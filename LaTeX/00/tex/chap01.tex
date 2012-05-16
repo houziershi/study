@@ -11,6 +11,11 @@
 
 			可以设定字体为\textit{斜体}；给文字加上\underline{下划线}。可以设定字体为\textit{斜体}；给文字加上\underline{下划线}。可以设定字体为\textit{斜体}；给文字加上\underline{下划线}。可以设定字体为\textit{斜体}；给文字加上\underline{下划线}。
 
+		\subsection{边注与脚注}
+			按照国际惯例，这里是鬼扯的部分。\footnote{我才不承认这是为了骗稿费呢～}
+
+			同样也给内容加上连注。但边注是没有编号的，因为就在旁边。\marginpar{这里是边注的内容。}
+
 		\subsection{原文照排}
 			在正文中放入源文照排：在Linux下通过\verb|ls -al|查看当前目录下所有文件。
 
@@ -69,19 +74,16 @@ int main(int argc, char ** argv)
 
 			\lstinputlisting[language=HTML,firstline=2,lastline=8]{src/aa.html}
 
-		\subsection{边注与脚注}
-			按照国际惯例，这里是鬼扯的部分。\footnote{我才不承认这是为了骗稿费呢～}
+	\section{图片与表格}
 
-			同样也给内容加上连注。但边注是没有编号的，因为就在旁边。\marginpar{这里是边注的内容。}
-
-		\subsection{插入图片}
+		\subsection{使用图片}
 
 			试试使用浮动环境插入图片，但是这样图片就不知道浮动到什么地方去了：
 
 			\begin{figure}[htbp]                        % 
 				\centering                              % 图片居中	
 				\includegraphics[scale=0.5]{dm0201.png} % scale指定缩放
-				\caption{图片标题}            % 图片的标题，会自动编号
+				\caption{第一张浮动的图片}            % 图片的标题，会自动编号
 				\label{dm0201}                % 图片的标记，一定要加在caption后面。不然指向的是前一个插图
 			\end{figure}
 
@@ -90,7 +92,7 @@ int main(int argc, char ** argv)
 			\begin{figure}[htbp]                        % 
 				\centering                              % 图片居中	
 				\includegraphics[scale=0.5]{dm0201.png} % scale指定缩放
-				\caption{图片标题}            % 图片的标题，会自动编号
+				\caption{第二张浮动的图片}            % 图片的标题，会自动编号
 				\label{dm0202}                % 图片的标记，一定要加在caption后面。不然指向的是前一个插图
 			\end{figure}
 
@@ -99,13 +101,26 @@ int main(int argc, char ** argv)
 			\begin{figure}[htbp]                        % 
 				\centering                              % 图片居中	
 				\includegraphics[scale=0.5]{dm0201.png} % scale指定缩放
-				\caption{图片标题}            % 图片的标题，会自动编号
+				\caption{第三张浮动的图片}            % 图片的标题，会自动编号
 				\label{dm0203}                % 图片的标记，一定要加在caption后面。不然指向的是前一个插图
 			\end{figure}
 
+		\subsection{使用表格}
 
-	\section{第二节}
+			组表格也加上浮动环境：
 
-		\subsection{第一小节}
+			\begin{table}[htbp]
+				\caption{浮动环境中的三线表}
+				\label{tab:threesome}
+				\centering
+				\begin{tabular}{lll}
+					\hline
+					操作系统 & 发行版 & 编辑器 \\
+					\hline
+					Windows & MikTeX & TeXnicCenter \\
+					Unix/Linux & TeX Live & Emacs \\
+					Mac OS & MacTeX & TeXShop \\
+					\hline
+				\end{tabular}
+			\end{table}
 
-		\subsection{第二小节}
