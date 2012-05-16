@@ -1,0 +1,16 @@
+digraph dm0102 {
+	lable = "图：（一，(2)）";
+	rankdir = LR;
+	node [ shape=record ];
+
+	node0 [ label = "<f1> fat table: univ | <f2> student_id | <f3> course_id | <f4> semester_id | <f5> instructor | <f6> count | <f7> avg_grade" ];
+	node1 [ label = "<f1> dimension_table: studen | <f2> student_id | <f3> student_name | <f4> area_id | <f5> major | <f6> status | <f7> university " ];
+	node2 [ label = "<f1> dimension_table: course | <f2> course_id | <f3> course_name | <f4> department " ];
+	node3 [ label = "<f1> dimension_table: semester | <f2> semester_id | <f3> semester | <f4> year" ];
+	node4 [ label = "<f1> dimension_table: instructor | <f2> instructor_id | <f3> dept | <f4> rank" ];
+
+	node0:f2 -> node1:f2;
+	node0:f3 -> node2:f2;
+	node0:f4 -> node3:f2;
+	node0:f5 -> node4:f2;
+}

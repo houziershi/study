@@ -1,0 +1,8 @@
+graph G {
+	lable = "图：（二，(4)）";
+
+	A -- AC -- ABC;
+	all -- B -- BC -- ABC;
+	C -- BC;
+	AB -- ABC;
+}

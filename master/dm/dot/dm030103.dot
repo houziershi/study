@@ -1,0 +1,7 @@
+digraph G {
+	NULL -> A -> B -> D;
+
+	A [ label = "A:4" ];
+	B [ label = "B:4" ];
+	D [ label = "D:4" ];
+}

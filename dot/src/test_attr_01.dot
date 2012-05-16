@@ -1,0 +1,17 @@
+digraph test_attr_01 {
+	label = "这个是标题";
+	fontsize = 10; // 字体大小
+	rankdir = LR;  // 方向是从左到右
+
+	node [ shape = box, color = green,
+		style = filled,
+		fillcolor = "0.7 0.3 1.0",
+		fontsize = 10 ];
+
+	A -> B -> C -> D;
+
+	// 具体配置一个结点的属性
+	B [ shape = circle, color = red, style = solid, 
+		// 不指定label转为的就是结点的名字B
+		label = "第二个结点"];
+}

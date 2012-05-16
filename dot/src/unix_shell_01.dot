@@ -1,0 +1,47 @@
+digraph shells {
+	node [fontsize = 11, height = .02]
+	edge [arrowsize= .5]
+	
+	node [shape = plaintext]
+	1972 -> 1976 -> 1978 -> 1980 -> 1982 -> 1984
+	1984 -> 1986 -> 1988 -> 1990 -> future
+
+	1972 [ label = "" ];
+	
+	node [shape = box]
+	rank = same
+	{1972 Thompson}
+	{1976 Mashey Bourne}
+	{1978 Formshell csh}
+	{1980 esh vsh}
+	{1982 ksh "System-V"}
+	{1984 v9sh tcsh}
+	{1986 "ksh-i"}
+	{1988 KornShell Perl rc}
+	{1990 tcl Bash}
+	{"future" POSIX "ksh-POSIX"}
+
+	Thompson -> Mashey
+	Thompson -> Bourne
+	Thompson -> csh
+	csh -> tcsh
+	Bourne -> ksh
+	Bourne -> esh
+	Bourne -> vsh
+	Bourne -> "System-V"
+	Bourne -> v9sh
+	v9sh -> rc
+	Bourne -> Bash
+	"ksh-i" -> Bash
+	KornShell -> Bash
+	esh -> ksh
+	vsh -> ksh
+	Formshell -> ksh
+	csh -> ksh
+	KornShell -> POSIX
+	"System-V" -> POSIX
+	ksh -> "ksh-i"
+	"ksh-i" -> KornShell
+	KornShell -> "ksh-POSIX"
+	Bourne -> Formshell
+}

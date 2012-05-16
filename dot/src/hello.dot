@@ -1,0 +1,3 @@
+graph hello {
+	Node1 [label="hello, world!"]
+}

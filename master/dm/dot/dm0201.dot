@@ -1,0 +1,10 @@
+graph G {
+	lable = "图：（二，(1)）";
+
+//	node [shape = plantext ];
+
+	all -- A -- AB -- ABC;
+	all -- B -- BC -- ABC;
+	all -- C -- AC -- ABC;
+	A -- AC; B -- AB; C -- BC;
+}

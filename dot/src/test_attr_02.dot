@@ -1,0 +1,19 @@
+digraph test_attr_02 {
+	label = "这个是标题";
+	fontsize = 10;
+	rankdir = LR;
+
+	node [ shape = box, color = green,
+		style = filled,
+		fillcolor = "0.7 0.3 1.0",
+		fontsize = 10 ];
+
+	// 设置所有结连箭头的大小
+	edge [arrowsize = 0.5];
+
+	A -> B[label="处理"]; // 设置连线的标题
+	B -> C -> D;
+
+	B [ shape = circle, color = red, style = solid, 
+		label = "第二个结点"];
+}

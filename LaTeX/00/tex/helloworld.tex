@@ -1,0 +1,57 @@
+\documentclass[10pt,a4paper]{book}
+%------------------------------------------------------------------------------------------------------
+\usepackage{xltxtra,fontspec,xunicode}
+\usepackage[slantfont,boldfont]{xeCJK} % 允许斜体和粗体
+
+\setCJKmainfont{WenQuanYi Micro Hei}        % 缺省中文字体
+\setCJKmonofont{WenQuanYi Micro Hei Mono}   % 中文等宽字体
+\setmainfont{DejaVu Serif}                  % 英文衬线字体
+\setsansfont{DejaVu Sans}                   % 英文无衬线字体
+\setmonofont{Monaco}                        % 英文等宽字体
+%-------------------------------------------------------------------------------------------------------
+%\renewcommand{\rmdefault}{Monaco}
+\usepackage{xcolor}
+\usepackage{listings}
+\lstset{
+	frame = shadowbox,
+	basicstyle = \ttfamily\small,
+	columns = fixed,
+	numbers = left,
+	numberstyle = \footnotesize,
+	stepnumber = 1,
+	tabsize = 2,
+	showspaces = false,
+	showstringspaces = false,
+	showtabs = false,
+	captionpos = b,
+	breaklines = tr[],
+	breakatwhitespace = false,
+	backgroundcolor = \color{white},
+	keywordstyle=\color{blue},
+	numberstyle=\color[RGB]{0,192,192},
+	commentstyle=\color[RGB]{0,96,96},
+	stringstyle=\ttfamily\slshape\color[RGB]{128,0,0},
+	escapeinside=``
+}
+%-------------------------------------------------------------------------------------------------------
+\usepackage{graphicx}                       % 引入图片
+\graphicspath{{img/}{images/}}              % 要导入的图片的位置。可以有多个目录，但就算只有一个目录，也要用两级花括号
+%-------------------------------------------------------------------------------------------------------
+\title{文章标题}
+\author{
+	阿左 \thanks{感谢读者} \and 
+	Nobody \thanks{感谢国家}
+}
+\date{\today}
+%-------------------------------------------------------------------------------------------------------
+\begin{document}
+
+	\maketitle
+	\tableofcontents
+
+	\part{第一部分}
+
+		\include{tex/chap01}
+
+
+\end{document}

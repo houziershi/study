@@ -1,0 +1,7 @@
+# digraph 表示图为有向图
+# -> 表示方向
+
+digraph test1 {
+	A -> B; A -> C;
+	B -> D; C -> D;
+}
