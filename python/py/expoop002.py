@@ -1,14 +1,16 @@
 # coding=utf-8
 
 class Employee():
-	def __init__(self, name):   # __init__ 声明构造函数
+	def __init__(self, name):   # __init__ defing construter
 		self.name = name
 	def showName(self):
 		print self.name
 
 morgan = Employee("Morgan")
 morgan.showName()
-print morgan.showName
 
-morgan.showName = "new name"    # 可以把变量赋值给原来是方法的成员
-print morgan.showName
+morgan.showName = "new name"    # set value
+morgan.nickName = "Jade"        # create new variable
+
+print Employee.__dict__.keys()  # 大多数基于类的对象的命名空间字典
+print morgan.__dict__.keys()    # 大多数基于类的对象的命名空间字典
