@@ -1,0 +1,71 @@
+
+\chapter{模块}
+	
+	\section{模块与路径}
+		
+		在linux环境下查找python的安装目录：
+
+\begin{lstlisting}
+whereis python
+\end{lstlisting}
+
+		在python交互环境中查看python路径:
+
+\begin{lstlisting}
+sys.path
+\end{lstlisting}
+
+	\section{导入模块}
+
+		导入模块使用\verb|import|语句：
+
+\begin{lstlisting}
+import module01
+\end{lstlisting}
+
+		当模块被导入后，会包含源文件的目录信息：<目录>/<文件名>.<扩展名>。
+
+		一个模块只能有一个实例，导入一个模块以后不能再次导入。当一个模块的代码被修改以后必须使用\verb|reload|语句重新加载模块才能生效：
+
+\begin{lstlisting}
+reload module01
+\end{lstlisting}
+
+		如果只导入模块中的部分变量，则使用\verb|from|语句：
+		
+\begin{lstlisting}
+from module01 import a, b, c
+\end{lstlisting}
+
+		\verb|from|语句不导入模块，只复制模块中的变量到本地。复制模块中全部变量的例子：
+
+\begin{lstlisting}
+from module01 import *
+\end{lstlisting}
+
+		\verb|import|与\verb|from|语句都都有赋值效果，例如：
+
+\begin{lstlisting}
+from module1 import a, b, c
+\end{lstlisting}
+
+		等价于：
+
+\begin{lstlisting}
+import module1
+
+a = module1.a
+b = module1.b
+c = module1.c
+\end{lstlisting}
+
+%		\lstinputlisting[label=ch12:baseOOP, caption=类与实例]{py/expoo00.py}
+
+
+	\section{直接执行脚本文件}
+		
+		可以不加载模块而是直接以脚本文件的方式执行：
+
+\begin{lstlisting}
+execfile('mymodule.py')
+\end{lstlisting}

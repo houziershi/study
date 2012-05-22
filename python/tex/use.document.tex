@@ -1,0 +1,30 @@
+
+\chapter{python文档}
+
+	\section{PyDoc查看文档内容}
+
+		使用\verb|help()|函数查看帮助：
+\begin{lstlisting}
+help(sys.getrefcount)
+\end{lstlisting}
+
+		浏览HTML版的文档：
+
+		\begin{verbatim}
+			pydoc.py -g
+			或
+			<pythonDir>/Tools/pydocgui.pyw
+		\end{verbatim}
+
+	\section{程序内文档}
+
+		文件、类、函数头上的文档字符串\verb|__doc__|会被自动封装为文档。
+
+		显示文档的方法：
+
+\begin{lstlisting}
+print filename.__doc__
+print filename.classname.__doc__
+print filename.funcname.__doc__
+\end{lstlisting}
+

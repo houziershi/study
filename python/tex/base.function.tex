@@ -1,0 +1,53 @@
+
+\chapter{常用功能}
+
+	\section{输入输出}
+
+		\subsection{python中的输出流}
+
+\begin{lstlisting}
+import sys
+
+sys.stdout.write('hello\n')     # 输出到标准输出
+sys.stderr.write('Error...\n')  # 输出到标准错误
+\end{lstlisting}
+
+
+		\subsection{print打印输出}
+
+			\verb|print|语句会把对象打印到默认的输出流（标准输出）中：
+
+\begin{lstlisting}
+print a, b, b...
+\end{lstlisting}
+
+			格式化打印为\verb|a => b|的效果：
+
+\begin{lstlisting}
+print '%s => %s' % ('a', 'b')
+\end{lstlisting}
+
+		\subsection{重定向print到其他输出流}
+		
+			方法一：用指定的输出流替换掉标准输出。这样有一个缺点是每次都要手动地打开与关闭输出流：
+\begin{lstlisting}
+import sys
+
+sys.stdout = open('aa.txt', 'a');
+print 'hello'
+sys.stdout.close()
+\end{lstlisting}
+
+			方法二：可以在\verb|print|语句中指定输出流：
+\begin{lstlisting}
+import sys
+
+log = open('log.txt', 'w')
+print >> log, 'start', 1, 2, 3   # write to log file
+log.close()
+print >> sys.stderr, "err..."    # write to std err
+\end{lstlisting}
+
+	\section{正则表达式}
+		
+		\lstinputlisting[firstline=1,lastline=13]{py/basefunc/use.reg.py}

@@ -60,7 +60,7 @@
 \usepackage{graphicx}                            % 引入图片
 \graphicspath{{img/}{images/}}                   % 要导入的图片的位置。可以有多个目录，但就算只有一个目录，也要用两级花括号
 %-------------------------------------------------------------------------------------------------------
-	\title{文章标题}                             % 文章的标题
+	\title{Python2.5学习笔记}                             % 文章的标题
 	\author{                                     % 作者与致谢
 		阿左 \thanks{感谢读者} \and 
 		Nobody \thanks{感谢国家}
@@ -76,19 +76,89 @@
 	\listoftables                                % 生成表格目录
 
 
-%	\begin{abstract}                             % 英文摘要
-%		this is for english abstract
-%	\end{abstract}
-%
-%	\renewcommand{\abstractname}{摘要}           % 中文摘要
-%	\begin{abstract}
-%		这里是摘要的内容
-%	\end{abstract}
+	\begin{abstract}                             % 英文摘要
+		The Zen of Python, by Tim Peters
+
+		Beautiful is better than ugly.
+
+		Explicit is better than implicit.
+
+		Simple is better than complex.
+
+		Complex is better than complicated.
+
+		Flat is better than nested.
+
+		Sparse is better than dense.
+
+		Readability counts.
+
+		Special cases aren't special enough to break the rules.
+
+		Although practicality beats purity.
+
+		Errors should never pass silently.
+
+		Unless explicitly silenced.
+
+		In the face of ambiguity, refuse the temptation to guess.
+
+		There should be one-- and preferably only one --obvious way to do it.
+
+		Although that way may not be obvious at first unless you're Dutch.
+
+		Now is better than never.
+
+		Although never is often better than *right* now.
+
+		If the implementation is hard to explain, it's a bad idea.
+
+		If the implementation is easy to explain, it may be a good idea.
+
+		Namespaces are one honking great idea -- let's do more of those!
+	\end{abstract}
+
+	\renewcommand{\abstractname}{摘要}           % 中文摘要
+	\begin{abstract}
+
+		Python之禅
+
+		优美胜于丑陋，明了胜于晦涩；
+		简洁胜于复杂，复杂胜于凌乱；
+		扁平胜于嵌套，错落有致胜于密密匝匝。
+		可读性不容轻视。
+
+		即便觉得应该为实用性而放弃简单纯粹的时候，
+		“存在特例”也不能成为违反上述规则的借口。
+
+		不要让任何错误悄悄溜过，
+		除非你确定不想让人看到报错。
+		当存在多种可能时不要冒险猜测，
+		尽量找到那唯一且明确的答案。
+
+		虽然这在一开始并不容易，
+		毕竟你不是Pytho之父。
+
+		做也许好过不做，但不假思索就动手还不如不做。
+		难以理解的实现方式绝对糟糕；
+		简章易懂的实现方式往往不错。
+		命名空间是一种绝妙的理念，让我们多加利用！
+	\end{abstract}
 
 	\part{语法基础}
+		\include{tex/module}
 
-		\include{tex/chap12}
+		\include{tex/core.data.struct}
 
+		\include{tex/execute.sequence}
+
+		\include{tex/function}
+
+		\include{tex/oop}
+
+		\include{tex/use.document}
+
+		\include{tex/base.function}
 % \chapter{基本使用}
 % 
 % 	\section{常用的格式}

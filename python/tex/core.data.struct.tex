@@ -1,0 +1,106 @@
+
+
+\chapter{核心数据类型}
+
+	在python的核数据类型中，数字、字符串、元组这三个对象是不可变的。
+
+	\section{基本数字类型}
+		
+		数字对象是不可变的，许多对它的操作会生成一个新的对象返回，而不是改变原来的对象。
+
+		支持的操作：加（\verb|+|）、减（\verb|-|）、乘（\verb|*|）、除（\verb|/|）、乘方（\verb|**|）。
+
+		\subsection{常用数学模块}
+
+
+\begin{lstlisting}
+import math
+import random
+
+print math.pi
+print math.sqrt(85)
+
+print random.random()
+print random.choice([1,2,3,4,5])
+\end{lstlisting}
+
+	\section{序列类型的共同点}
+		
+		字符串、列表、元组都属于序列类型类型，会支持一些共同的操作。
+
+		索引操作：
+
+		\lstinputlisting[firstline=1,lastline=10]{py/coreda/exstr.py}
+
+		分片操作：
+		\lstinputlisting[firstline=11,lastline=17]{py/coreda/exstr.py}
+
+		连接与重复操作会生成新的对象：
+		\lstinputlisting[firstline=19,lastline=20]{py/coreda/exstr.py}
+
+	\section{字符串类型}
+
+		字符串也是一种序列类型，所以支持所有的序列操作。
+
+		字符串对象是不可变的，许多对它的操作会生成一个新的对象返回，而不是改变原来的对象。
+
+		\lstinputlisting[firstline=22,lastline=32]{py/coreda/exstr.py}
+
+	\section{列表}
+
+		列表也是一种序列类型，所以支持所有的序列操作。
+
+		虽然列表没有固定大小，但是还是会越界。越界会抛出IndexError。
+		
+		列表常用的特定操作：
+
+		\lstinputlisting[firstline=1,lastline=11]{py/coreda/exlist.py}
+
+		列表可以进行嵌套，并且经常被用在多维数组上：
+
+		\lstinputlisting[firstline=13,lastline=26]{py/coreda/exlist.py}
+
+	\section{字典}
+
+		不能读取一个字典中不存在的键：
+
+		\lstinputlisting[firstline=1,lastline=25]{py/coreda/exdict.py}
+
+		对字典内容进行排序：
+
+		\lstinputlisting[firstline=27,lastline=35]{py/coreda/exdict.py}
+
+	\section{元组}
+
+		元组也是一种序列类型，所以支持所有的序列操作。
+
+		元组对象是不可变的，许多对它的操作会生成一个新的对象返回，而不是改变原来的对象。
+
+		\lstinputlisting[firstline=1,lastline=12]{py/coreda/exfile.py}
+		
+	\section{集合类型}
+
+		集合类型set可以支持一般的数学集合操作：
+
+		\lstinputlisting{py/coreda/exset.py}
+		
+	\section{bool类型与空}
+
+		bool类型实际是在以定制后的逻辑来显示整数的1和0。
+
+		None对象表示空
+		
+		\lstinputlisting{py/coreda/exbool.py}
+
+
+	\section{十进制小数类型}
+
+		集合类型set可以支持一般的数学集合操作：
+
+		\lstinputlisting{py/coreda/exdecimal.py}
+
+	\section{type类型}
+
+		再次强调python中的类型信息与变量无关，类型是关联在对象上的。
+
+		\lstinputlisting{py/coreda/extype.py}
