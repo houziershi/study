@@ -90,7 +90,7 @@
 
 		元组对象是不可变的，许多对它的操作会生成一个新的对象返回，而不是改变原来的对象。
 
-		\lstinputlisting[firstline=1,lastline=12]{py/coreda/exfile.py}
+%		\lstinputlisting[firstline=1,lastline=12]{py/coreda/exfile.py}
 		
 	\section{集合类型}
 
@@ -111,3 +111,28 @@
 		再次强调python中的类型信息与变量无关，类型是关联在对象上的。
 
 		\lstinputlisting{py/coreda/extype.py}
+
+	\section{对象的副本}
+		\subsection{对象的副本}
+
+			要为序列类对象为了建立一个用于修改的副本，用全部分片是最方便的方法：
+
+			\lstinputlisting[firstline=1,lastline=7]{py/coreda/excopyobj.py}
+
+			对于字典对象，有成员方法\verb|copy|：
+
+			\lstinputlisting[firstline=9,lastline=13]{py/coreda/excopyobj.py}
+
+			标准库中的copy可以拷贝任意对象，分只复制顶层与深层复制：
+
+			\lstinputlisting[firstline=15,lastline=31]{py/coreda/excopyobj.py}
+
+		\subsection{对象的相等与同一}
+
+			判断两个对象是否相等用“\verb|==|”操作符，判断两个对象是不是同一个对象用“\verb|is|”操作符：
+
+			\lstinputlisting[firstline=33,lastline=41]{py/coreda/excopyobj.py}
+
+			在\verb|sys|模块中的\verb|getrefcount|函数会返回一个对象被引用的次数：
+
+			\lstinputlisting[firstline=43,lastline=45]{py/coreda/excopyobj.py}
