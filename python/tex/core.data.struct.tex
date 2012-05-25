@@ -58,31 +58,27 @@
 
 		字符串对象是不可变的，许多对它的操作会生成一个新的对象返回，而不是改变原来的对象。
 
-		\lstinputlisting[firstline=22,lastline=32]{py/coreda/exstr.py}
+		\subsection{常用方法}
+
+			python中的字符串使用双引号和单引号都是一样的。而且空值不会像在C语言里中断字符串。
+
+			三重引号可以按原文格式生成文本。可以用来注释大段的代码。
+
+			\lstinputlisting{py/coreda/exstring.py}
 
 	\section{列表}
 
-		列表也是一种序列类型，所以支持所有的序列操作。
+		列表也是一种序列类型，所以支持所有的序列操作。而且列表是可变类型。
 
 		虽然列表没有固定大小，但是还是会越界。越界会抛出IndexError。
 		
 		列表常用的特定操作：
 
-		\lstinputlisting[firstline=1,lastline=11]{py/coreda/exlist.py}
+		\lstinputlisting[firstline=1,lastline=23]{py/coreda/exlist.py}
 
 		列表可以进行嵌套，并且经常被用在多维数组上：
 
-		\lstinputlisting[firstline=13,lastline=26]{py/coreda/exlist.py}
-
-	\section{字典}
-
-		不能读取一个字典中不存在的键：
-
-		\lstinputlisting[firstline=1,lastline=25]{py/coreda/exdict.py}
-
-		对字典内容进行排序：
-
-		\lstinputlisting[firstline=27,lastline=35]{py/coreda/exdict.py}
+		\lstinputlisting[firstline=25,lastline=38]{py/coreda/exlist.py}
 
 	\section{元组}
 
@@ -90,8 +86,43 @@
 
 		元组对象是不可变的，许多对它的操作会生成一个新的对象返回，而不是改变原来的对象。
 
+		新建一个元组的操作：
+
+		\begin{verbatim}
+			tuple(l)
+		\end{verbatim}
 %		\lstinputlisting[firstline=1,lastline=12]{py/coreda/exfile.py}
-		
+
+	\section{字典}
+
+		创建一个字典的方法：
+
+		\lstinputlisting[firstline=3,lastline=14]{py/coreda/exdict.py}
+
+		字典的常用方法：
+
+		\lstinputlisting[firstline=18,lastline=32]{py/coreda/exdict.py}
+
+		字典中的键不一定要用字符串，可以用任何不可变对象。不能读取一个字典中不存在的键，但可以给不存在的键设一个默认值：
+
+		\lstinputlisting[firstline=34,lastline=36]{py/coreda/exdict.py}
+
+		字典中的项目可以是不同的类型：
+
+		\lstinputlisting[firstline=38,lastline=44]{py/coreda/exdict.py}
+
+		对字典内容进行排序：
+
+		\lstinputlisting[firstline=46,lastline=52]{py/coreda/exdict.py}
+
+		用整数来作为字典的键，模拟一个不会越界的列表：
+
+		\lstinputlisting[firstline=54,lastline=55]{py/coreda/exdict.py}
+
+		用字典实现稀疏数据结构：
+
+		\lstinputlisting[firstline=57,lastline=63]{py/coreda/exdict.py}
+
 	\section{集合类型}
 
 		集合类型set可以支持一般的数学集合操作：
@@ -106,6 +137,18 @@
 		
 		\lstinputlisting{py/coreda/exbool.py}
 
+		常见对象的布尔值状态：
+
+		\begin{verbatim}
+			"spam"   True
+			""       False
+			[]       False
+			{}       False
+			1        True
+			0.0      False
+			None     False
+		\end{verbatim}
+
 	\section{type类型}
 
 		再次强调python中的类型信息与变量无关，类型是关联在对象上的。
@@ -113,6 +156,9 @@
 		\lstinputlisting{py/coreda/extype.py}
 
 	\section{对象的副本}
+
+		当一个复杂的对象内部有一个引用是它自己的话，就形成了循环引用的情况。python会把循环引用的对象打印为\verb|[...]|。但是程序在处理的时候还是会造成无限循环。	
+
 		\subsection{对象的副本}
 
 			要为序列类对象为了建立一个用于修改的副本，用全部分片是最方便的方法：
@@ -127,6 +173,9 @@
 
 			\lstinputlisting[firstline=15,lastline=31]{py/coreda/excopyobj.py}
 
+			序列的重复会生成新的序列：
+
+			\lstinputlisting[firstline=47,lastline=56]{py/coreda/excopyobj.py}
 		\subsection{对象的相等与同一}
 
 			判断两个对象是否相等用“\verb|==|”操作符，判断两个对象是不是同一个对象用“\verb|is|”操作符：

@@ -19,14 +19,3 @@ print s[::-1]         # backward
 print s + '^_^'       # create new object, s still the same
 print s * 3           # create new object, s still the same
 
-print s.find('pa')
-print s.replace('pa','^_^')
-print s.upper()
-print s.isalpha()
-
-line = '   aaa,bbb,ccc,ddd,eee   '
-print line.lstrip()
-print line.rstrip()
-print line.split(',')
-
-print ord('\n')       # show 10, because'\n' binary value is 0x10

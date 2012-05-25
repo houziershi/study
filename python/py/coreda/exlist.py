@@ -1,14 +1,26 @@
 # coding=utf-8
 
-l = [123, 'spam', 1.23]
+l = [123, 'spam', 1.23, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
-print l.append('NI') # None
-print l              # [123, 'spam', 1.23, 'NI']
-print l.pop(2)       # 1.23
-print l              # [123, 'spam', 'NI']
+l.index(1)
 
-print l.sort()       # Nome
-print l              # [123, 'NI', 'spam']
+l.append('NI') # [123, 'spam', 1.23, 'NI']
+l.extend([5,6,7])
+l.insert(1,88)
+
+l.pop(2)       # 1.23 # [123, 'spam', 'NI']
+l.remove(2)
+del l[1]
+del l[1:2]
+
+l[0] = 5
+l[3:5] = [66,77,88]
+
+range(4)       # create new list [1,2,3,4]
+xrange(0,4)    # xrange(4)
+
+l.sort()
+l.reverse()
 
 m = [[1,2,3], 
 		[4,5,6], 

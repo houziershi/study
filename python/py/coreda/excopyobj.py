@@ -43,3 +43,16 @@ print x is y       # True
 import sys
 print sys.getrefcount(1)  # 86
 print sys.getrefcount(x)  # 11
+
+l = [4,5,6]
+x = l * 4    # new list
+y = [l] * 4  # reference l 4 time
+
+print x # [4, 5, 6, 4, 5, 6, 4, 5, 6, 4, 5, 6]
+print y # [[4, 5, 6], [4, 5, 6], [4, 5, 6], [4, 5, 6]]
+
+l[1] = 0
+print x # [4, 5, 6, 4, 5, 6, 4, 5, 6, 4, 5, 6]
+print y # [[4, 0, 6], [4, 0, 6], [4, 0, 6], [4, 0, 6]]
+
+

@@ -48,6 +48,44 @@ log.close()
 print >> sys.stderr, "err..."    # write to std err
 \end{lstlisting}
 
+	\section{文件操作}
+		
+		\subsection{常用的文件操作}
+
+			\begin{verbatim}
+				input  = open('aa.txt')      # 输入文件 r读取（默认）
+				str = input.read()           # 读取整个文件
+				str = input.read(n)          # 读取多个字节
+				str = input.readline()       # 读取多个字节
+				lst = input.readlines()
+
+				output = open('aa.txt','w')  # 输出文件 w写入
+				output.write(str)            #
+				output.writelines(lst)       #
+				output.flush()
+				output.close()
+
+				anyFile.seek(n)              # move to n
+			\end{verbatim}
+
+		\subsection{对象的存取}
+
+			python的内置函数\verb|eval()|可以直接把字符串作为程序代码执行。所以可以用它来把文本变成python对象：
+
+			\lstinputlisting{py/file/str2obj.py}
+
+			但是\verb|eval()|函数有一个安全隐患：它会执行“任何”python代码……你懂的……
+
+			另一种选择是使用可以用来存取几乎任何python对象的pickle模块：
+
+			\lstinputlisting{py/file/usepickle.py}
+
+		\subsection{二进制文件读写}
+			
+			struct模块能打包并解析二进制文件：
+
+			\lstinputlisting{py/file/opbinfile.py}
+
 	\section{正则表达式}
 		
 		\lstinputlisting[firstline=1,lastline=13]{py/basefunc/use.reg.py}
