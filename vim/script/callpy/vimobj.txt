@@ -1,0 +1,23 @@
+vim.buffers						*python-buffers*
+	A sequence object providing access to the list of vim buffers.  The
+	object supports the following operations: >
+	    :py b = vim.buffers[i]	# Indexing (read-only)
+	    :py b in vim.buffers	# Membership test
+	    :py n = len(vim.buffers)	# Number of elements
+	    :py for b in vim.buffers:	# Sequential access
+
+vim.windows						*python-windows*
+	A sequence object providing access to the list of vim windows.  The
+	object supports the following operations: >
+	    :py w = vim.windows[i]	# Indexing (read-only)
+	    :py w in vim.windows	# Membership test
+	    :py n = len(vim.windows)	# Number of elements
+	    :py for w in vim.windows:	# Sequential access
+
+vim.current						*python-current*
+	An object providing access (via specific attributes) to various
+	"current" objects available in vim:
+		vim.current.line	The current line (RW)		String
+		vim.current.buffer	The current buffer (RO)		Buffer
+		vim.current.window	The current window (RO)		Window
+		vim.current.range	The current line range (RO)	Range

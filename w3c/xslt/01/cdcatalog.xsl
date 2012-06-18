@@ -6,6 +6,9 @@
 		 use date from the xpath "/" -->
 	<xsl:template match="/">
 		<html>
+			<head>
+				<script type="text/javascript" src="cdcatalog.js"></script>
+			</head>
 			<body>
 				<h2>My CD Collection</h2>
 				<table border="1">

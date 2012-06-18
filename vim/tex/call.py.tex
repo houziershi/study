@@ -1,0 +1,152 @@
+
+\chapter{调用python脚本}
+
+	\section{基本介绍}
+
+		先把函数定义于\verb|~/.vimrc|配置文件中。可以直接\verb|:so %|来重新载入，但是前提是所有在vimrc中的自定义函数都要定义成\verb|function!|这种形式。 
+
+		\subsection{在状态栏显示信息}
+
+			一个简单的例子：定义一个在vim的状态行中显示"Eat Me"的消息的函数。然后绑定到\verb|F7|键上。
+
+			\lstinputlisting[language=python]{script/callpy/ShowEatMe.vim}
+
+		\subsection{取得打开文件的缓存}
+
+			下面函数从打开文件的缓存中取得文件内容，然后统计空白行的行数。
+
+			\lstinputlisting[language=python]{script/callpy/CountBlankLine.vim}
+
+		\subsection{调用python脚本}
+
+			对于一个已经存在的python脚本：
+
+			\lstinputlisting[language=python]{script/callpy/ShowEatMe.py}
+
+			可以通过\verb|:pyfile <文件名>|来调用已经存在的python脚本。
+
+			同样对于python脚本：
+
+			\lstinputlisting[language=python]{script/callpy/CountBlankLine.py}
+
+			也可以通过\verb|pyfile|命令调用。
+
+	\section{vim模块}
+
+		现在有了vim模块提供python程序对vim的操作。
+
+		\subsection{基本常量}
+
+			基本常量
+
+			\lstinputlisting[language=python]{script/callpy/vimobj.txt}
+
+			Python脚本的全部\verb|sys.stdout|输出都在vim的消息区，正常输出像是提示信息。所以的\verb|sts.stderr|错误信息像是错误提示。
+
+			vim调用的python脚本不支持输入\verb|sys.stdin|(包括\verb|inout()|、\verb|raw_input()|)，调用时很可能会发生错误。
+
+		\subsection{错误对象}
+
+			vim模块中的错误会抛出\verb|vim.err|类型的异常：
+
+			\lstinputlisting[language=python]{script/callpy/vimerr.txt}
+
+		\subsection{缓冲区对象}
+
+			缓冲区对象可以通过以下途径获得：
+
+			- via vim.current.buffer (|python-current|)
+
+			- from indexing vim.buffers (|python-buffers|)
+
+			- from the "buffer" attribute of a window (|python-window|)
+
+			缓冲区对象可以作为一个序列对象。注意在索引与分片操作时结果会有不同：
+			
+			\verb|b[:]|的结果为\verb|None|，会清空整个缓冲区；\verb|b = None|仅仅更新了变量，不会影响缓冲区。
+
+			缓存对象的常用的操作：
+			\begin{verbatim}
+				b.append(str)      Append a line to the buffer
+				b.append(str, nr)  Idem, below line "nr"
+				b.append(list)     Append a list of lines to the buffer
+				                   Note that the option of supplying a list of strings to
+				                   the append method differs from the equivalent method
+				                   for Python's built-in list objects.
+				b.append(list, nr) Idem, below line "nr"
+				b.mark(name)       Return a tuple (row,col) representing the position
+				                   of the named mark (can also get the []"<> marks)
+				b.range(s,e)       Return a range object (see |python-range|) which
+				                   represents the part of the given buffer between line
+				                   numbers s and e |inclusive|.
+			\end{verbatim}
+
+			注意：用\verb|append()|添加一个新行时，不可以加上换行符\verb|'\n'|。 行尾可以有\verb|'\n'|但是会被忽略。所以以下的操作是被允许的：
+			\begin{verbatim}
+				:py b.append(f.readlines())
+			\end{verbatim}
+
+			常用的例子：
+
+			\begin{verbatim}
+				:py print b.name            # write the buffer file name
+				:py b[0] = "hello!!!"       # replace the top line
+				:py b[:] = None             # delete the whole buffer
+				:py del b[:]                # delete the whole buffer
+				:py b[0:0] = [ "a line" ]   # add a line at the top
+				:py del b[2]                # delete a line (the third)
+				:py b.append("bottom")      # add a line at the bottom
+				:py n = len(b)              # number of lines
+				:py (row,col) = b.mark('a') # named mark
+				:py r = b.range(1,5)        # a sub-range of the buffer
+			\end{verbatim}
+
+		\subsection{范围对象}
+
+			范围对象代表了一部分的缓冲区，取得方法有：
+
+				- via vim.current.range (|python-current|)
+				- from a buffer's range() method (|python-buffer|)
+
+			常用属性有：
+			\begin{verbatim}
+				r.start     Index of first line into the buffer
+				r.end       Index of last line into the buffer
+			\end{verbatim}
+
+			常用方法有：
+			\begin{verbatim}
+				r.append(str)      Append a line to the range
+				r.append(str, nr)  Idem, after line "nr"
+				r.append(list)     Append a list of lines to the range
+				                   Note that the option of supplying a list of strings to
+				                   the append method differs from the equivalent method
+				                   for Python's built-in list objects.
+				r.append(list, nr) Idem, after line "nr"
+			\end{verbatim}
+
+			例子（r是当前的范围）：
+			\begin{verbatim}
+				# Send all lines in a range to the default printer
+				vim.command("%d,%dhardcopy!" % (r.start+1,r.end+1))
+			\end{verbatim}
+
+		\subsection{窗口对象}
+
+			窗口对象代表了一个vim窗口。取得窗口对象的方法有：
+
+				- via vim.current.window (|python-current|)
+				- from indexing vim.windows (|python-windows|)
+
+			窗口对象没有方法，只能通过属性来操作。常用窗口属性：
+
+			\begin{verbatim}
+				buffer (read-only)  The buffer displayed in this window
+				cursor (read-write) The current cursor position in the window
+				                    This is a tuple, (row,col).
+				height (read-write) The window height, in rows
+				width (read-write)  The window width, in columns
+			\end{verbatim}
+
+			只有水平屏时才能重设调试；只能垂直分屏时才能设置调试对象。
+

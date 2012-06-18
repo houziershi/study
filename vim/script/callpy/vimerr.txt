@@ -1,0 +1,4 @@
+try:
+	vim.command("put a")
+except vim.error:
+	# nothing in register a
