@@ -1,57 +1,513 @@
 \chapter{OOP与类}
 
-	一个模块只能有一个实例，当一个模块的代码被修改以后必须重新加载模块才能生效；类可以同时创建多个实例（即对象）。
+一个模块只能有一个实例，当一个模块的代码被修改以后必须重新加载模块才能生效；类可以同时创建多个实例（即对象）。
 
-	\section{最简单的Python类}
+\section{最简单的Python类}
 
-		Python的类模型相当动态，类与实例只是命名空间对象。
-		
-		可以仅用pass作为占位语句生成一个没有任何成员的class，这样的class仅仅是一个空的命名空间对象。可以在以后通过赋值给这个类加上新的成员：
+Python的类模型相当动态，类与实例只是命名空间对象。
 
-		\lstinputlisting[label=ch12:baseOOP, caption=类与实例]{py/expoo00.py}
+可以仅用pass作为占位语句生成一个没有任何成员的class，这样的class仅仅是一个空的命名空间对象。可以在以后通过赋值给这个类加上新的成员：
 
+\begin{lstlisting}
+class C1: pass             # Empty class
+                           # as an namespace object
 
-	\section{类与实例的基本概念}
-		
-		类与类的实例都是对象。类是一个对象，该类的每个实例又各对应了一个关联到该类对象的实例对象。
-		
-		class语句会创建一个类对象并赋值给变量名。class语句块内的语句会创建数据对象和方法对象赋值给类的成员变量。类的成员只属于该类，不属于该类的实例。
+a = C1()
+a.name = "morgan"          # a.name is "morgan"
 
-		像调用函数一样调用类对象会创建该类的实例对象。每个实例对象根据具体类的创建属性并获得自己的命名空间，每个成员都有自己的实例。
+C1.name = "Class C1"       # C1.name is "C1"
+b = C1()                   # b.name is "C1"
+                           # a.name still is "morgan"
 
-		通过实例调用方法时，会把这个实例对象作为第一个参数self传递给方法。
+def upperName(self):
+	print self.name.upper()
+
+C1.showName = upperName    # add func to class
+a.showName()
+b.showName()
+\end{lstlisting}
+
+\section{类与实例的基本概念}
+
+类与类的实例都是对象。类是一个对象，该类的每个实例又各对应了一个关联到该类对象的实例对象。
+
+像调用函数一样调用类对象会创建该类的实例对象。每个实例对象根据具体类的创建属性并获得自己的命名空间，每个成员都有自己的实例。
+
+对象的数据成员（无论是数据还是函数）在没有被第一次赋值之前，都不能被访问（就像是没有被声明的变量一样）。同样地也可以简章地通过赋值给变量增加一个成员。
+
+class语句会创建一个类对象并赋值给变量名。class语句块内的语句会创建数据对象和方法对象赋值给类的成员变量。类的成员变成只属于该类，不属于该类的实例，但可以被所有的实例共享访问。
+
+\begin{lstlisting}
+class Ca:
+	v = 42
+
+a = Ca()   # a.v = 42
+b = Ca()   # b.v = 42
+
+Ca.v = 55  # Ca.v = 55
+           # a.v = 55
+		   # b.v = 55
+
+a.v = 11   # Ca.v = 55
+           # a.v = 11
+		   # b.v = 55
+\end{lstlisting}
+
+类中的方法被所有函数共享。通过实例调用方法时，会把这个实例对象作为第一个参数self传递给方法。
+
+\begin{lstlisting}
+class c1():
+	count = 0
+	def show(self):
+		print 'c1.show()'
+\end{lstlisting}
+
+类的构造函数是\verb|__init__|；析构函数是\verb|__del__|：
+
+\begin{lstlisting}
+class Life:
+	def __init__(self, name='unknow'):
+		print 'hello ', name
+		self.name = name
+	def __del__(self):
+		print 'goodbye ', self.name
+
+brian = Life('Brian')     # prints: hello Brian
+brian = 'loretta'         # prints: goodbye Brian
+\end{lstlisting}
 
 		实例对象的\verb|__class__|属性记录了这个实例的类对象。
 
-		\lstinputlisting[label=ch12:baseOOP, caption=类与实例]{py/expoo003.py}
+\begin{lstlisting}
+print a.__class__           # class of instance
+\end{lstlisting}
 
-	\section{类的属性与方法}
+\section{类的属性与方法}
 
-		python中把数据保存在对象中，相关的操作（方法）在类中。对于类和对象，无论数据还是方法都作为变量处理。
+python中对于类和对象，无论数据还是方法都作为变量处理。
 
-		对象的数据成员（无论是数据还是函数）在没有被第一次赋值之前，都不能被访问（就像是没有被声明的变量一样）。同样地也可以简章地通过赋值给变量增加一个成员。
+对象的数据成员（无论是数据还是函数）在没有被第一次赋值之前，都不能被访问（就像是没有被声明的变量一样）。同样地也可以简章地通过赋值给变量增加一个成员。
 
-		类对象与实例对象的\verb|__dict__|属性是大多数基于类的对象的命名空间字典。
+\begin{lstlisting}
+class Employee():
+	def __init__(self, name):   # __init__ defing construter
+		self.name = name
+	def showName(self):
+		print self.name
 
-		\lstinputlisting[label=ch12:funcandattr, caption=类的属性与方法]{py/expoop002.py}
+morgan = Employee("Morgan")
+morgan.showName()
 
-	\section{类的继承}
+morgan.showName = "new name"    # set value
+morgan.nickName = "Jade"        # create new variable
+\end{lstlisting}
+
+类对象与实例对象的\verb|__dict__|属性是大多数基于类的对象的命名空间字典。
+
+\begin{lstlisting}
+print Employee.__dict__.keys()  # 大多数基于类的对象的命名空间字典
+print morgan.__dict__.keys()    # 大多数基于类的对象的命名空间字典
+\end{lstlisting}
+
+\section{类的继承}
+
+子类会继承父类的成员。如果当多重继承时遇到重名成员，优先级按声明继承时从左到右顺序。
+
+\begin{lstlisting}
+class c1():
+	myname = 'aaa'
+	def show(self):
+		print 'c1.show()'
+	def helloC1(self):
+		print 'c1.helloC1()'
+
+class c2():
+	def show(self):
+		print 'c2.show()'
+	def helloC2(self):
+		print 'c2.helloC2()'
+
+class c3(c1, c2):               # 超类写在括号中，支持多重继承
+	def show(self):
+		print 'c3.show()'
+
+c1.myname                       # c1.myname is 'aaa'
+c3.myname                       # c3.myname is 'aaa'
+
+i1 = c3()                       # i1.myname is 'aaa'
+i2 = c3()                       # i2.myname is 'aaa'
+
+i1.myname = 'this is i1'        # i1.myname is 'this is i1'
+i2.myname = 'this is i2'        # i2.myname is 'this is i2'
+
+# 对象成员赋值后不影响类成员的值
+c1.myname                       # c1.myname still is 'aaa'
+c3.myname                       # c3.myname still is 'aaa'
+
+i1.show()                       # 调用重写的方法
+i1.helloC1()                    # 调用到父类的方法
+i1.helloC2()                    # 调用到父类的方法
+\end{lstlisting}
+
+类对象的成员\verb|__bases__|是超类构成的元组
+
+\begin{lstlisting}
+print c3.__bases__              # 超类的元组
+\end{lstlisting}
+
+通过\verb|Super|调用超类：
+
+\begin{lstlisting}
+class Sub(Super):
+	def __init__(self):
+		Super.__init(self):
+			pass
+\end{lstlisting}
+
+\subsection{继承的应用场景}
+
+一般由超类提供默认的方法或是等待实现的方法：
+
+\begin{lstlisting}
+class Super:
+	def method(self):
+		print 'Super.method()'           # default behavior
+	def delegate(self):
+		self.action()                    # expected to defined
+\end{lstlisting}
+
+子类可以不去实现超类：
+
+\begin{lstlisting}
+class Inheritor(Super):
+	pass                                 # inherit method verbatim
+\end{lstlisting}
+
+子类可以把超类的方法完全覆盖掉：
+
+\begin{lstlisting}
+class Replacer(Super):
+	def method(self):
+		print 'Replacer.method()'        # replace method completely
+\end{lstlisting}
+
+子类可以扩展超类的方法：
+
+\begin{lstlisting}
+class Extender(Super):
+	def method(self):                    # extend method behavior
+		print 'Extender.method() start'
+		Super.method(self)
+		print 'Extender.method() end'
+\end{lstlisting}
+
+子类可以实现超类有待实现的方法：
 		
-		子类会继承父类的成员。如果当多重继承时遇到重名成员，优先级按声明继承时从左到右顺序。
+\begin{lstlisting}
+class Provider(Super):                   # fill in required method
+	def action(self):
+		print 'Provider.action'
+\end{lstlisting}
 
-		类对象的成员\verb|__bases__|是超类构成的元组
+在迭代中创建类：
 
-		\lstinputlisting[label=ch12:subclass, caption=类继承]{py/expoo01.py}
+\begin{lstlisting}
+if __name__ == '__main__':
+	for clazz in (Inheritor, Replacer, Extender):
+		print '\n' + clazz.__name__ + '...'
+		clazz().method()
+	print '\nProvider...'
+	p = Provider()
+	p.delegate()
+\end{lstlisting}
 
-	\section{运算符重载}
+\section{运算符重载}
 
-		两头是下划线的方法名（\verb|__方法名__|）表示对运算符的重载。如：
-		
-		\verb|__add__|表示重载\verb|+|运算。
+两头是双下划线的方法名（\verb|__方法名__|）表示对运算符的重载。
 
-		\verb|__mul__|表示重载\verb|*|运算。
+\subsection{重载字符串化方法}
 
-		对于没有定义或是继承的操作符，表示该操作不被支持。
+当要把实例字符串化时会先使用\verb|__str__|。这样产生的结果在终端下用户体验较好； 如果没有定义，会再调用\verb|__repr__|，它产生的结果可以作为代码直接重建该对象。
 
-		\lstinputlisting[label=ch12:reloadOpt, caption=运算符重载]{py/expoo05.py}
+\begin{lstlisting}
+class adder:
+	def __init__(self, value=0):
+		self.data = value
+	def __str__(self):
+		return '[value is: %s]' % self.data
+	def __repr__(self):
+		return 'addrepr(%s)' % self.data
+
+x = adder(2)
+print x          # [value is: 2]
+print str(x)     # [value is: 2]
+print repr(x)    # addrepr(2)
+\end{lstlisting}
+
+\subsection{常用数学方法}
+
+\verb|__add__|表示重载\verb|+|运算。
+
+\verb|__sub__|表示重载\verb|-|运算。
+
+\verb|__mul__|表示重载\verb|*|运算。
+
+对于没有定义或是继承的操作符，表示该操作不被支持。
+
+\begin{lstlisting}
+class Number():
+	def __init__(self, value):
+		self.data = value
+	def __add__(self, other):
+		return C1(self.data + other)
+	def __sub__(self, other):
+		return C1(self.data - other)
+	def __mul__(self, other):
+		return C1(self.data * other)
+
+a = Number(5)       # Number.__init__(a,5)
+b = a - 2           # Number.__sub__(a,2)
+\end{lstlisting}
+
+以上的方法中，操作符右边的不能是实例对象。还有一个相反的左边不是对象右边是对象的\verb|__radd__|方法：
+
+\begin{lstlisting}
+class Computer:
+	def __init__(self, val):
+		self.val = val
+	def __add__(self,other):
+		self.val += other
+	def __radd__(self, other):
+		self.val = self.val + other
+
+x = Computer(2)
+x + 3
+print x.val
+
+y = Computer(3)
+3 + y
+print y.val
+\end{lstlisting}
+
+\subsection{拦截索引}
+
+索引操作可以通过\verb|__getitem__|方法拦截：
+
+\begin{lstlisting}
+class indexer:
+	def __getitem__(self,index):
+		return index ** 2
+
+x = indexer()
+x[2]                      # __getitem__(x,2)  result 4
+\end{lstlisting}
+
+索引操作可以模拟迭代效果：
+
+\begin{lstlisting}
+class stepper:
+	def __getitem__(self,index):
+		return self.data[i]
+
+x = stepper()
+x.data = "spam"
+
+for item in x:
+	print item
+\end{lstlisting}
+
+\subsection{拦截迭代}
+
+迭代操作可以通过\verb|__iter__|方法拦截，python在遇到迭代环境时会先尝试迭代，如果对象不支持迭代，就会尝试索引运算：
+
+\begin{lstlisting}
+class Squares:
+	def __init__(self, start, stop):    # save state when created
+		self.value = start -1
+		self.stop = stop
+	def __iter__(self):          # get iterator object on iter()
+		return self
+	def next(self):              # return a square on each iteration
+		if self.value == self.stop:
+			raise StopIteration
+		self.value += 1
+		return self.value ** 2
+
+for i in Squares(1,5):   # for calls iter(), which calls __iter__()
+	print i              # Each iteration calls next()
+	                     # get result: 1 4 9 16 25
+\end{lstlisting}
+
+\verb|__iter__|只循环一次，循环以后就变为空，每次新的循环就必须重新创建一个新的迭代器对象。
+
+\begin{lstlisting}
+x = Squares(1,5)
+[n for n in x]            # [1,4,9,16,25]
+[n for n in x]            # [] now it's empty
+[n for n in Squares(1,5)] # [1,4,9,16,25]
+list(Squares(1,3))        # [1,4,9]
+\end{lstlisting}
+
+另外一个例子，迭代时跳过下一下元素：
+
+\begin{lstlisting}
+class SkipIterator:
+	def __init__(self, wrapped):
+		self.wrapped = wrapped  # iter state flg
+		self.offset = 0
+	def next(self):
+		if self.offset >= len(self.wrapped):
+			raise StopIteration
+		else:
+			item = self.wrapped[self.offset]
+			self.offset += 2
+			return item
+
+class SkipObject:
+	def __init__(self,wrapped):
+		self.wrapped = wrapped
+	def __iter__(self):
+		return SkipIterator(self.wrapped)
+
+if __name__ == '__main__':
+	skipper = SkipObject('0123456789')
+	i = iter(skipper)   # make an iterator on it
+	print i.next(), i.next(), i.next()
+	
+	# in earch nest create new iterator
+	for c in skipper:
+		for d in skipper:
+			print c+d
+\end{lstlisting}
+
+在最后的嵌套的两个\verb|for|循环中，每个循环都会建立自己的迭代器，相互之间不会混淆。这相的操作相当于：
+
+\begin{lstlisting}
+str = 'abcdefg'
+for x in s[::2]
+	for y in s[::2]
+		print x+y
+\end{lstlisting}
+
+这里迭代与分片的区别是。分片把结果的整个列表放到了内存里，而迭代器每次产一个值；分片会产一个新的对象，并不同于迭代是对原来的对象进行r操作。
+
+\subsection{拦截成员属性}
+
+\verb|__getattr__|对成员属性的点号操作时行拦截（多数情况下是对没有定义的成员属性）：
+
+\begin{lstlisting}
+class empty:
+	height = 189
+	def __getattr__(self,name):
+		if attrname == "age":
+			return 40
+
+x.age          # 40
+x.height       # 189
+x.name         # None
+\end{lstlisting}
+
+其他属性抛出异常：
+
+\begin{lstlisting}
+class empty:
+	height = 189
+	def __getattr__(self,name):
+		if attrname == "age":
+			return 40
+		else:
+			raise AttributeError, attrname
+
+x.age          # 40
+x.height       # 189
+x.name         # exception
+\end{lstlisting}
+
+\verb|__setattr__|对成员属性的赋值操作进行拦截。但有个问题：即使在\verb|__setattr__|内的\verb|self.attr=value|也会再次被拦截，造成无限循环。所以在拦截函数内要通过：\verb|self.__dict__['name']=value|来赋值：
+
+\begin{lstlisting}
+class AccessControl:
+	def __setattr__(self,attr,value):
+		if attr == 'age':
+			self.__dict__[attr] = value
+		else:
+			raise AttributeError, attr + ' not allowed'
+
+x = AccessControl()
+x.age = 40
+\end{lstlisting}
+
+\subsection{模拟私有成员}
+
+\begin{lstlisting}
+class PrivateExc(Exception):pass
+
+class Privacy:
+	def __setattr__(self, attrname, value):
+		if attrname in self.privates:
+			raise PrivateExc(attrname, self)
+		else:
+			self.__dict__[attrname] = value
+
+class Test1(Privacy):
+	privates = ['age']
+
+class Test2(Privacy):
+	privates = ['name','pay']
+	def __init__(self):
+		self.__dict__['name'] = 'Tom'
+\end{lstlisting}
+
+\subsection{拦截调用}
+
+如果定义了\verb|__call__|方法，实例的调用就会被该方法拦截：
+
+\begin{lstlisting}
+class Prod:
+	def __init__(self,value):
+		self.value = value
+	def __call__(self,other):
+		return self.value * other
+
+x = Prod(2)   # x.value is 2
+x(3)          # return value is 2*3=6
+x(4)          # return value is 2*4=8
+\end{lstlisting}
+
+主要的应用场合是作为回调函数调用，比如在GUI程序中：
+
+\begin{lstlisting}
+class CallBack:
+	def __init__(self,color):
+		self.color = color
+	def show(self):
+		print 'color: ' + self.color
+
+a = CallBack('red')
+b = CallBack('blue')
+
+b1 = Button(command=a)
+b2 = Button(command=b)
+\end{lstlisting}
+
+除了绑定对象还可以直接绑定到方法：
+
+\begin{lstlisting}
+b1 = Button(command=a.show)
+b2 = Button(command=b.show)
+\end{lstlisting}
+
+lambda表达式也经常用来实现回调函数的功能：
+
+\begin{lstlisting}
+c = (lambda color='red' : 'color is: '+color)
+print c()
+\end{lstlisting}
+
+\begin{lstlisting}
+\end{lstlisting}
+
+\begin{lstlisting}
+\end{lstlisting}
+
 

@@ -1,0 +1,174 @@
+css选择器用来选择指定的dom结点，语法：
+ type-name  { ... }
+.class-name { ... }
+#node-id    { ... }
+
+多重选择器，语法：
+selector, selector, selector { ... }
+
+选择元素内的存在的元素（中间可以隔了其他元素），语法：
+selector selector selector { ... }
+
+选择元素内的的第一层元素，语法：
+selector > selector > selector { ... }
+
+选择元素同一级的下一个元素，语法：
+selector + selector + selector { ... }
+
+
+
+# =======================
+# 结点属性选择器
+# =======================
+
+[attr-name] { ... }
+[attr-name=attr-value] { ... }
+
+从有空格的值中匹配：
+<style type="text/css">
+	[title~=hello] { color:red; } 
+</style>
+<h1>可以应用样式：</h1>
+<h2 title="hello world">Hello world</h2>
+<p title="student hello">Hello W3School students!</h1>
+<h1>无法应用样式：</h1>
+<h2 title="world">Hello world</h2>
+<p title="student">Hello W3School students!</p>
+
+从有连字符的值中匹配 例子：
+<style type="text/css">
+	[lang|=en] { color:red; }
+</style>
+<h1>可以应用样式：</h1>
+<p lang="en">Hello!</p>
+<p lang="en-us">Hi!</p>
+<h1>无法应用样式：</h1>
+<p lang="us">Hi!</p>
+<p lang="zh">Hao!</p>
+
+
+
+# =======================
+# 设置表单组件的样式
+# =======================
+input[type="text"] {
+  width:150px;
+  display:block;
+  margin-bottom:10px;
+  background-color:yellow;
+  font-family: Verdana, Arial;
+}
+
+input[type="button"] {
+  width:120px;
+  margin-left:35px;
+  display:block;
+  font-family: Verdana, Arial;
+}
+
+
+
+
+# =======================
+# CSS 伪类 (Pseudo-classes)
+# =======================
+
+伪类的语法：
+selector : pseudo-class {property: value}
+
+CSS 类也可与伪类搭配使用：
+selector.class : pseudo-class {property: value}
+
+常用的伪类：
+属性             描述                                CSS
+:active      向被激活的元素添加样式。                 1
+:focus       向拥有键盘输入焦点的元素添加样式。       2
+:hover       当鼠标悬浮在元素上方时，向元素添加样式。 1
+:link        向未被访问的链接添加样式。               1
+:visited     向已被访问的链接添加样式。               1
+:first-child 向元素的第一个子元素添加样式。           2
+:lang        向带有指定 lang 属性的元素添加样式。     2
+
+
+# =======================
+# 超链接
+# =======================
+
+注意：在 CSS 定义中，a:hover 必须位于 a:link 和 a:visited 之后，这样才能生效！
+注意：在 CSS 定义中，a:active 必须位于 a:hover 之后，这样才能生效！
+
+<style type="text/css">
+	a:link		{color: #FF0000}
+	a:visited	{color: #00FF00}
+	a:hover		{color: #FF00FF}
+	a:active	{color: #0000FF}
+</style>
+
+<style type="text/css">
+	a.two:link {color: #ff0000}
+	a.two:visited {color: #0000ff}
+	a.two:hover {font-size: 150%}
+</style>
+<a class="two" href="/index.html" target="_blank">这个链接改变字体大小</a>
+
+<style type="text/css">
+	a.three:link {color: #ff0000}
+	a.three:visited {color: #0000ff}
+	a.three:hover {background: #66ff66}
+</style>
+<a class="three" href="/index.html" target="_blank">这个链接改变背景颜色</a>
+
+<style type="text/css">
+	a.four:link {color: #ff0000}
+	a.four:visited {color: #0000ff}
+	a.four:hover {font-family: monospace}
+</style>
+<a class="four" href="/index.html" target="_blank">这个链接改变字体系列</a>
+
+<style type="text/css">
+	a.five:link {color: #ff0000; text-decoration: none}
+	a.five:visited {color: #0000ff; text-decoration: none}
+	a.five:hover {text-decoration: underline}
+</style>
+<a class="five" href="/index.html" target="_blank">这个链接改变文本装饰</a>
+
+
+
+# =======================
+# :focus伪类(取得焦点)
+# =======================
+
+<style type="text/css">
+	input:focus { background-color:yellow; }
+</style>
+<input type="text" name="fname" />
+
+
+
+# =======================
+# :first-child(第一个子元素)
+# =======================
+<style type="text/css">
+	p:first-child {font-weight: bold;}
+	li:first-child {text-transform:uppercase;}
+</style>
+<ul>
+	<li>Intert Key</li>
+	<li>Turn key <strong>clockwise</strong></li>
+	<li>Push accelerator</li>
+</ul>
+<p>Do <em>not</em> push the brake at the same time as the accelerator.</p>
+
+
+
+# =======================
+# :first-child(第一个子元素)
+# =======================
+
+lang 伪类允许您为不同的语言定义特殊的规则。在下面的例子中，在下面的例子中，:lang 类为带有值为 "no" 的 lang 属性的 q 元素定义引号的类型：</p>
+
+<style type="text/css">
+	q:lang(no) { quotes: "~" "~" }
+</style>
+
+<p>一些文本 <q lang="no">段落中的引用</q> 一些文本。</p>
