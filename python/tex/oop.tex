@@ -82,11 +82,11 @@ brian = 'loretta'         # prints: goodbye Brian
 print a.__class__           # class of instance
 \end{lstlisting}
 
-\section{类的属性与方法}
+\section{类的成员}
 
-python中对于类和对象，无论数据还是方法都作为变量处理。
+\subsection{属性与方法}
 
-对象的数据成员（无论是数据还是函数）在没有被第一次赋值之前，都不能被访问（就像是没有被声明的变量一样）。同样地也可以简章地通过赋值给变量增加一个成员。
+python中对于类和对象，无论数据还是方法都作为变量处理。对象的数据成员（无论是数据还是函数）在没有被第一次赋值之前，都不能被访问（就像是没有被声明的变量一样）。同样地也可以简单地通过赋值给变量增加一个成员。
 
 \begin{lstlisting}
 class Employee():
@@ -109,9 +109,94 @@ print Employee.__dict__.keys()  # 大多数基于类的对象的命名空间字�
 print morgan.__dict__.keys()    # 大多数基于类的对象的命名空间字典
 \end{lstlisting}
 
+\subsection{类属性与对象属性}
+
+修改了类的属性以后会影响到所有的类实例：
+
+\begin{lstlisting}
+class C:
+	a = 1
+
+print C.a     # is 1
+o = C()
+print o.a     # is 1
+
+C.a = 2
+print o.a    # is 2, also change too
+
+j = X()
+print j.a   # is 2
+\end{lstlisting}
+
+\subsection{方法与对象的绑定}
+
+对于以下的类：
+
+\begin{lstlisting}
+class Spam:
+	def doit(self, message):
+		print message
+\end{lstlisting}
+
+可以通过新建对象调用：
+
+\begin{lstlisting}
+obj = Spam()
+obj.doit('hello world')
+\end{lstlisting}
+
+已经绑定的方法可以再赋值给一个变量，效果和对象点号调用一样：
+
+\begin{lstlisting}
+x = obj.doit
+x('hello world')
+\end{lstlisting}
+
+但是类中的方法是没有绑定到对象的，要传入对象：
+
+\begin{lstlisting}
+t = Spam.doit
+t(obj, 'hello world')
+\end{lstlisting}
+
+同理，如果要引致类中的函数，相同的规则也适用于类的方法：
+
+\begin{lstlisting}
+class Eggs:
+	def m1(self, n):
+		print n
+
+	def m2(self):
+		x = self.m1  # bound to object
+		x(42)
+
+Eggs().m2()
+\end{lstlisting}
+
 \section{类的继承}
 
-子类会继承父类的成员。如果当多重继承时遇到重名成员，优先级按声明继承时从左到右顺序。
+类对象的成员\verb|__bases__|是超类构成的元组
+
+\begin{lstlisting}
+print c3.__bases__              # 超类的元组
+\end{lstlisting}
+
+通过\verb|Super|调用超类：
+
+\begin{lstlisting}
+class Super:
+	def __init__(self):
+		pass
+
+class Sub(Super):
+	def __init__(self):
+		Super.__init__(self):
+			pass
+\end{lstlisting}
+
+\subsection{多重继承}
+
+子类会继承父类的成员。如果当多重继承时遇到重名成员时顺序就很重要，优先级按声明继承时从左到右顺序：
 
 \begin{lstlisting}
 class c1():
@@ -133,36 +218,82 @@ class c3(c1, c2):               # 超类写在括号中，支持多重继承
 
 c1.myname                       # c1.myname is 'aaa'
 c3.myname                       # c3.myname is 'aaa'
+\end{lstlisting}
 
+对象成员赋值后不影响类成员的值：
+
+\begin{lstlisting}
 i1 = c3()                       # i1.myname is 'aaa'
 i2 = c3()                       # i2.myname is 'aaa'
 
 i1.myname = 'this is i1'        # i1.myname is 'this is i1'
 i2.myname = 'this is i2'        # i2.myname is 'this is i2'
-
-# 对象成员赋值后不影响类成员的值
-c1.myname                       # c1.myname still is 'aaa'
-c3.myname                       # c3.myname still is 'aaa'
+print c1.myname                 # c1.myname still is 'aaa'
+print c3.myname                 # c3.myname still is 'aaa'
 
 i1.show()                       # 调用重写的方法
 i1.helloC1()                    # 调用到父类的方法
 i1.helloC2()                    # 调用到父类的方法
 \end{lstlisting}
 
-类对象的成员\verb|__bases__|是超类构成的元组
+虽然顺序很重要，但是也可以手动指定要调用哪一个：
 
 \begin{lstlisting}
-print c3.__bases__              # 超类的元组
+class A:
+	def __repr__(self): pass
+	def other(self): pass
+
+class B:
+	def __repr__(self): pass
+	def other(self): pass
+
+class C(A, B):
+	__repr__ = A.__repr__
+	other = B.other
 \end{lstlisting}
 
-通过\verb|Super|调用超类：
+\subsection{压缩成员变量名}
+
+常见的变量名重复的情况：
 
 \begin{lstlisting}
-class Sub(Super):
-	def __init__(self):
-		Super.__init(self):
-			pass
+class C1:
+	def meth1(self): self.x = 88
+	def meth2(self): print self.x
+
+class C2:
+	def metha(self): self.x = 99
+	def methb(self): print self.x
+
+class C3(C1, C2): pass
+
+I = C3()   # only 1 x in I !!!
 \end{lstlisting}
+
+在这样的情况下，x只有一个。两个类的四个方法读写的都是同一个x成员。这个x是值取决最后是哪一个方法调用的它。 
+
+在\verb|__class__|语句中以两个下划线开头的变量\verb|__verb|会扩展成包含类名的新变量名\verb|_classname__verb|。这样就不会和同一层次中其他类所创建的类似变量名相冲突。
+
+\begin{lstlisting}
+class C1:
+	def meth1(self): self.__x = 88
+	def meth2(self): print self.__x
+
+class C2:
+	def metha(self): self.__x = 99
+	def methb(self): print self.__x
+
+class C3(C1, C2): pass
+
+I = C3()   # two x in I: _C1__x and _C2__x
+
+I.meth1()
+I.meth2()  # result is 88
+
+I.metha()
+I.methb()  # result is 99
+\end{lstlisting}
+
 
 \subsection{继承的应用场景}
 
@@ -220,6 +351,84 @@ if __name__ == '__main__':
 	p = Provider()
 	p.delegate()
 \end{lstlisting}
+
+\section{命名空间}
+
+\subsection{命名空间范围}
+
+python中作用域是由源代码中赋值语句位置来决定的，不会受到导入关系的影响。通过下面的例子总结了python的命名空间：
+
+\lstinputlisting[]{py/chap.oop/manynames.py}
+
+需要注意的是在调用I.m()之前实例中是不存在成员变量X的。实例的成员变量也是变量，在执行到赋值语句之前是不会存在的。
+
+在外部文件中使用：
+
+\lstinputlisting[]{py/chap.oop/otherfile.py}
+
+\subsection{命名空间字典}
+
+无论是模块、对象还是实例，它们的命名空间实际都是以字典形式实现的。这个字典就是对象中的成员\verb|__dict__|变量。
+
+\begin{lstlisting}
+>>> class super:
+...     def hello(self):
+...             self.data1 = 'spam'
+... 
+>>> class sub(super):
+...     def hola(self):
+...             self.data2 = 'eggs'
+... 
+>>> X = sub()
+>>> X.__dict__
+{}
+>>> X.__class__
+<class __main__.sub at 0x7f35b8248ef0>
+>>> sub.__bases__
+(<class __main__.super at 0x7f35b8248e88>,)
+>>> super.__bases__
+()
+\end{lstlisting}
+
+以\verb|self|为目标赋值会把成员加入到对象，而不是类中：
+
+\begin{lstlisting}
+>>> Y = sub()
+
+>>> X.hello()
+>>> X.__dict__
+{'data1': 'spam'}
+
+>>> X.hola()
+>>> X.__dict__
+{'data1': 'spam', 'data2': 'eggs'}
+
+>>> sub.__dict__
+{'__module__': '__main__', '__doc__': None, 'hola': <function hola at 0x7f35b8201668>}
+
+>>> super.__dict__
+{'__module__': '__main__', 'hello': <function hello at 0x7f35b82015f0>, '__doc__': None}
+
+>>> Y.__dict__
+{}
+\end{lstlisting}
+
+可以用命名空间字典部分实现点号操作，但是字典不带继承搜索：
+
+\begin{lstlisting}
+>>> X.__dict__['data1']
+'spam'
+
+>>> X.__dict__['data3'] = 'ham'
+>>> X.data3
+'ham'
+\end{lstlisting}
+
+\subsection{命名空间链接}
+
+每个类的实例，都有成员变量\verb|__class__|连接到它的类；
+
+而在类中有成员变量\verb|__bases__|是一个元组，包含了到超类的链接。
 
 \section{运算符重载}
 
@@ -504,10 +713,170 @@ c = (lambda color='red' : 'color is: '+color)
 print c()
 \end{lstlisting}
 
+\section{类的设计}
+
+\subsection{通用对象工厂}
+
+python中的对象工厂要比强类型语言中简单得多：
+
+\begin{lstlisting}
+def factory(clazz, *args):
+	return apply(clazz, args)
+
+class Spam:
+	def doit(self,message):
+		print message
+
+class Person:
+	def __init__(self, name, job):
+		self.name = name
+		self.job = job
+
+obj1 = factory(Spam)
+obj2 = factory(Person, "Guido", "guru")
+\end{lstlisting}
+
+\section{静态方法和类方法}
+
+最典型的静态方法应用场景是统计一个类产生了多少实例：
+
+\begin{lstlisting}
+class Spam:
+	count = 0
+	def __init__(self):
+		Spam.count = Spam.count +1
+	def printCount():
+		print "count: " , Spam.count
+\end{lstlisting}
+
+但是这样是行不通的。在调用\verb|printCount()|时一定要传入一个实例作为参数，无论你在\verb|def|定义函数是有没有写明\verb|self|。虽然可以给它绑定一个对象，但这样有一个缺点就是一定要通过对象来调用这个函数。
+
+相对方便一点的方法是它移动到类外，作为一个模块下的简单函数。例：
+
+\begin{lstlisting}
+class Spam:
+	count = 0
+	def __init__(self):
+		Spam.count = Spam.count +1
+
+def printCount():
+	print "count: ", Spam.count
+\end{lstlisting}
+
+这样类和函数都是模块命名空间下的变量。也不会和其他文件中的变量名冲突：
+
+\begin{lstlisting}
+import spam
+
+a = spam.Spam()
+b = spam.Spam()
+c = spam.Spam()
+
+spam.printCount()  # module.function : result is 3
+spam.Spam.count    # module.class.verb : result is 3
+\end{lstlisting}
+
+\subsection{使用静态方法和类方法}
+
+可以通过内置函数\verb|staticmethod|和\verb|classmethod|来生成静态方法和类方法。这两都都不需要在启用时传入实例作为参数。
+
+\begin{lstlisting}
+class Multi:
+	def imeth(self,x):    # normal instance method
+		print self, x
+	def smeth(x):         # static: no instance passed
+		print x
+	def cmeth(clazz,x):   # Class: get class, not instance
+		print clazz, x
+	smeth = staticmethod(smeth) # make smeth a static method
+	cmeth = classmethod(cmeth)  # make cmeth a class method
+\end{lstlisting}
+
+实例方法、静态方法、类方法的使用：
+
+\begin{lstlisting}
+obj = Multi()
+obj.imeth(1)         # normal call
+Multi.imeth(obj, 1)  # normal call
+
+Multi.smeth(3)       # static call, through class
+obj.smeth(4)         # static call, through instance
+
+Multi.cmethod(5)     # class call, throw class
+obj.cmethod(5)       # class call, throw instance
+\end{lstlisting}
+
+\subsection{函数装饰器}
+
+函数包装器可以在函数外面包上层逻辑。如静态函数可以这样写：
+
+\begin{lstlisting}
+class C:
+	@staticmethod
+	def method(): pass
+\end{lstlisting}
+
+相当于前面的静态函数实现：
+
+\begin{lstlisting}
+class C:
+	def method(): pass
+	method = staticmethod(method)
+\end{lstlisting}
+
+实际上装饰器语法可以包上多层逻辑：
+
+\begin{lstlisting}
+@A @B @C
+def f(): pass
+\end{lstlisting}
+
+相当于前面的静态函数实现：
+
+\begin{lstlisting}
+def f(): pass
+f = A(B(C(f)))
+\end{lstlisting}
+
+\subsection{函数装饰器例子}
+
+\begin{lstlisting}
+class tracer:
+    def __init__(self,func):
+            self.calls = 0
+            self.func = func
+    def __call__(self, *args):
+            self.calls += 1
+            print 'call %s to %s' % (self.calls, self.func.__name__)
+            self.func(*args)
+
+@tracer
+def spam(a, b, c):
+    print a, b, c
+\end{lstlisting}
+
+用\verb|__call__|重载方法替实例实现函数调用接口。因为spam函数是通过tracer装饰器执行的，所以实际上调用的是类中的\verb|__call__|方法。
+
+\begin{lstlisting}
+spam(1,2,3)       # call 1 to spam
+                  # 1 2 3
+
+spam('a','b','c') # call 2 to spam
+                  # a b c
+
+spam(4,5,6)       # call 3 to spam
+                  # 4 5 6
+\end{lstlisting}
+
+\begin{lstlisting}
+\end{lstlisting}
+
 \begin{lstlisting}
 \end{lstlisting}
 
 \begin{lstlisting}
 \end{lstlisting}
 
+\begin{lstlisting}
+\end{lstlisting}
 
