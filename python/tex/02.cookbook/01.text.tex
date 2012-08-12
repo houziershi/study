@@ -1,0 +1,123 @@
+
+\chapter{文本}
+
+	\section{字符与其值的转换}
+
+		\lstinputlisting[]{py/02.cookbook/0102/exp.py}
+
+	\section{判断一个对象是否是字符串}
+
+		\verb|basestring|是str类型与Unicode类型的共同基类，但是Python标准库中的\verb|UserString|模块提供的\verb|UserString|类不是从它派生出来的。这种情况下可能尝试对象是否能像字符串一样工作（鸭子判断法）来判断，缺点是异常块的执行性能较差。
+
+		\lstinputlisting[]{py/02.cookbook/0103/exp.py}
+
+	\section{对齐字符串}
+
+		本来对齐字符串很简单。
+		
+		\lstinputlisting[]{py/02.cookbook/0104/exp.py}
+
+		但是全角字符的显示宽度不一样，要特别处理一下：
+
+		\lstinputlisting[]{py/02.cookbook/0104/exp02.py}
+
+
+	\section{拼接字符串}
+		
+		字符串可以直接用加号拼接，不过性能低下：
+
+		\lstinputlisting[firstline=3,lastline=8]{py/02.cookbook/0106/exp0106.py}
+
+		下面的代码相同与：
+
+		\lstinputlisting[firstline=10,lastline=11]{py/02.cookbook/0106/exp0106.py}
+
+		用\verb|join|方法通过指定的字符串把各个部分拼接起来：
+
+		\lstinputlisting[firstline=13,lastline=13]{py/02.cookbook/0106/exp0106.py}
+
+		更加复杂的格式可以用格式把字符串方法：
+
+		\lstinputlisting[firstline=15,lastline=15]{py/02.cookbook/0106/exp0106.py}
+
+	\section{反转字符串}
+		
+		反转每一个字符：
+
+		\lstinputlisting[firstline=3,lastline=4]{py/02.cookbook/0106/exp0107.py}
+
+		反转单词可以先按空格打散，然后再接起来：
+
+		\lstinputlisting[firstline=6,lastline=9]{py/02.cookbook/0106/exp0107.py}
+
+		挤成一行的写法：
+
+		\lstinputlisting[firstline=12,lastline=12]{py/02.cookbook/0106/exp0107.py}
+
+		用正则来保留原来是用空格还是用其他空白字符分隔的：
+
+		\lstinputlisting[firstline=15,lastline=19]{py/02.cookbook/0106/exp0107.py}
+
+		挤成一行的写法：
+
+		\lstinputlisting[firstline=21,lastline=21]{py/02.cookbook/0106/exp0107.py}
+
+	\section{包含与不包含}
+
+		判断字符（不光是字符串，还有其他的集合）是否属于一个集合：
+
+		\lstinputlisting[firstline=3,lastline=7]{py/02.cookbook/0106/exp0108.py}
+
+		用\verb|itertools|可以提高一点性能：
+
+		\lstinputlisting[firstline=12,lastline=16]{py/02.cookbook/0106/exp0108.py}
+		
+	\section{控制大小写}
+		
+		\lstinputlisting[firstline=3,lastline=6]{py/02.cookbook/0106/exp0109.py}
+		
+	\section{字符串模板替换}
+		
+		\lstinputlisting[firstline=5,lastline=9]{py/02.cookbook/0106/exp0117.py}
+		
+	\section{一次完成多个替换}
+		
+		可以先根据dict的key建立了一个正则表达式；然后在\verb|re.sub|调用过程中使用了回调函数代替了用于替换的字符串。这样每当匹配时，\verb|re.sub|会调用该回调函数，以它的返回值作为替换的字符串：
+
+		\lstinputlisting[firstline=3,lastline=14]{py/02.cookbook/0106/exp0118.py}
+		
+	\section{检查字符串的结尾}
+		
+		字符串的\verb|endwith|函数判断是否以指定字符串结尾。主要的思路是把字符串的\verb|endwith|作为参数传递给一个中间函数\verb|anyTrue|。然后用\verb|itertools.imap|来映射检查每一项：
+
+		\lstinputlisting[firstline=3,lastline=9]{py/02.cookbook/0106/exp0119.py}
+
+		上例中
+
+		一个应用的场景是查找图片文件：
+
+		\lstinputlisting[firstline=11,lastline=15]{py/02.cookbook/0106/exp0119.py}
+
+		
+	\section{应用Unicode}
+
+		python中Unicode文本和普通的字符串不是同一种对象，不能混合操作。所以要时刻明白你正在处理的文本对象是普通字符串还是Unicode字串。一般来说，会用以下措施来防止错误发生：
+
+		在收到外部的文本数据时，应该创建一个uncode对象，通过查看HTTP头之类的方法来确定所用的编码方式。不然错误的操作会引发UnicodeDeocdeError。
+
+		同理在向外部发送文本之前要用正确的编码把文本转化为字节串，不然有可能发生UnicodeEncodeError。
+		
+	\section{Unicode与字符串之间的转换}
+
+		转换时要先确定编码：
+
+		\lstinputlisting[firstline=3,lastline=18]{py/02.cookbook/0106/exp0121.py}
+
+	\section{在标准输出中打印Unicode}
+
+		通过ocdes模块把sys.stdout流用转换器包装起来。如果你要输出的终端以iso-8859-1编码显示字符：
+
+
+		
+
+		

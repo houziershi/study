@@ -1,0 +1,138 @@
+\chapter{异常}
+
+\section{捕获异常}
+
+\begin{lstlisting}
+try:
+	statements
+except type1:                 # match type
+	statements
+except type2, data:           # type and data
+	statements
+except (type3, type4):        # match those type
+	statements
+except (type3, type4), value: # match type get data
+	statements
+except:                       # all other type
+	statements
+else:
+	statements
+finally:
+	statements
+\end{lstlisting}
+
+\subsection{基于字符串的异常}
+
+基于字符串的异常马上就是被淘汰了。
+
+字符串异常的捕获是按照同一对象来匹配的。不是同一个字符串对象即便值相同也不会被捕获到。
+
+\subsection{基于类的异常}
+
+通过\verb|__repr__|或是\verb|__str__|定义异常文本：
+
+\begin{lstlisting}
+class MyBad:
+		def __repr__(self):
+			return "Sorry-my mistake..."
+\end{lstlisting}
+
+\section{产生异常}
+
+\begin{lstlisting}
+raise string          # maches same string object
+raise string, data    # extra data(default = None)
+raise class, instance # 
+raise instance        # same as: raise ins.__class__, ins
+raise                 # re-raise current exception
+\end{lstlisting}
+
+\section{附加信息}
+
+\subsection{异常类中附加信息}
+
+在except分句中：
+
+\begin{lstlisting}
+except type, instance:
+	statement
+\end{lstlisting}
+
+type和instance分别代表异常的类和实例：
+
+\begin{lstlisting}
+class FE:
+	def __init__(self, line, file):
+		self.line = line
+		self.file = file
+
+try:
+	raise FormatError(42, file='spam.txt')
+except FormatError, err
+	print 'error at: ', err.file, err.line
+\end{lstlisting}
+
+\subsection{字符串异常中附加信息}
+
+字符串中要额外附加一个对象来添加附加信息：
+
+\begin{lstlisting}
+errstr = 'FormatError'
+
+try:
+	raise errstr, {'line':42, 'file':'spam.txt'}
+except errstr, err:
+	print 'error at: ', err['file'], err['line']
+\end{lstlisting}
+
+\section{获得最新的异常}
+
+可以通过\verb|sys.exc_info|取得最新引发的异常。返回值是包含\verb|type|、\verb|value|、\verb|traceback'|三个成员的元组；在没有异常的情况下会返回成员是三个\verb|None|的无组。
+
+
+\section{断言}
+
+\begin{lstlisting}
+import asserter
+
+def f(x):
+	assert x < 0, 'x must be nagative'
+	return x ** 2
+
+asserter.f(1)
+\end{lstlisting}
+
+\section{环境管理器}
+
+\subsection{使用环境管理}
+
+使用\verb|with-as|环境管理会包装一个异常处理工作：
+
+格式：
+
+\begin{lstlisting}
+with expression [as variable]:
+	with-block
+\end{lstlisting}
+
+表达式产生的对象一定要是支持环境管理协议的对象，如文件对象已经支持环境管理协议：
+
+\begin{lstlisting}
+with open('aa.txt') as myfile:
+    for line in myfile:
+            print line
+\end{lstlisting}
+
+\subsection{实现环境管理协议}
+
+必须要有\verb|__enter__|和\verb|__exit__|方法。
+
+\verb|__enter__|方法被调用后的返回值会赋值给\verb|as|指定的变量。如果没有\verb|as|则丢弃这个变量。
+
+如果with代码块引发了异常，\verb|__exit__(type, value, traceback)|会被调用。如果此方法返回值为False，会再次抛出异常；否则表示异常已经被处理完毕。
+
+如果iwth代码块没有发生异常，\verb|__exit__|方法还是会被调用，其中的type、value、trackback参数都会为None。
+
+例子：
+
+\lstinputlisting[]{py/chap.exception/with/usewith.py}

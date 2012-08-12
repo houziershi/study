@@ -1,0 +1,51 @@
+
+\chapter{python文档}
+
+\section{PyDoc查看文档内容}
+
+使用\verb|dir(obj)|可以查看对象的所有成员。
+
+使用\verb|help()|函数查看帮助：
+
+\begin{lstlisting}
+help(sys.getrefcount)
+\end{lstlisting}
+
+浏览HTML版的文档：
+
+\begin{verbatim}
+pydoc.py -g
+或
+<pythonDir>/Tools/pydocgui.pyw
+\end{verbatim}
+
+\section{程序内文档}
+
+文件、类、函数头上的文档字符串会被自动封装为文档。
+
+\begin{lstlisting}
+'''
+    document text of module
+'''
+
+def func(x)
+	'''
+	document of function
+	'''
+	pass
+
+class MyClass:
+	'''
+	document of class
+	'''
+	pass
+\end{lstlisting}
+
+可以通过它们的\verb|__doc__|成员显示文档的内容：
+
+\begin{lstlisting}
+print filename.__doc__
+print filename.classname.__doc__
+print filename.funcname.__doc__
+\end{lstlisting}
+

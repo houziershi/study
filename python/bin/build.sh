@@ -4,4 +4,4 @@ xelatex -halt-on-error -no-pdf tex/python.note.tex
 xelatex -halt-on-error tex/python.note.tex 
 
 rm -f *.aux *.lof *.log *.lot *.toc *.xdv
-rm -f tex/*.aux
+find . -name "*.aux"  | xargs rm -f

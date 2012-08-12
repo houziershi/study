@@ -1,0 +1,167 @@
+
+\chapter{模块}
+
+\section{模块与路径}
+
+在linux环境下查找python的安装目录：
+
+\begin{lstlisting}
+whereis python
+\end{lstlisting}
+
+在python交互环境中查看python路径:
+
+\begin{lstlisting}
+sys.path
+\end{lstlisting}
+
+\section{导入模块}
+
+\subsection{导入模块}
+
+导入模块使用\verb|import|语句：
+
+\begin{lstlisting}
+import module01
+\end{lstlisting}
+
+当模块被导入后，会包含源文件的目录信息：<目录>/<文件名>.<扩展名>。
+
+\subsection{重新导入模块}
+
+一个模块只能有一个实例，导入一个模块以后不能再次导入。当一个模块的代码被修改以后必须使用\verb|reload|语句重新加载模块才能生效：
+
+\begin{lstlisting}
+reload module01
+\end{lstlisting}
+
+\verb|reload|只会重新导入写出的那个模块，不会自动导入相关的模块。
+
+\subsection{部分导入模块}
+如果只导入模块中的部分变量，则使用\verb|from|语句：
+
+\begin{lstlisting}
+from module01 import a, b, c
+\end{lstlisting}
+
+\verb|from|语句不导入模块，只复制模块中的变量到本地。复制模块中全部变量的例子：
+
+\begin{lstlisting}
+from module01 import *
+\end{lstlisting}
+
+\verb|import|与\verb|from|语句都都有赋值效果，例如：
+
+\begin{lstlisting}
+from module1 import a, b, c
+\end{lstlisting}
+
+等价于：
+
+\begin{lstlisting}
+import module1
+
+a = module1.a
+b = module1.b
+c = module1.c
+\end{lstlisting}
+
+\subsection{防止变量被from复制}
+
+方法一：下划线开头的变量不会被复制，如：“\verb|_X|”。
+
+方法二：在顶层变量“\verb|__all__|”列表中的成员不会被复制出。如：
+
+\begin{lstlisting}
+__all__ = ['Error', 'encode']
+\end{lstlisting}
+
+\subsection{模块别名}
+
+导入了模块以后，使用时要加上包名，所以有必要使用简写：
+
+\begin{lstlisting}
+import longname as name
+\end{lstlisting}
+
+等价于：
+
+\begin{lstlisting}
+import longname
+name = longname
+del longname
+\end{lstlisting}
+
+\verb|from|语句也可以用简写：
+
+\begin{lstlisting}
+from mod import longnmae as name
+\end{lstlisting}
+
+\subsection{判断是否是直接执行}
+
+模块有\verb|__name__|属性。如果是被导入的，值为模块的名字；如果是被直接调用的，值为：\verb|'__main__'|。可以通过它判断程序是否是被导入的：
+
+\begin{lstlisting}
+if __name__ =  '__main__' :
+	# in main
+\end{lstlisting}
+
+\section{直接执行脚本文件}
+
+可以不加载模块而是直接以脚本文件的方式执行：
+
+\begin{lstlisting}
+execfile('mymodule.py')
+\end{lstlisting}
+
+\section{包的使用}
+
+\subsection{建立自己的包}
+
+包放在python检索的目录下。包目录与包下的每一级都要有\verb|__init__.py|文件（内容可以为空）表明这是一个包，\verb|__init__.py|文件中的语句都会在导入时被执行。例：
+
+\begin{lstlisting}
+# dir1/__init__.py
+print 'dir1'
+x = 1
+\end{lstlisting}
+
+\begin{lstlisting}
+# dir1/dir2/__init__.py
+print 'dir2'
+y = 2
+\end{lstlisting}
+
+\begin{lstlisting}
+# dir1/dir2/mod.py
+print 'mod.py'
+z = 3
+\end{lstlisting}
+
+\subsection{使用自己的包}
+
+导入自己包的例子：
+
+\begin{lstlisting}
+% python
+>>> import dir1.dir2.mod
+dir1
+dir2
+mod.py
+
+>>> import dir1.dir2.mod
+
+>>> reload(dir1)
+dir1
+
+>>> reload(dir1.dir2)
+dir2
+
+>>> dir1.x
+1
+>>> dir1.dir2.y
+2
+>>> dir1.dir2.mod.z
+3
+\end{lstlisting}

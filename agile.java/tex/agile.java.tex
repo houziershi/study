@@ -35,7 +35,7 @@
 \usepackage{xcolor}
 \usepackage{listings}
 \lstset{
-	language=Python,
+	language=Java,
 	frame = shadowbox,
 	basicstyle = \ttfamily\small,
 	columns = fixed,
@@ -60,7 +60,7 @@
 \usepackage{graphicx}                            % 引入图片
 \graphicspath{{img/}{images/}}                   % 要导入的图片的位置。可以有多个目录，但就算只有一个目录，也要用两级花括号
 %-------------------------------------------------------------------------------------------------------
-	\title{Python2.5学习笔记}                             % 文章的标题
+	\title{Agile Java}                             % 文章的标题
 	\author{                                     % 作者与致谢
 		阿左 \thanks{感谢读者} \and 
 		Nobody \thanks{感谢国家}
@@ -76,96 +76,18 @@
 	\listoftables                                % 生成表格目录
 
 
-	\begin{abstract}                             % 英文摘要
-		The Zen of Python, by Tim Peters
 
-		Beautiful is better than ugly.
+	\part{基本概念}
 
-		Explicit is better than implicit.
+		\include{tex/01.dev.env}
 
-		Simple is better than complex.
+	\part{常用工具}
 
-		Complex is better than complicated.
+		\include{tex/02.text}
 
-		Flat is better than nested.
+		\include{tex/03.time}
 
-		Sparse is better than dense.
 
-		Readability counts.
-
-		Special cases aren't special enough to break the rules.
-
-		Although practicality beats purity.
-
-		Errors should never pass silently.
-
-		Unless explicitly silenced.
-
-		In the face of ambiguity, refuse the temptation to guess.
-
-		There should be one-- and preferably only one --obvious way to do it.
-
-		Although that way may not be obvious at first unless you're Dutch.
-
-		Now is better than never.
-
-		Although never is often better than *right* now.
-
-		If the implementation is hard to explain, it's a bad idea.
-
-		If the implementation is easy to explain, it may be a good idea.
-
-		Namespaces are one honking great idea -- let's do more of those!
-	\end{abstract}
-
-	\renewcommand{\abstractname}{摘要}           % 中文摘要
-	\begin{abstract}
-
-		Python之禅
-
-		优美胜于丑陋，明了胜于晦涩；
-		简洁胜于复杂，复杂胜于凌乱；
-		扁平胜于嵌套，错落有致胜于密密匝匝。
-		可读性不容轻视。
-
-		即便觉得应该为实用性而放弃简单纯粹的时候，
-		“存在特例”也不能成为违反上述规则的借口。
-
-		不要让任何错误悄悄溜过，
-		除非你确定不想让人看到报错。
-		当存在多种可能时不要冒险猜测，
-		尽量找到那唯一且明确的答案。
-
-		虽然这在一开始并不容易，
-		毕竟你不是Python之父。
-
-		做也许好过不做，但不假思索就动手还不如不做。
-		难以理解的实现方式绝对糟糕；
-		简章易懂的实现方式往往不错。
-		命名空间是一种绝妙的理念，让我们多加利用！
-	\end{abstract}
-
-	\part{语法基础}
-		\include{tex/01.language/module}
-
-		\include{tex/01.language/core.data.struct}
-
-		\include{tex/01.language/execute.sequence}
-
-		\include{tex/01.language/function}
-
-		\include{tex/01.language/oop}
-
-		\include{tex/01.language/exception}
-
-		\include{tex/01.language/use.document}
-
-		\include{tex/01.language/base.function}
-	\part{常用功能}
-
-		\include{tex/02.cookbook/01.text}
-
-	\part{其他扩展}
 
 % \chapter{基本使用}
 % 

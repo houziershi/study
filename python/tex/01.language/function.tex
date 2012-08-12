@@ -1,0 +1,228 @@
+
+\chapter{函数}
+
+	\section{函数定义}
+
+		函数都有返回值。没有return或yield语句的函数会返回一个None。
+
+		python中，函数也是一个对象。\verb|def|语句是实时执行的，当执行到\verb|def|语句时就会定义一个函数对象，然后赋值给指定函数名变量：
+
+\begin{lstlisting}
+def myAdd(a, b):
+	return a+b
+\end{lstlisting}
+
+		以上代码生成了一个函数对象，并且把这个对象赋值给了变量\verb|myAdd|。可以通过变量\verb|myAdd|调用这个函数：
+
+\begin{lstlisting}
+myAdd(1,2)
+\end{lstlisting}
+
+		也可以把函数再赋值给另一个变量：
+
+\begin{lstlisting}
+otherFunc = myadd
+otherFunc(1,2)
+\end{lstlisting}
+
+		函数对象的生成与赋值是在运行时发生的。所以也可以在运行时创建函数：
+
+\begin{lstlisting}
+if a>3:
+	otherFunc = funcA
+if a<3:
+	otherFunc = funcB
+\end{lstlisting}
+		
+	\section{参数传递}
+
+		函数参数没有参数类型限制，只要参数支持对应的操作就可以。如果参数不支持对应的操作会抛出异常。
+
+		\subsection{默认参数}
+		函数参数列表支持\verb|name=value|形式的默认值：
+
+\begin{lstlisting}
+def myAdd(a=1, b=2):
+	return a+b
+\end{lstlisting}
+
+		函数的默认参数被认为是静态的，不会每次调用都生成一个新的对象。例：
+\begin{lstlisting}
+def myfunc(x=[]):
+	x.addend(1)
+	print x
+
+myfunc([2])       # [2,1]
+myfunc()       # [1]
+myfunc()       # [1,1]
+myfunc()       # [1,1,1]
+myfunc()       # [1,1,1,1]
+\end{lstlisting}
+
+		为了让每次建立新的默认值，可以在函数内写赋值语句：
+\begin{lstlisting}
+def myfunc(x=None):
+	if x is None:
+		x = []
+	x.addend(1)
+	print x
+\end{lstlisting}
+
+
+		\subsection{可变参数}
+			python支持可变参数。当定义函数时，\verb|*|表示列表、\verb|**|表示字典：
+
+\begin{lstlisting}
+def func(a, * pargs, ** kargs):
+    print a, pargs, kargs
+
+func(1,2,3,x=1,y=2)           # 1 (2, 3) {'y': 2, 'x': 1}
+\end{lstlisting}
+
+			当调用函数时，\verb|*|表示把列表打散成多个参数、\verb|**|表示把字典打散作为参数：
+\begin{lstlisting}
+lst = (1,2,3,4,5)
+dic = {'a':1,'b':2,'c':3}
+
+func(*lst)                    # 1 (2, 3, 4, 5) {}
+func(**dic)                   # 1 () {'c': 3, 'b': 2}
+
+def func(a,b,c):
+	print a
+
+func( *(1,2,3) )         # OK
+func(  (1,2,3) )         # err
+func(  2 )               # err
+\end{lstlisting}
+
+			混合使用参数的格式：
+
+\begin{lstlisting}
+def func(a,b,c,... j=k,l=m,... *p,*q,... **x,**y...)
+         ^         ^           ^         ^
+         normal    key-value   seq       dict
+\end{lstlisting}
+
+\section{变量的作用域}
+
+\subsection{全局变量}
+
+用\verb|global|关键字声明要用的是全局变量：
+
+\begin{lstlisting}
+x = 5
+def func():
+	global x
+	x = 99
+\end{lstlisting}
+
+\subsection{内置变量}
+
+内置作用域变量要导入后才能使用：
+
+\begin{lstlisting}
+import __builtin__
+\end{lstlisting}
+
+\section{lambda表达式}
+
+lambda表达式中不能出现语句，只能用表达式。例：
+
+\begin{lstlisting}
+f = lambda a,b : a+b
+f(1,2)
+\end{lstlisting}
+
+		用表达式替代常用语句。例：
+
+\begin{lstlisting}
+lbd = lambda x : sys.stdout.write(x+'\n')
+lbd('aaa')
+
+lbd = lambda x : map(sys.stdout.write, x)
+lbd(['aaa\n','bbb\n','ccc\n'])
+
+lbd = lambda x : [sys.stdout.write(line) for line in x]
+lbd(['aaa\n','bbb\n','ccc\n'])
+\end{lstlisting}
+
+	\section{闭包}
+
+		一个函数的成员变量可以被定义在这个函数内部的内部函数访问。
+
+		在早期不支持闭包的版本中，内部函数不能访问外部函数的变量；只能通过参数的默认值来取得外部函数变量的值：
+
+\begin{lstlisting}
+def func1():
+	x = 88
+	def func2(x=x):    # 作为默认参数赋值
+		print x
+	func2()
+\end{lstlisting}
+
+		在使用闭包的情况下：
+
+\begin{lstlisting}
+def func1():
+	x = 88
+	def func2():
+		print x
+	return func2
+
+action = func1() # call func1()
+action()         # call func2()
+\end{lstlisting}
+
+		要注意的一点是：函数只有在第一次被调用时存在。
+		
+		所以下面的例子中，变量\verb|i|的值永远是4。而不是随循环从0增长到4：
+
+\begin{lstlisting}
+def func1():
+	acts = []
+	for i in range(5):
+		acts.append(lambda x: i ** x)
+	return acts
+\end{lstlisting}
+
+		在这种情况下，只能使用默认参数：
+
+\begin{lstlisting}
+def func1():
+	acts = []
+	for i in range(5):
+		acts.append(lambda x,i=i: i ** x)
+	return acts
+\end{lstlisting}
+
+\section{结合函数处理序列}
+
+\subsection{过滤（filter）}
+
+过滤大于0的元素：
+
+\begin{lstlisting}
+filter( (lamabda x : x>0), [-2,-1,0,1,2,3,4])
+# result: [1,2,3,4,]
+\end{lstlisting}
+
+\subsection{汇总（reduce）}
+
+所有的元素加起来：
+\begin{lstlisting}
+reduce( (lamabda x,y : x+y), [1,2,3,4])   # 10
+\end{lstlisting}
+
+所有的元素乘起来：
+\begin{lstlisting}
+reduce( (lamabda x,y : x*y), [1,2,3,4])   # 24
+\end{lstlisting}
+
+在python3中可能移除reduce，但自己实现一个并不难：
+\begin{lstlisting}
+def myreduce(func, seq):
+	tally = seq[0]
+	for i in seq[1:]:
+		tally = function(tally,i)
+	return tally
+\end{lstlisting}
