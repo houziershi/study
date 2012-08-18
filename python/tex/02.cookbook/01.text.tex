@@ -115,8 +115,18 @@
 
 	\section{在标准输出中打印Unicode}
 
-		通过ocdes模块把sys.stdout流用转换器包装起来。如果你要输出的终端以iso-8859-1编码显示字符：
+		通过cocdes模块把sys.stdout流用转换器包装起来。如果你要输出的终端以iso-8859-1编码显示字符：
 
+		\lstinputlisting[firstline=3,lastline=5]{py/02.cookbook/0106/exp0122.py}
+
+		上面的代码把\verb|sys.stdout|绑定到一个使用Unicode输入和ISO-8859-1输入的流。这样的好处是不会改变\verb|sys.stdout|上原来的编码。
+
+		Python会尝试确认“终端”所使用的编码（并不一定正确）并把编码的名字存放到\verb|sys.stdout.encoding|中作为一个属性。
+
+	\section{在XML与HTML中使用Unicode}
+
+
+		
 
 		
 

@@ -1,0 +1,30 @@
+
+\chapter{文件}
+
+	\section{基础}
+		
+		一次读取整个文件会占用大量内存：
+
+		\lstinputlisting[firstline=3,lastline=4]{py/02.cookbook/0200/exp0200.py}
+
+		可以一次读取一行：
+
+		\lstinputlisting[firstline=6,lastline=7]{py/02.cookbook/0200/exp0200.py}
+
+		对于二进制文件在\verb|read|调用时指定读取N个字节。不指定的话默认会读取剩下的全部内容。
+
+		包装读取文件与处理：
+
+		\lstinputlisting[firstline=9,lastline=11]{py/02.cookbook/0200/exp0200.py}
+
+		把具体的实例传递进去：
+
+		\lstinputlisting[firstline=13,lastline=20]{py/02.cookbook/0200/exp0200.py}
+
+		现在这个\verb|scanner|的范围只能用来扫描文件。为了扩展应用范围到也能扫描字符串，我们可以用StringIO或是性能更好的cStringIO把字符串封装为文件：
+
+		\lstinputlisting[firstline=22,lastline=29]{py/02.cookbook/0200/exp0200.py}
+
+		其实还可以有个更加通用的方案就是用包含迭代器的类把它包装起来：
+
+		\lstinputlisting[firstline=22,lastline=29]{py/02.cookbook/0200/exp0200.py}
