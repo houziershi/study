@@ -161,7 +161,7 @@ Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 
 上面输出的资料共有八个栏位,您需要注意的有几个地方：
 Destination其实就是 Network 的意思
-Gateway就是该介面的 Gateway 那个 IP 啦!若为 0.0.0.0 表示不需要额外的 IP
+Gateway就是该介面的 Gateway 那个 IP 啦!若为 0.0.0.0（不加参数-n时显示为*）表示不需要额外的 IP（需要经过网关）
 Genmask就是Netmask。与 Destination 组合成为一部主或网域
 Flags共有多个旗标可以来表示该网域或主机代表的意义：
      U代表该路由可用
