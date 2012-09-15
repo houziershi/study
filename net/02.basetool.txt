@@ -1,0 +1,410 @@
+
+# ===========================
+#
+# ifconfig
+#
+# ===========================
+
+ifconfig 主要是可以手动的启动、观察与修改网络接口的相关参数:
+
+[root@www ~]# ifconfig {interface} {up|down} <== 观察与启动接口
+[root@www ~]# ifconfig interface {options}   <== 设定与修改接口
+
+选项与参数:
+	interface:网络卡接口代号,包括 eth0, eth1, ppp0 等等
+	options :可以接的参数,包括如下:
+	up, down :启动 (up) 或关闭 (down) 该网络接口(不涉及任何参数)
+	mtu :可以设定不同的 MTU 数值,例如 mtu 1500 (单位为 byte)
+	netmask :就是子屏蔽网络;
+	broadcast:就是广播地址啊!
+
+一般来说, 直接输入 ifconfig 就会列出目前已经被启动的卡,不论这个卡是否有给予都会被显示出来。 
+
+而如果是输入 ifconfig eth0, 则仅会秀出这张接口的相关数据, IP, 而不管该接口是否有启动。
+
+# 范例一:观察所有的网络接口(直接输入 ifconfig)
+
+[root@www ~]# ifconfig eth0
+Link encap:Ethernet HWaddr 08:00:27:71:85:BD
+inet addr:192.168.1.100 Bcast:192.168.1.255 Mask:255.255.255.0
+inet6 addr: fe80::a00:27ff:fe71:85bd/64 Scope:Link
+UP BROADCAST RUNNING MULTICAST MTU:1500 Metric:1
+RX packets:2555 errors:0 dropped:0 overruns:0 frame:0
+TX packets:70 errors:0 dropped:0 overruns:0 carrier:0 
+collisions:0 txqueuelen:1000
+RX bytes:239892 (234.2 KiB) TX bytes:11153 (10.8 KiB)
+
+各参数的意义：
+	eth0:就是网络卡的代号,也有 lo 这个 loopback ;
+	HWaddr:就是网络卡的硬件地址,俗称的 MAC 是也;
+	inet addr:IPv4 的 IP 地址,
+		后续的 Bcast, Mask 分别代表的是Broadcast 与 netmask
+	inet6 addr:是 IPv6 的版本的 IP ,我们没有使用,所以略过;
+	MTU:就是第二章谈到的 MTU 啊!
+	RX:那一行代表的是网络由启动到目前为止的封包接收情况, 
+		packets 代表封包数、
+		errors 代表封包发生错误的数量、 
+		dropped 代表封包由于有问题而遭丢弃的数量等等
+	TX:与 RX 相反,为网络由启动到目前为止的传送情况;
+	collisions:代表封包碰撞的情况,如果发生太多次, 表示你的网络状况不太好;
+	txqueuelen:代表用来传输数据的缓冲区的储存长度;
+	RX bytes, TX bytes:总接收、发送字节总量
+
+
+范例二:暂时修改网络接口,给予 eth0 一个 192.168.100.100/24 的参数
+如果不加任何其他参数,则系统会依照该 IP 所在的 class 范围,自动的 计算出netmask 以及 network, broadcast 等 IP 参数,
+
+[root@www ~]# ifconfig eth0 192.168.100.100
+
+若想改其他参数则:
+
+[root@www ~]# ifconfig eth0 192.168.100.100 netmask 255.255.255.128 mtu 8000
+# 设定不同参数的网络接口,同时设定 MTU 的数值!
+
+[root@www ~]# ifconfig eth0 mtu 9000
+# 仅修改该接口的 MTU 数值,其他的保持不动!
+
+[root@www ~]# ifconfig eth0:0 192.168.50.50
+# 仔细看那个界面是 eth0:0 那就是在该实体网卡上,再仿真一个网络接口, 即是在一张网络卡上面设定多个 IP。 
+
+[root@www ~]# ifconfig
+eth0   Link encap:Ethernet HWaddr 08:00:27:71:85:BD
+       inet addr:192.168.100.100 Bcast:192.168.100.127
+       Mask:255.255.255.128
+       inet6 addr: fe80::a00:27ff:fe71:85bd/64 Scope:Link
+       UP BROADCAST RUNNING MULTICAST MTU:9000 Metric:1
+       RX packets:2555 errors:0 dropped:0 overruns:0 frame:0
+       TX packets:70 errors:0 dropped:0 overruns:0 carrier:0
+       collisions:0 txqueuelen:1000
+       RX bytes:239892 (234.2 KiB) TX bytes:11153 (10.8 KiB)
+
+eth0:0 Link encap:Ethernet HWaddr 08:00:27:71:85:BD
+       inet addr:192.168.50.50 Bcast:192.168.50.255
+       Mask:255.255.255.0
+       UP BROADCAST RUNNING MULTICAST MTU:9000 Metric:1
+
+与硬件有关的信息都相同，因为是同一张网卡。
+
+如果想要将刚刚建立的那张 eth0:0 关闭, 不影响原有的 eth0
+
+[root@www ~]# ifconfig eth0:0 down
+# 关掉 eth0:0 这个界面。
+
+那如果想用默认值启动 eth1: ifconfig eth1 up 即可达成
+
+范例三:将手动的处理全部取消,使用原有的设定值重建网络参数:
+
+[root@www ~]# /etc/init.d/network restart
+
+这样刚刚设定的数据全部失效,会以 ifcfg-ethX 的设定为主!
+
+可以利用 /etc/init.d/network restart 来重新启动整个网络接口,那么之前手动的设定数据会全部失效。
+
+另外, 要启动某个网络接口,但又不让他具有 IP 参数时,直接给他 ifconfig eth0 up 即可! 这个动作经常在无线网卡当中会进行,因为我们必须要启动无线网卡让他去侦测 AP 存在与否啊!
+
+
+
+
+# ===========================
+#
+# route
+#
+# ===========================
+
+只要有网络接口, 接口就会产生一个路由, 所以主机有一个 eth0 的接口, 看起来就会是这样:
+
+[root@www ~]# route [-nee]
+[root@www ~]# route add [-net|-host] [网域或主机] netmask [mask] [gw|dev]
+[root@www ~]# route del [-net|-host] [网域或主机] netmask [mask] [gw|dev]
+
+参数说明:
+
+	-n :不要使用通讯协议或主机名,直接使用 IP 或 port number;
+	-ee :使用更详细的信息来显示
+
+增加 (add) 与删除 (del) 路由的相关参数:
+
+	-net :表示后面接的路由为一个网域;
+	-host :表示后面接的为连接到单部主机的路由;
+	netmask :与网域有关,可以设定 netmask 决定网域的大小;
+	gw :gateway 的简写,后续接的是 IP 的数值喔,与 dev 不同;
+	dev :如果只是要指定由那一块网络卡联机出去,则使用这个设定, 后面接 eth0 等
+
+范例一:单纯的观察路由状态
+
+┌─(morgan@morgan-laptop:pts/3)────────────────────────(~/workspace/study/net)─┐
+└─(130:19:40:%)── route                                         ──(Wed,Sep12)─┘
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+default         192.168.1.1     0.0.0.0         UG    0      0        0 wlan0
+link-local      *               255.255.0.0     U     1000   0        0 wlan0
+192.168.1.0     *               255.255.255.0   U     2      0        0 wlan0
+
+┌─(morgan@morgan-laptop:pts/3)────────────────────────(~/workspace/study/net)─┐
+└─(19:40:%)── route -n                                          ──(Wed,Sep12)─┘
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+0.0.0.0         192.168.1.1     0.0.0.0         UG    0      0        0 wlan0
+169.254.0.0     0.0.0.0         255.255.0.0     U     1000   0        0 wlan0
+192.168.1.0     0.0.0.0         255.255.255.0   U     2      0        0 wlan0
+
+不加-n会去查主机名。有加 -n 参数的主要是显示出 IP，所以加了-n能省去了查IP的时间。
+
+从上面也可以知道 default = 0.0.0.0/0.0.0.0
+
+Destination, Genmask:这两个玩意儿就是分别是 network 与 netmask 啦!  所以这两个就组合成为一个完整的网域!
+Gateway:该网域是通过哪个 gateway 连接出去的?如果显示 0.0.0.0 表示该路由是直接由本机传送,亦即可以透过局域网络的 MAC 直接传讯;如果有显示 IP 的话,表示该路由需要经过路由器 (通讯闸) 的帮忙才能够传送出去。
+Flags:总共有多个旗标,代表的意义如下: 
+	U (route is up):该路由是启动的;
+	H (target is a host):目标是一部主机 (IP) 而非网域;
+	G (use gateway):需要透过外部的主机 (gateway) 来转递封包;
+	R (reinstate route for dynamic routing):使用动态路由时,恢复路由信息的旗标;
+	D (dynamically installed by daemon or redirect):已经由服务或转 port 功能设定为动态路由
+	M (modified from routing daemon or redirect):路由已经被修改了;
+	! (reject route): 这个路由将不会被接受(用来抵挡不安全的网域!)
+Iface:这个路由传递封包的接口。
+
+此外,观察一下上面的路由排列顺序喔,依序是由小网域 (192.168.1.0/24 是 Class C),逐渐到大网域 (169.254.0.0/16 Class B) 最后则是预设路由 (0.0.0.0/0.0.0.0)。 然后当我们要判断某个网络封包应该如何传送的时候,该封包会经由这个路由的过程来判断喔! 
+
+举例来说,我上头仅有三个路由,若我有一个传往 192.168.1.20 的封包要传递, 那首先会找 192.168.1.0/24 这个网域的路由, 找到了! 所以直接由 eth0 传送出去;
+
+如果是传送到 Yahoo 的主机呢? Yahoo 的主机 IP 是 119.160.246.241, 我们通过判断 
+1)不是 192.168.1.0/24 
+2)不是 169.254.0.0/16 
+3)到达0.0.0.0/0时,OK!  传出去了,把封包传给一条的网关192.168.1.1主机
+所以说,路由是有顺序的。
+
+因此当你重复设定多个同样的路由时, 例如在你的主机上的两张网络卡设定为相同网域的 IP 时,会出现如下的情况:
+
+┌─(morgan@morgan-laptop:pts/3)────────────────────────(~/workspace/study/net)─┐
+└─(19:40:%)── route -n                                          ──(Wed,Sep12)─┘
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+192.168.1.0     0.0.0.0         255.255.255.0   U     2      0        0 eth0 
+192.168.1.0     0.0.0.0         255.255.255.0   U     2      0        0 eth1
+
+也就是说, 由于路由是依照顺序来排列与传送的, 所以不论封包是由那个界面 (eth0, eth1) 所接收,都会由上述的 eth0 传送出去, 所以,在一部主机上面设定两个相同 网域的 IP 本身没有什么意义!有点多此一举就是了。 除非是类似虚拟机 (Xen, VMware 等软件) 所架设的多主机时,才会有这个必要。
+
+# 范例二:路由的增加与删除
+
+[root@www ~]# route del -net 169.254.0.0 netmask 255.255.0.0 dev eth0
+
+上面这个动作可以删除掉 169.254.0.0/16 这个网域。请注意,在删除的时候,需要将路由表上面出现的信息都写入包括 netmask , dev 等等参数。
+
+[root@www ~]# route add -net 192.168.100.0 netmask 255.255.255.0 dev eth0
+
+透过 route add 来增加一个路由!请注意,这个路由的设定必须要能够与你的网络互通。举例来说,如果我下达底下的指令就会显示错误:
+
+route add -net 192.168.200.0 netmask 255.255.255.0 gw 192.168.200.254
+
+因为我的主机内仅有 192.168.1.11 这个 IP ,所以不能直接与 192.168.200.254这个网段直接使用 MAC 互通。
+
+[root@www ~]# route add default gw 192.168.1.250
+增加预设路由的方法!请注意,只要有一个预设路由就够了喔!
+同样的,那个 192.168.1.250 的 IP 也需要能与你的 LAN 沟通才行!
+在这个地方如果你随便设定后,记得使用底下的指令重新设定你的网络
+/etc/init.d/network restart
+
+其实,使用 man route里面的数据就很丰富了!仔细查阅一下啰! 你只要记得,当出现『SIOCADDRT: Network is unreachable』 这个错误时,肯定是由于 gw 后面接的 IP 无法直接与你的网域沟通 (Gateway 并不在你的网域内), 所以,赶紧检查一下是否输入错误啊!
+
+Tips:
+一般来说,鸟哥如果接触到一个新的环境内的主机,在不想要更动
+原系统的配置文件情况下,然后预计使用本书的网络环境设定时,
+手动的处理就变成:『ifconfig eth0 192.168.1.100; route add
+default gw 192.168.1.254』这样就搞定了! 直接联网与测试。等
+到完成测试后,
+再给她 /etc/init.d/network restart 恢复原系统
+的网络即可
+
+
+
+
+# ===========================
+#
+# ip
+#
+# ===========================
+
+ip 是個指令喔！並不是那個 TCP/IP 的 IP 啦！這個 ip 指令的功能可多了！基本上，他就是整合了 ifconfig 與 route 這兩個指令囉～不過， ip 可以達成的功能卻又多更多！真是個相當厲害的指令。如果你有興趣的話，請自行 vi /sbin/ifup ，就知道整個 ifup 就是利用 ip 這個指令來達成的。好了，如何使用呢？讓我們來瞧一瞧先！
+
+[root@www ~]# ip [option] [動作] [指令]
+
+選項與參數：
+
+option ：設定的參數，主要有：
+    -s ：顯示出該裝置的統計數據(statistics)，例如總接受封包數等；
+
+動作：亦即是可以針對哪些網路參數進行動作，包括有：
+    link  ：關於裝置 (device) 的相關設定，包括 MTU, MAC 位址等等
+    addr/address ：關於額外的 IP 協定，例如多 IP 的達成等等；
+    route ：與路由有關的相關設定
+
+底下我們就分三個部分 (link, addr, route) 來介紹這個 ip 指令吧！
+
+
+# ===========================
+#
+# ip link
+#
+# ===========================
+
+關於裝置介面 (device) 的相關設定： ip link
+
+ip link 可以設定與裝置 (device) 有關的相關參數，包括 MTU 以及該網路介面的 MAC 等等，當然也可以啟動 (up) 或關閉 (down) 某個網路介面啦！整個語法是這樣的：
+
+[root@www ~]# ip [-s] link show  <== 單純的查閱該裝置相關的資訊
+[root@www ~]# ip link set [device] [動作與參數]
+選項與參數：
+show：僅顯示出這個裝置的相關內容，如果加上 -s 會顯示更多統計數據；
+set ：可以開始設定項目， device 指的是 eth0, eth1 等等介面代號；
+動作與參數：包括有底下的這些動作：
+   up|down  ：啟動 (up) 或關閉 (down) 某個介面，其他參數使用預設的乙太網路；
+   address  ：如果這個裝置可以更改 MAC 的話，用這個參數修改！
+   name     ：給予這個裝置一個特殊的名字；
+   mtu      ：就是最大傳輸單元啊！
+
+# 範例一：顯示出所有的介面資訊
+[root@www ~]# ip link show
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 16436 qdisc noqueue state UNKNOWN
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 08:00:27:71:85:bd brd ff:ff:ff:ff:ff:ff
+3: eth1: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN qlen 1000
+    link/ether 08:00:27:2a:30:14 brd ff:ff:ff:ff:ff:ff
+4: sit0: <NOARP> mtu 1480 qdisc noop state DOWN
+    link/sit 0.0.0.0 brd 0.0.0.0
+
+[root@www ~]# ip -s link show eth0
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 08:00:27:71:85:bd brd ff:ff:ff:ff:ff:ff
+    RX: bytes  packets  errors  dropped overrun mcast
+    314685     3354     0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    27200      199      0       0       0       0
+
+使用 ip link show 可以顯示出整個裝置介面的硬體相關資訊，如上所示，包括網卡位址(MAC)、MTU等等， 比較有趣的應該是那個 sit0 的介面了，那個 sit0 的介面是用在 IPv4 及 IPv6 的封包轉換上的， 對於我們僅使用 IPv4 的網路是沒有作用的。 lo 及 sit0 都是主機內部所自行設定的。 而如果加上 -s 的參數後，則這個網路卡的相關統計資訊就會被列出來， 包括接收 (RX) 及傳送 (TX) 的封包數量等等，詳細的內容與 ifconfig 所輸出的結果相同的。
+
+# 範例二：啟動、關閉與設定裝置的相關資訊
+[root@www ~]# ip link set eth0 up
+# 啟動 eth0 這個裝置介面；
+
+[root@www ~]# ip link set eth0 down
+# 阿就關閉啊！簡單的要命～
+
+[root@www ~]# ip link set eth0 mtu 1000
+# 更改 MTU 的值，達到 1000 bytes，單位就是 bytes 啊！
+
+更新網路卡的 MTU 使用 ifconfig 也可以達成啊！沒啥了不起，不過，如果是要更改『網路卡代號、 MAC 位址的資訊』的話，那可就得使用 ip 囉～不過，設定前可能得要先關閉該網路卡，否則會不成功。 如下所示：
+
+# 範例三：修改網路卡代號、MAC 等參數
+[root@www ~]# ip link set eth0 name vbird
+SIOCSIFNAME: Device or resource busy
+# 因為該裝置目前是啟動的，所以不能這樣做設定。你應該要這樣做：
+
+[root@www ~]# ip link set eth0 down       <==關閉介面
+[root@www ~]# ip link set eth0 name vbird <==重新設定
+[root@www ~]# ip link show                <==觀察一下
+2: vbird: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 08:00:27:71:85:bd brd ff:ff:ff:ff:ff:ff
+# 怕了吧！連網路卡代號都可以改變！不過，玩玩後記得改回來啊！
+# 因為我們的 ifcfg-eth0 還是使用原本的裝置代號！避免有問題，要改回來
+
+[root@www ~]# ip link set vbird name eth0 <==介面改回來
+
+[root@www ~]# ip link set eth0 address aa:aa:aa:aa:aa:aa
+[root@www ~]# ip link show eth0
+# 如果你的網路卡支援硬體位址(MAC)可以更改的話，上面這個動作就可以更改
+# 你的網路卡位址了！厲害吧！不過，還是那句老話，測試完之後請立刻改回來啊！
+
+在這個裝置的硬體相關資訊設定上面，包括 MTU, MAC 以及傳輸的模式等等，都可以在這裡設定。 有趣的是那個 address 的項目，那個項目後面接的可是硬體位址 (MAC) 而不是 IP 喔！ 很容易搞錯啊！切記切記！更多的硬體參數可以使用 man ip 查閱一下與 ip link 有關的設定。
+
+
+
+
+# ===========================
+#
+# ip addr
+#
+# ===========================
+
+如果說 ip link 是與 OSI 七層協定 的第二層資料連階層有關的話，那麼 ip address (ip addr) 就是與第三層網路層有關的參數啦！ 主要是在設定與 IP 有關的各項參數，包括 netmask, broadcast 等等。
+
+[root@www ~]# ip address show   <==就是查閱 IP 參數啊！
+
+[root@www ~]# ip address [add|del] [IP參數] [dev 裝置名] [相關參數]
+選項與參數：
+show    ：單純的顯示出介面的 IP 資訊啊；
+add|del ：進行相關參數的增加 (add) 或刪除 (del) 設定，主要有：
+    IP 參數：主要就是網域的設定，例如 192.168.100.100/24 之類的設定喔；
+    dev    ：這個 IP 參數所要設定的介面，例如 eth0, eth1 等等；
+    相關參數：主要有底下這些：
+        broadcast：設定廣播位址，如果設定值是 + 表示『讓系統自動計算』
+        label    ：亦即是這個裝置的別名，例如 eth0:0 就是了！
+        scope    ：這個介面的領域，通常是這幾個大類：
+                   global ：允許來自所有來源的連線；
+                   site   ：僅支援 IPv6 ，僅允許本主機的連線；
+                   link   ：僅允許本裝置自我連線；
+                   host   ：僅允許本主機內部的連線；
+                   所以當然是使用 global 囉！預設也是 global 啦！
+
+範例一：顯示出所有的介面之 IP 參數：
+
+[root@www ~]# ip address show
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 16436 qdisc noqueue state UNKNOWN
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+    inet6 ::1/128 scope host
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 08:00:27:71:85:bd brd ff:ff:ff:ff:ff:ff
+    inet 192.168.1.100/24 brd 192.168.1.255 scope global eth0
+    inet6 fe80::a00:27ff:fe71:85bd/64 scope link
+       valid_lft forever preferred_lft forever
+3: eth1: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN qlen 1000
+    link/ether 08:00:27:2a:30:14 brd ff:ff:ff:ff:ff:ff
+4: sit0: <NOARP> mtu 1480 qdisc noop state DOWN
+    link/sit 0.0.0.0 brd 0.0.0.0
+
+看到上面那個
+    inet 192.168.1.100/24 brd 192.168.1.255 scope global eth0
+沒錯！那就是 IP 參數啦！也是 ip address 最主要的功能。 底下我們進一步來新增虛擬的網路介面試看看：
+
+範例二：新增一個介面，名稱假設為 eth0:vbird 
+
+[root@www ~]# ip address add 192.168.50.50/24 broadcast + \
+> dev eth0 label eth0:vbird
+[root@www ~]# ip address show eth0
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 08:00:27:71:85:bd brd ff:ff:ff:ff:ff:ff
+    inet 192.168.1.100/24 brd 192.168.1.255 scope global eth0
+    inet 192.168.50.50/24 brd 192.168.50.255 scope global eth0:vbird
+    inet6 fe80::a00:27ff:fe71:85bd/64 scope link
+       valid_lft forever preferred_lft forever
+
+看到上面的
+这一行了吧？多出了一行新的介面，且名稱是 eth0:vbird
+至於那個 broadcast + 也可以寫成 broadcast 192.168.50.255 啦！
+
+[root@www ~]# ifconfig
+eth0:vbird Link encap:Ethernet  HWaddr 08:00:27:71:85:BD
+          inet addr:192.168.50.50  Bcast:192.168.50.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+
+如果使用 ifconfig 就能夠看到這個怪東西了！可愛吧！ ^_^
+
+# 範例三：將剛剛的介面刪除 
+[root@www ~]# ip address del 192.168.50.50/24 dev eth0
+# 刪除就比較簡單啊！ ^_^
+
+
+
+
+# ===========================
+#
+# ip route
+#
+# ===========================
+
+
+
+

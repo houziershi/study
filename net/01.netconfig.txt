@@ -1,0 +1,250 @@
+
+检查网卡是否被系统内核检测到：
+
+# dmesg | grep -in eth                                                                                                                                                                                         ──(Tue,Sep11)─┘
+...
+1063:[   17.994372] sky2 0000:86:00.0: eth0: Link is up at 1000 Mbps, full duplex, flow control rx
+1064:[   17.994846] ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
+...
+
+可以看到etho对应的模块号“0000:86:00.0”。通过这个号找到网卡对应的相关模块信息：
+
+# lspci
+...
+86:00.0 Ethernet controller: Marvell Technology Group Ltd. 88E8072 PCI-E Gigabit Ethernet Controller (rev 10)
+
+再根据模块去找对应的驱动程序：
+
+# cd /lib/modules/`uname -r`/kernel/drivers/net
+# modinfo 3c59x.ko
+
+filename:
+3c59x.ko
+author:
+Donald Becker <becker@scyld.com>
+description:
+3Com 3c59x/3c9xx ethernet driver LK1.1.19 10 Nov 2002
+license:
+GPL
+version:
+LK1.1.19 DBFD1C112761D573276AC45
+parm:
+debug:3c59x debug level (0-6)
+.....以下省略.....
+
+
+
+
+
+
+
+#####################
+# 
+# 网络的启动与关闭 
+#
+#####################
+
+重启网络：
+/etc/init.d/network restart
+Debian系：
+/etc/init.d/networking restart
+
+启动/关闭网络：
+ifup eth0
+ifdown eth0
+Debian系：
+ifconfig eth0 up
+ifconfig eth0 down
+
+
+
+#####################
+# 
+# 配置主机名
+#
+#####################
+/etc/sysconfig/network
+Debian系为：
+/etc/hostname
+
+
+
+#####################
+# 
+# 网卡设定
+#
+#####################
+Debian系配置文件为： /etc/network/interfaces                                                                                                                                                     ──(Tue,Sep11)─┘
+
+动态取IP把内容设置为：
+
+auto lo
+iface lo inet loopback
+
+如果要静态IP则把内容设置为：
+
+auto eth1
+iface eth1 inet static
+address 10.10.103.77
+netmask 255.255.255.0
+gateway 10.10.103.20
+
+重启网卡后生效。除了配置文件，也通过命令动态取IP：
+
+sudo dhclient eth0
+
+
+
+#####################
+# 
+# 域名解析
+#
+#####################
+
+本地域名解析：
+/etc/hosts
+
+DNS域名解析：
+/etc/resolv.conf
+内容形式为：
+nameserver 202.119.230.8
+
+测试域名解析：
+
+# nslookup www.google.com                                                                                                                                                         ──(Tue,Sep11)─┘
+Server:		127.0.0.1
+Address:	127.0.0.1#53
+
+Non-authoritative answer:
+www.google.com	canonical name = www.l.google.com.
+Name:	www.l.google.com
+Address: 74.125.141.103
+Name:	www.l.google.com
+Address: 74.125.141.104
+Name:	www.l.google.com
+Address: 74.125.141.105
+Name:	www.l.google.com
+Address: 74.125.141.106
+Name:	www.l.google.com
+Address: 74.125.141.147
+Name:	www.l.google.com
+Address: 74.125.141.99
+
+
+TCP/IP服务对应的端口：
+/etc/services
+
+IP封包设定：
+/etc/protocols
+
+
+
+
+#####################
+# 
+# 无线网络
+#
+#####################
+每一台AP都有一个ESSID/SSID。
+
+查看无线连接信息：
+# iwconfig                                                                                                                                                                        ──(Tue,Sep11)─┘
+lo        no wireless extensions.
+
+wlan0     IEEE 802.11abgn  ESSID:off/any  
+          Mode:Managed  Access Point: Not-Associated   Tx-Power=15 dBm   
+          Retry  long limit:7   RTS thr:off   Fragment thr:off
+          Power Management:off
+          
+eth0      no wireless extensions.
+
+
+#####################
+# 
+# 查找无线网络
+#
+#####################
+
+# iwlist scanning                                                                                                                                                                 ──(Tue,Sep11)─┘
+lo        Interface doesn't support scanning.
+
+wlan0     Scan completed :
+          Cell 01 - Address: 28:94:0F:79:8A:01
+                    Channel:1
+                    Frequency:2.412 GHz (Channel 1)
+                    Quality=46/70  Signal level=-64 dBm  
+                    Encryption key:on
+                    ESSID:"GoldenDay"
+                    Bit Rates:1 Mb/s; 2 Mb/s; 5.5 Mb/s; 11 Mb/s; 6 Mb/s
+                              9 Mb/s; 12 Mb/s; 18 Mb/s
+                    Bit Rates:24 Mb/s; 36 Mb/s; 48 Mb/s; 54 Mb/s
+                    ESSID:""
+                    ESSID:""
+                    Mode:Master
+                    Extra:tsf=00000000000f9d80
+                    Extra: Last beacon: 5940ms ago
+                    IE: Unknown: 0009476F6C64656E446179
+                    IE: Unknown: 010882848B960C121824
+                    IE: Unknown: 030101
+                    IE: Unknown: 050400010300
+                    IE: Unknown: 2A0100
+                    IE: IEEE 802.11i/WPA2 Version 1
+                        Group Cipher : TKIP
+                        Pairwise Ciphers (2) : CCMP TKIP
+                        Authentication Suites (1) : PSK
+                       Preauthentication Supported
+                    IE: WPA Version 1
+                        Group Cipher : TKIP
+                        Pairwise Ciphers (2) : CCMP TKIP
+                        Authentication Suites (1) : PSK
+                    IE: Unknown: 32043048606C
+                    IE: Unknown: DD180050F2020101840003A4000027A4000042435E006232DDDD
+                    IE: Unknown: DD1E00904C334E101BFFFF000000000000000000000000000000000000000000
+                    IE: Unknown: 2D1A4E101BFFFF000000000000000000000000000000000000000000
+                    IE: Unknown: DD1A0090483001001B00000000000000000000000000000000000000
+                    IE: Unknown: 391201001B000000000000000000000000000000
+                    IE: Unknown: 0000
+                    IE: Unknown: 0000
+                    IE: Unknown: 4A0E14000A002C01C800140005001900
+                    IE: Unknown: 7F0101
+                    IE: Unknown: DD0900037F01010000FF7F
+                    IE: Unknown: DD0A00037F04010006004000
+                    IE: Unknown: DD3F0050F204104A0001101044000102104700100000000000001000000028940F798A01103C000103104900140024E26002000101600000020001600100020001
+          Cell 02 - Address: BC:AE:C5:C3:86:6A
+                    Channel:6
+                    Frequency:2.437 GHz (Channel 6)
+                    Quality=45/70  Signal level=-65 dBm  
+                    Encryption key:on
+                    ESSID:"izenesoft"
+                    Bit Rates:1 Mb/s; 2 Mb/s; 5.5 Mb/s; 11 Mb/s; 18 Mb/s
+                              24 Mb/s; 36 Mb/s; 54 Mb/s
+                    Bit Rates:6 Mb/s; 9 Mb/s; 12 Mb/s; 48 Mb/s
+                    Mode:Master
+                    Extra:tsf=00000032de35f203
+                    Extra: Last beacon: 5404ms ago
+                    IE: Unknown: 0009697A656E65736F6674
+                    IE: Unknown: 010882848B962430486C
+                    IE: Unknown: 030106
+                    IE: Unknown: 050400010000
+                    IE: Unknown: 2A0104
+                    IE: Unknown: 2F0104
+                    IE: IEEE 802.11i/WPA2 Version 1
+                        Group Cipher : CCMP
+                        Pairwise Ciphers (1) : CCMP
+                        Authentication Suites (1) : PSK
+                    IE: Unknown: 32040C121860
+                    IE: Unknown: 2D1AEC181BFFFF000000000000000000000000000000000000000000
+                    IE: Unknown: 3D1606080400000000000000000000000000000000000000
+                    IE: Unknown: DD09001018020FF0050000
+                    IE: Unknown: DD180050F2020101800003A4000027A4000042435E0062322F00
+
+eth0      Interface doesn't support scanning.
+
+
+可以看到每个可用网络的ESSID，然后可以手动连接：
+
+# iwconfig wlan0 essid 'izenesoft' key 'p@ssw0rd'
+
+查看连接信息：
+
+# iwconfig wlan0
