@@ -1,0 +1,104 @@
+
+\chapter{常用功能}
+
+	\section{输入输出}
+
+		\subsection{python中的输出流}
+
+\begin{lstlisting}
+Interface eth0:
+	Address (v6): fe80:0:0:0:225:b3ff:fe69:1659%2
+	Address (v4): 172.16.7.1
+Interface lo:
+	Address (v6): 0:0:0:0:0:0:0:1%1
+	Address (v4): 127.0.0.1
+www.baidu.com: 
+	www.baidu.com/220.181.111.147
+www.jadehahaha.com: 
+	Unable to find address for : www.jadehahaha.com
+129.35.69.7: 
+	129.35.69.7/129.35.69.7
+\end{lstlisting}
+
+
+		\subsection{print打印输出}
+
+			\verb|print|语句会把对象打印到默认的输出流（标准输出）中：
+
+\begin{lstlisting}
+print a, b, b...
+\end{lstlisting}
+
+			格式化打印为\verb|a => b|的效果：
+
+\begin{lstlisting}
+print '%s => %s' % ('a', 'b')
+\end{lstlisting}
+
+		\subsection{重定向print到其他输出流}
+		
+			方法一：用指定的输出流替换掉标准输出。这样有一个缺点是每次都要手动地打开与关闭输出流：
+\begin{lstlisting}
+import sys
+
+sys.stdout = open('aa.txt', 'a');
+print 'hello'
+sys.stdout.close()
+\end{lstlisting}
+
+			方法二：可以在\verb|print|语句中指定输出流：
+\begin{lstlisting}
+import sys
+
+log = open('log.txt', 'w')
+print >> log, 'start', 1, 2, 3   # write to log file
+log.close()
+print >> sys.stderr, "err..."    # write to std err
+\end{lstlisting}
+
+	\section{文件操作}
+		
+		\subsection{常用的文件操作}
+
+			\begin{verbatim}
+				input  = open('aa.txt')      # 输入文件 r读取（默认）
+				str = input.read()           # 读取整个文件
+				str = input.read(n)          # 读取多个字节
+				str = input.readline()       # 读取多个字节
+				lst = input.readlines()
+
+				output = open('aa.txt','w')  # 输出文件 w写入
+				output.write(str)            #
+				output.writelines(lst)       #
+				output.flush()
+				output.close()
+
+				anyFile.seek(n)              # move to n
+			\end{verbatim}
+
+		\subsection{文本读写}
+
+			\lstinputlisting{py/chap.tools/io/exfile.py}
+
+
+		\subsection{对象的存取}
+
+			python的内置函数\verb|eval()|可以直接把字符串作为程序代码执行。所以可以用它来把文本变成python对象：
+
+			\lstinputlisting{py/chap.tools/io/str2obj.py}
+
+			但是\verb|eval()|函数有一个安全隐患：它会执行“任何”python代码……你懂的……
+
+			另一种选择是使用可以用来存取几乎任何python对象的pickle模块：
+
+			\lstinputlisting{py/chap.tools/io/usepickle.py}
+
+		\subsection{二进制文件读写}
+			
+			struct模块能打包并解析二进制文件：
+
+			\lstinputlisting{py/chap.tools/io/opbinfile.py}
+
+	\section{正则表达式}
+		
+		\lstinputlisting[firstline=1,lastline=13]{py/chap.tools/regexp/use.reg.py}

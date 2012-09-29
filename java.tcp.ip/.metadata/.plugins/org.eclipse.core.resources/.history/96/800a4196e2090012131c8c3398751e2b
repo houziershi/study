@@ -1,0 +1,34 @@
+package ch02;
+
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.util.Enumeration;
+
+public class InetAddressExample {
+
+	public static void main(String[] args) {
+		/*
+		 * get the newwork interface and associate address for this host
+		 */
+		try {
+			Enumeration<NetworkInterface> interfaceList = NetworkInterface
+					.getNetworkInterfaces();
+			if (null == interfaceList) {
+				System.out.println("--No interface found--");
+			} else {
+				while (interfaceList.hasMoreElements()) {
+					NetworkInterface iface = interfaceList.nextElement();
+					System.out.println("Interface " + iface.getName() + ":");
+					Enumeration<InetAddress> addrList= iface.getInetAddresses();
+					if(!addrList.hasMoreElements()){
+						System.out.println("\t(No addresses forthis interface)");
+					}
+				}
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+
+	}
+
+}

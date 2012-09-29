@@ -405,6 +405,569 @@ eth0:vbird Link encap:Ethernet  HWaddr 08:00:27:71:85:BD
 #
 # ===========================
 
+[root@www ~]# ip route show  <==單純的顯示出路由的設定而已
+[root@www ~]# ip route [add|del] [IP或網域] [via gateway] [dev 裝置]
+選項與參數：
+show ：單純的顯示出路由表，也可以使用 list ；
+add|del ：增加 (add) 或刪除 (del) 路由的意思。
+    IP或網域：可使用 192.168.50.0/24 之類的網域或者是單純的 IP ；
+    via     ：從那個 gateway 出去，不一定需要；
+    dev     ：由那個裝置連出去，這就需要了！
+    mtu     ：可以額外的設定 MTU 的數值喔！
+
+# 範例一：顯示出目前的路由資料
+[root@www ~]# ip route show
+192.168.1.0/24 dev eth0  proto kernel  scope link  src 192.168.1.100
+169.254.0.0/16 dev eth0  scope link  metric 1002
+default via 192.168.1.254 dev eth0
+
+如上表所示，最簡單的功能就是顯示出目前的路由資訊，其實跟 route 這個指令相同啦！ 指示必須要注意幾個小東西：
+
+    proto：此路由的路由協定，主要有 redirect, kernel, boot, static, ra 等， 其中 kernel 指的是直接由核心判斷自動設定。
+    scope：路由的範圍，主要是 link ，亦即是與本裝置有關的直接連線。
+
+# 範例二：增加路由，主要是本機直接可溝通的網域
+[root@www ~]# ip route add 192.168.5.0/24 dev eth0
+# 針對本機直接溝通的網域設定好路由，不需要透過外部的路由器
+[root@www ~]# ip route show
+192.168.5.0/24 dev eth0  scope link
+....(以下省略)....
+
+# 範例三：增加可以通往外部的路由，需透過 router 喔！
+[root@www ~]# ip route add 192.168.10.0/24 via 192.168.5.100 dev eth0
+[root@www ~]# ip route show
+192.168.5.0/24 dev eth0  scope link
+....(其他省略)....
+192.168.10.0/24 via 192.168.5.100 dev eth0
+# 仔細看喔，因為我有 192.168.5.0/24 的路由存在 (我的網卡直接聯繫)，
+# 所以才可以將 192.168.10.0/24 的路由丟給 192.168.5.100 
+# 那部主機來幫忙傳遞喔！與之前提到的 route 指令是一樣的限制！
+
+# 範例四：增加預設路由
+[root@www ~]# ip route add default via 192.168.1.254 dev eth0
+# 那個 192.168.1.254 就是我的預設路由器 (gateway) 的意思啊！ ^_^
+# 真的記得，只要一個預設路由就 OK ！
+
+# 範例五：刪除路由
+[root@www ~]# ip route del 192.168.10.0/24
+[root@www ~]# ip route del 192.168.5.0/24
 
 
+
+
+# ===========================
+#
+# 手动使用DHCP
+#
+# ===========================
+
+[root@www ~]# dhclient eth0
+
+夠簡單吧！這樣就可以立刻叫我們的網路卡以 dhcp 協定去嘗試取得 IP 喔！
+
+
+
+
+# ===========================
+#
+# 两部主机连通测试 ping
+#
+# ===========================
+
+[root@www ~]# ping [選項與參數] IP
+選項與參數：
+-c 數值：後面接的是執行 ping 的次數，例如 -c 5 ；
+-n     ：在輸出資料時不進行 IP 與主機名稱的反查，直接使用 IP 輸出(速度較快)；
+-s 數值：發送出去的 ICMP 封包大小，預設為 56bytes，不過你可以放大此一數值；
+-t 數值：TTL 的數值，預設是 255，每經過一個節點就會少一；
+-W 數值：等待回應對方主機的秒數。
+-M [do|dont] ：主要在偵測網路的 MTU 數值大小，兩個常見的項目是：
+   do  ：代表傳送一個 DF (Don't Fragment) 旗標，讓封包不能重新拆包與打包；
+   dont：代表不要傳送 DF 旗標，表示封包可以在其他主機上拆包與打包
+
+# 範例一：偵測一下 168.95.1.1 這部 DNS 主機是否存在？
+[root@www ~]# ping -c 3 168.95.1.1
+PING 168.95.1.1 (168.95.1.1) 56(84) bytes of data.
+64 bytes from 168.95.1.1: icmp_seq=1 ttl=245 time=15.4 ms
+64 bytes from 168.95.1.1: icmp_seq=2 ttl=245 time=10.0 ms
+64 bytes from 168.95.1.1: icmp_seq=3 ttl=245 time=10.2 ms
+
+--- 168.95.1.1 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2047ms
+rtt min/avg/max/mdev = 10.056/11.910/15.453/2.506 ms
+
+ping 最簡單的功能就是傳送 ICMP 封包去要求對方主機回應是否存在於網路環境中，上面的回應訊息當中，幾個重要的項目是這樣的：
+
+    64 bytes：表示這次傳送的 ICMP 封包大小為 64 bytes 這麼大，這是預設值， 在某些特殊場合中，例如要搜索整個網路內最大的 MTU 時，可以使用 -s 2000 之類的數值來取代；
+
+    icmp_seq=1：ICMP 所偵測進行的次數，第一次編號為 1 ；
+
+    ttl=243：TTL 與 IP 封包內的 TTL 是相同的，每經過一個帶有 MAC 的節點 (node) 時，例如 router, bridge 時， TTL 就會減少一，預設的 TTL 為 255 ， 你可以透過 -t 150 之類的方法來重新設定預設 TTL 數值；
+
+    time=15.4 ms：回應時間，單位有 ms(0.001秒)及 us(0.000001秒)， 一般來說，越小的回應時間，表示兩部主機之間的網路連線越良好！
+
+特別注意一下，如果你的主機與待偵測主機並不在同一個網域內， 那麼 TTL 預設使用 255 ，如果是同一個網域內，那麼 TTL 預設則使用 64 喔！
+
+
+
+例題：
+寫一支腳本程式 ping.sh ，透過這支腳本程式，你可以用 ping 偵測整個網域的主機是否有回應。此外，每部主機的偵測僅等待一秒鐘，也僅偵測一次。
+答：
+由於僅偵測一次且等待一秒，因此 ping 的選項為： -W1 -c1 ，而位於本機所在的區網為 192.168.1.0/24 ，所以可以這樣寫 (vim /root/bin/ping.sh)：
+
+#!/bin/bash
+for siteip in $(seq 1 254)
+do
+	site="192.168.1.${siteip}"
+	ping -c1 -W1 ${site} &> /dev/null
+	if [ "$?" == "0" ]; then
+		echo "$site is UP"
+	else
+		echo "$site is DOWN"
+	fi
+done
+
+
+
+
+用 ping 追蹤路徑中的最大 MTU 數值
+
+我們由第二章的網路基礎裡面談到加大訊框 (frame) 時， 對於網路效能是有幫助的，因為封包打包的次數會減少，加上如果整個傳輸的媒體都能夠接受這個 frame 而不需要重新進行封包的拆解與重組的話，那麼效能當然會更好，那個修改 frame 大小的參數就是 MTU 啦！
+
+好了，現在我們知道網路卡的 MTU 修改可以透過 ifconfig 或者是 ip 等指令來達成，那麼追蹤整個網路傳輸的最大 MTU 時，又該如何查詢？呵呵！最簡單的方法當然是透過 ping 傳送一個大封包， 並且不許中繼的路由器或 switch 將該封包重組，那就能夠處理啦！沒錯！可以這樣的：
+
+# 範例二：找出最大的 MTU 數值
+[root@www ~]# ping -c 2 -s 1000 -M do 192.168.1.254
+PING 192.168.1.254 (192.168.1.254) 1000(1028) bytes of data.
+1008 bytes from 192.168.1.254: icmp_seq=1 ttl=64 time=0.311 ms
+# 如果有回應，那就是可以接受這個封包，如果無回應，那就表示這個 MTU 太大了。
+
+[root@www ~]# ping -c 2 -s 8000 -M do 192.168.1.254
+PING 192.168.1.254 (192.168.1.254) 8000(8028) bytes of data.
+From 192.168.1.100 icmp_seq=1 Frag needed and DF set (mtu = 1500)
+# 這個錯誤訊息是說，本地端的 MTU 才到 1500 而已，你要偵測 8000 的 MTU
+# 根本就是無法達成的！那要如何是好？用前一小節介紹的 ip link 來進行 MTU 設定吧！
+
+不過，你需要知道的是，由於 IP 封包表頭 (不含 options) 就已經佔用了 20 bytes ，再加上 ICMP 的表頭有 8 bytes ，所以當然你在使用 -s size 的時候，那個封包的大小就得要先扣除 (20+8=28) 的大小了。 因此如果要使用 MTU 為 1500 時，就得要下達『 ping -s 1472 -M do xx.yy.zz.ip 』才行啊！
+
+另外，由於本地端的網路卡 MTU 也會影響到偵測，所以如果想要偵測整個傳輸媒體的 MTU 數值， 那麼每個可以調整的主機就得要先使用 ifcofig 或 ip 先將 MTU 調大，然後再去進行偵測， 否則就會出現像上面提供的案例一樣，可能會出現錯誤訊息的！
+
+不過這個 MTU 不要隨便調整啊！除非真的有問題。通常調整 MTU 的時間是在這個時候：
+
+    因為全部的主機群都是在內部的區網，例如叢集架構 (cluster) 的環境下， 由於內部的網路節點都是我們可以控制的，因此可以透過修改 MTU 來增進網路效能；
+    因為作業系統預設的 MTU 與你的網域不符，導致某些網站可以順利連線，某些網站則無法連線。 以 Windows 作業系統作為連線分享的主機時，在 Client 端挺容易發生這個問題；
+
+
+如果是要連上 Internet 的主機，注意不要隨便調整 MTU ，因為我們無法知道 Internet 上面的每部機器能夠支援的 MTU 到多大，因為......不是我們能夠管的到的嘛 ^_^！ 另外，其實每種連線方式都有不同的 MTU 值，常見的各種介面的 MTU 值分別為︰
+
+網路介面		MTU
+Ethernet		1500
+PPPoE			1492
+Dial-up(Modem)	576
+
+
+
+
+
+
+
+
+# ===========================
+#
+# 两部主机之间节点的分析： traceroute
+#
+# ===========================
+
+我們前面談到的指令大多數都是針對主機的網路參數設定所需要的，而 ping 是兩部主機之間的回聲與否判斷， 那麼有沒有指令可以追蹤兩部主機之間通過的各個節點 (node) 通訊狀況的好壞呢？舉例來說，如果我們連線到 yahoo 的速度比平常慢，你覺得是 (1)自己的網路環境有問題？ (2)還是外部的 Internet 有問題？如果是 (1) 的話，我們當然需要檢查自己的網路環境啊，看看是否又有誰中毒了？但如果是 Internet 的問題呢？那只有『等等等』啊！ 判斷是 (1) 還是 (2) 就得要使用 traceroute 這個指令啦！
+
+[root@www ~]# traceroute [選項與參數] IP
+選項與參數：
+-n ：可以不必進行主機的名稱解析，單純用 IP ，速度較快！
+-U ：使用 UDP 的 port 33434 來進行偵測，這是預設的偵測協定；
+-I ：使用 ICMP 的方式來進行偵測；
+-T ：使用 TCP 來進行偵測，一般使用 port 80 測試
+-w ：若對方主機在幾秒鐘內沒有回聲就宣告不治...預設是 5 秒
+-p 埠號：若不想使用 UDP 與 TCP 的預設埠號來偵測，可在此改變埠號。
+-i 裝置：用在比較複雜的環境，如果你的網路介面很多很複雜時，才會用到這個參數；
+         舉例來說，你有兩條 ADSL 可以連接到外部，那你的主機會有兩個 ppp，
+         你可以使用 -i 來選擇是 ppp0 還是 ppp1 啦！
+-g 路由：與 -i 的參數相仿，只是 -g 後面接的是 gateway 的 IP 就是了。
+
+# 範例一：偵測本機到 yahoo 去的各節點連線狀態
+[root@www ~]# traceroute -n tw.yahoo.com
+traceroute to tw.yahoo.com (119.160.246.241), 30 hops max, 40 byte packets
+ 1  192.168.1.254  0.279 ms  0.156 ms  0.169 ms
+ 2  172.20.168.254  0.430 ms  0.513 ms  0.409 ms
+ 3  10.40.1.1  0.996 ms  0.890 ms  1.042 ms
+ 4  203.72.191.85  0.942 ms  0.969 ms  0.951 ms
+ 5  211.20.206.58  1.360 ms  1.379 ms  1.355 ms
+ 6  203.75.72.90  1.123 ms  0.988 ms  1.086 ms
+ 7  220.128.24.22  11.238 ms  11.179 ms  11.128 ms
+ 8  220.128.1.82  12.456 ms  12.327 ms  12.221 ms
+ 9  220.128.3.149  8.062 ms  8.058 ms  7.990 ms
+10  * * *
+11  119.160.240.1  10.688 ms  10.590 ms 119.160.240.3  10.047 ms
+12  * * * <==可能有防火牆裝置等情況發生所致
+
+這個 traceroute 挺有意思的，這個指令會針對欲連接的目的地之所有 node 進行 UDP 的逾時等待， 例如上面的例子當中，由鳥哥的主機連接到 Yahoo 時，他會經過 12 個節點以上，traceroute 會主動的對這 12 個節點做 UDP 的回聲等待，並偵測回覆的時間，每節點偵測三次，最終回傳像上頭顯示的結果。 你可以發現每個節點其實回覆的時間大約在 50 ms 以內，算是還可以的 Internet 環境了。
+
+比較特殊的算是第 10/12 個，會回傳星號的，代表該 node 可能設有某些防護措施，讓我們發送的封包資訊被丟棄所致。 因為我們是直接透過路由器轉遞封包，並沒有進入路由器去取得路由器的使用資源，所以某些路由器僅支援封包轉遞， 並不會接受來自用戶端的各項偵測啦！此時就會出現上述的問題。因為 traceroute 預設使用 UDP 封包，如果你想嘗試使用其他封包， 那麼 -I 或 -T 可以試看看囉！
+
+由於目前 UDP/ICMP 的攻擊層出不窮，因此很多路由器可能就此取消這兩個封包的回應功能。所以我們可以使用 TCP 來偵測呦！ 例如使用同樣的方法，透過等待時間 1 秒，以及 TCP 80 埠口的情況下，可以這樣做：
+
+[root@www ~]# traceroute -w 1 -n -T tw.yahoo.com
+
+
+
+
+
+
+
+
+# ===========================
+#
+# 查看本机与网络的后门： netstat
+#
+# ===========================
+
+如果你覺得你的某個網路服務明明就啟動了，但是就是無法造成連線的話，那麼應該怎麼辦？ 首先你應該要查詢一下自己的網路介面所監聽的埠口 (port) 來看看是否真的有啟動，因為有時候螢幕上面顯示的 [OK] 並不一定是 OK 啊！ ^_^
+
+[root@www ~]# netstat -[rn]       <==與路由有關的參數
+[root@www ~]# netstat -[antulpc]  <==與網路介面有關的參數
+
+選項與參數：
+
+與路由 (route) 有關的參數說明：
+	-r  ：列出路由表(route table)，功能如同 route 這個指令；
+	-n  ：不使用主機名稱與服務名稱，使用 IP 與 port number ，如同 route -n
+
+與網路介面有關的參數：
+	-a  ：列出所有的連線狀態，包括 tcp/udp/unix socket 等；
+	-t  ：僅列出 TCP 封包的連線；
+	-u  ：僅列出 UDP 封包的連線；
+	-l  ：僅列出有在 Listen (監聽) 的服務之網路狀態；
+	-p  ：列出 PID 與 Program 的檔名；
+	-c  ：可以設定幾秒鐘後自動更新一次，例如 -c 5 每五秒更新一次網路狀態的顯示；
+
+# 範例一：列出目前的路由表狀態，且以 IP 及 port number 顯示：
+
+[root@www ~]# netstat -rn
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags   MSS Window  irtt Iface
+192.168.1.0     0.0.0.0         255.255.255.0   U         0 0          0 eth0
+169.254.0.0     0.0.0.0         255.255.0.0     U         0 0          0 eth0
+0.0.0.0         192.168.1.254   0.0.0.0         UG        0 0          0 eth0
+
+# 其實這個參數就跟 route -n 一模一樣，對吧！這不是 netstat 的主要功能啦！
+
+# 範例二：列出目前的所有網路連線狀態，使用 IP 與 port number
+
+[root@www ~]# netstat -an
+Active Internet connections (servers and established)
+Proto Recv-Q Send-Q Local Address     Foreign Address     State
+....(中間省略)....
+tcp        0      0 127.0.0.1:25      0.0.0.0:*           LISTEN
+tcp        0     52 192.168.1.100:22  192.168.1.101:1937  ESTABLISHED 
+tcp        0      0 :::22             :::*                LISTEN
+....(中間省略)....
+Active UNIX domain sockets (servers and established)
+Proto RefCnt Flags    Type    State      I-Node Path
+unix  2      [ ACC ]  STREAM  LISTENING  11075  @/var/run/hald/dbus-uukdg1qMPh
+unix  2      [ ACC ]  STREAM  LISTENING  10952  /var/run/dbus/system_bus_socket
+unix  2      [ ACC ]  STREAM  LISTENING  11032  /var/run/acpid.socket
+....(底下省略)....
+
+netstat 的輸出主要分為兩大部分，分別是 TCP/IP 的網路介面部分，以及傳統的 Unix socket 部分。 還記得我們在基礎篇裡面曾經談到檔案的類型嗎？那個 socket 與 FIFO 檔案還記得吧？ 那就是在 Unix 介面用來做為程式資料交流的介面了，也就是上頭表格內看到的 Active Unix domain sockets 的內容囉～
+
+通常鳥哥都是建議加上『 -n 』這個參數的，因為可以避過主機名稱與服務名稱的反查，直接以 IP 及埠口號碼 (port number) 來顯示，顯示的速度上會快很多！至於在輸出的訊息當中， 我們先來談一談關於網路連線狀態的輸出部分，他主要是分為底下幾個大項：
+
+    Proto：該連線的封包協定，主要為 TCP/UDP 等封包；
+    Recv-Q：非由使用者程式連接所複製而來的總 bytes 數；
+    Send-Q：由遠端主機所傳送而來，但不具有 ACK 標誌的總 bytes 數， 意指主動連線 SYN 或其他標誌的封包所佔的 bytes 數；
+    Local Address：本地端的位址，可以是 IP (-n 參數存在時)， 也可以是完整的主機名稱。使用的格是就是『 IP:port 』只是 IP 的格式有 IPv4 及 IPv6 的差異。 如上所示，在 port 22 的介面中，使用的 :::22 就是針對 IPv6 的顯示，事實上他就相同於 0.0.0.0:22 的意思。 至於 port 25 僅針對 lo 介面開放，意指 Internet 基本上是無法連接到我本機的 25 埠口啦！
+    Foreign Address：遠端的主機 IP 與 port number
+    stat：狀態列，主要的狀態含有：
+        ESTABLISED：已建立連線的狀態；
+        SYN_SENT：發出主動連線 (SYN 標誌) 的連線封包；
+        SYN_RECV：接收到一個要求連線的主動連線封包；
+        FIN_WAIT1：該插槽服務(socket)已中斷，該連線正在斷線當中；
+        FIN_WAIT2：該連線已掛斷，但正在等待對方主機回應斷線確認的封包；
+        TIME_WAIT：該連線已掛斷，但 socket 還在網路上等待結束；
+        LISTEN：通常用在服務的監聽 port ！可使用『 -l 』參數查閱。
+
+基本上，我們常常談到的 netstat 的功能，就是在觀察網路的連線狀態了，而網路連線狀態中， 又以觀察『我目前開了多少的 port 在等待用戶端的連線』以及 『目前我的網路連線狀態中，有多少連線已建立或產生問題』最常見。 那你如何瞭解與觀察呢？通常鳥哥是這樣處理的：
+
+# 範例三：秀出目前已經啟動的網路服務
+
+[root@www ~]# netstat -tulnp
+Active Internet connections (only servers)
+Proto Recv-Q Send-Q Local Address  Foreign Address   State   PID/Program name
+tcp        0      0 0.0.0.0:34796  0.0.0.0:*         LISTEN 987/rpc.statd
+tcp        0      0 0.0.0.0:111    0.0.0.0:*         LISTEN 969/rpcbind
+tcp        0      0 127.0.0.1:25   0.0.0.0:*         LISTEN 1231/master
+tcp        0      0 :::22          :::*              LISTEN 1155/sshd
+udp        0      0 0.0.0.0:111    0.0.0.0:*                969/rpcbind
+....(底下省略)....
+# 上面最重要的其實是那個 -l 的參數，因為可以僅列出有在 Listen 的 port
+
+你可以發現很多的網路服務其實僅針對本機的 lo 開放而已，網際網路是連接不到該埠口與服務的。 而由上述的資料我們也可以看到，啟動 port 111 的，其實就是 rpcbind 那隻程式，那如果想要關閉這個埠口， 你可以使用 kill 刪除 PID 969，也可以使用 killall 刪除 rpcbind 這個程序即可。如此一來， 很輕鬆的你就能知道哪個程式啟動了哪些埠口囉！
+
+# 範例四：觀察本機上頭所有的網路連線狀態
+
+[root@www ~]# netstat -atunp
+Active Internet connections (servers and established)
+Proto Recv-Q Send-Q Local Address     Foreign Address     State       PID/Program
+tcp        0      0 0.0.0.0:111       0.0.0.0:*           LISTEN      969/rpcbind
+tcp        0      0 0.0.0.0:22        0.0.0.0:*           LISTEN      1155/sshd
+tcp        0      0 127.0.0.1:25      0.0.0.0:*           LISTEN      1231/master
+tcp        0     52 192.168.1.100:22  192.168.1.101:1937  ESTABLISHED 4716/0
+....(底下省略)....
+
+看到上頭的最后一行吧？那代表目前已經建立連線的一條網路連線，他是由遠端主機 192.168.1.101 啟動一個大於 1024 的埠口向本地端主機 192.168.1.100 的 port 22 進行的一條連線， 你必須要想起來的是：『Client 端是隨機取一個大於 1024 以上的 port 進行連線』，此外『只有 root 可以啟動小於 1024 以下的 port 』，那就看的懂上頭那條連線囉！如果這條連線你想要砍掉他的話， 看到最右邊的 4716 了沒？ kill 會用吧！ ^_^
+
+至於傳統的 Unix socket 的資料，記得使用 man netstat 查閱一下吧！ 這個 Unix socket 通常是用在一些僅在本機上運作的程式所開啟的插槽介面檔， 例如 X Window 不都是在本機上運作而已嗎？那何必啟動網路的 port 呢？當然可以使用 Unix socket 囉，另外，例如 Postfix 這一類的網路伺服器，由於很多動作都是在本機上頭來完成的， 所以以會佔用很多的 Unix socket 喔！
+
+例題： 請說明服務名稱與 port number 的對應在 Linux 當中，是用那個檔案來設定對應的？
+  答： /etc/services 
+
+
+
+
+
+
+
+
+
+# ===========================
+#
+# 查看主机名：host
+#
+# ===========================
+
+這個指令可以用來查出某個主機名稱的 IP 喔！舉例來說，我們想要知道 tw.yahoo.com 的 IP 時，可以這樣做：
+
+[root@www ~]# host [-a] hostname [server]
+
+選項與參數：
+	-a ：列出該主機詳細的各項主機名稱設定資料
+	[server] ：可以使用非為 /etc/resolv.conf 的 DNS 伺服器 IP 來查詢。
+
+# 範例一：列出 tw.yahoo.com 的 IP 
+
+[root@www ~]# host tw.yahoo.com
+tw.yahoo.com is an alias for tw-cidr.fyap.b.yahoo.com.
+tw-cidr.fyap.b.yahoo.com is an alias for tw-tpe-fo.fyap.b.yahoo.com.
+tw-tpe-fo.fyap.b.yahoo.com has address 119.160.246.241
+
+瞧！IP 是 119.160.246.241 啊！很簡單就可以查詢到 IP 了！那麼這個 IP 是向誰查詢的呢？其實就是寫在 /etc/resolv.conf 那個檔案內的 DNS 伺服器 IP 啦！如果不想要使用該檔案內的主機來查詢，也可以這樣做：
+
+[root@www ~]# host tw.yahoo.com 168.95.1.1
+Using domain server:
+Name: 168.95.1.1
+Address: 168.95.1.1#53
+Aliases:
+
+tw.yahoo.com is an alias for tw-cidr.fyap.b.yahoo.com.
+tw-cidr.fyap.b.yahoo.com is an alias for tw-tpe-fo.fyap.b.yahoo.com.
+tw-tpe-fo.fyap.b.yahoo.com has address 119.160.246.241
+
+會告訴我們所使用來查詢的主機是哪一部吶！這樣就夠清楚了吧！不過，再怎麼清楚也比不過 dig 這個指令的，所以這個指令僅是參考參考啦！
+
+
+
+
+
+
+
+
+# ===========================
+#
+# 查看主机名：nslookup
+#
+# ===========================
+
+這玩意兒的用途與 host 基本上是一樣的，就是用來作為 IP 與主機名稱對應的檢查， 同樣是使用 /etc/resolv.conf 這個檔案來作為 DNS 伺服器的來源選擇。
+
+[root@www ~]# nslookup [-query=[type]] [hostname|IP]
+
+選項與參數：
+	-query=type：查詢的類型，除了傳統的 IP 與主機名稱對應外，DNS 還有很多資訊，
+				 所以我們可以查詢很多不同的資訊，包括 mx, cname 等等，
+				 例如： -query=mx 的查詢方法！
+
+# 範例一：找出 www.google.com 的 IP
+
+[root@www ~]# nslookup www.google.com
+Server:         168.95.1.1
+Address:        168.95.1.1#53
+
+Non-authoritative answer:
+www.google.com  canonical name = www.l.google.com.
+Name:   www.l.google.com
+Address: 74.125.71.106
+....(底下省略)....
+
+# 範例二：找出 168.95.1.1 的主機名稱
+
+[root@www ~]# nslookup 168.95.1.1
+Server:         168.95.1.1
+Address:        168.95.1.1#53
+
+1.1.95.168.in-addr.arpa name = dns.hinet.net.
+
+如何，看起來與 host 差不多吧！不過，這個 nslookup 還可以由 IP 找出主機名稱喔！ 例如那個範例二，他的主機名稱是： dns.hinet.net 哩！目前大家都建議使用 dig 這個指令來取代 nslookup ，我們會在第十九章 DNS 伺服器那時再來好好談一談吧！
+
+
+
+
+
+
+
+
+# ===========================
+#
+# 抓包工具：tcpdump
+#
+# ===========================
+
+說實在的，對於 tcpdump 這個軟體來說，你甚至可以說這個軟體其實就是個駭客軟體， 因為他不但可以分析封包的流向，連封包的內容也可以進行『監聽』， 如果你使用的傳輸資料是明碼的話，不得了，在 router 或 hub 上面就可能被人家監聽走了！ 我們在第二章談到的 CSMA/CD 流程中，不是說過有所謂的『監聽軟體』嗎？這個 tcpdump 就是啦！ 很可怕吶！所以，我們也要來瞭解一下這個軟體啊！(註：這個 tcpdump 必須使用 root 的身份執行)
+
+[root@www ~]# tcpdump [-AennqX] [-i 介面] [-w 儲存檔名] [-c 次數] \
+                      [-r 檔案] [所欲擷取的封包資料格式]
+
+選項與參數：
+	-A ：封包的內容以 ASCII 顯示，通常用來捉取 WWW 的網頁封包資料。
+	-e ：使用資料連接層 (OSI 第二層) 的 MAC 封包資料來顯示；
+	-nn：直接以 IP 及 port number 顯示，而非主機名與服務名稱
+	-q ：僅列出較為簡短的封包資訊，每一行的內容比較精簡
+	-X ：可以列出十六進位 (hex) 以及 ASCII 的封包內容，對於監聽封包內容很有用
+	-i ：後面接要『監聽』的網路介面，例如 eth0, lo, ppp0 等等的介面；
+	-w ：如果你要將監聽所得的封包資料儲存下來，用這個參數就對了！後面接檔名
+	-r ：從後面接的檔案將封包資料讀出來。那個『檔案』是已經存在的檔案，
+		 並且這個『檔案』是由 -w 所製作出來的。
+	-c ：監聽的封包數，如果沒有這個參數， tcpdump 會持續不斷的監聽，
+		 直到使用者輸入 [ctrl]-c 為止。
+
+所欲擷取的封包資料格式：我們可以專門針對某些通訊協定或者是 IP 來源進行封包擷取，
+	 那就可以簡化輸出的結果，並取得最有用的資訊。常見的表示方法有：
+	 'host foo', 'host 127.0.0.1' ：針對單部主機來進行封包擷取
+	 'net 192.168' ：針對某個網域來進行封包的擷取；
+	 'src host 127.0.0.1' 'dst net 192.168'：同時加上來源(src)或目標(dst)限制
+	 'tcp port 21'：還可以針對通訊協定偵測，如 tcp, udp, arp, ether 等
+	 還可以利用 and 與 or 來進行封包資料的整合顯示呢！
+
+# 範例一：以 IP 與 port number 捉下 eth0 這個網路卡上的封包，持續 3 秒
+
+[root@www ~]# tcpdump -i eth0 -nn
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
+17:01:47.360523 IP 192.168.1.101.1937 > 192.168.1.100.22: Flags [.], ack 196, win 65219, 
+17:01:47.362139 IP 192.168.1.100.22 > 192.168.1.101.1937: Flags [P.], seq 196:472, ack 1,
+17:01:47.363201 IP 192.168.1.100.22 > 192.168.1.101.1937: Flags [P.], seq 472:636, ack 1,
+17:01:47.363328 IP 192.168.1.101.1937 > 192.168.1.100.22: Flags [.], ack 636, win 64779,
+<==按下 [ctrl]-c 之後結束
+6680 packets captured              <==捉下來的封包數量
+14250 packets received by filter   <==由過濾所得的總封包數量
+7512 packets dropped by kernel     <==被核心所丟棄的封包
+
+如果你是第一次看 tcpdump 的 man page 時，肯定一個頭兩個大，因為 tcpdump 幾乎都是分析封包的表頭資料，使用者如果沒有簡易的網路封包基礎，要看懂粉難吶！ 所以，至少你得要回到網路基礎裡面去將 TCP 封包的表頭資料理解理解才好啊！ ^_^！至於那個範例一所產生的輸出範例中，我們可以約略區分為數個欄位， 我們以範例一當中第二行來說明一下：
+
+    17:01:47.362139：這個是此封包被擷取的時間，『時:分:秒』的單位；
+    IP：透過的通訊協定是 IP ；
+    192.168.1.100.22 > ：傳送端是 192.168.1.100 這個 IP，而傳送的 port number 為 22，你必須要瞭解的是，那個大於 (>) 的符號指的是封包的傳輸方向喔！
+    192.168.1.101.1937：接收端的 IP 是 192.168.1.101， 且該主機開啟 port 1937 來接收；
+    [P.], seq 196:472：這個封包帶有 PUSH 的資料傳輸標誌， 且傳輸的資料為整體資料的 196~472 byte；
+    ack 1：ACK 的相關資料。
+
+最簡單的說法，就是該封包是由 192.168.1.100 傳到 192.168.1.101，透過的 port 是由 22 到 1937 ， 使用的是 PUSH 的旗標，而不是 SYN 之類的主動連線標誌。呵呵！不容易看的懂吧！所以說，上頭才講請務必到 TCP 表頭資料的部分去瞧一瞧的啊！
+
+再來，一個網路狀態很忙的主機上面，你想要取得某部主機對你連線的封包資料而已時， 使用 tcpdump 配合管線命令與正規表示法也可以，不過，畢竟不好捉取！ 我們可以透過 tcpdump 的表示法功能，就能夠輕易的將所需要的資料獨立的取出來。 在上面的範例一當中，我們僅針對 eth0 做監聽，所以整個 eth0 介面上面的資料都會被顯示到螢幕上， 不好分析啊！那麼我們可以簡化嗎？例如只取出 port 21 的連線封包，可以這樣做：
+
+[root@www ~]# tcpdump -i eth0 -nn port 21
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on eth0, link-type EN10MB (Ethernet), capture size 96 bytes
+01:54:37.96 IP 192.168.1.101.1240 > 192.168.1.100.21: . ack 1 win 65535
+01:54:37.96 IP 192.168.1.100.21 > 192.168.1.101.1240: P 1:21(20) ack 1 win 5840
+01:54:38.12 IP 192.168.1.101.1240 > 192.168.1.100.21: . ack 21 win 65515
+01:54:42.79 IP 192.168.1.101.1240 > 192.168.1.100.21: P 1:17(16) ack 21 win 65515
+01:54:42.79 IP 192.168.1.100.21 > 192.168.1.101.1240: . ack 17 win 5840
+01:54:42.79 IP 192.168.1.100.21 > 192.168.1.101.1240: P 21:55(34) ack 17 win 5840
+
+瞧！這樣就僅提出 port 21 的資訊而已，且仔細看的話，你會發現封包的傳遞都是雙向的， client 端發出『要求』而 server 端則予以『回應』，所以，當然是有去有回啊！ 而我們也就可以經過這個封包的流向來瞭解到封包運作的過程。舉例來說：
+
+    我們先在一個終端機視窗輸入『 tcpdump -i lo -nn 』 的監聽，
+    再另開一個終端機視窗來對本機 (127.0.0.1) 登入『ssh localhost』
+
+那麼輸出的結果會是如何？
+
+[root@www ~]# tcpdump -i lo -nn
+ 1 tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+ 2 listening on lo, link-type EN10MB (Ethernet), capture size 96 bytes
+ 3 11:02:54.253777 IP 127.0.0.1.32936 > 127.0.0.1.22: S 933696132:933696132(0) 
+   win 32767 <mss 16396,sackOK,timestamp 236681316 0,nop,wscale 2>
+ 4 11:02:54.253831 IP 127.0.0.1.22 > 127.0.0.1.32936: S 920046702:920046702(0) 
+   ack 933696133 win 32767 <mss 16396,sackOK,timestamp 236681316 236681316,nop,
+   wscale 2>
+ 5 11:02:54.253871 IP 127.0.0.1.32936 > 127.0.0.1.22: . ack 1 win 8192 <nop,
+   nop,timestamp 236681316 236681316>
+ 6 11:02:54.272124 IP 127.0.0.1.22 > 127.0.0.1.32936: P 1:23(22) ack 1 win 8192 
+   <nop,nop,timestamp 236681334 236681316>
+ 7 11:02:54.272375 IP 127.0.0.1.32936 > 127.0.0.1.22: . ack 23 win 8192 <nop,
+   nop,timestamp 236681334 236681334>
+
+上表顯示的頭兩行是 tcpdump 的基本說明，然後：
+
+    第 3 行顯示的是『來自 client 端，帶有 SYN 主動連線的封包』，
+    第 4 行顯示的是『來自 server 端，除了回應 client 端之外(ACK)，還帶有 SYN 主動連線的標誌；
+    第 5 行則顯示 client 端回應 server 確定連線建立 (ACK)
+    第 6 行以後則開始進入資料傳輸的步驟。
+
+從第 3-5 行的流程來看，熟不熟悉啊？沒錯！那就是三向交握的基礎流程啦！夠有趣吧！ 不過 tcpdump 之所以被稱為駭客軟體之一可不止上頭介紹的功能吶！ 上面介紹的功能可以用來作為我們主機的封包連線與傳輸的流程分析， 這將有助於我們瞭解到封包的運作，同時瞭解到主機的防火牆設定規則是否有需要修訂的地方。
+
+更神奇的使用要來啦！如果我們使用 tcpdump 在 router 上面監聽『明碼』的傳輸資料時， 例如 FTP 傳輸協定，你覺得會發生什麼問題呢？ 我們先在主機端下達『 tcpdump -i lo port 21 -nn -X 』然後再以 ftp 登入本機，並輸入帳號與密碼， 結果你就可以發現如下的狀況：
+
+[root@www ~]# tcpdump -i lo -nn -X 'port 21'
+    0x0000:  4500 0048 2a28 4000 4006 1286 7f00 0001  E..H*(@.@.......
+    0x0010:  7f00 0001 0015 80ab 8355 2149 835c d825  .........U!I.\.%
+    0x0020:  8018 2000 fe3c 0000 0101 080a 0e2e 0b67  .....<.........g
+    0x0030:  0e2e 0b61 3232 3020 2876 7346 5450 6420  ...a220.(vsFTPd.
+    0x0040:  322e 302e 3129 0d0a                      2.0.1)..
+
+    0x0000:  4510 0041 d34b 4000 4006 6959 7f00 0001  E..A.K@.@.iY....
+    0x0010:  7f00 0001 80ab 0015 835c d825 8355 215d  .........\.%.U!]
+    0x0020:  8018 2000 fe35 0000 0101 080a 0e2e 1b37  .....5.........7
+    0x0030:  0e2e 0b67 5553 4552 2064 6d74 7361 690d  ...gUSER.dmtsai.
+    0x0040:  0a                                       .
+
+    0x0000:  4510 004a d34f 4000 4006 694c 7f00 0001  E..J.O@.@.iL....
+    0x0010:  7f00 0001 80ab 0015 835c d832 8355 217f  .........\.2.U!.
+    0x0020:  8018 2000 fe3e 0000 0101 080a 0e2e 3227  .....>........2'
+    0x0030:  0e2e 1b38 5041 5353 206d 7970 6173 7377  ...8PASS.mypassw
+    0x0040:  6f72 6469 7379 6f75 0d0a                 ordisyou..
+
+上面的輸出結果已經被簡化過了，你必須要自行在你的輸出結果當中搜尋相關的字串才行。 從上面輸出結果的特殊字體中，我們可以發現『該 FTP 軟體使用的是 vsftpd ，並且使用者輸入 dmtsai 這個帳號名稱，且密碼是 mypasswordisyou』 嘿嘿！你說可不可怕啊！如果使用的是明碼的方式來傳輸你的網路資料？ 所以我們才常常在講啊，網路是很不安全滴！
+
+另外你得瞭解，為了讓網路介面可以讓 tcpdump 監聽，所以執行 tcpdump 時網路介面會啟動在 『錯亂模式 (promiscuous)』，所以你會在 /var/log/messages 裡面看到很多的警告訊息， 通知你說你的網路卡被設定成為錯亂模式！別擔心，那是正常的。至於更多的應用，請參考 man tcpdump 囉！
+
+例題： 如何使用 tcpdump 監聽 
+(1)來自 eth0 介面卡且 
+(2)通訊協定為 port 22 ，
+(3)封包來源為 192.168.1.101 的封包資料？
+
+答：
+
+tcpdump -i eth0 -nn 'port 22 and src host 192.168.1.101'
+
+
+
+
+
+
+
+
+# ===========================
+#
+# 启动 TCP/UDP 端口连接： nc
+#
+# ===========================
 
