@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+
+<project name="myproject" default="firstExample">
+
+	<!-- reference properties file -->
+	<property file="build.properties" />
+
+	<property name="src" value="src" />
+
+	<target name="init">
+		<!-- get current time -->
+		<tstamp/>
+	</target>
+
+	<target name="firstExample" depends="init">
+		<echo message="author name:${author.name}" />
+		<echo message="author nick:${author.nickname}" />
+		<echo message="currentTime:${DSTAMP}" />
+	</target>
+
+</project>

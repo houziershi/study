@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+
+<!--
+	 ant -f build.03.xml
+	 ant -f build.03.xml checkFinished
+-->
+<project name="myproject" default="firstExample">
+
+	<target name="showJava" if="ant.java.version">
+		<echo message="java version: ${ant.java.version}" />
+	</target>
+
+	<!--
+	<property name="isFinished" value="finished" />
+	-->
+
+	<target name="checkFinished" if="isFinished">
+		<echo message="is finished: ${isFinished}" />
+	</target>
+
+	<target name="firstExample" depends="showJava, checkFinished">
+		<echo message="always show this" />
+	</target>
+</project>

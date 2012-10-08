@@ -1,0 +1,87 @@
+\chapter{核心类型}
+
+\section{断言类型：Asseritions Type}
+
+	断言类型指定哪些类需要让ant工具执行java断言。enableSystemAssertions属性设定是否允许系统断言，默认为unspecified。
+
+	断言类型内还可以定义enable类型与disable类型，通过这两个类型的class属性与package属性来设置指定的类或是包是否可以执行断言。
+	
+	允许所有的用户代码执行断言：
+
+	\lstinputlisting[language=XML,firstline=5,lastline=8]{src/03/build.01.xml}
+
+	只允许Test这个类执行断言：
+
+	\lstinputlisting[language=XML,firstline=9,lastline=11]{src/03/build.01.xml}
+
+	允许一个包下所有的类都执行断言：
+
+	\lstinputlisting[language=XML,firstline=13,lastline=15]{src/03/build.01.xml}
+
+	更复杂的定义：
+
+	\lstinputlisting[language=XML,firstline=17,lastline=21]{src/03/build.01.xml}
+
+	引用一个已经存在的定义：
+
+	\lstinputlisting[language=XML,firstline=23,lastline=27]{src/03/build.01.xml}
+
+\section{匹配模式：PatternSet}
+
+	\subsection{包含与排除}
+
+		匹配格式通过以下四个属性指定包含与排除：
+
+		include属性：可以指定多个模式用逗号或空格分隔，相当于一个列表。
+
+		includesfile属性：指定具体包含的文件。可以引用在properties文件中指定的内容。
+
+		exclude属性：和上面的相反。
+
+		excludesfile属性：和上面的相反。
+
+	\subsection{过滤的模式}
+
+		以上四个属性都有三个属性来匹配指定的内容：
+
+		name属性：文件名、路径或格式。
+
+		if属性：指定的属性有定义则生效。
+
+		unless属性：指定的属性没有定义则生效。
+
+
+	\subsection{例子}
+
+		类名中不包含Test的类：
+
+		\lstinputlisting[language=XML,firstline=5,lastline=8]{src/03/build.02.xml}
+
+		引用已经定义的模式：
+
+		\lstinputlisting[language=XML,firstline=10,lastline=10]{src/03/build.02.xml}
+
+		可以包含多个定义：
+
+		\lstinputlisting[language=XML,firstline=12,lastline=16]{src/03/build.02.xml}
+
+		指定文件名中包含了"some-file"的文件：
+
+		\lstinputlisting[language=XML,firstline=18,lastline=20]{src/03/build.02.xml}
+
+		也可以简写成下面的格式：
+
+		\lstinputlisting[language=XML,firstline=22,lastline=22]{src/03/build.02.xml}
+
+		配合if条件的形式：
+
+		\lstinputlisting[language=XML,firstline=24,lastline=26]{src/03/build.02.xml}
+
+\section{匹配目录：DirSet}
+
+	DirSet类似于PatternSet，用于匹配目录。DirSet可以引用已经存在的PatternSet，也可以直接使用include、includesfile、exclude、excludesfile属性。
+
+	另外，DirSet还有casesensitive属性来设置是否大小写敏感；followsymlinks属性来设置采用操作系统差异（如linux与windows的路径符号）等。
+
+	\subsection{包含与排除}
+

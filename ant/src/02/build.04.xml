@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+
+<!--
+	ant -f build.04.xml checkUnFinished
+-->
+<project name="myproject" default="firstExample">
+	<!--
+	<property name="isFinished" value="finished" />
+	-->
+
+	<target name="checkUnFinished" unless="isFinished">
+		<echo message="show this if not set ifFinished" />
+	</target>
+
+	<target name="firstExample" depends="checkUnFinished">
+		<echo message="always show this" />
+	</target>
+
+</project>

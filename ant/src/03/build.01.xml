@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+
+<project name="myproject" default="firstExample">
+
+	<assertions>
+		<enable />
+	</assertions>
+
+	<assertions>
+		<enable class="Test"/>
+	</assertions>
+
+	<assertions>
+		<enable package="org.apache"/>
+	</assertions>
+
+	<assertions>
+		<enable  package="org.apache"/>
+		<disable package="org.apache.tools.ant"/>
+		<enable    class="org.apache.tools.ant.Main"/>
+	</assertions>
+
+	<assertions id="project.assertions">
+		<disable package="org.apache.test"/>
+	</assertions>
+
+	<assertions refid="project.assertions" />
+
+</project>

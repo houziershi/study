@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+
+<project name="myproject" default="D">
+
+	<target name="A">
+		<echo message="this is A" />
+	</target>
+
+	<target name="B" depends="A">
+		<echo message="this is B" />
+	</target>
+
+	<target name="C" depends="B">
+		<echo message="this is C" />
+	</target>
+
+	<target name="D" depends="A,B,C">
+		<echo message="this is D" />
+	</target>
+
+</project>

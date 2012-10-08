@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+
+<project name="myproject" default="firstExample">
+
+	<target name="firstExample">
+		<echo message="This is my first targe" />
+		<echo message="          os: ${os.name}" />
+		<echo message="     baseidr: ${basedir}" />
+		<echo message="  ant fileis: ${ant.file}" />
+		<echo message=" ant version: ${ant.version}" />
+		<echo message="project name: ${ant.project.name}" />
+		<echo message="java version: ${ant.java.version}" />
+	</target>
+
+</project>

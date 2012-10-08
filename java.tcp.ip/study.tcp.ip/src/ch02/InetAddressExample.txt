@@ -1,0 +1,97 @@
+% java InetAddressExample \
+	www.mkp.com blah.blah \
+	129.35.69.7
+
+Interface lo:
+Address (v4): 127.0.0.1
+Address (v6): 0:0:0:0:0:0:0:1
+Address (v6): fe80:0:0:0:0:0:0:1%1
+Interface eth0:
+Address (v4): 192.168.159.1
+Address (v6): fe80:0:0:0:250:56ff:fec0:8%4
+www.mkp.com:
+www.mkp.com/129.35.69.7
+blah.blah:
+Unable to find address for blah.blah
+129.35.69.7:
+129.35.69.7/129.35.69.7
+
+
+
+
+static InetAddress [] getAllByName(String host);
+static InetAddress getByName(String host);
+static InetAddress getLocalHost();
+/**
+ * return byte array as ip address
+ * size if 4 byte in ipv4
+ * or size is 16 in ipv6
+ */
+byte[] getAddress();
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * return value format like:
+ *   hostname.example.com/192.0.2.127
+ *   or
+ *   never.example.net/2000::620:1a30:95b2
+ */
+String toString();
+String getHostAddress();
+/**
+ * return host name
+ */
+String getHostName();
+/**
+ * return host name ()
+ */
+String getCanonicalHostName();
+
+
+
+
+boolean isAnyLocalAddress();
+boolean isLinkLocalAddress();
+boolean isLoopBackAddress();
+// 是否为多播地址
+boolean isMulticastAddress();
+// 测试多播地址范围：global
+boolean isMCGlobal();
+// 测试多播地址范围：link local
+boolean isMCLinkLocal();
+// 测试多播地址范围：node local
+boolean isMCNodeLocal();
+// 测试多播地址范围：org local
+boolean isMCOrgLocal();
+// 测试多播地址范围：site local
+boolean isMCSiteLocal();
+boolean isReachable(int timeout);
+boolean isReachable(NetworkInterface netif, int ttl, int timeout)
+
+
+
+
+
+
+
+
+
+
+
+
+
+static Enumeration<NetworkInterface> getNetworkInterfaces();
+static NetworkInterface getByInetAddress(InetAddress addr);
+static NetworkInterface getByName(InetAddress addr);
+static Enumeration<InetAddress> getInetAddresses();
+String getName();
+String getDisplayName();

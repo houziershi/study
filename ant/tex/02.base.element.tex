@@ -1,0 +1,55 @@
+
+\chapter{起步}
+
+\section{project元素}
+
+	一个ant文件中一定要有一个project元素。name属性定义工作名字；default属性代表默认启动target；description属性定义说明文本。
+
+	\lstinputlisting[language=XML]{src/02/build.01.xml}
+
+\section{target元素}
+
+	target元素一定要有name属性。
+
+	\subsection{depends属性}
+
+		表示当前target执行依赖于其他的target成功执行。可以有多个depends之间用“,”分隔。
+
+		\lstinputlisting[language=XML]{src/02/build.01.xml}
+
+	\subsection{if属性}
+
+		验证执行前必须设定的属性。例如设定JDK：
+
+		\lstinputlisting[language=XML]{src/02/build.03.xml}
+
+	\subsection{unless属性}
+
+		没有设置才执行
+
+		\lstinputlisting[language=XML]{src/02/build.04.xml}
+
+\section{property元素}
+
+	property可以看作为参数或是变量的定义。可以在构建文件中通过property元素建立，也可以在构建文件外建立一个build.property文件来存放。
+
+	\lstinputlisting[language=XML]{src/02/build.05.xml}
+
+\section{task元素}
+	
+	task元素是一系列完成指定功能的脚本和程序。比如自带的编译用的javac、打包用的jar、建立目录的mkdir等。用户也可以编写自己的task。
+
+
+\section{命令行使用ant}
+
+	\subsection{指定文件}
+
+		\verb|-buildfile|或\verb|-file|或\verb|-f|都可以。
+
+	\subsection{显示任务描述}
+
+		\verb|-projecthelp|。
+
+	\subsection{指定变量的值}
+
+		\verb|-D<property>=<value>|

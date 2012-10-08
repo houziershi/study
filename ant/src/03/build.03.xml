@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+
+<project name="myproject" default="firstExample">
+
+	<patternset id="non.test.sources">
+		<include name="**/*.java" />
+		<exclude name="**/*Test.java" />
+	</patternset>
+
+	<patternset refid="non.test.sources">
+
+	<patternset id="sources">
+		<include name="std/**/*.java" />
+		<include name="prof/**/*.java" if="professional" />
+		<exclude name="**/*Test.java" />
+	</patternset>
+
+	<patternset>
+		<includesfile name="some-file" />
+	</patternset>
+
+	<patternset includesfile="some-file" />
+
+	<patternset>
+		<includesfile name="some-file" if="isInclue" />
+	</patternset>
+
+</project>
