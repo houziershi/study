@@ -1,0 +1,2 @@
+This is the test sample.
+The message will be replaced: HELLO

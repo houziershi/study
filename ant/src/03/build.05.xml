@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+
+<project name="myproject" default="firstExample">
+
+	<property name="lib1" value="lib1path" />
+	<property name="lib2" value="lib2path" />
+
+	<propertyset id="projectset1">
+		<projectref name="lib1" />
+		<projectref name="lib2" />
+	</properties>
+
+	<propertyset id="properties-starting-with-foo">
+		<propertyref prefix="foo" />
+	</propertyset>
+
+	<propertyset id="properties-starting-with-bar">
+		<propertyref prefix="bar" />
+	</propertyset>
+
+	<propertyset id="my-set">
+		<propertyset refid="properties-starting-with-foo" />
+		<propertyset refid="properties-starting-with-bar" />
+	</properties>
+
+</project>

@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+
+<project name="myproject" default="firstExample">
+
+	<target name="ex01" >
+		<tstamp>
+			<format property="now" pattern="yyyy/MM/dd HH:mm:ss" />
+		</tstamp>
+		<copy todir="build" filtering="true">
+			<fileset dir="src">
+				<include name="**/*.java" />
+			</fileset>
+			<!-- find @COPYRIGHT@ and @BUILD_DATE@ -->
+			<filterset>
+				<filter token="BUILD_DATE" value="${now}" />
+				<filter token="COPYRIGHT" value="Jade Shan" />
+			</filterset>
+		</copy>
+	</target>
+
+	<!-- get current time -->
+	<tstamp>
+		<format property="now" pattern="yyyy/MM/dd HH:mm:ss" />
+	</tstamp>
+
+	<!-- find @COPYRIGHT@ and @BUILD_DATE@ -->
+	<filterset id="date.copyright.filterset">
+		<filter token="BUILD_DATE" value="${now}" />
+		<filter token="COPYRIGHT" value="Jade Shan" />
+	</filterset>
+
+	<target name="firstExample" >
+		<copy todir="build" filtering="true">
+			<fileset dir="src">
+				<include name="**/*.java" />
+			</fileset>
+			<filterset refid="date.copyright.filterset" />
+		</copy>
+	</target>
+
+	<filterset id="prop.message">
+		<filtersfile file="abc.properties" />
+	</filterset>
+
+	<target name="filterProp" >
+		<copy todir="build" filtering="true">
+			<fileset dir="src">
+				<include name="src.txt" />
+			</fileset>
+			<filterset refid="prop.message" />
+		</copy>
+	</target>
+
+</project>

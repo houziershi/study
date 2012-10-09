@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+
+<project name="myproject" default="firstExample">
+
+	<zip desfile="${dist}/manual.zip" >
+		<zipfileset dir="htdocs/manual" 
+			prefix="docs/user-guide" />
+		<zipfileset dir="." includes="ChangeLog27.txt" 
+			fullpath="docs/ChangeLog.txt" />
+		<zipfileset prefix="docs/examples" includes="**/*.html"
+			src="example.zip" />
+	</zip>
+
+</project>

@@ -1,0 +1,97 @@
+<?xml version="1.0"?>
+
+<project name="myproject" default="firstExample">
+
+	<!--
+		 A.java                        -> A.java
+		 foo/bar/B.java                -> B.java
+		 C.properties                  -> C.properties
+		 Classes/dir/dri2/A.properties -> A.properties
+	-->
+	<mapper type="identity" />
+	<identitymapper />
+
+
+	<!--
+		 A.java                        -> archive.tar
+		 foo/bar/B.java                -> archive.tar
+		 C.properties                  -> archive.tar
+		 Classes/dir/dri2/A.properties -> archive.tar
+	-->
+	<mapper type="flatten" />
+	<flattenmapper />
+
+
+	<!--
+		 A.java                        -> A.java.bak
+		 foo/bar/B.java                -> foo/bar/B.java.bak
+		 C.properties                  -> Ignored
+		 Classes/dir/dri2/A.properties -> Ignored
+	-->
+	<mapper type="glob" from="*.java" to="*.java.bak"/>
+	<globmapper         from="*.java" to="*.java.bak" />
+
+
+	<!--
+		 A.java                        -> archive.tar
+		 foo/bar/B.java                -> archive.tar
+		 C.properties                  -> archive.tar
+		 Classes/dir/dri2/A.properties -> archive.tar
+	-->
+	<mapper type="merge" to="archive.tar" />
+	<mergemapper         to="archive.tar" />
+
+
+	<!--
+		 A.java                        -> A.java.bak
+		 foo/bar/B.java                -> foo/bar/B.java.bak
+		 C.properties                  -> Ignored
+		 Classes/dir/dri2/A.properties -> Ignored
+	-->
+	<mapper type="regexp" from="^(.*)\.java$$" to="\1.java.bak" />
+	<regexpmapper         from="^(.*)\.java$$" to="\1.java.bak" />
+
+
+	<!--
+		 org/apache/tools/ant/util/PackageMapperTest.java 
+		 	-> Test-org.apache.tools.ant.util.PackageMapperTest.xml
+		 org/apache/tools/ant/util/Helper.java 
+		 	-> ignored
+	-->
+	<mapper type="package" from="*Test.java" to="TEST-*Test.xml" />
+	<packagemapper         from="*Test.java" to="TEST-*Test.xml" />
+
+
+	<!--
+		 foo/bar/A.java -> foo/bar/A.java
+		 foo/bar/A.java -> foo.bar.A
+	-->
+	<compositemapper>
+		<identitymapper />
+		<packagemapper from="*.java" to="" />
+	</compositemapper>
+
+
+	<!--
+		 foo/bar/A.java -> new/path/A.java1
+		 foo/bar/A.java -> new/path/A.java2
+		 foo/bar/B.java -> new/path/B.java1
+		 foo/bar/B.java -> new/path/B.java2
+	-->
+	<chainedmapper>
+		<flattenmapper/>
+		<globmapper from="*" to="new/path/*" />
+		<mapper>
+			<globmapper from="*" to="*1" />
+			<globmapper from="*" to="*2" />
+		</mapper>
+	</chainedmapper>
+
+
+	<!--
+		 foo\bar\A.java -> new/path/A.java1
+	-->
+	<filtermapper>
+		<replacestring from="\" to="/" />
+	</filtermapper>
+</project>

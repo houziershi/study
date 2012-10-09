@@ -2,27 +2,73 @@
 
 <project name="myproject" default="firstExample">
 
-	<patternset id="non.test.sources">
+	<dirset dir="${build.dir}">
 		<include name="**/*.java" />
 		<exclude name="**/*Test.java" />
-	</patternset>
+	</dirset>
 
-	<patternset refid="non.test.sources">
+	<dirset dir="${build.dir}">
+		<patternset id="non.test.classes">
+			<include name="**/*.java" />
+			<exclude name="**/*Test.java" />
+		</patternset>
+	</dirset>
 
-	<patternset id="sources">
-		<include name="std/**/*.java" />
-		<include name="prof/**/*.java" if="professional" />
-		<exclude name="**/*Test.java" />
-	</patternset>
+	<dirset dir="${build.dir}" >
+		<patternset refid="non.text.classes" />
+	</dirset>
 
-	<patternset>
-		<includesfile name="some-file" />
-	</patternset>
+	<fileset dir="${doc.path}" includes="**/*.html">
+		<contains text="script" casesentive="no" />
+	</fileset>
 
-	<patternset includesfile="some-file" />
+	<fileset dir="${doc.path}" includes="**/*.jar">
+		<date datetime="01/01/2001 12:00 AM" when="before" />
+	</fileset>
 
-	<patternset>
-		<includesfile name="some-file" if="isInclue" />
-	</patternset>
+	<fileset dir="${ant.1.5}/src/main" includes="**/*.java">
+		<depend targetdir="${ant.1.4}/src/main" />
+	</fileset>
+
+	<fileset dir="${doc.path}" includes="**/*">
+		<depend max="1" />
+	</fileset>
+
+	<fileset dir="${ant.1.5}/src/main" includes="**/*.java">
+		<different targetdir="${ant.1.4}/src/main" />
+	</fileset>
+
+	<fileset dir="${doc.path}" includes="**/*">
+		<filename name="**/*.css" />
+	</fileset>
+
+	<fileset dir="${ant.1.5}/src/main" includes="**/*.java">
+		<present present="only" targetdir="${ant.1.4}/src/main" />
+	</fileset>
+
+	<fileset dir="${doc.path}" includes="**/*">
+		<containsregexp expression="[4-6]\.[0-9]" />
+	</fileset>
+
+	<fileset dir="${jar.path}">
+		<patternset>
+			<include name="**/*.jar" />
+		</patternset>
+		<size value="4" unites="Ki" when="more" />
+	</fileset>
+
+	<fileset dir="${src}">
+		<type type="dir" />
+	</fileset>
+
+	<filelist id="docfiles" dir="${doc.src}"
+		files="foo.xml,bar.xml" />
+
+	<filelist id="docfiles2" refid="docfiles"/>
+
+	<filelist id="docfiles3" dir="${doc.src}" >
+		<file name="foo.xml" />
+		<file name="bar.xml" />
+	</filelist>
 
 </project>

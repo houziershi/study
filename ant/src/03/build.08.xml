@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+
+<project name="myproject" default="firstExample">
+
+	<copy file="${src.file}" tofile="${dest.file}" >
+		<!-- define the chains -->
+		<filterchain>
+			<filterreader classname="aa.FilterReader">
+				<param name="foo" value="bar" />
+			</filterreader>
+			<!-- define your own reader -->
+			<filterreader classname="bb.FilterReader">
+				<!-- class path -->
+				<classpath>
+					<pathelement path="${classpath}" />
+				</classpath>
+				<param name="bar" value="blee" />
+				<param name="abc" value="cadd" />
+			</filterreader>
+		</filterchain>
+	</copy>
+
+</project>
+

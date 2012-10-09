@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+
+<project name="myproject" default="firstExample">
+
+	<typedef name="alluppercase" 
+		classname="exp.ant.AllUpperCaseCondition"
+		classpath="${src.class}" />
+
+	<condition property="allupper">
+		<alluppercase value="THIS IS ALL UPPER CASE" />
+	</condition>
+
+	<typedef name="javaselector" 
+		classname="exp.ant.JavaSelector"
+		classpath="${src.class}" />
+
+	<copy todir="to">
+		<fileset dir="src">
+			<javaselector/>
+		</fileset>
+	</copy>
+
+	<copy file="${src.file}" todir="to">
+		<filterchain>
+			<filterreader classname="exp.ant.RemoveOddCharacters" />
+		</filterchain>
+	</copy>
+
+</project>
+

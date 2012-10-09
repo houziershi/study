@@ -79,9 +79,343 @@
 
 \section{匹配目录：DirSet}
 
-	DirSet类似于PatternSet，用于匹配目录。DirSet可以引用已经存在的PatternSet，也可以直接使用include、includesfile、exclude、excludesfile属性。
+	DirSet类似于PatternSet，用于匹配目录。必填属性dir用于指定一个目录。
+	
+	DirSet可以引用已经存在的PatternSet，也可以直接使用include、includesfile、exclude、excludesfile属性。
 
 	另外，DirSet还有casesensitive属性来设置是否大小写敏感；followsymlinks属性来设置采用操作系统差异（如linux与windows的路径符号）等。
 
-	\subsection{包含与排除}
+	定义目录集合的例子：
 
+	\lstinputlisting[language=XML,firstline=5,lastline=19]{src/03/build.03.xml}
+
+\section{匹配目录：FileSet}
+
+	\subsection{设置匹配}
+
+		FileSet匹配符合的文件，它不仅包含DirSet的属性外，还有一些其他的属性：
+
+		file属性：指定单个文件，fileSet定义中至少要dir属性或是file属性。
+
+		defaultexcludes：当值为yes时默认忽略指定的文件（如版本控制文件），常用的模式有：
+
+		\verb|**/*~, **/#*#, **/.#*, **/%*%, **/._*, |
+
+		\verb|**/CVS, **/CVS/**, **/.cvsignore, |
+
+		\verb|**/SCCS, **/SCCS/**, **/vssver.scc, |
+
+		\verb|**/.svn, **/.svn/**, **/.DS_Store |
+
+	\subsection{过滤筛选：selector}
+
+		selector可以看作是FileSet中的一个元素。有以下几种常见的过滤工具：
+
+	\subsection{内容过滤：contains}
+
+		只选择包含text属性定义字符串的文件。
+
+		text属性：文件包含的字符串，不能为空。
+
+		casesenitive属性：大小写敏感。
+
+		ignorewhitespace属性：忽略空白字符。
+
+		\lstinputlisting[language=XML,firstline=21,lastline=23]{src/03/build.03.xml}
+
+	\subsection{时间过滤：date}
+
+		datetime属性：指定时间格式为：MM/DD/YYYY HH:MM AM 。例如：09/09/2006 10:10 am
+
+		milis属性：指定亳秒时间。datetime与milis两个必选一个。
+
+		when属性：文件修改时间的比较方式，默认为equals。其他值还有：before与after。
+
+		granularity属性：允许的时间误差毫秒数。
+
+		pattern属性：指定datettime是否兼容Java中的SimpleDateFormat格式。
+
+		checkdirs属性：是否检查文件目录创建时间，默认为false。
+
+		\lstinputlisting[language=XML,firstline=25,lastline=27]{src/03/build.03.xml}
+
+	\subsection{比较过滤：depend}
+		
+		比较两个目录下同名的文件，选择最后修改的那个。
+
+		targetdir属性：指定进行比较的目录。
+
+		granularity属性：允许的时间误差毫秒数。
+
+		比较1.4版与1.5版中有修改过的源文件。
+
+		\lstinputlisting[language=XML,firstline=29,lastline=31]{src/03/build.03.xml}
+
+	\subsection{深度过滤：depth}
+		
+		min最小与max最大。
+
+		\lstinputlisting[language=XML,firstline=33,lastline=35]{src/03/build.03.xml}
+
+	\subsection{差异过滤：different}
+
+		比较目录下的文件中否有不同（当前目录和一层子目录）。比较的内容有：
+
+		1）一个地方有另一个地方没有。
+		
+		2）文件大小不同。
+
+		3）ignoreFileTimes不为off，且文件修改时间不同。
+
+		4）ignoreContents为true，内容不同。
+
+		属性有：targetdir、granularity（允许的时间误差范围）、ignoreFileTimes、ignoreContents。
+
+		\lstinputlisting[language=XML,firstline=37,lastline=39]{src/03/build.03.xml}
+
+	\subsection{文件名过滤：filename}
+
+		主要属性：name（文件名匹配）、casesensitive、negate（反选，选中不匹配的）。
+
+		例如,选择所有的css样式文件：
+
+		\lstinputlisting[language=XML,firstline=41,lastline=43]{src/03/build.03.xml}
+		
+	\subsection{目录过滤：paresent}
+
+		选择一个与当前目录对应的目录（targetdir），找出指定目录中不存在或是两个目录中都存在的文件。主要属性有：
+
+		present属性：值为srconly本目录有面targetDir没有的文件；值为both选中两个目录都有的文件。
+
+		\lstinputlisting[language=XML,firstline=45,lastline=47]{src/03/build.03.xml}
+
+	\subsection{正则过滤：containsregexp}
+
+		\lstinputlisting[language=XML,firstline=49,lastline=51]{src/03/build.03.xml}
+
+	\subsection{大小过滤：size}
+
+		value属性：值。
+
+		units属性：单位。以1000为进制的K，M，G。或是以1024为单位的Ki，Mi，Gi。默认为bytes。
+
+		when属性：more，less，equal。
+
+		\lstinputlisting[language=XML,firstline=53,lastline=58]{src/03/build.03.xml}
+
+	\subsection{类型过滤：type}
+		
+		指定是文件（file）还是目录（dir）。
+
+		\lstinputlisting[language=XML,firstline=60,lastline=62]{src/03/build.03.xml}
+
+\section{文件列表：FileList}
+
+	\lstinputlisting[language=XML,firstline=64,lastline=72]{src/03/build.03.xml}
+
+\section{文件过滤器：FilterSet}
+	
+	过滤器可以在对文件进行复制或移动时对文件内容进行替换操作。
+
+	\subsection{主要属性}
+
+		1）begintoken属性：用一个字符（默认为@）指定过滤字符串的开始。如：@DATE@
+
+		2）endtoken属性：定义结束。
+
+		3）recurse属性：是否查找多个替换标记，默认为true。
+
+	\subsection{替换版权与日期的例子}
+
+		\lstinputlisting[language=XML,firstline=5,lastline=19]{src/03/build.04.xml}
+		
+		可引用的版本：
+
+		\lstinputlisting[language=XML,firstline=21,lastline=39]{src/03/build.04.xml}
+		
+	\subsection{把替换的内容放在属性文件中}
+
+		要替换的文本：
+
+		\lstinputlisting[language=XML,firstline=1,lastline=2]{src/03/src/src.txt}
+
+		属性文件：
+
+		\lstinputlisting[language=XML,firstline=1,lastline=1]{src/03/abc.properties}
+
+		构建文件：
+
+		\lstinputlisting[language=XML,firstline=41,lastline=52]{src/03/build.04.xml}
+		
+\section{属性集合：PropertySet}
+
+	定义一套可以组其他标签引用的属性集合。
+
+	\subsection{属性与功能}
+		
+		dynamic属性：是否动态地加载属性。
+
+		negate属性：取反默认为false，如果为true代表返回除PropertySet外的属性。
+
+	\subsection{引用已经存在的属性}
+
+		Propertyref类型可以引用一个已经定义的property。主要属性有：
+
+		name属性：引用的名字。
+
+		prefix属性：引用指定开头的多个属性。
+
+		regex属性：用正则匹配。
+
+		builtin属性：引用ant内建的属性，值为all时表示所有内建属性。
+
+	\subsection{使用属性集合的例子}
+
+		组建一个属性集合：
+
+		\lstinputlisting[language=XML,firstline=5,lastline=11]{src/03/build.05.xml}
+		
+		projectset间相互引用的例子：
+		
+		\lstinputlisting[language=XML,firstline=13,lastline=24]{src/03/build.05.xml}
+		
+\section{文件映射：mapper}
+
+	用来定义文件之间的对应关系的，主要属性有：
+
+	type属性：定义一个实现的类型，可以用现成的也可以自己实现一个。
+
+	classname属性：通过类名指定一个实现类型。type和classname一定要选一个。
+
+	classpath属性：查找类的路径。
+
+	classpathref属性：引用已经有的path作为classpath。
+
+	from属性：源文件的位置。
+
+	to属性：目标文件的位置。
+
+	对于文件映射，不同的实现类提供了不同的映射实现方法，以下各小节是现有的实现。每个类的调用都可以通过类名调用与type属性调用两种方法来写：
+
+	\subsection{identity}
+
+		源文件与目标文件同名。只取文件名，忽略路径：
+		
+		\lstinputlisting[language=XML,firstline=5,lastline=12]{src/03/build.06.xml}
+
+	\subsection{flatten}
+
+		忽略目录把文件放到一个压缩文件中：
+		
+		\lstinputlisting[language=XML,firstline=15,lastline=22]{src/03/build.06.xml}
+
+	\subsection{glob}
+
+		匹配路径与文件名：
+		
+		\lstinputlisting[language=XML,firstline=25,lastline=32]{src/03/build.06.xml}
+
+	\subsection{merge}
+
+		把源文件打包到压缩文件中：
+		
+		\lstinputlisting[language=XML,firstline=35,lastline=42]{src/03/build.06.xml}
+
+	\subsection{regexp}
+
+		通过正则来映射：
+		
+		\lstinputlisting[language=XML,firstline=45,lastline=52]{src/03/build.06.xml}
+
+	\subsection{package}
+
+		替换目录名称。
+		
+		\lstinputlisting[language=XML,firstline=55,lastline=62]{src/03/build.06.xml}
+
+	\subsection{composite}
+
+		多个mapper都对源文件进行操作。Composite Mapper不能通过Mapper类型的type属性定指定：
+		
+		\lstinputlisting[language=XML,firstline=65,lastline=72]{src/03/build.06.xml}
+
+	\subsection{chained}
+
+		包含多个mapper，源文件依次经过每个mapper操作。
+		
+		\lstinputlisting[language=XML,firstline=75,lastline=88]{src/03/build.06.xml}
+
+	\subsection{filtermapper}
+
+		对文件名进行过滤：
+		
+		\lstinputlisting[language=XML,firstline=91,lastline=96]{src/03/build.06.xml}
+	
+\section{压缩文件：zip}
+	
+	有两种压缩文件：
+
+	1）当使用src属性时，目录下的文件会以.zip文件格式进行组织。
+
+	2）当使用dir属性时，目录下的文件会以文件系统形式进行组织。
+
+	\subsection{属性与功能}
+		
+		prefix属性：文件路径前缀，符合的会被选中。
+
+		fullpath属性：包含全路径。
+
+		src属性：用于替代当前的目录位置。
+
+		filemode属性与dirmode属性：文件的权限，如linux下的权限777。
+
+	\subsection{例子}
+
+		以zip格式压缩htdocs/manual目录下的所有文件。存放到docs/user-guide目录下。
+
+		同时添加ChangeLog27.txt文件到zip文件的docs目录下。
+
+		这个zip文件还包含example.zip文件。example.zip文件包含docs/examples目录及其子目录下的所有html文件。
+		
+		\lstinputlisting[language=XML,firstline=5,lastline=12]{src/03/build.07.xml}
+
+\section{过滤链与过滤读取器：FilterChains and FilterReader}
+
+	一组有序的FilterReader组成FilterChains，用户可以实现自己的FilterReader。
+
+	FilterReader通过classname属性指定实现类。
+
+	在ant任务concat、copy、loadFile、loadProperties、move中都可以直接使用FilterChain进行过滤操作。
+		
+	\lstinputlisting[language=XML,firstline=5,lastline=21]{src/03/build.08.xml}
+
+\section{定制与扩展}
+
+	用户可以定制的有：conditions、selecters和filters类型。
+
+	\subsection{定制条件判断：Condition}
+
+		实现一个判断字符串是大写的条件判断：
+
+		\lstinputlisting[language=Java]{src/03/src/exp/ant/AllUpperCaseCondition.java}
+
+		构建文件中通过typedef导入，然后使用定义的类。
+		
+		\lstinputlisting[language=XML,firstline=5,lastline=11]{src/03/build.09.xml}
+
+	\subsection{定制选择器：Selector}
+
+		\lstinputlisting[language=Java]{src/03/src/exp/ant/JavaSelector.java}
+		
+		\lstinputlisting[language=XML,firstline=13,lastline=21]{src/03/build.09.xml}
+
+		ant已经提供了一个BaseSelector做了一些预处理功能：setError(String errMsg)可提供出错信息；validate()方法会在isSelected()前进行验证。
+
+	\subsection{定制过滤器：Filter}
+
+
+		\lstinputlisting[language=Java]{src/03/src/exp/ant/RevomeOddCharacters.java}
+
+		直接通过类名调用：
+		
+		\lstinputlisting[language=XML,firstline=23,lastline=27]{src/03/build.09.xml}
