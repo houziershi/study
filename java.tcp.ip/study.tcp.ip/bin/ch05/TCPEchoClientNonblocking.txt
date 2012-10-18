@@ -1,0 +1,12 @@
+SocketChannel clntChan = SocketChannel.open(); 
+ServerSocketChannel servChan = ServerSocketChannel.open(); 
+
+
+ByteBuffer buffer = ByteBuffer.allocate(CAPACITY); 
+ByteBuffer buffer = ByteBuffer.wrap(byteArray); 
+
+clntChan.configureBlocking(false); 
+
+
+
+

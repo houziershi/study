@@ -1,0 +1,491 @@
+
+\chapter{基本套接字}
+
+	现在我们可以学习如何编写自己的套接字应用程序了。我们首先通过使用 InetAddress类和 SocketAddress 类来示范 Java 应用程序如何识别网络主机。然后,举了一个使用 TCP协议的客户端和服务器端例子来展示 Socket 类和 ServerSocket 类的用法。同样,我们举了一个使用 UDP 协议的客户端和服务器端例子来展示 DatagramSocket 类的用法。对于每个类对应的网络抽象,列举出了各个类中最重要的方法,根据这些方法的不同用途进行了分组,并简要描述了它们的功能。
+
+	\section{套接字地址}
+
+		回顾前面章节所讲的内容,一个客户端要发起一次通信,首先必须知道运行服务器端程序的主机的 IP 地址。然后由网络的基础结构利用目标地址(destination address),将客户端发送的信息传递到正确的主机上。在 Java 中,地址可以由一个字符串来定义,这个字符串可以是数字型的地址(不同版本的 IP 地址有不同的型式,如 192.0.2.27 是一个 IPv4 地址,fe20:12a0::0abc:1234 是一个 IPv6 地址),也可以是主机名(如 server.example.com)。在后面的例子中,主机名必须被解析(resolved)成数字型地址才能用来进行通信。
+
+		InetAddress 类代表了一个网络目标地址,包括主机名和数字类型的地址信息。该类有两个子类,Inet4Address 和 Inet6Address,分别对应了目前 IP 地址的两个版本。InetAddress实例是不可变的,一旦创建,每个实例就始终指向同一个地址。我们将通过一个示例程序来示范 InetAddress 类的用法。在这个例子中,首先打印出与本地主机关联的所有 IP 地址,包括 IPv4 和 IPv6,然后对于每个在命令行中指定的主机,打印出其相关的主机名和地址。为了获得本地主机地址,示例程序利用了 NetworkInterface 类的功能。前面已经讲过,IP 地址实际上是分配给了主机与网络之间的连接,而不是主机本身。NetworkInterface 类提供了访问主机所有接口的信息的功能。这个功能非常有用,比如当一个程序需要通知其他程序其 IP 地址时就会用到。
+
+		\lstinputlisting[]{src/ch02/InetAddressExample.java}
+
+		1.获取主机的网络接口列表:第18-19行
+
+		静态方法 getNetworkInterfaces()返回一个列表,其中包含了该主机每一个接口所对应的NetworkInterface 类实例。
+
+		2. 空列表检测:第 20-22 行
+
+		通常情况下,即使主机没有任何其他网络连接,回环接口也总是存在的。因此,只要当一个主机根本没有网络子系统时,列表检测才为空。
+
+		3. 获取并打印出列表中每个接口的地址:第 23-47 行
+
+		打印接口名:第 15 行getName()方法为接口返回一个本地名称。接口的本地名称通常由字母与数字的联合组成,代表了接口的类型和具体实例,如"lo0"或"eth0"。
+
+		获取与接口相关联的地址:第 26-27 行
+
+		getInetAddresses()方法返回了另一个 Enumeration 类对象,其中包含了 InetAddress 类的实例,即该接口所关联的每一个地址。根据主机的不同配置,这个地址列表可能只包含 IPv4或 IPv6 地址,或者是包含了两种类型地址的混合列表。
+
+		空列表检测:第 28-31 行
+
+		列表的迭代,打印出每个地址:第 32-46 行
+
+		对每个地址实例进行检测以判断其属于哪个 IP 地址子类(目前 InetAddress 的子类只有上面列出的那些,但可以想像到,将来也许还会有其他子类)。InetAddress 类的getHostAddress()方法返回一个字符串来代表主机的数字型地址。不同类型的地址对应了不同的格式:IPv4 是点分形式,IPv6 是冒号分隔的 16 进制形式。参考下文中的"字符串表示法"概要,其对不同类型的 IP 地址格式进行了描述。
+
+		4. 捕获异常:第 49-52 行
+
+		对 getNetworkInterfaces()方法的调用将会抛出 SocketException 异常。
+
+		5. 获取从命令行输入的每个参数所对应的主机名和地址:第 34-44 行
+
+		获取给定主机/地址的相关地址列表:第 60 行
+
+		迭代列表,打印出列表中的每一项:第 61-64 行
+
+		对于列表中的每个主机,我们通过调用 getHostName()方法来打印主机名,并把调用getHostAddress()方法所获得的数字型地址打印在主机名后面。
+
+		为了使用这个应用程序来获取本地主机信息、出版社网站(www.mkp.com)服务器信息、一个虚假地址信息(blah.blah)、以及一个IP地址的信息,需要在命令行中运行如下代码:
+
+		\lstinputlisting[language=Bash,firstline=1,lastline=3]{src/ch02/InetAddressExample.txt}
+
+		得到的结果为：
+
+		\lstinputlisting[language=Bash,firstline=5,lastline=17]{src/ch02/InetAddressExample.txt}
+
+		你也许已经注意到,一些 IPv6 地址带有\%d 型式的后缀,其中 d 是一个数字。这样的地址在一个有限的范围内(通常它们是本地链接),其后缀表明了该地址所关联的特定范围。这就保证了列出的每个地址字符串都是唯一的。IPv6 的本地链接地址由 fe8 开头。
+
+		你可能还注意到,当程序解析 blah.blah 这个虚假地址时,会有一定的延迟。地址解析器在放弃对一个主机名的解析之前,会到多个不同的地方查找该主机名。如果由于某些原因使名字服务失效(例如由于程序所运行的机器并没有连接到所有的网络),试图通过名字来定位一个主机就可能失败。而且这还将耗费大量的时间,因为系统将尝试各种不同的方法来将主机名解析成 IP 地址,因此最好能直接使用点分形式的 IP 地址来访问一个主机。在本书的所有例子中,如果远程主机由名字指定,运行示例程序的主机必须配置为能够将名字解析成地址,否则示例程序将无法正确运行。如果能通过主机的名字 ping 到该主机(如,在命令行窗口中执行命令"ping server.example.com"),那么在示例程序中就可以使用主机名。如果 ping 测试失败或示例程序挂起,可以尝试使用 IP 地址来定位主机,这就完全避免了从名字到地址的转换。(参见后文将要讨论的 InetAddress 类的 isReachable()方法) 
+
+		InetAddress类中创建与访问实例方法：
+
+		\lstinputlisting[language=Bash,firstline=21,lastline=29]{src/ch02/InetAddressExample.txt}
+
+		这些静态工厂方法所返回的实例能够传递给另一个套接字方法来指定一个主机。这些方法的输入字符串可以是一个域名,如"skeezix"或 "farm.example.com",也可以是一个代表数字型地址的字符串。对于 IPv6 地址,第 1 章所提到的缩写形式同样适用。一个名字可能关联了多个数字地址,getAllByName()方法用于返回一组与给定主机名相关联的所有地址的实例。
+
+		getAddress()方法返回一个适当长度的字节数组,代表地址的二进制的形式。如果是一个 Inet4Address 实例,该数组长 4 个字节;如果是 Inet6Address 实例,则长 16 字节。返回的数组的第一个元素是该地址中最重要的字节。
+
+		我们已看到,一个 InetAddress 实例可以通过多种方式转换成字符串形式。
+
+		InetAddress类中字符串显示方法：
+
+		\lstinputlisting[language=Bash,firstline=41,lastline=56]{src/ch02/InetAddressExample.txt}
+
+		上面这些方法返回主机名或数字型地址,或者以一定格式的字符串返回两者的联合形式。toString()方法重写了 Object 类的方法,返回如"hostname.example.com/192.0.2.127"或"never.example.net/2000::620:1a30:95b2 "形式的字符串。单一的数字型地址表示形式由getHostAddress()方法返回。对于 IPv6 地址,字符串中总是包含了完整的 8 组数字(即显示地列出了 7 个":"),这样做是为了消除二义性。因为通常情况下,地址字符串后还会附有由另一个分号隔开的端口号,后面我们将看到这样的例子。而且,对于有范围限制的 IPv6地址,如本地链接地址,还会在后面附有一个范围标识符(scope identifier)。这只是一个用于消除二义性(因为同样的本地链接地址能用于不同的链接中)的本地标识符,不是数据报文中所传输的地址的一部分。
+
+		最后两个方法只返回主机名,它们的区别在于:如果实例最初通过主机名创建,getHostName()则直接返回这个名字,没有解析的步骤;否则,getHostName()要通过系统配置的名字解析机制将地址解析成名字。另一方面,getCanonicalName()方法总是尝试对地址进行解析,以获取主机域名全称(fully qualified domain name),如"ns1.internat.net" 或"bam.example.com"。注意,如果不同名字映射到了同一地址,该方法所返回的主机名可能与最初用于创建实例的主机名不同。如果名字解析失败,两个方法都将返回数字型地址,而且在发送任何消息之前,都将用安全管理器进行许可检查。
+
+		InetAddress 类还支持地址属性的检查,如判断其是否属于 1.2 节提到的"特殊用途"地址中的某一类,以及检测其可达性,即与主机进行报文交互的能力。
+
+		InetAddress类中检查属性的方法：
+
+		\lstinputlisting[language=Bash,firstline=61,lastline=77]{src/ch02/InetAddressExample.txt}
+
+		这些方法检查一个地址是否属于某个特定类型。它们对 IPv4 地址和 IPv6 地址都适用。上述前三个方法分别检查地址实例是否属于"任意"本地地址,本地链接地址,以及回环地址(匹配 127.*.*.* 或 ::1 的形式)。第 4 个方法检查其是否为一个多播地址(见 4.3.2 节),而 isMC...()形式的方法检测多播地址的各种范围(scopes)。(范围粗略地定义了到达该目的地址的数据报文从它的起始地址开始,所能传递的最远距离。)
+
+		最后两个方法检查是否真能与 InetAddress 地址确定的主机进行数据报文交换。注意,与其他句法检查方法不一样的是,这些方法引起网络系统执行某些动作,即发送数据报文。系统不断尝试发送数据报文,直到指定的时间(以毫秒为单位)用完才结束。后面这种形式更详细:它明确指出数据报文必须经过指定的网络接口(NetworkInterface),并检查其是否能在指定的生命周期(time-to-live,TTL)内联系上目的地址。TTL 限制了一个数据报文在网络上能够传输的距离。后面两个方法的有效性通常还受到安全管理配置方面的限制。
+
+		NetworkInterface 类提供了更多的方法,其中有很多方法不属于本书的讨论范围。下面,我们只对与我们所讨论的问题最有用的方法进行描述。
+
+		NetworkInterface创建与获取的方法：
+
+		\lstinputlisting[language=Bash,firstline=91,lastline=96]{src/ch02/InetAddressExample.txt}
+
+		上面第一个方法非常有用,使用它可以很容易获取到运行程序的主机的 IP 地址:通过getNetworkInterfaces()方法可以获取一个接口列表,再使用实例的 getInetAddresses()方法就可以获取每个接口的所有地址。注意:这个列表包含了主机的所有接口,包括不能够向网络中的其他主机发送或接收消息的虚拟回环接口。同样,列表中可能还包括外部不可达的本地链接地址。由于这些列表都是无序的,所以你不能简单地认为,列表中第一个接口的第一个地址一定能够通过互联网访问,而是要通过前面提到的 InetAddress 类的属性检查方法,来判断一个地址不是回环地址,不是本地链接地址等等。
+
+		getName()方法返回一个接口(interface)的名字(不是主机名)。这个名字由字母字符串加上一个数字组成,如 eth0。在很多系统中,回环地址的名字都是 lo0。
+
+	\section{TCP套接字}
+
+		Java 为 TCP 协议提供了两个类:Socket 类和 ServerSocket 类。一个 Socket 实例代表了TCP 连接的一端。一个 TCP 连接(TCP connection)是一条抽象的双向信道,两端分别由 IP地址和端口号确定。在开始通信之前,要建立一个 TCP 连接,这需要先由客户端 TCP 向服务器端 TCP 发送连接请求。ServerSocket 实例则监听 TCP 连接请求,并为每个请求创建新的 Socket 实例。也就是说,服务器端要同时处理 ServerSocket 实例和 Socket 实例,而客户端只需要使用 Socket 实例。
+
+		我们从一个简单的客户端例子开始介绍。
+
+		\subsection{TCP客户端}
+
+		客户端向服务器发起连接请求后,就被动地等待服务器的响应。典型的 TCP 客户端要经过下面三步:
+
+		1.创建一个 Socket 实例:构造器向指定的远程主机和端口建立一个 TCP 连接。
+
+		2. 通过套接字的输入输出流(I/O streams)进行通信:一个 Socket 连接实例包括一个InputStream 和一个 OutputStream,它们的用法同于其他 Java 输入输出流。(见 2.2.3 节)
+
+		3. 使用 Socket 类的 close()方法关闭连接。
+
+		我们的第一个 TCP 应用程序叫 TCPEchoClient.java,这是一个通过 TCP 协议与回馈服务器(echo server)进行通信的客户端。回馈服务器的功能只是简单地将收到的信息返回给客户端。在这个程序中,要回馈的字符串以命令行参数的型式传递给我们的客户端。很多系统都包含了用于进行调试和测试的回馈服务程序。你也许可以使用 telnet 程序来检测你的系统上是否运行了标准的回馈服务程序(如在命令行中输入"telnet server.example.com 7"),或者继续阅读本书,并运行下一节的服务器端示例程序。
+
+		\lstinputlisting[]{src/ch02/TCPEchoClient.java}
+
+		1. 应用程序设置与参数解析:第 13-29 行
+
+		转换回馈字符串:第 15 行TCP 套接字发送和接收字节序列信息。String 类的 getBytes()方法将返回代表该字符串的一个字节数组。(见 3.1 节讨论的字符编码)
+
+		确定回馈服务器的端口号:第 29 行
+
+		默认端口号是 7。如果我们给出了第三个参数,Integer.parseInt()方法就将第三个参数字符串转换成相应的整数,并作为端口号。
+
+		2.创建 TCP 套接字:第 32 行
+
+		Socket 类的构造函数将创建一个套接字,并将其连接到由名字或 IP 地址指定的服务器,再将该套接字返回给程序。注意,底层的 TCP 协议只能处理 IP 地址,如果给出的是主机的名字,Socket 类具体实现的时候会将其解析成相应的地址。若因某些原因连接失败,构造函数将抛出一个 IOException 异常。
+
+		3.获取套接字的输入输出流:第 35-36 行
+
+		每个 Socket 实例都关联了一个 InputStream 和一个 OutputStream 对象。就像使用其他流一样,我们通过将字节写入套接字的 OutputStream 来发送数据,并通过从 InputStream 读取信息来接受数据。
+
+		4.发送字符串到回馈服务器:第 38 行
+
+		OutputStream 类的 write()方法将指定的字节数组通过之前建立好的连接,传送到指定的服务器。
+
+		5.从回馈服务器接受回馈信息:第 40-49 行
+
+		既然已经知道要从回馈服务器接收的字节数,我们就能重复执行接收过程,直到接收了与发送的字节数相等的信息。这个特殊型式的 read()方法需要 3 个参数:
+		
+		1)接收数据的字节数组,
+		
+		2)接收的第一个字节应该放入数组的位置,即字节偏移量,
+		
+		3)放入数组的最大字节数。
+		
+		read()方法在没有可读数据时会阻塞等待,直到有新的数据可读,然后读取指定的最大字节数,并返回实际放入数组的字节数(可能少于指定的最大字节数)。循环只是简单地将数据填入 data 字节数组,直到接收的字节数与发送的字节数一样。如果 TCP 连接被另一端关闭,read()方法返回-1。对于客户端来说,这表示服务器端提前关闭了套接字。为什么不只用一个 read 方法呢?TCP 协议并不能确定在 read()和 write()方法中所发送信息的界限,也就是说,虽然我们只用了一个 write()方法来发送回馈字符串,回馈服务器也可能从多个块(chunks)中接受该信息。即使回馈字符串在服务器上存于一个块中,在返回的时候,也可能被 TCP 协议分割成多个部分。对于初学者来说,最常见的错误就是认为由一个 write()方法发送的数据总是会由一个 read()方法来接收。
+
+		6. 打印回馈字符串:第 51 行
+
+		要打印服务器的响应信息,我们必须通过默认的字符编码将字节数组转换成一个字符串。
+
+		7.关闭套接字:第 53 行
+
+		当客户端接收到所有的回馈数据后,将关闭套接字。
+
+		我们可以使用以下两种方法来与一个名叫 server.example.com,IP 地址为 192.0.2.1 的回馈服务器进行通信。
+
+		Socket：创建
+
+		\lstinputlisting[language=Java,firstline=1,lastline=7]{src/ch02/TCPEchoClient.txt}
+
+		前四个构造函数在创建了一个 TCP 套接字后,先连接到(connect)指定的远程地址和端口号,再将其返回给程序。前两个构造函数没有指定本地地址和端口号,因此将采用默认地址和可用的端口号。在有多个接口的主机上指定本地地址是有用的。指定的目的地址字符串参数可以使用与 InetAddress 构造函数的参数相同的型式。最后一个构造函数创建一个没有连接的套接字,在使用它进行通信之前,必须进行显式连接(通过 connect()方法,见下文)。
+
+		Socket：操作
+
+		\lstinputlisting[language=Java,firstline=11,lastline=17]{src/ch02/TCPEchoClient.txt}
+
+		connect()方法将使指定的终端打开一个 TCP 连接。SocketAddress 抽象类代表了套接字地址的一般型式,它的子类 InetSocketAddress 是针对 TCP/IP 套接字的特殊型式(见下文介绍) 与远程主机的通信是通过与套接字相关联的输入输出流实现的。可以使用 get...Stream()方法来获取这些流。
+
+		close()方法关闭套接字及其关联的输入输出流,从而阻止对其的进一步操作。shutDownInput()方法关闭 TCP 流的输入端,任何没有读取的数据都将被舍弃,包括那些已经被套接字缓存的数据、正在传输的数据以及将要到达的数据。后续的任何从套接字读取数据的尝试都将抛出异常。shutDownOutput()方法在输出流上也产生类似的效果,但在具体实现中,已经写入套接字输出流的数据,将被尽量保证能发送到另一端。详情见 4.5 节。
+
+		注意:默认情况下,Socket 是在 TCP 连接的基础上实现的,但是在 Java 中,你可以改变 Socket 的底层连接。由于本书是关于 TCP/IP 的,因此为了简便我们假设所有这些网络类的底层实现都与默认情况一致。
+
+		Socket：获取／检测属性
+
+		\lstinputlisting[language=Java,firstline=21,lastline=26]{src/ch02/TCPEchoClient.txt}
+
+		这些方法返回套接字的相应属性。实际上,本书中所有返回 SocketAddress 的方法返回的都是 InetSocketAddress 实例,而 InetSocketAddress 中封装了一个 InetAddress 和一个端口号。
+
+		Socket 类实际上还有大量的其他相关属性,称为套接字选项(socket options)。这些属性对于编写基本应用程序是不必要的,因此我们推迟到第 4.4 节才对它们进行介绍。
+
+		InetSocketAddress: 创建与访问
+
+		\lstinputlisting[language=Java,firstline=31,lastline=43]{src/ch02/TCPEchoClient.txt}
+
+
+		InetSocketAddress 类为主机地址和端口号提供了一个不可变的组合。只接收端口号作为参数的构造函数将使用特殊的"任何"地址来创建实例,这点对于服务器端非常有用。接收字符串主机名的构造函数会尝试将其解析成相应的 IP 地址,而 createUnresolved()静态方法允许在不对主机名进行解析情况下创建实例。如果在创建 InetSocketAddress 实例时没有对主机名进行解析,或解析失败,isUnresolved()方法将返回 true。get...()系列方法提供了对指定属性的访问,getHostName()方法将返回 InetSocketAddress 内部 InetAddress 所关联的主机名。toString()方法重写了 Object 类的 toString()方法,返回一个包含了主机名、数字型地址(如果已知)和端口号的字符串。其中,主机名与地址之间由'/'(斜线)隔开,地址和端口号之间由':'(冒号)隔开。如果 InetSocketAddress 的主机名没有解析,则冒号前只有创建实例时的主机名字符串。
+
+	\subsection{TCP服务端}
+
+		服务器端的工作是建立一个通信终端并等待客户端的连接。典型的工作有：
+
+		1）建立一个ServerSocket实例并指定到本地端口，侦听该端口收到的所有连接。
+
+		2）重复执行以下步骤：
+
+		a）调用ServletSocket的accept()方法获取下一个客户端的连接。基于新的客户端连接，创建一个Socket()实例，并由accept()方法返回。
+
+		b）通过得到的Socket的输入输出流进行通信。
+
+		c）通信完成，使用Socket的close()方法关闭连接。
+
+		服务器端的示例如下：
+
+		\lstinputlisting[]{src/ch02/TCPEchoServer.java}
+
+		ServerSocket的构造函数有：
+
+		\lstinputlisting[language=Java,firstline=51,lastline=54]{src/ch02/TCPEchoClient.txt}
+
+		注意参数中的队列长度不是一个严格限制，也不能用来控制客户端的总数。
+
+		如果指定了本地地址，这个地址就一定要是本主机的网络接口之一；如果没有指定，套接字会接受指向本主机任何IP地址的连接，这对于有多个接口的服务器非常有用。
+
+		没有参数的构造函数生产的实例在使用前，必须使用bind()方法为其绑定一个端口号。
+
+		ServerSocket常用操作：
+
+		\lstinputlisting[language=Java,firstline=61,lastline=64]{src/ch02/TCPEchoClient.txt}
+
+		bind()方法为套接字关联一个本地的端口。如果该实例已经关联了一个端口，或指定的端口已经被战胜，则抛出IOException异常。
+
+		ServerSocket取得属性：
+
+		\lstinputlisting[language=Java,firstline=71,lastline=73]{src/ch02/TCPEchoClient.txt}
+		
+	\subsection{输入输出流}
+
+		OutputStream操作：
+
+		\lstinputlisting[language=Java,firstline=81,lastline=85]{src/ch02/TCPEchoClient.txt}
+		
+		输出一个字节的write方法只将整形参数的低8位输出。注意如果输出流上的输出在另一端还没有被read()方法读取时会产生阻塞。
+
+		InputStream操作：
+
+		\lstinputlisting[language=Java,firstline=91,lastline=95]{src/ch02/TCPEchoClient.txt}
+
+		前三个方法的作用是从流中获取传输的数据。第一种形式的read方法将读取的一个字节放入一个整型变量的低8位中，并将该变量返回；第二种形式的read方法从输入流中获取长度为data.length的字节序列，并将其存入data数组中，该方法的返回值是实际传输的字节数；第三种形式与第二种的功能相似，但在把数据存入data数组时，将从offset所指定的偏移量开始存放，而且最多只传输长度为length的字节序列。当没有数据可读，而又没有检测到流结束标记时，所有的read()方法都将阻塞等待，直到至少有一个字节可读。在没有数据可读，同时又检测到流结束标记时，以上所有方法都将返回-1。 
+
+		available()方法作用是返回当前可读字节的总数。
+		
+
+\section{UDP套接字} 
+
+	UDP协议提供了一种不同于TCP协议的端到端服务。实际上UDP协议只实现两个功能：
+	
+	1）在IP协议的基础上添加了另一层地址（端口）
+	
+	2）对数据传输过程中可能产生的数据错误进行了检测，并抛弃已经损坏的数据。
+	
+	由于其简单性，UDP套接字具有一些与我们之前所看到的TCP套接字不同的特征。例如，UDP套接字在使用前不需要进行连接。TCP协议与电话通信相似，而UDP协议则与邮件通信相似：你寄包裹或信件时不需要进行"连接"，但是你得为每个包裹和信件指定目的地址。类似的，每条信息（即数据报文，datagram）负载了自己的地址信息，并与其他信息相互独立。在接收信息时，UDP套接字扮演的角色就像是一个信箱，从不同地址发送来的信件和包裹都可以放到里面。一旦被创建，UDP套接字就可以用来连续地向不同的地址发送信息，或从任何地址接收信息。 
+
+	UDP套接字与TCP套接字的另一个不同点在于他们对信息边界的处理方式不同：UDP套接字将保留边界信息。这个特性使应用程序在接受信息时，从某些方面来说比使用TCP套接字更简单。（第2.3.4节将进一步讨论这个问题）最后一个不同点是，UDP协议所提供的端到端传输服务是尽力而为（best-effort）的，即UDP套接字将尽可能地传送信息，但并不保证信息一定能成功到达目的地址，而且信息到达的顺序与其发送顺序不一定一致（就像通过邮政部门寄信一样）。因此，使用了UDP套接字的程序必须准备好处理信息的丢失和重排。（稍后我们将给出一个这样的例子） 
+
+	既然UDP协议为程序带来了这个额外的负担，为什么还会使用它而不使用TCP协议呢？原因之一是效率：如果应用程序只交换非常少量的数据，例如从客户端到服务器端的简单请求消息，或一个反方向的响应消息，TCP连接的建立阶段就至少要传输其两倍的信息量（还有两倍的往返延迟时间）。另一个原因是灵活性：如果除可靠的字节流服务外，还有其他的需求，UDP协议则提供了一个最小开销的平台来满足任何需求的实现。
+
+	Java程序员通过DatagramPacket 类和 DatagramSocket类来使用UDP套接字。客户端和服务器端都使用DatagramSockets来发送数据，使用DatagramPackets来接收数据。 
+
+	\subsection{DatagramPacket类} 
+
+		与TCP协议发送和接收字节流不同，UDP终端交换的是一种称为数据报文的自包含
+		（self-contained）信息。这种信息在Java中表示为DatagramPacket类的实例。发送信息时，
+		Java程序创建一个包含了待发送信息的DatagramPacket实例，并将其作为参数传递给
+		DatagramSocket类的send()方法。接收信息时，Java程序首先创建一个DatagramPacket实例，
+
+		该实例中预先分配了一些空间（一个字节数组byte[]），并将接收到的信息存放在该空间中。
+		然后把该实例作为参数传递给DatagramSocket类的receive()方法。 
+
+		除传输的信息本身外，每个DatagramPacket实例中还附加了地址和端口信息，其具体
+		含义取决于该数据报文是被发送还是被接收。若是要发送的数据报文， DatagramPacket实
+		例中的地址则指明了目的地址和端口号，若是接收到的数据报文， DatagramPacket实例中
+		的地址则指明了所收信息的源地址。因此，服务器端可以修改接收到的DatagramPacket实
+		例的缓存区内容，再将这个实例连同修改后的信息一起，发回给它的源地址。在
+		DatagramPacket的内部也有length和offset字段，分别定义了数据信息在缓存区的起始位置
+		和字节数。请参考下面的介绍和第2.3.4节的内容，以避免在使用DatagramPackets时易犯的
+		一些错误。 
+
+		DatagramPacket: 创建 
+
+		\lstinputlisting[language=Java,firstline=1,lastline=13]{src/ch02/UDPClient.txt}
+
+		以上构造函数都创建一个数据部分包含在指定的字节数组中的数据报文，前两种形式的构造函数主要用来创建接收的端的DatagramPackets实例，因为没有指定其目的地址（尽管可以通过setAddress() 和setPort()方法，或setSocketAddress()方法来指定）。后四种形式主要用来创建发送端的DatagramPackets实例。 
+
+		如果指定了offset，数据报文的数据部分将从字节数组的指定位置发送或接收数据。length参数指定了字节数组中在发送时要传输的字节数，或在接收数据时所能接收的最多字节数。length参数可能比data.length小，但不能比它大。 
+
+		目的地址和端口号可以分别设置，或通过SocketAddress同时设置。 
+
+		DatagramPacket: 地址处理 
+
+		\lstinputlisting[language=Java,firstline=21,lastline=26]{src/ch02/UDPClient.txt}
+
+		除了构造函数外，以上方法提供了另外一些方法来访问和修改DatagramPacket实例的地址信息。另外需要注意，DatagramSocket的receive()方法是将其地址和端口设置为数据报发送者的地址和端口。 
+
+		DatagramPacket: 处理数据 
+
+		\lstinputlisting[language=Java,firstline=31,lastline=36]{src/ch02/UDPClient.txt}
+
+		前两个方法返回和设置数据报文中数据部分的内部长度。此内部长度可以通过其构造函数或setLength()方法显式地设定。若试图将其设置得比相关联的缓存区长度更大，程序将抛出一个IllegalArgumentException异常。DatagramSocket类的receive()方法在两个方面使用内部长度：在输入时，用来指定接收到的将被复制到缓冲区的消息的最长字节数，在返回时，用来指示实际存入缓冲区的字节数。 
+
+		getOffset()方法返回发送或接收的数据存放在缓存区时的偏移量。不存在setOffset()方法，不过可以使用setData()方法来设置偏移量。 
+
+		getData()方法返回与数据报文相关联的字节数组。实际返回的是对与DatagramPacket最近关联的字节数组的一个引用，而关联则是通过构造函数或setData()方法形成。返回的缓存数组的长度可能比数据报文内部长度更长，因此，必须使用内部长度和偏移量来指定实际接收到的信息。 
+
+		setData()方法指定一个字节数组作为该数据报文的数据部分。第一种形式将整个字节数组作为缓冲区；第二种形式把字节数组中，从offset到offset+length-1的部分作为缓存区。每次调用第二种形式的setData()方法，都将更新数据的内部偏移量和长度。 
+
+	\subsection{UDP客户端}
+
+		UDP客户端首先向被动等待联系的服务器端发送一个数据报文。一个典型的UDP客户端主要执行以下三步： 
+
+		1. 创建一个DatagramSocket实例，可以选择对本地地址和端口号进行设置。 
+
+		2. 使用DatagramSocket类的send() 和 receive()方法来发送和接收DatagramPacket实例，进行通信。 
+
+		3. 通信完成后，使用DatagramSocket类的close()方法来销毁该套接字。 
+
+		与Socket类不同，DatagramSocket实例在创建时并不需要指定目的地址。这也是TCP协议和UDP协议的最大不同点之一。在进行数据交换前，TCP套接字必须跟特定主机和另一个端口号上的TCP套接字建立连接，之后，在连接关闭前，该套接字就只能与相连接的那个套接字通信。而UDP套接字在进行通信前则不需要建立连接，每个数据报文都可以发送到或接收于不同的目的地址。（DatagramSocket类的connect()方法确实允许指定远程地址和端口，但该功能是可选的。） 
+
+		我们的UDP回馈客户端示例程序UDPEchoClientTimeout.java，发送一个带有回馈字符串的数据报文，并打印出从服务器收到的所有信息。一个UDP回馈服务器只是简单地将其收到的数据报文返回给客户端。当然，一个UDP客户端只与一个UDP服务器进行通信。许多系统都集成了UDP回馈服务程序，用于调试和测试。 
+
+		使用UDP协议的一个后果是数据报文可能丢失。在我们的回馈协议中，客户端的回馈请求信息和服务器端的响应信息都有可能在网络中丢失。回顾前面所介绍的TCP回馈客户端，其发送了一个回馈字符串后，将在read()方法上阻塞等待响应。如果试图在我们的UDP回馈客户端上使用相同的策略，数据报文丢失后，我们的客户端就会永远阻塞在receive()方法上。为了避免这个问题，我们在客户端使用DatagramSocket类的setSoTimeout()方法来指定receive()方法的最长阻塞时间，因此，如果超过了指定时间仍未得到响应，客户端就会重发回馈请求。我们的回馈客户端执行以下步骤： 
+
+		1. 向服务器端发送回馈字符串。 
+
+		2. 在receive()方法上最多阻塞等待3秒钟，在超时前若没有收到响应，则重发请求（最多重发5次）。 
+
+		3. 终止客户端。 
+
+		\lstinputlisting[language=Java,firstline=1]{src/ch02/UDPEchoClientTimeout.java}
+
+		1. 应用程序设置和参数解析：第19-22行 
+
+		2. 创建UDP套接字：第32行 
+
+		该DatagramSocket实例能够将数据报文发送给任何UDP套接字。我们没有指定本地地址和端口号，因此程序将自动选择本地地址和可用端口号。如果需要的话，我们也可以通过setLocalAddress()和setLocalPort()方法或构造函数，来显式地设置本地地址和端口。 
+
+		3. 设置套接字超时时间：第35行 
+
+		数据报文套接字的超时时间，用来控制调用receive()方法的最长阻塞时间（毫秒）。本例中我们设置超时时间为3秒。注意，超时时间是不精确的，receive()方法的调用可能会阻塞比这更长的时间（但不会少于超时时间）。 
+
+		4. 创建发送的数据报文：第37-39
+
+		创建一个要发送的数据报文，我们需要指定三件事：数据，目的地址，以及目的端口。对于目的地址，我们可以使用主机名或IP地址来确定一个回馈服务器。若使用的是主机名，它将在构造函数中转换成实际的IP地址。 
+
+		5. 创建接收的数据报文：第41-42行 
+
+		创建一个要接收的数据报文，我们只需要定义一个用来存放报文数据的字节数组。而数据报文的源地址和端口号将从receive()方法获得。 
+
+		6. 发送数据报文：第45-66行 
+
+		由于数据报文可能丢失，我们必须准备好重新传输数据。本例中，我们最多循环5次，来发送数据报文并尝试接收响应信息。 
+
+		发送数据报文：第49行 
+
+		send()方法将数据报文传输到其指定的地址和端口号去。 
+
+		处理数据报文的接收：第50-65行 
+
+		receive()方法将阻塞等待，直到收到一个数据报文或等待超时。超时信息由InterruptedIOException异常指示。一旦超时，发送尝试计数器（tries)）加1，并重新发送。若尝试了最大次数后，仍没有接收到数据报文，循环将退出。如果receive()方法成功接收了数据，我们将循环标记receivedResponse设为true，以退出循环。由于数据报文可能发送自任何地址，我们需要验证所接收的数据报文，检查其源地址和端口号是否与所指定的回馈服务器地址和端口号相匹配。 
+
+		7. 打印接收结果：第68-73行 
+
+		如果接收到了一个数据报文，即receivedResponse为true，我们就可以打印出数据报文中的数据信息。 
+
+		8. 关闭套接字：第74行 
+
+		在学习服务器端代码之前，我们先看看DatagramSocket类的主要方法。 
+
+		DatagramSocket: 创建 
+
+		\lstinputlisting[language=Java,firstline=41,lastline=43]{src/ch02/UDPClient.txt}
+
+		以上构造函数将创建一个UDP套接字。可以分别或同时设置本地端口和地址。如果没有指定本地端口，或将其设置为0，该套接字将与任何可用的本地端口绑定。如果没有指定本地地址， 数据包（packet）可以接收发送向任何本地地址的数据报文。 
+
+		DatagramSocket: 连接与关闭 
+
+		\lstinputlisting[language=Java,firstline=51,lastline=54]{src/ch02/UDPClient.txt}
+		 
+		connect()方法用来设置套接字的远程地址和端口。一旦连接成功，该套接字就只能与指定的地址和端口进行通信，任何向其他地址和端口发送数据报文的尝试都将抛出一个异常。套接字也将只接收从指定地址和端口发送来的数据报文，从其他地址或端口发送来的数据报文将被忽略。重点提示：连接到多播地址或广播地址的套接字只能发送数据报文，因为数据报文的源地址总是一个单播地址（见第4.3节）。注意，连接仅仅是本地操作，因为与TCP协议不同，UDP中没有端对端的数据包交换。disconnect()方法用来清空远程地址和端口号，若存在的话。close()方法表明该套接字不再使用，之后任何发送或接收数据的尝试都将抛出异常。 
+
+		DatagramSocket: 地址处理 
+
+		\lstinputlisting[language=Java,firstline=61,lastline=66]{src/ch02/UDPClient.txt}
+
+		第一个方法返回一个代表所连接的远程套接字地址的InetAddress实例，如果没有连接，则返回null。与之类似，getPort()方法返回所连接的套接字的端口号，若没有连接则返回-1。第三个方法一个SocketAddress实例，其中包含了所连接的远程套接字的地址和端口号，如果没有连接，则返回null。 
+
+		后面三个方法为本地地址和端口提供了类似的服务。如果该套接字没有与本地地址绑定，getLocalAddress()方法将返回通配符地址（"任何本地地址"）。getLocalPort()方法总是会返回一个本地端口号。如果调用这个方法前该套接字还没有绑定端口号，getLocalPort()方法将选择任意一个可以本地端口与之绑定。getLocalSocketAddress()在套接字没有绑定本地地址时返回null。 
+
+		DatagramSocket: 发送和接收 
+
+		\lstinputlisting[language=Java,firstline=71,lastline=72]{src/ch02/UDPClient.txt}
+		 
+		send()方法用来发送DatagramPacket实例。一旦建立连接，数据包将发送到该套接字所连接的地址，除非DatagramPacket实例中已经指定了不同目的地址，这将抛出一个异常。如果没有创建连接，数据包将发送到DatagramPacket实例中指定的目的地址。该方法不阻塞等待。 
+
+		receive()方法将阻塞等待，直到接收到数据报文，并将报文中的数据复制到指定的DatagramPacket实例中。如果套接字已经创建了连接，该方法也阻塞等待，直到接收到从所连接的远程套接字发来的数据报文。 
+
+		DatagramSocket: 选项 
+
+		\lstinputlisting[language=Java,firstline=81,lastline=82]{src/ch02/UDPClient.txt}
+
+		以上方法分别获取和设置该套接字中receive()方法调用的最长阻塞时间。如果在接收到数据之前超时，则抛出InterruptedIOException异常。超时时间以毫秒为单位。 
+
+		与Socket类和ServerSocket类一样，DatagramSocket类也还有许多其他选项，这些内容将在第4.4节更加完整地介绍。 
+
+ 
+	\subsection{UDP服务器端}
+
+		与TCP服务器一样，UDP服务器的工作是建立一个通信终端，并被动等待客户端发起连接。但由于UDP是无连接的，UDP通信通过客户端的数据报文初始化，并没有TCP中建立连接那一步。典型的UDP服务器要执行以下三步： 
+
+		1. 创建一个DatagramSocket实例，指定本地端口号，并可以选择指定本地地址。此时，服务器已经准备好从任何客户端接收数据报文。 
+
+		2. 使用DatagramSocket类的receive()方法来接收一个DatagramPacket实例。当receive()方法返回时，数据报文就包含了客户端的地址，这样我们就知道了回复信息应该发送到什么地方。 
+
+		3. 使用DatagramSocket类的send() 和receive()方法来发送和接收DatagramPackets实例，进行通信。 
+
+		下一个示例程序，UDPEchoServer.java，实现了一个UDP版本的回馈服务器。这个服务器非常简单：它不停地循环，接收数据报文后将相同的数据报文返回给客户端。实际上我们的服务器只接收和发送数据报文中的前255（ECHOMAX）个字符，超出的部分将在套接字的具体实现中无提示地丢弃。 
+
+		\lstinputlisting[language=Java,firstline=1]{src/ch02/UDPEchoServer.java}
+
+		1. 应用程序设置和参数解析：第0-17行 
+
+		UDPEchoServer只接收一个参数，即该回馈服务器套接字的本地端口号。 
+
+		2. 创建和设置数据报文套接字：第19行 
+
+		与UDP客户端不同的是，UDP服务器必须显式地设置它的本地端口号，并使客户端知道该端口，否则客户端将不知道应该把回馈请求数据报文发送到什么目的地址。服务器从客户端接收到了回馈数据报文后，能从中获取客户端的地址和端口号。 
+
+		3. 创建数据报文：第20行 
+
+		UDP消息包含在数据报文中。我们构建了一个DatagramPacket实例，其缓存区最多（ECHOMAX）可容纳255个字节。这个数据报文将同时用来接收回馈请求和发送回馈信息。 
+
+		4. 迭代处理收到的回馈请求：第24-34行 
+
+		UDP服务器为所有的通信使用同一个套接字，这点与TCP服务器不同，TCP服务器为每个成功返回的accept()方法创建一个新的套接字。 
+
+		接收回馈请求数据报文，打印其源地址信息：第26行 
+
+		DatagramSocket类的receive()方法将阻塞等待，直到接收到从客户端发来的数据报文（或超时）。由于没有连接，每个数据报文都可能发送自不同的客户端。而数据报文自身就包含了其发送者的（客户端的）源地址和端口号。 
+
+		发送回馈信息：第31行 
+
+		数据包（packet）中已经包含了回馈字符串和回馈目的地址及端口，因此DatagramSocket类的send()方法只是简单地传输之前接收到的数据报文。注意，当我们接收数据报文时，将其地址和端口解释为源地址和端口，而在发送数据报文时，则将其地址和端口称为目的地址和端口。 
+
+		重置缓存区大小：第33行 
+
+		处理了接收到的消息后，数据包的内部长度将设置为刚处理过的消息的长度，而这可能比缓冲区的原始长度短。如果接收新消息前不对内部长度进行重置，后续的消息一旦长于之前消息，就会被截断。 
+
+	\subsection{使用UDP套接字发送和接收信息} 
+
+		本节我们将比较使用UDP套接字和TCP套接字进行通信的一些不同点。一个微小但重要的差别是UDP协议保留了消息的边界信息。DatagramSocket的每一次receive()调用最多只能接收调用一次send()方法所发送的数据。而且，不同的receive()方法调用绝不会返回同一个send()方法调用所发送的数据。 
+
+		当在TCP套接字的输出流上调用的write()方法返回后，所有的调用者都知道数据已经被复制到一个传输缓存区中，实际上此时数据可能已经被传送，也可能还没有被传送（第6章中将对此进行详细介绍）。而UDP协议没有提供从网络错误中恢复的机制，因此，并不对可能需要重传的数据进行缓存。这就意味着，当send()方法调用返回时，消息已经被发送到了底层的传输信道中，并正处在（或即将处在）发送途中。 
+
+		消息从网络到达后，其所包含数据被read()方法或receive()方法返回前，数据存储在一个先进先出（first-in, first-out，FIFO）的接收数据队列中。对于已连接的TCP套接字来说，所有已接收但还未传送的字节都看作是一个连续的字节序列（见第6章）。然而，对于UDP套接字来说，接收到的数据可能来自于不同的发送者。一个UDP套接字所接收的数据存放在一个消息队列中，每个消息都关联了其源地址信息。每次receive()调用只返回一条消息。然而，如果receive()方法在一个缓存区大小为n的DatagramPacket实例中调用，而接收队列中的第一条消息长度大于n，则receive()方法只返回这条消息的前n个字节。超出部分的其他字节都将自动被丢弃，而且对接收程序也没有任何消息丢失的提示！ 
+
+		出于这个原因，接收者应该提供一个有足够大的缓存空间的DatagramPacket实例，以完整地存放调用receive()方法时应用程序协议所允许的最大长度的消息。这个技术能够保证数据不会丢失。一个DatagramPacket实例中所运行传输的最大数据量为65507字节，即UDP数据报文所能负载的最多数据。因此，使用一个有65600字节左右缓存数组的数据包总是安全的。 
+
+		同时，还需要记住的重要一点是，每一个DatagramPacket实例都包含一个内部消息长度值，而该实例一接收到新消息，这个长度值都可能改变（以反映实际接收的消息的字节数）。如果一个应用程序使用同一个DatagramPacket实例多次调用receive()方法，每次调用前就必须显式地将消息的内部长度重置为缓存区的实际长度。 
+
+		对于新手的另一个潜在的问题根源是DatagramPacket类的getData()方法，该方法总是返回缓冲区的原始大小，忽略了实际数据的内部偏移量和长度信息。消息接收到DatagramPacket的缓存区时，只是修改了存放消息数据的地址。例如，假设buf是一个长度为20的字节数组，其在初始化时已使每个字节中存放了该字节在数组中的索引： 
+
+		\lstinputlisting[language=Java,firstline=91,lastline=95]{src/ch02/UDPClient.txt}
+
+		同时假设dg是一个DatagramPacket实例，我们将dg的缓存区设置为buf数组的中间10 个字节： 
+
+		\lstinputlisting[language=Java,firstline=97,lastline=97]{src/ch02/UDPClient.txt}
+
+		现在假设dgsocket是一个DatagramSocket实例，某人向dgsocket发送了一个包含以下内容的8字节的消息， 
+
+		\lstinputlisting[language=Java,firstline=99,lastline=101]{src/ch02/UDPClient.txt}
+
+		该消息接收到了dg中： 
+
+		\lstinputlisting[language=Java,firstline=103,lastline=103]{src/ch02/UDPClient.txt}
+
+		此时，调用dg.getData()方法将返回buf字节数组的原始引用，其内容变为： 
+
+		\lstinputlisting[language=Java,firstline=105,lastline=109]{src/ch02/UDPClient.txt}
+
+		可以看到buf数组中只有索引为5-12的字节被修改，一般而言，应用程序需要使用getOffset()和getData()方法来访问刚接收到的数据。一种可能的方式是将接收到的数据复制到一个单独的字节数组中，如下所示： 
+
+		\lstinputlisting[language=Java,firstline=111,lastline=113]{src/ch02/UDPClient.txt}
+
+		在Java1.6中我们可以使用Arrays.copyOfRange()方法，只需要一步就能方便地实现以上功能： 
+
+		\lstinputlisting[language=Java,firstline=115,lastline=116]{src/ch02/UDPClient.txt}
+
+		我们不需要在UDPEchoServer.java中执行复制操作，因为这个服务器根本不从DatagramPacket中读取数据。 
+

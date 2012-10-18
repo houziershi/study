@@ -1,0 +1,95 @@
+Socket(InetAddress remoteAddr, int remotePort);
+Socket(String remoteHost, int remotePort);
+Socket(InetAddress remoteAddr, int remotePort, 
+		InetAddress localAddr, int localPort);
+socket(String remoteHost, int remotePort,
+		Inetaddress localAddr, int localPort);
+socket();
+
+
+
+void connect(SocketAddress distination);
+void connect(SocketAddress destination, int timeout);
+InputStream getInputStream();
+OutputStream getOutputStream();
+void close();
+void shutdownInput();
+void shutdownOutput();
+
+
+
+InetAddress getInetAddress();
+int getPort();
+InetAddress getLocalAddress();
+int getLocalPort();
+SocketAddress getRemoteSocketAddress();
+SocketAddress getLocalSocketAddress();
+
+
+
+
+InetSocketAddress(InetAddress addr, int port);
+InetSocketAddress(int port);
+InetScoketAddress(String hostname, int port);
+
+static InetSocketAddress createUnresolved(
+		String host, int port);
+
+boolean isUnresolved();
+
+InetAddress getAddres();
+int getPort();
+String getHostName();
+String toString();
+
+
+
+
+
+
+
+ServerSocket(int loaclPort);
+ServerSocket(int localPort, int queueLimit);
+ServerSocket(int localPort, int uqeueLimit, InetAddress localAddr);
+ServerSocket();
+
+
+
+
+
+
+void bind(int prot);
+void bind(int port, int queuelimit);
+Socket accept();
+void close();
+
+
+
+
+
+
+InetAddress getInetAddress();
+SocketAddress getLocalSocketAddress();
+int getLocalPort();
+
+
+
+
+
+
+
+abstract void write(int data);
+void write(byte[] data);
+void write(byte[] data, int offset, int length);
+void flush();
+void close();
+
+
+
+
+
+abstract int read();
+int read(byte[] data);
+int read(byte[] data, int offset, int length);
+int available();
+void close();

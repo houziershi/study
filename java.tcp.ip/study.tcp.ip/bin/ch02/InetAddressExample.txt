@@ -1,19 +1,20 @@
 % java InetAddressExample \
-	www.baidu.com www.jadehahaha.com \
+	www.mkp.com blah.blah \
 	129.35.69.7
 
-Interface eth0:
-	Address (v6): fe80:0:0:0:225:b3ff:fe69:1659%2
-	Address (v4): 172.16.7.1
 Interface lo:
-	Address (v6): 0:0:0:0:0:0:0:1%1
-	Address (v4): 127.0.0.1
-www.baidu.com: 
-	www.baidu.com/220.181.111.147
-www.jadehahaha.com: 
-	Unable to find address for : www.jadehahaha.com
-129.35.69.7: 
-	129.35.69.7/129.35.69.7
+Address (v4): 127.0.0.1
+Address (v6): 0:0:0:0:0:0:0:1
+Address (v6): fe80:0:0:0:0:0:0:1%1
+Interface eth0:
+Address (v4): 192.168.159.1
+Address (v6): fe80:0:0:0:250:56ff:fec0:8%4
+www.mkp.com:
+www.mkp.com/129.35.69.7
+blah.blah:
+Unable to find address for blah.blah
+129.35.69.7:
+129.35.69.7/129.35.69.7
 
 
 

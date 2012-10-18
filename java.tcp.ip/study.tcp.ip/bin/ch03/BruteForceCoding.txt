@@ -1,0 +1,141 @@
++---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+byte| short |<---- int ---->|<---         long          --->|
+
+
+
+
+
+
+
+
+
++---+---+---+---+---+---+---+---+
+| 0 | 0 |112| 72|133|249| 38|177|
++---+---+---+---+---+---+---+---+
+
+
++---+---+---+---+---+---+---+---+
+|177| 38|249|133| 72|112| 0 | 0 |
++---+---+---+---+---+---+---+---+
+
+
+
+
+
+
+
+
+
+
+
++---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+|101| 39| 17| 5 |245|225| 1 | 0 | 0 | 0 |232|212|165| 16| 1 |
++---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+byte| short |<---- int ---->|<---         long          --->|
+
+
+
+
+
+
+ByteArrayOutputStream buf = new ByteArrayOutputStream(); 
+DataOutputStream out = new DataOutputStream(buf); 
+out.writeByte(byteVal); 
+out.writeShort(shortVal); 
+out.writeInt(intVal); 
+out.writeLong(longVal); 
+out.flush(); 
+byte[] msg = buf.toByteArray(); 
+
+
++-------+-------+-------+-------+-------+
+|     84|    101|    115|    116|     33|
++-------+-------+-------+-------+-------+
+
++---+---+---+---+---+---+---+---+---+---+
+|  0| 84|  0|101|  0|115|  0|116|  0| 33|
++---+---+---+---+---+---+---+---+---+---+
+
++-------+-------+-------+-------+-------+
+|    227|    133|    162|    163|     90|
++-------+-------+-------+-------+-------+
+
+
+
+
+
+
+
+
+
+final int BIT5 = (1<<5); 
+final int BIT7 = 0x80; 
+final int BITS2AND3 = 12; // 8+4 
+int bitmap = 1234567; 
+
+bitmap |= BIT5; // bit 5 is now one 
+
+bitmap &= ~BIT7; // bit 7 is now zero 
+
+// clear bits 2, 3 and 5 
+bitmap &= ~(BITS2AND3|BIT5); 
+
+boolean bit6Set = (bitmap & (1<<6)) != 0; 
+
+
+
+
+
+
+
+Socket socket = new Socket(server, port); 
+DataOutputStream out = new DataOutputStream( 
+new BufferedOutputStream(socket.getOutputStream())); 
+
+
+
+
+
+
+
+Buffered[Input/Output]Stream 通过缓存性能优化
+Checked[Input/Output]Stream  维护数据检查
+Cipher[Input/Output]Stream   加密/解密 
+Data[Input/Output]Stream     数据处理 
+Digest[Input/Output]Stream   维护数据摘要 
+GZIP[Input/Output]Stream     压缩/解压缩 
+Object[Input/Output]Stream   数据处理 
+PushbackInputStream          允许一个字节或是字节是“末读的”
+PrintOutputStream            输出数据类型的字符串表示法
+Zip[Input/Output]Stream      以zip格式
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

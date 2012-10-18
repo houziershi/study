@@ -1,0 +1,116 @@
+DatagramPacket(byte[ ] data, int length) 
+
+DatagramPacket(byte[ ] data, int offset, int length) 
+
+DatagramPacket(byte[ ] data, int length, InetAddress 
+	remoteAddr, int remotePort) 
+
+DatagramPacket(byte[ ] data, int offset, int length, 
+	InetAddress remoteAddr, int remotePort) 
+
+DatagramPacket(byte[ ] data, int length, SocketAddress sockAddr) 
+
+DatagramPacket(byte[ ] data, int offset, int length, SocketAddress sockAddr) 
+
+
+
+
+
+
+
+InetAddress getAddress() 
+void setAddress(InetAddress address) 
+int getPort() 
+void setPort(int port) 
+SocketAddress getSocketAddress() 
+void setSocketAddress(SocketAddress sockAddr) 
+
+
+
+
+int getLength() 
+void setLength(int length) 
+int getOffset() 
+byte[ ] getData() 
+void setData(byte[ ] data) 
+void setData(byte[ ] buffer, int offset, int length) 
+
+
+
+
+DatagramSocket() 
+DatagramSocket(int localPort) 
+DatagramSocket(int localPort, InetAddress localAddr) 
+
+
+
+
+
+
+
+void connect(InetAddress remoteAddr, int remotePort) 
+void connect(SocketAddress remoteSockAddr) 
+void disconnect() 
+void close() 
+
+
+
+
+
+
+InetAddress getInetAddress() 
+int getPort() 
+SocketAddress getRemoteSocketAddress() 
+InetAddress getLocalAddress() 
+int getLocalPort() 
+SocketAddress getLocalSocketAddress() 
+
+
+
+
+void send(DatagramPacket packet) 
+void receive(DatagramPacket packet) 
+
+
+
+
+
+
+
+
+int getSoTimeout() 
+void setSoTimeout(int timeoutMillis) 
+
+
+
+
+
+
+
+
++---+---+---+---+---+---+---+---+---+---+
+| 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
++---+---+---+---+---+---+---+---+---+---+
+| 10| 11| 12| 13| 14| 15| 16| 17| 18| 19|
++---+---+---+---+---+---+---+---+---+---+
+
+dg.setData(buf,5,10); 
+
++---+---+---+---+---+---+---+---+
+| 41| 42| 43| 44| 45| 46| 47| 48|
++---+---+---+---+---+---+---+---+
+
+dgsocket.receive(dg); 
+
++---+---+---+---+---+---+---+---+---+---+
+| 0 | 1 | 2 | 3 | 4 | 41| 42| 43| 44| 45|
++---+---+---+---+---+---+---+---+---+---+
+| 46| 47| 48| 13| 14| 15| 16| 17| 18| 19|
++---+---+---+---+---+---+---+---+---+---+
+
+byte[] destBuf = new byte[dg.getLength()]; 
+System.arraycopy(dg.getData(), dg.getOffset(), destBuf, 0, 
+		destBuf.length);
+
+byte[] destBuf = Arrays.copyOfRange(dg.getData(),dg.getOffset(), 
+	dg.getOffset()+dg.getLength()); 

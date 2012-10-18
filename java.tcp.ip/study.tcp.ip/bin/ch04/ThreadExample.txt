@@ -1,0 +1,154 @@
+static Logger getLogger(String name);
+static Logger getLogger(String name, String resourceBundleName);
+
+
+
+
+
+
+
+
+void severe(String msg) 
+void warning(String msg) 
+void info(String msg) 
+void config(String msg) 
+void fine(String msg) 
+void finer(String msg) 
+void finest(String msg) 
+void entering(String sourceClass, String sourceMethod) 
+void entering(String sourceClass, String sourceMethod, Object param) 
+void entering(String sourceClass, String sourceMethod, Object[] params) 
+void exiting(String sourceClass, String sourceMethod) 
+void exiting(String sourceClass, String sourceMethod, Object result) 
+void throwing(String sourceClass, String sourceMethod, Throwable thrown) 
+
+void log(Level level, String msg) 
+void log(Level level, String msg, Throwable thrown); 
+
+
+
+
+Handler[] getHandlers() 
+void addHandler(Handler handler) 
+void removeHandler(Handler handler) 
+Level getLevel() 
+void setLevel(Level newLevel) 
+boolean isLoggable(Level level) ;
+
+
+
+
+Executor service = Executors.newFixedThreadPool(threadPoolSize); 
+Executor service = Executors.newSingleThreadExecutor(); 
+
+
+
+
+
+
+
+
+service.execute(new TimeLimitEchoProtocol(clntSock, logger)); 
+
+
+
+
+
+
+
+
+
+MulticastSocket() 
+MulticastSocket(int localPort) 
+MulticastSocket(SocketAddress bindaddr) ;
+
+
+
+
+
+
+
+void joinGroup(InetAddress groupAddress) 
+void joinGroup(SocketAddress mcastaddr, NetworkInterface netIf) 
+void leaveGroup(InetAddress groupAddress) 
+void leaveGroup(SocketAddress mcastaddr, NetworkInterface netIf); 
+
+
+
+
+
+
+int getTimeToLive() 
+void setTimeToLive(int ttl) 
+boolean getLoopbackMode() 
+void setLoopbackMode(boolean disable) 
+InetAddress getInterface() 
+NetworkInterface getNetworkInterface() 
+void setInterface(InetAddress inf) 
+void setNetworkInterface(NetworkInterface netIf); 
+
+
+boolean getKeepAlive() 
+void setKeepAlive(boolean on) ;
+
+
+
+
+
+
+
+
+int getReceiveBufferSize() 
+void setReceiveBufferSize(int size) 
+int getSendBufferSize() 
+void setSendBufferSize(int size) ;
+
+
+
+
+
+
+int getReceiveBufferSize() 
+void setReceiveBufferSize(int size) 
+
+
+
+int getSoTimeout() 
+void setSoTimeout(int timeout) ;
+
+boolean getReuseAddress() 
+void setReuseAddress(boolean on) 
+
+boolean getTcpNoDelay() 
+void setTcpNoDelay(boolean on) ;
+
+
+void sendUrgentData(int data) 
+boolean getOOBInline() 
+void setOOBInline(boolean on) ;
+
+
+int getSoLinger() 
+void setSoLinger(boolean on, int linger) 
+
+
+
+boolean getBroadcast() 
+void setBroadcast(boolean on) 
+
+
+
+int getTrafficClass() 
+void setTrafficClass(int tc); 
+
+
+void setPerformancePreferences(int connectionTime, int latency, int bandwidth) 
+
+service.execute(new CompressProtocol(clntSock, logger)); 
+
+
+
+
+
+
+
