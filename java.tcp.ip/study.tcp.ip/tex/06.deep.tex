@@ -1,8 +1,10 @@
 \chapter{深入剖析} 
 
-	如果不理解套接字的具体实现所关联的数据结构和底层协议的工作细节，就很难抓住网络编程的精妙之处，对于TCP套接字（即Socket的实例）来说更是如此。本章就对创建和使用Socket或ServerSocket实例时的底层细节进行了介绍。（本章开始的讨论以及第6.5节同样适用于DatagramSocket和MulticastSocket。而且，由于每个SocketChannel都有一个底层的Socket（其他类型的信道也类似），我们讨论的内容也同样适用于它们。然而，本章大部分内容都针对的是TCP套接字，即，Socket和ServerSocket。）请注意，这些内容仅仅涵盖了一些普通的事件序列，略去了很多细节。尽管如此，我们相信即使是这种基础的理解也是有用的。如果希望了解更详尽内容，可以参考TCP规范[ ]，或关于该主题的其他更全面的著作[ , ]。
+	如果不理解套接字的具体实现所关联的数据结构和底层协议的工作细节，就很难抓住网络编程的精妙之处，对于TCP套接字（即Socket的实例）来说更是如此。本章就对创建和使用Socket或ServerSocket实例时的底层细节进行了介绍。（本章开始的讨论以及第6.5节同样适用于DatagramSocket和MulticastSocket。而且，由于每个SocketChannel都有一个底层的Socket（其他类型的信道也类似），我们讨论的内容也同样适用于它们。然而，本章大部分内容都针对的是TCP套接字，即，Socket和ServerSocket。）请注意，这些内容仅仅涵盖了一些普通的事件序列，略去了很多细节。尽管如此，我们相信即使是这种基础的理解也是有用的。如果希望了解更详尽内容，可以参考TCP规范[ ]，或关于该主题的其他更全面的著作。
 
 	图6.1是一个Socket实例所关联的一些信息的简化视图。JVM和/或其运行的平台（即，主机操作系统中的"套接字层"）为这些类的支持提供了底层实现。Java对象上的操作则转换成了在这种底层抽象上的操作。在本章中，"Socket"指的是图6.1中的类之一，而"套接字（socket）"指的是的底层抽象，这种抽象由操作系统提供或由JVM自己实现（例如在嵌入式系统中）。有重要一点需要注意，即运行在统一主机上的其他程序可能也会通过底层套接字抽象来使用网络，因此会与Java Socket实例竞争系统资源，如端口等。
+
+	\clearpage
 
 	\begin{figure}[htbp]%位置选项
 		\centering
@@ -73,6 +75,8 @@
 
 	如果接收者现在调用read()方法时使用4000字节的缓冲区数组，将有很多字节从等待分配队列（RecvQ）转移到已分配队列（Delivered）中。这包括第二次调用write()方法时剩下的1500字节加上第三次调用write()的前2500字节。此时队列的状态如图6.4所示。
 
+	\clearpage
+
 	\begin{figure}[htbp]%位置选项
 		\centering
 		\includegraphics[scale=.6]{img/06.02.jpg}
@@ -82,6 +86,8 @@
 
 	Sending Implementation：发送实现，Receiving Implementation：接收实现，6500 bytes：6500字节，1500 bytes：1500字节，Receiving Program：接收程序，First write(1000 bytes)：第一次写操作（1000字节），Second write(2000 bytes)：第二次写操作（2000字节），Third write(5000 bytes)：第三次写操作（5000字节），TCP protocol：TCP协议
 
+	\clearpage
+
 	\begin{figure}[htbp]%位置选项
 		\centering
 		\includegraphics[scale=.6]{img/06.03.jpg}
@@ -90,6 +96,8 @@
 	\end{figure}
 
 	Sending Implementation：发送实现，Receiving Implementation：接收实现，500 bytes：500字节，6000 bytes：6000字节，1500 bytes：1500字节，First write(1000 bytes)：第一次写操作（1000字节），Second write(2000 bytes)：第二次写操作（2000字节），Third write(5000 bytes)：第三次写操作（5000字节）
+
+	\clearpage
 
 	\begin{figure}[htbp]%位置选项
 		\centering
@@ -113,6 +121,8 @@
 	假设SendQ队列和RecvQ队列的大小分别为SQS和RQS。将一个大小为n的字节数组传递给write()方法调用，其中n > SQS，直到有至少n- SQS字节传递到接收端主机的RecvQ队列后，该方法才会返回。如果n的大小超过了（SQS + RQS），write()方法则将在接收程序从输入流读取了至少n? (SQS + RQS)字节后才会返回。如果接收程序没有调用read()方法，大数据量的send()调用则无法成功。特别是当连接的两端同时分别调用它们输出流的write()方法，而它们的缓冲区大小又大于SQS + RQS时，将发生死锁：两个write操作都不能完成，两个程序都将永远保持阻塞状态。
 
 	下面考虑一个具体的例子，即主机A上的程序和主机B上的程序之间的一个连接。假设A和B上的SQS和RQS都是500字节，图6.5展示了两个程序试图同时发送1500字节时的情况。主机A上的程序中的前500字节已经传输到了另一端，另外500字节已经复制到了主机A的SendQ队列中，余下的500字节则无法发送（因此out.write()方法将无法返回）直到主机B上的RecvQ队列有空间空出来。然而不幸的是主机B上的程序也遇到了同样的情况。因此两个程序的write()方法调用都永远无法完成。
+
+	\clearpage
 
 	\begin{figure}[htbp]%位置选项
 		\centering
@@ -162,6 +172,8 @@
 
 		当客户端以服务器端的互联网地址W.X.Y.Z和端口号Q作为参数，调用Socket的构造函数时，底层实现将创建一个套接字实例，该实例的初始状态是关闭状态（Closed）。如果在调用构造函数时客户端没有指定本地地址或端口号，底层实现将选择一个没有被其他TCP套接字使用的本地端口号（P）。同时还要指定本地的互联网地址，如果没有显式地指定，则将向服务器发送数据报文的网络接口地址作为本地地址。底层实现将本地和远程地址和端口复制到底层套接字的数据结构，并初始化TCP连接建立时的握手消息。
 
+		\clearpage
+
 		\begin{figure}[htbp]%位置选项
 			\centering
 			\includegraphics[scale=.6]{img/06.06.jpg}
@@ -187,6 +199,8 @@
 
 		\lstinputlisting[language=Java,firstline=61,lastline=63]{src/ch06/stp.txt}
 
+		\clearpage
+
 		\begin{figure}[htbp]%位置选项
 			\centering
 			\includegraphics[scale=.6]{img/06.07.jpg}
@@ -204,6 +218,8 @@
 
 		除了要创建一个新的底层套接字数据结构外，服务器方的TCP实现还要向客户端发回一个TCP握手确认消息。
 
+		\clearpage
+
 		\begin{figure}[htbp]%位置选项
 			\centering
 			\includegraphics[scale=.6]{img/06.08.jpg}
@@ -220,6 +236,8 @@
 		现在，我们来考虑（见图6.9）服务器程序调用了ServerSocket的accept()方法后发生的事情。只要其关联的套接字数据结构列表中有新的连接到来，该方法调用就立即停止阻塞。（注意，在调用accept()方法时，这个列表可能已经是非空状态。）此时，一个新的连接数据结构将从列表中移除，并为其创建一个Socket实例，作为accept()方法的返回值。
 
 		有非常重要的一点需要注意，在ServerSocket关联的列表中的每个数据结构，都代表了一个与另一端的客户端已经完成建立的TCP连接。实际上，客户端只要接收到了开放握手的第2条消息，就可以立即发送数据--这可能比服务器调用accept()方法为其获取一个Socket实例要早很长时间。
+
+		\clearpage
 
 		\begin{figure}[htbp]%位置选项
 			\centering
@@ -241,6 +259,9 @@
 		（在首先发起关闭的主机上，\verb|FIN_WAIT_2|是"半关闭"状态的专业术语。图中由"Closing"指示的状态的专业术语是\verb|FIN_WAIT_1|，不过该状态非常转瞬即逝，很难被netstat捕获到。）
 
 		注意，如果连接处于半关闭状态时，远程终端已经离开，那么本地底层数据结构则将无限期地保持在该状态。当另一端的关闭握手消息到达后，则发回一条确认消息并将状态改变成"Time-Wait"。虽然应用程序中相应的Socket实例可能早已消失，与
+
+
+		\clearpage
 
 		\begin{figure}[htbp]%位置选项
 			\centering
@@ -265,6 +286,9 @@
 
 		最好的解决方案是设计一种应用程序协议，以使首先调用close()方法的一方在接收到了应用程序层的数据已接收保证后，才真正执行关闭操作。例如，当我们的TCPEchoClient程序接收到了它所发送的数据的完全拷贝后，它就能够知道此时在连接两个方向上都没有数据在传输，因此可以安全地关闭连接。
 
+
+		\clearpage
+
 		\begin{figure}[htbp]%位置选项
 			\centering
 			\includegraphics[scale=.6]{img/06.11.jpg}
@@ -285,6 +309,9 @@
 \section{解调多路复用揭秘}
 
 	在前面的讨论中已经隐含表明一个事实，即同一个机器上的不同套接字可以有相同的本地地址和端口号。例如，在只有一个IP地址的机器上，每个通过ServerSocket的accept()方法接收的新Socket实例都将使用与ServerSocket相同的本地端口号。显然，要确定传入的分组报文应该分配到那个套接字（即，解调多路复用）不仅仅是查看分组报文的目的地址和端口。
+
+
+		\clearpage
 
 	\begin{figure}[htbp]%位置选项
 		\centering

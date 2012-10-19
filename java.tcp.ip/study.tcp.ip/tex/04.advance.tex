@@ -125,7 +125,7 @@
 
 		Logger: 设置/获取日志的等级和处理器 
 
-		\lstinputlisting[language=Java,firstline=31,lastline=36]{src/ch04/ThreadExample.txt}
+		\lstinputlisting[language=Java,firstline=31,lastline=37]{src/ch04/ThreadExample.txt}
 
 		getHandlers()方法返回一个包含了和该记录器关联的所有日志处理器数组。addHandler()和removeHandler()方法用于给该记录器添加或删除日志处理器。getLevel()和setLevel()方法用于获取和设置日志记录的最小等级。isLoggable()方法则在该记录器能够记录所给定的等级 的日志时返回true。 
 
@@ -199,7 +199,7 @@
 
 		我们可以通过调用Executors类的各种静态工厂方法来获取ExecutorService实例。示例程序TCPEchoServerExecutor.java演示了基本Executor工具的使用方法。 
 
-		\lstinputlisting[language=Java,firstline=1]{src/ch04/ThreadExample.java}
+		\lstinputlisting[language=Java,firstline=1]{src/ch04/TCPEchoServerExecutor.java}
 
 		1.设置：
 
@@ -292,7 +292,7 @@
 
 		MulticastSocket: 创建 
 
-		\lstinputlisting[language=Java,firstline=61,lastline=61]{src/ch04/ThreadExample.txt}
+		\lstinputlisting[language=Java,firstline=61,lastline=63]{src/ch04/ThreadExample.txt}
 
 		这些构造函数用来创建一个具有多播功能的UDP套接字。如果没有指定本地端口或指定为0，套接字将绑定到任意一个可以的本地端口。如果指定了地址，该套接字则只能从所指定的地址接收消息。 
 

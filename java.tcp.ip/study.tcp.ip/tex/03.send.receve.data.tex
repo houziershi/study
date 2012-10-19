@@ -161,6 +161,8 @@ TCP/IP协议以字节的方式传输用户数据，并没有对其进行检查�
 
 	\lstinputlisting[language=Java,firstline=91,lastline=93]{src/ch03/BruteForceCoding.txt}
 
+	\clearpage
+
 	\begin{figure}[htbp]%位置选项
 		\centering
 		\includegraphics[scale=.8]{img/03.01.jpg}
@@ -172,25 +174,27 @@ TCP/IP协议以字节的方式传输用户数据，并没有对其进行检查�
 
 	对Java输入输出API的完整介绍不在本书的讨论范围中，不过，表3.1列出了一些相关的Java输入输出类，为介绍它们的强大功能起一个抛砖引玉的作用。Java基本输入输出类：
 
-	Buffered[Input/Output]Stream 通过缓存性能优化
-
-	Checked[Input/Output]Stream  维护数据检查
-
-	Cipher[Input/Output]Stream   加密/解密 
-
-	Data[Input/Output]Stream     数据处理 
-
-	Digest[Input/Output]Stream   维护数据摘要 
-
-	GZIP[Input/Output]Stream     压缩/解压缩 
-
-	Object[Input/Output]Stream   数据处理 
-
-	PushbackInputStream          允许一个字节或是字节是“末读的”
-
-	PrintOutputStream            输出数据类型的字符串表示法
-
-	Zip[Input/Output]Stream      以zip格式
+		\begin{table}[htbp]
+			\caption{Java输入输出类}
+			\label{tab:java.io.class}
+			\centering
+			\begin{tabular}{lll}
+				\hline
+					输入输出                     & 类型 \\
+				\hline
+					Buffered[Input/Output]Stream & 通过缓存性能优化  \\
+					Checked[Input/Output]Stream  & 维护数据检查  \\
+					Cipher[Input/Output]Stream   & 加密/解密   \\
+					Data[Input/Output]Stream     & 数据处理   \\
+					Digest[Input/Output]Stream   & 维护数据摘要   \\
+					GZIP[Input/Output]Stream     & 压缩/解压缩   \\
+					Object[Input/Output]Stream   & 数据处理   \\
+					PushbackInputStream          & 允许一个字节或是字节是“末读的”  \\
+					PrintOutputStream            & 输出数据类型的字符串表示法  \\
+					Zip[Input/Output]Stream      & 以zip格式  \\
+				\hline
+			\end{tabular}
+		\end{table}
 
 \section{成帧与解析} 
 

@@ -92,35 +92,35 @@ static ByteOrder nativeOrder()
 | H | I |   | M | O | M |   |
 +---+---+---+---+---+---+---+
   0   1   2   3   4   5   6
-                          ^    ^
+                          ^    *
 ;
 
 +---+---+---+---+---+---+---+
 | H | I |   | M | O | M |   |
 +---+---+---+---+---+---+---+
   0   1   2   3   4   5   6
-  ^                       ^    
+  ^                       *    
 ;
 
 +---+---+---+---+---+---+---+
 | H | I |   | M | O | M |   |
 +---+---+---+---+---+---+---+
   0   1   2   3   4   5   6
-  ^                            ^    
+  ^                            *    
 ;
 
 +---+---+---+---+---+---+---+
 | H | I |   | M | O | M |   |
 +---+---+---+---+---+---+---+
   0   1   2   3   4   5   6
-              ^                ^    
+              ^                *    
 ;
 
 +---+---+---+---+---+---+---+
 | H | I |   | M | O | M |   |
 +---+---+---+---+---+---+---+
   0   1   2   3   4   5   6
-  ^           ^                     
+  ^           *                     
 ;
 
 
@@ -132,10 +132,10 @@ channel.read(buffer); // Read new data into buffer, starting at first element
 
 
 
-
 // ... put data in buffer with put() or read() ... 
 buffer.flip(); // Set position to 0, limit to old position 
-while (buffer.hasRemaining()) // Write buffer data from the first element up to limit 
+// Write buffer data from the first element up to limit 
+while (buffer.hasRemaining()) 
 	channel.write(buffer); 
 
 // Start with buffer ready for writing 
@@ -152,7 +152,7 @@ while (buffer.hasRemaining()) // Write all data to logger
 | H | I |   | M | O | M |   |
 +---+---+---+---+---+---+---+
   0   1   2   3   4   5   6
-              ^           ^         
+              ^           *         
 ;
 
 
@@ -160,7 +160,7 @@ while (buffer.hasRemaining()) // Write all data to logger
 | H | I |   | M | O | M |   |
 +---+---+---+---+---+---+---+
   0   1   2   3   4   5   6
-              ^               ^                     
+              ^               *                     
 ;
 
 
@@ -350,8 +350,8 @@ channel.socket().bind(new InetSocketAddress(5000));
 ByteBuffer buffer = ByteBuffer.allocateDirect(20);
 SocketAddress address = channel.receive(buffer);
 buffer.flip();
-String received = Charset.forName("UTF-16").
-newDecoder().decode(buffer).toString();
+String received = Charset.forName("UTF-16")
+					.newDecoder().decode(buffer).toString();
 
 
 

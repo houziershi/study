@@ -59,7 +59,7 @@
 
 		InetAddress类中创建与访问实例方法：
 
-		\lstinputlisting[language=Bash,firstline=21,lastline=29]{src/ch02/InetAddressExample.txt}
+		\lstinputlisting[language=Bash,firstline=21,lastline=24]{src/ch02/InetAddressExample.txt}
 
 		这些静态工厂方法所返回的实例能够传递给另一个套接字方法来指定一个主机。这些方法的输入字符串可以是一个域名,如"skeezix"或 "farm.example.com",也可以是一个代表数字型地址的字符串。对于 IPv6 地址,第 1 章所提到的缩写形式同样适用。一个名字可能关联了多个数字地址,getAllByName()方法用于返回一组与给定主机名相关联的所有地址的实例。
 
@@ -69,9 +69,9 @@
 
 		InetAddress类中字符串显示方法：
 
-		\lstinputlisting[language=Bash,firstline=41,lastline=56]{src/ch02/InetAddressExample.txt}
+		\lstinputlisting[language=Bash,firstline=41,lastline=44]{src/ch02/InetAddressExample.txt}
 
-		上面这些方法返回主机名或数字型地址,或者以一定格式的字符串返回两者的联合形式。toString()方法重写了 Object 类的方法,返回如"hostname.example.com/192.0.2.127"或"never.example.net/2000::620:1a30:95b2 "形式的字符串。单一的数字型地址表示形式由getHostAddress()方法返回。对于 IPv6 地址,字符串中总是包含了完整的 8 组数字(即显示地列出了 7 个":"),这样做是为了消除二义性。因为通常情况下,地址字符串后还会附有由另一个分号隔开的端口号,后面我们将看到这样的例子。而且,对于有范围限制的 IPv6地址,如本地链接地址,还会在后面附有一个范围标识符(scope identifier)。这只是一个用于消除二义性(因为同样的本地链接地址能用于不同的链接中)的本地标识符,不是数据报文中所传输的地址的一部分。
+		上面这些方法返回主机名或数字型地址,或者以一定格式的字符串返回两者的联合形式。toString()方法重写了 Object 类的方法,返回如"hostname.example.com/ 192.0.2.127"或"never.example.net/ 2000::620:1a30:95b2 "形式的字符串。单一的数字型地址表示形式由getHostAddress()方法返回。对于 IPv6 地址,字符串中总是包含了完整的 8 组数字(即显示地列出了 7 个":"),这样做是为了消除二义性。因为通常情况下,地址字符串后还会附有由另一个分号隔开的端口号,后面我们将看到这样的例子。而且,对于有范围限制的 IPv6地址,如本地链接地址,还会在后面附有一个范围标识符(scope identifier)。这只是一个用于消除二义性(因为同样的本地链接地址能用于不同的链接中)的本地标识符,不是数据报文中所传输的地址的一部分。
 
 		最后两个方法只返回主机名,它们的区别在于:如果实例最初通过主机名创建,getHostName()则直接返回这个名字,没有解析的步骤;否则,getHostName()要通过系统配置的名字解析机制将地址解析成名字。另一方面,getCanonicalName()方法总是尝试对地址进行解析,以获取主机域名全称(fully qualified domain name),如"ns1.internat.net" 或"bam.example.com"。注意,如果不同名字映射到了同一地址,该方法所返回的主机名可能与最初用于创建实例的主机名不同。如果名字解析失败,两个方法都将返回数字型地址,而且在发送任何消息之前,都将用安全管理器进行许可检查。
 
@@ -79,7 +79,7 @@
 
 		InetAddress类中检查属性的方法：
 
-		\lstinputlisting[language=Bash,firstline=61,lastline=77]{src/ch02/InetAddressExample.txt}
+		\lstinputlisting[language=Bash,firstline=61,lastline=71]{src/ch02/InetAddressExample.txt}
 
 		这些方法检查一个地址是否属于某个特定类型。它们对 IPv4 地址和 IPv6 地址都适用。上述前三个方法分别检查地址实例是否属于"任意"本地地址,本地链接地址,以及回环地址(匹配 127.*.*.* 或 ::1 的形式)。第 4 个方法检查其是否为一个多播地址(见 4.3.2 节),而 isMC...()形式的方法检测多播地址的各种范围(scopes)。(范围粗略地定义了到达该目的地址的数据报文从它的起始地址开始,所能传递的最远距离。)
 
@@ -155,7 +155,12 @@
 
 		当客户端接收到所有的回馈数据后,将关闭套接字。
 
-		我们可以使用以下两种方法来与一个名叫 server.example.com,IP 地址为 192.0.2.1 的回馈服务器进行通信。
+		我们可以使用以下两种方法来与一个名叫 server.example.com,IP 地址为 192.0.2.1 的回馈服务器进行通信。命令行运行方式与结果如下：
+
+
+		在本书的网站上可以参考TCPEchoClientGUI.java示例程序，该程序为TCP回馈客户端实现了一个图形接口。
+
+		\lstinputlisting[language=Bash,firstline=76,lastline=79]{src/ch02/InetAddressExample.txt}
 
 		Socket：创建
 
@@ -190,50 +195,92 @@
 
 	\subsection{TCP服务端}
 
-		服务器端的工作是建立一个通信终端并等待客户端的连接。典型的工作有：
+		现在我们将注意力转向如何创建一个服务器端。服务器端的工作是建立一个通信终端，并被动地等待客户端的连接。典型的TCP服务器有如下两步工作：
 
-		1）建立一个ServerSocket实例并指定到本地端口，侦听该端口收到的所有连接。
+		1. 创建一个ServerSocket实例并指定本地端口。此套接字的功能是侦听该指定端口收到的连接。
 
-		2）重复执行以下步骤：
+		2. 重复执行：
 
-		a）调用ServletSocket的accept()方法获取下一个客户端的连接。基于新的客户端连接，创建一个Socket()实例，并由accept()方法返回。
+		a. 调用ServerSocket的accept()方法以获取下一个客户端连接。基于新建立的客户端连接，创建一个Socket实例，并由accept()方法返回。
 
-		b）通过得到的Socket的输入输出流进行通信。
+		b. 使用所返回的Socket实例的InputStream和OutputStream与客户端进行通信。
 
-		c）通信完成，使用Socket的close()方法关闭连接。
+		c. 通信完成后，使用Socket类的close()方法关闭该客户端套接字连接。
 
-		服务器端的示例如下：
+		下面的例子，TCPEchoServer.java，为我们前面的客户端程序实现了一个回馈服务器。这个服务器程序非常简单，它将一直运行，反复接受连接请求，接收并返回字节信息。直到客户端关闭了连接，它才关闭客户端套接字。
 
 		\lstinputlisting[]{src/ch02/TCPEchoServer.java}
 
-		ServerSocket的构造函数有：
+		1. 应用程序设置和参数解析：
+
+		2. 创建服务器端套接字：
+
+		servSock侦听特定端口号上的客户端连接请求，该端口号在构造函数中指定。
+
+		3. 永久循环，迭代处理新的连接请求：
+
+		接受新的连接请求：
+
+		ServerSocket实例的唯一目的，是为新的TCP连接请求提供一个新的已连接的Socket实例。当服务器端已经准备好处理客户端请求时，就调用accept()方法。该方法将阻塞等待，直到有向ServerSocket实例指定端口的新的连接请求到来。（如果新的连接请求到来时，在服务器端套接字刚创建，而尚未调用accept()方法，那么新的连接将排在一个队列中，在这种情况下调用accept()方法，将立即得到响应，即立即返回客户端套接字。连接的建立细节见第6.4.1节。）ServerSocket类的accept()方法将返回一个Socket实例，该实例已经连接到了远程客户端的套接字，并已准备好读写数据。
+
+		报告已连接的客户端：
+
+		在新创建的Socket实例中，我们可以查询所连接的客户端的相应地址和端口号。Socket类的getRemoteSocketAddress()方法返回一个包含了客户端地址和端口号的InetSocketAddress实例。 InetSocketAddress类的toString()方法以"\verb|/_address_:_port_|"的形式打印出这些信息。（主机名部分为空，因为该实例只根据地址信息创建。）
+
+		获取套接字的输入输出流：
+
+		写入这个服务器端套接字的OutputStream的字节信息将从客户端套接字的InputStream中读出，而写入客户端OutputStream的字节信息将从服务器端套接字的InputStream读出。
+
+		接收并复制数据，直到客户端关闭：
+
+		while循环从输入流中反复读取字节数据（在数据可获得时），并立即将同样的字节返回给输出流，这个过程一直持续到客户端关闭连接。InputStream的read()方法每次获取缓存数组所能放下的最多的字节（在本例中为BUFSIZE个字节），并存入该数组（receiveBuf），同时返回实际读取的字节数。read()方法将阻塞等待，直到有可读数据。如果已经数据已经读完则返回-1，表示客户端关闭了其套接字。在反馈协议中，客户端在接受的字节数与其发送字节数相等时就关闭连接，因此在服务器端最终将从read()方法中收到为-1的返回值。（回顾客户端的情况，从read()方法收到-1返回值表示发生了一个协议错误，因为这种情况只会在服务器端提取关闭连接的时候发生。）
+
+		如前文所述，read()方法并不一定要在整个字节数组填满后才返回。实际上它只接收了一个字节时就可以返回。OutputStream类的write()方法将receiveBuf中的recvMsgSize个字节写入套接字。该方法的第二个参数指明了要发送的第一个字节在字节数组中的偏移量。在本例中，0表示从data的最前端传送数据。如果我们使用只以缓存数组为参数的write()方法，那么缓存数组中的所有字节都将被传送，甚至可能包括那些不是从客户端接收来的数据。
+
+		关闭客户端套接字：
+
+		关闭套接字连接可以释放与连接相关联的系统资源，同时，这对于服务器端来说也是必须的，因为每一个程序所能够打开的Socket实例数量要受到系统限制。
+
+		ServerSocket: 创建	
 
 		\lstinputlisting[language=Java,firstline=51,lastline=54]{src/ch02/TCPEchoClient.txt}
 
-		注意参数中的队列长度不是一个严格限制，也不能用来控制客户端的总数。
+		一个TCP终端必须与特定的端口号关联，以使客户端能够向该端口号发送连接请求。上面前三个构造函数创建一个TCP端口，此端口与特定的本地端口相关联且已准备好接受（accept）传入的连接请求。端口号的有效范围是0-65535。（如果端口号被设为0，将选择任意没有使用的端口号）连接队列的大小以及本地地址也可以选择设置。需要注意的是，最大队列长度不是一个严格的限制，也不能用来控制客户端的总数。如果指定了本地地址，该地址就必须是主机的网络接口之一；如果没有指定，套接字将接受指向主机任何IP地址的连接。这将对有多个接口而服务器端只接受其中一个接口连接的主机非常有用。
 
-		如果指定了本地地址，这个地址就一定要是本主机的网络接口之一；如果没有指定，套接字会接受指向本主机任何IP地址的连接，这对于有多个接口的服务器非常有用。
+		第四个构造函数能创建一个没有关联任何本地端口的ServerSocket实例。在使用该实例前，必须为其绑定（见下文中的bind()方法）一个端口号。
 
-		没有参数的构造函数生产的实例在使用前，必须使用bind()方法为其绑定一个端口号。
-
-		ServerSocket常用操作：
+		ServerSocket: 操作
 
 		\lstinputlisting[language=Java,firstline=61,lastline=64]{src/ch02/TCPEchoClient.txt}
 
-		bind()方法为套接字关联一个本地的端口。如果该实例已经关联了一个端口，或指定的端口已经被战胜，则抛出IOException异常。
+		bind()方法为套接字关联一个本地端口。每个ServerSocket实例只能与唯一一个端口相关联。如果该实例已经关联了一个端口，或所指定的端口已经被占用，则将抛出IOException异常。
 
-		ServerSocket取得属性：
+		accept()方法为下一个传入的连接请求创建Socket实例，并将已成功连接的Socket实例返回给服务器端套接字。如果没有连接请求等待，accept()方法将阻塞等待，直到有新的连接请求到来或超时。
+
+		close()方法关闭套接字。调用该方法后，服务器将拒绝接受传入该套接字的客户端连接请求。
+
+		ServerSocket: 获取属性
 
 		\lstinputlisting[language=Java,firstline=71,lastline=73]{src/ch02/TCPEchoClient.txt}
+
+		以上方法将返回服务器端套接字的本地地址和端口号。注意，与Socket类不同的是，ServerSocket没有相关联的I/O流。然而，它有另外一些称为选项（options）的属性，并能通过多种方法对选项进行控制。这些内容将在第4.4节介绍。
 		
 	\subsection{输入输出流}
+
+		如上例所示，Java中TCP套接字的基本输入输出形式是流（stream）抽象。（Java1.4加入的NIO（New I/O）工具提供了另一种替代的抽象形式，我们将在第5章介绍。）流只是一个简单有序的字节序列。Java的输入流（input streams）支持读取字节，而输出流（output streams）则支持写出字节。在我们的TCP服务器和客户端中，每个Socket实例都维护了一个InputStream实例和一个OutputStream实例。当我们向Socket的输出流写了数据后，这些字节最终将能从连接另一端的Socket的输入流中读取。
+
+		OutputStream类是Java中所有输出流的抽象父类。通过OutputStream我们可以向输出流写字节、刷新缓存区和关闭输出流。
 
 		OutputStream操作：
 
 		\lstinputlisting[language=Java,firstline=81,lastline=85]{src/ch02/TCPEchoClient.txt}
-		
-		输出一个字节的write方法只将整形参数的低8位输出。注意如果输出流上的输出在另一端还没有被read()方法读取时会产生阻塞。
 
+		这些write()方法分别向输出流传输一个字节、整个字节数组，或从一个数组中offset所指定偏移量开始，输出长度为length的字节。输出一个字节的write()方法只将其整型参数的低8位输出。如果在一个TCP套接字关联的输出流上进行这些操作，当大量的数据已发送，而连接的另一端所关联的输入流最近没有调用read()方法时，这些方法可能会阻塞。如果不作特殊处理，这可能会产生一些不想得到的后果。（见6.2节）
+
+		flush()方法用来将缓存中的所有数据推送到输出流。close()方法用来关闭流，流关闭之后，再调用write()方法时将抛出异常。
+
+		InputStream类是所有输入流的抽象父类。可以使用InputStream从输入流中读取字节或关闭输入流。
+		
 		InputStream操作：
 
 		\lstinputlisting[language=Java,firstline=91,lastline=95]{src/ch02/TCPEchoClient.txt}

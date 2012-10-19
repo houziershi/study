@@ -285,11 +285,11 @@
 
 		通过包装的方法创建的缓冲区保留了被包装数组内保存的数据。实际上，wrap()方法只是简单地创建了一个具有指向被包装数组的引用的缓冲区，该数组称为后援数组。对后援数组中的数据做的任何修改都将改变缓冲区中的数据，反之亦然。如果我们为wrap()方法指定了偏移量（offset）和长度（length），缓冲区将使用整个数组为后援数组，同时将position和limit的值初始化为偏移量（offset）和偏移量+长度（offset+length）。在偏移量之前和长度之后的元素依然可以通过缓冲区访问。 
 
-		\lstinputlisting[language=Java,firstline=31,lastline=31]{src/ch05/TCPEchoClientNonblocking.txt}
-
 		使用分配空间的方式来创建缓冲区其实与使用包装的方法区别不大。惟一的区别是allocate()方法创建了自己的后援数组。在缓冲区上调用array()方法即可获得后援数组的引用。通过调用arrayOffset()方法，甚至还可以获取缓冲区中第一个元素在后援数组中的偏移量。使用wrap()方法和非零偏移量参数创建的缓冲区，其数组偏移量依然是0。 
 
 		到目前为止，我们实现的所有缓冲区都将数据存放在Java分配的后援数组中。通常，底层平台（操作系统）不能使用这些缓冲区进行I/O操作。操作系统必须使用自己的缓冲区来进行I/O，并将结果复制到缓冲区的后援数组中。这些复制过程可能非常耗费系统资源，尤其是在有很多读写需求的时候。Java的NIO提供了一种直接缓冲区（direct buffers）来解决这个问题。使用直接缓冲区，Java将从平台能够直接进行I/O操作的存储空间中为缓冲区分配后援存储空间，从而省略了数据的复制过程。这种低层的、本地的I/O通常在字节层进行操作，因此只能为 ByteBuffer进行直接缓冲区分配。 
+
+		\lstinputlisting[language=Java,firstline=31,lastline=31]{src/ch05/TCPEchoClientNonblocking.txt}
 
 		通过调用isDirect()方法可以查看一个缓冲区是否是直接缓冲区。由于直接缓冲区没有后援数组，在它上面调用array()或arrayOffset()方法都将抛出UnsupportedOperationException异常。在考虑是否使用直接缓冲区时需要牢记几点。首先，要知道调用allocateDirect()方法并不能保证能成功分配直接缓冲区--有的平台或JVM可能不支持这个操作，因此在尝试分配直接缓冲区后必须调用isDirect()方法进行检查。其次，要知道分配和销毁直接缓冲区通常比分配和销毁非直接缓冲区要消耗更多的系统资源，因为直接缓冲区的后援存储空间通常存在与JVM之外，对它的管理需要与操作系统进行交互。所以，只有当需要在很多I/O操作上长时间使用时，才分配直接缓冲区。实际上，在相对于非直接缓冲区能明显提高系统性能时，使用直接缓冲区是个不错的主意。 
 
@@ -347,6 +347,8 @@
 
 		在使用缓冲区进行输入输出数据之前，必须确定缓冲区的position，limit都已经设置了正确的值。下面考虑一个容量为7的CharBuffer实例，并已经连续调用了put()或read()方法： 
 
+		“\verb|^|”表示position，“\verb|*|”表示limit。
+
 		\lstinputlisting[language=Java,firstline=91,lastline=95]{src/ch05/TCPEchoClientNonblocking.txt}
 
 		如果现在想用这个缓冲区进行信道的写操作，由于write()方法将从position指示的位置开始读取数据，在limit指示的位置停止，因此在进行写操作前，先要将limit的值设为position的当前值，再将position的值设为0。 
@@ -389,7 +391,7 @@
 
 		后续的get()/write()调用将从缓冲区的第一个元素开始检索数据，直到到达limit指示的位置。下面是使用flip()方法的例子： 
 
-		\lstinputlisting[language=Java,firstline=136,lastline=140]{src/ch05/TCPEchoClientNonblocking.txt}
+		\lstinputlisting[language=Java,firstline=135,lastline=140]{src/ch05/TCPEchoClientNonblocking.txt}
 
 		假设在写出缓冲区的所有数据后，你想回到缓冲区的开始位置再重写一次相同的数据（例如，想要将同样的数据发送给另一个信道）。rewind()方法将position设置为0，并使mark值无效。这很像flip()方法的操作，只是limit的值没变。这些操作什么时候会有用呢？当你想要将在网络上发送的所有数据都写入日志时就会用到： 
 
@@ -559,6 +561,8 @@
 
 		键关联的Selector实例和Channel实例可以分别使用该键的selector()和channel()方法获得。cancel()方法用于（永久性地）注销该键，并将其放入选择器的注销集（canceled set）中（图5.1）。在下一次调用select()方法时，这些键将从该选择器的所有键集中移除，其关联的信道也将不再被监听（除非它又重新注册）。 
 
+		\clearpage
+
 		\begin{figure}[htbp]%位置选项
 			\centering
 			\includegraphics[scale=.6]{img/05.01.jpg}
@@ -566,13 +570,7 @@
 			\label{fig:selector.and.its.key.set}
 		\end{figure}
 
-		Selected Key Set: 选择键集； 
-
-		Cancelled Key Set：注销键集； 
-
-		Key Set：键集；
-
-		Interest Sets：兴趣操作集 
+		Selected Key Set: 选择键集；Cancelled Key Set：注销键集；Key Set：键集；Interest Sets：兴趣操作集 
 
 	\subsection{选取和识别准备就绪的信道}
 
@@ -671,7 +669,7 @@
 
 	以下代码段用于创建一个DatagramChannel实例，并将UTF-16编码的字符串"Hello"发送到运行在同一主机的5000端口上的UDP服务器上。
 
-	\lstinputlisting[language=Java,firstline=344,lastline=345]{src/ch05/TCPEchoClientNonblocking.txt}
+	\lstinputlisting[language=Java,firstline=344,lastline=346]{src/ch05/TCPEchoClientNonblocking.txt}
 
 	以下代码段用于创建一个DatagramChannel实例，将底层的套接字绑定到5000端口，接收最长为20字节的数据报文，并将字节转换成使用UTF-16编码的字符串。
 
