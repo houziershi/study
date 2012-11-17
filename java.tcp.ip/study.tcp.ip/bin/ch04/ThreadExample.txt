@@ -31,10 +31,10 @@ void log(Level level, String msg, Throwable thrown);
 Handler[] getHandlers() 
 void addHandler(Handler handler) 
 void removeHandler(Handler handler) 
+
 Level getLevel() 
 void setLevel(Level newLevel) 
 boolean isLoggable(Level level) ;
-
 
 
 

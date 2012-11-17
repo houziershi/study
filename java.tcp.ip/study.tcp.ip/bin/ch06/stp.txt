@@ -1,0 +1,107 @@
+Active Internet connections (servers and established)
+Proto Recv-Q Send-Q Local Address         Foreign Address     State
+tcp    0     0      0.0.0.0:36045         0.0.0.0:*           LISTEN
+tcp    0     0      0.0.0.0:111           0.0.0.0:*           LISTEN
+tcp    0     0      0.0.0.0:53363         0.0.0.0:*           LISTEN
+tcp    0     0      127.0.0.1:25          0.0.0.0:*           LISTEN
+tcp    0     0      128.133.190.219:34077 4.71.104.187:80     TIME_WAIT
+tcp    0     0      128.133.190.219:43346 79.62.132.8:22      ESTABLISHED
+tcp    0     0      128.133.190.219:875   128.133.190.43:2049 ESTABLISHED
+tcp6   0     0      :::22                 :::*                LISTEN
+
+
+
+
+byte[] buffer0 = new byte[1000];
+byte[] buffer1 = new byte[2000];
+byte[] buffer2 = new byte[5000];
+// ...
+Socket s = new Socket(destAddr, destPort);
+OutputStream out = s.getOutputStream();
+// ...
+out.write(buffer0);
+// ...
+out.write(buffer1);
+// ...
+out.write(buffer2);
+// ...
+s.close();
+
+
+ActiveInternet connections
+Proto Recv-Q Send-Q Local Address     Foreign Address  State
+tcp   0      6500   10.21.44.33:43346 192.0.2.8:22     ESTABLISHED
+
+Active Internet connections
+Proto Recv-Q Send-Q Local Address  Foreign Address   State
+tcp   1500   0      192.0.2.8:22   10.21.44.33:43346 ESTABLISHED
+
+
+
+Thread thread = new Thread() {
+public void run() {
+	try {
+		SendBytes(sock, fileIn);
+	} catch (Exception ignored) {}
+	}
+};
+thread.start();
+
+
+Active Internet connections
+Proto Recv-Q Send-Q Local Address Foreign Address State
+tcp   0      0      A.B.C.D:P     W.X.Y.Z:Q       SYN_SENT
+
+
+Active Internet connections
+Proto Recv-Q Send-Q Local Address Foreign Address State
+tcp   0      0      A.B.C.D:P     W.X.Y.Z:Q       ESTABLISHED
+
+
+Active Internet connections
+Proto Recv-Q Send-Q Local Address Foreign Address State
+tcp   0      0      0.0.0.0:Q     0.0.0.0:0       LISTENING
+
+Active Internet connections
+Proto Recv-Q Send-Q Local Address Foreign Address State
+tcp   0      0      0.0.0.0:Q     0.0.0.0:0       LISTENING
+tcp   0      0      W.X.Y.Z:Q     A.B.C.D:P       SYN_RCVD
+
+
+Active Internet connections
+Proto Recv-Q Send-Q Local Address Foreign Address State
+tcp   0      0      0.0.0.0:Q     0.0.0.0:0       LISTENING
+tcp   0      0      W.X.Y.Z:Q     A.B.C.D:P       ESTABLISHED
+
+
+Active Internet connections
+Proto Recv-Q Send-Q Local Address Foreign Address State
+tcp   0      0      A.B.C.D:P     W.X.Y.Z:Q       FIN_WAIT_2
+
+Active Internet connections
+Proto Recv-Q Send-Q Local Address Foreign Address State
+tcp   0      0      A.B.C.D:P     W.X.Y.Z:Q       TIME_WAIT
+
+Active Internet connections
+Proto Recv-Q Send-Q Local Address Foreign Address State
+tcp   0      0      A.B.C.D:P     W.X.Y.Z:Q       CLOSE_WAIT 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

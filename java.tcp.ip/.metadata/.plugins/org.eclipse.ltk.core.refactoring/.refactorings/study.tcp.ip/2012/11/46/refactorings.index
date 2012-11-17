@@ -1,0 +1,6 @@
+1353120327480	Rename field 'BSIZE'
+1353120340689	Rename field 'SSIZE'
+1353120353863	Rename field 'ISIZE'
+1353120369684	Rename field 'LSIZE'
+1353132993939	Rename method 'transByteToHexString'
+1353133384264	Rename method 'byteArrayToDecimalString'

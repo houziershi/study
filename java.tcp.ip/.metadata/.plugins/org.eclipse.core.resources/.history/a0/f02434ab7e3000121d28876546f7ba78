@@ -1,0 +1,151 @@
+package ch03;
+
+public class BruteForceCoding {
+
+	/* define how many byte every type use */
+	public static final int BYTE_SIZE = Byte.SIZE / Byte.SIZE;
+	public static final int SHORT_SIZE = Short.SIZE / Byte.SIZE;
+	public static final int INT_SIZE = Integer.SIZE / Byte.SIZE;
+	public static final int LONG_SIZE = Long.SIZE / Byte.SIZE;
+
+	public static void main(String[] args) {
+		/*
+		 * prepare data for test
+		 */
+		byte byteVal = 101;
+		short shortVal = 10001;
+		int intVal = 100000001;
+		long longVal = 1000000000001L;
+		//
+		System.out.print("       In Logic: ");
+		System.out.print(transDataToHexString(byteVal, BYTE_SIZE));
+		System.out.print(" ");
+		System.out.print(transDataToHexString(shortVal, SHORT_SIZE));
+		System.out.print(" ");
+		System.out.print(transDataToHexString(intVal, INT_SIZE));
+		System.out.print(" ");
+		System.out.println(transDataToHexString(longVal, LONG_SIZE));
+
+		/*
+		 * Encode the fields in the target byte array
+		 */
+		// stream of byte code
+		byte[] byteStream = new byte[BYTE_SIZE + SHORT_SIZE + INT_SIZE
+				+ LONG_SIZE];
+		// encode the datas
+		int offset = 0;
+		offset = encodeIntBigEndian(byteStream, offset, byteVal, BYTE_SIZE);
+		offset = encodeIntBigEndian(byteStream, offset, shortVal, SHORT_SIZE);
+		offset = encodeIntBigEndian(byteStream, offset, intVal, INT_SIZE);
+		offset = encodeIntBigEndian(byteStream, offset, longVal, LONG_SIZE);
+		// print the stream in hex
+		System.out.println("Encoded message: "
+				+ byteArrayToDecimalString(byteStream) + "\n");
+
+		/*
+		 * 
+		 * Decode several fields
+		 */
+		long value = 0L;
+		offset = 0;
+		//
+		value = decodeIntBigEndian(byteStream, offset, BYTE_SIZE);
+		System.out.println("Decoded byte = " + value);
+		offset += BYTE_SIZE;
+		//
+		value = decodeIntBigEndian(byteStream, offset, SHORT_SIZE);
+		System.out.println("Decoded short = " + value);
+		offset += SHORT_SIZE;
+		//
+		value = decodeIntBigEndian(byteStream, offset, INT_SIZE);
+		System.out.println("Decoded short = " + value);
+		offset += INT_SIZE;
+		//
+		value = decodeIntBigEndian(byteStream, offset, LONG_SIZE);
+		System.out.println("Decoded long = " + value);
+		offset += LONG_SIZE;
+
+		// Demonstrate dangers of conversion
+		offset = 4;
+		value = decodeIntBigEndian(byteStream, offset, BYTE_SIZE);
+		System.out.println("Decoded value (offset " + offset + ", size "
+				+ BYTE_SIZE + ") = " + value);
+		byte bVal = (byte) decodeIntBigEndian(byteStream, offset, BYTE_SIZE);
+		System.out.println("Same value as byte = " + bVal);
+	}
+
+	/**
+	 * 把长度为size个字节的变量long存入数组dst，dst前offset个字节已经存放了其他内容了。
+	 * 
+	 * @param byteStream
+	 *            存放消息的数组
+	 * @param offset
+	 *            存放的起始位置
+	 * @param data
+	 *            要存放的值
+	 * @param dataSize
+	 *            存放的值占几个字节
+	 * @return 存放后数组被使用了多少个字节（新的offset）
+	 */
+	public static int encodeIntBigEndian(byte[] byteStream, int offset,
+			long data, int dataSize) {
+		// Warning: Untested preconditions (e.g., 0 <= dataSize <= 8)
+		for (int i = 0; i < dataSize; i++) {
+			// 先通过位移把要取的那8位移到最低，
+			// 通过强制转换把最低的8位转为一个byte。
+			byteStream[offset++] = (byte) (data >> ((dataSize - i - 1) * Byte.SIZE));
+		}
+		return offset;
+	}
+
+	/**
+	 * 从数组中取出数据
+	 * 
+	 * @param byteStream
+	 *            存放消息的数组
+	 * @param offset
+	 *            存放的起始位置
+	 * @param dataSize
+	 *            存放的值占几个字节
+	 * @return 读出的值
+	 */
+	public static long decodeIntBigEndian(byte[] byteStream, int offset,//
+			int dataSize) {
+		// Warning: Untested preconditions (e.g., 0 <= dataSize <= 8)
+		long data = 0;
+		for (int i = 0; i < dataSize; i++) {
+			// 先把当前的内容左移一个字节
+			// 空出的字节中填入流中指定位置的字节
+			data = (data << Byte.SIZE) | ((long) byteStream[offset + i] & 0xFF);
+		}
+		return data;
+	}
+
+	// 用十进制显示数组中的每个字节
+	public static String byteArrayToDecimalString(byte[] bArray) {
+		StringBuilder rtn = new StringBuilder();
+		for (byte b : bArray) {
+			// 用十六进制字符串显示一个字节的内容
+			rtn.append(transDataToHexString((long) b, BYTE_SIZE)).append(" ");
+		}
+		return rtn.toString();
+	}
+
+	// 用十六进制字符串显示一个字节的内容
+	public static String transDataToHexString(long b, int size) {
+		StringBuffer result = new StringBuffer();
+		int charSize = size * 2;
+		StringBuffer sb = new StringBuffer();
+		// 每四个位为一段，从0开始循环取每一段
+		for (int i = 0; i < charSize; i++) {
+			long curr = b >> ((charSize - i - 1) * 4);
+			curr = curr & 0xF;
+			sb.append(Long.toHexString(curr).toUpperCase());
+		}
+		for (int i = sb.length(); i < charSize; i += 4) {
+			sb.append("0");
+		}
+		result.append(sb.toString());
+		return result.toString();
+	}
+}

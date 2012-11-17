@@ -8,5 +8,371 @@ ByteBuffer buffer = ByteBuffer.wrap(byteArray);
 clntChan.configureBlocking(false); 
 
 
+boolean hasRemaining() 
+int remaining() 
 
+
+
+ByteBuffer byteBuf = ByteBuffer.allocate(20); 
+DoubleBuffer dblBuf = DoubleBuffer.allocate(5); 
+
+
+
+byteArray[] = new byte[BUFFERSIZE]; 
+// ...Fill array... 
+ByteBuffer byteWrap = ByteBuffer.wrap(byteArray); 
+ByteBuffer subByteWrap = ByteBuffer.wrap(byteArray, 3, 3); 
+
+
+
+
+
+
+ByteBuffer byteBufDirect = ByteBuffer.allocateDirect(BUFFERSIZE); 
+
+
+
+byte get() 
+ByteBuffer get(byte[] dst) 
+ByteBuffer get(byte[] dst, int offset, int length) 
+ByteBuffer put(byte b) 
+ByteBuffer put(byte[] src) 
+ByteBuffer put(byte[] src, int offset, int length) 
+ByteBuffer put(ByteBuffer src) 
+
+
+
+byte get(int index) 
+ByteBuffer put(int index, byte b) 
+
+
+
+
+<type> get<Type>() 
+<type> get<Type>(int index) 
+ByteBuffer put<Type>(<type> value) 
+ByteBuffer put<Type>(int index,<type> value) 
+
+
+myBuffer.putInt(1).putInt(2); 
+
+
+
+ByteOrder order() 
+ByteBuffer order(ByteOrder order) 
+
+
+
+
+
+
+
+
+ByteBuffer buffer = ByteBuffer.allocate(4); 
+buffer.putShort((short) 1); 
+buffer.order(ByteOrder.LITTLE_ENDIAN); 
+buffer.putShort((short) 1); 
+// Predict the byte values for buffer and test your prediction 
+
+
+
+
+
+static final ByteOrder BIG_ENDIAN 
+static final ByteOrder LITTLE_ENDIAN 
+static ByteOrder nativeOrder() 
+;
+
+
+
+
+
+
++---+---+---+---+---+---+---+
+| H | I |   | M | O | M |   |
++---+---+---+---+---+---+---+
+  0   1   2   3   4   5   6
+                          ^    *
+;
+
++---+---+---+---+---+---+---+
+| H | I |   | M | O | M |   |
++---+---+---+---+---+---+---+
+  0   1   2   3   4   5   6
+  ^                       *    
+;
+
++---+---+---+---+---+---+---+
+| H | I |   | M | O | M |   |
++---+---+---+---+---+---+---+
+  0   1   2   3   4   5   6
+  ^                            *    
+;
+
++---+---+---+---+---+---+---+
+| H | I |   | M | O | M |   |
++---+---+---+---+---+---+---+
+  0   1   2   3   4   5   6
+              ^                *    
+;
+
++---+---+---+---+---+---+---+
+| H | I |   | M | O | M |   |
++---+---+---+---+---+---+---+
+  0   1   2   3   4   5   6
+  ^           *                     
+;
+
+
+
+// Start with buffer in unknown state 
+buffer.clear(); // Prepare buffer for input, ignoring existing state 
+channel.read(buffer); // Read new data into buffer, starting at first element 
+
+
+
+
+// ... put data in buffer with put() or read() ... 
+buffer.flip(); // Set position to 0, limit to old position 
+// Write buffer data from the first element up to limit 
+while (buffer.hasRemaining()) 
+	channel.write(buffer); 
+
+// Start with buffer ready for writing 
+while (buffer.hasRemaining()) // Write all data to network 
+	networkChannel.write(buffer); 
+buffer.rewind(); // Reset buffer to write again 
+
+while (buffer.hasRemaining()) // Write all data to logger 
+	loggerChannel.write(buffer); 
+
+
+
++---+---+---+---+---+---+---+
+| H | I |   | M | O | M |   |
++---+---+---+---+---+---+---+
+  0   1   2   3   4   5   6
+              ^           *         
+;
+
+
++---+---+---+---+---+---+---+
+| H | I |   | M | O | M |   |
++---+---+---+---+---+---+---+
+  0   1   2   3   4   5   6
+              ^               *                     
+;
+
+
+
+
+
+
+// Start with buffer ready for reading 
+while (channel.read(buffer) != -1) { 
+	buffer.flip(); 
+	channel.write(buffer); 
+	buffer.compact(); 
+} 
+while (buffer.hasRemaining()) 
+	channel.write(buffer); 
+
+
+// Start with buffer ready for writing 
+ByteBuffer logBuffer = buffer.duplicate(); 
+while (buffer.hasRemaining()) // Write all data to network 
+	networkChannel.write(buffer); 
+while (logBuffer.hasRemaining()) // Write all data to logger 
+	loggerChannel.write(buffer); 
+
+
+
+
+// ...get message by calling channel.read(buf) ... 
+int numShorts = (int)buf.get(); 
+if (numShorts < 0) { 
+	throw new SomeException() 
+} else { 
+	short[] shortArray = new short[numShorts]; 
+	ShortBuffer sbuf = buf.asShortBuffer(); 
+	sbuf.get(shortArray); // note: will throw if header was incorrect! 
+} 
+
+Charset charSet = Charset.forName("US-ASCII"); 
+CharsetEncoder encoder = charSet.newEncoder(); 
+ByteBuffer buffer = encoder.encode(CharBuffer.wrap("Hi mom")); 
+
+
+CharsetDecoder decoder = charSet.newDecoder(); 
+CharBuffer cBuf = decoder.decode(buffer); 
+
+
+
+encoder.reset(); 
+if (encoder.encode(CharBuffer.wrap("Hi "),buffer,false) 
+	== CoderResult.OVERFLOW) 
+{ 
+	// ... deal with lack of space in buffer ... 
+} 
+if (encoder.encode(CharBuffer.wrap("Mom"),buffer,true) 
+	== CoderResult.OVERFLOW) 
+{ 
+	// ... ditto ... 
+} 
+encoder.flush(buffer); 
+
+
+
+
+
+
+
+
+static SocketChannel open(SocketAddress remote) 
+static SocketChannel open() 
+boolean connect(SocketAddress remote) 
+boolean isConnected() 
+void close() 
+boolean isOpen() 
+Socket socket() 
+;
+
+
+int read(ByteBuffer dst) 
+long read(ByteBuffer[] dsts) 
+long read(ByteBuffer[] dsts, int offset, int length) 
+int write(ByteBuffer src) 
+long write(ByteBuffer[] srcs) 
+long write(ByteBuffer[] srcs, int offset, int length) 
+;
+
+
+
+static ServerSocketChannel open() 
+ServerSocket socket() 
+SocketChannel accept() 
+void close() 
+boolean isOpen() 
+;
+
+
+
+
+SelectableChannel configureBlocking(boolean block) 
+boolean isBlocking() 
+;
+
+
+boolean finishConnect(); 
+boolean isConnected(); 
+boolean isConnectionPending(); 
+
+
+static Selector open(); 
+boolean isOpen();
+void close(); 
+
+
+static int OP_ACCEPT 
+static int OP_CONNECT 
+static int OP_READ 
+static int OP_WRITE 
+int interestOps() 
+SelectionKey interestOps(int ops); 
+
+
+SelectionKey register(Selector sel, int ops) 
+SelectionKey register(Selector sel, int ops, Object 
+attachment) 
+int validOps() 
+boolean isRegistered() 
+SelectionKey keyFor(Selector sel) ;
+
+SelectionKey key = clientChannel.register(selector, 
+SelectionKey.OP_READ | SelectionKey.OP_WRITE); 
+
+
+Selector selector() 
+SelectableChannel channel() 
+void cancel() 
+
+
+
+int select()
+int select(long timeout)
+int selectNow()
+Selector wakeup()
+
+
+Iterator<SelectionKey> keyIter = selector.selectedKeys().iterator();
+while (keyIter.hasNext()) {
+	SelectionKey key = keyIter.next();
+	// ...Handle I/O for key's channel...
+	keyIter.remove();
+}
+
+
+Set<SelectionKey> keys()
+Set<SelectionKey> selectedKeys()
+
+
+int readyOps()
+boolean isAcceptable()
+boolean isConnectable()
+boolean isReadable()
+boolean isValid()
+boolean isWritable()
+
+
+
+(key.readyOps() & SelectionKey.OP_READ) != 0
+key.isReadable()
+
+Object attach(Object ob)
+Object attachment()
+;
+
+
+static DatagramChannel open()
+boolean isOpen()
+DatagramSocket socket() void close()
+
+
+int send(ByteBuffer src, SocketAddress target)
+SocketAddress receive(ByteBuffer dst)
+
+DatagramChannel channel = DatagramChannel.open();
+ByteBuffer buffer = ByteBuffer.wrap("Hello".getBytes("UTF-16"));
+channel.send(buffer, new InetSocketAddress("localhost", 5000));
+
+DatagramChannel channel = DatagramChannel.open();
+channel.socket().bind(new InetSocketAddress(5000));
+ByteBuffer buffer = ByteBuffer.allocateDirect(20);
+SocketAddress address = channel.receive(buffer);
+buffer.flip();
+String received = Charset.forName("UTF-16")
+					.newDecoder().decode(buffer).toString();
+
+
+
+DatagramChannel connect(SocketAddress remote)
+DatagramChannel disconnect()
+boolean isConnected()
+int read(ByteBuffer dst)
+long read(ByteBuffer[] dsts)
+long read(ByteBuffer[] dsts, int offset, int length)
+int write(ByteBuffer src)
+long write(ByteBuffer[] srcs)
+long write(ByteBuffer[] srcs, int offset, int length)
+
+
+
+
+SelectableChannel configureBlocking(boolean block)
+boolean isBlocking()
+SelectionKey register(Selector sel, int ops)
+SelectionKey register(Selector sel, int ops, Object attachment)
+boolean isRegistered()
+int validOps()
+SelectionKey keyFor(Selector sel)
 
