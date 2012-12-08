@@ -1,6 +1,11 @@
-\documentclass[10pt,a4paper]{report}
-\addtolength{\textheight}{-4cm}
-\addtolength{\textwidth}{+2cm}
+% 纸张与版面大小：电纸书版本
+% \documentclass[10pt,a4paper]{report}
+% \addtolength{\textheight}{-4cm}
+% \addtolength{\textwidth}{+3cm}
+%------------------------------------------------------------------------------------------------------
+% 纸张与版面大小：普通A4纸版本
+\documentclass[a4paper]{report}
+\usepackage[margin=4cm]{geometry}      % 使用geometry包设置边距为2cm
 %------------------------------------------------------------------------------------------------------
 \usepackage{xltxtra,fontspec,xunicode}
 \usepackage[slantfont,boldfont]{xeCJK} % 允许斜体和粗体
@@ -84,6 +89,8 @@
 		\include{tex/02.base.element}
 
 		\include{tex/03.core.type}
+
+		\include{tex/04.core.task}
 
 	\part{工具整合}
 

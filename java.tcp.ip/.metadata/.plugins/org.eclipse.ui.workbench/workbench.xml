@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <workbench progressCount="39" version="2.0">
 <workbenchAdvisor/>
-<window height="711" width="1138" x="0" y="19">
+<window height="829" width="1473" x="1366" y="19">
 <fastViewData fastViewLocation="1024"/>
 <perspectiveBar>
 <itemSize x="160"/>
@@ -43,7 +43,7 @@
 </editorArea>
 <editor activePart="true" focus="true" id="org.eclipse.jdt.ui.CompilationUnitEditor" name="BruteForceCoding.java" partName="BruteForceCoding.java" path="/home/morgan/workspace/study/java.tcp.ip/study.tcp.ip/src/ch03/BruteForceCoding.java" title="BruteForceCoding.java" tooltip="study.tcp.ip/src/ch03/BruteForceCoding.java" workbook="DefaultEditorWorkbook">
 <input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/study.tcp.ip/src/ch03/BruteForceCoding.java"/>
-<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="2145" selectionTopPixel="0"/>
+<editorState selectionHorizontalPixel="0" selectionLength="632" selectionOffset="1510" selectionTopPixel="1031"/>
 </editor>
 </editors>
 <views>
@@ -434,7 +434,7 @@
 <page content="org.eclipse.ui.cheatsheets.views.CheatSheetView" label="LabelNotFound"/>
 </folder>
 </info>
-<info folder="true" part="org.eclipse.debug.internal.ui.ConsoleFolderView" ratio="0.7488" ratioLeft="468" ratioRight="157" relationship="4" relative="org.eclipse.debug.internal.ui.NavigatorFolderView">
+<info folder="true" part="org.eclipse.debug.internal.ui.ConsoleFolderView" ratio="0.6797297" ratioLeft="503" ratioRight="237" relationship="4" relative="org.eclipse.debug.internal.ui.NavigatorFolderView">
 <folder activePageID="org.eclipse.ui.console.ConsoleView" appearance="2" expanded="2">
 <page content="org.eclipse.ui.console.ConsoleView" label="Console"/>
 <page content="org.eclipse.ui.views.TaskList" label="Tasks"/>
@@ -450,7 +450,7 @@
 </presentation>
 </folder>
 </info>
-<info part="org.eclipse.ui.editorss" ratio="0.44871795" ratioLeft="210" ratioRight="258" relationship="4" relative="org.eclipse.debug.internal.ui.NavigatorFolderView"/>
+<info part="org.eclipse.ui.editorss" ratio="0.2551724" ratioLeft="148" ratioRight="432" relationship="4" relative="org.eclipse.debug.internal.ui.NavigatorFolderView"/>
 <info folder="true" part="org.eclipse.debug.internal.ui.OutlineFolderView" ratio="0.7495575" ratioLeft="847" ratioRight="283" relationship="2" relative="org.eclipse.ui.editorss">
 <folder activePageID="org.eclipse.ui.views.ContentOutline" appearance="2" expanded="2">
 <page content="org.eclipse.ui.views.ContentOutline" label="Outline"/>
@@ -481,12 +481,6 @@
 <editors>
 <editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.jdt.ui.CompilationUnitEditor" path="/study.tcp.ip/src/ch03/BruteForceCoding.java"/>
 </editors>
-<item historyLabel="BruteForceCoding.java" index="0">
-<position/>
-</item>
-<item historyLabel="BruteForceCoding.java" index="0">
-<position info="not_deleted" x="2214" y="4"/>
-</item>
 <item historyLabel="BruteForceCoding.java" index="0">
 <position/>
 </item>
@@ -628,8 +622,14 @@
 <item historyLabel="BruteForceCoding.java" index="0">
 <position info="not_deleted" x="238" y="8"/>
 </item>
-<item active="true" historyLabel="BruteForceCoding.java" index="0">
+<item historyLabel="BruteForceCoding.java" index="0">
 <position info="not_deleted" x="3765" y="26"/>
+</item>
+<item historyLabel="BruteForceCoding.java" index="0">
+<position info="not_deleted" x="603" y="0"/>
+</item>
+<item active="true" historyLabel="BruteForceCoding.java" index="0">
+<position info="not_deleted" x="4162" y="20"/>
 </item>
 </navigationHistory>
 <input factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/" type="8"/>
@@ -637,14 +637,6 @@
 <workbenchWindowAdvisor/>
 <actionBarAdvisor/>
 <trimLayout>
-<trimArea IMemento.internal.id="16384">
-<trimItem IMemento.internal.id="org.eclipse.debug.internal.ui.NavigatorFolderView"/>
-</trimArea>
-<trimArea IMemento.internal.id="131072">
-<trimItem IMemento.internal.id="org.eclipse.debug.internal.ui.ConsoleFolderView"/>
-<trimItem IMemento.internal.id="org.eclipse.debug.internal.ui.ToolsFolderView"/>
-<trimItem IMemento.internal.id="org.eclipse.debug.internal.ui.OutlineFolderView"/>
-</trimArea>
 <trimArea IMemento.internal.id="128">
 <trimItem IMemento.internal.id="org.eclipse.ui.internal.WorkbenchWindow.topBar"/>
 <trimItem IMemento.internal.id="org.eclipse.mylyn.tasks.ui.trim.container"/>
