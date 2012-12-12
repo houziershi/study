@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<project name="projectA" default="buildAll">
+	
+	<property file="default.properties" />
+
+	<target name="buildAll" depends="buildSub1, buildSub2">
+		<echo message="buildAll" />
+	</target>
+
+	<target name="buildSub1">
+		<ant antfile="subfile/sub1.xml" target="readme" />
+	</target>
+
+	<target name="buildSub2">
+		<ant antfile="subfile/sub2.xml" target="readme" >
+			<property name="testParam" value="hello" />
+		</ant>
+	</target>
+
+</project>

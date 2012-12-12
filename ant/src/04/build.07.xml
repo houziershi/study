@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<project name="projectA" default="t1">
+	<target name="init">
+		<echo message="init" />
+	</target>
+	<target name="t1">
+		<echo message="target A start" />
+		<antcall target="t2" />
+		<echo message="target A end" />
+	</target>
+	<target name="t2" depends="init">
+		<echo message="target B" />
+	</target>
+</project>

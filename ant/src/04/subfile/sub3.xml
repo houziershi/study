@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!-- call another ant project projectB -->
+<project name="sub3" default="init">
+	<target name="init">
+		<echo message="In sub3" />
+	</target>
+	<target name="readme">
+		<echo message="this is sub3: readme" />
+			<echo message="param from parent file: ${path3}" />
+	</target>
+</project>

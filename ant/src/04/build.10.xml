@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<project name="projectA" default="t1">
+
+
+	<target name="t2">
+		<delete file="others/tu.jar" />
+	</target>
+
+	<target name="t3">
+		<delete dir="others/libs" />
+	</target>
+
+	<!-- delete all *.bak file, and the empty folder -->
+	<target name="t1">
+		<delete includeEmptyDirs="true" >
+			<fileset dir="others/build" includes="**/*.bak" />
+		</delete>
+	</target>
+
+</project>
+
+
+

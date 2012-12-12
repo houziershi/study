@@ -5,7 +5,7 @@
 %------------------------------------------------------------------------------------------------------
 % 纸张与版面大小：普通A4纸版本
 \documentclass[a4paper]{report}
-\usepackage[margin=4cm]{geometry}      % 使用geometry包设置边距为2cm
+\usepackage[margin=2cm]{geometry}      % 使用geometry包设置边距为2cm
 %------------------------------------------------------------------------------------------------------
 \usepackage{xltxtra,fontspec,xunicode}
 \usepackage[slantfont,boldfont]{xeCJK} % 允许斜体和粗体
@@ -43,7 +43,7 @@
 \usepackage{xcolor}
 \usepackage{listings}
 \lstset{
-	language=Java,
+	language=Bash,
 	frame = shadowbox,
 	basicstyle = \ttfamily\small,
 	columns = fixed,
@@ -68,7 +68,7 @@
 \usepackage{graphicx}                            % 引入图片
 \graphicspath{{img/}{images/}}                   % 要导入的图片的位置。可以有多个目录，但就算只有一个目录，也要用两级花括号
 %-------------------------------------------------------------------------------------------------------
-	\title{正则表达式学习笔记}                             % 文章的标题
+	\title{Linux命令}                             % 文章的标题
 	\author{                                     % 作者与致谢
 		阿左 \thanks{感谢档} \and 
 		Nobody \thanks{感谢郭嘉}
@@ -85,22 +85,17 @@
 
 
 	\begin{abstract}                             % 英文摘要
-		Regex study note
+		Linux command
 	\end{abstract}
 
 	\renewcommand{\abstractname}{摘要}           % 中文摘要
 	\begin{abstract}
-		Regex study note
+		Linux command
 	\end{abstract}
 
 	\part{基本概念}
 
 		\include{tex/01.base}
 
-	\part{语言与工具}
-
-		\include{tex/egrep}
-
-		\include{tex/perl}
 
 \end{document}

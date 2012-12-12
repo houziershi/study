@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<project name="projectA" default="callProjectB">
+	<target name="callProjectB">
+		<echo message="In projectA calling projectB" />
+		<ant antfile="subfile/projectB.xml" output="out.log" />
+	</target>
+</project>

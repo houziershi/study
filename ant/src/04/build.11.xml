@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<project name="projectA" default="t1">
+
+	<!-- move file -->
+	<target name="t2">
+		<move file="others/a.old" tofile="toDir/a.new" />
+	</target>
+
+	<!-- move all file under foler "others/build" 
+		 to "toDir" -->
+	<target name="t3">
+		<move todir="toDir" >
+			<fileset dir="others/build" />
+		</move>
+	</target>
+
+	<!-- move all file under foler "others/build" 
+		 to "toDir" -->
+	<!-- after ant 1.6.3 -->
+	<target name="t4">
+		<move file="others/build" tofile="toDir" />
+	</target>
+
+	<!-- move the folder "others/build" to "toDir" -->
+	<target name="t5">
+		<move file="others/build" todir="toDir" />
+	</target>
+
+	<!-- move file and rename to *.bak-->
+	<target name="t1">
+		<move todir="toDir" includeemptydirs="false" >
+			<fileset dir="others/build">
+				<exclude name="**/*.bak" />
+			</fileset>
+			<mapper type="glob" from="*" to="*.bak" />
+		</move>
+	</target>
+
+</project>
+
+
+

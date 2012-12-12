@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<project name="projectA" default="t1">
+
+	<fileset id='prop' dir=".">
+		<patternset>
+			<include name="**/*.properties" />
+		</patternset>
+	</fileset>
+
+	<target name="t1" depends="t2">
+		<apply executable="ls">
+			<!-- arg -->
+			<arg value="-l" />
+			<!-- file set -->
+			<fileset dir=".">
+				<patternset>
+					<exclude name="**/*.properties" />
+				</patternset>
+			</fileset>
+		</apply>
+	</target>
+
+	<target name="t2" >
+		<apply executable="ls">
+			<!-- arg -->
+			<arg value="-l" />
+			<!-- file set -->
+			<fileset refid="prop" />
+		</apply>
+	</target>
+
+</project>

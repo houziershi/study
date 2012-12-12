@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<!-- call another ant project projectB -->
+<project name="projectB" default="init">
+	<target name="init">
+		<echo message="In project B" />
+	</target>
+	<target name="target2">
+		<echo message="In project B, target2" />
+	</target>
+</project>

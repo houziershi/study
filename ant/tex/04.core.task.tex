@@ -2,12 +2,357 @@
 
 \section{任务调用（Ant Task）}
 
-	有一种类型的Ant任务就叫“Ant任务”（Ant Task）。这种类型的Task可以去调用另一个Ant项目。
+有一种类型的Ant任务就叫“Ant任务”（Ant Task）。这种类型的Task可以去调用另一个Ant项目。
 
-	\subsection{主要属性}
+\subsection{主要属性}
 
-	指定要执行的文件（antfile属性）：
+指定要执行的文件（antfile属性）：
 
-	\lstinputlisting[language=XML]{src/04/build.01.xml}
+\lstinputlisting[language=XML]{src/04/build.01.xml}
 
-	\lstinputlisting[language=XML]{src/04/subfile/projectB.xml}
+\lstinputlisting[language=XML]{src/04/subfile/projectB.xml}
+
+指定文件所在目录（dir属性）：
+
+\lstinputlisting[language=XML]{src/04/build.02.xml}
+
+调用指定的任务（target属性）：
+
+\lstinputlisting[language=XML]{src/04/build.03.xml}
+
+\lstinputlisting[language=XML]{src/04/subfile/projectB2.xml}
+
+指定输出流（output属性）：
+
+\lstinputlisting[language=XML]{src/04/build.04.xml}
+
+被调用文件可以使用调用它文件中的属性（inheritAll属性）：类似于Java中的继承属性，默认值为“true”。
+
+被调用文件可以使用调用它文件中的reference任务（inheritRefs属性）：reference任务的作用是把当前属性复制到被调用的任务中使用。它有两个可配置的属性：
+
+１）refid属性：当前project中的属性id。
+２）torefid属性：指定被调用的project中的引用id。
+
+例：把当前project中的path1属性传递给被调用的project的属性path2使用：
+
+\begin{lstlisting}[language=XML]
+	<reference refid="path1" torefid="path2" />
+\end{lstlisting}
+
+\subsection{实例：一个任务整合了多个子任务}
+
+实际工作中，一个大的项目会被独立为几个小的项目：
+
+\lstinputlisting[language=XML]{src/04/build.06.xml}
+\lstinputlisting[language=XML]{src/04/subfile/sub1.xml}
+\lstinputlisting[language=XML]{src/04/subfile/sub2.xml}
+
+
+
+
+
+\section{执行过程中调用其他target（AntCall Task）}
+
+\subsection{主要属性}
+
+三个主要属性：target、inheritAll、inheritRefs参照前一部分Ant Task。
+
+\subsection{例子}
+
+\lstinputlisting[language=XML]{src/04/build.07.xml}
+
+
+
+
+
+\section{调用系统命令（Apply/ExecOn Task）}
+
+\subsection{主要属性}
+
+executable：指定要执行的命令，不带命令行参数。必填。
+
+dest：执行命令的目标文件位置。
+
+spawn：不输出日志，默认为false表示输出日志。
+
+dir：在哪个目录下执行这个命令。
+
+relative：是否支持相对路径。默认false不支持。
+
+forwardslash：文件路径是否支持斜线分隔符。
+
+os：支持这个命令的操作系统。
+
+output：输出重定向。
+
+error：错误输出重定向。
+
+logError：错误输出重定向到ant的日志中去。
+
+append：追加内容面不是覆盖已经有的文件。默认为false。
+
+outputproperty：指定输出定向到的属性名字（定义一个文件则输出到文件中）。
+
+errorproperty：错误重定向到属性的名字。
+
+input：从指定文件中读取属性，可以以命令执行过程中引用。
+
+inputstring：把指定的字符串传递给执行的命令。
+
+resultproperty：执行后存放结果。
+
+timeout：设定执行的超时时间。
+
+failonerror：出错是中否中断。
+
+failifexecutionfails：不能执行程序时中断。默认true。
+
+skipemptyfilesets：如果目录中没有文件，则跳过执行。
+
+parallel：如果为ture，则构建命令只执行一次，并把附加的文件作为命令参数。如果为false则每一个附加文件都会执行一次这个命令。默认为false。
+
+type：说明参数类型：文件（file）、目录（dir）、路径（path）。默认为file。
+
+newenvironment：如果当前环境变量被声明，则不传递旧的环境变量。默认为false。
+
+vmlauncher：默认为true。通过java虚拟机的特性来执行构建文件；如果为false则通过操作系统本身的脚本来执行。
+
+resolveExecutable：默认为false。如为true，命令会在project的根目录下执行。在UNIX或Linux下只允许用户在自己的路径下执行这个命令，要把这个属性设为false。
+
+maxparallel：最大的平行值，指定一次执行源文件的最大数目。如果小于０表示没有限制（默认）。
+
+addsourcefile：自动添加源文件名到执行命令中，默认为true。
+
+verbose：输出命令执行时的概要信息，默认为false不输出。
+
+ignoremissing：忽略不存在的文件，默认为true。
+
+force：是否通过timestame来对target文件进行对比。默认为false。
+
+\subsection{主要参数}
+
+FileSet、FileList、DirSet、Arg(\verb|<arg>|指定参数)。
+
+Mapper（可能指定dest属性的文件的映射关系）。
+
+SrcFile（在\verb|<arg>|参数后使用，指定源文件）。
+
+TargetFile（与srcFile作用相似，用于指定目录文件的参数）。
+
+Env（环境变量）。
+
+\subsection{例子}
+
+调用“ls”命令，参数“-l”。分别排除和包含“properties”文件。
+
+\lstinputlisting[language=XML]{src/04/build.08.xml}
+
+\subsection{使用Mapper、SrcFile的例子}
+
+以一个编译C源文件的例子：对于每一个比\verb|.o|文件更加新的\verb|.c|文件，执行：
+
+\verb|cc -c -o targetfile sourcefile|
+
+在这个文件中用\verb|.o|文件的名称替换targetfile，用\verb|.c|文件的名称替换sourcefile。
+
+\begin{lstlisting}[language=Bash]
+<apply executable="cc" dest="src/c" parallel="false">
+	<arg value="-c" />
+	<arg value="-c" />
+	<targetfile />
+	<srcfile />
+	<fileset dir="src/c" includes="*.c" />
+	<mapper type="glob" from="*.c" to="*.o" />
+</apply>
+\end{lstlisting}
+
+
+
+
+\section{改变文件的权限（Chmod Task）}
+
+\subsection{主要属性}
+
+file、dir、include、excludes、perm（新的权限）。
+
+parallel：是否为每个文件单独执行chmod。默认为true。
+
+type：只改文件的权限（file）；只改目录的权限(dir)；都改权限（both）
+
+maxparallel：最大的平行值，指定一次执行源文件的最大数目。如果小于０表示没有限制（默认）。
+
+verbose：输出命令执行时的概要信息，默认为false不输出。
+
+defaultexcludes：当值为yes时默认忽略指定的文件（如版本控制文件），常用的模式有：
+
+\verb|**/*~, **/#*#, **/.#*, **/%*%, **/._*, |
+
+\verb|**/CVS, **/CVS/**, **/.cvsignore, |
+
+\verb|**/SCCS, **/SCCS/**, **/vssver.scc, |
+
+\verb|**/.svn, **/.svn/**, **/.DS_Store |
+
+\subsection{例子}
+
+所有cgi或old结尾的文件，\verb|private_|开头的目录以及内部的文件。
+
+\lstinputlisting[language=XML]{src/04/build.09.xml}
+
+
+
+
+
+
+\section{删除文件（Delete Task）}
+
+\subsection{主要属性}
+
+file、dir、verbose、quiet（当文件不存在时，不显示提示信息）、failonerror、includes、includesfile、excludes、excludesfile（不推荐使用）、defaultexcludes（不推荐使用）。
+
+deleteonexit：当文件存在时才删除。默认为false。
+
+includeemptydirs：当使用FileSet类型时是否删除空的目录。
+
+\subsection{例子}
+
+\lstinputlisting[language=XML]{src/04/build.10.xml}
+
+
+
+
+
+
+\section{输出信息（Echo Task）}
+
+\subsection{主要属性}
+
+message、file、append（追加到原有文件后面）、level（error、warning、info、verbose、debug）。
+
+\subsection{例子}
+
+\begin{lstlisting}[language=Bash]
+<echo message="hello" />
+<echo message="hello" file="logs/01.log" />
+\end{lstlisting}
+
+
+
+
+
+
+\section{创建目录（Mkdir Task）}
+
+\begin{lstlisting}[language=Bash]
+<property name="dist" value="dist" />
+<property name="tmp" value="tmp" />
+<mkdir dir="${dist}" />
+<mkdir dir="${tmp}" />
+\end{lstlisting}
+
+
+
+
+
+
+\section{移动文件与目录（Move Task）}
+
+\subsection{主要属性}
+
+file、tofile、todir、overwrite、failonerror、verbose、
+
+preservelastmodified：移动后文件的时间与源文件相同。
+
+filtering：允许使用过滤符号。
+
+flatten：没有目录结构，都在一级目录下。
+
+includeEmptyDirs：忽略空目录。
+
+encoding：过滤器的编码方式。
+
+outputencoding：输出文件的编码。
+
+granularity：允许文件修改时间的误差。默认0，DOS系统为2。
+
+\subsection{例子}
+
+\lstinputlisting[language=XML]{src/04/build.11.xml}
+
+
+
+
+
+
+\section{压缩zip文件（Zip Task）}
+
+\subsection{主要属性}
+
+distfile、basedir、compress（是否压缩默认true）、encoding、fileonly、includes、includesfile、excludes、excludesfile、defaultexcludes、
+
+update：覆盖目标文件。
+
+whenempty：当没有可压缩的文件时结果为：报错（fail）、忽略（skip）、创建空zip文件（create）。
+
+duplicate：文件重复时：默认为覆盖（add）、跳过（preserve）、报错（fail）。
+
+roundup：文件修改时间是否采用一下个连续的秒数。
+
+keepcompression：已经压缩的文件保持原先的压缩数据。
+
+comment：zip文件的备注。
+
+\subsection{例子}
+
+任务t1直接按目录生成了压缩文件。任务t2指定了不同文件在生成的压缩文件中的位置。任务t3把一些其他的压缩文件放到了产生的压缩文件中。
+
+\lstinputlisting[language=XML]{src/04/build.12.xml}
+
+
+
+
+
+
+\section{加载属性文件（LoadProperties Task）}
+
+\subsection{主要属性}
+
+srcFile、resource（同srcFile）、encoding、classpath、classpathref。
+
+\subsection{例子}
+
+把复制的目标和来源都定义在属性文件中。
+
+\lstinputlisting[language=XML]{src/04/copy.properties}
+
+加载过程中只加载“copy”开头的属性。
+
+\lstinputlisting[language=XML]{src/04/build.13.xml}
+
+
+
+
+
+
+\section{定义日期格式（Tstamp Task）}
+
+\subsection{主要属性}
+
+property：定义名称，可以在以后引用。
+
+pattern：格式。同java中的SimpleDateFormat。
+
+timezone：时区。同java中的Timezone。
+
+unit：设定与当时时间相差的单元，可为：millisecond、second、minute、hour、day、week、month、year。
+
+offset：设定与当时时间差，单元由unit设定。
+
+locale：地区设置。
+
+\subsection{例子}
+
+\lstinputlisting[language=XML]{src/04/build.14.xml}
+
+
+

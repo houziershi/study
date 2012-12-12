@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<project name="projectA" default="t1">
+
+	<target name="t2">
+		<chmod file="others/aa.sh" perm="ugo+rx" />
+	</target>
+
+
+	<target name="t3">
+		<chmod file="others/aa.sh" perm="700" />
+	</target>
+
+	<target name="t1">
+		<chmod perm="700" type="file" >
+
+			<fileset dir="others" >
+				<include name="**/*.cgi" />
+				<include name="**/*.old" />
+			</fileset>
+
+			<dirset dir="others" >
+				<include name="**/private_*" />
+			</dirset>
+
+		</chmod>
+	</target>
+
+</project>
+
+
+

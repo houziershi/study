@@ -1,0 +1,17 @@
+\chapter{egrep}
+
+在邮件中查找发信人与主题的例子：
+
+\begin{lstlisting}[language=bash]
+egrep '^(From|Subject):' ./*
+\end{lstlisting}
+
+忽略大小写：
+
+\begin{lstlisting}[language=bash]
+egrep -i '^(From|Subject):' ./*
+\end{lstlisting}
+
+
+
+

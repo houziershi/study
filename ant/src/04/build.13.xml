@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<project name="projectA" default="t1">
+
+	<loadproperties srcFile="copy.properties">
+		<filterchain>
+			<linecontains>
+				<contains value="copy." />
+			</linecontains>
+		</filterchain>
+	</loadproperties>
+
+	<target name="t1">
+		<copy todir="${copy.dist}" >
+			<fileset dir="${copy.src}" />
+		</copy>
+	</target>
+
+</project>
+
+
+

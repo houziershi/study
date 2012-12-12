@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<project name="projectA" default="t1">
+
+	<!-- -->
+	<target name="t2">
+		<zip destfile="zipDir/manual1.zip"
+			basedir="manual" includes="**/*.html"
+			excludes="**/todo.html" />
+	</target>
+
+	<!-- -->
+	<target name="t3">
+		<zip destfile="zipDir/manual2.zip" >
+			<!-- define dist folder in zip file -->
+			<zipfileset dir="manual/readme" prefix="docs/user-guide" />
+			<!-- define dist file in zip file -->
+			<zipfileset dir="manual" includes="todo.html" 
+				fullpath="docs/todo.html" />
+			<!-- load file from another zip file -->
+			<zipfileset src="manual/others.zip" includes="**/*.html" 
+				prefix="docs/examples" />
+		</zip>
+	</target>
+
+	<!-- -->
+	<target name="t1">
+		<zip destfile="zipDir/manual3.zip" >
+			<zipfileset dir="manual" prefix="docs/user-guide" />
+			<!-- put other zip file in dist zip file -->
+			<zipgroupfileset dir="." includes="examples*.zip" />
+		</zip>
+	</target>
+
+</project>
+
+
+

@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<project name="sub2" default="init">
+	<target name="init">
+		<echo message="In sub2" />
+	</target>
+	<target name="readme">
+		<echo message="this is sub2: readme" />
+		<echo message="param from parent file: ${testParam}" />
+	</target>
+</project>

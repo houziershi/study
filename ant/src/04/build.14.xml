@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<project name="projectA" default="t1">
+
+	<tstamp>
+		<format property="today_UK" pattern="d-MMMM-yyyy" locale="en" />
+	</tstamp>
+
+	<tstamp>
+		<format property="today_CN" pattern="d-MMMM-yyyy" locale="zh" />
+	</tstamp>
+
+	<tstamp>
+		<format property="touch.time" pattern="MM/dd/yyyy hh:mm aa"
+			offset="5" unit="hour" />
+	</tstamp>
+
+
+	<target name="t1">
+		<echo message="${DSTAMP}" />
+		<echo message="${today_UK}" />
+		<echo message="${today_CN}" />
+		<echo message="${touch.time}" />
+	</target>
+
+</project>
+
+
+
