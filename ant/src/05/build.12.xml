@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<project name="projectA" default="all" basedir=".">
+
+	<target name="use.init">
+		<taskdef name="helloworld" classname="ch05.HelloWorldTask"
+			classpath="build/jar/HelloWorld.jar" />
+	</target>
+
+	<target name="use.withoutParam" depends="use.init" >
+		<helloworld/>
+	</target>
+
+	<target name="use.withMessage" depends="use.init" >
+		<helloworld message="attribute-text" />
+	</target>
+
+	<target name="use.nestedText" depends="use.init" >
+		<helloworld>nested-text</helloworld>
+	</target>
+
+	<target name="use.nestedElement" depends="use.init" >
+		<helloworld>
+			<message msg="nested Element 1" />
+			<message msg="nested Element 2" />
+		</helloworld>
+	</target>
+
+	<target name="all" depends="use.withoutParam,use.nestedText,use.nestedElement">
+	</target>
+
+</project>

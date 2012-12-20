@@ -1,0 +1,31 @@
+
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="jade-dungeon" default="genWAR" basedir=".">
+
+	<target name="genWAR" >
+		<war destfile="${dist.war}/${deployname}.war" 
+			webxml="WebContent/WEB-INF/web.xml">
+
+			<!-- set libs -->
+			<lib dir="${lib.url}">
+				<include name="*.jar" />
+			</lib>
+			<lib dir="${lib.ssh}">
+				<include name="*.jar" />
+			</lib>
+
+			<!-- set classes -->
+			<classes dir="${build.classes.code}" />
+
+			<!-- put file to dist in zipfile -->
+			<zipfileset dir="src/graphics/images/gifs" 
+				prefix="images"/>
+			<zipfileset dir="WebContent" prefix="">
+				<exclude name="**/web.xml" />
+				<exclude name="META-INF/MANIFEST.MF" />
+			</zipfileset>
+
+		</war>
+	</target>
+
+</project>

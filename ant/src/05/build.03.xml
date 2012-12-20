@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<project name="projectA" default="run" basedir=".">
+
+	<target name="run" depends="compile">
+		<java classname="ch05.HelloWorld">
+			<classpath>
+				<pathelement location="dist/test.jar" />
+				<pathelement path="${java.class.path}" />
+			</classpath>
+		</java>
+	</target>
+
+</project>

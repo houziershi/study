@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.8.4
+Created-By: 1.6.0_24-b24 (Sun Microsystems Inc.)
+Built-By: morgan
+Main-Class: ch05.HelloWorld
+
+Name: common
+Specification-Title: Example
+Specification-Vendor: Jade Dungeon Crop.
+
+Name: common/class1.class
+Sealed: false
+

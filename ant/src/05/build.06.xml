@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<project name="projectA" default="run" basedir=".">
+
+	<target name="clean">
+		<delete dir="build" />
+	</target>
+
+	<target name="compile" depends="clean">
+		<mkdir dir="build/classes" />
+		<javac srcdir="java" destdir="build/classes" 
+			includeantruntime="true"/>
+	</target>
+
+	<target name="run" depends="compile">
+		<java classname="ch05.HelloWorld">
+			<classpath>
+				<pathelement path="build/classes" />
+			</classpath>
+		</java>
+	</target>
+
+	<target name="jar" depends="compile">
+		<mkdir dir="build/jar" />
+		<jar destfile="build/jar/HelloWorld.jar" basedir="build/classes" >
+			<manifest>
+				<attribute name="Built-By" value="${user.name}" />
+				<attribute name="Main-Class" value="ch05.HelloWorld" />
+				<section name="common">
+					<attribute name="Specification-Title" value="Example" />
+					<attribute name="Specification-Vendor" 
+						value="Jade Dungeon Crop." />
+				</section>
+				<section name="common/class1.class">
+					<attribute name="Sealed" value="false" />
+				</section>
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="runjar" depends="jar">
+		<java jar="build/jar/HelloWorld.jar" fork="true" />
+	</target>
+
+</project>

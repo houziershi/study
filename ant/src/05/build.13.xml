@@ -1,0 +1,4 @@
+<taskdef name="myJavaDoc" classname="ch05.JavadocTask" />
+
+<taskdef name="myJavaDoc" classname="ch05.JavadocTask" 
+	adapter="ch05.JavaDocAdapter" />

@@ -1,0 +1,14 @@
+
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="jade-dungeon" default="genWAR" basedir=".">
+
+	<target name="genWAR" >
+
+		<ear distfile="dist/${contextPath}.ear" 
+			appxml="deploy/${deploy_name}/application.xml">
+			<fileset dir="dist" includes=".war" />
+		</ear>
+
+	</target>
+
+</project>

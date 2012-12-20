@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="unzip" default="unjar" basedir=".">
+
+	<target name="unjar" >
+		<mkdir dir="unjar" />
+		<unzip src="compile.jar" dest="unjar" />
+	</target>
+
+</project>

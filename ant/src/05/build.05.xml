@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<project name="projectA" default="run" basedir=".">
+
+	<jar destfile="${dist}/lib/app.jar"
+		basedir="${build}/classes"
+		includes="mybackage/pkg01/*"
+		excludes="**/Test.class" />
+
+	<jar destfile="${dist}/lib/app.jar" >
+		<fileset dir="${build.classes}"
+			excludes="**/Test.class" />
+		<fileset dir="${src}/resources" />
+	</jar>
+
+</project>
