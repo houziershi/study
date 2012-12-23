@@ -1,6 +1,13 @@
 \chapter{整合tomcat}
 
 
+首先要通过“conf/tomcat-users.xml”配置文件配置在tomcat上建立管理员的角色与账号：
+
+\lstinputlisting[language=XML]{src/07/tomcat-users.xml}
+
+然后点击tomcat启动页面左上色的“管理”链接看看能不能登录管理界面。如果可以登录的话，就可以用ant的tomcat任务了：
+
+
 \lstinputlisting[language=Bash]{src/07/build.properties}
 
 \lstinputlisting[language=XML]{src/07/build.01.xml}
