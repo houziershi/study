@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<project name="projectA"  basedir=".">
+
+	<path id="classpath">
+		<fileset dir="lib">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<!-- run sql in transaction to import data-->
+	<target name="importData">
+		<sql classpathref="classpath" 
+			driver="com.mysql.jdbc.Driver" 
+			url="jdbc:mysql://127.0.0.1:3306/jadedungeon"
+			userid="root"
+			password="p@ssw0rd"
+			print="true">
+			<transaction src="02.sql" />
+		</sql>
+	</target>
+
+	<!-- use mysql outputfile to export -->
+	<target name="exportData">
+		<sql classpathref="classpath" 
+			driver="com.mysql.jdbc.Driver" 
+			url="jdbc:mysql://127.0.0.1:3306/jadedungeon"
+			userid="root"
+			password="p@ssw0rd"
+			print="true">
+			<![CDATA[
+				select * into outfile 'out.txt' from logTable;	
+			]]>
+		</sql>
+	</target>
+
+</project>

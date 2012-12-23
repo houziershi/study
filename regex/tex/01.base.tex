@@ -20,11 +20,7 @@
 
 \subsection{单词分界符（Word Boundaries）}
 
-“\verb|\<|”与“\verb|\>|”匹配单词的开始与结束。注意匹配的是位置，而不是字符。
-
-
-
-
+“\verb|\<|”与“\verb|\>|”匹配单词（包括字母和数字）的开始与结束。注意匹配的是位置，而不是字符。
 
 
 
@@ -46,8 +42,6 @@ echo '-123456789' | egrep '[-ab]'   # match
 
 
 
-
-
 \section{选择结构（Alternation）}
 
 括号构成子表达式，“\verb|||”表示逻辑“或”。
@@ -58,16 +52,27 @@ Jeff(re|er)y
 
 
 
+\section{注意}
+
+比较下面二者的区别：
+
+\begin{lstlisting}[language=bash]
+[ \t]*
+( *|t*)
+\end{lstlisting}
+
+第一个匹配的内容要么全是空格，要么全是TAB；第二个可以匹配空格和TAB混合。
+
+以下两行是相等的（不过字符范围速度更快）：
+
+\begin{lstlisting}[language=bash]
+[ \t]*
+( |t)*
+\end{lstlisting}
+
+
 
 \section{重复控制}
-
-\subsection{选项元素（Optional Items）}
-
-“\verb|?|”表示前一个元素是可选的。“\verb|July?|”可以匹配“Jul”或“July”。
-
-\subsection{其他量词：重复出现（Other Quantifier: Repetition）}
-
-“\verb|+|”表示前一元素出现一次以上；“\verb|*|”表示前一元素可不出现或出现多次。
 
 \subsection{区间量次（Interval Quantifier）}
 
@@ -76,7 +81,15 @@ Jeff(re|er)y
 echo '1234567890' | egrep '[0-9]{8,15}' 
 \end{lstlisting}
 
+\subsection{选项元素（Optional Items）}
 
+“\verb|?|”相当于“\verb|{0,1}|”。“\verb|July?|”可以匹配“Jul”或“July”。
+
+\subsection{其他量词：重复出现（Other Quantifier: Repetition）}
+
+“\verb|*|”相当于“\verb|{0,n}|”。
+
+“\verb|+|”相当于“\verb|{1,n}|”；
 
 
 
@@ -90,10 +103,10 @@ echo 'that that' | egrep '\<([A-Za-z]+) +\1\>'
 
 “\verb|([a-z])([0-9])\1\2|”这个表达式中，“\verb|\1|”表示第一个表达式“\verb|[0-9]|”匹配的内容；“\verb|\2|”表示第二个表达式“\verb|[0-9]|”匹配的内容。
 
+
+
 \section{转义元字符}
 
 反斜线“\verb|\|”实现元字符的转义。大多数正则工具会把字符范围“\verb|[...]|”中的“\verb|\|”作为普通字符。
-
-
 
 

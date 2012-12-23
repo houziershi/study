@@ -1,0 +1,23 @@
+\chapter{日期与时间}
+
+
+
+\section{时间}
+
+\subsection{24小时}
+
+\begin{lstlisting}[language=bash]
+([01]?[0-9]|2[0-3]):[0-5][0-9]
+\end{lstlisting}
+
+\subsection{12小时}
+
+先来一个不完善的：
+
+\begin{lstlisting}[language=bash]
+([1-9]|1[0-2]):[0-5][0-9] ?([Aa]|[Pp])[Mm]
+\end{lstlisting}
+
+能匹配“\verb|92:15 pm|”
+
+

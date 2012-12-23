@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Storage" default="usage" basedir=".">
+	<description> project </description>
+	<property file="build.properties" />
+	<property name="tomcat.home" value="${appserver.home}" />
+	<property name="deployname" value="jade-dungeon" />
+
+	<property name="dist.dir" location="dist" />
+	<property name="dist.jar" location="dist/jar" />
+	<property name="dist.war" location="dist/war" />
+
+	<!-- ========================================== -->
+	<!--         Define Tomcat tasks            -->
+	<!-- ========================================== -->
+	<path id="catalina-ant-classpath">
+		<fileset dir="${appserver.lib}">
+			<include name="catalina-ant.jar" />
+		</fileset>
+	</path>
+
+	<taskdef name="install" 
+		classname="org.apache.catalina.ant.InstallTask">
+		<classpath refid="catalina-ant-classpath" />
+	</taskdef>
+	<taskdef name="reload" 
+		classname="org.apache.catalina.ant.ReloadTask">
+		<classpath refid="catalina-ant-classpath" />
+	</taskdef>
+	<taskdef name="list" 
+		classname="org.apache.catalina.ant.ListTask">
+		<classpath refid="catalina-ant-classpath" />
+	</taskdef>
+	<taskdef name="start" 
+		classname="org.apache.catalina.ant.StartTask">
+		<classpath refid="catalina-ant-classpath" />
+	</taskdef>
+	<taskdef name="stop" 
+		classname="org.apache.catalina.ant.StopTask">
+		<classpath refid="catalina-ant-classpath" />
+	</taskdef>
+	<taskdef name="undeploy" 
+		classname="org.apache.catalina.ant.UndeployTask">
+		<classpath refid="catalina-ant-classpath" />
+	</taskdef>
+	
+	<!-- ========================================== -->
+	<!--         List Tomcat applications         -->
+	<!-- ========================================== -->
+	<target name="listApp" description="List Tomcat applications">
+		<list url="${tomcat.manager.url}" 
+			username="${tomcat.manager.username}" 
+			password="${tomcat.manager.password}" />
+	</target>
+
+
+	<!-- ========================================== -->
+	<!--         stat the application            -->
+	<!-- ========================================== -->
+	<target name="startApp" description="Start Tomcat application">
+		<start url="${tomcat.manager.url}" 
+			username="${tomcat.manager.username}" 
+			password="${tomcat.manager.password}" path="/${deployname}" />
+	</target>
+
+	<!-- ========================================== -->
+	<!--         stop the  application           -->
+	<!-- ========================================== -->
+	<target name="stopApp" description="Stop Tomcat application">
+		<stop url="${tomcat.manager.url}" 
+			username="${tomcat.manager.username}" 
+			password="${tomcat.manager.password}" path="/${deployname}" />
+	</target>
+
+	<!-- ========================================== -->
+	<!--         reload the application           -->
+	<!-- ========================================== -->
+	<target name="reloadApp" description="Reload application in Tomcat">
+		<reload url="${tomcat.manager.url}" 
+			username="${tomcat.manager.username}" 
+			password="${tomcat.manager.password}" path="/${deployname}" />
+	</target>
+
+	<!-- ========================================== -->
+	<!--         Install WAR file             -->
+	<!-- ========================================== -->
+	<target name="deployApp" description="Install application in Tomcat">
+		<install url="${tomcat.manager.url}" 
+			username="${tomcat.manager.username}" 
+			password="${tomcat.manager.password}" 
+			path="/${deployname}" war="${dist.war}/${deployname}.war" />
+	</target>
+	<target name="deployNewApp" depends="genWAR,deployApp" />
+
+	<!-- ========================================== -->
+	<!--         Remove WAR from Server           -->
+	<!-- ========================================== -->
+	<target name="undeployApp" description="Undeploy Tomcat application">
+		<undeploy url="${tomcat.manager.url}" 
+			username="${tomcat.manager.username}" 
+			password="${tomcat.manager.password}" path="/${deployname}" />
+	</target>
+	<target name="redeployApp" depends="undeployApp,deployApp" />
+	<target name="redeployNewApp" depends="genWAR,undeployApp,deployApp" />
+
+</project>

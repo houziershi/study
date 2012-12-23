@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<project name="projectA"  basedir=".">
+
+	<path id="classpath">
+		<fileset dir="lib">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<!-- run sql in file -->
+	<target name="runFile">
+		<sql classpathref="classpath" 
+			driver="com.mysql.jdbc.Driver" 
+			url="jdbc:mysql://127.0.0.1:3306/jadedungeon"
+			userid="root"
+			password="p@ssw0rd"
+			src="01.sql"
+			print="true">
+		</sql>
+	</target>
+
+	<!-- run sql  -->
+	<target name="runSql">
+		<sql classpathref="classpath" 
+			driver="com.mysql.jdbc.Driver" 
+			url="jdbc:mysql://127.0.0.1:3306/jadedungeon"
+			userid="root"
+			password="p@ssw0rd"
+			print="true">
+			insert into Resident 
+			(id, userName, password, nick, createTime) 
+			values 
+			('00005','yun','111111','yun',now());
+		</sql>
+	</target>
+
+	<!-- run sql in ctada -->
+	<target name="runSql2">
+		<sql classpathref="classpath" 
+			driver="com.mysql.jdbc.Driver" 
+			url="jdbc:mysql://127.0.0.1:3306/jadedungeon"
+			userid="root"
+			password="p@ssw0rd"
+			print="true">
+			<![CDATA[
+			insert into Resident 
+			(id, userName, password, nick, createTime) 
+			values 
+			('00006','cccc','111111','cccc',now());
+			]]>
+		</sql>
+	</target>
+
+	<!-- run sql in transaction -->
+	<target name="runTransaction">
+		<sql classpathref="classpath" 
+			driver="com.mysql.jdbc.Driver" 
+			url="jdbc:mysql://127.0.0.1:3306/jadedungeon"
+			userid="root"
+			password="p@ssw0rd"
+			print="true">
+			<transaction src="02.sql" />
+			<transaction src="03.sql" />
+			<transaction src="04.sql" />
+		</sql>
+	</target>
+
+	<!-- out put to file-->
+	<target name="toOutfile">
+		<sql classpathref="classpath" 
+			driver="com.mysql.jdbc.Driver" 
+			url="jdbc:mysql://127.0.0.1:3306/jadedungeon"
+			userid="root"
+			password="p@ssw0rd"
+			output="outfile.txt"
+			print="true">
+			select * from Resident;
+		</sql>
+	</target>
+
+	<!-- spec the database version -->
+	<!-- only success in mysql 5.5 -->
+	<target name="inVersion">
+		<sql classpathref="classpath" 
+			rdbms="mysql" version="5.5"
+			driver="com.mysql.jdbc.Driver" 
+			url="jdbc:mysql://127.0.0.1:3306/jadedungeon"
+			userid="root"
+			password="p@ssw0rd"
+			output="outfile.txt"
+			print="true">
+			select * from Resident;
+		</sql>
+	</target>
+
+</project>
