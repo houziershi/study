@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Storage" default="usage" basedir=".">
+
+	<property name="build.dir" location="tmp" />
+	<property name="build.classes.code" 
+		location="${build.dir}/code" />
+	<property name="build.classes.test" 
+		location="${build.dir}/test" />
+
+	<property name="junit.report.dir" value="junitreport" />
+	<property name="junit.report.src" value="junitreport/src" />
+	<property name="junit.report.frame" value="junitreport/frame" />
+
+	<!--  to build the build path -->
+	<path id="lib.compile">
+		<fileset dir="${lib.tomcat}">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+	<path id="lib.run">
+		<fileset dir="${lib.url}">
+			<include name="*.jar" />
+		</fileset>
+		<fileset dir="${lib.ssh}">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<!--   -->
+	<path id="classpath.code">
+		<pathelement path="${build.classes.code}" />
+		<pathelement path="${build.classes.test}" />
+	</path>
+
+	<!-- Run JUnit test and generate Junit Report-->
+	<target name="runJunit" depends="compileTest">
+		<mkdir dir="${junit.report.src}" />
+		<junit fork="yes" printsummary="withOutAndErr" 
+			haltonerror="yes" haltonfailure="yes">
+			<formatter type="xml" />
+			<classpath refid="lib.compile" />
+			<classpath refid="lib.run" />
+			<classpath refid="classpath.code" />
+			<test todir="${junit.report.src}" 
+				name="test.base.sute.SampleSuite" />
+		</junit>
+	</target>
+
+	<!-- trans JUnit report to HTML fromat -->
+	<target name="reportJunit" depends="runJunit">
+		<mkdir dir="${junit.report.frame}" />
+		<junitreport todir="${junit.report.frame}">
+			<fileset dir="${junit.report.src}">
+				<include name="TEST-*.xml" />
+			</fileset>
+			<report format="frames" todir="${junit.report.frame}" />
+		</junitreport>
+	</target>
+
+</project>
