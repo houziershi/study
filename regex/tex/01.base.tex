@@ -18,6 +18,14 @@
 匹配所有的行（因为所有的行都有一个开头）：
 \lstinputlisting[firstline=3,lastline=3]{src/ch01/00.txt}
 
+\subsection{增强锚点}
+
+通常来说，锚点“\verb|^|”、“\verb|$|”匹配的不是逻辑行的开头与结尾，而是整个字符串的开头与结尾。如果要匹配逻辑行可以切换到增强锚点（enhanced line anchor）模式下。在Perl语言中修饰符为“\verb|/m|”。例如，把空白行替换为HTML的段落符“\verb|<p>|”：
+
+\lstinputlisting[language=Perl,firstline=8,lastline=8]{src/ch02/exp11.pl}
+
+
+
 \subsection{单词分界符（Word Boundaries）}
 
 “\verb|\<|”与“\verb|\>|”匹配单词（包括字母和数字）的开始与结束。注意匹配的是位置，而不是字符。

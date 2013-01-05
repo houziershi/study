@@ -1,0 +1,153 @@
+\chapter{元字符}
+
+\section{数值传义}
+
+\subsection{通过八进制转义}
+
+格式为“\verb|\num|”，例如：“\verb|\015\012|”。取值范围一般在“\verb|\000|”到“\verb|\377|”之间，而且通常要求以0开头。
+
+\subsection{通过十六进制转义}
+
+格式有：“\verb|\xnum|”、“\verb|\x{num}|”、“\verb|\unum|”、“\verb|Unum|”。
+
+\section{字符集合}
+
+\begin{table}[htbp]
+	\caption{常用正则元字符}
+	\label{tab:part.meta.charset}
+	\centering
+	\begin{tabular}{ll}
+		\hline
+		元字符 & 作用 \\
+		\hline
+		\verb|\s| & 空白字符（包括空格、制表符、换行）\\
+		\verb|\S| & 除了“\verb|\s|”以外的任何字符\\
+		\verb|\w| & “\verb|[A-Za-z0-9]|”\\
+		\verb|\W| & 除了“\verb|\W|”以外的任何字符\\
+		\verb|\d| & “\verb|[0-9]|”\\
+		\verb|\D| & 除了“\verb|\d|”以外的任何字符\\
+		\hline
+	\end{tabular}
+\end{table}
+
+\section{Unicode属性}
+
+Unicode不仅是字符的映射，还记录了每个字符的属性（是大写还是小写字符、是从右向左读的……）。
+
+匹配属性的格式为“\verb|\p{Prop}|”或“\verb|\P{Prop}|”。如属性“\verb|\p{L}|”匹配了字符属性（相对于数字、标点、口音等），还有相等的多字母表示方式“\verb|p{Letter}|”。还有些系统中在单字符版本中可以省略花括号。还有些系统中可以加上条件“\verb|In|”或“\verb|Is|”来限制条件，如“\verb|\p{IsL}|”。
+
+许多属性还可以进一步加上子属性，如字符可以再一步描述是大写字符还是小写字符。
+
+\subsection{字母属性}
+
+“\verb|\p{L}|”或“\verb|\p{Letter}|”字母。
+
+“\verb|\p{Ll}|”或“\verb|\p{Lowercase_Letter}|”小写字母。
+
+“\verb|\p{Lu}|”或“\verb|\p{Uppercase_Letter}|”大写字母。
+
+“\verb|\p{Lt}|”或“\verb|\p{Titlecase_Letter}|”出现在单词开头的字母（某些语言单词组合中会有）。
+
+“\verb|\p{L&}|”包含了“\verb|\p{Ll}|”“\verb|\p{Lu}|”“\verb|\p{Lt}|”三者的集合。
+
+“\verb|\p{Lm}|”或“\verb|\p{Modifier_Letter}|”少数的样子像字母，其实是特殊用途的字符。
+
+“\verb|\p{Lo}|”或“\verb|\p{Other_Letter}|”没有大小写、也不是修饰符的字母。包括希伯来语、阿拉伯语、日语中的字母。
+
+“\verb|\p{M}|”或“\verb|\p{Mark}|”重音符号等修饰符号，不能单独出现。
+
+“\verb|\p{Mn}|”或“\verb|\p{Non_Spacing_Mark}|”修饰其他字符的重音符、变音符等。
+
+“\verb|\p{Mc}|”或“\verb|\p{Spacing_Combining_Mark}|”会占一定宽度的修饰符，孟加拉语、马来语中有。
+
+“\verb|\p{Me}|”或“\verb|\p{Encolsing_Mark}|”可以围住其他字符的标记，圆圈、方框等。
+
+“\verb|\p{Z}|”或“\verb|\p{Separator}|”空白的分隔符。
+
+“\verb|\p{Zs}|”或“\verb|\p{Space_Separator}|”空格、制表符等。
+
+“\verb|\p{Zl}|”或“\verb|\p{Line_Separator}|”LINE SEPAPATOR（U+2028）。
+
+“\verb|\p{Zp}|”或“\verb|\p{Paragraph_Separator}|”PAPAGRAPH SEPARATOR（U+2029）。
+
+“\verb|\p{S}|”或“\verb|\p{Symbol}|”图形与符号。
+
+“\verb|\p{Sm}|”或“\verb|\p{Math_Symbol}|”数学符号，加减乘除等。
+
+“\verb|\p{Sc}|”或“\verb|\p{Currency_Symbol}|”货币符号。
+
+“\verb|\p{Sk}|”或“\verb|\p{Modifier_Symbol}|”组合字符，但作为功能完整的字符有自己的意义。
+
+“\verb|\p{So}|”或“\verb|\p{Other_Symbol}|”印刷符号、框图等。
+
+“\verb|\p{N}|”或“\verb|\p{Number}|”数字。
+
+“\verb|\p{Nd}|”或“\verb|\p{Decimal_Digit_Number}|”各种表示0到9的数字（但不包括中日韩）。
+
+“\verb|\p{Nl}|”或“\verb|\p{Letter_Number}|”几乎所有的罗马数字。
+
+“\verb|\p{No}|”或“\verb|\p{Other_Number}|”作为加密符号与记数符号，（但不包括中日韩）。
+
+“\verb|\p{P}|”或“\verb|\p{Punctuation}|”标点符号。
+
+“\verb|\p{Pd}|”或“\verb|\p{Dash_Punctuation}|”各种连字符与短划线。
+
+“\verb|\p{Ps}|”或“\verb|\p{Open_Punctuation}|”像是(、《等开符号。
+
+“\verb|\p{Pe}|”或“\verb|\p{Close_Punctuation}|”像是)、》等闭符号。
+
+“\verb|\p{Pi}|”或“\verb|\p{Initial_Punctuation}|”像是“、<等。
+
+“\verb|\p{Pf}|”或“\verb|\p{Final_Punctuation}|”像是”、>等。
+
+“\verb|\p{Pc}|”或“\verb|\p{Connector_Punctuation}|”少数有特殊语法含义的标点，如下划线。
+
+“\verb|\p{Po}|”或“\verb|\p{Other_Punctuation}|”其他标点，句点、感叹号等。
+
+“\verb|\p{C}|”或“\verb|\p{Other}|”其他任何字符。
+
+“\verb|\p{Cc}|”或“\verb|\p{Control}|”ASCII和Latin-1编码中的控制字符。
+
+“\verb|\p{Cf}|”或“\verb|\p{Format}|”表示格式的不可见字符。
+
+“\verb|\p{Co}|”或“\verb|\p{Private_Use}|”私人用途，如公司的Logo等。
+
+“\verb|\p{Cn}|”或“\verb|\p{Unassigned}|”末分配的代码点。
+
+\subsection{字母表（Scripts）}
+
+字母表匹配一个语系中独有的字符，如“\verb|\p{Hebrew}|”匹配只有希伯莱文才有的字符。
+
+有些字符不属于任何字母表（如句点或空格）而属于通用字母表，用“\verb|\p{IsCommon}|”匹配。还有一个伪字母表Inherited包括从其所属的字母表中基本字符继承而来的组合字符。
+
+\subsection{区块（Block）}
+
+区块代码了一段连续的代码（通常与语言地区相关），如西藏字符在Perl与java.util.regex中可以用“\verb|\p{InTibetan}|”来匹配。
+
+\subsection{字母表与区块}
+
+属于某个字母表的字符可能同时包含多个区块，而且字母表和区块很容易混淆。如Unicode同时提供了Tibetan字母表和Tibetan区块。
+
+
+
+\section{字符集合的集合运算}
+
+\subsection{简单的排除运算}
+
+.NET提供了简单的排除（减法）运算，如“\verb|[[a-z]-[aeiou]]|”就取出了所有的辅音。再看一个排除标点符号中除了书名号括号等成对符号的例子：“\verb|[\p{P}-[\p{Ps}\p{Pe}]|”。
+
+\subsection{完整的字符集合运算}
+
+Sun的Java正则包提供了完整的字符集合运算（并、交、减）。
+
+并集运算：“\verb|[abcxyz]|”相同的表示有“\verb|[[abc][xyz]]|”、“\verb|[abc[xyz]]|”、“\verb|[[abc]xyz]|”。
+
+交集运算：“\verb|[\p{InThai}&&\p{Cn}]|”
+
+排除运算：“\verb|[\p{InThai}&&[^\p{Cn}]]|”。上一节中.NET取辅音的例子可以写为：“\verb|[[a-z]&&[^aeiou]]|”。
+
+
+
+
+
+

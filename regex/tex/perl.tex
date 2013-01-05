@@ -169,18 +169,11 @@ file.in
 perl -w mkreply.pl file.in > file.out
 \end{lstlisting}
 
-\subsection{读到文件文件}
+\section{从文件读取}
 
 Perl提供了操作符“\verb|<>|”把每一行读取到变量中，我们通过“\verb|^\s*$|”检查空行（表示邮件head结束）。
 
-\begin{lstlisting}[language=Perl]
-while($line = <>) {
-	# ... deal with $line ...
-	if($line =~ m/^\s*$/) {
-		last; # jump out of loop
-	}
-}
-\end{lstlisting}
+\lstinputlisting[language=Perl,firstline=0,lastline=6]{src/ch02/exp11.pl}
 
 从邮件头中提取信息的方法，以Subject为例：
 
@@ -193,4 +186,24 @@ while($line = <>) {
 就连输出原文引用的部人也可以通过正则来实现：
 
 \lstinputlisting[language=Perl,firstline=13,lastline=14]{src/ch02/exp10.pl}
+
+\section{增强锚点}
+
+通常来说，锚点“\verb|^|”、“\verb|$|”匹配的不是逻辑行的开头与结尾，而是整个字符串的开头与结尾。如果要匹配逻辑行可以切换到增强锚点（enhanced line anchor）模式下。在Perl语言中修饰符为“\verb|/m|”。例如，把空白行替换为HTML的段落符“\verb|<p>|”：
+
+\lstinputlisting[language=Perl,firstline=8,lastline=8]{src/ch02/exp11.pl}
+
+
+\section{格式化}
+
+为了增加可读性，修饰符“\verb|/x|”允许对正则表达式进行排版（还可以用花括号代替斜线）：
+
+\lstinputlisting[language=Perl,firstline=10,lastline=19]{src/ch02/exp11.pl}
+
+
+\section{重用正则对象}
+
+修饰符“\verb|qr/.../|”表示不应用到字符串，建立一个对象以后再用：
+
+\lstinputlisting[language=Perl,firstline=21,lastline=25]{src/ch02/exp11.pl}
 
