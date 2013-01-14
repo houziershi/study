@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="0" hostname="morgan-laptop" name="testsuite.AllSuite" tests="3" time="0.084" timestamp="2013-01-14T17:31:10">
+  <properties>
+    <property name="java.vendor" value="Oracle Corporation" />
+    <property name="sun.java.launcher" value="SUN_STANDARD" />
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers" />
+    <property name="ant.file.lesson" value="/home/morgan/workspace/study/agile.java/code/04.string/build.xml" />
+    <property name="os.name" value="Linux" />
+    <property name="sun.boot.class.path" value="/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/resources.jar:/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/rt.jar:/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/sunrsasign.jar:/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/jsse.jar:/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/jce.jar:/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/charsets.jar:/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/netx.jar:/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/plugin.jar:/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/rhino.jar:/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/jfr.jar:/usr/lib/jvm/java-7-openjdk-amd64/jre/classes" />
+    <property name="build.lib.run" value="/home/morgan/workspace/study/agile.java/code/04.string/build/lib/run" />
+    <property name="java.vm.specification.vendor" value="Oracle Corporation" />
+    <property name="ant.home" value="/opt/morganstudio/lib-java/apache-ant-1.8.4" />
+    <property name="java.runtime.version" value="1.7.0_09-b30" />
+    <property name="user.name" value="morgan" />
+    <property name="build.dir" value="/home/morgan/workspace/study/agile.java/code/04.string/build" />
+    <property name="user.language" value="en" />
+    <property name="sun.boot.library.path" value="/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/amd64" />
+    <property name="ant.project.default-target" value="runJunit" />
+    <property name="ant.project.name" value="lesson" />
+    <property name="java.version" value="1.7.0_09" />
+    <property name="user.timezone" value="" />
+    <property name="sun.arch.data.model" value="64" />
+    <property name="junit.report.frame" value="junitreport/frame" />
+    <property name="lib.junit" value="/opt/morganstudio/lib-java/junit4.8.2" />
+    <property name="java.endorsed.dirs" value="/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/endorsed" />
+    <property name="sun.cpu.isalist" value="" />
+    <property name="sun.jnu.encoding" value="UTF-8" />
+    <property name="file.encoding.pkg" value="sun.io" />
+    <property name="file.separator" value="/" />
+    <property name="java.specification.name" value="Java Platform API Specification" />
+    <property name="build.lib.compile" value="/home/morgan/workspace/study/agile.java/code/04.string/build/lib/compile" />
+    <property name="ant.file.type.lesson" value="file" />
+    <property name="junit.report.dir" value="junitreport" />
+    <property name="java.class.version" value="51.0" />
+    <property name="user.country" value="US" />
+    <property name="java.home" value="/usr/lib/jvm/java-7-openjdk-amd64/jre" />
+    <property name="dist.dir" value="/home/morgan/workspace/study/agile.java/code/04.string/dist" />
+    <property name="java.vm.info" value="mixed mode" />
+    <property name="ant.file" value="/home/morgan/workspace/study/agile.java/code/04.string/build.xml" />
+    <property name="os.version" value="3.2.0-36-generic" />
+    <property name="path.separator" value=":" />
+    <property name="java.vm.version" value="23.2-b09" />
+    <property name="ant.library.dir" value="/opt/morganstudio/lib-java/apache-ant-1.8.4/lib" />
+    <property name="src.code" value="/home/morgan/workspace/study/agile.java/code/04.string/src" />
+    <property name="dist.jar" value="/home/morgan/workspace/study/agile.java/code/04.string/dist/jar" />
+    <property name="java.awt.printerjob" value="sun.print.PSPrinterJob" />
+    <property name="junit.report.src" value="junitreport/src" />
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle" />
+    <property name="build.classes.code" value="/home/morgan/workspace/study/agile.java/code/04.string/build/classes/code" />
+    <property name="awt.toolkit" value="sun.awt.X11.XToolkit" />
+    <property name="compile.version" value="1.7" />
+    <property name="user.home" value="/home/morgan" />
+    <property name="java.specification.vendor" value="Oracle Corporation" />
+    <property name="java.library.path" value="/usr/java/packages/lib/amd64:/usr/lib/jni:/lib:/usr/lib" />
+    <property name="java.vendor.url" value="http://java.oracle.com/" />
+    <property name="java.vm.vendor" value="Oracle Corporation" />
+    <property name="java.runtime.name" value="OpenJDK Runtime Environment" />
+    <property name="sun.java.command" value="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner testsuite.AllSuite filtertrace=true haltOnError=true haltOnFailure=true formatter=org.apache.tools.ant.taskdefs.optional.junit.OutErrSummaryJUnitResultFormatter showoutput=false outputtoformatters=true logfailedtests=true logtestlistenerevents=false formatter=org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter,/home/morgan/workspace/study/agile.java/code/04.string/junitreport/src/TEST-testsuite.AllSuite.xml crashfile=/home/morgan/workspace/study/agile.java/code/04.string/junitvmwatcher278769914531858808.properties propsfile=/home/morgan/workspace/study/agile.java/code/04.string/junit3989962770082664474.properties" />
+    <property name="java.class.path" value="/home/morgan/workspace/study/agile.java/code/04.string/build/lib/run/junit-4.8.2-src.jar:/home/morgan/workspace/study/agile.java/code/04.string/build/lib/run/junit-4.8.2.jar:/home/morgan/workspace/study/agile.java/code/04.string/build/lib/run/junit-dep-4.8.2.jar:/home/morgan/workspace/study/agile.java/code/04.string/build/classes/code:/home/morgan/workspace/study/agile.java/code/04.string/build/classes/test:/home/morgan/workspace/study/agile.java/code/04.string:/usr/lib/jvm/java-7-openjdk-amd64/jre/lib:/opt/morganstudio/lib-java/apache-ant-1.8.4/lib/ant-launcher.jar:/opt/morganstudio/lib-java/apache-ant-1.8.4/lib/ant.jar:/opt/morganstudio/lib-java/apache-ant-1.8.4/lib/ant-junit.jar:/opt/morganstudio/lib-java/apache-ant-1.8.4/lib/ant-junit4.jar" />
+    <property name="ant.version" value="Apache Ant(TM) version 1.8.4 compiled on May 22 2012" />
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification" />
+    <property name="ant.file.type" value="file" />
+    <property name="java.vm.specification.version" value="1.7" />
+    <property name="sun.cpu.endian" value="little" />
+    <property name="sun.os.patch.level" value="unknown" />
+    <property name="src.test" value="/home/morgan/workspace/study/agile.java/code/04.string/test" />
+    <property name="dist.pkg" value="/home/morgan/workspace/study/agile.java/code/04.string/dist/pkg" />
+    <property name="java.io.tmpdir" value="/tmp" />
+    <property name="java.vendor.url.bug" value="http://bugreport.sun.com/bugreport/" />
+    <property name="build.classes.test" value="/home/morgan/workspace/study/agile.java/code/04.string/build/classes/test" />
+    <property name="os.arch" value="amd64" />
+    <property name="java.awt.graphicsenv" value="sun.awt.X11GraphicsEnvironment" />
+    <property name="java.ext.dirs" value="/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/ext:/usr/java/packages/lib/ext" />
+    <property name="user.dir" value="/home/morgan/workspace/study/agile.java/code/04.string" />
+    <property name="line.separator" value="&#xa;" />
+    <property name="java.vm.name" value="OpenJDK 64-Bit Server VM" />
+    <property name="basedir" value="/home/morgan/workspace/study/agile.java/code/04.string" />
+    <property name="ant.java.version" value="1.7" />
+    <property name="ant.core.lib" value="/opt/morganstudio/lib-java/apache-ant-1.8.4/lib/ant.jar" />
+    <property name="file.encoding" value="UTF-8" />
+    <property name="java.specification.version" value="1.7" />
+    <property name="ant.project.invoked-targets" value="runJunit" />
+  </properties>
+  <testcase classname="test.StringConstansTest" name="testNewLine" time="0.004" />
+  <testcase classname="test.EnumTest" name="testColor" time="0.001" />
+  <testcase classname="test.EnumTest" name="testGender" time="0.001" />
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

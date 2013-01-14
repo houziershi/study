@@ -1,6 +1,11 @@
-\documentclass[10pt,a4paper]{report}
+% 纸张与版面大小：电纸书版本
+% \documentclass[10pt,a4paper]{report}
 % \addtolength{\textheight}{-4cm}
-% \addtolength{\textwidth}{+2cm}
+% \addtolength{\textwidth}{+3cm}
+%------------------------------------------------------------------------------------------------------
+% 纸张与版面大小：普通A4纸版本
+\documentclass[a4paper]{report}
+\usepackage[margin=4cm]{geometry}      % 使用geometry包设置边距为2cm
 %------------------------------------------------------------------------------------------------------
 \usepackage{xltxtra,fontspec,xunicode}
 \usepackage[slantfont,boldfont]{xeCJK} % 允许斜体和粗体
@@ -60,7 +65,7 @@
 \usepackage{graphicx}                            % 引入图片
 \graphicspath{{img/}{images/}}                   % 要导入的图片的位置。可以有多个目录，但就算只有一个目录，也要用两级花括号
 %-------------------------------------------------------------------------------------------------------
-	\title{Agile Java}                             % 文章的标题
+	\title{Scala 学习笔记}                             % 文章的标题
 	\author{                                     % 作者与致谢
 		阿左 \thanks{感谢读者} \and 
 		Nobody \thanks{感谢国家}
@@ -75,10 +80,11 @@
 	\listoffigures                               % 生成图片目录
 	\listoftables                                % 生成表格目录
 
-	\part{基本概念}
-		\include{tex/01.dev.env}
-	\part{常用工具}
-		\include{tex/03.time}
-		\include{tex/04.string}
+
+
+	\part{基础入门}
+
+		\include{tex/01.start}
+
 
 \end{document}

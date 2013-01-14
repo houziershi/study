@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="lesson" default="runJunit" basedir=".">
+	<description>lesson</description>
+	<property file="build.properties" />
+
+	<property name="src.code" location="src" />
+	<property name="src.test" location="test" />
+
+
+	<property name="build.dir" location="build" />
+	<property name="build.lib.compile" location="build/lib/compile" />
+	<property name="build.lib.run" location="build/lib/run" />
+	<property name="build.classes.code" location="build/classes/code" />
+	<property name="build.classes.test" location="build/classes/test" />
+
+	<property name="junit.report.dir" value="junitreport" />
+	<property name="junit.report.src" value="junitreport/src" />
+	<property name="junit.report.frame" value="junitreport/frame" />
+
+	<property name="dist.dir" location="dist" />
+	<property name="dist.jar" location="dist/jar" />
+	<property name="dist.pkg" location="dist/pkg" />
+
+	<!--  to build the build path -->
+	<path id="lib.compile">
+		<fileset dir="${build.lib.compile}">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+	<path id="lib.run">
+		<fileset dir="${build.lib.run}">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<!--   -->
+	<path id="classpath.code">
+		<pathelement path="${build.classes.code}" />
+		<pathelement path="${build.classes.test}" />
+	</path>
+
+	<!--// create needed folder-->
+	<target name="init">
+		<delete dir="${build.dir}" />
+		<delete dir="${junit.report.dir}" />
+		<delete dir="${dist.dir}" />
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${build.lib.compile}" />
+		<mkdir dir="${build.lib.run}" />
+		<mkdir dir="${junit.report.dir}" />
+		<mkdir dir="${dist.dir}" />
+		<!--
+		<copy todir="${build.lib.compile}">
+		</copy>
+		-->
+		<copy todir="${build.lib.run}">
+			<fileset dir="${lib.junit}">
+				<include name="*.jar" />
+			</fileset>
+		</copy>
+	</target>
+
+	<!--// to compile the .java file -->
+	<target name="compile" depends="init">
+		<mkdir dir="${build.classes.code}" />
+		<javac srcdir="${src.code}" destdir="${build.classes.code}" source="${compile.version}" target="${compile.version}" includeantruntime="true" debug="on">
+			<classpath refid="lib.compile" />
+			<classpath refid="lib.run" />
+		</javac>
+		<copy todir="${build.classes.code}">
+			<fileset dir="${src.code}">
+				<exclude name="**/*.java" />
+			</fileset>
+		</copy>
+	</target>
+
+	<!--// to compile the .java file -->
+	<target name="compileTest" depends="compile">
+		<mkdir dir="${build.classes.test}" />
+		<javac srcdir="${src.test}" destdir="${build.classes.test}" source="${compile.version}" target="${compile.version}" includeantruntime="true" debug="on">
+			<classpath refid="lib.compile" />
+			<classpath refid="lib.run" />
+			<classpath refid="classpath.code" />
+		</javac>
+		<copy todir="${build.classes.test}">
+			<fileset dir="${src.test}">
+				<exclude name="**/*.java" />
+			</fileset>
+		</copy>
+	</target>
+
+	<!-- Run JUnit test and generate Junit Report-->
+	<target name="runJunit" depends="compileTest">
+		<mkdir dir="${junit.report.src}" />
+		<junit fork="yes" printsummary="withOutAndErr" haltonerror="yes" haltonfailure="yes">
+			<formatter type="xml" />
+			<classpath refid="lib.compile" />
+			<classpath refid="lib.run" />
+			<classpath refid="classpath.code" />
+			<test todir="${junit.report.src}" name="testsuite.AllSuite" />
+		</junit>
+	</target>
+
+	<!-- trans JUnit report to HTML fromat -->
+	<target name="reportJunit">
+		<mkdir dir="${junit.report.frame}" />
+		<junitreport todir="${junit.report.frame}">
+			<fileset dir="${junit.report.src}">
+				<include name="TEST-*.xml" />
+			</fileset>
+			<report format="frames" todir="${junit.report.frame}" />
+		</junitreport>
+	</target>
+
+</project>
