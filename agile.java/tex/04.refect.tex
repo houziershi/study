@@ -36,6 +36,8 @@
 
 \lstinputlisting[]{code/04.refect/test/test/DctTest.java}
 
+
+
 \section{反射}
 
 通过Object的getClass方法可以在程序运行过程中判断一个对象的类型。一个类的成员方法
@@ -49,3 +51,26 @@ java.lang.Class类的getMethods、getConstructors、getFields等方法可以取�
 \lstinputlisting[]{code/04.refect/src/example/RefectClassExp.java}
 
 \lstinputlisting[]{code/04.refect/test/test/ClassRefTest.java}
+
+\section{代理模式}
+
+java.lang.reflectProxy可以提供动态代理类，在运行时动态实现一个或多个接口。
+
+
+
+\subsection{代理应用实例}
+
+对于一个账号服务我们抽象出接口AccountService。它有两个实现：AccountServiceProxy
+在客户端，AccountServiceImpl在服务器端。服务器端还有一个可能接收请示的ServerStub
+。
+
+客户端程序只知道调用了AccountService接口的方法，但实际上生产出来的类是
+AccountServiceProxy。它的工作是与服务器端的ServiceStub通讯。ServiceStub会分析对
+应的请示，调用具体实现功能的AccountServiceImpl处理业务逻辑。ServiceStub再把处理
+结果返回给客户端的AccountServiceProxy。
+
+整个过程在客户端程序看起来好像是在调用本地代码一样。
+
+
+AccountServiceProxy。它不能提供服务，但能和服务器通讯上的
+
