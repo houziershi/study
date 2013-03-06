@@ -4,7 +4,7 @@ Global setup:
 
  Set up git
   git config --global user.name "Jade Shan"
-  git config --global user.email evokeralucard@gmail.com
+  git config --global user.email aaa@bbb.com
       
 
 Next steps:
@@ -23,7 +23,7 @@ Existing Git Repo?
 
   cd existing_git_repo
   git remote add origin git@github.com:Jade-Shan/study.git
-  git push -u origin master
+  git pull -u origin master
       
 
 Importing a Subversion Repo?
@@ -44,7 +44,7 @@ When you're done:
 # ====================================
 
 git conf --global user.name "Jade-Shan"
-git conf --global user.email "evokeralucard@gmail.com"
+git conf --global user.email "aaa@bbb.com"
 
 
 

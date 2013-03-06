@@ -58,7 +58,7 @@ java.lang.reflectProxy可以提供动态代理类，在运行时动态实现一�
 
 
 
-\subsection{代理应用实例}
+\subsection{代理应用场景}
 
 对于一个账号服务我们抽象出接口AccountService。它有两个实现：AccountServiceProxy
 在客户端，AccountServiceImpl在服务器端。服务器端还有一个可能接收请示的ServerStub
@@ -72,5 +72,34 @@ AccountServiceProxy。它的工作是与服务器端的ServiceStub通讯。Servi
 整个过程在客户端程序看起来好像是在调用本地代码一样。
 
 
-AccountServiceProxy。它不能提供服务，但能和服务器通讯上的
 
+\subsection{通过代理实现权限控制}
+
+我们要通过权限类与异常来控制程序：
+
+\lstinputlisting[]{code/04.refect/src/sis/security/Permission.java}
+
+\lstinputlisting[]{code/04.refect/src/sis/security/PermissionException.java}
+
+首先抽象出业务逻辑的接口并实现类：
+
+\lstinputlisting[]{code/04.refect/src/sis/studentinfo/Accountable.java}
+
+\lstinputlisting[]{code/04.refect/src/sis/studentinfo/Account.java}
+
+现在能够实现业务逻辑的是Account类，但它没有实现权限控制的功能。所以我们创建一个
+代理类SecureProsy来管理权限。它的构造函数接收两个参数：
+
+一个参数为具体实现业务逻辑的类，这样就可以通过反射执行具体的业务。
+
+另一个参数是一组方法名，指定哪些功能是要通过授权才能访问的。如果要调用这些方法，
+就直接抛出异常。
+
+具体代码如下：
+
+\lstinputlisting[]{code/04.refect/src/sis/security/SecureProxy.java}
+
+现在创建一个工厂类，根据传入的权限级别来创造一个有权限限制的SecureProxy或原始的
+Account业务类：
+
+\lstinputlisting[]{code/04.refect/src/sis/studentinfo/AccountFactory.java}

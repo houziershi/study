@@ -6,7 +6,8 @@ import org.junit.runners.Suite;
 import test.*;
 
 @RunWith(Suite.class)
-@Suite.SuiteClasses({ DctTest.class, ClassRefTest.class })
+@Suite.SuiteClasses({ DctTest.class, ClassRefTest.class, 
+	SecureProxyTest.class })
 public class AllSuite {
 
 }
