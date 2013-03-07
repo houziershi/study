@@ -158,7 +158,7 @@ hard会把所有位置中的版本都回退掉：
 git reset --hard
 }}}
 
-`-- 文件名`指定文件：
+`-- 文件名`从版本库中去除文件：
 
 {{{class="brush: bash"
 git reset -- src/aa.c
