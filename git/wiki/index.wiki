@@ -1,0 +1,478 @@
+
+%title Git入门
+
+%toc Git入门
+
+
+= 配置 =
+
+== 初始化个人信息 ==
+
+{{{class="brush: bash"
+git config --global user.name "Jade Shan"
+git config --global user.email aaa@bbb.com
+}}}
+ 
+ 
+= 代码托管服务商GitHub =
+
+先要申请账号，建立自己的repo。
+
+然后上传自己的ssh-key作为连接凭证。上传后检查是否能成功连接：
+{{{class="brush: bash"
+ssh -T git@github.com
+}}}
+
+如果失败，用debug方式检查一下是不是因为防火墙的原因：
+{{{class="brush: bash"
+ssh -vT git@github.com
+}}}
+
+还有一个失败的可能性是因为没有把私钥加上：
+{{{class="brush: bash"
+ssh-add ~/.ssh/id_rsa
+}}}
+
+验证可能成功连接后，把repo复制下来：
+{{{class="brush: bash"
+git clone git@github.com:Jade-Shan/Jade-Wubi.git
+}}}
+
+复制下来的第一次提交声明提交到来源：
+{{{class="brush: bash"
+git push origin master
+}}}
+
+以后的直接push就可以了：
+{{{class="brush: bash"
+git push
+}}}
+
+== 在GitHub上新建一个项目 ==
+
+{{{class="brush: bash"
+  mkdir study
+  cd study
+  git init
+  touch README
+  git add README
+  git commit -m 'first commit'
+  git remote add origin git@github.com:Jade-Shan/study.git
+  git push -u origin master
+}}}
+      
+
+== 导出一个GitHub上已经存在的项目 ==
+
+{{{class="brush: bash"
+  cd existing_git_repo
+  git remote add origin git@github.com:Jade-Shan/study.git
+  git pull -u origin master
+}}}
+      
+      
+= 基本项目操作 =
+
+* 工作区（working tree）就是本地的代码。
+* 快照（snapshot）建立索引（index）。
+* 提交到仓库。
+
+== 新建立一个工程 ==
+
+{{{class="brush: bash"
+cd workspace/wubi
+git init              # 初始化
+git add .             # 目建立快照的索引
+git commit            # 提交修改
+}}}
+
+初始化一个新的工程，会建立.git目录保存信息。add为当前项目建立快照（snapshot）的索引（index file）。
+
+提交时会在编辑器里要求输入备注。但是要注意第一行要少于50字，如果有第二行，一定要空白。
+
+== 拷贝过来的工程 ==
+
+拷贝过来的工程目录中要带上`.git`目录，然后执行`git init`就会重新恢复版本库为可用状态了。
+
+== 提交修改 ==
+
+查看当前文件（work tree）和索引（index file）的区别：
+{{{class="brush: bash"
+git diff
+}}}
+
+在提交这前，先把改动添加到index file：
+{{{class="brush: bash"
+git add readme.txt
+}}}
+
+查看index file和版本库之间的差别：
+{{{class="brush: bash"
+git diff --cached
+}}}
+
+查看文件和版本库之间的差别：
+{{{class="brush: bash"
+git diff HEAD
+}}}
+
+提交更新的内容到版本库：
+{{{class="brush: bash"
+git commit
+}}}
+
+可以省略比对和快照的过程，直接一次提交所有的变更。但仅提交现有的文件，新文件还是要git add：
+{{{class="brush: bash"
+git commit -a
+}}}
+
+在检查修改内容的过程中，还可以查看当前工作的状态：
+{{{class="brush: bash"
+git status
+}}}
+
+提交状态： 
+
+* Change but not update：有一部分文件有修改，还没有index
+* Changes to be update：有一部分文件已经index，还没有commit
+* Untracked files：新增加的文件
+
+== 回退 ==
+
+soft表示回退到index，`HEAD^`指定上一个版本：
+
+{{{class="brush: bash"
+git reset --soft
+}}}
+
+默认的位置是mixed，回到工作版本：
+
+{{{class="brush: bash"
+git reset --mixed
+git reset
+}}}
+
+hard会把所有位置中的版本都回退掉：
+
+{{{class="brush: bash"
+git reset --hard
+}}}
+
+`-- 文件名`指定文件：
+
+{{{class="brush: bash"
+git reset -- src/aa.c
+}}}
+
+
+== 关于提交、回退与状态的概念图 ==
+
+<img src="images/git.commit.png" />
+
+
+
+= 分支控制 =
+
+== 查看分支 ==
+
+显示所有的分支：
+{{{class="brush: bash"
+git branch
+}}}
+
+查看当前所在的分支及提交记录：
+{{{class="brush: bash"
+git-show-branch
+}}}
+
+== 新建分支 ==
+
+想要建一个新的叫experimenal的分支：
+{{{class="brush: bash"
+git branch experienal
+}}}
+
+== 切换分支 ==
+
+在切换分支之前要保证当前分支处于commit状态。
+
+切换到experimenal分支：
+
+{{{class="brush: bash"
+git checkout experimenal
+}}}
+
+
+使用checkout可以在多个分支上随意切换。在一个分支上的操作不会影响到另一个分支。
+
+可以把分支的创建与切换合并为一步：
+{{{class="brush: bash"
+git checkout -b experimenal
+}}}
+
+== 合并分支 ==
+
+两个分支必须都已经commit才能合并。
+
+要把experimenal合并到master，要先切到master：
+
+{{{class="brush: bash"
+git checkout master
+}}}
+
+然后把experimenal合并过来：
+
+{{{class="brush: bash"
+git merge experimenal
+}}}
+
+如果有冲突，会把冲突中的文件修改为diff格式的状态。要手动修正了以后再提交：
+
+{{{class="brush: bash"
+git commit -a
+}}}
+
+可以通过图型界面查看分支过程：
+
+{{{class="brush: bash"
+gitk
+}}}
+
+合并成功了以后可以删除原来的experimenal：
+{{{class="brush: bash"
+git branch -d experimenal
+}}}
+
+如果分支还没有合并，可以用大写-D表示强制删除，通常在分支失败时用：
+{{{class="brush: bash"
+git branch -D experimenal
+}}}
+
+
+= 合作开发 =
+ 
+假设现在有另一个人（用户B）和我合作。他的工作目录在：
+
+{{{class="brush: bash"
+mkdir wubi2
+}}}
+
+== 从仓库复制源代码到本地 ==
+
+用户B从我的版本库中导出。
+
+在没有服务器的情况下：
+{{{class="brush: bash"
+git clone wubi wubi2
+}}}
+
+通过服务器：
+
+{{{class="brush: bash"
+git clone git://git.jade.com/wubi wubi2
+}}}
+
+然后别人可以在我的代码基础上进行开发，然后提交：
+{{{class="brush: bash"
+git commit -a
+}}}
+
+== 发布本地提交的内容 ==
+
+用户B提交的内容只有自己能看到，他想让别人得到他的工作成果的话，就要把他提交的内容发布给其他开发者。
+
+如果服务器允许直接发布，那可以直接发布到服务器：
+
+{{{class="brush: bash"
+git push
+}}}
+
+有些项目（如：linux kernel）不允许提交到版本库，只能做成补丁文件发邮件给别人：
+
+{{{class="brush: bash"
+git format-patch origin
+}}}
+
+
+== 取得其他人提交的内容 ==
+
+回到我这边，我知道别人已经提交了，现在要取得别人的工作成果。如果不放心别人的工作，根据别人的远程仓库名为master的分支在本地建立一个名为otherone的分支。
+
+在没有服务器的情况下：
+
+{{{class="brush: bash"
+cd wubi
+git fetch ../wubi2 master:otherone
+}}}
+
+有服务器的情况下（区别就是源地址，以后不再说明没有服务器的情况了）：
+
+{{{class="brush: bash"
+cd wubi
+git fetch git://git.jade.com/wubi master:otherone
+}}}
+
+
+比较一下别人改了哪些地方
+{{{class="brush: bash"
+git whatchanged -p master..otherone
+}}}
+
+如果认为对方改错了，可以删除掉对方的修改
+{{{class="brush: bash"
+git branch -D otherone
+}}}
+
+如果觉得没有问题了可以用pull命令导入别人的修改。其实pull命令相当于是fetch命令和merge命令的一个组合。当然如果信任对方的话，也可以不建立分支检查（略过上面的所有步骤）直接导入。
+
+从目录：
+
+{{{class="brush: bash"
+git pull ../wubi2 master
+}}}
+
+从服务器：
+
+{{{class="brush: bash"
+git pull git://git.jade.com/wubi master
+}}}
+
+从服务器也可以不加参数，直接：
+
+{{{class="brush: bash"
+git pull
+}}}
+
+其实，用“`git pull .`”就相当于“`git merge`”。
+
+
+用户B继续开发时先要取得我的工作成果，可以直接pull不用加参数。因为clone的时候已经记住了来源：
+{{{class="brush: bash"
+git pull
+}}}
+
+== 冲突处理 ==
+
+合作开发与合并分支都有可能发生冲突，看到如下错误信息：
+
+Automatic merge failed; fix conflicts and then commit the result.
+
+这个时候要手动排除冲突，源代码被会git修改。以“====”分隔冲突的两边。修改完成了以后可以再次提交：
+{{{class="brush: bash"
+git commit -a
+}}}
+
+
+= 查看提交记录 =
+
+查看提交的记录，每一次提交都有一个唯一的主键叫commit：
+
+{{{class="brush: bash"
+git log
+}}}
+
+加上参数-p可以显示详细日志信息，如提交的改动：
+
+{{{class="brush: bash"
+git log -p
+}}}
+
+可以通过commit的值查看当次提交的详细信息：
+
+{{{class="brush: bash"
+git show 1e193e9a7bf1699392c6bbe3d53d786b93e6570b
+}}}
+
+上面那个好长一串啊！其实只要前几个就行了（长到正好可以区分开来）：
+
+{{{class="brush: bash"
+git show 1e193e9
+}}}
+
+也可以指定查看分支的名字：
+
+{{{class="brush: bash"
+git show master
+git show experimenal
+}}}
+
+查看本次提交的头信息。每一次commit都会有parent commit,可以使用`^`表示parent:
+
+{{{class="brush: bash"
+git show HEAD^  # 查看 HEAD 的父版本的信息 
+git show HEAD^^ # 查看 HEAD 的父的父母的信息 
+git show HEAD~4 # 查看 HEAD 上溯 4 代的信息
+}}}
+
+要注意的是 git-merge 是会产生双父版本的,这种情况这样处理:
+
+{{{class="brush: bash"
+git show HEAD^1 # 查看 HEAD 的第一个父代
+git show HEAD^2 # 查看 HEAD 的第二个父代
+}}}
+
+可以用一个名字代替序列号（就是常说的“打TAG”啦～）：
+
+{{{class="brush: bash"
+git tag V1.0 c9d52de78c132f6ea420644c2b7e422b225d258f
+git show V1.0
+git branch stalbe V1.0 # 建立一个叫stalbe的分支
+}}}
+
+查找文本：
+
+{{{class="brush: bash"
+git grep "ibus"      # 在所有版本口查找
+git grep "ibus" V1.0 # 在V3版本中查找
+}}}
+
+定位具体的历史记录。显示 V3 之后直至 V7 的所有历史记录：
+
+{{{class="brush: bash"
+git log V3..V7 
+}}}
+
+显示所有 V3 之后的历史记录。
+
+{{{class="brush: bash"
+git log V3.. 
+}}}
+
+注意`<since>..<until>`中任何一个被省略都将被默认设置为 HEAD。所以如果使用`..<until>`的话,git log 在大部分情况下会输出空的。
+
+显示 2 周前到现在的所有历史记录。具体语法可查询git-ref-parse 命令的帮助文件。
+
+{{{class="brush: bash"
+git log –since=”2 weeks ago”
+}}}
+
+将显示在 experimental分支，但不在stable分支的历史记录：
+
+{{{class="brush: bash"
+git log stable..experimental 
+}}}
+
+将显示在stable分支但不在experimental分支的历史记录：
+
+{{{class="brush: bash"
+git log experimental..stable 
+}}}
+
+将显示在experimental分支但不在stable分支的历史记录：
+
+{{{class="brush: bash"
+git log stable ..experimental
+}}}
+
+gitk也可以定位具体的历史记录。将在GUI中显示自2周前到现在为止的，且位于drivers目录下的分支记录信息：
+
+{{{class="brush: bash"
+gitk –since=”2 weeks ago” drivers/ 
+}}}
+
+
+
+
+
+
+
