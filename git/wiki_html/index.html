@@ -38,25 +38,30 @@
 <ul>
 <li><a href="#toc_3.1">新建立一个工程</a>
 <li><a href="#toc_3.2">拷贝过来的工程</a>
-<li><a href="#toc_3.3">提交修改</a>
-<li><a href="#toc_3.4">回退</a>
-<li><a href="#toc_3.5">关于提交、回退与状态的概念图</a>
+<li><a href="#toc_3.3">忽略指定文件</a>
 </ul>
-<li><a href="#toc_4">分支控制</a>
+<li><a href="#toc_4">基本概念</a>
 <ul>
-<li><a href="#toc_4.1">查看分支</a>
-<li><a href="#toc_4.2">新建分支</a>
-<li><a href="#toc_4.3">切换分支</a>
-<li><a href="#toc_4.4">合并分支</a>
+<li><a href="#toc_4.1">提交状态</a>
+<li><a href="#toc_4.2">提交修改</a>
+<li><a href="#toc_4.3">回退</a>
+<li><a href="#toc_4.4">关于提交、回退与状态的概念图</a>
 </ul>
-<li><a href="#toc_5">合作开发</a>
+<li><a href="#toc_5">分支控制</a>
 <ul>
-<li><a href="#toc_5.1">从仓库复制源代码到本地</a>
-<li><a href="#toc_5.2">发布本地提交的内容</a>
-<li><a href="#toc_5.3">取得其他人提交的内容</a>
-<li><a href="#toc_5.4">冲突处理</a>
+<li><a href="#toc_5.1">查看分支</a>
+<li><a href="#toc_5.2">新建分支</a>
+<li><a href="#toc_5.3">切换分支</a>
+<li><a href="#toc_5.4">合并分支</a>
 </ul>
-<li><a href="#toc_6">查看提交记录</a>
+<li><a href="#toc_6">合作开发</a>
+<ul>
+<li><a href="#toc_6.1">从仓库复制源代码到本地</a>
+<li><a href="#toc_6.2">发布本地提交的内容</a>
+<li><a href="#toc_6.3">取得其他人提交的内容</a>
+<li><a href="#toc_6.4">冲突处理</a>
+</ul>
+<li><a href="#toc_7">查看提交记录</a>
 </ul>
 </div>
 
@@ -179,11 +184,58 @@ git commit            # 提交修改
 拷贝过来的工程目录中要带上<code>.git</code>目录，然后执行<code>git init</code>就会重新恢复版本库为可用状态了。
 </p>
 
-<h2 id="toc_3.3">提交修改</h2>
+<h2 id="toc_3.3">忽略指定文件</h2>
+
+<p>
+有很多文件是我们不想放到版本库中的，比如编辑过程中的临时文件或是程序构建中的临时文件。可以在项目根目录下的<code>.gitignore</code>文件中指定排除规则：
+</p>
+
+<pre class="brush: bash">
+*.a           # 忽略所有.a结尾的文件
+!lib.a        # 但不包括 lib.a
+/TODO         # 仅忽略项目根目录下的 TODO 文件，不包括 subdir/TODO
+build/        # 忽略 build/ 目录下的所有文件
+doc/*.txt     # 忽略如 doc/aa.txt，但不包括 doc/subdir/aa.txt
+</pre>
+
+<h1 id="toc_4">基本概念</h1>
+
+<p>
+对于git来说，可以理解为有三个工作区：
+</p>
+
+<ul>
+<li>
+Workint Tree：就是现在正在开发的项目。
+
+<li>
+Snapshot Index：快照／索引。就是一个缓冲区，让用户准备哪些东西要提交到版本库。
+
+<li>
+HEAD：就是版本库。
+
+</ul>
+
+<h2 id="toc_4.1">提交状态</h2>
+
+<ul>
+<li>
+Untracked files：新增加的没有加入版本库跟踪的文件。
+
+<li>
+Change but not update：有一部分文件有修改，还没有index。
+
+<li>
+Changes to be update：有一部分文件已经index，还没有commit。
+
+</ul>
+
+<h2 id="toc_4.2">提交修改</h2>
 
 <p>
 查看当前文件（work tree）和索引（index file）的区别：
 </p>
+
 <pre class="brush: bash">
 git diff
 </pre>
@@ -231,22 +283,10 @@ git status
 </pre>
 
 <p>
-提交状态： 
+如果要删除一个文件，要先用<code>git rm</code>命令。如果只在文件系统上删除而没有<code>git rm</code>的话，只会让这个文件的状态回到<code>Change but not update</code>状态。
 </p>
 
-<ul>
-<li>
-Change but not update：有一部分文件有修改，还没有index
-
-<li>
-Changes to be update：有一部分文件已经index，还没有commit
-
-<li>
-Untracked files：新增加的文件
-
-</ul>
-
-<h2 id="toc_3.4">回退</h2>
+<h2 id="toc_4.3">回退</h2>
 
 <p>
 soft表示回退到index，<code>HEAD^</code>指定上一个版本：
@@ -282,7 +322,7 @@ git reset -- src/aa.c
 </pre>
 
 
-<h2 id="toc_3.5">关于提交、回退与状态的概念图</h2>
+<h2 id="toc_4.4">关于提交、回退与状态的概念图</h2>
 
 <p>
 <img src="images/git.commit.png" />
@@ -290,9 +330,9 @@ git reset -- src/aa.c
 
 
 
-<h1 id="toc_4">分支控制</h1>
+<h1 id="toc_5">分支控制</h1>
 
-<h2 id="toc_4.1">查看分支</h2>
+<h2 id="toc_5.1">查看分支</h2>
 
 <p>
 显示所有的分支：
@@ -308,7 +348,7 @@ git branch
 git-show-branch
 </pre>
 
-<h2 id="toc_4.2">新建分支</h2>
+<h2 id="toc_5.2">新建分支</h2>
 
 <p>
 想要建一个新的叫experimenal的分支：
@@ -317,7 +357,7 @@ git-show-branch
 git branch experienal
 </pre>
 
-<h2 id="toc_4.3">切换分支</h2>
+<h2 id="toc_5.3">切换分支</h2>
 
 <p>
 在切换分支之前要保证当前分支处于commit状态。
@@ -343,7 +383,7 @@ git checkout experimenal
 git checkout -b experimenal
 </pre>
 
-<h2 id="toc_4.4">合并分支</h2>
+<h2 id="toc_5.4">合并分支</h2>
 
 <p>
 两个分支必须都已经commit才能合并。
@@ -396,7 +436,7 @@ git branch -D experimenal
 </pre>
 
 
-<h1 id="toc_5">合作开发</h1>
+<h1 id="toc_6">合作开发</h1>
  
 <p>
 假设现在有另一个人（用户B）和我合作。他的工作目录在：
@@ -406,7 +446,7 @@ git branch -D experimenal
 mkdir wubi2
 </pre>
 
-<h2 id="toc_5.1">从仓库复制源代码到本地</h2>
+<h2 id="toc_6.1">从仓库复制源代码到本地</h2>
 
 <p>
 用户B从我的版本库中导出。
@@ -434,7 +474,7 @@ git clone git://git.jade.com/wubi wubi2
 git commit -a
 </pre>
 
-<h2 id="toc_5.2">发布本地提交的内容</h2>
+<h2 id="toc_6.2">发布本地提交的内容</h2>
 
 <p>
 用户B提交的内容只有自己能看到，他想让别人得到他的工作成果的话，就要把他提交的内容发布给其他开发者。
@@ -457,7 +497,7 @@ git format-patch origin
 </pre>
 
 
-<h2 id="toc_5.3">取得其他人提交的内容</h2>
+<h2 id="toc_6.3">取得其他人提交的内容</h2>
 
 <p>
 回到我这边，我知道别人已经提交了，现在要取得别人的工作成果。如果不放心别人的工作，根据别人的远程仓库名为master的分支在本地建立一个名为otherone的分支。
@@ -536,7 +576,7 @@ git pull
 git pull
 </pre>
 
-<h2 id="toc_5.4">冲突处理</h2>
+<h2 id="toc_6.4">冲突处理</h2>
 
 <p>
 合作开发与合并分支都有可能发生冲突，看到如下错误信息：
@@ -554,7 +594,7 @@ git commit -a
 </pre>
 
 
-<h1 id="toc_6">查看提交记录</h1>
+<h1 id="toc_7">查看提交记录</h1>
 
 <p>
 查看提交的记录，每一次提交都有一个唯一的主键叫commit：

@@ -1,0 +1,201 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<link type="text/css" rel="stylesheet" href="styles/style.css" />
+<link type="text/css" rel="stylesheet" href="styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="styles/shThemeRDark.css"/>
+
+<script type="text/javascript" src="scripts/jquery-1.4.2.min.js"></script>
+<script type="text/javascript" src="scripts/shCore.js"></script>
+<script type="text/javascript" src="scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="scripts/default.js"></script>
+
+
+<title>Scala入门</title>
+</head>
+<body>
+
+
+
+
+<h1>Scala入门</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">配置</a>
+<li><a href="#toc_2">使用</a>
+<ul>
+<li><a href="#toc_2.1">简单脚本</a>
+<li><a href="#toc_2.2">Scala程序</a>
+<li><a href="#toc_2.3">脚本与程序的区别</a>
+</ul>
+</ul>
+</div>
+
+
+<h1 id="toc_1">配置</h1>
+
+
+<h1 id="toc_2">使用</h1>
+ 
+
+<h2 id="toc_2.1">简单脚本</h2>
+
+<p>
+脚本文件，可以接收一个参数并输出欢迎信息：
+</p>
+
+<pre class="brush: scala" title="helloarg.scala">
+/* 可以接收一个参数 */
+println("Hello, " + args(0) + "!")
+</pre>
+
+<p>
+调用脚本：scala命令、文件名、参数
+</p>
+
+<pre class="brush: bash">
+--(morgan-laptop:pts/8)-(13-03-14 23:28:27)-(~/workspace/study/scala/tmp)
+\-(morgan:%) &gt;&gt;&gt; scala helloarg.scala Jade
+Hello, Jade!
+</pre>
+
+<p>
+可以通过循环处理多个参数的：
+</p>
+
+<pre class="brush: scala" title="pa.scala">
+args.foreach( arg =&gt; println(arg) )
+</pre>
+
+<p>
+调用：
+</p>
+
+<pre class="brush: bash">
+--(morgan-laptop:pts/8)-(13-03-14 23:49:39)-(~/workspace/study/scala/tmp)
+\-(morgan:%) &gt;&gt;&gt; scala pa.scala Scala is even more fun      
+Scala
+is
+even
+more
+fun
+</pre>
+
+<h2 id="toc_2.2">Scala程序</h2>
+
+<p>
+先看一个工具类，它根据字符串来计算出检验和：
+</p>
+<pre class="brush: scala" title="Summer.scala">
+import scala.collection.mutable.Map
+
+class ChecksumAccumulator {
+	private var sum = 0
+	def add(b: Byte) { sum += b }
+	def checksum(): Int =  ~(sum &amp;0xFF) + 1
+}
+
+object ChecksumAccumulator {
+	private val cache = Map[String, Int]()
+
+	def calculate(s: String): Int =
+		if( cache.contains(s) ) {
+			cache(s)
+		} else {
+			val acc = new ChecksumAccumulator
+			for (c &lt;- s)
+				acc.add(c.toByte)
+			val cs = acc.checksum()
+			cache += (s -&gt; cs)
+			cs
+		}
+}
+</pre>
+
+<p>
+然后是主程序。独立运行的程序一定要有<code>main</code>方法（仅有一个参数<code>Array[String]</code>而且结果类型为<code>Unit</code>）的单例对象。
+</p>
+
+<pre class="brush: scala" title="Summer.scala">
+import ChecksumAccumulator.calculate
+
+object Summer {
+
+	def main(args: Array[String]) {
+		for (arg &lt;- args)
+			println(arg + " -&gt; " + calculate(arg))
+	}
+
+}
+</pre>
+
+<p>
+编译Scala程序：
+</p>
+<pre class="brush: bash">
+--(morgan-laptop:pts/8)-(13-03-15 0:28:39)-(~/workspace/study/scala/tmp)
+\-(morgan:%) &gt;&gt;&gt; scalac ChecksumAccumulator.scala Summer.scala
+</pre>
+
+<p>
+有一个<code>fast Scala compiler</code>的后台进程可以在第一次被调用后一直跑在后台，节省一下每次编译的速度：
+</p>
+<pre class="brush: bash">
+--(morgan-laptop:pts/8)-(13-03-15 0:29:11)-(~/workspace/study/scala/tmp)
+\-(morgan:%) &gt;&gt;&gt; fsc ChecksumAccumulator.scala Summer.scala   
+</pre>
+
+<p>
+可以关掉这个后台进程：
+</p>
+<pre class="brush: bash">
+--(morgan-laptop:pts/8)-(13-03-15 0:29:11)-(~/workspace/study/scala/tmp)
+\-(morgan:%) &gt;&gt;&gt; fsc -shutdown
+</pre>
+
+<p>
+编译完后可以看到生成的<code>.class</code>文件：
+</p>
+<pre class="brush: bash">
+--(morgan-laptop:pts/8)-(13-03-15 0:44:31)-(~/workspace/study/scala/tmp)
+\-(morgan:%) &gt;&gt;&gt; ls *.class
+ChecksumAccumulator$$anonfun$calculate$1.class  ChecksumAccumulator$.class    Summer.class
+ChecksumAccumulator.class                       Summer$$anonfun$main$1.class  Summer$.class
+</pre>
+
+<p>
+运行编译出来的类文件：
+</p>
+<pre class="brush: bash">
+--(morgan-laptop:pts/8)-(13-03-15 0:30:58)-(~/workspace/study/scala/tmp)
+\-(morgan:%) &gt;&gt;&gt; scala Summer of love
+of -&gt; -213
+love -&gt; -182
+</pre>
+
+<p>
+还有一个加入的<code>Application</code>特质的方式实现应用程序，但是有局限：不能访问命令行参数、只能在单线程下用。所以不推荐用它。
+</p>
+
+<p>
+形式类似于：
+</p>
+<pre class="brush: scala" title="myApp.scala">
+object MyApp extends Application {
+	println("Hello")
+}	
+</pre>
+
+<h2 id="toc_2.3">脚本与程序的区别</h2>
+
+<p>
+脚本必须以表达式结束，而程序以定义结尾。尝试以<code>scala</code>解释器运行程序会报错。
+</p>
+
+
+</body>
+</html>

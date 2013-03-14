@@ -94,9 +94,36 @@ git commit            # 提交修改
 
 拷贝过来的工程目录中要带上`.git`目录，然后执行`git init`就会重新恢复版本库为可用状态了。
 
+== 忽略指定文件 ==
+
+有很多文件是我们不想放到版本库中的，比如编辑过程中的临时文件或是程序构建中的临时文件。可以在项目根目录下的`.gitignore`文件中指定排除规则：
+
+{{{class="brush: bash"
+*.a           # 忽略所有.a结尾的文件
+!lib.a        # 但不包括 lib.a
+/TODO         # 仅忽略项目根目录下的 TODO 文件，不包括 subdir/TODO
+build/        # 忽略 build/ 目录下的所有文件
+doc/*.txt     # 忽略如 doc/aa.txt，但不包括 doc/subdir/aa.txt
+}}}
+
+= 基本概念 =
+
+对于git来说，可以理解为有三个工作区：
+
+* Workint Tree：就是现在正在开发的项目。
+* Snapshot Index：快照／索引。就是一个缓冲区，让用户准备哪些东西要提交到版本库。
+* HEAD：就是版本库。
+
+== 提交状态 ==
+
+* Untracked files：新增加的没有加入版本库跟踪的文件。
+* Change but not update：有一部分文件有修改，还没有index。
+* Changes to be update：有一部分文件已经index，还没有commit。
+
 == 提交修改 ==
 
 查看当前文件（work tree）和索引（index file）的区别：
+
 {{{class="brush: bash"
 git diff
 }}}
@@ -131,11 +158,7 @@ git commit -a
 git status
 }}}
 
-提交状态： 
-
-* Change but not update：有一部分文件有修改，还没有index
-* Changes to be update：有一部分文件已经index，还没有commit
-* Untracked files：新增加的文件
+如果要删除一个文件，要先用`git rm`命令。如果只在文件系统上删除而没有`git rm`的话，只会让这个文件的状态回到`Change but not update`状态。
 
 == 回退 ==
 

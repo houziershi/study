@@ -1,0 +1,15 @@
+*.class
+*.swp
+
+# eclipse files #
+.metadata/
+bin/
+.settings/
+
+# maven files #
+target/
+
+# Package Files #
+*.jar
+*.war
+*.ear
