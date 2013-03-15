@@ -3,14 +3,39 @@
 
 %toc Scala入门
 
-
-= 配置 =
-
-
 = 使用 =
  
+== Scala Shell ==
 
-== 简单脚本 ==
+使用进入REPL环境的方式：
+
+{{{class="brush: bash"
+--(morgan-laptop:pts/8)-(13-03-15 9:04:57)-(~/workspace/study/scala)
+\-(morgan:%) >>> scala
+Welcome to Scala version 2.9.2 (OpenJDK 64-Bit Server VM, Java 1.7.0_15).
+Type in expressions to have them evaluated.
+Type :help for more information.
+
+scala> 
+}}}
+
+输入回车自动换行。
+
+发现输错了，再按几个回车就退出了。
+
+退出`Scala Shell`：`:quit`或`:q`
+
+在REPL环境中只能一行一行读取，所以如果要换行的话，不能让一行在语法上看起来已经结束：
+
+{{{class="brush: scala"
+scala> if(x > 0) { 1
+     | } else if(x == 0) 0 else -1
+res1: Int = 1
+}}}
+
+另一个方法是在REPL中输入`:paste`粘贴代码，按下`Control + D`。
+
+== 脚本 ==
 
 脚本文件，可以接收一个参数并输出欢迎信息：
 
@@ -138,3 +163,239 @@ object MyApp extends Application {
 
 
 
+
+= 入门 =
+
+
+
+== 变量定义 ==
+
+`val`不可变变量；`var`可变变量。格式：
+{{{class="brush: scala"
+// 基本格式
+val msg: java.lang.String = "Hello"
+
+// java.lang默认已经导入了
+val msg: String = "Hello"
+
+// 自动推导类型
+val msg = "Hello"
+}}}
+
+
+== 函数定义 ==
+
+取最大的函数，函数体的最后一行作为结果返回： 
+
+{{{class="brush: scala"
+def max(x: Int, y: Int): Int = {
+	if (x > y) x else y
+}
+}}}
+
+函数类型也能自动推导出来，可以省略。在递归函数的情况下，一定要明确地说明返回类型。如果函数体只有一行，那花括号也可以省略：
+
+{{{class="brush: scala"
+scala> def max(x: Int, y: Int) =  if (x > y) x else y
+max: (x: Int, y: Int)Int
+}}}
+
+
+类型`Unit`对应Java中的`void`。即没有参数又没有返回结果的函数定义：
+
+{{{class="brush: scala"
+scala> def greet() = println("Hello")
+greet: ()Unit
+}}}
+
+
+== 函数字面量（Function Literal） ==
+
+函数字面量用`=>`来分隔参数表与函数体：
+
+{{{class="brush: scala"
+(x:Int, y:Int) => x + y
+}}}
+
+通过函数字面量来迭代处理参数的例子：
+
+{{{class="brush: scala"
+args.foreach( (arg: String) => println(arg) )
+
+//这里的String类型可以自动推导出来：
+args.foreach( arg => println(arg) )
+
+//在这种字面量只有一行而且只有一个参数情况下，可以省掉参数列表
+args.foreach( println )
+}}}
+
+
+== for循环 ==
+
+{{{class="brush: scala"
+scala> for (i <- 0 to 10) print(i)
+012345678910
+
+}}}
+
+
+== 方法与操作符 ==
+
+下面的语句产一个从0到5的集合：
+
+{{{class="brush: scala"
+scala> 0 to 5
+res9: scala.collection.immutable.Range.Inclusive = Range(0, 1, 2, 3, 4, 5)
+}}}
+
+其实这个`to`是一个方法的调用。Scala中对于方法调用时，如果方法只有一个参数的话可以省略括号，原本的样子是：
+
+{{{class="brush: scala"
+(0).to(5)
+}}}
+
+scala中没有操作符的重载，因为操作符也是方法的名字：
+
+{{{class="brush: scala"
+1 + 2
+}}}
+相当于：
+{{{class="brush: scala"
+(1).+(2)
+}}}
+
+== 类型参数化数组 ==
+
+长度为3的数组，存放的元素类型为`String`：
+
+{{{class="brush: scala"
+val gs: Array[String] = new Array[String](3)
+}}}
+
+{{{class="brush: scala"
+
+scala> val gs = new Array[String](3)
+gs: Array[String] = Array(null, null, null)
+
+scala> gs(0) = "aa"
+scala> gs(1) = "bb"
+scala> gs(2) = "cc"
+
+scala> gs.foreach(print)
+aabbcc
+
+scala> val ns = Array("11","22","33")
+ns: Array[java.lang.String] = Array(11, 22, 33)
+
+scala> ns.foreach(print)
+112233
+}}}
+
+
+== apply与update方法 ==
+
+对一个对象的后面加上括号的操作其实是调用了这个对象的`apply`方法。所以数组的元素索引操作其实是`apply`方法调用：
+
+{{{class="brush: scala"
+gs(0)
+//相当于：
+gs.apply(0)
+
+val ns = Array("11","22","33")
+//相当于：
+val ns = Array.apply("11","22","33")
+}}}
+
+对带有括号并包括一到多个参数的变量赋值时，编译器使用对象的`update`方法对括号里的参数（索引值）和等号右边的对象执行调用：
+{{{class="brush: scala"
+gs(0) = "aa"
+//相当于：
+gs.update(0, "aa")
+}}}
+
+
+== 列表 ==
+
+与`java.util.List`不同，`scala.List`是不可变的。不可变的对象更加符合函数式风格。
+
+{{{class="brush: scala"
+scala> val ll = List(1,2,3)
+ll: List[Int] = List(1, 2, 3)
+}}}
+
+`::`把一个元素加到列表的头上； 用`:::`连起两个列表：
+
+{{{class="brush: scala"
+scala> 0 :: ll
+res12: List[Int] = List(0, 1, 2, 3)
+
+scala> val ll2 = List(4,5,6)
+ll2: List[Int] = List(4, 5, 6)
+
+scala> ll ::: ll2
+res11: List[Int] = List(1, 2, 3, 4, 5, 6)
+}}}
+
+一个元素也没有的空列表用`Nil`表示，作为一个空的列表，它可以把其他的元素给串起来：
+
+{{{class="brush: scala"
+scala> val nl = 1 :: 2 :: 3 :: Nil
+nl: List[Int] = List(1, 2, 3)
+}}}
+
+List只能把元素加在头上，如果要加在后面的话，一个方法是在加到头上以后再调用`reverse`方法；还有一个方案是使用ListBuffer，它有`append`方法。
+
+=== List常用方法 ===
+
+{{{class="brush: scala"
+List() 或 Nil                          // 空List
+List("Cool", "tools", "rule")          // 创建带有三个值"Cool"，"tools"和"rule"的新List[String]
+
+val thrill = "Will"::"fill"::"until"::Nil  // 创建带有三个值"Will"，"fill"和"until"的新List[String]
+
+List("a", "b") ::: List("c", "d")      // 叠加两个列表（返回带"a"，"b"，"c"和"d"的新List[String]）
+thrill(2)                              // 返回在thrill列表上索引为2（基于0）的元素（返回"until"）
+thrill.count(s => s.length == 4)       // 计算长度为4的String元素个数（返回2）
+thrill.drop(2)                         // 返回去掉前2个元素的thrill列表（返回List("until")）
+thrill.dropRight(2)                    // 返回去掉后2个元素的thrill列表（返回List("Will")）
+thrill.exists(s => s == "until")       // 判断是否有值为"until"的字串元素在thrill里（返回true）
+thrill.filter(s => s.length == 4)      // 依次返回所有长度为4的元素组成的列表（返回List("Will", "fill")）
+thrill.forall(s => s.endsWith("1"))    // 辨别是否thrill列表里所有元素都以"l"结尾（返回true）
+thrill.foreach(s => print(s))          // 对thrill列表每个字串执行print语句（"Willfilluntil"）
+thrill.foreach(print)                  // 与前相同，不过更简洁（同上）
+thrill.head                            // 返回thrill列表的第一个元素（返回"Will"）
+thrill.init                            // 返回thrill列表除最后一个以外其他元素组成的列表（返回List("Will", "fill")）
+thrill.isEmpty                         // 说明thrill列表是否为空（返回false）
+thrill.last                            // 返回thrill列表的最后一个元素（返回"until"）
+thrill.length                          // 返回thrill列表的元素数量（返回3）
+thrill.map(s => s + "y")               // 返回由thrill列表里每一个String元素都加了"y"构成的列表（返回List("Willy", "filly", "untily")）
+thrill.mkString(", ")                  // 用列表的元素创建字串（返回"will, fill, until"）
+thrill.remove(s => s.length == 4)      // 返回去除了thrill列表中长度为4的元素后依次排列的元素列表（返回List("until")）
+thrill.reverse                         // 返回含有thrill列表的逆序元素的列表（返回List("until", "fill", "Will")）
+
+thrill.sort((s, t) => s.charAt(0).toLowerCase < t.charAt(0).toLowerCase)
+// 返回包括thrill列表所有元素，并且第一个字符小写按照字母顺序排列的列表（返回List("fill", "until", "Will")）
+
+thrill.tail                            // 返回除掉第一个元素的thrill列表（返回List("fill", "until")）
+}}}
+
+
+
+
+== 方法关联性 ==
+
+所有以`:`结尾的方法其实是后一个操作数调用前一个操作数，所以：
+
+{{{class="brush: scala"
+0 :: ll
+// 其实是
+ll.::(0)
+
+ll ::: ll2
+// 其实是
+ll2.:::(ll)
+}}}
+
+
+{{{class="brush: scala"
+}}}

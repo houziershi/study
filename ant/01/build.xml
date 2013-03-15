@@ -1,7 +1,0 @@
-<?xml version="1.0"?>
-<project name="myproject" default="readme">
-	<target name="readme">
-		<echo message="This is my first targe" />
-		<echo message="Current folder is: ${basedir}" />
-	</target>
-</project>
