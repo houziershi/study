@@ -45,42 +45,59 @@
 <li><a href="#toc_3.4">函数字面量（Function Literal）</a>
 <li><a href="#toc_3.5">for循环</a>
 <li><a href="#toc_3.6">方法与操作符</a>
-<li><a href="#toc_3.7">类型参数化数组</a>
-<li><a href="#toc_3.8">apply与update方法</a>
-<li><a href="#toc_3.9">列表</a>
+</ul>
+<li><a href="#toc_4">标识符</a>
 <ul>
-<li><a href="#toc_3.9.1">方法关联性</a>
-<li><a href="#toc_3.9.2">List常用方法</a>
-</ul>
-<li><a href="#toc_3.10">元组（Tuple）</a>
-<li><a href="#toc_3.11">集（Set）和映射（Map）</a>
-<li><a href="#toc_3.12">函数式风格</a>
+<li><a href="#toc_4.1">字母数字标识符（alphanumeric identifier）</a>
+<li><a href="#toc_4.2">操作符标识符（operator identifier）</a>
+<li><a href="#toc_4.3">混合标识符（mixed identifier）</a>
+<li><a href="#toc_4.4">文本标识符（literal identifier）</a>
+<li><a href="#toc_4.5">类型参数化数组</a>
+<li><a href="#toc_4.6">apply与update方法</a>
+<li><a href="#toc_4.7">列表</a>
 <ul>
-<li><a href="#toc_3.12.1">典型的指令式风格</a>
-<li><a href="#toc_3.12.2">去除变量的使用</a>
-<li><a href="#toc_3.12.3">去除副作用</a>
+<li><a href="#toc_4.7.1">方法关联性</a>
+<li><a href="#toc_4.7.2">List常用方法</a>
 </ul>
-<li><a href="#toc_3.13">读取文本文件</a>
-</ul>
-<li><a href="#toc_4">基本类型</a>
+<li><a href="#toc_4.8">元组（Tuple）</a>
+<li><a href="#toc_4.9">集（Set）和映射（Map）</a>
+<li><a href="#toc_4.10">函数式风格</a>
 <ul>
-<li><a href="#toc_4.1">字符串</a>
-<li><a href="#toc_4.2">符号</a>
-<li><a href="#toc_4.3">操作符与方法</a>
+<li><a href="#toc_4.10.1">典型的指令式风格</a>
+<li><a href="#toc_4.10.2">去除变量的使用</a>
+<li><a href="#toc_4.10.3">去除副作用</a>
+</ul>
+<li><a href="#toc_4.11">读取文本文件</a>
+</ul>
+<li><a href="#toc_5">基本类型</a>
 <ul>
-<li><a href="#toc_4.3.1">中缀操作符（infix）</a>
-<li><a href="#toc_4.3.2">前缀操作符</a>
-<li><a href="#toc_4.3.3">后缀操作符</a>
-</ul>
-<li><a href="#toc_4.4">对象相等性</a>
-</ul>
-<li><a href="#toc_5">类</a>
+<li><a href="#toc_5.1">字符串</a>
+<li><a href="#toc_5.2">符号</a>
+<li><a href="#toc_5.3">操作符与方法</a>
 <ul>
-<li><a href="#toc_5.1">访问控制</a>
-<li><a href="#toc_5.2">成员方法</a>
+<li><a href="#toc_5.3.1">中缀操作符（infix）</a>
+<li><a href="#toc_5.3.2">前缀操作符</a>
+<li><a href="#toc_5.3.3">后缀操作符</a>
 </ul>
-<li><a href="#toc_6">单例对象</a>
-<li><a href="#toc_7">伴生对象</a>
+<li><a href="#toc_5.4">对象相等性</a>
+</ul>
+<li><a href="#toc_6">类</a>
+<ul>
+<li><a href="#toc_6.1">创建新类型</a>
+<li><a href="#toc_6.2">主构造器：primary constructor</a>
+<li><a href="#toc_6.3">先决条件（precondition）</a>
+<li><a href="#toc_6.4">字段</a>
+<li><a href="#toc_6.5">方法</a>
+<li><a href="#toc_6.6">自指向</a>
+<li><a href="#toc_6.7">从构造器</a>
+<li><a href="#toc_6.8">私有字段和方法</a>
+<li><a href="#toc_6.9">定义操作符</a>
+<li><a href="#toc_6.10">方法覆盖（override）</a>
+<li><a href="#toc_6.11">方法重载（overload）</a>
+<li><a href="#toc_6.12">隐式转换</a>
+</ul>
+<li><a href="#toc_7">单例对象</a>
+<li><a href="#toc_8">伴生对象</a>
 </ul>
 </div>
 
@@ -522,7 +539,87 @@ scala中没有操作符的重载，因为操作符也是方法的名字：
 (1).+(2)
 </pre>
 
-<h2 id="toc_3.7">类型参数化数组</h2>
+
+<h1 id="toc_4">标识符</h1>
+
+<p>
+Scala在构成标识符方面有四种非常灵活的规则： 
+</p>
+
+<h2 id="toc_4.1">字母数字标识符（alphanumeric identifier）</h2>
+
+<p>
+字母数字标识符起始于一个字母或下划线，之后可以跟字母，数字，或下划线。‘\(’字符也被当作是字母，但是被保留作为Scala编译器产生的标识符之用。用户程序里的标识符不应该包含‘\)’字符，尽管能够编译通过；但是这样做有可能导致与Scala编译器产生的标识符发生名称冲撞。
+</p>
+
+<p>
+Scala遵循Java的驼峰式标识符习俗。尽管下划线在标识符内是合法的，但在Scala程序里并不常用，部分原因是为了保持与Java一致，同样也由于下划线在Scala代码里有许多其它非标识符用法。因此，最好避免使用像<code>to_string</code>，<code>__init__</code>，或<code>name</code>这样的标识符。
+</p>
+ 
+<p>
+标识符结尾使用下划线的一个结果就是，如果你尝试写一个这样的定义：<code>val name_: Int = </code>，你会收到一个编译器错误。编译器会认为你正常是定义一个叫做<code>name_:</code>的变量。要让它编译通过，你将需要在冒号之前插入一个额外的空格，如：<code>val name_ : Int = 1</code>。
+</p>
+
+<p>
+字段，方法参数，本地变量，还有函数的驼峰式名称，应该以小写字母开始，如：<code>length</code>，<code>flatMap</code>，还有s。
+</p>
+
+<p>
+类和特质的驼峰式名称应该以大写字母开始，如：<code>BigInt</code>，<code>List</code>，还有<code>UnbalancedTreeMap</code>。
+</p>
+
+<p>
+Scala与Java的习惯不一致的地方在于常量名。Scala里，constant这个词并不等同于val。尽管val在被初始化之后的确保持不变，但它还是个变量。比方说，方法参数是val，但是每次方法被调用的时候这些val都可以代表不同的值。而常量更持久。比方说，<code>scala.Math.Pi</code>被定义为很接近实数π的双精度值，表示圆周和它的直径的比值。这个值不太可能改变，因此Pi显然是个常量。你还可以用常数去给一些你代码里作为幻数（magic number）要用到的值一个名字：文本值不具备解释能力，如果出现在多个地方将会变得极度糟糕。Java里，习惯上常量名全都是大写的，用下划线分隔单词，如<code>MAX_VALUE</code>或<code>PI</code>。Scala里，习惯只是第一个字母必须大写。因此，Java风格的常量名，如<code>X_OFFSET</code>，在Scala里也可以用，但是Scala的惯例是常数也用驼峰式风格，如<code>XOffset</code>。
+</p>
+
+
+<h2 id="toc_4.2">操作符标识符（operator identifier）</h2>
+
+<p>
+由一个或多个操作符字符组成。操作符字符是一些如<code>+</code>，<code>:</code>，<code>?</code>，<code>~</code>或<code>#</code>的可打印的ASCII字符。以下是一些操作符标识符的例子： 
+</p>
+
+<pre class="brush: scala">
++ ++ ::: &lt;?&gt; :-&gt;
+</pre>
+
+<p>
+ Scala编译器将内部“粉碎”操作符标识符以转换成合法的内嵌<code>\(</code>的Java标识符。例如，标识符<code>:-&gt;</code>将被内部表达为<code>\)colon\(minus\)greater</code>。若你想从Java代码访问这个标识符，就应使用这个内部表达。 
+</p>
+ 
+<p>
+Scala里的操作符标识符可以变得任意长，因此在Java和Scala间有一些小差别。Java里，输入<code>x&lt;-y</code>将会被拆分成四个词汇符号，所以写成<code>x &lt; - y</code>也没什么不同。Scala里，<code>&lt;-</code>将被作为一个标识符拆分，而得到<code>x &lt;- y</code>。如果你想要得到第一种解释，你要在<code>&lt;</code>和<code>-</code>字符间加一个空格。这大概不会是实际应用中的问题，因为没什么人会在Java里写<code>x&lt;-y</code>的时候不注意加空格或括号的。
+</p>
+
+
+<h2 id="toc_4.3">混合标识符（mixed identifier）</h2>
+
+<p>
+混合标识符由字母数字组成，后面跟着下划线和一个操作符标识符。例如，<code>unary_+</code>被用做定义一元的<code>+</code>操作符的方法名。或者，<code>myvar_=</code>被用做定义赋值操作符的方法名。多说一句，混合标识符格式<code>myvar_=</code>是由Scala编译器产生的用来支持属性：<code>property</code>的；第十八章进一步说明。 
+</p>
+
+
+<h2 id="toc_4.4">文本标识符（literal identifier）</h2>
+
+<p>
+文本标识符是用反引号包括的任意字串。如：
+</p>
+
+<pre class="brush: scala">
+`x` `&lt;clinit&gt;` `yield` 
+</pre>
+
+<p>
+它的思路是你可以把任何运行时认可的字串放在反引号之间当作标识符。结果总是Scala标识符。即使包含在反引号间的名称是Scala保留字，这个规则也是有效的。在Java的Thread类中访问静态的yield方法是其典型的用例。你不能写<code>Thread.yield()</code>因为yield是Scala的保留字。然而，你仍可以在反引号里引用方法的名称，例如：
+</p>
+
+<pre class="brush: scala">
+Thread.`yield`()
+</pre>
+
+
+
+<h2 id="toc_4.5">类型参数化数组</h2>
 
 <p>
 长度为3的数组，存放的元素类型为<code>String</code>：
@@ -552,7 +649,7 @@ scala&gt; ns.foreach(print)
 </pre>
 
 
-<h2 id="toc_3.8">apply与update方法</h2>
+<h2 id="toc_4.6">apply与update方法</h2>
 
 <p>
 对一个对象的后面加上括号的操作其实是调用了这个对象的<code>apply</code>方法。所以数组的元素索引操作其实是<code>apply</code>方法调用：
@@ -578,7 +675,7 @@ gs.update(0, "aa")
 </pre>
 
 
-<h2 id="toc_3.9">列表</h2>
+<h2 id="toc_4.7">列表</h2>
 
 <p>
 与<code>java.util.List</code>不同，<code>scala.List</code>是不可变的。不可变的对象更加符合函数式风格。
@@ -617,7 +714,7 @@ nl: List[Int] = List(1, 2, 3)
 List只能把元素加在头上，如果要加在后面的话，一个方法是在加到头上以后再调用<code>reverse</code>方法；还有一个方案是使用ListBuffer，它有<code>append</code>方法。
 </p>
 
-<h3 id="toc_3.9.1">方法关联性</h3>
+<h3 id="toc_4.7.1">方法关联性</h3>
 
 <p>
 所有以<code>:</code>结尾的方法其实是后一个操作数调用前一个操作数，所以：
@@ -645,7 +742,7 @@ val nl = 1 :: 2 :: 3 :: Nil
 如果没有最后的<code>Nil</code>，就变成了<code>3.::(2)</code>。因为数字没有<code>::</code>方法，这样就会报错。
 </p>
 
-<h3 id="toc_3.9.2">List常用方法</h3>
+<h3 id="toc_4.7.2">List常用方法</h3>
 
 <pre class="brush: scala">
 List() 或 Nil                          // 空List
@@ -680,7 +777,7 @@ thrill.tail                            // 返回除掉第一个元素的thrill�
 </pre>
 
 
-<h2 id="toc_3.10">元组（Tuple）</h2>
+<h2 id="toc_4.8">元组（Tuple）</h2>
 
 <p>
 元组像列表，但可以放不同类型的元素。这样类似于Java Bean，但写起来更加简单。元组的类型按字段个数来识别，有2个字段的就是<code>Tuple2</code>、3个就是<code>Tuple3</code>，Scala最多支持到<code>Tuple22</code>：
@@ -704,7 +801,7 @@ Luft
 </pre>
 
 
-<h2 id="toc_3.11">集（Set）和映射（Map）</h2>
+<h2 id="toc_4.9">集（Set）和映射（Map）</h2>
 <p>
 对于Map和Set，Scala都分别提供了可变和不变的版本（放一不同的包里）。可变版本的操作会在本地修改，不可变的版本会返回一个新的对象。一般默认会使用不可变版本。
 </p>
@@ -814,13 +911,13 @@ Find big X on ground.
 
 
 
-<h2 id="toc_3.12">函数式风格</h2>
+<h2 id="toc_4.10">函数式风格</h2>
 
 <p>
 函数式风格极力避免使用变量（就是用到变量也尽量用val这种不可变的变量）与副作用。
 </p>
 
-<h3 id="toc_3.12.1">典型的指令式风格</h3>
+<h3 id="toc_4.10.1">典型的指令式风格</h3>
 
 <p>
 先来看一个指令式的for循环：
@@ -840,7 +937,7 @@ scala&gt; def printArgs(args: Array[String]): Unit = {
 printArgs: (args: Array[String])Unit
 </pre>
 
-<h3 id="toc_3.12.2">去除变量的使用</h3>
+<h3 id="toc_4.10.2">去除变量的使用</h3>
 
 <p>
 通过去掉val的使用变得更加函数式风格：
@@ -864,7 +961,7 @@ scala&gt; def printArgs(args: Array[String]): Unit = {
 printArgs: (args: Array[String])Unit
 </pre>
 
-<h3 id="toc_3.12.3">去除副作用</h3>
+<h3 id="toc_4.10.3">去除副作用</h3>
 
 <p>
 光去掉了变量的使用还不是函数式的。因为这个例子中还有副作用：打印到输出流。
@@ -890,7 +987,7 @@ scala&gt; println(formatArgs(args))
 
 
 
-<h2 id="toc_3.13">读取文本文件</h2>
+<h2 id="toc_4.11">读取文本文件</h2>
 
 <p>
 一个读取文本文件的方法，统计每个行里的字符数：
@@ -984,13 +1081,13 @@ if (args.length &gt; 0) {
 
 
 
-<h1 id="toc_4">基本类型</h1>
+<h1 id="toc_5">基本类型</h1>
 
 <p>
 基本类型包括<code>java.lang</code>包下的<code>String</code>和<code>scala</code>包下的<code>Byte</code>、<code>Short</code>、<code>Int</code>、<code>Long</code>、<code>Float</code>、<code>Double</code>、<code>Char</code>、<code>Boolean</code>。还有在<code>scala.runtime</code>包下对应的包装器类<code>Rich...</code>，如：<code>RichInt</code>。
 </p>
 
-<h2 id="toc_4.1">字符串</h2>
+<h2 id="toc_5.1">字符串</h2>
 
 <p>
 除了和Java一样的字符串字面量表示方式以外，Scala还提供了原始字符串（raw string）方便照原文解读： 
@@ -1024,7 +1121,7 @@ Welcome to Ultamix 3000.
 Type "HELP" for help.
 </pre>
 
-<h2 id="toc_4.2">符号</h2>
+<h2 id="toc_5.2">符号</h2>
 
 <p>
 格式为<code>'symb</code>，这里的<code>symb</code>可以是任何字母或数字。这种字面量被直接映射为类<code>scala.Symbol</code>的实例，解释器调用工厂方法<code>Symbol("symb")</code>产生。
@@ -1055,13 +1152,13 @@ scala&gt; updateRecordByName('pcOK, "OK Computer")
 
 
 
-<h2 id="toc_4.3">操作符与方法</h2>
+<h2 id="toc_5.3">操作符与方法</h2>
 
 <p>
 操作符也是普通方法的另一种写法，操作符的重载也就是方法的重载。
 </p>
 
-<h3 id="toc_4.3.1">中缀操作符（infix）</h3>
+<h3 id="toc_5.3.1">中缀操作符（infix）</h3>
 
 <pre class="brush: scala">
 scala&gt; val s = "Hello, world!"
@@ -1074,7 +1171,7 @@ scala&gt; s indexOf ('o', 5)
 res7: Int = 8
 </pre>
 
-<h3 id="toc_4.3.2">前缀操作符</h3>
+<h3 id="toc_5.3.2">前缀操作符</h3>
 
 <p>
 前缀操作符以<code>unary_</code>开头，能有四种<code>+</code>、<code>-</code>、<code>!</code>、<code>~</code>：
@@ -1092,7 +1189,7 @@ res9: Double = -2.0
 其他的符号就算定义了也不能作为前置操作符解释，如果定义了<code>p.unary_*</code>，在调用<code>*p</code>会被Scala解释为<code>*.p</code>。
 </p>
 
-<h3 id="toc_4.3.3">后缀操作符</h3>
+<h3 id="toc_5.3.3">后缀操作符</h3>
 
 <p>
 后缀操作符其实就是没有参数的函数。一般习惯上没有副作用的话就加上括号，如：<code>println()</code>；如果没有副作用就不加括号，如：<code>String.toLowerCase</code>
@@ -1107,7 +1204,7 @@ res11: java.lang.String = hello
 </pre>
 
 
-<h2 id="toc_4.4">对象相等性</h2>
+<h2 id="toc_5.4">对象相等性</h2>
 
 <p>
 操作符<code>==</code>与<code>!=</code>不仅比较基本类型，也可以比较对象，甚至是不同类的对象也可以比较，也可以和<code>null</code>比不会有异常抛出：
@@ -1144,7 +1241,7 @@ res20: Boolean = true
 
 
 
-<h1 id="toc_5">类</h1>
+<h1 id="toc_6">类</h1>
 
 <p>
 简单定义类与创建对象：
@@ -1169,14 +1266,13 @@ scala&gt; val csa = new ChecksumAccumulator
 csa: ChecksumAccumulator = ChecksumAccumulator@58f285cd
 </pre>
 
-<h2 id="toc_5.1">访问控制</h2>
-
 <p>
-默认为public。
+默认访问控制为public。
 </p>
 
-
-<h2 id="toc_5.2">成员方法</h2>
+<p>
+成员方法：
+</p>
 
 <pre class="brush: scala">
 class ChecksumAccumulator {
@@ -1225,7 +1321,409 @@ class ChecksumAccumulator {
 	def add(b: Byte) { sum += b }
 </pre>
 
-<h1 id="toc_6">单例对象</h1>
+
+
+<h2 id="toc_6.1">创建新类型</h2>
+
+<p>
+分数（rational number）表示分子（numerator）和分母（denominator）的比率，其中分母不能为零。能让小数部分得到了完全表达，没有舍入或估算。要模型化分数的行为，包括允许它们执行加，减，乘还有除运算。
+</p>
+
+<p>
+要加两个分数，首先要获得公分母，然后才能把两个分子相加。
+</p>
+
+<p>
+要乘两个分数，可以简单的两个分子相乘，然后两个分母相乘。
+</p>
+
+<p>
+除法是把右操作数分子分母调换，然后做乘法。
+</p>
+
+<p>
+一个分数加到另外一个分数上，产生的结果是一个新的分数。而原来的数不会被“改变”。
+</p>
+
+<h2 id="toc_6.2">主构造器：primary constructor</h2>
+
+<p>
+如果类没有主体，就不需要指定一对空的大括号（当然你如果想的话也可以）。
+</p>
+
+<pre class="brush: scala" title="Rational.scala">
+class Rational(n: Int, d: Int)
+</pre>
+
+<p>
+在类名Rational之后括号里的n和d，被称为类参数（class parameter）。<code>n</code>和<code>d</code>并不是类中的字段，而是主构造器的两个参数。Scala编译器会收集这两个类参数并创造一个带同样的两个参数的主构造器（primary constructor）。Java类具有可以带参数的构造器，而Scala类可以直接带参数。
+</p>
+
+
+<p>
+Scala编译器将把你放在类内部的任何不是字段的部分或者方法定义的代码，编译进主构造器。例如：
+</p>
+
+<pre class="brush: scala">
+scala&gt; class Rational(n: Int, d: Int) { println("Created "+n+"/"+d) }
+
+scala&gt; new Rational(1, 2)
+Created 1/2 res0: Rational = Rational@a0b0f5
+</pre>
+
+<p>
+你可以像这样打印输出一条消息，因为打印语句也在主构造器中。
+</p>
+
+<h2 id="toc_6.3">先决条件（precondition）</h2>
+
+<p>
+先决条件是对传递给方法或构造器的值的限制，是调用者必须满足的需求。使用<code>Predef</code>包中的<code>require</code>方法。如果传入的值为真，require将正常返回。反之，require将通过抛出IllegalArgumentException来阻止对象被构造。
+</p>
+
+<pre class="brush: scala">
+class Rational(n: Int, d: Int) { 
+	require(d != 0) 
+}
+</pre>
+
+
+<h2 id="toc_6.4">字段</h2>
+
+<p>
+要注意的是：
+</p>
+
+<pre class="brush: scala" title="Rational.scala">
+scala&gt; class Rational(n: Int, d: Int)
+</pre>
+
+<p>
+在前面主构造器部分已经提别提到：<code>n</code>和<code>d</code>并不是类中的字段，而是主构造器的两个参数。所以下面人代码是无法访问到<code>n</code>和<code>d</code>的：
+</p>
+<pre class="brush: scala">
+def showRational(r: Rational): Rational = println("Rational: "+n+"/"+d) 
+</pre>
+
+<p>
+所以又增加了两个字段，分别是numer和denom，并用类参数n和d初始化它们：
+</p>
+
+
+<pre class="brush: scala" title="Rational.scala">
+class Rational(n: Int, d: Int) {
+	require(d != 0) 
+
+	val numer: Int = n 
+	val denom: Int = d 
+}
+</pre>
+
+<p>
+在对象外面访问分子和分母：
+</p>
+
+<pre class="brush: scala">
+scala&gt; val r = new Rational(1, 2) 
+r: Rational = 1 / 2 
+
+scala&gt; r.numer 
+res7: Int = 1 
+
+scala&gt; r.denom 
+res8: Int = 2
+</pre>
+
+
+<h2 id="toc_6.5">方法</h2>
+
+<p>
+添加加法运算，得到另外一个分数后返回一个新对象为二者的和：
+</p>
+
+<pre class="brush: scala" title="Rational.scala">
+class Rational(n: Int, d: Int) {
+	require(d != 0) 
+
+	val numer: Int = n 
+	val denom: Int = d 
+
+	def add(that: Rational): Rational = new Rational( 
+		numer * that.denom + that.numer * denom, 
+		denom * that.denom 
+	)
+}
+</pre>
+
+<p>
+加法操作：
+</p>
+
+<pre class="brush: scala">
+scala&gt; val oneHalf = new Rational(1, 2) 
+oneHalf: Rational = 1/2 
+
+scala&gt; val twoThirds = new Rational(2, 3) 
+twoThirds: Rational = 2/3 
+
+scala&gt; oneHalf add twoThirds 
+res0: Rational = 7/6
+</pre>
+
+
+<h2 id="toc_6.6">自指向</h2>
+
+<p>
+关键字this指向当前执行方法被调用的对象实例，或者如果使用在构造器里的话，就是正被构建的对象实例。
+</p>
+
+<p>
+例如，我们考虑添加一个方法，lessThan，来测试给定的分数是否小于传入的参数： 
+</p>
+
+<pre class="brush: scala">
+def lessThan(that: Rational) = 
+	this.numer * that.denom &lt; that.numer * this.denom 
+</pre>
+
+<p>
+这里，this.numer指向lessThan被调用的那个对象的分子。你也可以去掉this前缀而只是写numer；着两种写法是相同的。 
+</p>
+
+<p>
+举一个不能缺少this的例子，考虑在Rational类里添加max方法返回指定分数和参数中的较大者： 
+</p>
+
+<pre class="brush: scala">
+def max(that: Rational) = 
+	if (this.lessThan(that)) that else this
+</pre>
+
+<p>
+这里，第一个this是冗余的，你写成(lessThan(that))也是一样的。但第二个this表示了当测试为假的时候的方法的结果；如果你省略它，就什么都返回不了了。
+</p>
+
+
+<h2 id="toc_6.7">从构造器</h2>
+
+<p>
+有些时候一个类里需要多个构造器。Scala里主构造器之外的构造器被称为从构造器（auxiliary constructor）。Scala的从构造器开始于<code>def this(...)</code>。
+</p>
+
+<p>
+Java里，构造器的第一个动作必须要么调用同类里的另一个构造器，要么直接调用超类的构造器。Scala的类里面，只有主构造器可以调用超类的构造器。Scala里更严格的限制实际上是权衡了更高的简洁度和与Java构造器相比的简易性所付出的代价之后作出的设计。
+</p>
+
+<p>
+比方说，分母为1的分数只写分子的话就更为简洁。如，对于5/1来说，可以只是写成5。因此，如果不是写成<code>Rational(5, 1)</code>，客户程序员简单地写成<code>Rational(5)</code>或许会更好看一些。这就需要给Rational添加一个只带一个参数分子的从构造器并预先设定分母为1。
+</p>
+
+<pre class="brush: scala">
+class Rational(n: Int, d: Int) { 
+	require(d != 0) 
+
+	val numer: Int = n 
+	val denom: Int = d 
+
+	def this(n: Int) = this(n, 1)
+</pre>
+
+<p>
+Rational的从构造器主体几乎完全是调用主构造器，直接传递了它的唯一的参数n作为分子和1作为分母。
+</p>
+
+
+
+<h2 id="toc_6.8">私有字段和方法</h2>
+
+<p>
+分数的分子分母有时可以约掉，添加一个最大公约数的私有方法：
+</p>
+
+<pre class="brush: scala">
+class Rational(n: Int, d: Int) { 
+	require(d != 0) 
+
+	private val g = gcd(n.abs, d.abs) 
+
+	val numer = n / g 
+	val denom = d / g 
+
+	private def gcd(a: Int, b: Int): Int = 
+		if (b == 0) a else gcd(b, a % b) 
+}
+</pre>
+
+
+
+<h2 id="toc_6.9">定义操作符</h2>
+
+<p>
+用通常的数学的符号替换add方法，同样实现一个*方法以实现乘法：
+</p>
+
+<pre class="brush: scala">
+def +(that: Rational): Rational = new Rational( 
+	numer * that.denom + that.numer * denom, 
+	denom * that.denom 
+
+def *(that: Rational): Rational = 
+	new Rational(numer * that.numer, denom * that.denom)
+</pre>
+
+<p>
+使用
+</p>
+
+<pre class="brush: scala">
+scala&gt; val x = new Rational(1, 2)
+x: Rational = 1/2
+
+scala&gt; val y = new Rational(2, 3) 
+y: Rational = 2/3 
+
+scala&gt; x.+(y) 
+res33: Rational = 7/6
+
+scala&gt; x + y 
+res32: Rational = 7/6
+
+</pre>
+
+<p>
+而且实现的加法和乘法都带有优先级：
+</p>
+
+<pre class="brush: scala">
+scala&gt; x + x * y 
+res34: Rational = 5/6 
+
+scala&gt; (x + x) * y 
+res35: Rational = 2/3 
+
+scala&gt; x + (x * y) 
+res36: Rational = 5/6
+</pre>
+
+
+
+<h2 id="toc_6.10">方法覆盖（override）</h2>
+
+<p>
+<code>override</code>修饰符标示了之前的方法定义被重载。Rational类里增加toString方法的方式重载：override缺省的实现，如： 
+</p>
+
+<pre class="brush: scala">
+class Rational(n: Int, d: Int) { override def toString = n +"/"+ d } 
+</pre>
+
+<p>
+方法定义前的override修饰符标示了之前的方法定义被重载；第10章会更进一步说明。现在分数显示得很漂亮了，所以我们去掉了前一个版本的Rational类里面的println除错语句。你可以在解释器里测试Rational的新行为： 
+</p>
+
+<pre class="brush: scala">
+scala&gt; val x = new Rational(1, 3) 
+x: Rational = 1/3 
+
+scala&gt; val y = new Rational(5, 7) 
+y: Rational = 5/7
+</pre>
+
+
+
+<h2 id="toc_6.11">方法重载（overload）</h2>
+
+<p>
+方法的参数表不同产生重载。
+</p>
+
+<p>
+给每个数学方法都有两个版本了：一个带分数做参数，另一个带整数。
+</p>
+
+
+<pre class="brush: scala">
+def +(that: Rational): Rational = new Rational( 
+    numer * that.denom + that.numer * denom, 
+    denom * that.denom 
+  ) 
+
+def +(i: Int): Rational = new Rational(numer + i * denom, denom) 
+
+def -(that: Rational): Rational = new Rational( 
+    numer * that.denom - that.numer * denom, 
+    denom * that.denom 
+  ) 
+
+def -(i: Int): Rational = new Rational(numer - i* denom, denom) 
+
+def *(that: Rational): Rational = new Rational(
+    numer * that.numer, 
+    denom * that.denom
+  ) 
+ 
+def *(i: Int): Rational = new Rational(numer * i, denom) 
+
+def /(that: Rational): Rational = new Rational(
+   numer * that.denom, 
+    denom * that.numer
+  ) 
+ 
+def /(i: Int): Rational = new Rational(numer, denom * i)
+</pre>
+
+
+<h2 id="toc_6.12">隐式转换</h2>
+
+<p>
+虽然现在可以写<code>r * 2</code>了，但是不能用<code>2 * r</code>这样的写法：
+</p>
+
+<pre class="brush: scala">
+scala&gt; val x = new Rational(2, 3)
+
+scala&gt; 2 * r
+error: overloaded method value * with alternatives:
+  (x: Double)Double &lt;and&gt;
+  (x: Float)Float &lt;and&gt;
+  (x: Long)Long &lt;and&gt;
+  (x: Int)Int &lt;and&gt;
+  (x: Char)Int &lt;and&gt;
+  (x: Short)Int &lt;and&gt;
+  (x: Byte)Int
+ cannot be applied to (this.Rational)
+</pre>
+
+<p>
+出错的原因是因为Int类上没有重载我们自己建的<code>Rational</code>类乘法。
+</p>
+
+<p>
+解决的方案是告诉Scala如何把Int类转换为Rational类，再加上修饰符<code>implicit</code>通知Scala编译器可以自动调用：
+</p>
+
+<pre class="brush: scala">
+scala&gt; implicit def intToRational(x: Int) = new Rational(x)
+
+scala&gt; 2 * r
+res16: Rational = 4/3
+</pre>
+
+<p>
+隐式转换只能在定义的作用范围内起作用，如果隐式方法被定义在<code>Rational</code>类中，就不在解释器的作用范围内，所以要把它定义在解释器内。
+</p>
+
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+
+
+<h1 id="toc_7">单例对象</h1>
 
 <p>
 Scala中没有像Java那样的静态成员而是用单例对象（Singleton Object）来代替。
@@ -1241,7 +1739,7 @@ object ObjNam{
 }
 </pre>
 
-<h1 id="toc_7">伴生对象</h1>
+<h1 id="toc_8">伴生对象</h1>
 
 <p>
 如果一个单例对象的名字和类一样，并且必须在同一个文件里。那它就是这个类的伴生对象（Companion Object），类是它的伴生类（Companion Class）。它们可以相互访问私有成员。
