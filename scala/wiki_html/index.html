@@ -95,9 +95,20 @@
 <li><a href="#toc_6.10">方法覆盖（override）</a>
 <li><a href="#toc_6.11">方法重载（overload）</a>
 <li><a href="#toc_6.12">隐式转换</a>
+<li><a href="#toc_6.13">完整的Rational代码</a>
 </ul>
 <li><a href="#toc_7">单例对象</a>
 <li><a href="#toc_8">伴生对象</a>
+<li><a href="#toc_9">内建控制结构</a>
+<ul>
+<li><a href="#toc_9.1">if表达式</a>
+<li><a href="#toc_9.2">while循环</a>
+<ul>
+<li><a href="#toc_9.2.1">while循环与Unit</a>
+<li><a href="#toc_9.2.2">while循环与函数式风格</a>
+</ul>
+<li><a href="#toc_9.3">for循环</a>
+</ul>
 </ul>
 </div>
 
@@ -1713,13 +1724,66 @@ res16: Rational = 4/3
 隐式转换只能在定义的作用范围内起作用，如果隐式方法被定义在<code>Rational</code>类中，就不在解释器的作用范围内，所以要把它定义在解释器内。
 </p>
 
-
-
+<h2 id="toc_6.13">完整的Rational代码</h2>
 
 <pre class="brush: scala">
+class Rational(n: Int, d: Int) { 
+	require(d != 0) 
+
+	private val g = gcd(n.abs, d.abs)
+	val numer = n / g 
+	val denom = d / g 
+
+	def this(n: Int) = this(n, 1)
+
+	def +(that: Rational): Rational = new Rational( 
+    numer * that.denom + that.numer * denom, 
+    denom * that.denom 
+  ) 
+
+  def +(i: Int): Rational = new Rational(numer + i * denom, denom) 
+
+  def -(that: Rational): Rational = new Rational( 
+      numer * that.denom - that.numer * denom, 
+      denom * that.denom 
+    ) 
+
+  def -(i: Int): Rational = new Rational(numer - i* denom, denom) 
+
+  def *(that: Rational): Rational = new Rational(
+      numer * that.numer, 
+      denom * that.denom
+    ) 
+
+  def *(i: Int): Rational = new Rational(numer * i, denom) 
+
+  def /(that: Rational): Rational = new Rational(
+     numer * that.denom, 
+     denom * that.numer
+    ) 
+
+  def /(i: Int): Rational = new Rational(numer, denom * i)
+
+	def lessThan(that: Rational) = 
+		this.numer * that.denom &lt; that.numer * this.denom 
+
+	def max(that: Rational) = 
+		if (this.lessThan(that)) that else this
+
+	override def toString = n +"/"+ d
+
+	private def gcd(a: Int, b: Int): Int = 
+		if (b == 0) a else gcd(b, a % b) 
+}
+
+val x = new Rational(2, 3)
+print("    x = ");  println(x)
+print("x * x = ");  println(x * x)
+print("x * 2 = ");  println(x * 2)
+
+implicit def intToRational(x: Int) = new Rational(x)
+print("2 * x = ");  println(2 * x)
 </pre>
-
-
 
 
 
@@ -1785,26 +1849,149 @@ val res2 = ChecksumAccumulator.caculate("So simple!")
 println(res2)
 </pre>
 
-<pre class="brush: scala">
-</pre>
+
+
+
+<h1 id="toc_9">内建控制结构</h1>
+
+<h2 id="toc_9.1">if表达式</h2>
+
+<p>
+if表达式返回执行分支的结果：
+</p>
 
 <pre class="brush: scala">
+var filename = "default.txt"
+if (!args.isEmpty)
+	filename = args(0)
 </pre>
 
+<p>
+更加函数式地写法，去掉变量：
+</p>
 
 <pre class="brush: scala">
+val filename = 
+	if (!args.isEmpty) args(0)
+	else "default.txt"
 </pre>
+
+<p>
+在没有副作用的情况下，用变量的目的就是为了存个值。而表达式就是算值的，所以直接拿表达式来用得了：
+</p>
 
 <pre class="brush: scala">
+println(if (!args.isEmpty) args(0) else "default.txt")
 </pre>
 
+
+
+<h2 id="toc_9.2">while循环</h2>
+
+<p>
+用do-while算最大公约数：
+</p>
 
 <pre class="brush: scala">
+def gcdLoop(x: Long, y: Long): Long = {
+	var a = x; var b = y
+	while (a != 0) {
+		val temp = a; a = b % a; b = temp
+	}
+	b
+}
 </pre>
+
+<p>
+用while-do读取文件：
+</p>
 
 <pre class="brush: scala">
+var line = ""
+do {
+	line = readline()
+		println("Read: " + line)
+} while (line != "")
 </pre>
 
+<h3 id="toc_9.2.1">while循环与Unit</h3>
+
+<p>
+注意这里没有叫它“表达式”。原因是它不会有返回值（类型为<code>Unit</code>，写作“<code>()</code>”），所以不是表达式。
+</p>
+
+<pre class="brush: scala">
+scala&gt; def greet() { println("HI") }
+greet: ()Unit
+
+scala&gt; greet() == ()
+&lt;console&gt;:9: warning: comparing values of types Unit and Unit using `==' will always yield true
+              greet() == ()
+                      ^
+HI
+res1: Boolean = true
+
+scala&gt; () == ""
+&lt;console&gt;:8: warning: comparing values of types Unit and java.lang.String using `==' will always yield false
+              () == ""
+                 ^
+res2: Boolean = false
+
+scala&gt; () != ""
+&lt;console&gt;:8: warning: comparing values of types Unit and java.lang.String using `!=' will always yield true
+              () != ""
+                 ^
+res3: Boolean = true
+</pre>
+
+<p>
+注意上面的警告信息：Unit与Unit进行相等运算永远为true；与String相等运算永远false；与String不相等运算永远为true。
+</p>
+
+<p>
+现在说到重点了：Scala中var赋值操作也是Unit，而不是和Java一样返回变量值。所以下面这种Java中一直用到的写法在Scala中是会出问题的：
+</p>
+
+<pre class="brush: scala">
+var line = ""
+while ((line = readline()) != "") {  // always true !!!
+		println("Read: " + line)
+} 
+</pre>
+
+
+<h3 id="toc_9.2.2">while循环与函数式风格</h3>
+
+<p>
+由于while没有返回值，所以常常被函数式语言舍弃。例如对于同样一个求最大公约数的函数，对比一下指令式与函数式的区别。
+</p>
+
+<p>
+指令式，用循环：
+</p>
+<pre class="brush: scala">
+def gcdLoop(x: Long, y: Long): Long = {
+	var a = x; var b = y
+	while (a != 0) {
+		val temp = a; a = b % a; b = temp
+	}
+	b
+}
+</pre>
+
+<p>
+函数式，用递归：
+</p>
+<pre class="brush: scala">
+def gcd(x: Long, y: Long): Long = if (y == 0) x else gcd(x, x % y)
+</pre>
+
+<p>
+while循环是没有返回值的，那就一定要用副作用：不是更新var就是写I/O之类的，不然浪费电么？
+</p>
+
+
+<h2 id="toc_9.3">for循环</h2>
 
 <pre class="brush: scala">
 </pre>
