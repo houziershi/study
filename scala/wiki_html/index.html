@@ -107,7 +107,80 @@
 <li><a href="#toc_9.2.1">while循环与Unit</a>
 <li><a href="#toc_9.2.2">while循环与函数式风格</a>
 </ul>
-<li><a href="#toc_9.3">for循环</a>
+<li><a href="#toc_9.3">for表达式</a>
+<ul>
+<li><a href="#toc_9.3.1">生成器（generator）</a>
+<li><a href="#toc_9.3.2">for是表达式</a>
+<li><a href="#toc_9.3.3">过滤器（filter）</a>
+<li><a href="#toc_9.3.4">for循环嵌套</a>
+<li><a href="#toc_9.3.5">（流间）变量绑定（mid-stream）</a>
+<li><a href="#toc_9.3.6">制造新集合</a>
+</ul>
+<li><a href="#toc_9.4">try表达式与异常</a>
+<ul>
+<li><a href="#toc_9.4.1">抛出异常</a>
+<li><a href="#toc_9.4.2">捕获异常</a>
+</ul>
+<li><a href="#toc_9.5">finally子句</a>
+<ul>
+<li><a href="#toc_9.5.1">try-cache-finally产生的值</a>
+</ul>
+<li><a href="#toc_9.6">match表达式</a>
+<ul>
+<li><a href="#toc_9.6.1">不要用break和contine</a>
+</ul>
+<li><a href="#toc_9.7">变量作用域</a>
+<ul>
+<li><a href="#toc_9.7.1">重构指令式风格的代码</a>
+</ul>
+</ul>
+<li><a href="#toc_10">函数与闭包</a>
+<ul>
+<li><a href="#toc_10.1">方法（method）</a>
+<li><a href="#toc_10.2">本地函数</a>
+<li><a href="#toc_10.3">头等函数与函数字面量（literal）</a>
+<li><a href="#toc_10.4">函数字面量的短格式</a>
+<li><a href="#toc_10.5">占位符语法（Placeholder syntax）</a>
+<li><a href="#toc_10.6">部分应用函数（partially applied function）</a>
+<li><a href="#toc_10.7">闭包（Closures）</a>
+<li><a href="#toc_10.8">重复参数</a>
+<li><a href="#toc_10.9">尾递归（tail recursive）</a>
+<ul>
+<li><a href="#toc_10.9.1">跟踪尾递归函数</a>
+<li><a href="#toc_10.9.2">尾递归的局限</a>
+</ul>
+</ul>
+<li><a href="#toc_11">控制抽象</a>
+<ul>
+<li><a href="#toc_11.1">可复用的代码</a>
+<li><a href="#toc_11.2">简化客户端代码</a>
+<li><a href="#toc_11.3">柯里化（Currying）</a>
+<li><a href="#toc_11.4">编写新的控制结构</a>
+<li><a href="#toc_11.5">传名参数</a>
+</ul>
+<li><a href="#toc_12">组合与继承</a>
+<ul>
+<li><a href="#toc_12.1">定制一个二维布局库</a>
+<li><a href="#toc_12.2">抽象类</a>
+<li><a href="#toc_12.3">定义无参数方法</a>
+<li><a href="#toc_12.4">扩展类</a>
+<li><a href="#toc_12.5">重载方法和字段</a>
+<li><a href="#toc_12.6">定义参数化字段</a>
+<li><a href="#toc_12.7">调用超类构造器</a>
+<li><a href="#toc_12.8">使用override修饰符</a>
+<li><a href="#toc_12.9">多态和动态绑定</a>
+</ul>
+<li><a href="#toc_13">特质（Traits）</a>
+<ul>
+<li><a href="#toc_13.1">概念</a>
+<li><a href="#toc_13.2">比较瘦接口与胖接口</a>
+<li><a href="#toc_13.3">样例：长方形对象</a>
+<li><a href="#toc_13.4">实现Ordered特质来排序</a>
+<li><a href="#toc_13.5">特质的继承</a>
+<li><a href="#toc_13.6">特质的叠加</a>
+<li><a href="#toc_13.7">为什么不是多重继承</a>
+<li><a href="#toc_13.8">什么情况下要用特质</a>
+<li><a href="#toc_13.9">包和引用</a>
 </ul>
 </ul>
 </div>
@@ -1991,51 +2064,2974 @@ while循环是没有返回值的，那就一定要用副作用：不是更新var
 </p>
 
 
-<h2 id="toc_9.3">for循环</h2>
+<h2 id="toc_9.3">for表达式</h2>
+
+
+<p>
+Scale中的for表达式是遍历集合类的强大工具，包括了过滤与构造新集合的功能。
+</p>
+
+<h3 id="toc_9.3.1">生成器（generator）</h3>
+
+<p>
+生成器语法<code>item &lt;- collection</code>，对应每步遍历时集合中对应的项：
+</p>
+
+<pre class="brush: scala">
+// Array[file]
+val fileList = (new java.io.File(".")).listFiles
+
+for (file &lt;- fileList) println(file)
+</pre>
+
+<p>
+指定次数：
+</p>
+
+<pre class="brush: scala">
+scala&gt; for (i &lt;- 1 to 4) print(i + " ")
+1 2 3 4
+
+scala&gt; for (i &lt;- 1 until 4) print(i + " ")
+1 2 3 
+</pre>
+
+<p>
+不推荐的风格，遍历时还要考虑下标是从0还是从1开始，会不会越界：
+</p>
+
+<pre class="brush: scala">
+for (i &lt;-0 to filesList.length -1)
+	println(fileList(i))
+</pre>
+
+<h3 id="toc_9.3.2">for是表达式</h3>
+
+
+<p>
+for表达式之所以被称为“表达式”是因为它能产生令人感兴趣的值，一个其类型取决于for表达式&lt;-子句的集合。
+</p>
+
+
+<h3 id="toc_9.3.3">过滤器（filter）</h3>
+
+<p>
+只要处理以<code>.scala</code>结尾的文件：
+</p>
+
+<pre class="brush: scala">
+for (file &lt;- fileList)
+	if ( file.getName.endsWith(".scala") )
+		println(file)
+</pre>
+
+<p>
+Scala可以做得更好，给for循环加上选择器：
+</p>
+
+<pre class="brush: scala">
+for (file &lt;- fileList if file.getName.endsWith(".scala"))
+		println(file)
+</pre>
+
+<p>
+而且不止可以加一个，当然多个语句之间要用分号分隔：
+</p>
+
+<pre class="brush: scala">
+for (
+	file &lt;- fileList 
+	if file.isFile;
+	if file.getName.endsWith(".scala")
+) println(file)
+</pre>
+
+<h3 id="toc_9.3.4">for循环嵌套</h3>
+
+<p>
+通过多个<code>&lt;-</code>得到嵌套：
+</p>
+
+<pre class="brush: scala">
+def fileLines(file: java.io.File) = 
+	scala.io.Source.fromFile(file).getlines.toList
+
+def grep(pattern: String) =
+	for {
+		file &lt;- filesList
+		if file.getName.endWith(".scala")
+		line &lt;- fileLines(file)
+		if line.trim.matches(pattern)
+	} println(file + ": " + line.trim)
+
+grep(".*gcd.*")
+</pre>
+
+<p>
+就像上面的代码那样，花括号可以代替小括号。但是替换的目的是什么呢？
+</p>
+
+<p>
+在前面提到过的Scala的断句原则时提到，在小括号里被认为是一条语句，所以多个for嵌套时要加上分号分隔；花括号里可以放多条，根据换行可以正确断句。
+</p>
+
+<h3 id="toc_9.3.5">（流间）变量绑定（mid-stream）</h3>
+
+<p>
+请注意前面的代码段中重复出现的表达式line.trim。这不是个可忽略的计算，因此你或许想每次只算一遍。通过用等号<code>=</code>把结果绑定到新变量可以做到这点。绑定的变量被当作val引入和使用，不过不用带关键字val。
+</p>
+
+<pre class="brush: scala">
+def grep(pattern: String) =
+	for {
+		file &lt;- filesList if file.getName.endWith(".scala")
+		line &lt;- fileLines(file)
+		trimmed = line.trim if line.trim.matches(pattern)
+	} println(file + ": " + trimmed)
+</pre>
+
+
+<h3 id="toc_9.3.6">制造新集合</h3>
+
+<p>
+到现在为止所有的例子都只是对枚举值进行操作然后就放过，除此之外，你还可以创建一个值去记住每一次的迭代。只要在for表达式之前加上关键字<code>yield</code>。
+</p>
+
+<p>
+for表达式在每次执行的时候都会制造一个值，当for表达式完成的时候，结果将是一个包含了所有产生的值的集合。结果集合的类型基于枚举子句处理的集合类型。
+</p>
+
+<p>
+对于for-yield表达式的语法是这样的： 
+</p>
+
+<pre class="brush: scala">
+for {子句} yield {循环体}
+</pre>
+
+
+<p>
+比如，下面的函数鉴别出.scala文件并保存在数组里： 
+</p>
+
+<pre class="brush: scala">
+def scalaFiles = 
+	for { 
+		file &lt;- filesHere if file.getName.endsWith(".scala") 
+	} yield file
+</pre>
+
+<p>
+for表达式在每次执行的时候都会制造一个值，本例中是file。本例中结果为Array[File]，因为filesHere是数组并且产生的表达式类型是File。 
+</p>
+
+<p>
+再来一个取每行长度的例子：
+</p>
+
+<pre class="brush: scala">
+val forLineLengths =
+	for {
+		file &lt;- filesList if file.getName.endWith(".scala")
+		line &lt;- fileLines(file)
+		trimmed = line.trim if line.trim.matches(".*for.*")
+	} yield trimmed.length
+</pre>
+
+<h2 id="toc_9.4">try表达式与异常</h2>
+
+<h3 id="toc_9.4.1">抛出异常</h3>
+
+<pre class="brush: scala">
+throw new IllegalArgumentException
+</pre>
+
+<p>
+throw也是有结果类型的表达式，而且还可以转换成任何类型。所以可以写在赋值语句里。没有异常就是表达式的值，有异常了得到<code>Nothing</code>：
+</p>
+
+<pre class="brush: scala">
+val half = 
+	if ( n % 2 == 0 ) n/2
+	else throw new RuntimeException("n must be even")
+</pre>
+
+<h3 id="toc_9.4.2">捕获异常</h3>
+
+<p>
+捕获异常的语法选择catch子句的形式。这样设计的原因是为了与Scala很重要的部分：模式匹配（pattern matching）保持一致。模式匹配是一种很强大的特征，将在稍后概述并在另外的章节中详述。
+</p>
+
+<pre class="brush: scala">
+import java.io.FileReader 
+import java.io.FileNotFoundException 
+import java.io.IOException 
+
+try { 
+	val f = new FileReader("input.txt") // Use and close file 
+} catch { 
+	case ex: FileNotFoundException =&gt; // Handle missing file 
+	case ex: IOException =&gt; // Handle other I/O error 
+}
+</pre>
+
+<p>
+与Java的一个差别是Scala里不需要你捕获检查异常（checked exception）或把它们声明在throws子句中。如果你愿意，可以用ATthrows标注声明一个throws子句，但这不是必需的。
+</p>
+
+<h2 id="toc_9.5">finally子句</h2>
+
+<p>
+没有啥要特别说明的：
+</p>
+
+<pre class="brush: scala">
+import java.io.FileReader
+
+val file = openFile()
+try { 
+	// ... do something ...
+} finally { 
+	file.close()
+}
+</pre>
+
+<h3 id="toc_9.5.1">try-cache-finally产生的值</h3>
+
+<p>
+和其它大多数Scala控制结构一样，try-catch-finally也产生值。
+</p>
+
+<p>
+下面的例子尝试拆分URL，但如果URL格式错误就使用缺省值。结果是，如果没有异常抛出，则对应于try子句；如果抛出异常并被捕获，则对应于相应的catch子句。如果异常被抛出但没被捕获，表达式就没有返回值。由finally子句计算得到的值，如果有的话，被抛弃。通常finally子句做一些清理类型的工作如关闭文件；他们不应该改变在主函数体或try的catch子句中计算的值。
+</p>
+<pre class="brush: scala">
+import java.net.URL 
+import java.net.MalformedURLException 
+
+def urlFor(path: String) = 
+	try { new URL(path) } 
+	catch { 
+		case e: MalformedURLException =&gt; 
+			new URL("http://www.scalalang.org") 
+}
+</pre>
+
+<p>
+而下面的两个例子一个第一个值为2，第二个值为1：
+</p>
+
+<pre class="brush: scala">
+scala&gt; def f(): Int = try { return 1 } finally { return 2 }
+f: ()Int
+
+scala&gt; f()
+res1: Int = 2
+
+scala&gt; def g(): Int = try { 1 } finally { 2 }
+g: ()Int
+
+scala&gt; g()
+res2: Int = 1
+</pre>
+
+<p>
+这个不明白是为什么，因此通常最好还是避免从finally子句中返回值。最好是把finally子句当作确保某些副作用，如关闭打开的文件。
+</p>
+
+
+
+<h2 id="toc_9.6">match表达式</h2>
+
+<p>
+Scala的匹配表达式允许你在许多可选项（alternative）中做选择，就好象其它语言中的switch语句。通常说来match表达式可以让你使用任意的模式（pattern）做选择，后面会有专门的篇幅介绍。通用的模式可以稍等再说。目前，只要考虑使用match在若干可选项中做选择。 
+</p>
+
+<p>
+下面的例子里的脚本从参数列表读入食物名然后打印食物配料。match表达式检查参数列表的第一个参数<code>firstArg</code>。如果是字串<code>"salt"</code>就打印<code>"pepper"</code>；如果是<code>"chips"</code>，就打印<code>"salsa"</code>，如此递推。缺省情况用下划线<code>_</code>说明，这是常用在Scala里作为占位符表示完全不清楚的值的通配符。
+</p>
+
+<pre class="brush: scala">
+val firstArg = if (args.length &gt; 0) args(0) else "" 
+
+firstArg match { 
+	case "salt"  =&gt; println("pepper") 
+	case "chips" =&gt; println("salsa") 
+	case "eggs"  =&gt; println("bacon") 
+	case _       =&gt; println("huh?") 
+}
+</pre>
+
+<p>
+与Java的switch语句比，匹配表达式还有一些重要的差别：
+</p>
+
+<ul>
+<li>
+任何种类的常量，或其他什么东西，都能用作Scala里的case，而不只是Java的case语句里面的整数类型和枚举常量。
+
+</ul>
+
+<ul>
+<li>
+每个可选项的最后并没有break。取而代之，break是隐含的，不会有从一个可选项转到另一个里面去的情况。这通常把代码变短了，并且避免了一些错误的根源。
+
+</ul>
+
+<ul>
+<li>
+match表达式也能产生值。
+
+</ul>
+
+<pre class="brush: scala">
+val firstArg = if (args.length &gt; 0) args(0) else "" 
+
+val friend = firstArg match { 
+	case "salt"  =&gt; "pepper"
+	case "chips" =&gt; "salsa" 
+	case "eggs"  =&gt; "bacon" 
+	case _       =&gt; "huh?"
+}
+println(friend)
+</pre>
+
+
+<h3 id="toc_9.6.1">不要用break和contine</h3>
+
+<p>
+break和continue与函数式文本结合得不好，而且有效利用函数式文本可以让代码写得更加简短。
+</p>
+
+<p>
+最简单的方式是用if替换每个every和用布尔变量替换每个break。布尔变量指代是否包含它的while循环应该继续。比如说，假设你正搜索一个参数列表去查找以“.scala”结尾但不以连号开头的字串。Java里你可以——如果你很喜欢while循环，break和continue——如此写：
+</p>
+
+<pre class="brush: java">
+  int i = 0;                // This is Java
+  boolean foundIt = false;
+  while (i &lt; args.length) {
+    if (args[i].startsWith("-")) {
+      i = i + 1;
+      continue;
+    }
+    if (args[i].endsWith(".scala")) {
+      foundIt = true;
+      break;
+    }
+    i = i + 1;
+  }
+</pre>
+<p>
+如果要字面直译成Scala的代码，代之以执行一个if然后continue，你可以写一个if环绕while余下的全部内容。要去掉break，你可以增加一个布尔变量提示是否继续做下去，不过在这里你可以复用foundIt，基本就是这样：
+</p>
+
+<pre class="brush: scala">
+  var i = 0
+  var foundIt = false
+
+  while (i &lt; args.length &amp;&amp; !foundIt) {
+    if (!args(i).startsWith("-")) {
+      if (args(i).endsWith(".scala"))
+        foundIt = true
+    }
+    i = i + 1
+  }
+</pre>
+
+<p>
+这个版本与原来的Java代码非常像。所有的主要段落仍然存在并保持原顺序。有两个可重新赋值的变量及一个while循环。循环内有个i是否小于args.length的测试，然后检查"-"，然后检查".scala"。
+</p>
+
+<p>
+如果要去掉代码里的var，可以尝试的一种方式是用递归函数重写循环。比方说，你可以定义带一个整数值做输入的searchFrom函数向前搜索，并返回想要的参数的索引。采用这种技巧的代码看上去会像这样：
+</p>
+
+<pre class="brush: scala">
+  def searchFrom(i: Int): Int =
+    if (i &gt;= args.length) -1
+    else if (args(i).startsWith("-")) searchFrom(i + 1) 
+    else if (args(i).endsWith(".scala")) i
+    else searchFrom(i + 1)
+
+  val i = searchFrom(0)
+</pre>
+
+<p>
+每个continue都被带有i + 1做参数的递归调用替换掉，有效地跳转到下一个整数。用递归替代了循环的编程风格更易于理解。
+</p>
+
+<p>
+Scala编译器不会实际对代码7.17展示的代码生成递归函数。因为所有的递归调用都在尾调用：tail-call位置，编译器会产生出与while循环类似的代码。每个递归调用将被实现为回到函数开始位置的跳转。尾调用优化将在后面用另外篇幅讨论。
+</p>
+
+
+<h2 id="toc_9.7">变量作用域</h2>
+
+<p>
+大括号通常引入了一个新的范围，所以任何定义在打括号里的东西在括号之后就脱离了范围。这条规则有几个例外，因为在Scala里有时候你可以用大括号代替小括号。表达式语法的替代品是这种使用大括号例子的其中之一。
+</p>
+
+<p>
+本地变量：local variable。对于它们被定义的函数来说是“本地”的。每次函数被调用的时候，一整套全新的本地变量将被使用。 一旦变量被定义了，你就不可以在同一个范围内定义同样的名字。比如，下面的脚本不会被编译通过： 
+</p>
+
+<pre class="brush: scala">
+  val a = 1
+  val a = 2 // Does not compile
+  println(a)
+</pre>
+
+<p>
+然而，你可以在一个内部范围内定义与外部范围里名称相同的变量。下列脚本将编译通过并可以运行。内部变量被说成是遮蔽（shadow）了同名的外部变量，因为在内部范围内外部变量变得不可见了：
+</p>
+
+<pre class="brush: scala">
+  val a = 1;
+  {
+    val a = 2 // Compiles just fine
+    println(a)
+  }
+  p
+</pre>
+
+<p>
+在解释器里看上去像是遮蔽的东西：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val a = 1
+  a: Int = 1
+
+  scala&gt; val a = 2
+  a: Int = 2
+
+  scala&gt; println(a)
+  2
+</pre>
+
+<p>
+在理论上，解释器在每次你输入新的语句时都创建了一个新的嵌套范围。因此，你可以把之前解释的代码虚拟化认为是
+</p>
+
+<pre class="brush: scala">
+  val a = 1;
+  {
+    val a = 2;
+    {
+      println(a)
+    }
+  }
+</pre>
+
+
+<h3 id="toc_9.7.1">重构指令式风格的代码</h3>
+
+<p>
+通过指令式风格输出乘法表：
+</p>
+
+<pre class="brush: scala">
+  def printMultiTable() {
+
+    var i = 1
+    // only i in scope here
+
+    while (i &lt;= 10) {
+
+      var j = 1
+      // both i and j in scope here
+
+      while (j &lt;= 10) {
+
+        val prod = (i * j).toString
+        // i, j, and prod in scope here
+
+        var k = prod.length
+        // i, j, prod, and k in scope here
+
+        while (k &lt; 4) {
+          print(" ")
+          k += 1
+        }
+
+        print(prod)
+        j += 1
+      }
+
+      // i and j still in scope; prod and k out of scope
+
+      println()
+      i += 1
+    }
+
+    // i still in scope; j, prod, and k out of scope
+  }
+</pre>
+
+<p>
+代码在两个方面显示出了指令式风格。
+</p>
+
+<p>
+首先，调用printMultiTable有副作用：在标准输出上打印乘法表。在函数式风格中，我们重构了函数，让它把乘法表作为字串返回。由于函数不再执行打印，我们把它重命名为multiTable。正如前面提到过的，没有副作用的函数的一个优点是它们很容易进行单元测试。要测试printMultiTable，你需要重定义print和println从而能够检查输出的正确性。测试multiTable就简单多了，只要检查结果即可。
+</p>
+
+<pre class="brush: scala">
+  // Returns a row as a sequence
+  def makeRowSeq(row: Int) =
+    for (col &lt;- 1 to 10) yield {
+      val prod = (row * col).toString
+      val padding = " " * (4 - prod.length)
+      padding + prod
+    }
+
+  // Returns a row as a string
+  def makeRow(row: Int) = makeRowSeq(row).mkString
+
+  // Returns table as a string with one row per line
+  def multiTable() = {
+
+    val tableSeq = // a sequence of row strings
+      for (row &lt;- 1 to 10)
+      yield makeRow(row)
+
+    tableSeq.mkString("\n")
+  }
+</pre>
+
+<p>
+printMultiTable里另一个揭露其指令式风格的信号来自于它的while循环和var。与之相对，multiTable函数使用了val，for表达式，帮助函数：helper function，并调用了mkString。 
+</p>
+
+<p>
+我们提炼出两个帮助函数<code>makeRow</code>和<code>makeRowSeq</code>，使代码容易阅读。
+</p>
+
+<p>
+函数<code>makeRowSeq</code>使用for表达式从1到10枚举列数。这个for函数体计算行和列的乘积，决定乘积前占位的空格，并生成由占位空格，乘积字串叠加成的结果。for表达式的结果是一个包含了这些生成字串作为元素的序列（scala.Seq的某个子类）。
+</p>
+
+<p>
+另一个帮助函数<code>makeRow</code>仅仅调用了<code>makeRowSeq</code>返回结果的<code>mkString</code>函数。叠加序列中的字串把它们作为一个字串返回。 
+</p>
+
+<p>
+<code>multiTable</code>方法首先使用一个for表达式的结果初始化tableSeq，这个for表达式从1到10枚举行数，对每行调用<code>makeRow</code>获得该行的字串。因为字串前缀yield关键字，所以表达式的结果就是行字串的序列。现在仅剩下的工作就是把字串序列转变为单一字串。mkString的调用完成这个工作，并且由于我们传递进去"\n"，因此每个字串结尾插入了换行符。
+</p>
+
+
+
+<h1 id="toc_10">函数与闭包</h1>
+
+<h2 id="toc_10.1">方法（method）</h2>
+
+<p>
+方法是被定义为某个对象成员的函数，这是最常用的形式。如下面这个工具检查文件中超过指定长度的行：
+</p>
+
+<pre class="brush: scala">
+  import scala.io.Source
+
+  object LongLines {
+
+    def processFile(filename: String, width: Int) {
+      val source = Source.fromFile(filename)
+      for (line &lt;- source.getLines) 
+        processLine(filename, width, line)
+    }
+
+    private def processLine(filename: String,
+        width: Int, line: String) {
+
+      if (line.length &gt; width)
+        println(filename +": "+ line.trim)
+    }
+  }
+</pre>
+
+<p>
+再定义了一个application以后，就可以在shell中调用它了，把第一个命令行参数当作行长度，并把后续的参数解释为文件名：
+</p>
+
+<pre class="brush: scala">
+  object FindLongLines {
+    def main(args: Array[String]) {
+      val width = args(0).toInt
+      for (arg &lt;- args.drop(1))
+        LongLines.processFile(arg, width)
+    } 
+  } 
+</pre>
+
+<p>
+调用：
+</p>
+
+<pre class="brush: scala">
+  $ scala FindLongLines 45 LongLines.scala
+  LongLines.scala: def processFile(filename: String, width: Int) {
+</pre>
+
+<h2 id="toc_10.2">本地函数</h2>
+
+<p>
+Java里通过定义private方法来限制访问。在Scala里还可以把方法定义在另一个函数里来限制只有所在的代码块能访问：
+</p>
+
+<pre class="brush: scala">
+  def processFile(filename: String, width: Int) {
+
+    def processLine(filename: String,
+        width: Int, line: String) {
+
+      if (line.length &gt; width)
+        print(filename +": "+ line)
+    }    
+
+    val source = Source.fromFile(filename)
+    for (line &lt;- source.getLines) {
+      processLine(filename, width, line)
+    }
+  }
+</pre>
+
+<p>
+还可以省掉<code>filename</code>和<code>width</code>这两个参数的传递：
+</p>
+
+<pre class="brush: scala">
+  import scala.io.Source
+
+  object LongLines {
+
+    def processFile(filename: String, width: Int) {
+
+      def processLine(line: String) {
+        if (line.length &gt; width)
+          print(filename +": "+ line)
+      }    
+
+      val source = Source.fromFile(filename)
+      for (line &lt;- source.getLines)
+        processLine(line)
+    }
+  }
+</pre>
+
+<h2 id="toc_10.3">头等函数与函数字面量（literal）</h2>
+
+<p>
+Scala拥有头等函数（first-class function），除了定义函数与调用函数外，还可以写成没有名字的函数字面量（literal）。
+</p>
+
+<p>
+函数字面量直接作为一段文本被编译进一个类中，等到运行时被实例化为函数值（function value）。
+</p>
+
+<p>
+任何函数值都是某个扩展了若干scala包的FunctionN特质之一的类的实例，如Function0是没有参数的函数，Function1是有一个参数的函数等等。每个FunctionN特质有一个apply方法用来调用函数。
+</p>
+
+<p>
+简单例子：
+</p>
+
+<pre class="brush: scala">
+(x: Int) =&gt; x + 1
+</pre>
+
+<p>
+<code>=&gt;</code>指明这个函数把左边的东西（任何整数x）转变成右边的东西（x + 1）。所以，这是一个把任何整数x映射为x + 1的函数。
+</p>
+
+<p>
+函数值是对象，所以如果你愿意可以把它们存入变量。它们也是函数，所以你可以使用通常的括号函数调用写法调用它们。以下是这两种动作的例子：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; var increase = (x: Int) =&gt; x + 1
+  increase: (Int) =&gt; Int = &lt;function&gt;
+
+  scala&gt; increase(10)
+  res0: Int = 11
+</pre>
+
+<p>
+本例中，因为increase是var，你可以在之后重新赋给它不同的函数值。
+</p>
+
+<pre class="brush: scala">
+  scala&gt; increase = (x: Int) =&gt; x + 9999
+  increase: (Int) =&gt; Int = &lt;function&gt;
+
+  scala&gt; increase(10)
+  res2: Int = 10009
+</pre>
+
+<p>
+如果你想在函数文本中包括超过一个语句，用大括号包住函数体，一行放一个语句，就组成了一个代码块。与方法一样，当函数值被调用时，所有的语句将被执行，而函数的返回值就是最后一行产生的那个表达式。
+</p>
+
+<pre class="brush: scala">
+  scala&gt; increase = (x: Int) =&gt; {
+       |   println("We")
+       |   println("are")
+       |   println("here!")
+       |   x + 1
+       | }
+  increase: (Int) =&gt; Int = &lt;function&gt;
+
+  scala&gt; increase(10)
+  We
+  are
+  here!
+  res4: Int = 11
+</pre>
+
+<p>
+许多Scala库都提供了结合函数字面量的机制。例如，所有的集合类都能用到foreach方法和filter方法：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val someNumbers = List(-11, -10, -5, 0, 5, 10)
+  someNumbers: List[Int] = List(-11, -10, -5, 0, 5, 10)
+
+  scala&gt; someNumbers.foreach((x: Int) =&gt; println(x))
+  -11
+  -10
+  -5
+  0
+  5
+  10
+</pre>
+
+<h2 id="toc_10.4">函数字面量的短格式</h2>
+
+<p>
+Scala提供了许多方法去除冗余信息并把函数文本写得更简短。
+</p>
+
+<p>
+一种让函数文本更简短的方式是去除参数类型：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; someNumbers.filter((x) =&gt; x &gt; 0)
+  res7: List[Int] = List(5, 10)
+</pre>
+
+<p>
+根据<code>someNumbers</code>编译器知道x一定是整数，因为它看到你立刻使用了这个函数过滤整数列表（暗示）。这被称为目标类型化（target typing），。目标类型化的精确细节并不重要。你可以简单地从编写一个不带参数类型的函数文本开始，并且，如果编译器不能识别，再加上类型。几次之后你就对什么情况编译器能或不能解开谜题有感觉了。
+</p>
+
+<p>
+第二种去除无用字符的方式是省略类型是被推断的参数之外的括号。前面例子里，x两边的括号不是必须的：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; someNumbers.filter(x =&gt; x &gt; 0)
+  res8: List[Int] = List(5, 10)
+</pre>
+
+
+<h2 id="toc_10.5">占位符语法（Placeholder syntax）</h2>
+
+<p>
+如果想让函数文本更简洁，可以把下划线当做一个或更多参数的占位符，只要每个参数在函数文本内仅出现一次，也就是说，在这种情况下每个下划线都代表一个不同的参数。
+</p>
+
+<p>
+比如，<code>_ &gt; 0</code>对于检查值是否大于零的函数来说就是非常短的标注：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; someNumbers.filter(_ &gt; 0)
+  res9: List[Int] = List(5, 10)
+</pre>
+
+<p>
+可以把下划线看作表达式里需要被“填入”的“空白”。相当于：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; someNumbers.filter(x =&gt; x &gt; 0)
+  res10: List[Int] = List(5, 10)
+</pre>
+
+<p>
+有时编译器有可能没有足够的信息推断缺失的参数类型。如只是写：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val f = _ + _
+  &lt;console&gt;:4: error: missing parameter type for expanded 
+  function ((x$1, x$2) =&gt; x$1.$plus(x$2))
+         val f = _ + _
+                 ^
+</pre>
+
+<p>
+这种情况下使用冒号指定类型：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val f = (_: Int) + (_: Int)
+  f: (Int, Int) =&gt; Int = &lt;function&gt;
+
+  scala&gt; f(5, 10)
+  res11: Int = 15
+</pre>
+
+<h2 id="toc_10.6">部分应用函数（partially applied function）</h2>
+
+<p>
+下划线不仅能代替一个参数，还可以代替整个参数列表：
+</p>
+
+<pre class="brush: scala">
+  someNumbers.foreach(println(_))
+</pre>
+
+<p>
+或简化为：
+</p>
+
+<pre class="brush: scala">
+  someNumbers.foreach(println _)
+</pre>
+
+<p>
+住要在函数名和下划线之间留一个空格，因为不这样做编译器会认为在调用名为<code>println_</code>的方法。
+</p>
+
+<p>
+Scala把短格式直接看作是你输入了下列代码：
+</p>
+
+<pre class="brush: scala">
+  someNumbers.foreach(x =&gt; println(x))
+</pre>
+
+<p>
+以这种方式使用下划线时，你就正在写一个偏应用函数（partially applied function）。Scala里，当你调用函数，传入任何需要的参数，你就是在把函数应用到参数上。如，给定下列函数：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; def sum(a: Int, b: Int, c: Int) = a + b + c
+  sum: (Int,Int,Int)Int
+</pre>
+
+<p>
+你就可以把函数sum应用到参数1，2和3上，如下：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; sum(1, 2, 3)
+  res12: Int = 6
+</pre>
+
+<p>
+偏应用函数是一种表达式，你不需要提供函数需要的所有参数。代之以仅提供部分，或不提供所需参数。比如，要创建不提供任何三个所需参数的调用sum的偏应用表达式，只要在“sum”之后放一个下划线即可。然后可以把得到的函数存入变量。举例如下：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val a = sum _
+  a: (Int, Int, Int) =&gt; Int = &lt;function&gt;
+</pre>
+
+<p>
+有了这个代码，Scala编译器以偏应用函数表达式，<code>sum _</code>，实例化一个带三个缺失整数参数的函数值，并把这个新的函数值的索引赋给变量a。当你把这个新函数值应用于三个参数之上时，它就转回头调用sum，并传入这三个参数：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; a(1, 2, 3)
+  res13: Int = 6
+</pre>
+
+<p>
+实际发生的事情是这样的：
+</p>
+
+<p>
+名为a的变量指向一个函数值对象。这个函数值是由Scala编译器依照偏应用函数表达式sum _，自动产生的类的一个实例。
+</p>
+
+<p>
+编译器产生的类有一个apply方法带三个参数（产生的类扩展了特质Function3，定义了三个参数的apply方法）。之所以带三个参数是因为<code>sum _</code>表达式缺少的参数数量为三。Scala编译器把表达式a(1,2,3)翻译成对函数值的apply方法的调用，传入三个参数1，2，3。因此a(1,2,3)是下列代码的短格式：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; a.apply(1, 2, 3)
+  res14: Int = 6
+</pre>
+
+<p>
+Scala编译器根据表达式sum _自动产生的类里的apply方法，简单地把这三个缺失的参数前转到sum，并返回结果。本例中apply调用了sum(1,2,3)，并返回sum返回的，6。
+</p>
+
+<p>
+这种一个下划线代表全部参数列表的表达式的另一种用途，就是把它当作转换def为函数值的方式。例如，如果你有一个本地函数，如<code>sum(a: Int, b: Int, c: Int): Int</code>，你可以把它“包装”在apply方法具有同样的参数列表和结果类型的函数值中。当你把这个函数值应用到某些参数上时，它依次把sum应用到同样的参数，并返回结果。尽管不能把方法或嵌套函数赋值给变量，或当作参数传递给其它方法，但是如果你把方法或嵌套函数通过在名称后面加一个下划线的方式包装在函数值中，就可以做到了。
+</p>
+
+<p>
+现在，尽管<code>sum _</code>确实是一个偏应用函数，或许对你来说为什么这么称呼并不是很明显。这个名字源自于函数未被应用于它所有的参数。在<code>sum _</code>的例子里，它没有应用于任何参数。不过还可以通过提供某些但不是全部需要的参数表达一个偏应用函数。举例如下：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val b = sum(1, _: Int, 3)
+  b: (Int) =&gt; Int = &lt;function&gt;
+</pre>
+
+<p>
+这个例子里，你提供了第一个和最后一个参数给sum，但中间参数缺失。因为仅有一个参数缺失，Scala编译器会产生一个新的函数类，其apply方法带一个参数。在使用一个参数调用的时候，这个产生的函数的apply方法调用sum，传入1，传递给函数的参数，还有3。如下：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; b(2)       // b.apply调用了sum(1,2,3)
+  res15: Int = 6
+
+  scala&gt; b(5)       // b.apply调用了sum(1,5,3)
+  res16: Int = 9
+</pre>
+
+<p>
+如果你正在写一个省略所有参数的偏应用程序表达式，如println _或sum _，而且在代码的那个地方正需要一个函数，你可以去掉下划线从而表达得更简明。例如，代之以打印输出someNumbers里的每一个数字：
+</p>
+
+<pre class="brush: scala">
+  val someNumbers = List(-11, -10, -5, 0, 5, 10) 
+  someNumbers.foreach(println _)
+</pre>
+
+<p>
+你可以只是写成：
+</p>
+
+<pre class="brush: scala">
+  someNumbers.foreach(println) 
+</pre>
+
+<p>
+最后一种格式仅在需要写函数的地方，如例子中的foreach调用，才能使用。编译器知道这种情况需要一个函数，因为foreach需要一个函数作为参数传入。在不需要函数的情况下，尝试使用这种格式将引发一个编译错误。举例如下：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val c = sum
+  &lt;console&gt;:5: error: missing arguments for method sum...
+  follow this method with `_' if you want to treat it as
+     a partially applied function
+         val c = sum
+                 ^
+  scala&gt; val d = sum _
+  d: (Int, Int, Int) =&gt; Int = &lt;function&gt;
+
+  scala&gt; d(10, 20, 30)
+  res17: Int = 60 
+</pre>
+
+<p>
+为什么要使用尾下划线？ Scala的偏应用函数语法凸显了Scala与经典函数式语言如Haskell或ML之间，设计折中的差异。在经典函数式语言中，偏应用函数被当作普通的例子。更进一步，这些语言拥有非常严格的静态类型系统能够暴露出你在偏应用中可能犯的所有错误。Scala与指令式语言如Java关系近得多，在这些语言中没有应用所有参数的方法会被认为是错误的。进一步说，子类型推断的面向对象的传统和全局的根类型接受一些被经典函数式语言认为是错误的程序。 
+</p>
+
+<p>
+举例来说，如果你误以为List的<code>drop(n: Int)</code>方法如<code>tail(</code>)，那么你会忘记你需要传递给<code>drop</code>一个数字。你或许会写，<code>println(drop)</code>。如果Scala采用偏应用函数在哪儿都OK的经典函数式传统，这个代码就将通过类型检查。然而，你会惊奇地发现这个<code>println</code>语句打印的输出将总是<code>&lt;function&gt;</code>！可能发生的事情是表达式drop将被看作是函数对象。因为<code>println</code>可以带任何类型对象，这个代码可以编译通过，但产生出乎意料的结果。
+</p>
+
+<p>
+ 为了避免这样的情况，Scala需要你指定显示省略的函数参数，尽管标志简单到仅用一个<code>_</code>。Scala允许你仅在需要函数类型的地方才能省略这个仅用的_。
+</p>
+
+
+
+<h2 id="toc_10.7">闭包（Closures）</h2>
+
+<p>
+函数不仅可以用到参数：
+</p>
+
+<pre class="brush: scala">
+  (x: Int) =&gt; x + more  // how much more? 
+</pre>
+
+<p>
+，more是个自由变量：free variable，因为函数文本自身没有给出其含义。相对的，x变量是一个绑定变量：bound variable，因为它在函数的上下文中有明确意义：被定义为函数的唯一参数，一个Int。如果你尝试独立使用这个函数文本，范围内没有任何more的定义，编译器会报错说：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; (x: Int) =&gt; x + more
+  &lt;console&gt;:5: error: not found: value more
+         (x: Int) =&gt; x + more
+                         ^ 
+</pre>
+
+<p>
+另一方面，只要有一个叫做more的什么东西同样的函数文本将工作正常：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; var more = 1
+  more: Int = 1
+
+  scala&gt; val addMore = (x: Int) =&gt; x + more
+  addMore: (Int) =&gt; Int = &lt;function&gt;
+
+  scala&gt; addMore(10)
+  res19: Int = 11 
+</pre>
+
+<p>
+依照这个函数文本在运行时创建的函数值（对象）被称为闭包：closure。名称源自于通过“捕获”自由变量的绑定对函数文本执行的“关闭”行动。
+</p>
+
+<p>
+不带自由变量的函数文本，如<code>(x: Int) =&gt; x + 1</code>，被称为封闭术语：closed term，这里术语：term指的是一小部分源代码。因此依照这个函数文本在运行时创建的函数值严格意义上来讲就不是闭包，因为<code>(x: Int) =&gt; x + 1</code>在编写的时候就已经封闭了。
+</p>
+
+<p>
+任何带有自由变量的函数文本，如<code>(x: Int) =&gt; x + more</code>，都是开放术语：open term。因此，任何依照<code>(x: Int) =&gt; x + more</code>在运行期创建的函数值将必须捕获它的自由变量，more，的绑定。由于函数值是关闭这个开放术语<code>(x: Int) =&gt; x + more</code>的行动的最终产物，得到的函数值将包含一个指向捕获的<code>more</code>变量的参考，因此被称为闭包。
+</p>
+
+<p>
+如果more在闭包创建之后被改变了闭包会反映这个变化。如下：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; more = 9999
+  more: Int = 9999
+
+  scala&gt; addMore(10)
+  res21: Int = 10009 
+</pre>
+
+<p>
+直觉上，Scala的闭包捕获了变量本身，而不是变量指向的值。相对的，Java的内部类根本不允许你访问外围范围内可以改变的变量，因此到底是捕获了变量还是捕获了它当前具有的值就没有差别了。
+</p>
+
+<p>
+反过来也同样。闭包对捕获变量作出的改变在闭包之外也可见：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val someNumbers = List(-11, -10, -5, 0, 5, 10)
+  someNumbers: List[Int] = List(-11, -10, -5, 0, 5, 10)
+
+  scala&gt; var sum = 0
+  sum: Int = 0
+
+  scala&gt; someNumbers.foreach(sum +=  _)
+
+  scala&gt; sum
+  res23: Int = -11 
+</pre>
+
+<p>
+对于会有不同实例的场景，如：本地变量，闭包会对应到创建时关联的那个变量。
+</p>
+
+<p>
+例如，以下是创建和返回“递增”闭包的函数：
+</p>
+
+<pre class="brush: scala">
+  def makeIncreaser(more: Int) = (x: Int) =&gt; x + more 
+</pre>
+
+<p>
+每次函数被调用时都会创建一个新闭包。每个闭包都会访问闭包创建时活跃的more变量。
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val inc1 = makeIncreaser(1)
+  inc1: (Int) =&gt; Int = &lt;function&gt;
+
+  scala&gt; val inc9999 = makeIncreaser(9999)
+  inc9999: (Int) =&gt; Int = &lt;function&gt; 
+</pre>
+
+<p>
+结果依赖于闭包被创建时more是如何定义的：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; inc1(10)
+  res24: Int = 11
+
+  scala&gt; inc9999(10)
+  res25: Int = 10009 
+</pre>
+
+<p>
+尽管本例中more是一个已经返回的方法调用的参数也没有区别。Scala编译器在这种情况下重新安排了它以使得捕获的参数继续存在于堆中，而不是堆栈中，因此可以保留在创建它的方法调用之外。这种重新安排的工作都是自动关照的，因此你不需要操心。请任意捕获你想要的变量：val，var，或参数。
+</p>
+
+
+<h2 id="toc_10.8">重复参数</h2>
+
+<p>
+Scala允许你指明函数的最后一个参数可以是重复的。这可以允许客户向函数传入可变长度参数列表。想要标注一个重复参数，在参数的类型之后放一个星号。例如：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; def echo(args: String*) = 
+       |   for (arg &lt;- args) println(arg)
+  echo: (String*)Unit 
+</pre>
+
+<p>
+这样定义，echo可以被零个至多个String参数调用：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; echo()
+
+  scala&gt; echo("one")
+  one
+
+  scala&gt; echo("hello", "world!")
+  hello
+  world! 
+</pre>
+
+<p>
+函数内部，重复参数的类型是声明参数类型的数组。因此，echo函数里被声明为类型<code>String*</code>的args的类型实际上是<code>Array[String]</code>。然而，如果你有一个合适类型的数组，并尝试把它当作重复参数传入，你会得到一个编译器错误：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val arr = Array("What's", "up", "doc?")
+  arr: Array[java.lang.String] = Array(What's, up, doc?)
+
+  scala&gt; echo(arr)
+  &lt;console&gt;:7: error: type mismatch;
+   found   : Array[java.lang.String]
+   required: String
+         echo(arr)
+              ^ 
+</pre>
+
+<p>
+要实现这个做法，你需要在数组参数后添加一个冒号和一个<code>_*</code>符号，像这样：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; echo(arr: _*)
+  What's
+  up
+  doc? 
+</pre>
+
+<p>
+这个标注告诉编译器把<code>arr</code>的每个元素当作参数，而不是当作单一的参数传给<code>echo</code>。
+</p>
+
+
+<h2 id="toc_10.9">尾递归（tail recursive）</h2>
+
+<p>
+Scala编译器可以应用一个重要的优化。注意递归调用是函数体执行的最后一件事，那么函数在它们最后一个动作调用自己的函数。这被称为尾递归。
+</p>
+
+<p>
+Scala编译器检测到尾递归就用新值更新函数参数，然后把它替换成一个回到函数开头的跳转。这样减小了递归调用的开销。
+</p>
+
+<p>
+递归经常是比基于循环的更优美和简明的方案。如果方案是尾递归，就无须付出任何运行期开销。
+</p>
+
+<h3 id="toc_10.9.1">跟踪尾递归函数</h3>
+
+<p>
+尾递归函数将不会为每个调用制造新的堆栈框架；所有的调用将在一个框架内执行。所以在调试的时候会比较怪。
+</p>
+
+<p>
+例如，这个函数调用自身若干次之后抛出一个异常：
+</p>
+
+<pre class="brush: scala">
+  def boom(x: Int): Int = 
+    if (x == 0) throw new Exception("boom!")
+    else boom(x - 1) + 1 
+</pre>
+
+<p>
+这个函数不是尾递归，因为在递归调用之后执行了递增操作。如果执行它，你会得到预期的：
+</p>
+
+<pre class="brush: scala">
+  scala&gt;  boom(3)
+  java.lang.Exception: boom!
+  	at .boom(&lt;console&gt;:5)
+  	at .boom(&lt;console&gt;:6)
+  	at .boom(&lt;console&gt;:6)
+  	at .boom(&lt;console&gt;:6)
+  	at .&lt;init&gt;(&lt;console&gt;:6)
+  ...
+</pre>
+
+<p>
+如果你现在修改了boom从而让它变成尾递归：
+</p>
+
+<pre class="brush: scala">
+ def bang(x: Int): Int = 
+   if (x == 0) throw new Exception("bang!")
+   else bang(x - 1) 
+</pre>
+
+<p>
+你会得到： 
+</p>
+
+<pre class="brush: scala">
+  scala&gt; bang(5)
+  java.lang.Exception: bang!
+  	at .bang(&lt;console&gt;:5)
+  	at .&lt;init&gt;(&lt;console&gt;:6)
+  ... 
+</pre>
+
+<p>
+这回，你仅看到了bang的一个堆栈框架。或许你会认为bang在调用自己之前就崩溃了，但这不是事实。如果你认为你会在看到堆栈跟踪时被尾调用优化搞糊涂，你可以用开关项关掉它：
+</p>
+<pre class="brush: scala">
+  -g:notailcalls 
+</pre>
+
+<p>
+把这个参数传给scala的shell或者scalac编译器。定义了这个选项，你就能得到一个长长的堆栈跟踪了：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; bang(5)
+  java.lang.Exception: bang!
+  	at .bang(&lt;console&gt;:5)
+  	at .bang(&lt;console&gt;:5)
+  	at .bang(&lt;console&gt;:5)
+  	at .bang(&lt;console&gt;:5)
+  	at .bang(&lt;console&gt;:5)
+  	at .bang(&lt;console&gt;:5)
+  	at .&lt;init&gt;(&lt;console&gt;:6)
+  ... 
+</pre>
+
+<h3 id="toc_10.9.2">尾递归的局限</h3>
+
+<p>
+Scala里尾递归的使用局限很大，因为JVM指令集使实现更加先进的尾递归形式变得很困难。Scala仅优化了直接递归调用使其返回同一个函数。如果递归是间接的，就像在下面的例子里两个互相递归的函数，就没有优化的可能性了：
+</p>
+
+<pre class="brush: scala">
+  def isEven(x: Int): Boolean =
+    if (x == 0) true else isOdd(x - 1)
+  def isOdd(x: Int): Boolean =
+    if (x == 0) false else isEven(x - 1) 
+</pre>
+
+<p>
+同样如果最后一个调用是一个函数值你也不能获得尾调用优化。请考虑下列递归代码的实例：
+</p>
+
+<pre class="brush: scala">
+  val funValue = nestedFun _
+  def nestedFun(x: Int) { 
+    if (x != 0) { println(x); funValue(x - 1) }
+  } 
+</pre>
+
+<p>
+<code>funValue</code>变量指向一个实质是包装了<code>nestedFun</code>的调用的函数值。当你把这个函数值应用到参数上，它会转向把<code>nestedFun</code>应用到同一个参数，并返回结果。因此你或许希望Scala编译器能执行尾调用优化，但在这个例子里做不到。因此，尾调用优化受限于方法或嵌套函数在最后一个操作调用本身，而没有转到某个函数值或什么其它的中间函数的情况。
+</p>
+
+
+
+
+<h1 id="toc_11">控制抽象</h1>
+
+<h2 id="toc_11.1">可复用的代码</h2>
+
+<p>
+所有的函数都被分割成通用部分（它们在每次函数调用中都相同）以及非通用部分（在不同的函数调用中可能会变化）。通用部分是函数体，而非通用部分必须由参数提供。
+</p>
+
+<p>
+当你把函数值用做参数时，算法的非通用部分就是它代表的某些其它算法。在这种函数的每一次调用中，你都可以把不同的函数值作为参数传入，于是被调用函数将在每次选用参数的时候调用传入的函数值。这种高阶函数（higher-order function）带其它函数做参数的函数提供了机会去组织和简化代码。
+</p>
+
+<p>
+例子。一个工具类，提供了很多查找文件的方法，有根据文件结尾的、文件名是否包含指定字串的、文件名是否匹配正则的：
+</p>
+
+<pre class="brush: scala">
+  object FileMatcher {
+
+    // private method, get file name list in current dir
+    private def filesHere = (new java.io.File(".")).listFiles
+
+    // by file name end with string
+    def filesEnding(query: String) =
+      for (file &lt;- filesHere; if file.getName.endsWith(query))
+        yield file
+                     
+    // by file name end include string
+    def filesContaining(query: String) =
+      for (file &lt;- filesHere; if file.getName.contains(query))
+        yield file
+                   
+    // by file name match regex
+    def filesRegex(query: String) =
+      for (file &lt;- filesHere; if file.getName.matches(query))
+        yield file
+  } 
+</pre>
+
+<p>
+如果在Java中对应这种情况，大家应该都知道如何提炼接口来重用代码，这里就不啰嗦了。
+</p>
+
+<p>
+如果是在某些动态语言中，要提炼一个工具方法提炼出共用的部分，根据传入不同<code>method</code>作为参数也匹配也很方便，可以直接把代码“拼接”起来：
+</p>
+
+<pre class="brush: scala">
+  def filesMatching(query: String, method) =
+    for (file &lt;- filesHere; if file.getName.method(query))
+      yield file
+</pre>
+
+<p>
+不过Scala不是动态语言，不能这么拼接。虽然不能把方法名作为参数传递，但可以通过字面量在运行时产生对应的函数值：
+</p>
+
+<pre class="brush: scala">
+  def filesMatching(
+    query: String,
+    matcher: (String, String) =&gt; Boolean
+  ) = {
+    for (file &lt;- filesHere; if matcher(file.getName, query))
+      yield file
+  } 
+</pre>
+
+<p>
+字面量只说明了函数的类型是<code>(String, String) =&gt; Boolean</code>，不用关内部逻辑的。现在已经有了一个<code>filesMatching</code>方法来处理共同的逻辑，三个具体的匹配方法只要调用它就行了：
+</p>
+
+<pre class="brush: scala">
+  def filesEnding(query: String) =
+    filesMatching(query, _.endsWith(_))
+
+  def filesContaining(query: String) =
+    filesMatching(query, _.contains(_))
+
+  def filesRegex(query: String) =
+    filesMatching(query, _.matches(_)) 
+</pre>
+
+<p>
+加上参数表和参数类型可以更加好理解一些
+</p>
+
+<pre class="brush: scala">
+  // _.endsWith(_)
+  (fileName: String, query: String) =&gt; fileName.endsWith(query)
+  
+  // _.contains(_)
+  (fileName: String, query: String) =&gt; fileName.contains(query))
+  
+  // _.matches(_)
+  (fileName: String, query: String) =&gt; fileName.matches(query))
+</pre>
+
+<p>
+代码已经被简化了，但它实际还能更短。注意到<code>query</code>传递给了方法<code>filesMatching</code>，但<code>filesMatching</code>根本用不着这个参数，只是为了把它传回给传入的<code>matcher</code>函数。
+</p>
+
+<p>
+所以在这里可以直接把参数<code>query</code>绑定到函数字面量中，这样<code>fileMacthing</code>方法就不要<code>query</code>这个参数了。 
+</p>
+
+<pre class="brush: scala">
+  object FileMatcher {
+    private def filesHere = (new java.io.File(".")).listFiles
+
+    private def filesMatching(matcher: String =&gt; Boolean) =
+      for (file &lt;- filesHere; if matcher(file.getName))
+        yield file
+  
+    def filesEnding(query: String) =
+      filesMatching(_.endsWith(query))
+  
+    def filesContaining(query: String) =
+      filesMatching(_.contains(query))
+  
+    def filesRegex(query: String) =
+      filesMatching(_.matches(query))
+  } 
+</pre>
+
+<h2 id="toc_11.2">简化客户端代码</h2>
+
+<p>
+高阶函数可以提供更加强大的API，让客户的代码写起来更加简单。
+</p>
+
+<p>
+比如List中的高阶函数<code>exists</code>方法已经提供了遍历整个集合的抽象，用户只要把判断符合的函数传入就可以了。下面的两个例子非常简单地实现了检查是否存在负数和是否存在奇数两个方法：
+</p>
+
+<pre class="brush: scala">
+scala&gt; def containsNeg(nums: List[Int]) = nums.exists(_ &lt; 0)
+containsNeg: (nums: List[Int])Boolean
+
+scala&gt; def containsOdd(nums: List[Int]) = nums.exists(_ % 2 == 1)
+containsOdd: (nums: List[Int])Boolean
+ 
+scala&gt; List(1, 2, 3, 4)
+res1: List[Int] = List(1, 2, 3, 4)
+
+scala&gt; containsNeg(res1)
+res3: Boolean = false
+
+scala&gt; containsOdd(res1)
+res4: Boolean = true
+</pre>
+
+<p>
+如果没有高阶函数<code>exists</code>，那就要自己写循环的逻辑，就会有很多重复的代码：
+</p>
+
+<pre class="brush: scala">
+  def containsNeg(nums: List[Int]): Boolean = {
+    var exists = false
+    for (num &lt;- nums)
+      if (num &lt; 0)
+        exists = true
+    exists
+  }
+  
+  def containsOdd(nums: List[Int]): Boolean = {
+    var exists = false
+    for (num &lt;- nums)
+      if (num % 2 == 1)
+        exists = true
+    exists
+  } 
+</pre>
+
+
+<h2 id="toc_11.3">柯里化（Currying）</h2>
+
+<p>
+理解柯里化可以帮助理解如何建立自己的控制结构。柯里化就是一个函数有多个参数列表。
+</p>
+
+<p>
+普通的函数，实现了两个Int型参数，x和y的加法：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; def plainOldSum(x: Int, y: Int) = x + y
+  plainOldSum: (Int,Int)Int
+
+  scala&gt; plainOldSum(1, 2)
+  res4: Int = 3 
+</pre>
+
+<p>
+curry化后的同一个函数，两个列表的各一个参数：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; def curriedSum(x: Int)(y: Int) = x + y
+  curriedSum: (Int)(Int)Int
+
+  scala&gt; curriedSum(1)(2)
+  res5: Int = 3 
+</pre>
+
+<p>
+实际上背靠背地调用了两个传统函数。第一个函数调用带单个的名为x的Int参数，并返回第二个函数的函数值。第二个函数带Int参数y。下面的名为first的函数实质上执行了curriedSum的第一个传统函数调用会做的事情：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; def first(x: Int) = (y: Int) =&gt; x + y
+  first: (Int)(Int) =&gt; Int 
+</pre>
+
+<p>
+调用第一个函数并传入1——会产生第二个函数：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val second = first(1)
+  second: (Int) =&gt; Int = &lt;function&gt; 
+</pre>
+
+<p>
+调用第二个函数传入2产生结果：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; second(2)
+  res6: Int = 3 
+</pre>
+
+<p>
+first和second函数只演示连接在curriedSum函数上的那两个函数，并不直接连接在curriedSum函数上的那两个函数。但我们仍然有一个方式获得实际指向curriedSum的“第二个”函数的参考。你可以用偏应用函数表达式方式，把占位符标注用在curriedSum里，如：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val onePlus = curriedSum(1)_
+  onePlus: (Int) =&gt; Int = &lt;function&gt; 
+</pre>
+
+<p>
+之前说过，当占位符标注用在传统方法上时，如println _，你必须在名称和下划线之间留一个空格。不然编译器会误认为是要调用名为<code>println_</code>的函数。而在这个例子里不需要，因为println_是Scala里合法的标识符，curriedSum(1)_不是。
+</p>
+
+<p>
+现在得到了指向一个函数的引用，这个函数在被调用的时候，传入Int参数加一并返回结果：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; onePlus(2)
+  res7: Int = 3 
+</pre>
+
+<p>
+由于第二个函数的参数已经有了（传入的是2），现在再用参数2调用第一个函数也能有结果出来：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val twoPlus = curriedSum(2)_
+  twoPlus: (Int) =&gt; Int = &lt;function&gt;
+
+  scala&gt; twoPlus(2)
+  res8: Int = 4 
+</pre>
+
+
+
+<h2 id="toc_11.4">编写新的控制结构</h2>
+
+<p>
+在拥有头等函数的编程语言中，可以在方法中以函数作为参数创造自己的控制结构。
+</p>
+
+<p>
+比如有个“重复操作”的方法，它可以把任何操作重复执行两次：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; def twice(op: Double =&gt; Double, x: Double) = op(op(x))
+  twice: ((Double) =&gt; Double,Double)Double
+
+  scala&gt; twice(_ + 1, 5)
+  res9: Double = 7.0 
+</pre>
+
+<p>
+如果在工作中曾经遇到重复操作两次<code>(Double) =&gt; Double</code>类型函数的操作的话，这样就把一个控制结构给抽象出来了。
+</p>
+
+<p>
+再考虑一个常用的工作流程：打开一个资源，对它进行操作，然后关闭资源。你可以使用如下的方法将其捕获并放入控制抽象：
+</p>
+
+<pre class="brush: scala">
+  def withPrintWriter(file: File, op: PrintWriter =&gt; Unit) {
+    val writer = new PrintWriter(file)
+    try {
+      op(writer)
+    } finally {
+      writer.close()
+    }
+  } 
+</pre>
+
+<p>
+以后要使用的时候就只要传入要处理的文件和处理的方法就行了，打开一个资源和关闭资源都已经在高阶函数中被抽象出来了：
+</p>
+
+<pre class="brush: scala">
+  withPrintWriter(
+    new File("date.txt"),
+    writer =&gt; writer.println(new java.util.Date)
+  ) 
+</pre>
+
+<p>
+这个技巧被称为贷出模式：loan pattern，因为控制抽象函数，如withPrintWriter，打开了资源并“贷出”给函数。当函数完成的时候，它发出信号说明它不再需要“借”的资源。于是资源被关闭在finally块中，以确信其确实被关闭，而忽略函数是正常结束返回还是抛出了异常。
+</p>
+
+<p>
+让客户代码看上去更像内建控制结构的一种方式是使用大括号代替小括号包围参数列表。Scala的任何方法调用，如果你确实只传入一个参数，就能可选地使用大括号替代小括号包围参数：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; println("Hello, world!")
+  Hello, world!
+  
+  scala&gt; println { "Hello, world!" }
+  Hello, world!  
+</pre>
+
+<p>
+这个大括号技巧仅在你传入一个参数时有效，多个参数只能用小括号：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val g = "Hello, world!"
+  g: java.lang.String = Hello, world!
+  
+  scala&gt; g.substring(7, 9)
+  res12: java.lang.String = wo 
+
+  scala&gt; g.substring { 7, 9 }
+  &lt;console&gt;:1: error: ';' expected but ',' found.
+         g.substring { 7, 9 }
+                        ^ 
+</pre>
+
+<p>
+以前面例子里定义的withPrintWriter方法举例。在它最近的形式里，withPrintWriter带了两个参数，因此你不能使用大括号。虽然如此，因为传递给withPrintWriter的函数是列表的最后一个参数，你可以使用curry化把第一个参数，File拖入分离的参数列表。这将使函数仅剩下列表的第二个参数作为唯一的参数：
+</p>
+
+<pre class="brush: scala">
+  def withPrintWriter(file: File)(op: PrintWriter =&gt; Unit) {
+    val writer = new PrintWriter(file)
+    try {
+      op(writer)
+    } finally {
+      writer.close()
+    }
+  } 
+</pre>
+
+<p>
+可以用更赏心悦目的语法格式调用这个方法：
+</p>
+
+<pre class="brush: scala">
+  val file = new File("date.txt")
+
+  withPrintWriter(file) {
+    writer =&gt; writer.println(new java.util.Date)
+  } 
+</pre>
+
+<p>
+第一个参数列表，包含了一个File参数，被写成包围在小括号中。第二个参数列表，包含了一个函数参数，被包围在大括号中。
+</p>
+
+
+<h2 id="toc_11.5">传名参数</h2>
+
+<p>
+上节展示的withPrintWriter方法不同于语言的内建控制结构，如if和while，在于大括号之间的代码带了参数。withPrintWriter方法需要一个类型为PrintWriter的参数。这个参数以“writer =&gt;”方式显示出来：
+</p>
+
+<pre class="brush: scala">
+  withPrintWriter(file) {
+    writer =&gt; writer.println(new java.util.Date)
+  } 
+</pre>
+
+<p>
+然而如果你想要实现某些更像if或while的东西，根本没有值要传入大括号之间的代码，那该怎么做呢？为了解决这种情况，Scala提供了叫名参数。
+</p>
+
+<p>
+为了举一个有现实意义的例子：虽然Scala提供了它自己的assert，但是用户想自己实现一个称为myAssert的断言架构。
+</p>
+
+<p>
+myAssert函数将带一个函数值做输入并参考一个标志位来决定该做什么。如果标志位被设置了，myAssert将调用传入的函数并证实其返回true。如果标志位被关闭了，myAssert将安静地什么都不做。 如果没有叫名参数，你可以这样写myAssert：
+</p>
+
+<pre class="brush: scala">
+  var assertionsEnabled = true
+
+  def myAssert(predicate: () =&gt; Boolean) =
+    if (assertionsEnabled &amp;&amp; !predicate())
+      throw new AssertionError 
+</pre>
+
+<p>
+调用时不能省略<code>() =&gt;</code>：
+</p>
+
+<pre class="brush: scala">
+  myAssert(() =&gt; 5 &gt; 3) 
+
+  myAssert(5 &gt; 3) // Won't work, because missing () =&gt;  
+</pre>
+
+<p>
+传名函数恰好为了实现你的愿望而出现。要实现一个叫传函数，要定义参数的类型开始于<code>=&gt;</code>而不是<code>() =&gt;</code>。如，改<code>() =&gt; Boolean</code>为<code>=&gt; Boolean</code>：
+</p>
+
+<pre class="brush: scala">
+  def byNameAssert(predicate: =&gt; Boolean) =
+    if (assertionsEnabled &amp;&amp; !predicate)
+      throw new AssertionError 
+</pre>
+
+<p>
+现在可以省略了，看起来像语言内建的控制结构一样：
+</p>
+
+<pre class="brush: scala">
+  byNameAssert(5 &gt; 3) 
+</pre>
+
+<p>
+传名类型中，空的参数列表<code>()</code>被省略，它仅在参数中被允许。没有什么叫名变量或叫名字段这样的东西。 
+</p>
+
+<p>
+对于myAssert，我们费了这么大的力气，只是为了让函数字面量看起来像表达式，那为什么不直接用Boolean变量作为参数呢？
+</p>
+
+<pre class="brush: scala">
+  def boolAssert(predicate: Boolean) =
+    if (assertionsEnabled &amp;&amp; !predicate)
+      throw new AssertionError 
+</pre>
+
+<p>
+当然这种格式同样合法，并且使用这个版本boolAssert的代码看上去仍然与前面的一样：
+</p>
+
+<pre class="brush: scala">
+  boolAssert(5 &gt; 3) 
+</pre>
+
+<p>
+虽然如此，这两种方式之间存在一个非常重要的差别须指出：表达式会在传入参数前先被执行。
+</p>
+
+<p>
+所以在上面的例子中，如果断言被禁用，你会看到boolAssert括号里的表达式的某些副作用，而byNameAssert却没有。例如，如果断言被禁用，boolAssert的例子里尝试对“x / 0 == 0”的断言将产生一个异常：
+</p>
+                    
+<pre class="brush: scala">
+  scala&gt; var assertionsEnabled = false
+  assertionsEnabled: Boolean = false
+
+  scala&gt; boolAssert(x / 0 == 0)
+  java.lang.ArithmeticException: / by zero
+  	   at .&lt;init&gt;(&lt;console&gt;:8)
+          at .&lt;clinit&gt;(&lt;console&gt;)
+          at RequestResult$.&lt;init&gt;(&lt;console&gt;:3)
+          at RequestResult$.&lt;clinit&gt;(&lt;console&gt;)...
+</pre>
+
+<p>
+但在byNameAssert的例子里尝试同样代码的断言将不产生异常：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; byNameAssert(x / 0 == 0) 
+</pre>
+
+
+
+<h1 id="toc_12">组合与继承</h1>
+
+
+<h2 id="toc_12.1">定制一个二维布局库</h2>
+
+<p>
+作为本章运行的例子，我们将创造一个制造和渲染二维布局元素的库。每个元素将代表一个填充字符的长方形。方便起见，库将提供名为<code>elem</code>的工厂方法来通过传入的数据构造新的元素。例如，你将能通过工厂方法采用下面的写法创建带有字串的元素：
+</p>
+
+
+<pre class="brush: scala">
+  elem(s: String): Element 
+</pre>
+
+<p>
+元素将以名为Element的类型为模型。你将能在元素上调用above或beside，把另一个元素放在当前元素的右边或是上边：
+</p>
+
+<pre class="brush: scala">
+  val column1 = elem("hello") above elem("***")
+  val column2 = elem("***") above elem("world")
+  column1 beside column2
+</pre>
+
+<p>
+打印这个表达式的结果将是：
+</p>
+
+<pre class="brush: scala">
+  hello ***  
+   *** world
+</pre>
+
+<h2 id="toc_12.2">抽象类</h2>
+
+<p>
+布局元素名为Element，存放的文本内容类型为<code>Array[String]</code>。提供方法<code>contents</code>取得存放的文本内容，但没有定义实现方式，所以这个类是抽象类，要加上<code>abstract</code>关键字：
+</p>
+
+<pre class="brush: scala">
+  abstract class Element {
+    def contents: Array[String]
+  } 
+</pre>
+
+<p>
+请注意类Element的contents方法并没带有abstract修饰符。不像Java，方法的声明中不需要（或允许）抽象修饰符。如果方法没有实现，它就是抽象的。
+</p>
+
+<p>
+另一个术语用法需要分辨声明（declaration）和定义（definition）。类Element声明了抽象方法contents，但当前没有定义具体方法。
+</p>
+
+
+<h2 id="toc_12.3">定义无参数方法</h2>
+
+<p>
+添加显示宽度和高度的方法：
+</p>
+
+<p>
+height方法返回contents里的行数。
+</p>
+
+<p>
+width方法返回第一行的长度，或如果元素没有行记录，返回零。（也就是说你不能定义一个高度为零但宽度不为零的元素。）
+</p>
+
+<pre class="brush: scala">
+  abstract class Element {
+    def contents: Array[String]
+    def height: Int = contents.length
+    def width: Int = if (height == 0) 0 else contents(0).length
+  } 
+</pre>
+
+<p>
+三个方法没一个有参数列表，甚至连个空列表都没有。如：
+</p>
+
+<pre class="brush: scala">
+  def width(): Int
+  // 省略括号
+  def width: Int 
+</pre>
+
+<p>
+推荐的惯例是在没有参数并且方法仅通过读含有对象的方式访问可变状态（专指其不改变可变状态）时使用无参数方法。这样感觉上就和只读字段一样，其实也可以选择把width和height作为字段而不是方法来实现，只要简单地在每个实现里把def修改成val即可：
+</p>
+
+<pre class="brush: scala">
+  abstract class Element {
+    def contents: Array[String]
+    val height = contents.length
+    val width = 
+      if (height == 0) 0 else contents(0).length
+  }
+</pre>
+
+<p>
+两组定义从客户的观点来看是完全相同的。唯一的差别是与的访问或许稍微比方法调用要快，因为字段值在类被初始化的时候被预计算，而方法调用在每次调用的时候都要计算。换句话说，字段在每个Element对象上需要更多的内存空间。因此类的使用概况，属性表达成字段还是方法更好，决定了其实现，并且这个概况还可以随时改变。
+</p>
+
+<p>
+重点是Element类的客户不应在其内部实现改变的时候受影响。
+</p>
+
+<p>
+特别是如果类的字段变成了访问函数，且访问函数是纯的，就是说它没有副作用并且不依赖于可变状态，那么类Element的客户不需要被重写。客户都不应该需要关心这些。
+</p>
+
+<p>
+目前为止一切良好。但仍然有些琐碎的复杂的东西要去做以协同Java处理事情的方式。问题在于Java没有实现统一访问原则。因此Java里是string.length()，不是string.length（尽管是array.length，不是array.length()）。不用说，这让人很困惑。
+</p>
+
+<p>
+为了在这道缺口上架一座桥梁，Scala在遇到混合了无参数和空括号方法的情况时很大度。特别是，你可以用空括号方法重载无参数方法，并且反之亦可。你还可以在调用任何不带参数的方法时省略空的括号。例如，下面两行在Scala里都是合法的：
+</p>
+
+<pre class="brush: scala">
+  Array(1, 2, 3).toString
+  "abc".length
+</pre>
+
+<p>
+原则上Scala的函数调用中可以省略所有的空括号。然而，在调用的方法表达的超过其接收调用者对象的属性时，推荐仍然写一对空的括号。例如，如果方法执行了I/O，或写入可重新赋值的变量（var），或读出不是接受调用者的字段的var，无论是直接的还是非直接的通过使用可变对象，那么空括号是合适的。这种方式是让参数列表扮演一个可见的线索说明某些有趣的计算正通过调用被触发。例如：
+</p>
+
+<pre class="brush: scala">
+  "hello".length  // no () because no side-effect
+  println()       // better to not drop the ()
+</pre>
+
+<p>
+总结起来，Scala里定义不带参数也没有副作用的方法为无参数方法，也就是说，省略空的括号，是鼓励的风格。另一方面，永远不要定义没有括号的带副作用的方法，因为那样的话方法调用看上去会像选择一个字段。这样你的客户看到了副作用会很奇怪。相同地，当你调用带副作用的函数，请确信写这个调用的时候包括了空的括号。另一种考虑这个问题的方式是，如果你调用的函数执行了操作，使用括号，但如果仅提供了对某个属性的访问，省略括号。
+</p>
+
+
+<h2 id="toc_12.4">扩展类</h2>
+
+<p>
+实例化一个元素，我们需要创建扩展了Element并实现抽象的contents方法的子类。
+</p>
+
+<pre class="brush: scala">
+  class ArrayElement(conts: Array[String]) extends Element {
+    def contents: Array[String] = conts
+  }
+</pre>
+
+<p>
+这种extends子句有两个效果：使类ArrayElement从类Element继承所有非私有的成员，并且使ArrayElement成为Element的子类型。由于ArrayElement扩展了Element，类ArrayElement被称为类Element的子类。反过来，Element是ArrayElement的超类。
+</p>
+
+<p>
+如果你省略extends子句，Scala编译器隐式地假设你的类扩展自scala.AnyRef，在Java平台上与java.lang.Object一致。因此，类Element隐式地扩展了类AnyRef。
+</p>
+
+<p>
+ArrayElement的contents方法重载（或者可说成：实现）了类Element的抽象方法contents：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val ae = new ArrayElement(Array("hello", "world"))
+  ae: ArrayElement = ArrayElement@d94e60
+
+  scala&gt; ae.width
+  res1: Int = 5
+</pre>
+
+<p>
+子类型化：subtyping是指子类的值可以被用在需要其超类的值的任何地方。例如：
+</p>
+
+<pre class="brush: scala">
+  val e: Element = new ArrayElement(Array("hello"))
+</pre>
+
+
+
+<h2 id="toc_12.5">重载方法和字段</h2>
+
+<p>
+字段和方法属于相同的命名空间。这使得字段重载无参数方法成为可能。比如说，你可以改变类ArrayElement中contents的实现，从一个方法变为一个字段，而无需修改类Element中contents的抽象方法定义：
+</p>
+
+<pre class="brush: scala">
+  class ArrayElement(conts: Array[String]) extends Element {
+    val contents: Array[String] = conts
+  }
+</pre>
+
+<p>
+这个ArrayElement的版本里，字段contents（用val定义）完美地实现了类Element里的无参数方法contents（用def定义）。 
+</p>
+
+<p>
+另一方面，Scala里禁止在同一个类里用同样的名称定义字段和方法，而在Java里这样做被允许。例如，下面的Java类能够很好地编译：
+</p>
+
+<pre class="brush: scala">
+  // This is Java
+  class CompilesFine {
+    private int f = 0;
+    public int f() {
+      return 1;
+    }
+  }
+</pre>
+
+<p>
+但是相应的Scala类将不能编译：
+</p>
+
+<pre class="brush: scala">
+
+  class WontCompile {
+    private var f = 0 // Won't compile, because a field 
+    def f = 1         // and method have the same name
+  }
+
+</pre>
+
+<p>
+Java为定义准备了四个命名空间：字段，方法，类型和包。
+</p>
+
+<p>
+而Scala仅有两个,与Java的四个命名空间相对：
+</p>
+
+<ul>
+<li>
+值（字段，方法，包还有单例对象）
+
+<li>
+类型（类和特质名）
+
+</ul>
+
+<p>
+Scala把字段和方法放进同一个命名空间的理由很清楚，因为这样你就可以使用val重载无参数的方法，这种你在Java里做不到的事情。
+</p>
+
+
+<h2 id="toc_12.6">定义参数化字段</h2>
+
+<p>
+ArrayElement类的定义。它有一个参数conts，其唯一目的是被复制到contents字段。选择conts这个参数的名称只是为了让它看上去更像字段名contents而不会与它发生实际冲突。这是一种“代码异味”，一个表明或许某些不必须的累赘和重复。
+</p>
+
+<p>
+可以通过在单一的参数化字段：parametric field定义中组合参数和字段避免：
+</p>
+
+<pre class="brush: scala">
+  class ArrayElement(val contents: Array[String]) extends Element
+</pre>
+
+<p>
+现在拥有一个可以从类外部访问的，（不能重新赋值的）字段contents。字段使用参数值初始化。等同于：
+</p>
+
+<pre class="brush: scala">
+  class ArrayElement(x123: Array[String]) extends Element { 
+    val contents: Array[String] = x123
+  } 
+</pre>
+
+<p>
+同样也可以使用var前缀类参数，这种情况下相应的字段将能重新被赋值。还有可能添加如private，protected，或override这类的修饰符到这些参数化字段上，就好象你可以在其他类成员上做的事情：
+</p>
+
+<pre class="brush: scala">
+  class Cat {
+    val dangerous = false
+  }
+  class Tiger(
+    override val dangerous: Boolean,
+    private var age: Int
+  ) extends Cat
+</pre>
+
+<p>
+Tiger的定义是以下包括重载成员dangerous和private成员age的类定义替代写法的简写：
+</p>
+
+<pre class="brush: scala">
+  class Tiger(param1: Boolean, param2: Int) extends Cat {
+    override val dangerous = param1
+    private var age = param2
+  }
+</pre>
+
+
+
+<h2 id="toc_12.7">调用超类构造器</h2>
+
+<p>
+如果再要新的子类：
+</p>
+
+<pre class="brush: scala">
+  class LineElement(s: String) extends ArrayElement(Array(s)) {
+    override def width = s.length
+    override def height = 1
+  }
+</pre>
+
+<p>
+由于LineElement扩展了ArrayElement，并且ArrayElement的构造器带一个参数（Array[String]），LineElement需要传递一个参数到它的超类的主构造器。要调用超类构造器，只要把你要传递的参数或参数列表放在超类名之后的括号里即可。
+</p>
+
+
+<h2 id="toc_12.8">使用override修饰符</h2>
+
+<p>
+考虑一下这样的场景：
+</p>
+
+<p>
+基类和子类是不同的人维护的。原来基类里没有<code>add</code>方法，所以子类里加上了。后来基类里也加上了<code>add</code>方法，但维护子类的人不知道。这样的规定是为了防止“脆基类”问题。
+</p>
+
+<p>
+所以Scala里override有强制的规定：
+</p>
+
+<ul>
+<li>
+如果实现了抽象成员，加不加随便。
+
+<li>
+如果重载了具体实现，就一定要加。
+
+<li>
+没有重载就绝不能加。
+
+</ul>
+
+<p>
+这样起码保证了维护子类的人知道自己会覆盖超类的方法。
+</p>
+
+
+<h2 id="toc_12.9">多态和动态绑定</h2>
+
+
+<p>
+创建一个新的子类，它可以按给出的长度宽度，用指定的字符填充：
+</p>
+
+<pre class="brush: scala">
+  class UniformElement(
+    ch: Char, 
+    override val width: Int,
+    override val height: Int 
+  ) extends Element {
+    private val line = ch.toString * width
+    def contents = Array.make(height, line)
+  }
+</pre>
+
+<p>
+父类的变量可以存放子类的实例，就是多态的一种体现。这么多子类都可以用父类的变量来存放：
+</p>
+
+
+<pre class="brush: scala">
+  val e1: Element = new ArrayElement(Array("hello", "world"))
+  val ae: ArrayElement = new LineElement("hello")
+  val e2: Element = ae
+  val e3: Element = new UniformElement('x', 2, 3)
+</pre>
+
+<p>
+变量和表达式上的方法调用是动态绑定（dynamically bound）的。这意味着被调用的实际方法实现取决于运行期对象其实的类，而不是变量或表达式的类型。
+</p>
+
+<p>
+为了演示这种行为，我们会从我们的Element类中临时移除所有存在的成员并添加一个名为demo的方法。我们会在ArrayElement和LineElement中重载demo，但UniformElement除外：
+</p>
+
+<pre class="brush: scala">
+  abstract class Element {
+    def demo() {
+      println("Element's implementation invoked")
+    }
+  }
+
+  class ArrayElement extends Element {
+    override def demo() {
+      println("ArrayElement's implementation invoked")
+    }
+  }
+
+  class LineElement extends ArrayElement {
+    override def demo() {
+      println("LineElement's implementation invoked")
+    }
+  }
+
+  // UniformElement inherits Element's demo
+  class UniformElement extends Element 
+</pre>
+
+<p>
+如果你把这些代码输入到了解释器中，那么你就能定义这个带了一个Element并调用demo的方法：
+</p>
+
+<pre class="brush: scala">
+  def invokeDemo(e: Element) {
+    e.demo()
+  }
+</pre>
+
+<p>
+如果你传给invokeDemo一个ArrayElement，你会看到一条消息指明ArrayElement的demo实现被调用，尽管被调用demo的变量e的类型是Element：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; invokeDemo(new ArrayElement)
+  ArrayElement's implementation invoked
+</pre>
+
+<p>
+相同的，如果你传递LineElement给invokeDemo，你会看到一条指明LineElement的demo实现被调用的消息：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; invokeDemo(new LineElement)
+  LineElement's implementation invoked
+</pre>
+
+<p>
+传递UniformElement时的行为一眼看上去会有些可以，但是正确：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; invokeDemo(new UniformElement)
+  Element's implementation invoked
+</pre>
+
+<p>
+因为UniformElement没有重载demo，它从它的超类Element继承了demo的实现。因此，当对象的类是UniformElement时，Element的实现就是要调用的demo的正确实现。
+</p>
+
+
+
+<h1 id="toc_13">特质（Traits）</h1>
+
+<p>
+trait是Scala里代码复用的基础单元。特质封装了方法和字段的定义，并可以通过混入到类中重用它们。
+</p>
+
+<h2 id="toc_13.1">概念</h2>
+
+<p>
+定义，  trait NoPoint(x: Int, y: Int) // Does not compile：
+</p>
+
+<pre class="brush: scala">
+  trait Philosophical {
+    def philosophize() {
+      println("I consume memory, therefore I am!")
+    }
+  }
+</pre>
+
+<p>
+没有声明超类，因此和类一样，有个缺省的超类AnyRef。一旦特质被定义了，就可以使用extends或with关键字，把它混入到类中：
+</p>
+
+<pre class="brush: scala">
+  class Frog extends Philosophical {
+    override def toString = "green"
+  }
+</pre>
+
+<p>
+类Frog是AnyRef（Philosophical的超类）的子类并混入了Philosophical。从特质继承的方法可以像从超类继承的方法那样使用：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val frog = new Frog
+  frog: Frog = green
+
+  scala&gt; frog.philosophize()
+  I consume memory, therefore I am!
+</pre>
+
+<p>
+特质同样也是类型。以下是把Philosophical用作类型的例子：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val phil: Philosophical = frog  
+  phil: Philosophical = green
+
+  scala&gt; phil.philosophize()
+  I consume memory, therefore I am!
+</pre>
+
+<p>
+phil的类型是Philosophical，一个特质。因此，变量phil可以被初始化为任何混入了Philosophical特质的类的对象。
+</p>
+
+<p>
+如果想把特质混入到显式扩展超类的类里，可以用extends指明待扩展的超类，用with混入特质：
+</p>
+
+<pre class="brush: scala">
+  class Animal
+
+  class Frog extends Animal with Philosophical {
+    override def toString = "green"
+  }
+</pre>
+
+<p>
+如果想混入多个特质，都加在with子句里就可以了：
+</p>
+
+<pre class="brush: scala">
+  class Animal
+  trait HasLegs
+
+  class Frog extends Animal with Philosophical with HasLegs {
+    override def toString = "green"
+  }
+</pre>
+
+<p>
+目前为止你看到的例子中，类Frog都继承了Philosophical的philosophize实现。或者，Frog也可以重载philosophize方法。语法与重载超类中定义的方法一样。举例如下：
+</p>
+
+<pre class="brush: scala">
+  class Animal
+
+  class Frog extends Animal with Philosophical {
+    override def toString = "green"
+    override def philosophize() {
+      println("It ain't easy being "+ toString +"!")
+    }
+  }
+</pre>
+
+<p>
+因为Frog的这个新定义仍然混入了特质Philosophize，你仍然可以把它当作这种类型的变量使用。但是由于Frog重载了Philosophical的philosophize实现，当你调用它的时候，你会得到新的回应：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val phrog: Philosophical = new Frog
+  phrog: Philosophical = green
+
+  scala&gt; phrog.philosophize()
+  It ain't easy being green!
+</pre>
+
+<p>
+这时你或许推导出以下哲理：特质就像是带有具体方法的Java接口，不过其实它能做的更多。特质可以，比方说，声明字段和维持状态值。实际上，你可以用特质定义做任何用类定义做的事，并且语法也是一样的，除了两点。第一点，特质不能有任何“类”参数，也就是说，传递给类的主构造器的参数。换句话说，尽管你可以定义如下的类：
+</p>
+
+<pre class="brush: scala">
+  class Point(x: Int, y: Int)
+</pre>
+
+<p>
+但是下面定义特质的尝试将遭到失败：
+</p>
+
+<pre class="brush: scala">
+  trait NoPoint(x: Int, y: Int) // Does not compile
+</pre>
+
+<p>
+类和特质的另一个差别在于不论在类的哪个角落，super调用都是静态绑定的，在特质中，它们是动态绑定的。如果你在类中写下“super.toString”，你很明确哪个方法实现将被调用。然而如果你在特质中写了同样的东西，在你定义特质的时候super调用的方法实现尚未被定义。调用的实现将在每一次特质被混入到具体类的时候才被决定。这种处理super的有趣的行为是使得特质能以可堆叠的改变（stackable modifications）方式工作的关键。
+</p>
+
+<h2 id="toc_13.2">比较瘦接口与胖接口</h2>
+
+<p>
+瘦接口与胖接口的对阵体现了面向对象设计中常会面临的在实现者与接口用户之间的权衡。胖接口有更多的方法，对于调用者来说更便捷。客户可以捡一个完全符合他们功能需要的方法。另一方面瘦接口有较少的方法，对于实现者来说更简单。然而调用瘦接口的客户因此要写更多的代码。由于没有更多可选的方法调用，他们或许不得不选一个不太完美匹配他们所需的方法并为了使用它写一些额外的代码。
+</p>
+
+<p>
+Java的接口常常是过瘦而非过胖。例如，从Java 1.4开始引入的CharSequence接口，是对于字串类型的类来说通用的瘦接口，它持有一个字符序列。下面是把它看作Scala特质的定义：
+</p>
+
+<pre class="brush: scala">
+  trait CharSequence {
+    def charAt(index: Int): Char
+    def length: Int
+    def subSequence(start: Int, end: Int): CharSequence
+    def toString(): String
+  }
+</pre>
+
+<p>
+尽管类String成打的方法中的大多数都可以用在任何CharSequence上，Java的CharSequence接口定义仅提供了4个方法。如果CharSequence代以包含全部String接口，那它将为CharSequence的实现者压上沉重的负担。任何实现Java里的CharSequence接口的程序员将不得不定义一大堆方法。因为Scala特质可以包含具体方法，这使得创建胖接口大为便捷。 
+</p>
+
+<p>
+在特质中添加具体方法使得胖瘦对阵的权衡大大倾向于胖接口。不像在Java里那样，在Scala中添加具体方法是一次性的劳动。你只要在特质中实现方法一次，而不再需要在每个混入特质的方法中重新实现它。因此，与没有特质的语言相比，Scala里的胖接口没什么工作要做。 
+</p>
+
+<p>
+要使用特质丰满接口，只要简单地定义一个具有少量抽象方法的特质——特质接口的瘦部分——和潜在的大量具体方法，所有的都实现在抽象方法之上。然后你就可以把丰满了的特质混入到类中，实现接口的瘦部分，并最终获得具有全部胖接口内容的类。
+</p>
+
+<h2 id="toc_13.3">样例：长方形对象</h2>
+
+<p>
+为了使这些长方形对象便于使用，如果库能够提供诸如width，height，left，right，topLeft，等等方法。
+</p>
+
+<p>
+没有特质的代码的话，首先会有一些基本的集合类如Point和Rectangle：
+</p>
+
+<pre class="brush: scala">
+  class Point(val x: Int, val y: Int)
+
+  class Rectangle(val topLeft: Point, val bottomRight: Point) {
+    def left = topLeft.x
+    def right = bottomRight.x
+    def width = right - left
+    // and many more geometric methods...
+  }
+</pre>
+
+<p>
+这个Rectangle类在它的主构造器中带两个点，分别是左上角和右下角的坐标。然后它通过对这两个点执行简单的计算实现了许多便捷方法诸如left，right，和width。 图库应该有的另一个类是2-D图像工具：
+</p>
+
+<pre class="brush: scala">
+  abstract class Component {
+    def topLeft: Point
+    def bottomRight: Point
+
+    def left = topLeft.x
+    def right = bottomRight.x
+    def width = right - left
+    // and many more geometric methods...
+  } 
+</pre>
+
+<p>
+注意left，right，和width在两个类中的定义是一模一样。除了少许的变动外，他们将在任何其他的长方形对象的类中保持一致。
+</p>
+
+<p>
+这种重复可以使用特质消除。这个特质应该具有两个抽象方法：一个返回对象的左上角坐标，另一个返回右下角的坐标。然后他就可以应用到所有其他的几何查询的具体实现中
+</p>
+
+<pre class="brush: scala">
+  trait Rectangular {
+    def topLeft: Point
+    def bottomRight: Point
+
+    def left = topLeft.x
+    def right = bottomRight.x
+    def width = right - left
+    // and many more geometric methods...
+  }
+</pre>
+
+<p>
+类Component可以混入这个特质并获得Rectangular提供的所有的几何方法：
+</p>
+
+<pre class="brush: scala">
+  abstract class Component extends Rectangular {
+    // other methods...
+  }
+</pre>
+
+<p>
+可以创建Rectangle对象并对它调用如width或left的几何方法：
+</p>
+
+<pre class="brush: scala">
+
+  scala&gt; val rect = new Rectangle(new Point(1, 1),
+       |     new Point(10, 10))
+  rect: Rectangle = Rectangle@3536fd
+
+  scala&gt; rect.left
+  res2: Int = 1
+
+  scala&gt; rect.right
+  res3: Int = 10
+
+  scala&gt; rect.width
+  res4: Int = 9
+</pre>
+
+
+<h2 id="toc_13.4">实现Ordered特质来排序</h2>
+
+<p>
+Scala专门提供了Ordered特质解决排序。以前面用过的分数类型来说，原来已经有了四个比较大小的方法：
+</p>
+
+<pre class="brush: scala">
+  class Rational(n: Int, d: Int) {
+    // ...
+    def &lt; (that: Rational) = 
+      this.numer * that.denom &gt; that.numer * this.denom
+    def &gt; (that: Rational) = that &lt; this
+    def &lt;= (that: Rational) = (this &lt; that) || (this == that)
+    def &gt;= (that: Rational) = (this &gt; that) || (this == that)
+  }
+</pre>
+
+<p>
+现在通过Ordered特质的<code>compare</code>方法来完成一个比大小的功能：
+</p>
+
+<pre class="brush: scala">
+  class Rational(n: Int, d: Int) extends Ordered[Rational] {
+    // ...
+    def compare(that: Rational) =
+      (this.numer * that.denom) - (that.numer * this.denom)
+  }
+</pre>
+
+<p>
+上面定义compare方法来比较两个对象，类Rational现在具有了所有4种比较方法：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val half = new Rational(1, 2)
+  half: Rational = 1/2
+
+  scala&gt; val third = new Rational(1, 3)
+  third: Rational = 1/3
+
+  scala&gt; half &lt; third
+  res5: Boolean = false
+
+  scala&gt; half &gt; third
+  res6: Boolean = true
+</pre>
+
+<p>
+考虑下面的抽象简化了四个比较操作符的实现：
+</p>
+
+<pre class="brush: scala">
+  trait Ordered[T] {
+    def compare(that: T): Int
+
+    def &lt;(that: T): Boolean = (this compare that) &lt; 0
+    def &gt;(that: T): Boolean = (this compare that) &gt; 0
+    def &lt;=(that: T): Boolean = (this compare that) &lt;= 0
+    def &gt;=(that: T): Boolean = (this compare that) &gt;= 0
+  }
+</pre>
+
+<h2 id="toc_13.5">特质的继承</h2>
+
+<p>
+可以把多个特质加在一个类上，按声明的顺序，它们操作的顺序就像栈一样。
+</p>
+
+<p>
+IntQueue有一个put方法把整数添加到队列中，和一个get方法移除并返回它们：
+</p>
+
+<pre class="brush: scala">
+  abstract class IntQueue {
+    def get(): Int
+    def put(x: Int)
+  }
+</pre>
+
+<p>
+BasicIntQueue类根据上面的特质实现了一个队列：
+</p>
+
+<pre class="brush: scala">
+  import scala.collection.mutable.ArrayBuffer
+
+  class BasicIntQueue extends IntQueue {
+    private val buf = new ArrayBuffer[Int]
+    def get() = buf.remove(0)
+    def put(x: Int) { buf += x }
+  }
+</pre>
+
+<p>
+运行一个队列的效果：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val queue = new BasicIntQueue
+  queue: BasicIntQueue = BasicIntQueue@24655f
+
+  scala&gt; queue.put(10)
+
+  scala&gt; queue.put(20)
+
+  scala&gt; queue.get()
+  res9: Int = 10
+
+  scala&gt; queue.get()
+  res10: Int = 20
+</pre>
+
+
+<p>
+Doubling特质把整数放入队列的时候对它加倍。
+</p>
+
+<pre class="brush: scala">
+  trait Doubling extends IntQueue {
+    abstract override def put(x: Int) { super.put(2 * x) }
+  }
+</pre>
+
+<p>
+他定义了超类<code>IntQueue</code>这个定义意味着特质只能混入到扩展了IntQueue的类中。声明为抽象的方法中有一个super调用。这种调用对于普通的类来说是非法的，因为他们在执行时将必然失败。然而对于特质来说，这样的调用实际能够成功。因为特质里的super调用是动态绑定的，特质Doubling的super调用将直到被混入在另一个特质或类之后，有了具体的方法定义时才工作。
+</p>
+
+<p>
+所以要加上<code>abstract override</code>，说明要继承父特质（只有特质，类里是不能这样写的）才能实际产生作用。
+</p>
+
+<p>
+现在一行代码都不用写，下面只有一个<code>extends</code>和一个<code>with</code>就把类定义好了：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; class MyQueue extends BasicIntQueue with Doubling
+  defined class MyQueue
+
+  scala&gt; val queue = new MyQueue
+  queue: MyQueue = MyQueue@91f017
+
+  scala&gt; queue.put(10)
+
+  scala&gt; queue.get()
+  res12: Int = 20
+</pre>
+
+<p>
+这个队列即能入队出队，而且数字还是加倍的。
+</p>
+
+<p>
+还可以更加简化到类名都不用写，直接｀new BasicIntQueue with Doubling｀这个父类名加上特质就可以把对象拿到了：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val queue = new BasicIntQueue with Doubling
+  queue: BasicIntQueue with Doubling = $anon$1@5fa12d
+
+  scala&gt; queue.put(10)
+
+  scala&gt; queue.get()
+  res14: Int = 20
+</pre>
+
+
+<h2 id="toc_13.6">特质的叠加</h2>
+
+<p>
+有两个特质，一个在入队时把值加1；另一个过滤掉负数：
+</p>
+
+<pre class="brush: scala">
+  trait Incrementing extends IntQueue {
+    abstract override def put(x: Int) { super.put(x + 1) }
+  }
+
+  trait Filtering extends IntQueue {
+    abstract override def put(x: Int) {
+      if (x &gt;= 0) super.put(x)
+    }
+  }
+</pre>
+
+<p>
+队列能够即过滤负数又对每个进队列的数字增量：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val queue = (new BasicIntQueue
+       |     with Incrementing with Filtering)
+  queue: BasicIntQueue with Incrementing with Filtering...
+
+  scala&gt; queue.put(-1); queue.put(0); queue.put(1)
+
+  scala&gt; queue.get()
+  res15: Int = 1
+
+  scala&gt; queue.get()
+  res16: Int = 2 
+</pre>
+
+<p>
+粗略地说，越靠近右侧的特质越先起作用。。如果那个方法调用了super，它调用其左侧特质的方法，以此类推。
+</p>
+
+<p>
+前面的例子里，Filtering的put首先被调用，因此它移除了开始的负整数。Incrementing的put第二个被调用，因此它对剩下的整数增量。
+</p>
+
+<p>
+如果你逆转特质的次序，那么整数首先会加1，然后如果仍然是负的才会被抛弃：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val queue = (new BasicIntQueue
+       |     with Filtering with Incrementing)
+  queue: BasicIntQueue with Filtering with Incrementing...
+
+  scala&gt; queue.put(-1); queue.put(0); queue.put(1)
+
+  scala&gt; queue.get()
+  res17: Int = 0
+
+  scala&gt; queue.get()
+  res18: Int = 1
+
+  scala&gt; queue.get()
+  res19: Int = 2
+</pre>
+
+
+<h2 id="toc_13.7">为什么不是多重继承</h2>
+
+<p>
+特质是一种继承多个类似于类的结构的方式，但是它与许多语言中的多重继承有很重要的差别。其中的一个尤为重要：super的解释。对于多重继承来说，super调用导致的方法调用可以在调用发生的地方明确决定。而对于特质来说，方法调用是由类和被混入到类的特质的线性化（linearization）所决定的。这种差别让前一节所描述的改动的堆叠成为可能。
+</p>
+
+<p>
+在关注线性化之前，请花一点儿时间考虑一下在传统的多重继承语言中如何堆叠改动。假想有下列的代码，但是这次解释为多重继承而不是特质混入：
+</p>
+
+<pre class="brush: scala">
+  val q = new BasicIntQueue with Incrementing with Doubling
+  q.put(42)  // which put would be called?
+</pre>
+
+<p>
+第一个问题是，哪个put方法会在这个调用中被引用？或许规则会决定最后一个超类胜出，本例中的Doubling将被调用。Doubling将加倍它的参数并调用super.put，大概就是这样。增量操作将不会发生！同样，如果规则决定第一个超类胜出，那么结果队列将增量整数但不会加倍它们。因此怎么排序都不会有效。
+</p>
+
+<p>
+或许你会满足于允许程序员显式地指定在他们说super的时候他们想要的到底是哪个超类方法。比方说，假设下列Scala类似代码，super似乎被显式地指定为Incrementing和Doubling调用：
+</p>
+
+<pre class="brush: scala">
+  trait MyQueue extends BasicIntQueue
+      with Incrementing with Doubling {
+
+    def put(x: Int) {
+      Incrementing.super.put(x) // (Not real Scala)
+      Doubling.super.put(x)
+    }
+  }
+</pre>
+
+<p>
+这种方式将带给我们新的问题。这种尝试的繁冗几乎不算是问题。实际会发生的是基类的put方法将被调用两次——一次带了增量的值另一次带了加倍的值，但是没有一次是带了增量加倍的值。
+</p>
+
+<p>
+显然使用多重继承对这个问题来说没有好的方案。你不得不返回到你的设计并分别提炼出代码。相反，Scala里的特质方案很直接。你只要简单地混入Incrementing和Doubling，Scala对super的特别照顾让它迎刃而解。这与传统的多重继承相比必然有不同的地方，但这是什么呢？
+</p>
+
+<p>
+就像在前面暗示的，答案就是线性化。当你使用new实例化一个类的时候，Scala把这个类和所有它继承的类还有它的特质以线性：linear的次序放在一起。然后，当你在其中的一个类中调用super，被调用的方法就是链子的下一节。除了最后一个调用super之外的方法，其净结果就是可堆叠的行为。
+</p>
+
+<p>
+线性化的精确次序由语言的式样书描述。虽然有一点儿复杂，但你需要知道的主旨就是，在任何的线性化中，某个类总是被线性化在所有其超类和混入特质之前。因此，当你写了一个调用super的方法时，这个方法必将改变超类和混入特质的行为，没有其它路可走。
+</p>
+
+<p>
+Scala的线性化的主要属性可以用下面的例子演示：假设你有一个类Cat，继承自超类Animal以及两个特质Furry和FourLegged。FourLegged又扩展了另一个特质HasLegs：
+</p>
+
+<pre class="brush: scala">
+  class Animal 
+  trait Furry extends Animal
+  trait HasLegs extends Animal
+  trait FourLegged extends HasLegs
+  class Cat extends Animal with Furry with FourLegged
+</pre>
+
+<p>
+<img src="images/Selection_017.png" alt="继承关系" />
+</p>
+
+<p>
+类型的线性化看起来是这样的：
+</p>
+
+<pre class="brush: scala">
+Animal     :  Animal, AnyRef, Any
+Furry      :  Furry, Animal, AnyRef, Any
+FourLegged :  FourLegged, HasLegs, Animal, AnyRef, Any
+HasLegs    :  HasLegs, Animal, AnyRef, Any
+Cat        :  Cat, FourLegged, HasLegs, Furry, Animal, AnyRef, Any
+</pre>
+
+<p>
+因为Animal没有显式扩展超类或混入任何超特质，因此它缺省地扩展了AnyRef，并随之扩展了Any。
+</p>
+
+<pre class="brush: scala">
+Animal     :  Animal, AnyRef, Any
+</pre>
+
+<p>
+第二部分是第一个混入，特质Furry的线性化，但是所有已经在Animal的线性化之中的类现在被排除在外，因此Cat的线性化中每个类仅出现1次。结果是：
+</p>
+
+<pre class="brush: scala">
+Furry      :  Furry, Animal, AnyRef, Any
+</pre>
+
+<p>
+它之前是FourLegged的线性化，任何已被复制到线性化中的超类及第一个混入再次被排除在外：
+</p>
+
+<pre class="brush: scala">
+FourLegged :  FourLegged, HasLegs, Animal, AnyRef, Any
+</pre>
+
+<p>
+最后，Cat线性化的第一个类是Cat自己：
+</p>
+
+<p>
+当这些类和特质中的任何一个通过super调用了方法，那么被调用的实现将是它线性化的右侧的第一个实现。
+</p>
+
+<pre class="brush: scala">
+Cat        :  Cat, FourLegged, HasLegs, Furry, Animal, AnyRef, Any
+</pre>
+
+<h2 id="toc_13.8">什么情况下要用特质</h2>
+
+<p>
+没有固定的规律，但是包含了几条可供考虑的导则。
+</p>
+
+<p>
+如果行为不会被重用，那么就把它做成具体类。具体类没有可重用的行为。 
+</p>
+
+<p>
+如果要在多个不相关的类中重用，就做成特质。只有特质可以混入到不同的类层级中。 
+</p>
+
+<p>
+如果你希望从Java代码中继承它，就使用抽象类。因为特质和它的代码没有近似的Java模拟，在Java类里继承特质是很笨拙的。而继承Scala的类和继承Java的类完全一样。除了一个例外，只含有抽象成员的Scala特质将直接翻译成Java接口，因此即使你想用Java代码继承，也可以随心地定义这样的特质。要了解让Java和Scala一起工作的更多信息请看后面其他的章节。
+</p>
+
+<p>
+如果你计划以编译后的方式发布它，并且你希望外部组织能够写一些继承自它的类，你应更倾向于使用抽象类。原因是当特质获得或失去成员，所有继承自它的类就算没有改变也都要被重新编译。如果外边客户仅需要调用行为，而不是继承自它，那么使用特质没有问题。
+</p>
+
+<p>
+如果效率非常重要，倾向于类。大多数Java运行时都能让类成员的虚方法调用快于接口方法调用。特质被编译成接口，因此会付出微小的性能代价。然而，仅当你知道那个存疑的特质构成了性能瓶颈，并且有证据说明使用类代替能确实解决问题，才做这样的选择。
+</p>
+
+<h2 id="toc_13.9">包和引用</h2>
+
 
 <pre class="brush: scala">
 </pre>
 
-<pre class="brush: scala">
-</pre>
 
 
 <pre class="brush: scala">
 </pre>
 
-<pre class="brush: scala">
-</pre>
 
 
 <pre class="brush: scala">
 </pre>
 
-<pre class="brush: scala">
-</pre>
 
 
 <pre class="brush: scala">
 </pre>
 
-<pre class="brush: scala">
-</pre>
 
 
 <pre class="brush: scala">
 </pre>
 
-<pre class="brush: scala">
-</pre>
 
 
 <pre class="brush: scala">
 </pre>
 
-<pre class="brush: scala">
-</pre>
+
 
 <pre class="brush: scala">
 </pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
 
 <pre class="brush: scala">
 </pre>
