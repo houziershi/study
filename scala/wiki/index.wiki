@@ -9,7 +9,7 @@
 
 在默认字符编码为UTF-8的Linux下没问题。
 
-Mac OS X系统的默认字符编码早就改成了UTF-8但它bundle的Java默认字符编码却一直是MacRoman。在启动REPL时传入参数`-Dfile.encoding=UTF-8`
+Mac OS X系统的默认字符编码早就改成了UTF-8但它bundle的Java默认字符编码却一直是MacRoman。在启动REPL时传入参数`-Dfile.encoding=UTF-8`。
 
 用vim、emacs或者你习惯的文本编辑器打开scala命令，比如：
 {{{class="brush: bash"
@@ -94,6 +94,45 @@ even
 more
 fun
 }}}
+
+=== OS可执行脚本 ===
+
+Unix下可执行脚本：
+
+{{{class="brush: scala" title="helloarg"
+#!/bin/sh
+	exec scala "$0" "$@"
+!#
+
+println("hello," + arg(0) + "!")
+}}}
+
+执行：
+
+{{{class="brush: bash"
+$ chmod +x helloarg
+
+$ ./helloarg globe
+}}}
+
+Windows下可执行脚本：
+
+{{{class="brush: scala" title="helloarg.bat"
+::#!
+@echo off
+call scala %0 %*
+goto :eof
+::!#
+
+println("hello," + arg(0) + "!")
+}}}
+
+执行：
+
+{{{class="brush: bash"
+> helloarg.bat globe
+}}}
+
 
 == Scala程序 ==
 
@@ -3310,15 +3349,571 @@ Tiger的定义是以下包括重载成员dangerous和private成员age的类定�
 
 
 
+== 定义final成员 ==
+
+要确保成员不被子类重载。Scala里和Java里一样，通过添加final修饰符给成员来做到。
+
+{{{class="brush: scala" 
+  class ArrayElement extends Element {
+    final override def demo() {
+      println("ArrayElement's implementation invoked")
+    }
+  }
+}}}
+
+在类的声明上添加final修饰符把整个类声明为final：
+
+{{{class="brush: scala" 
+  final class ArrayElement extends Element {
+    override def demo() {
+      println("ArrayElement's implementation invoked")
+    }
+  }
+}}}
+
+== 使用组合与继承 ==
+
+组合与继承是利用其它现存类定义新类的两个方法。
+
+如果你接下来的工作主要是代码重用，通常你应采用组合而不是继承。只有继承受脆基类问题之苦，这
+种情况你可能会无意中通过改变超类而破坏了子类。
+
+关于继承关系你可以问自己一个问题，是否它建模了一个is-a关系。你能问的另一个问题是，是否客户
+想要把子类类型当作超类类型来用。
+
+== 实现示例中的功能 ==
+
+把一个元素放在另一个上面是指串连这两个元素的contents值。
+
+{{{class="brush: scala" 
+  def above(that: Element): Element =
+    new ArrayElement(this.contents ++ that.contents)
+}}}
+
+把两个元素靠在一起，我们将创造一个新的元素，其中的每一行都来自于两个元素的相应行的串连。
+
+{{{class="brush: scala" 
+  def beside(that: Element): Element = {
+    val contents = new Array[String](this.contents.length)
+    for (i <- 0 until this.contents.length) 
+      contents(i) = this.contents(i) + that.contents(i)
+    new ArrayElement(contents)
+  }
+
+}}}
+
+索引数组的循环是指令式风格。这个方法可以替代缩减成一个表达式：
+
+{{{class="brush: scala" 
+  new ArrayElement(
+    for (
+      (line1, line2) <- this.contents zip that.contents
+    ) yield line1 + line2
+  )
+}}}
+
+zip操作符转换为一个对子的数组（可以称为Tupele2）。zip方法从它的两个参数中拣出相应的元素并组
+织成对子数组。
+
+例如，表达式：
+
+{{{class="brush: scala" 
+  Array(1, 2, 3) zip Array("a", "b")
+}}}
+
+将生成：
+
+{{{class="brush: scala" 
+  Array((1, "a"), (2, "b"))
+}}}
+
+如果两个操作数组的其中一个比另一个长，zip将舍弃余下的元素。
+
+定义toString方法返回元素格式化成的字串：
+
+{{{class="brush: scala" 
+  override def toString = contents mkString "\n"
+}}}
+
+最后是这个样子：
+
+{{{class="brush: scala" 
+  abstract class Element {
+
+    def contents: Array[String]
+
+    def width: Int =
+      if (height == 0) 0 else contents(0).length
+
+    def height: Int = contents.length
+
+    def above(that: Element): Element =
+      new ArrayElement(this.contents ++ that.contents)
+
+    def beside(that: Element): Element =
+      new ArrayElement(
+        for (
+          (line1, line2) <- this.contents zip that.contents
+        ) yield line1 + line2
+      )
+
+    override def toString = contents mkString "\n"
+  }
+}}}
+
+
+
+== 定义工厂对象 ==
+
+最直接的方案是创建类Element的伴生对象并把它做成布局元素的工厂方法。这种方式唯一要暴露给客户
+的就是Element的类/对象组合，隐藏它的三个实现类ArrayElement，LineElement和UniformElement。
+
+{{{class="brush: scala" 
+  object Element {
+
+    def elem(contents: Array[String]): Element = 
+      new ArrayElement(contents)
+
+    def elem(chr: Char, width: Int, height: Int): Element = 
+      new UniformElement(chr, width, height)
+
+    def elem(line: String): Element = 
+      new LineElement(line)
+  }
+
+}}}
+
+这些工厂方法使得改变类Element的实现通过使用elem工厂方法实现而不用显式地创建新的ArrayElement
+实例成为可能。
+
+为了不使用单例对象的名称，Element，认证而调用工厂方法，我们将在源文件顶上引用Element.elem。
+换句话说，代之以在Element类内部使用Element.elem调用工厂方法，我们将引用Element.elem，这样我
+们只要使用它们的简化名，elem，就可以调用工厂方法。
+
+
+{{{class="brush: scala" 
+  import Element.elem
+
+  abstract class Element {
+
+    def contents: Array[String]
+
+    def width: Int =
+      if (height == 0) 0 else contents(0).length
+
+    def height: Int = contents.length
+
+    def above(that: Element): Element =
+      elem(this.contents ++ that.contents)
+
+    def beside(that: Element): Element =
+      elem(
+        for (
+          (line1, line2) <- this.contents zip that.contents
+        ) yield line1 + line2
+      )
+
+    override def toString = contents mkString "\n"
+  }
+
+}}}
+
+
+有了工厂方法之后，子类ArrayElement，LineElement和UniformElement不再需要直接被客户访问，所以可以改成是私有的。
+
+Scala里，你可以在类和单例对象中定义其它的类和单例对象。因此一种让Element的子类私有化的方式
+就是把它们放在Element单例对象中并在那里声明它们为私有。需要的时候，这些类将仍然能被三个elem
+工厂方法访问。
+
+{{{class="brush: scala"   object Element {
+
+    private class ArrayElement(
+      val contents: Array[String]
+    ) extends Element
+
+    private class LineElement(s: String) extends Element {
+      val contents = Array(s)
+      override def width = s.length
+      override def height = 1
+    }
+
+    private class UniformElement(
+      ch: Char,
+      override val width: Int,
+      override val height: Int
+    ) extends Element {
+      private val line = ch.toString * width
+      def contents = Array.make(height, line)
+    }
+
+    def elem(contents:  Array[String]): Element =
+      new ArrayElement(contents)
+
+    def elem(chr: Char, width: Int, height: Int): Element =
+      new UniformElement(chr, width, height)
+
+    def elem(line: String): Element =
+      new LineElement(line)
+  }
+}}}
+
+
+
+
+== 变高变宽 ==
+
+Element的版本并不完全，因为他不允许客户把不同宽度的元素堆叠在一起，或者不同高度的元素靠在一起。比方说，下面的表达式将不能正常工作，因为组合元素的第二行比第一行要长：
+
+{{{class="brush: scala" 
+  new ArrayElement(Array("hello")) above 
+  new ArrayElement(Array("world!"))
+}}}
+
+与之相似的，下面的表达式也不能正常工作：
+
+{{{class="brush: scala" 
+
+  new ArrayElement(Array("one", "two")) beside 
+  new ArrayElement(Array("one"))
+}}}
+
+添加私有帮助方法widen通过带个宽度做参数并返回那个宽度的Element。heighten，能在竖直方向执行同样的功能。
+
+{{{class="brush: scala" 
+  import Element.elem
+
+  abstract class Element {
+    def contents:  Array[String]
+
+    def width: Int = contents(0).length
+    def height: Int = contents.length
+
+    def above(that: Element): Element = {
+      val this1 = this widen that.width
+      val that1 = that widen this.width
+      elem(this1.contents ++ that1.contents)
+    }
+
+    def beside(that: Element): Element = {
+      val this1 = this heighten that.height
+      val that1 = that heighten this.height
+      elem(
+        for ((line1, line2) <- this1.contents zip that1.contents) 
+        yield line1 + line2)
+    }
+
+    def widen(w: Int): Element = 
+      if (w <= width) this
+      else {
+        val left = elem(' ', (w - width) / 2, height) 
+        var right = elem(' ', w - width - left.width, height)
+        left beside this beside right
+      }
+
+    def heighten(h: Int): Element = 
+      if (h <= height) this
+      else {
+        val top = elem(' ', width, (h - height) / 2)
+        var bot = elem(' ', width, h - height - top.height)
+        top above this above bot
+      }
+
+    override def toString = contents mkString "\n"
+  }
+}}}
+
+== 完整的示例代码 ==
+
+写一个画给定数量边界的螺旋的程序。
+
+{{{class="brush: scala" 
+// In file compo-inherit/Spiral.scala
+
+  import Element.elem
+
+  object Spiral {
+
+    val space = elem(" ")
+    val corner = elem("+")
+
+    def spiral(nEdges: Int, direction: Int): Element = {
+      if (nEdges == 1)
+        elem("+")
+      else {
+        val sp = spiral(nEdges - 1, (direction + 3) % 4)
+        def verticalBar = elem('|', 1, sp.height)
+        def horizontalBar = elem('-', sp.width, 1)
+        if (direction == 0)
+          (corner beside horizontalBar) above (sp beside space)
+        else if (direction == 1)
+          (sp above space) beside (corner above verticalBar)
+        else if (direction == 2)
+          (space beside sp) above (horizontalBar beside corner)
+        else
+          (verticalBar above corner) beside (space above sp)
+      }
+    }
+
+    def main(args: Array[String]) {
+      val nSides = args(0).toInt
+      println(spiral(nSides, 0))
+    }
+  }
+}}}
+
+
+
+{{{class="brush: scala" 
+$ scala Spiral 6    $ scala Spiral 11    $ scala Spiral 17
++-----              +----------          +----------------
+|                   |                    |                
+| +-+               | +------+           | +------------+ 
+| + |               | |      |           | |            | 
+|   |               | | +--+ |           | | +--------+ | 
++---+               | | |  | |           | | |        | | 
+                    | | ++ | |           | | | +----+ | | 
+                    | |    | |           | | | |    | | | 
+                    | +----+ |           | | | | ++ | | | 
+                    |        |           | | | |  | | | | 
+                    +--------+           | | | +--+ | | | 
+                                         | | |      | | | 
+                                         | | +------+ | | 
+                                         | |          | | 
+                                         | +----------+ | 
+                                         |              | 
+                                         +--------------+ 
+}}}
+
+
+= Scala类的层级 =
+
+Scala里，每个类都继承自通用的名为Any的超类。因为所有的类都是Any的子类，那么定义在Any中的方
+法就是“普遍”方法：它们可以被任何对象调用。
+
+Scala还在层级的底端定义了Null和Nothing，主要都扮演通用的子类。例如，就像说Any是所有其它类的
+超类，Nothing是所有其它类的子类。
+
+<img src="images/scala.hirtc.png" alt="scala.hirtc" />
+
+
+
+== Scala类的概览 ==
+
+层级的顶端是类Any，定义了包含下列的方法：
+
+{{{class="brush: scala" 
+  final def ==(that: Any): Boolean
+  final def !=(that: Any): Boolean
+  def equals(that: Any): Boolean
+  def hashCode: Int
+  def toString: String
+}}}
+
+类Any里的`=`和`!=`，被声明为final，因此它们不能在子类里面重载。实际上，`==`总是与`equals`相同，`!=`总是与`equals`相反。因此独立的类可以通过重载equals方法修改`==`或`!=`的意义。
+
+根类Any有两个子类：AnyVal和AnyRef。
+
+=== 值类型（AnyVal） ===
+
+AnyVal是Scala里每个内建值类型的父类。有九个这样的值类型：Byte，Short，Char，Int，Long，Float，Double，Boolean和Unit。其中的前八个对应到Java的原始类型，它们的值在运行时表示成Java的原始值。
+
+Scala里这些类的实例都写成字面量，不能使用new创造这些类的实例。值类都被定义为即是抽象的又是final的，强制贯彻。因此如果你写了`new`就会出错：
+
+{{{class="brush: scala"   
+  scala> new Int
+  <console>:5: error: class Int is abstract; cannot be 
+  instantiated
+         new Int
+         ^
+}}}
+
+另一个值类型，Unit，大约对应于Java的void类型；被用作不返回任何有趣结果的方法的结果类型。Unit只有一个实例值，被写作()。
+
+值类型支持作为方法的通用的数学和布尔操作符。例如，Int有名为`+`和`*`的方法，Boolean有名为`||`和`&&`的方法。值类型也从类Any继承所有的方法：
+
+{{{class="brush: scala" 
+  scala> 42 max 43
+  res4: Int = 43
+
+  scala> 42 min 43
+  res5: Int = 42
+
+  scala> 1 until 5
+  res6: Range = Range(1, 2, 3, 4)
+
+  scala> 1 to 5
+  res7: Range.Inclusive = Range(1, 2, 3, 4, 5)
+
+  scala> 3.abs
+  res8: Int = 3
+
+  scala> (-3).abs
+  res9: Int = 3
+}}}
+
+值类型的空间是扁平的；所有的值类都是scala.AnyVal的子类型，但是它们不是互相的子类。代之以它们不同的值类型之间可以隐式地互相转换。例如，需要的时候，类scala.Int的实例可以自动放宽（通过隐式转换）到类scala.Long的实例。
+
+
+隐式转换还用来为值类型添加更多的功能。例如，类型Int支持以下所有的操作：
+
+{{{class="brush: scala" 
+  scala> 42 max 43
+  res4: Int = 43
+
+  scala> 42 min 43
+  res5: Int = 42
+
+  scala> 1 until 5
+  res6: Range = Range(1, 2, 3, 4)
+
+  scala> 1 to 5
+  res7: Range.Inclusive = Range(1, 2, 3, 4, 5)
+
+  scala> 3.abs
+  res8: Int = 3
+
+  scala> (-3).abs
+  res9: Int = 3
+}}}
+
+工作原理：方法min，max，until，to和abs都定义在类scala.runtime.RichInt里，并且有一个从类Int到RichInt的隐式转换。当你在Int上调用没有定义在Int上但定义在RichInt上的方法时，这个转换就被应用了：
+
+=== 引用类型（AnyRef） ===
+
+类Any的另一个子类是类AnyRef。这个是Scala里所有引用类的基类。正如前面提到的，在Java平台上AnyRef实际就是类java.lang.Object的别名。因此Java里写的类和Scala里写的都继承自AnyRef。
+
+存在AnyRef别名代替使用java.lang.Object名称的理由是，Scala被设计成可以同时工作在Java和.Net平台。在.NET平台上，AnyRef是System.Object的别名。 
+
+可以认为java.lang.Object是Java平台上实现AnyRef的方式。因此，尽管你可以在Java平台上的Scala程序里交换使用Object和AnyRef，推荐的风格是在任何地方都只使用AnyRef。
+
+Scala类与Java类不同在于它们还继承自一个名为ScalaObject的特别的记号特质。理念是ScalaObject包含了Scala编译器定义和实现的方法，目的是让Scala程序的执行更有效。到现在为止，Scala对象包含了单个方法，名为$tag，用于内部以提速模式匹配。
+
+
+
+== 原始类型是如何实现的 ==
+
+Scala以与Java同样的方式存储整数：把它当作32位的字。这对在JVM上的效率以及与Java库的互操作性方面来说都很重要。标准的操作如加法或乘法都被实现为原始操作。然而，当整数需要被当作（Java）对象看待的时候，Scala使用了“备份”类java.lang.Integer。如在整数上调用toString方法或者把整数赋值给Any类型的变量时，就会这么做。
+
+所有这些听上去都近似Java5里的自动装箱并且它们的确很像。不过有一个关键差异，Scala里的装箱比Java里的更少看见。尝试下面的Java代码：
+
+{{{class="brush: scala" 
+  // This is Java
+  boolean isEqual(int x, int y) {
+    return x == y;
+  }
+  System.out.println(isEqual(421, 421));
+}}}
+
+当然会得到true。现在，把isEqual的参数类型变为java.lang.Integer（或Object，结果都一样）：
+
+{{{class="brush: scala" 
+  // This is Java
+  boolean isEqual(Integer x, Integer y) {
+    return x == y;
+  }
+  System.out.println(isEqual(421, 421));
+}}}
+
+却得到了false！原因是数421被装箱了两次，因此参数x和y是两个不同的对象。
+
+因为在引用类型上==表示引用相等，而Integer是引用类型，所以结果是false。这是展示了Java不是纯面向对象语言的一个方面。我们能清楚观察到原始类型和引用类型之间的差别。
+
+现在在Scala里尝试同样的实验：
+
+{{{class="brush: scala" 
+  scala> def isEqual(x: Int, y: Int) = x == y
+  isEqual: (Int,Int)Boolean
+
+  scala> isEqual(421, 421)
+  res10: Boolean = true
+
+  scala> def isEqual(x: Any, y: Any) = x == y
+  isEqual: (Any,Any)Boolean
+
+  scala> isEqual(421, 421)
+  res11: Boolean = true
+}}}
+
+实际上Scala里的相等操作==被设计为透明的参考类型代表的东西。对值类型来说，就是自然的（数学或布尔）相等。对于引用类型，==被视为继承自Object的equals方法的别名。这个方法被初始地定义为引用相等，但被许多子类重载实现它们种族的相等概念。这也意味着Scala里你永远也不会落入Java知名的关于字串比较的陷阱。Scala里，字串比较以其应有的方式工作：
+
+{{{class="brush: scala" 
+  scala> val x = "abcd".substring(2)
+  x: java.lang.String = cd
+
+  scala> val y = "abcd".substring(2)
+  y: java.lang.String = cd
+
+  scala> x == y
+  res12: Boolean = true
+}}}
+
+Java里，x与y的比较结果将是false。程序员在这种情况应该用equals，不过它容易被忘记。
+
+然而，有些情况你需要使用引用相等代替用户定义的相等。
+
+例如，某些时候效率是首要因素，你想要把某些类哈希合并（hash cons）然后通过引用相等比较它们的实例（类实例的哈希合并是指把创建的所有实例缓存在弱集合中。然后，一旦需要类的新实例，首先检查缓存。如果缓存中已经有一个元素等于你打算创建的，你可以重用存在的实例。这样安排的结果是，任何以equals()判断相等的两个实例同样在引用相等上判断一致。）。
+
+为这种情况，类AnyRef定义了附加的`eq`方法，它不能被重载并且实现为引用相等（也就是说，它表现得就像Java里对于引用类型的==那样）。同样也有一个`eq`的反义词，被称为`ne`。例如：
+
+{{{class="brush: scala" 
+  scala> val x = new String("abc")
+  x: java.lang.String = abc
+
+  scala> val y = new String("abc")
+  y: java.lang.String = abc
+
+  scala> x == y
+  res13: Boolean = true
+
+  scala> x eq y
+  res14: Boolean = false
+
+  scala> x ne y
+  res15: Boolean = true
+}}}
+
+== 底层类型 ==
+
+层级的底部你看到了两个类scala.Null和Scala.Nothing。它们是用统一的方式处理某些Scala的面向对象类型系统的“边界情况”的特殊类型。
+
+类Null是null类型的引用；它是每个引用类（就是说，每个继承自AnyRef的类）的子类。Null不兼容值类型。你不可，比方说，把null值赋给整数变量：
+
+{{{class="brush: scala" 
+  scala> val i: Int = null
+  <console>:4: error: type mismatch;
+   found   : Null(null)
+   required: Int
+}}}
+
+类型Nothing在Scala的类层级的最底端；它是任何其它类型的子类型。然而，根本没有这个类型的任何值。要一个没有值的类型有什么意思呢？在控制结构的try-catch中讨论过，Nothing的一个用处是它标明了不正常的终止。例如Scala的标准库中的Predef对象有一个error方法，如下定义：
+
+{{{class="brush: scala" 
+  def error(message: String): Nothing =
+    throw new RuntimeException(message)
+}}}
+
+error的返回类型是Nothing，告诉用户方法不是正常返回的（代之以抛出了异常）。因为Nothing是任何其它类型的子类，你可以非常灵活的使用像error这样的方法。例如：
+
+{{{class="brush: scala" 
+
+  def divide(x: Int, y: Int): Int = 
+    if (y != 0) x / y 
+    else error("can't divide by zero")
+}}}
+
+`if`状态分支，`x / y`，类型为Int，而`else`分支，调用了`error`，类型为`Nothing`。因为`Nothing`是Int的子类型，整个状态语句的类型是Int，正如需要的那样。
+
+
+
 = 特质（Traits） =
 
 trait是Scala里代码复用的基础单元。特质封装了方法和字段的定义，并可以通过混入到类中重用它们。
 
 == 概念 ==
 
-定义，  trait NoPoint(x: Int, y: Int) // Does not compile：
+定义， trait NoPoint(x: Int, y: Int) // Does not compile：
 
-{{{class="brush: scala"   
+{{{class="brush: scala"
   trait Philosophical {
     def philosophize() {
       println("I consume memory, therefore I am!")
@@ -3328,7 +3923,7 @@ trait是Scala里代码复用的基础单元。特质封装了方法和字段的�
 
 没有声明超类，因此和类一样，有个缺省的超类AnyRef。一旦特质被定义了，就可以使用extends或with关键字，把它混入到类中：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   class Frog extends Philosophical {
     override def toString = "green"
   }
@@ -3336,7 +3931,7 @@ trait是Scala里代码复用的基础单元。特质封装了方法和字段的�
 
 类Frog是AnyRef（Philosophical的超类）的子类并混入了Philosophical。从特质继承的方法可以像从超类继承的方法那样使用：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   scala> val frog = new Frog
   frog: Frog = green
 
@@ -3346,8 +3941,8 @@ trait是Scala里代码复用的基础单元。特质封装了方法和字段的�
 
 特质同样也是类型。以下是把Philosophical用作类型的例子：
 
-{{{class="brush: scala" 
-  scala> val phil: Philosophical = frog  
+{{{class="brush: scala"
+  scala> val phil: Philosophical = frog
   phil: Philosophical = green
 
   scala> phil.philosophize()
@@ -3358,7 +3953,7 @@ phil的类型是Philosophical，一个特质。因此，变量phil可以被初�
 
 如果想把特质混入到显式扩展超类的类里，可以用extends指明待扩展的超类，用with混入特质：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   class Animal
 
   class Frog extends Animal with Philosophical {
@@ -3368,7 +3963,7 @@ phil的类型是Philosophical，一个特质。因此，变量phil可以被初�
 
 如果想混入多个特质，都加在with子句里就可以了：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   class Animal
   trait HasLegs
 
@@ -3379,7 +3974,7 @@ phil的类型是Philosophical，一个特质。因此，变量phil可以被初�
 
 目前为止你看到的例子中，类Frog都继承了Philosophical的philosophize实现。或者，Frog也可以重载philosophize方法。语法与重载超类中定义的方法一样。举例如下：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   class Animal
 
   class Frog extends Animal with Philosophical {
@@ -3392,7 +3987,7 @@ phil的类型是Philosophical，一个特质。因此，变量phil可以被初�
 
 因为Frog的这个新定义仍然混入了特质Philosophize，你仍然可以把它当作这种类型的变量使用。但是由于Frog重载了Philosophical的philosophize实现，当你调用它的时候，你会得到新的回应：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   scala> val phrog: Philosophical = new Frog
   phrog: Philosophical = green
 
@@ -3402,13 +3997,13 @@ phil的类型是Philosophical，一个特质。因此，变量phil可以被初�
 
 这时你或许推导出以下哲理：特质就像是带有具体方法的Java接口，不过其实它能做的更多。特质可以，比方说，声明字段和维持状态值。实际上，你可以用特质定义做任何用类定义做的事，并且语法也是一样的，除了两点。第一点，特质不能有任何“类”参数，也就是说，传递给类的主构造器的参数。换句话说，尽管你可以定义如下的类：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   class Point(x: Int, y: Int)
 }}}
 
 但是下面定义特质的尝试将遭到失败：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   trait NoPoint(x: Int, y: Int) // Does not compile
 }}}
 
@@ -3420,7 +4015,7 @@ phil的类型是Philosophical，一个特质。因此，变量phil可以被初�
 
 Java的接口常常是过瘦而非过胖。例如，从Java 1.4开始引入的CharSequence接口，是对于字串类型的类来说通用的瘦接口，它持有一个字符序列。下面是把它看作Scala特质的定义：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   trait CharSequence {
     def charAt(index: Int): Char
     def length: Int
@@ -3429,9 +4024,9 @@ Java的接口常常是过瘦而非过胖。例如，从Java 1.4开始引入的Ch
   }
 }}}
 
-尽管类String成打的方法中的大多数都可以用在任何CharSequence上，Java的CharSequence接口定义仅提供了4个方法。如果CharSequence代以包含全部String接口，那它将为CharSequence的实现者压上沉重的负担。任何实现Java里的CharSequence接口的程序员将不得不定义一大堆方法。因为Scala特质可以包含具体方法，这使得创建胖接口大为便捷。 
+尽管类String成打的方法中的大多数都可以用在任何CharSequence上，Java的CharSequence接口定义仅提供了4个方法。如果CharSequence代以包含全部String接口，那它将为CharSequence的实现者压上沉重的负担。任何实现Java里的CharSequence接口的程序员将不得不定义一大堆方法。因为Scala特质可以包含具体方法，这使得创建胖接口大为便捷。
 
-在特质中添加具体方法使得胖瘦对阵的权衡大大倾向于胖接口。不像在Java里那样，在Scala中添加具体方法是一次性的劳动。你只要在特质中实现方法一次，而不再需要在每个混入特质的方法中重新实现它。因此，与没有特质的语言相比，Scala里的胖接口没什么工作要做。 
+在特质中添加具体方法使得胖瘦对阵的权衡大大倾向于胖接口。不像在Java里那样，在Scala中添加具体方法是一次性的劳动。你只要在特质中实现方法一次，而不再需要在每个混入特质的方法中重新实现它。因此，与没有特质的语言相比，Scala里的胖接口没什么工作要做。
 
 要使用特质丰满接口，只要简单地定义一个具有少量抽象方法的特质——特质接口的瘦部分——和潜在的大量具体方法，所有的都实现在抽象方法之上。然后你就可以把丰满了的特质混入到类中，实现接口的瘦部分，并最终获得具有全部胖接口内容的类。
 
@@ -3441,7 +4036,7 @@ Java的接口常常是过瘦而非过胖。例如，从Java 1.4开始引入的Ch
 
 没有特质的代码的话，首先会有一些基本的集合类如Point和Rectangle：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   class Point(val x: Int, val y: Int)
 
   class Rectangle(val topLeft: Point, val bottomRight: Point) {
@@ -3454,7 +4049,7 @@ Java的接口常常是过瘦而非过胖。例如，从Java 1.4开始引入的Ch
 
 这个Rectangle类在它的主构造器中带两个点，分别是左上角和右下角的坐标。然后它通过对这两个点执行简单的计算实现了许多便捷方法诸如left，right，和width。 图库应该有的另一个类是2-D图像工具：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   abstract class Component {
     def topLeft: Point
     def bottomRight: Point
@@ -3463,14 +4058,14 @@ Java的接口常常是过瘦而非过胖。例如，从Java 1.4开始引入的Ch
     def right = bottomRight.x
     def width = right - left
     // and many more geometric methods...
-  } 
+  }
 }}}
 
 注意left，right，和width在两个类中的定义是一模一样。除了少许的变动外，他们将在任何其他的长方形对象的类中保持一致。
 
 这种重复可以使用特质消除。这个特质应该具有两个抽象方法：一个返回对象的左上角坐标，另一个返回右下角的坐标。然后他就可以应用到所有其他的几何查询的具体实现中
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   trait Rectangular {
     def topLeft: Point
     def bottomRight: Point
@@ -3484,7 +4079,7 @@ Java的接口常常是过瘦而非过胖。例如，从Java 1.4开始引入的Ch
 
 类Component可以混入这个特质并获得Rectangular提供的所有的几何方法：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   abstract class Component extends Rectangular {
     // other methods...
   }
@@ -3492,10 +4087,10 @@ Java的接口常常是过瘦而非过胖。例如，从Java 1.4开始引入的Ch
 
 可以创建Rectangle对象并对它调用如width或left的几何方法：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
 
   scala> val rect = new Rectangle(new Point(1, 1),
-       |     new Point(10, 10))
+       | new Point(10, 10))
   rect: Rectangle = Rectangle@3536fd
 
   scala> rect.left
@@ -3513,10 +4108,10 @@ Java的接口常常是过瘦而非过胖。例如，从Java 1.4开始引入的Ch
 
 Scala专门提供了Ordered特质解决排序。以前面用过的分数类型来说，原来已经有了四个比较大小的方法：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   class Rational(n: Int, d: Int) {
     // ...
-    def < (that: Rational) = 
+    def < (that: Rational) =
       this.numer * that.denom > that.numer * this.denom
     def > (that: Rational) = that < this
     def <= (that: Rational) = (this < that) || (this == that)
@@ -3526,7 +4121,7 @@ Scala专门提供了Ordered特质解决排序。以前面用过的分数类型�
 
 现在通过Ordered特质的`compare`方法来完成一个比大小的功能：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   class Rational(n: Int, d: Int) extends Ordered[Rational] {
     // ...
     def compare(that: Rational) =
@@ -3536,7 +4131,7 @@ Scala专门提供了Ordered特质解决排序。以前面用过的分数类型�
 
 上面定义compare方法来比较两个对象，类Rational现在具有了所有4种比较方法：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   scala> val half = new Rational(1, 2)
   half: Rational = 1/2
 
@@ -3552,7 +4147,7 @@ Scala专门提供了Ordered特质解决排序。以前面用过的分数类型�
 
 考虑下面的抽象简化了四个比较操作符的实现：
 
-{{{class="brush: scala"   
+{{{class="brush: scala"
   trait Ordered[T] {
     def compare(that: T): Int
 
@@ -3569,7 +4164,7 @@ Scala专门提供了Ordered特质解决排序。以前面用过的分数类型�
 
 IntQueue有一个put方法把整数添加到队列中，和一个get方法移除并返回它们：
 
-{{{class="brush: scala"   
+{{{class="brush: scala"
   abstract class IntQueue {
     def get(): Int
     def put(x: Int)
@@ -3578,7 +4173,7 @@ IntQueue有一个put方法把整数添加到队列中，和一个get方法移除
 
 BasicIntQueue类根据上面的特质实现了一个队列：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   import scala.collection.mutable.ArrayBuffer
 
   class BasicIntQueue extends IntQueue {
@@ -3590,7 +4185,7 @@ BasicIntQueue类根据上面的特质实现了一个队列：
 
 运行一个队列的效果：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   scala> val queue = new BasicIntQueue
   queue: BasicIntQueue = BasicIntQueue@24655f
 
@@ -3608,7 +4203,7 @@ BasicIntQueue类根据上面的特质实现了一个队列：
 
 Doubling特质把整数放入队列的时候对它加倍。
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   trait Doubling extends IntQueue {
     abstract override def put(x: Int) { super.put(2 * x) }
   }
@@ -3620,7 +4215,7 @@ Doubling特质把整数放入队列的时候对它加倍。
 
 现在一行代码都不用写，下面只有一个`extends`和一个`with`就把类定义好了：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   scala> class MyQueue extends BasicIntQueue with Doubling
   defined class MyQueue
 
@@ -3637,7 +4232,7 @@ Doubling特质把整数放入队列的时候对它加倍。
 
 还可以更加简化到类名都不用写，直接｀new BasicIntQueue with Doubling｀这个父类名加上特质就可以把对象拿到了：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   scala> val queue = new BasicIntQueue with Doubling
   queue: BasicIntQueue with Doubling = $anon$1@5fa12d
 
@@ -3652,7 +4247,7 @@ Doubling特质把整数放入队列的时候对它加倍。
 
 有两个特质，一个在入队时把值加1；另一个过滤掉负数：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   trait Incrementing extends IntQueue {
     abstract override def put(x: Int) { super.put(x + 1) }
   }
@@ -3668,7 +4263,7 @@ Doubling特质把整数放入队列的时候对它加倍。
 
 {{{class="brush: scala"
   scala> val queue = (new BasicIntQueue
-       |     with Incrementing with Filtering)
+       | with Incrementing with Filtering)
   queue: BasicIntQueue with Incrementing with Filtering...
 
   scala> queue.put(-1); queue.put(0); queue.put(1)
@@ -3677,7 +4272,7 @@ Doubling特质把整数放入队列的时候对它加倍。
   res15: Int = 1
 
   scala> queue.get()
-  res16: Int = 2 
+  res16: Int = 2
 }}}
 
 粗略地说，越靠近右侧的特质越先起作用。。如果那个方法调用了super，它调用其左侧特质的方法，以此类推。
@@ -3686,9 +4281,9 @@ Doubling特质把整数放入队列的时候对它加倍。
 
 如果你逆转特质的次序，那么整数首先会加1，然后如果仍然是负的才会被抛弃：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   scala> val queue = (new BasicIntQueue
-       |     with Filtering with Incrementing)
+       | with Filtering with Incrementing)
   queue: BasicIntQueue with Filtering with Incrementing...
 
   scala> queue.put(-1); queue.put(0); queue.put(1)
@@ -3710,16 +4305,16 @@ Doubling特质把整数放入队列的时候对它加倍。
 
 在关注线性化之前，请花一点儿时间考虑一下在传统的多重继承语言中如何堆叠改动。假想有下列的代码，但是这次解释为多重继承而不是特质混入：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   val q = new BasicIntQueue with Incrementing with Doubling
-  q.put(42)  // which put would be called?
+  q.put(42) // which put would be called?
 }}}
 
 第一个问题是，哪个put方法会在这个调用中被引用？或许规则会决定最后一个超类胜出，本例中的Doubling将被调用。Doubling将加倍它的参数并调用super.put，大概就是这样。增量操作将不会发生！同样，如果规则决定第一个超类胜出，那么结果队列将增量整数但不会加倍它们。因此怎么排序都不会有效。
 
 或许你会满足于允许程序员显式地指定在他们说super的时候他们想要的到底是哪个超类方法。比方说，假设下列Scala类似代码，super似乎被显式地指定为Incrementing和Doubling调用：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   trait MyQueue extends BasicIntQueue
       with Incrementing with Doubling {
 
@@ -3740,8 +4335,8 @@ Doubling特质把整数放入队列的时候对它加倍。
 
 Scala的线性化的主要属性可以用下面的例子演示：假设你有一个类Cat，继承自超类Animal以及两个特质Furry和FourLegged。FourLegged又扩展了另一个特质HasLegs：
 
-{{{class="brush: scala" 
-  class Animal 
+{{{class="brush: scala"
+  class Animal
   trait Furry extends Animal
   trait HasLegs extends Animal
   trait FourLegged extends HasLegs
@@ -3752,47 +4347,47 @@ Scala的线性化的主要属性可以用下面的例子演示：假设你有一
 
 类型的线性化看起来是这样的：
 
-{{{class="brush: scala" 
-Animal     :  Animal, AnyRef, Any
-Furry      :  Furry, Animal, AnyRef, Any
-FourLegged :  FourLegged, HasLegs, Animal, AnyRef, Any
-HasLegs    :  HasLegs, Animal, AnyRef, Any
-Cat        :  Cat, FourLegged, HasLegs, Furry, Animal, AnyRef, Any
+{{{class="brush: scala"
+Animal : Animal, AnyRef, Any
+Furry : Furry, Animal, AnyRef, Any
+FourLegged : FourLegged, HasLegs, Animal, AnyRef, Any
+HasLegs : HasLegs, Animal, AnyRef, Any
+Cat : Cat, FourLegged, HasLegs, Furry, Animal, AnyRef, Any
 }}}
 
 因为Animal没有显式扩展超类或混入任何超特质，因此它缺省地扩展了AnyRef，并随之扩展了Any。
 
-{{{class="brush: scala" 
-Animal     :  Animal, AnyRef, Any
+{{{class="brush: scala"
+Animal : Animal, AnyRef, Any
 }}}
 
 第二部分是第一个混入，特质Furry的线性化，但是所有已经在Animal的线性化之中的类现在被排除在外，因此Cat的线性化中每个类仅出现1次。结果是：
 
-{{{class="brush: scala" 
-Furry      :  Furry, Animal, AnyRef, Any
+{{{class="brush: scala"
+Furry : Furry, Animal, AnyRef, Any
 }}}
 
 它之前是FourLegged的线性化，任何已被复制到线性化中的超类及第一个混入再次被排除在外：
 
-{{{class="brush: scala" 
-FourLegged :  FourLegged, HasLegs, Animal, AnyRef, Any
+{{{class="brush: scala"
+FourLegged : FourLegged, HasLegs, Animal, AnyRef, Any
 }}}
 
 最后，Cat线性化的第一个类是Cat自己：
 
 当这些类和特质中的任何一个通过super调用了方法，那么被调用的实现将是它线性化的右侧的第一个实现。
 
-{{{class="brush: scala" 
-Cat        :  Cat, FourLegged, HasLegs, Furry, Animal, AnyRef, Any
+{{{class="brush: scala"
+Cat : Cat, FourLegged, HasLegs, Furry, Animal, AnyRef, Any
 }}}
 
 == 什么情况下要用特质 ==
 
 没有固定的规律，但是包含了几条可供考虑的导则。
 
-如果行为不会被重用，那么就把它做成具体类。具体类没有可重用的行为。 
+如果行为不会被重用，那么就把它做成具体类。具体类没有可重用的行为。
 
-如果要在多个不相关的类中重用，就做成特质。只有特质可以混入到不同的类层级中。 
+如果要在多个不相关的类中重用，就做成特质。只有特质可以混入到不同的类层级中。
 
 如果你希望从Java代码中继承它，就使用抽象类。因为特质和它的代码没有近似的Java模拟，在Java类里继承特质是很笨拙的。而继承Scala的类和继承Java的类完全一样。除了一个例外，只含有抽象成员的Scala特质将直接翻译成Java接口，因此即使你想用Java代码继承，也可以随心地定义这样的特质。要了解让Java和Scala一起工作的更多信息请看后面其他的章节。
 
@@ -3800,8 +4395,360 @@ Cat        :  Cat, FourLegged, HasLegs, Furry, Animal, AnyRef, Any
 
 如果效率非常重要，倾向于类。大多数Java运行时都能让类成员的虚方法调用快于接口方法调用。特质被编译成接口，因此会付出微小的性能代价。然而，仅当你知道那个存疑的特质构成了性能瓶颈，并且有证据说明使用类代替能确实解决问题，才做这样的选择。
 
-== 包和引用 ==
 
+
+
+= 包和引用 =
+
+通过把package子句放在文件顶端的方式把整个文件内容放进包里：
+
+{{{class="brush: scala"
+  package bobsrockets.navigation
+  class Navigator 
+}}}
+
+另一种方式很像C#的命名空间。在package子句之后用大括号包起来一段要放到包里去的定义。除此之外，这种语法还能把同一个文件内的不同部分放在不同的包里。
+
+{{{class="brush: scala"
+  package bobsrockets {
+    package navigation {
+
+      // In package bobsrockets.navigation
+      class Navigator
+
+      package tests {
+
+        // In package bobsrockets.navigation.tests
+        class NavigatorSuite
+      }
+    }
+  } 
+}}}
+
+类似于Java的语法实际上只是括号嵌入风格的语法糖。原理是：如果除了签入另一个包之外对包不作任何事，你可以下面的方式省去一个缩进：
+
+{{{class="brush: scala"
+  package bobsrockets.navigation {
+
+    // In package bobsrockets.navigation
+    class Navigator
+
+    package tests {
+
+      // In package bobsrockets.navigation.tests
+      class NavigatorSuite
+    }
+  } 
+}}}
+
+Java包尽管是分级的，却不是嵌套的。在Java里，在你命名一个包的时候，你必须从包层级的根开始。
+
+Scala为了简化，采用包风格类似于是相对路径：
+
+{{{class="brush: scala"
+  package bobsrockets {
+    package navigation {
+      class Navigator
+    }
+    package launch {
+      class Booster {
+        // No need to say bobsrockets.navigation.Navigator
+        val nav = new navigation.Navigator
+      }
+    }
+  } 
+}}}
+
+而且内部区域的包可以隐匿被定义在外部区域的同名包。还提供了`_root_`表示顶层包：
+
+{{{class="brush: scala"
+  // In file launch.scala
+  package launch {
+    class Booster3
+  }
+
+  // In file bobsrockets.scala
+  package bobsrockets {
+    package navigation {
+      package launch {
+        class Booster1
+      }
+      class MissionControl {
+        val booster1 = new launch.Booster1
+        val booster2 = new bobsrockets.launch.Booster2
+        val booster3 = new _root_.launch.Booster3
+      }
+    }
+    package launch {
+      class Booster2
+    }
+  } 
+}}}
+
+上面的代码中，为了访问Booster3，Scala提供了所有用户可创建的包之外的名为`_root_`的包。换句话就是，任何你写的顶层包都被当作是`_root_`包的成员。
+
+因此，`_root_.launch`让你能访问顶层的`launch`包，`_root_.launch.Booster3`指向的就是最外面的`booster`类。
+
+
+== 引用包 ==
+
+Scala里用import子句来引用包和其成员：
+
+{{{class="brush: scala"
+  package bobsdelights
+
+  abstract class Fruit(
+    val name: String,
+    val color: String
+  )
+
+  object Fruits {
+    object Apple extends Fruit("apple", "red")
+    object Orange extends Fruit("orange", "orange")
+    object Pear extends Fruit("pear", "yellowish")
+    val menu = List(Apple, Orange, Pear)
+  } 
+}}}
+
+不止是包，其他成员也可以用import来引用：
+
+{{{class="brush: scala"
+  // easy access to Fruit
+  import bobsdelights.Fruit
+
+  // easy access to all members of bobsdelights
+  import bobsdelights._
+
+  // easy access to all members of Fruits
+  import bobsdelights.Fruits._ 
+}}}
+
+差别是Scala的按需引用写作尾下划线`_`而不是星号`*`（毕竟`*`是合法的Scala标识符！）。上面的第三个引用子句与Java的静态类字段引用一致。
+
+cala引用可以出现在任何地方，而不是仅仅在编译单元的开始处。同样，它们可以指向任意值。
+
+{{{class="brush: scala"
+  def showFruit(fruit: Fruit) {
+    import fruit._
+    println(name +"s are "+ color)
+  } 
+}}}
+
+方法`showFruit`引用了它的参数，`Fruit`类型的`fruit`，的所有成员。之后的`println`语句就可以直接使用`name`和`color`了。这两个索引等价于`fruit.name`和`fruit.color`。
+
+Scala的引用很灵活的另一个方面是它们可以引用包自身，而不只是非包成员。这只有你把内嵌包想象成包含在外围包之内才是自然的。
+
+例如，下面的代码里包`java.util.regex`被引用。这使得`regex`可以用作简单名。要访问`java.util.regex`包的`Pattern`单例对象，你可以只是写成`regex.Pattern`：
+
+{{{class="brush: scala"
+  import java.util.regex
+
+  class AStarB {
+    // Accesses java.util.regex.Pattern
+    val pat = regex.Pattern.compile("a*b")
+  } 
+}}}
+
+Scala的引用同样可以重命名或隐藏成员。可以用跟在引用的成员对象之后的包含在括号里的引用选择子句（import selector clause）做到：
+
+* 重命名子句的格式是`<原始名> => <新名>``。
+
+* `<原始名> => _`格式的子句从被引用的名字中排除了<原始名>。
+
+{{{class="brush: scala"
+// 只引用了对象Fruits的Apple和Orange成员。 
+import Fruits.{Apple, Orange} 
+
+// Apple对象重命名为McIntosh。
+import Fruits.{Apple => McIntosh, Orange}
+
+// 以SDate的名字引用了SQL的日期类，因此你可以在同时引用普通的Java日期类Date。
+import java.sql.{Date => SDate}
+
+// 以名称S引用了java.sql包，这样你就可以写成S.Date。
+import java.{sql => S}
+
+// 引用了对象Fruits的所有成员。这与import Fruits._同义。
+import Fruits.{_}
+
+// 从Fruits对象引用所有成员，不过重命名Apple为McIntosh。
+import Fuites.{Apple => McIntosh, _}
+
+// 引用了除Pear之外的所有Fruits成员。
+import Fuits.{Pear => _, _}
+}}}
+
+把某样东西重命名为`_`就是表示把它隐藏掉。这对避免出现混淆的局面有所帮助。比方说你有两个包，Fruits和Notebooks，它们都定义了类Apple。如果你想只是得到名为Apple的笔记本而不是水果，就需要引用所有的Notebooks和除了Apple之外所有的水果：
+
+{{{class="brush: scala"
+  import Notebooks._
+  import Fruits.{Apple => _, _} 
+}}}
+
+总而言之，引用选择可以包括下列模式：
+
+* 简单名x。把x包含进引用名集。
+
+* 重命名子句x => y。让名为x的成员以名称y出现。
+ 
+* 隐藏子句x => _。把x排除在引用名集之外。
+ 
+* 全包括‘_’。引用除了前面子句提到的之外的全体成员。如果存在全包括，那么必须是引用选择的最后一个。
+ 
+本节最初展示的比较简单的引用子句可以被视为带有选择子句的简写。例如，`import p._`等价于`import p.{_}`并且`import p.n`等价于`import p.{n}`。
+
+
+== 隐式引用 ==
+
+Scala隐式地添加了一些引用到每个程序中。本质上，就好象下列的三个引用子句已经被加载了：
+
+{{{class="brush: scala"
+  import java.lang._ // everything in the java.lang package
+  import scala._     // everything in the scala package
+  import Predef._    // everything in the Predef object 
+}}}
+
+`java.lang`包囊括了标准Java类。它永远被隐式包含在Scala的JVM实现中。.NET实现将代以引用system包，它是`java.lang`的.NET模拟。
+
+scala包含有标准的Scala库，包括许多通用的类和对象。因为scala被隐式引用，你可以直接用List而不是`scala.List`。
+
+Predef对象包含了许多Scala程序中常用到的类型，方法和隐式转换的定义。比如，因为Predef是隐式引用，你可以直接写`assert`而不是`Predef.assert`。
+
+上面的这三个引用子句与其它的稍有不同，靠后的引用将遮盖靠前的。
+
+例如，`StringBuilder`类被定义在`scala`包里以及Java版本1.5以后的`java.lang`包中都 有。因为`scala`引用遮盖了`java.lang`引用，所以`StringBuilder`简单名将被看作是`scala.StringBuilder`，而不是`java.lang.StringBuilder`。
+
+
+
+== 访问修饰符 ==
+
+Scala与Java对访问修饰符的对待方式有一些重要的差异。
+
+=== private ===
+
+标记为private的成员仅在包含了成员定义的类或对象内部可见。但不同于Java，Scala里这个规则同样应用到了内部类上。这种方式更一致。
+
+{{{class="brush: scala"
+  class Outer {
+    class Inner {
+      private def f() { println("f") }
+      class InnerMost {
+        f() // OK
+      }
+    }
+    (new Inner).f() // error: f is not accessible
+  } 
+}}}
+
+Scala里，`(new Inner).f()`访问非法，因为f在Inner中被声明为private而访问不在类Inner之内。相反，类InnerMost里访问f没有问题，因为这个访问包含在Inner类之内。
+
+这点与Java不同，Java会允许这两种访问因为它允许外部类访问其内部类的私有成员。
+
+=== protected ===
+
+Java中protected可以被同一个包里的类访问。Scala里，只在定义了成员的类的子类中可以被访问。
+
+{{{class="brush: scala"
+  package p {
+    class Super {
+      protected def f() { println("f") }
+    }
+    class Sub extends Super {
+      f()
+    }
+    class Other {
+      (new Super).f()  // error: f is not accessible
+    }
+  } 
+}}}
+
+=== public ===
+
+没有任何标记就是公开的，可以在任何地方被访问。
+
+
+=== 保护的范围 ===
+
+Scala里的访问修饰符可以通过使用修饰词增加。格式为`private[X]`或`protected[X]`的修饰符表示针对“X”的私有或保护，这里“X”指代某些外围的包，类或单例对象。
+
+这样允许定义一些在你项目的若干子包中可见但对于项目外部的客户却始终不可见的东西。同样的技巧在Java里是不可能的：
+
+{{{class="brush: scala"
+ package bobsrockets {
+   package navigation {
+     private[bobsrockets] class Navigator { 
+       protected[navigation] def useStarChart() {}
+       class LegOfJourney {
+         private[Navigator] val distance = 100
+       }
+       private[this] var speed = 200
+     }
+   }
+   package launch {
+     import navigation._
+     object Vehicle { 
+       private[launch] val guide = new Navigator
+     }
+   }
+ } 
+}}}
+
+类Navigator被标记为private[bobsrockets]。这就是说这个类对包含在bobsrockets包的所有的类和对象可见。特别是对象Vehicle里对Navigator的访问被允许，因为Vehicle包含在包launch中，而launch包在bobsrockets中。另一方面，包bobsrockets包之外的所有代码都不能访问类Navigator。
+
+private修饰词同样可以直接是外围包。对象Vehicle类的guide对象的访问修饰符是这样的例子。这种访问修饰符等价于Java的包私有访问。
+
+| 没有修饰符            | 公开访问                 |
+| Private[bobsrockets]  | 在外部包中访问           |
+| Private[navigation]   | 与Java的包可见度相同     |
+| Private[Navigator]    | 与Java的private相同      |
+| Private[LegOfJourney] | 与Scala的private相同     |
+| Private[this]         | 仅在同一个对象中可以访问 |
+
+
+所有的修饰词也可以用在protected上，与private意思相同。也就是说，类C的protected[X]修饰符允许C的所有子类和外围的包、类、或对象X访问被标记的定义。例如，useStarChart方法在Navigator所有子类以及包含在navigation包里的所有代码能够被访问。这与Java的protected意思完全一致。
+
+Private的修饰词还能指向外围类或对象。例如LegOfJourney里的distance变量被标记为private[Navigator]，因此它在类Navigator的任何地方都可见。这与Java里的内部类的私有成员具有同样的访问能力。private[C]里的C如果是最外层类，那么private的意思和Java一致。
+
+Scala还具有一种比private更严格的访问修饰符。被private[this]标记的定义仅能在包含了定义的同一个对象中被访问。这种定义被称为对象私有：object-private。例如，代码13.11中，类Navigator的的speed定义就是对象私有的。这就是说所有的访问必须不仅是在Navigator类里，而且还要是同一个Navigator实例发生的。
+
+因此在Navigator内访问“speed”和`this.speed`是合法的。然而以下的访问，将不被允许，即使它发生在Navigator类之中：
+
+{{{class="brush: scala"
+  val other = new Navigator
+  other.speed // this line would not compile 
+}}}
+
+把成员标记为private[this]是一个让它不能被同一个类中其它对象访问的保障。这在做文档时比较有用。有时它也能让写出更通用的变体注释（参见以后会讲到的参数类型化章节的变体注释）。
+
+=== 伴生对象的可见度性 ===
+
+Java里，静态成员和实例成员属于同一个类，因此访问修饰符可以统一地应用在他们之上。在Scala里没有静态成员，代之以可以拥有包含成员的仅存在一个的伴生对象。
+
+{{{class="brush: scala"
+  class Rocket {
+    import Rocket.fuel
+    private def canGoHomeAgain = fuel > 20
+  }
+
+  object Rocket {
+    private def fuel = 10
+    def chooseStrategy(rocket: Rocket) {
+      if (rocket.canGoHomeAgain)
+        goHome()
+      else
+        pickAStar()
+    }
+    def goHome() {}
+    def pickAStar() {}
+  }
+ 
+}}}
+
+Scala的访问规则给予了伴生对象和类一些特权。类把它所有的访问权限共享给半生对象，反过来也是如此。特别的是，对象可以访问所有它的伴生类的私有成员，就好象类也可以访问所有伴生对象的私有成员一样。
+
+举个例子，上面的Rocket类可以访问方法fuel，它在Rocket对象中被声明为私有。类似地，Rocket对象也可以访问Rocket类里面的私有方法canGetHome。
+
+有一个例外，说到protected static成员时，Scala和Java的相似性被打破了。Java类C的保护静态成员可以被C的所有子类访问。相反，伴生对象的protected成员没有意义，因为单例对象没有任何子类。
 
 {{{class="brush: scala" 
 }}}
@@ -3910,18 +4857,49 @@ Cat        :  Cat, FourLegged, HasLegs, Furry, Animal, AnyRef, Any
 
 {{{class="brush: scala" 
 }}}
+{{{class="brush: scala"
+}}}
 
-
-
-{{{class="brush: scala" 
+{{{class="brush: scala"
 }}}
 
 
+{{{class="brush: scala"
+}}}
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
 }}}
 
 
+{{{class="brush: scala"
+}}}
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
 }}}
