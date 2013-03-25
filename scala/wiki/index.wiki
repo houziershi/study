@@ -4750,14 +4750,171 @@ Scala的访问规则给予了伴生对象和类一些特权。类把它所有的
 
 有一个例外，说到protected static成员时，Scala和Java的相似性被打破了。Java类C的保护静态成员可以被C的所有子类访问。相反，伴生对象的protected成员没有意义，因为单例对象没有任何子类。
 
+
+
+= 断言和测试 =
+
+== 断言 ==
+
+`assert`是预定义的方法，`assert(condition)`会在条件不成立时抛出`AssertionError`。
+
+另一个版本`assert(condition, explanation)`，指定了抛出含有指定`explantion`作为说明的`assertionError`。`explation`的类型为`Any`，所以任何对象都可以作为参数。`assert`方法会对传入的参数调用`toString`的结果作为放在`AssertionError`中的文字描述。
+
+在前面的“组合与继承”这一章中的`above`方法加上道检查，只有宽度一样的元素才可以上下连接在一起：
+
 {{{class="brush: scala" 
+  def above(that: Element): Element = {
+    val this1 = this widen that.width
+    val that1 = that widen this.width
+    elem(this1.contents ++ that1.contents)
+  }
 }}}
 
-
+`assert`方法所在的`Predef`包里还有一个`ensuring`方法可以直接对表达式的返回结果进行测试而不用先把表达式的结果先存放到变量中：
 
 {{{class="brush: scala" 
+  def widen(w: Int): Element =
+    if (w <= width) this
+    else {
+      val left = elem(' ', (w - width) / 2, height)
+      var right = elem(' ', w - width - left.width, height)
+      left beside this beside right
+    } ensuring (w <= _.width)
 }}}
 
+`ensuring`接收一个返回类型为Boolean的函数作为参数。注意这里`ensuring`是作用在`if-else`表达式的`Element`类结果上的，而不是方法`widen`的返回值上。相当于是：
+
+{{{class="brush: scala" 
+  def widen(w: Int): Element = {
+    if (w <= width) this
+    else {
+      val left = elem(' ', (w - width) / 2, height)
+      var right = elem(' ', w - width - left.width, height)
+      left beside this beside right
+    } ensuring (w <= _.width)
+  }
+}}}
+
+还有一点要明白的是，这里的语法看起来像是对`Element`类对象调用`ensuring`方法（把`xxx.ensuring(...)中的点换成了空格）。但是实际上`Emement`对象是没有这个成员方法的，而是被隐式转换成了Ensuring对象。由于存在隐式转换，所以`ensuring`可以作用在任何类型上。
+
+== 测试 ==
+
+受益于和Java之间无缝操作。Java的测试库，像JUnit、TestNG，可以直接用于scala的单元测试。ScalaTest是专为scala设计的一个测试框架。ScalaTest提供了一些比较方便的功能。如果喜欢JUnit3的风格，那么可以写下面这样的单元测试。
+
+{{{class="brush: scala" 
+import org.scalatest.junit.JUnit3Suite
+
+class ElementSuite1 extends JUnit3Suite {
+    def testUniformElement() {
+        val ele = elem('x', 2, 3)
+        // 用===，在结果为false的时候打印出两边的值
+        // 以利于查找问题。也可以用assertEquals来代替
+        assert(ele.width === 2)
+        // 和上面的目的是一模一样的。只是用了另一种风格而已
+        expect(3) {
+            ele.height
+        }
+        // 如果结果为假时还能打印出相关信息
+        expect(3, "the height should be that value") {
+            ele.height
+        }
+        // 这是比JUnit使用方便的地方。
+        // 期望执行结果抛出异常
+        intercept[IllegalArgumentException] {
+            elem('x', -2, 3)
+        }
+    }
+}
+}}}
+
+如果喜欢JUnit4的风格，那么可以写下面这样的单元测试。
+
+{{{class="brush: scala" 
+import org.scalatest.junit.JUnitSuite
+import scala.collection.mutable.ListBuffer
+import org.junit.Assert._
+import org.junit.Test
+import org.junit.Before
+
+class ElementSuite2 extends JUnitSuite{
+    @Test
+    def uniformElement() {
+        val ele = elem('x', 2, 3)
+        assert(ele.width === 2)
+        expect(3) {
+            ele.height
+        }
+        expect(3, "the height should be that value") {
+            ele.height
+        }
+        intercept[IllegalArgumentException] {
+            elem('x', -2, 3)
+        }
+    }
+}
+}}}
+
+ScalaTest还提供了函数式的单元测试。
+
+{{{class="brush: scala" 
+// 用函数式的方式来写单元测试
+// IDE目前对ScalaTest的支持不是特别好
+// 加上RunWith就可以用JUnit的方式来运行了
+@RunWith(classOf[JUnitRunner])
+class ElementSuite3 extends FunSuite {
+    test("elem result should have passed width") {
+        val ele = elem('x', 2, 3)
+        assert(ele.width == 2)
+    }
+}
+}}}
+
+单元测试对提高软件质量很有好处。唯一的不足就是只针对程序员。其它人员要看懂还是比较有困难。ScalaTest提供了BDD（Behavior Driven Development行为驱动开发）测试方式。下面的这段测试代码在运行时就会打印出可读的解释。
+	
+{{{class="brush: scala" 
+class ElementSpec extends FlatSpec with ShouldMatchers {
+    "A UniformElement" should
+        "have a width equal to the passed value" in {
+        val ele = elem('x', 2, 3)
+        ele.width should be(2)
+    }
+    it should
+        "have a height equal to the passed value" in {
+        val ele = elem('x', 2, 3)
+        ele.height should be(3)
+    }
+    it should
+        "throw an IAE if passed a negative width" in {
+        evaluating {
+            elem('x', -2, 3)
+        } should produce[IllegalArgumentException]
+    }
+}
+}}}
+
+上面的代码会打印出下面这样的提示。
+
+{{{class="brush: scala" 
+A UniformElement 
+- should have a width equal to the passed value
+- should have a height equal to the passed value
+- should throw an IAE if passed a negative width
+}}}
+
+我们写单元测试时会测试一些边界值。然后再选一些典型的值。如果这些选值有库来做，不但可以减少单元测试的工作量，而且可以将边界值选取更合理。下面是如何将ScalaChecker和ScalaTest联合起来使用的一个例子。
+
+{{{class="brush: scala" 
+class ElementSpecChecker extends FlatSpec with ShouldMatchers with Checkers{
+    "A UniformElement" should
+        "have a width equal to the passed value" in {
+        // 这可以用数学化的方式来读
+        // 对每个整数w
+        // 当w>0时
+        // 都有后面的等式成立
+        check((w: Int) => w > 0 ==> (elem('x', w, 3).width == w))
+    }
+}
+}}}
 
 
 {{{class="brush: scala" 

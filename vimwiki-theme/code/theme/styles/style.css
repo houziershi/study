@@ -190,9 +190,9 @@ textarea {
 
 .tocWrap {
     position: fixed; 
-    width: 200px;
+    width: 300px;
     z-index: 100;
-    top: 16%;
+    top: 8%;
     right: 2.8%;
     display: none;
 }
