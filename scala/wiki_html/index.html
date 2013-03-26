@@ -39,7 +39,8 @@
 <li><a href="#toc_2.2.1">OS可执行脚本</a>
 </ul>
 <li><a href="#toc_2.3">Scala程序</a>
-<li><a href="#toc_2.4">脚本与程序的区别</a>
+<li><a href="#toc_2.4">Ant任务</a>
+<li><a href="#toc_2.5">脚本与程序的区别</a>
 </ul>
 <li><a href="#toc_3">入门</a>
 <ul>
@@ -218,6 +219,11 @@
 <ul>
 <li><a href="#toc_16.1">断言</a>
 <li><a href="#toc_16.2">测试</a>
+<ul>
+<li><a href="#toc_16.2.1">ScalaTest</a>
+<li><a href="#toc_16.2.2">Junit 4</a>
+<li><a href="#toc_16.2.3">混合ScalaTest与JUnit</a>
+</ul>
 </ul>
 </ul>
 </div>
@@ -398,7 +404,7 @@ println("hello," + arg(0) + "!")
 <p>
 先看一个工具类，它根据字符串来计算出检验和：
 </p>
-<pre class="brush: scala" title="Summer.scala">
+<pre class="brush: scala" title="ChecksumAccumulator.scala">
 import scala.collection.mutable.Map
 
 class ChecksumAccumulator {
@@ -498,7 +504,64 @@ object MyApp extends Application {
 }	
 </pre>
 
-<h2 id="toc_2.4">脚本与程序的区别</h2>
+<h2 id="toc_2.4">Ant任务</h2>
+
+<p>
+相关的Ant任务有<code>scalac</code>、<code>fsc</code>和<code>scaladoc</code>，这里只介绍<code>scalac</code>。
+</p>
+
+<pre class="brush: bash" title="build.xml">
+scala.home=/opt/morganstudio/language/scala
+compile.version=1.7
+</pre>
+
+<pre class="brush: xml" title="build.xml">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;project name="scala-example" default="init" basedir="."&gt;
+	&lt;description&gt;scala example&lt;/description&gt;
+	&lt;property file="build.properties" /&gt;
+
+	&lt;property name="sources.dir" value="sources" /&gt;
+	&lt;property name="build.dir" value="build" /&gt;
+
+	&lt;target name="init"&gt;
+		&lt;property name="scala-library.jar" 
+			value="${scala.home}/lib/scala-library.jar" /&gt;
+		&lt;path id="build.classpath"&gt;
+			&lt;pathelement location="${scala-library.jar}"   /&gt;
+			&lt;pathelement location="${build.dir}"   /&gt;
+		&lt;/path&gt;
+		&lt;taskdef resource="scala/tools/ant/antlib.xml"&gt;
+			&lt;classpath&gt;
+				&lt;pathelement location="${scala.home}/lib/scala-compiler.jar"   /&gt;
+				&lt;pathelement location="${scala-library.jar}"   /&gt;
+			&lt;/classpath&gt;
+		&lt;/taskdef&gt;
+	&lt;/target&gt;
+
+	&lt;target name="build" depends="init"&gt;
+		&lt;mkdir dir="${build.dir}"   /&gt;
+		&lt;scalac srcdir="${sources.dir}"
+			destdir="${build.dir}"
+			classpathref="build.classpath"&gt;
+			&lt;include name="**/*.scala"   /&gt;
+		&lt;/scalac&gt;
+	&lt;/target&gt;
+
+	&lt;target name="run" depends="build"&gt;
+		&lt;java classname="Summer"
+			classpathref="build.classpath"&gt;
+		&lt;/java&gt;
+	&lt;/target&gt;
+&lt;/project&gt;
+</pre>
+
+<p>
+以后可能会用到的jar包还有<code>scala-actors.jar</code>和<code>scala-dbc.jar</code>.
+</p>
+
+
+<h2 id="toc_2.5">脚本与程序的区别</h2>
 
 <p>
 脚本必须以表达式结束，而程序以定义结尾。尝试以<code>scala</code>解释器运行程序会报错。
@@ -6235,37 +6298,129 @@ Scala的访问规则给予了伴生对象和类一些特权。类把它所有的
 <h2 id="toc_16.2">测试</h2>
 
 <p>
-受益于和Java之间无缝操作。Java的测试库，像JUnit、TestNG，可以直接用于scala的单元测试。ScalaTest是专为scala设计的一个测试框架。ScalaTest提供了一些比较方便的功能。如果喜欢JUnit3的风格，那么可以写下面这样的单元测试。
+受益于和Java之间无缝操作。Java的测试库，像JUnit、TestNG，可以直接用于scala的单元测试。ScalaTest是专为scala设计的一个测试框架。ScalaTest提供了一些比较方便的功能。
+</p>
+
+<p>
+注意ScalaTest除了自己的版本号外，对应不同的Scala版本还有不同的对应版本。拿错了是用不了的。
+</p>
+
+<h3 id="toc_16.2.1">ScalaTest</h3>
+
+<p>
+ScalaTest提供了函数式的<code>FunSuite</code>（Function Suite）。<code>test</code>方法为测试方法，说明字符串的内容会显示在输出信息中：
 </p>
 
 <pre class="brush: scala">
-import org.scalatest.junit.JUnit3Suite
-
-class ElementSuite1 extends JUnit3Suite {
-    def testUniformElement() {
-        val ele = elem('x', 2, 3)
-        // 用===，在结果为false的时候打印出两边的值
-        // 以利于查找问题。也可以用assertEquals来代替
-        assert(ele.width === 2)
-        // 和上面的目的是一模一样的。只是用了另一种风格而已
-        expect(3) {
-            ele.height
-        }
-        // 如果结果为假时还能打印出相关信息
-        expect(3, "the height should be that value") {
-            ele.height
-        }
-        // 这是比JUnit使用方便的地方。
-        // 期望执行结果抛出异常
-        intercept[IllegalArgumentException] {
-            elem('x', -2, 3)
-        }
+import org.scalatest.FunSuite
+import scala.collection.mutable.Stack
+ 
+class ExampleSuite extends FunSuite {
+ 
+  test("pop is invoked on a non-empty stack") {
+    val stack = new Stack[Int]
+    stack.push(1)
+    stack.push(2)
+    val oldSize = stack.size
+    val result = stack.pop()
+    assert(result === 2)
+    assert(stack.size === oldSize - 1)
+  }
+ 
+  test("pop is invoked on an empty stack") {
+    val emptyStack = new Stack[Int]
+    intercept[NoSuchElementException] {
+      emptyStack.pop()
     }
+    assert(emptyStack.isEmpty)
+  }
+}
+</pre>
+
+<pre class="brush: bash">
+\-(morgan:%) &gt;&gt;&gt; scalac -cp scalatest_2.9.0-1.9.1.jar ExampleSuite.scala                      
+\-(morgan:%) &gt;&gt;&gt; scala -cp .:scalatest_2.9.0-1.9.1.jar org.scalatest.run ExampleSuite 
+Run starting. Expected test count is: 2
+ExampleSuite:
+- pop is invoked on a non-empty stack
+- pop is invoked on an empty stack
+Run completed in 158 milliseconds.
+Total number of tests run: 2
+Suites: completed 1, aborted 0
+Tests: succeeded 2, failed 0, ignored 0, pending 0
+All tests passed.
+</pre>
+
+<h3 id="toc_16.2.2">Junit 4</h3>
+
+<p>
+如果喜欢JUnit4的风格，那么可以写下面这样的单元测试。
+</p>
+
+<pre class="brush: scala">
+import org.scalatest.junit.AssertionsForJUnit
+import scala.collection.mutable.ListBuffer
+import org.junit.Assert._
+import org.junit.Test
+import org.junit.Before
+
+class ExampleSuite extends AssertionsForJUnit {
+
+  var sb: StringBuilder = _
+  var lb: ListBuffer[String] = _
+
+  @Before 
+	def initialize() {
+    sb = new StringBuilder("ScalaTest is ")
+    lb = new ListBuffer[String]
+  }
+
+  @Test 
+	def verifyEasy() { // Uses JUnit-style assertions
+    sb.append("easy!")
+    assertEquals("ScalaTest is easy!", sb.toString)
+    assertTrue(lb.isEmpty)
+    lb += "sweet"
+    try {
+      "verbose".charAt(-1)
+      fail()
+    }
+    catch {
+      case e: StringIndexOutOfBoundsException =&gt; // Expected
+    }
+  }
+
+  @Test 
+	def verifyFun() { // Uses ScalaTest assertions
+    sb.append("fun!")
+    assert(sb.toString === "ScalaTest is fun!")
+    assert(lb.isEmpty)
+    lb += "sweeter"
+    intercept[StringIndexOutOfBoundsException] {
+      "concise".charAt(-1)
+    }
+  }
 }
 </pre>
 
 <p>
-如果喜欢JUnit4的风格，那么可以写下面这样的单元测试。
+编译运行：
+</p>
+
+<pre class="brush: bash">
+\-(morgan:%) &gt;&gt;&gt; scalac -cp scalatest_2.9.0-1.9.1.jar:junit-4.8.2.jar ExampleSuite.scala                      
+\-(morgan:%) &gt;&gt;&gt; scala -cp .:scalatest_2.9.0-1.9.1.jar:junit-4.8.2.jar org.junit.runner.JUnitCore ExampleSuite
+JUnit version 4.8.2
+..
+Time: 0.026
+
+OK (2 tests)
+</pre>
+
+<h3 id="toc_16.2.3">混合ScalaTest与JUnit</h3>
+
+<p>
+<code>org.scalatest.junit.JUnitSuite</code>已经混入了特质<code>AssertionsForJUnit</code>，可以同时被用于JUnit与ScalaTest方法： 
 </p>
 
 <pre class="brush: scala">
@@ -6275,22 +6430,73 @@ import org.junit.Assert._
 import org.junit.Test
 import org.junit.Before
 
-class ElementSuite2 extends JUnitSuite{
-    @Test
-    def uniformElement() {
-        val ele = elem('x', 2, 3)
-        assert(ele.width === 2)
-        expect(3) {
-            ele.height
-        }
-        expect(3, "the height should be that value") {
-            ele.height
-        }
-        intercept[IllegalArgumentException] {
-            elem('x', -2, 3)
-        }
+class ExampleSuite extends JUnitSuite {
+
+  var sb: StringBuilder = _
+  var lb: ListBuffer[String] = _
+
+  @Before
+	def initialize() {
+    sb = new StringBuilder("ScalaTest is ")
+    lb = new ListBuffer[String]
+  }
+
+  @Test
+	def verifyEasy() { // Uses JUnit-style assertions
+    sb.append("easy!")
+    assertEquals("ScalaTest is easy!", sb.toString)
+    assertTrue(lb.isEmpty)
+    lb += "sweet"
+    try {
+      "verbose".charAt(-1)
+      fail()
     }
+    catch {
+      case e: StringIndexOutOfBoundsException =&gt; // Expected
+    }
+  }
+
+  @Test
+	def verifyFun() { // Uses ScalaTest assertions
+    sb.append("fun!")
+    assert(sb.toString === "ScalaTest is fun!")
+    assert(lb.isEmpty)
+    lb += "sweeter"
+    intercept[StringIndexOutOfBoundsException] {
+      "concise".charAt(-1)
+    }
+  }
 }
+</pre>
+
+<p>
+JUnit调用：
+</p>
+
+<pre class="brush: bash">
+\-(morgan:%) &gt;&gt;&gt; scala -cp .:scalatest_2.9.0-1.9.1.jar:junit-4.8.2.jar org.junit.runner.JUnitCore ExampleSuite
+JUnit version 4.8.2
+..
+Time: 0.026
+
+OK (2 tests)
+</pre>
+
+<p>
+ScalaTest调用：
+</p>
+
+<pre class="brush: bash">
+\-(morgan:%) &gt;&gt;&gt; scala -cp .:scalatest_2.9.0-1.9.1.jar:junit-4.8.2.jar org.scalatest.run ExampleSuite
+Run starting. Expected test count is: 2
+ExampleSuite:
+- verifyEasy
+- verifyFun
+Run completed in 226 milliseconds.
+Total number of tests run: 2
+Suites: completed 1, aborted 0
+Tests: succeeded 2, failed 0, ignored 0, pending 0
+All tests passed.
 </pre>
 
 <p>
