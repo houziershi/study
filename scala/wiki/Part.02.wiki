@@ -540,12 +540,79 @@ Scala在编译器在把这样的表达式转为偏函数时会对模式进行两
 
 == 大型的例子 ==
 
+目标是生成公式`((a / (b * c) + 1 / n) / 3)`显示形式为：
+
+{{{class="brush: scala"
+  a     1
+----- + -
+b * c   n
+---------
+    3
+}}}
+
+先来看：
+
+{{{class="brush: scala"
+  BinOp("+", 
+        BinOp("*", 
+              BinOp("+", Var("x"), Var("y")), 
+              Var("z")), 
+        Number(1))
+}}}
+
+应该输出`(x+y)*z+1`，`(x+y)`是有括号的，但是最外层不要括号。所以要先解决优先级问题：
+
+{{{class="brush: scala"
+  Map(
+    "|" -> 0, "||" -> 0,
+    "&" -> 1, "&&" -> 1, ...
+  )
+}}}
+
+当然还有改进的空间，更好的方法是只定义递减的优先级操作符。然后根据它来计算：
+
+{{{class="brush: scala"
+    // Contains operators in groups of increasing precedence
+    private val opGroups =
+      Array(
+        Set("|", "||"),
+        Set("&", "&&"),
+        Set("^"),
+        Set("==", "!="),
+        Set("<", "<=", ">", ">="),
+        Set("+", "-"),
+        Set("*", "%")
+      )
+}}}
+
+再定义一个操作符与优先级映射的变量`precedence`，映射的内容是通过处理上面定义的层级生成的：
+
+{{{class="brush: scala"
+    // A mapping from operators to their precedence
+    private val precedence = {
+      val assocs =
+        for {
+          i <- 0 until opGroups.length
+          op <- opGroups(i)
+        } yield op -> i
+      Map() ++ assocs
+    }
+}}}
+
+{{{class="brush: scala"
+}}}
+
 {{{class="brush: scala"
 }}}
 
 {{{class="brush: scala"
 }}}
 
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
 
 {{{class="brush: scala"
 }}}
@@ -553,6 +620,77 @@ Scala在编译器在把这样的表达式转为偏函数时会对模式进行两
 {{{class="brush: scala"
 }}}
 
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
 
 {{{class="brush: scala"
 }}}
