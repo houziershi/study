@@ -334,13 +334,211 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
 {{{class="brush: scala"
 }}}
 
+== Option类型 ==
+
+非必填类型：可以存值，也可以为`None`对象代表没有值。形式为`Some(x)`，`x`表示非必要。比如Scala的Map类型：
 
 {{{class="brush: scala"
+  scala> val capitals = 
+       |   Map("France" -> "Paris", "Japan" -> "Tokyo")
+  capitals: 
+    scala.collection.immutable.Map[java.lang.String,
+    java.lang.String] = Map(France -> Paris, Japan -> Tokyo)
+
+  scala> capitals get "France"
+  res21: Option[java.lang.String] = Some(Paris)
+
+  scala> capitals get "North Pole"
+  res22: Option[java.lang.String] = None
 }}}
+
+应用模式匹配处理有值和没有值的情况：
 
 {{{class="brush: scala"
+  scala> def show(x: Option[String]) = x match {
+       |   case Some(s) => s
+       |   case None => "?"
+       | }
+  show: (Option[String])String
+
+  scala> show(capitals get "Japan")
+  res23: String = Tokyo
+
+  scala> show(capitals get "France")
+  res24: String = Paris
+
+  scala> show(capitals get "North Pole")
+  res25: String = ?
 }}}
 
+在Java里Map没有值时返回的是`null`，如果忘记检查会引起空指针异常。而在Scala里对于一个`Map[Int,Int]`是不可能返回`null`的。
+
+使用Option类型的优点在于：
+
+* `Option[String]`从字面上看就已经提醒了程序员内容可能为`None`；
+* 在Java中如果变量为空要到运行时才抛出空指针异常，而Scala中Option类型让编译器就已经提供了检查：编译器会在把`Option[String]`当作`String`使用时报错。
+
+== 模式无处不在 ==
+
+=== 变量定义 ===
+
+通过类型定义变量：
+
+{{{class="brush: scala"
+  scala> val myTuple = (123, "abc")
+  myTuple: (Int, java.lang.String) = (123,abc)
+}}}
+
+用模式匹配代替类型声明：
+
+{{{class="brush: scala"
+  scala> val (number, string) = myTuple
+  number: Int = 123
+  string: java.lang.String = abc
+}}}
+
+这种方式用在指定精确类型的样本类时用得比较多：
+
+{{{class="brush: scala"
+  scala> val exp = new BinOp("*", Number(5), Number(1))
+  exp: BinOp = BinOp(*,Number(5.0),Number(1.0))
+
+  scala> val BinOp(op, left, right) = exp
+  op: String = *
+  left: Expr = Number(5.0)
+  right: Expr = Number(1.0)
+}}}
+
+=== 偏函数的样本序列 ===
+
+花括号case对应的样本本来就是函数字面量，可以用在任何用函数字面量的地方。而且还是有相当多个可选的函数字面量。如：
+
+{{{class="brush: scala"
+  val withDefault: Option[Int] => Int = {
+    case Some(x) => x
+    case None => 0
+  }
+}}}
+
+调用：
+
+{{{class="brush: scala"
+  scala> withDefault(Some(10))
+  res25: Int = 10
+
+  scala> withDefault(None)
+  res26: Int = 0
+}}}
+
+这样的方式很适合Actor应用：
+
+{{{class="brush: scala"
+  react {
+    case (name: String, actor: Actor) => {
+      actor ! getip(name)
+      act()
+    }
+    case msg => {
+      println("Unhandled message: "+ msg)
+      act()
+    }
+  }
+}}}
+
+顺带提一下应用在偏（partial）函数上的应用。如果是不支持的值上会产生一个运行时异常。
+
+如，下面的偏函数能返回整数列表的第二个元素：
+
+{{{class="brush: scala"
+  val second: List[Int] => Int = {
+    case x :: y :: _ => y
+  }
+}}}
+
+编译器会提示匹配不全：
+
+{{{class="brush: scala"
+  <console>:17: warning: match is not exhaustive!
+  missing combination            Nil
+}}}
+
+如果传递给它一个三元素列表，它的执行没有问题。但是一个空列表就不行了：
+
+{{{class="brush: scala"
+  scala> second(List(5,6,7))
+  res24: Int = 6
+
+  scala> second(List())
+  scala.MatchError: List()
+  	at $anonfun$1.apply(<console>:17)
+  	at $anonfun$1.apply(<console>:17)
+}}}
+
+如果要检查一个偏函数是否有定义，一定要告诉编译器正在使用的函数是偏函数。类型`Lint[Int] => Int`包含了不管是否是偏函数的，从整数列表到整数的所有函数。仅包含整数列表到的偏函数的，应该写成`Partialfunction[List[Int],Int]。
+
+下面是偏函数的定义例子：
+
+{{{class="brush: scala"
+  val second: PartialFunction[List[Int],Int] = {
+    case x :: y :: _ => y
+  }
+}}}
+
+偏函数有一个`idDefineAt`方法来测试函数对某个值是否有定义。以这个例子来说，对于至少两个元素的列表是有定义的：
+
+{{{class="brush: scala"
+  scala> second.isDefinedAt(List(5,6,7))
+  res27: Boolean = true
+
+  scala> second.isDefinedAt(List())
+  res28: Boolean = false
+}}}
+
+Scala在编译器在把这样的表达式转为偏函数时会对模式进行两次翻译：一次是真实函数的实现；另一次是测试函数是否对参数有定义的实现。
+
+例如上面的函数宣布量`{case x :: y :: _ => y`会被翻译成：
+
+{{{class="brush: scala"
+  new PartialFunction[List[Int], Int] {
+    def apply(xs: List[Int]) = xs match {
+      case x :: y :: _ => y 
+    }
+    def isDefinedAt(xs: List[Int]) = xs match {
+      case x :: y :: _ => true
+      case _ => false
+    }
+  }
+}}}
+
+这只有在声明类型为`PartialFunction`时才会发生。如果只是`Function1`或没有声明，函数字面量会编译为完整的函数。
+
+偏函数可能会引起运行时的异常，所以在调用前用`isDefineAt`检查一下。
+
+=== for表达式 ===
+
+典型例子，每个元素都是`(country,city)`：
+
+{{{class="brush: scala"
+  scala> for ((country, city) <- capitals)
+       |   println("The capital of "+ country +" is "+ city)
+  The capital of France is Paris
+  The capital of Japan is Tokyo
+}}}
+
+当然也有元素不匹配模式的情况，下面例子中不匹配的会被丢弃：
+
+{{{class="brush: scala"
+  scala> val results = List(Some("apple"), None,
+       |     Some("orange"))
+  results: List[Option[java.lang.String]] = List(Some(apple), 
+      None, Some(orange))
+
+  scala> for (Some(fruit) <- results) println(fruit)
+  apple
+  orange
+}}}
+
+== 大型的例子 ==
 
 {{{class="brush: scala"
 }}}
