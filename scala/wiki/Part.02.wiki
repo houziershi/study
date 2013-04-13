@@ -3,3 +3,1066 @@
 
 %toc Part II
 
+= 样本类和模式匹配 =
+
+样本类（case class）和模式匹配（pattern matching）。
+
+== 简单的例子 ==
+
+假设要建立一个操作数学表达式的库，就要先定义输入的数据。为了简单，现在只关注由变量、数字、一元及二元操作符组成的数学表达式上：
+
+
+=== 样本类 ===
+
+{{{class="brush: scala" 
+  abstract class Expr
+  case class Var(name: String) extends Expr
+  case class Number(num: Double) extends Expr
+  case class UnOp(operator: String, arg: Expr) extends Expr
+  case class BinOp(operator: String, 
+      left: Expr, right: Expr) extends Expr
+}}}
+
+上面为表达式定义了一个抽象的基类，四个子类分别代表四种具体的表达式。要注意的是每个子类都有一个`case`修饰符，会被编译器识别为样本类。
+
+样本类在使用工厂方法创建时可以省掉`new`：
+
+{{{class="brush: scala" 
+val v = Var("x")
+}}}
+
+这个特点让方法嵌套时少写`new`让代码看起来更加简洁：
+
+{{{class="brush: scala" 
+val op = binOp("+", Number(1), v)
+}}}
+
+样本类的另一个特点是参数列表中所有的参数隐式获得了`val`前缀，被作为字段维护：
+
+{{{class="brush: scala" 
+scala> v.name
+res0: String = x
+
+scala> op.left
+res1: Expr = Number(1.0)
+}}}
+
+编译器为样本类添加了可读性更强的`toString`、`hashCode`和`equals`方法：
+
+{{{class="brush: scala" 
+  scala> println(op)
+  BinOp(+,Number(1.0),Var(x))
+
+  scala> op.right == Var("x")
+  res3: Boolean = true
+}}}
+
+先来看一下格式。在格式上相当于把Java的`switch`格式：
+
+{{{class="brush: scala" 
+  switch (selector) { alternatives }
+}}}
+
+中括号里的选择器移到了`match`关键字的前面：
+
+{{{class="brush: scala" 
+  selector match { alternatives }
+}}}
+
+
+下面了一些基本的数学简化操作。下面的操作不用计算，因为值是不会变的：
+
+{{{class="brush: scala" 
+  UnOp("-", UnOp("-", e))  => e   // 负负得正
+  BinOp("+", e, Number(0)) => e   // 加0
+  BinOp("*", e, Number(1)) => e   // 乘1
+}}}
+
+定义一个`simplifyTop`来简化运算：
+
+{{{class="brush: scala" 
+  def simplifyTop(expr: Expr): Expr = expr match {
+    case UnOp("-", UnOp("-", e))  => e   // Double negation
+    case BinOp("+", e, Number(0)) => e   // Adding zero
+    case BinOp("*", e, Number(1)) => e   // Multiplying by one
+    case _ => expr
+  }
+}}}
+
+方法`simplifyTop`接收一个`Expr`类型的参数。这里参数`expr`作为选择器匹配各个备选项，`_`为通配模式能匹配所有的值，相当于Java中的default。箭头`=>`分开的模式与表达式。
+调用：
+
+{{{class="brush: scala" 
+  scala> simplifyTop(UnOp("-", UnOp("-", Var("x"))))
+  res4: Expr = Var(x)
+}}}
+
+
+* `match`是一种表达式，所以有返回结果。
+* 一个case不会走到下一个case。
+* 如果一项也没有匹配成功，会抛出`MatchError`异常。如果不想要异常要么把所有可能性都写上；要么加一个`_`的默认情况。
+
+{{{class="brush: scala" 
+  expr match {
+    case BinOp(op, left, right) =>
+      println(expr +" is a binary operation")
+    case _ =>
+  }
+}}}
+
+这个表达式在两种情况下都会返回Unit值'()'。
+
+
+== 模式的种类 ==
+
+=== 通配模式 ===
+
+通配模式“`_`”匹配所有的结果：
+
+{{{class="brush: scala" 
+  expr match {
+    case BinOp(op, left, right) =>
+      println(expr +"is a binary operation")
+    case _ =>
+  }
+}}}
+
+通配符还可以省略省略不用关注的内容，比如函数的参数名：
+
+{{{class="brush: scala" 
+  expr match {
+    case BinOp(_, _, _) => println(expr +"is a binary operation")
+    case _ => println("It's something else")
+  }
+}}}
+
+=== 常量模式 ===
+
+任何字面量都可以用作常量，如`nil`，`5`，`true`和`"hello"`：
+
+{{{class="brush: scala" 
+  def describe(x: Any) = x match {
+    case 5 => "five"
+    case true => "truth"
+    case "hello" => "hi!"
+    case Nil => "the empty list"
+    case _ => "something else"
+  }
+}}}
+
+效果：
+
+{{{class="brush: scala" 
+  scala> describe(5)
+  res5: java.lang.String = five
+
+  scala> describe(true)
+  res6: java.lang.String = truth
+
+  scala> describe("hello")
+  res7: java.lang.String = hi!
+
+  scala> describe(Nil)
+  res8: java.lang.String = the empty list
+
+  scala> describe(List(1,2,3))
+  res9: java.lang.String = something else
+}}}
+
+=== 变量模式 ===
+
+变量类似通配模式，只不过有个变量名所以可以在后面的表达式中操作这个变量：
+
+{{{class="brush: scala" 
+  expr match {
+    case 0 => "zero"
+    case somethingElse => "not zero: "+ somethingElse
+  }
+}}}
+
+=== 变量模式与常量模式的区别 ===
+
+常量不止有字面形式，还有用符号名的（比如`Nil`）。这样看起来就很容易与变量模式搞混：
+
+{{{class="brush: scala" 
+  scala> import Math.{E, Pi}
+  import Math.{E, Pi}
+
+  scala> E match {
+       |   case Pi => "strange math? Pi = "+ Pi
+       |   case _ => "OK"
+       | }
+  res10: java.lang.String = OK
+}}}
+
+上面的`E`与`Pi`都是常量。对Scala编译器来说小写字母开头都作为变量，其他引用被认为是常量。下面的例子中想建立一个小写的`pi`就匹配到常量`Pi`了：
+
+
+{{{class="brush: scala" 
+  scala> val pi = Math.Pi
+  pi: Double = 3.141592653589793
+
+  scala> E match {
+       |   case pi => "strange math? Pi = "+ pi
+       | }
+  res11: java.lang.String = strange math? Pi = 2.7182818...
+}}}
+
+在这个变量模式情况下，不能使用通配模式。因为变量模式已经可以匹配所有情况了：
+
+{{{class="brush: scala" 
+  scala> E match {
+       |   case pi => "strange math? Pi = "+ pi
+       |   case _ => "OK"  
+       | }
+  <console>:9: error: unreachable code
+           case _ => "OK"  
+                     ^
+}}}
+
+其实也有强制使用小写常量名的方式：`this.pi`或`obj.pi`的形式表示是常量模式；如果这样还没有用，可以用反引号包起来，如：
+
+{{{class="brush: scala" 
+  scala> E match {
+       |   case `pi` => "strange math? Pi = "+ pi
+       |   case _ => "OK"
+       | }
+  res13: java.lang.String = OK
+}}}
+
+反引号也可以用来处理其他的编码问题，如对于标识符来说，因为`yield`是Scala的保留字
+所以不能写`Thread.yield()`，但可以写成：
+
+{{{class="brush: scala" 
+Thread.`yield`()
+}}}
+
+=== 构造器模式 ===
+
+这个模式是真正牛X的模式，不仅检查对象是否是样本类的成员，还检查对象的构造器参数是否符合指定模式。
+
+Scala的模式支持深度匹配（deep match）。不止检查对象是否一致而且还检查对象的内容是否匹配内层模式。由于额外的模式自身可以形成构造器模式，因此可以检查到对象内部的任意深度。
+
+如下面的代码不仅检查了顶层的对象是`BinOp`，而且第三个构造参数是`Number`，而且它的值为`0`：
+
+{{{class="brush: scala" 
+  expr match {
+    case BinOp("+", e, Number(0)) => println("a deep match")
+    case _ =>
+  }
+}}}
+
+=== 序列模式 ===
+
+指定匹配序列中任意元素，如指定开始为0：
+
+{{{class="brush: scala" 
+  expr match {
+    case List(0, _, _) => println("found it")
+    case _ =>
+  }
+}}}
+
+不固定长度用`_*`：
+
+{{{class="brush: scala" 
+  expr match {
+    case List(0, _*) => println("found it")
+    case _ =>
+  }
+}}}
+
+=== 元组模式 ===
+
+{{{class="brush: scala" 
+  def tupleDemo(expr: Any) =
+    expr match {
+      case (a, b, c)  =>  println("matched "+ a + b + c)
+      case _ =>
+    }
+}}}
+
+调用：
+
+{{{class="brush: scala" 
+  scala> tupleDemo(("a ", 3, "-tuple"))
+  matched a 3-tuple
+}}}
+
+=== 类型模式 ===
+
+可以当成类型测试和类型转换的简易替代：
+
+{{{class="brush: scala" 
+  def generalSize(x: Any) = x match {
+    case s: String => s.length
+    case m: Map[_, _] => m.size
+    case _ => -1
+  }
+}}}
+
+调用的例子：
+
+{{{class="brush: scala" 
+  scala> generalSize("abc")
+  res14: Int = 3
+
+  scala> generalSize(Map(1 -> 'a', 2 -> 'b'))
+  res15: Int = 2
+
+  scala> generalSize(Math.Pi)
+  res16: Int = -1
+}}}
+
+注意方法中`s`和`x`虽然都指向同一个对象，但一个类型是`String`一个类型是`Any`。所以可以写成`s.length`不可以写成`x.length`。
+
+另一个测试类型的方法：
+
+{{{class="brush: scala" 
+expr.isInstanceOf[String]
+}}}
+
+另一个转换类型的方法：
+
+{{{class="brush: scala" 
+expr.asInstanceOf[String]
+}}}
+
+使用类型转换的例子：
+
+{{{class="brush: scala" 
+  if (x.isInstanceOf[String]) {
+    val s = x.asInstanceOf[String]
+    s.length
+  } else ...
+}}}
+
+
+===  类型擦除  ===
+
+和Java一样，对于除了数组以外其他集合都采用了泛型擦除（erasure）。就是在运行时不知道集合泛型类型。
+
+如对于`Map[Int,Int]`，到了运行时就不知道两个类型是什么类型了。所以对于泛型的模式匹配，编译器会有警告信息：
+
+{{{class="brush: scala" 
+  scala> def isIntIntMap(x: Any) = x match {
+       |   case m: Map[Int, Int] => true
+       |   case _ => false
+       | }
+  warning: there were unchecked warnings; re-run with 
+     -unchecked for details
+  isIntIntMap: (Any)Boolean
+}}}
+
+在启动编译器时加上检查开关可以看到更多详细信息：
+
+{{{class="brush: scala" 
+  scala> :quit
+  $ scala -unchecked
+  Welcome to Scala version 2.7.2
+  (Java HotSpot(TM) Client VM, Java 1.5.0_13).
+  Type in expressions to have them evaluated.
+  Type :help for more information.
+
+scala>  def isIntIntMap(x: Any) = x match {
+     |   case m: Map[Int, Int] => true
+     |   case _ => false
+     | }
+  <console>:5: warning: non variable type-argument Int in
+  type pattern is unchecked since it is eliminated by erasure
+           case m: Map[Int, Int] => true
+                   ^
+}}}
+
+所以对于不同的类型，上面函数结果都是`true`：
+
+{{{class="brush: scala" 
+  scala> isIntIntMap(Map(1 -> 1))
+  res17: Boolean = true
+
+  scala> isIntIntMap(Map("abc" -> "abc"))
+  res18: Boolean = true
+}}}
+
+数组和Java一样，是没有类型擦除的：
+
+{{{class="brush: scala" 
+  scala> def isStringArray(x: Any) = x match {
+       |   case a: Array[String] => "yes"
+       |   case _ => "no"
+       | }
+  isStringArray: (Any)java.lang.String
+
+  scala> val as = Array("abc")
+  as: Array[java.lang.String] = Array(abc)
+
+  scala> isStringArray(as)
+  res19: java.lang.String = yes
+
+  scala> val ai = Array(1, 2, 3)
+  ai: Array[Int] = Array(1, 2, 3)
+
+  scala> isStringArray(ai)
+  res20: java.lang.String = no
+}}}
+
+=== 变量绑定 ===
+
+除了独立的变量模式外，还可以对任何其他模式添加变量。 作用时在匹配成功后，变量就是匹配成功的对象了。 方式为写上变量名、一个`@`符号和模式。
+
+比如要匹配`abs`出现了两次的地方（做了两次绝对值计算等于没有算）：
+
+{{{class="brush: scala" 
+  expr match {
+    case UnOp("abs", e @ UnOp("abs", _)) => e
+    case _ =>
+  }
+}}}
+
+== 守卫模式 ==
+
+Scala要求模式是线性的，即模式变量只能在模式中出现一次。
+
+如，想要把`e+e`这个重复加法替换成乘法`e*2`：
+
+{{{class="brush: scala" 
+  BinOp("+", Var("x"), Var("x"))
+}}}
+
+等于：
+
+{{{class="brush: scala" 
+  BinOp("*", Var("x"), Number(2))
+}}}
+
+用下面的方式`x`重复出现了，所以有问题：
+
+{{{class="brush: scala" 
+  scala> def simplifyAdd(e: Expr) = e match {
+       |   case BinOp("+", x, x) => BinOp("*", x, Number(2))
+       |   case _ => e
+       | }
+  <console>:10: error: x is already defined as value x
+           case BinOp("+", x, x) => BinOp("*", x, Number(2))
+                              ^
+}}}
+
+守卫模式（pattern guard）很像`for`循环中的`if`过滤条件。接在匹配模式后面的、用`if`开始的、使用模式中变量的表达式：
+
+{{{class="brush: scala" 
+  scala> def simplifyAdd(e: Expr) = e match {
+       |   case BinOp("+", x, y) if x == y =>
+       |     BinOp("*", x, Number(2))
+       |   case _ => e
+       | }
+  simplifyAdd: (Expr)Expr
+}}}
+
+其他的例子，如只匹配正整数和只匹配以`a`开始的字符串：
+
+{{{class="brush: scala" 
+  // match only positive integers
+  case n: Int if 0 < n => ...  
+
+  // match only strings starting with the letter `a'
+  case s: String if s(0) == 'a' => ... 
+}}}
+
+== 模式重叠 ==
+
+{{{class="brush: scala" 
+  def simplifyAll(expr: Expr): Expr = expr match {
+    case UnOp("-", UnOp("-", e)) =>
+      simplifyAll(e)   // `-' is its own inverse
+    case BinOp("+", e, Number(0)) =>
+      simplifyAll(e)   // `0' is a neutral element for `+'
+    case BinOp("*", e, Number(1)) =>
+      simplifyAll(e)   // `1' is a neutral element for `*'
+    case UnOp(op, e) => 
+      UnOp(op, simplifyAll(e))
+    case BinOp(op, l, r) =>
+      BinOp(op, simplifyAll(l), simplifyAll(r))
+    case _ => expr
+  }
+}}}
+
+注意这个方法的第四个和第五个匹配样本的参数都是变量，而且对应的操作采用递归。因为四和五的匹配范围比前三个更加广，所以建立放在后面。如果放在前面的话会有警告。
+
+如下面的第一个样本能匹配任何第二个样本能匹配的情况：
+
+{{{class="brush: scala" 
+  scala> def simplifyBad(expr: Expr): Expr = expr match {
+       |   case UnOp(op, e) => UnOp(op, simplifyBad(e))
+       |   case UnOp("-", UnOp("-", e)) => e
+       | }
+  <console>:17: error: unreachable code
+           case UnOp("-", UnOp("-", e)) => e
+                                           ^
+}}}
+
+== 封闭类 ==
+
+前面说过Scala里如果所有的样本都没有匹配，那是会抛异常的。为了全都匹配，程序员会给匹配加上一个默认匹配项处理默认情况。
+
+实际上Scala编译器已经可以检测match表达式中遗漏的情况，但新的样本类可以定义在任何地方。比如我们的`Expr`有四个样本类，但可以在别的编译单元中再写其他的实现类。
+
+所以有一个方案：让样本类的超类被封闭（sealed），这样就不能在别的文件中添加新的子类。格式只要加一个`sealed`关键字：
+
+{{{class="brush: scala" 
+  sealed abstract class Expr
+  case class Var(name: String) extends Expr
+  case class Number(num: Double) extends Expr
+  case class UnOp(operator: String, arg: Expr) extends Expr
+  case class BinOp(operator: String, 
+      left: Expr, right: Expr) extends Expr
+}}}
+
+如果代码里漏掉可能的模式：
+
+{{{class="brush: scala" 
+  def describe(e: Expr): String = e match {
+    case Number(_) => "a number"
+    case Var(_)    => "a variable"
+  }
+}}}
+
+编译器会警告`UnOp`和`BinOp`没有处理：
+
+{{{class="brush: scala"
+  warning: match is not exhaustive!
+  missing combination           UnOp
+  missing combination          BinOp
+}}}
+
+如果程序员确实知道这两种情况不可能发生，就是要在这两种情况下抛异常。可以手动加上让编译器闭嘴：
+
+{{{class="brush: scala"
+  def describe(e: Expr): String = e match {
+    case Number(_) => "a number"
+    case Var(_) => "a variable"
+    case _ => throw new RuntimeException // Should not happen
+  }
+}}}
+
+还有一个方法是对变量`e`添加注释`@unchecked`：
+
+{{{class="brush: scala"
+  def describe(e: Expr): String = (e: @unchecked) match {
+    case Number(_) => "a number"
+    case Var(_)    => "a variable"
+  }
+}}}
+
+{{{class="brush: scala"
+}}}
+
+== Option类型 ==
+
+非必填类型：可以存值，也可以为`None`对象代表没有值。形式为`Some(x)`，`x`表示非必要。比如Scala的Map类型：
+
+{{{class="brush: scala"
+  scala> val capitals = 
+       |   Map("France" -> "Paris", "Japan" -> "Tokyo")
+  capitals: 
+    scala.collection.immutable.Map[java.lang.String,
+    java.lang.String] = Map(France -> Paris, Japan -> Tokyo)
+
+  scala> capitals get "France"
+  res21: Option[java.lang.String] = Some(Paris)
+
+  scala> capitals get "North Pole"
+  res22: Option[java.lang.String] = None
+}}}
+
+应用模式匹配处理有值和没有值的情况：
+
+{{{class="brush: scala"
+  scala> def show(x: Option[String]) = x match {
+       |   case Some(s) => s
+       |   case None => "?"
+       | }
+  show: (Option[String])String
+
+  scala> show(capitals get "Japan")
+  res23: String = Tokyo
+
+  scala> show(capitals get "France")
+  res24: String = Paris
+
+  scala> show(capitals get "North Pole")
+  res25: String = ?
+}}}
+
+在Java里Map没有值时返回的是`null`，如果忘记检查会引起空指针异常。而在Scala里对于一个`Map[Int,Int]`是不可能返回`null`的。
+
+使用Option类型的优点在于：
+
+* `Option[String]`从字面上看就已经提醒了程序员内容可能为`None`；
+* 在Java中如果变量为空要到运行时才抛出空指针异常，而Scala中Option类型让编译器就已经提供了检查：编译器会在把`Option[String]`当作`String`使用时报错。
+
+== 模式无处不在 ==
+
+=== 变量定义 ===
+
+通过类型定义变量：
+
+{{{class="brush: scala"
+  scala> val myTuple = (123, "abc")
+  myTuple: (Int, java.lang.String) = (123,abc)
+}}}
+
+用模式匹配代替类型声明：
+
+{{{class="brush: scala"
+  scala> val (number, string) = myTuple
+  number: Int = 123
+  string: java.lang.String = abc
+}}}
+
+这种方式用在指定精确类型的样本类时用得比较多：
+
+{{{class="brush: scala"
+  scala> val exp = new BinOp("*", Number(5), Number(1))
+  exp: BinOp = BinOp(*,Number(5.0),Number(1.0))
+
+  scala> val BinOp(op, left, right) = exp
+  op: String = *
+  left: Expr = Number(5.0)
+  right: Expr = Number(1.0)
+}}}
+
+=== 偏函数的样本序列 ===
+
+花括号case对应的样本本来就是函数字面量，可以用在任何用函数字面量的地方。而且还是有相当多个可选的函数字面量。如：
+
+{{{class="brush: scala"
+  val withDefault: Option[Int] => Int = {
+    case Some(x) => x
+    case None => 0
+  }
+}}}
+
+调用：
+
+{{{class="brush: scala"
+  scala> withDefault(Some(10))
+  res25: Int = 10
+
+  scala> withDefault(None)
+  res26: Int = 0
+}}}
+
+这样的方式很适合Actor应用：
+
+{{{class="brush: scala"
+  react {
+    case (name: String, actor: Actor) => {
+      actor ! getip(name)
+      act()
+    }
+    case msg => {
+      println("Unhandled message: "+ msg)
+      act()
+    }
+  }
+}}}
+
+顺带提一下应用在偏（partial）函数上的应用。如果是不支持的值上会产生一个运行时异常。
+
+如，下面的偏函数能返回整数列表的第二个元素：
+
+{{{class="brush: scala"
+  val second: List[Int] => Int = {
+    case x :: y :: _ => y
+  }
+}}}
+
+编译器会提示匹配不全：
+
+{{{class="brush: scala"
+  <console>:17: warning: match is not exhaustive!
+  missing combination            Nil
+}}}
+
+如果传递给它一个三元素列表，它的执行没有问题。但是一个空列表就不行了：
+
+{{{class="brush: scala"
+  scala> second(List(5,6,7))
+  res24: Int = 6
+
+  scala> second(List())
+  scala.MatchError: List()
+  	at $anonfun$1.apply(<console>:17)
+  	at $anonfun$1.apply(<console>:17)
+}}}
+
+如果要检查一个偏函数是否有定义，一定要告诉编译器正在使用的函数是偏函数。类型`Lint[Int] => Int`包含了不管是否是偏函数的，从整数列表到整数的所有函数。仅包含整数列表到的偏函数的，应该写成`Partialfunction[List[Int],Int]。
+
+下面是偏函数的定义例子：
+
+{{{class="brush: scala"
+  val second: PartialFunction[List[Int],Int] = {
+    case x :: y :: _ => y
+  }
+}}}
+
+偏函数有一个`idDefineAt`方法来测试函数对某个值是否有定义。以这个例子来说，对于至少两个元素的列表是有定义的：
+
+{{{class="brush: scala"
+  scala> second.isDefinedAt(List(5,6,7))
+  res27: Boolean = true
+
+  scala> second.isDefinedAt(List())
+  res28: Boolean = false
+}}}
+
+Scala在编译器在把这样的表达式转为偏函数时会对模式进行两次翻译：一次是真实函数的实现；另一次是测试函数是否对参数有定义的实现。
+
+例如上面的函数宣布量`{case x :: y :: _ => y`会被翻译成：
+
+{{{class="brush: scala"
+  new PartialFunction[List[Int], Int] {
+    def apply(xs: List[Int]) = xs match {
+      case x :: y :: _ => y 
+    }
+    def isDefinedAt(xs: List[Int]) = xs match {
+      case x :: y :: _ => true
+      case _ => false
+    }
+  }
+}}}
+
+这只有在声明类型为`PartialFunction`时才会发生。如果只是`Function1`或没有声明，函数字面量会编译为完整的函数。
+
+偏函数可能会引起运行时的异常，所以在调用前用`isDefineAt`检查一下。
+
+=== for表达式 ===
+
+典型例子，每个元素都是`(country,city)`：
+
+{{{class="brush: scala"
+  scala> for ((country, city) <- capitals)
+       |   println("The capital of "+ country +" is "+ city)
+  The capital of France is Paris
+  The capital of Japan is Tokyo
+}}}
+
+当然也有元素不匹配模式的情况，下面例子中不匹配的会被丢弃：
+
+{{{class="brush: scala"
+  scala> val results = List(Some("apple"), None,
+       |     Some("orange"))
+  results: List[Option[java.lang.String]] = List(Some(apple), 
+      None, Some(orange))
+
+  scala> for (Some(fruit) <- results) println(fruit)
+  apple
+  orange
+}}}
+
+== 大型的例子 ==
+
+目标是生成公式`((a / (b * c) + 1 / n) / 3)`显示形式为：
+
+{{{class="brush: scala"
+  a     1
+----- + -
+b * c   n
+---------
+    3
+}}}
+
+先来看：
+
+{{{class="brush: scala"
+  BinOp("+", 
+        BinOp("*", 
+              BinOp("+", Var("x"), Var("y")), 
+              Var("z")), 
+        Number(1))
+}}}
+
+应该输出`(x+y)*z+1`，`(x+y)`是有括号的，但是最外层不要括号。所以要先解决优先级问题：
+
+{{{class="brush: scala"
+  Map(
+    "|" -> 0, "||" -> 0,
+    "&" -> 1, "&&" -> 1, ...
+  )
+}}}
+
+当然还有改进的空间，更好的方法是只定义递减的优先级操作符。然后根据它来计算：
+
+{{{class="brush: scala"
+    // Contains operators in groups of increasing precedence
+    private val opGroups =
+      Array(
+        Set("|", "||"),
+        Set("&", "&&"),
+        Set("^"),
+        Set("==", "!="),
+        Set("<", "<=", ">", ">="),
+        Set("+", "-"),
+        Set("*", "%")
+      )
+}}}
+
+再定义一个操作符与优先级映射的变量`precedence`，映射的内容是通过处理上面定义的层级生成的：
+
+{{{class="brush: scala"
+    // A mapping from operators to their precedence
+    private val precedence = {
+      val assocs =
+        for {
+          i <- 0 until opGroups.length
+          op <- opGroups(i)
+        } yield op -> i
+      Map() ++ assocs
+    }
+
+    private val unaryPrecedence = opGroups.length
+    private val fractionPrecedence = -1
+}}}
+
+下一个问题是格式化方法的实现。定义一个`format`方法，参数为表达式类型的`e: Expr`和操作符的优先级`enclPrec: Int`（如果没有这个操作符，那优先级就应该是0）。
+
+注意`format`是私有方法，完成大部分工作。最后一个公开的同名方法`format`提供入口。内部还有一个`stripDot`方法来去掉如`2.0`的`.0`部分。
+
+{{{class="brush: scala"
+  private def format(e: Expr, enclPrec: Int): Element =
+
+    e match {
+
+      case Var(name) => 
+        elem(name)
+
+      case Number(num) => 
+        def stripDot(s: String) = 
+          if (s endsWith ".0") s.substring(0, s.length - 2)
+          else s
+        elem(stripDot(num.toString))
+
+      case UnOp(op, arg) => 
+        elem(op) beside format(arg, unaryPrecedence)
+
+      case BinOp("/", left, right) => 
+        val top = format(left, fractionPrecedence)
+        val bot = format(right, fractionPrecedence)
+        val line = elem('-', top.width max bot.width, 1)
+        val frac = top above line above bot
+        if (enclPrec != fractionPrecedence) frac
+        else elem(" ") beside frac beside elem(" ")
+
+      case BinOp(op, left, right) => 
+        val opPrec = precedence(op)
+        val l = format(left, opPrec) 
+        val r = format(right, opPrec + 1)
+        val oper = l beside elem(" "+ op +" ") beside r 
+        if (enclPrec <= opPrec) oper
+        else elem("(") beside oper beside elem(")")
+    }
+
+    def format(e: Expr): Element = format(e, 0)
+  }
+}}}
+
+分析具体的逻辑：
+
+如果是变量，结果就是变量名。
+
+{{{class="brush: scala"
+  case Var(name) => 
+    elem(name)
+}}}
+
+如果是数字，结果是格式化后的数字。
+
+{{{class="brush: scala"
+      case Number(num) => 
+        def stripDot(s: String) = 
+          if (s endsWith ".0") s.substring(0, s.length - 2)
+          else s
+        elem(stripDot(num.toString))
+}}}
+
+{{{class="brush: scala"
+      case UnOp(op, arg) => 
+        elem(op) beside format(arg, unaryPrecedence)
+}}}
+
+{{{class="brush: scala"
+      case BinOp("/", left, right) => 
+        val top = format(left, fractionPrecedence)
+        val bot = format(right, fractionPrecedence)
+        val line = elem('-', top.width max bot.width, 1)
+        val frac = top above line above bot
+        if (enclPrec != fractionPrecedence) frac
+        else elem(" ") beside frac beside elem(" ")
+}}}
+
+{{{class="brush: scala"
+      case BinOp(op, left, right) => 
+        val opPrec = precedence(op)
+        val l = format(left, opPrec) 
+        val r = format(right, opPrec + 1)
+        val oper = l beside elem(" "+ op +" ") beside r 
+        if (enclPrec <= opPrec) oper
+        else elem("(") beside oper beside elem(")")
+}}}
+
+{{{class="brush: scala"
+      case BinOp("/", left, right) => ...
+}}}
+
+{{{class="brush: scala"
+  BinOp("-", Var("a"), BinOp("-", Var("b"), Var("c")))
+}}}
+
+{{{class="brush: scala"
+  import org.stairwaybook.expr._
+
+  object Express extends Application {
+
+    val f = new ExprFormatter
+
+    val e1 = BinOp("*", BinOp("/", Number(1), Number(2)), 
+                        BinOp("+", Var("x"), Number(1)))
+    val e2 = BinOp("+", BinOp("/", Var("x"), Number(2)), 
+                        BinOp("/", Number(1.5), Var("x")))
+    val e3 = BinOp("/", e1, e2)
+
+    def show(e: Expr) = println(f.format(e)+ "\n\n")
+
+    for (val e <- Array(e1, e2, e3)) show(e)
+	}
+}}}
+
+{{{class="brush: scala"
+  scala Express
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala" 
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
