@@ -3,7 +3,6 @@
 
 %toc Part II
 
-
 = 样本类和模式匹配 =
 
 样本类（case class）和模式匹配（pattern matching）。
@@ -115,6 +114,229 @@ res1: Expr = Number(1.0)
 
 
 == 模式的种类 ==
+
+=== 通配模式 ===
+
+通配模式“`_`”匹配所有的结果：
+
+{{{class="brush: scala" 
+  expr match {
+    case BinOp(op, left, right) =>
+      println(expr +"is a binary operation")
+    case _ =>
+  }
+}}}
+
+通配符还可以省略省略不用关注的内容，比如函数的参数名：
+
+{{{class="brush: scala" 
+  expr match {
+    case BinOp(_, _, _) => println(expr +"is a binary operation")
+    case _ => println("It's something else")
+  }
+}}}
+
+=== 常量模式 ===
+
+任何字面量都可以用作常量，如`nil`，`5`，`true`和`"hello"`：
+
+{{{class="brush: scala" 
+  def describe(x: Any) = x match {
+    case 5 => "five"
+    case true => "truth"
+    case "hello" => "hi!"
+    case Nil => "the empty list"
+    case _ => "something else"
+  }
+}}}
+
+效果：
+
+{{{class="brush: scala" 
+  scala> describe(5)
+  res5: java.lang.String = five
+
+  scala> describe(true)
+  res6: java.lang.String = truth
+
+  scala> describe("hello")
+  res7: java.lang.String = hi!
+
+  scala> describe(Nil)
+  res8: java.lang.String = the empty list
+
+  scala> describe(List(1,2,3))
+  res9: java.lang.String = something else
+}}}
+
+=== 变量模式 ===
+
+变量类似通配模式，只不过有个变量名所以可以在后面的表达式中操作这个变量：
+
+{{{class="brush: scala" 
+  expr match {
+    case 0 => "zero"
+    case somethingElse => "not zero: "+ somethingElse
+  }
+}}}
+
+=== 变量模式与常量模式的区别 ===
+
+常量不止有字面形式，还有用符号名的（比如`Nil`）。这样看起来就很容易与变量模式搞混：
+
+{{{class="brush: scala" 
+  scala> import Math.{E, Pi}
+  import Math.{E, Pi}
+
+  scala> E match {
+       |   case Pi => "strange math? Pi = "+ Pi
+       |   case _ => "OK"
+       | }
+  res10: java.lang.String = OK
+}}}
+
+上面的`E`与`Pi`都是常量。对Scala编译器来说小写字母开头都作为变量，其他引用被认为是常量。下面的例子中想建立一个小写的`pi`就匹配到常量`Pi`了：
+
+
+{{{class="brush: scala" 
+  scala> val pi = Math.Pi
+  pi: Double = 3.141592653589793
+
+  scala> E match {
+       |   case pi => "strange math? Pi = "+ pi
+       | }
+  res11: java.lang.String = strange math? Pi = 2.7182818...
+}}}
+
+在这个变量模式情况下，不能使用通配模式。因为变量模式已经可以匹配所有情况了：
+
+{{{class="brush: scala" 
+  scala> E match {
+       |   case pi => "strange math? Pi = "+ pi
+       |   case _ => "OK"  
+       | }
+  <console>:9: error: unreachable code
+           case _ => "OK"  
+                     ^
+}}}
+
+其实也有强制使用小写常量名的方式：`this.pi`或`obj.pi`的形式表示是常量模式；如果这样还没有用，可以用反引号包起来，如：
+
+{{{class="brush: scala" 
+  scala> E match {
+       |   case `pi` => "strange math? Pi = "+ pi
+       |   case _ => "OK"
+       | }
+  res13: java.lang.String = OK
+}}}
+
+反引号也可以用来处理其他的编码问题，如对于标识符来说，因为`yield`是Scala的保留字
+所以不能写`Thread.yield()`，但可以写成：
+
+{{{class="brush: scala" 
+Thread.`yield`()
+}}}
+
+=== 构造器模式 ===
+
+这个模式是真正牛X的模式，不仅检查对象是否是样本类的成员，还检查对象的构造器参数是否符合指定模式。
+
+Scala的模式支持深度匹配（deep match）。不止检查对象是否一致而且还检查对象的内容是否匹配内层模式。由于额外的模式自身可以形成构造器模式，因此可以检查到对象内部的任意深度。
+
+如下面的代码不仅检查了顶层的对象是`BinOp`，而且第三个构造参数是`Number`，而且它的值为`0`：
+
+{{{class="brush: scala" 
+  expr match {
+    case BinOp("+", e, Number(0)) => println("a deep match")
+    case _ =>
+  }
+}}}
+
+=== 序列模式 ===
+
+指定匹配序列中任意元素，如指定开始为0：
+
+{{{class="brush: scala" 
+  expr match {
+    case List(0, _, _) => println("found it")
+    case _ =>
+  }
+}}}
+
+不固定长度用`_*`：
+
+{{{class="brush: scala" 
+  expr match {
+    case List(0, _*) => println("found it")
+    case _ =>
+  }
+}}}
+
+=== 元组模式 ===
+
+{{{class="brush: scala" 
+  def tupleDemo(expr: Any) =
+    expr match {
+      case (a, b, c)  =>  println("matched "+ a + b + c)
+      case _ =>
+    }
+}}}
+
+调用：
+
+{{{class="brush: scala" 
+  scala> tupleDemo(("a ", 3, "-tuple"))
+  matched a 3-tuple
+}}}
+
+=== 类型模式 ===
+
+可以当成类型测试和类型转换的简易替代：
+
+{{{class="brush: scala" 
+  def generalSize(x: Any) = x match {
+    case s: String => s.length
+    case m: Map[_, _] => m.size
+    case _ => -1
+  }
+}}}
+
+调用的例子：
+
+{{{class="brush: scala" 
+  scala> generalSize("abc")
+  res14: Int = 3
+
+  scala> generalSize(Map(1 -> 'a', 2 -> 'b'))
+  res15: Int = 2
+
+  scala> generalSize(Math.Pi)
+  res16: Int = -1
+}}}
+
+注意方法中`s`和`x`虽然都指向同一个对象，但一个类型是`String`一个类型是`Any`。所以可以写成`s.length`不可以写成`x.length`。
+
+另一个测试类型的方法：
+
+{{{class="brush: scala" 
+expr.isInstanceOf[String]
+}}}
+
+另一个转换类型的方法：
+
+{{{class="brush: scala" 
+expr.asInstanceOf[String]
+}}}
+
+使用类型转换的例子：
+
+{{{class="brush: scala" 
+  if (x.isInstanceOf[String]) {
+    val s = x.asInstanceOf[String]
+    s.length
+  } else ...
+}}}
+
 
 ===  类型擦除  ===
 
@@ -653,7 +875,7 @@ b * c   n
     elem(name)
 }}}
 
-如果是数字，结果是格式化后的数字。
+如果是数字，结果是格式化后的数字，如`2.0`格式化为`2`：
 
 {{{class="brush: scala"
       case Number(num) => 
@@ -663,10 +885,34 @@ b * c   n
         elem(stripDot(num.toString))
 }}}
 
+对于一元操作符的处理结果为操作`op`和最高环境优先级格式化参数`arg`的结果组成。这样如果`arg`是除了分数以外的二元操作就不会出现在括号中。
+
 {{{class="brush: scala"
       case UnOp(op, arg) => 
         elem(op) beside format(arg, unaryPrecedence)
 }}}
+
+如果是分数，则按上下位置放置。但仅仅上下的位置还不够。因为这样公不清主次：
+
+{{{class="brush: scala"
+a
+-
+b
+-
+c
+}}}
+
+有必要强化层次：
+
+{{{class="brush: scala"
+ a
+ -
+ b
+---
+ c
+}}}
+
+实现的代码这个样子的：
 
 {{{class="brush: scala"
       case BinOp("/", left, right) => 
@@ -678,6 +924,20 @@ b * c   n
         else elem(" ") beside frac beside elem(" ")
 }}}
 
+然后了除法以外的其他二元操作符。在这里要注意一下优先级问题：
+
+左操作数的优先级是操作符`op`的`opPrec`，而右操作数的优先级要再加1。这样保证了括号也同样反映正确的优先级。
+
+如：
+
+{{{class="brush: scala"
+BinOp("-", Var("a"), BinOp("-", Var("b"), Var("c")))
+}}}
+
+将被处理为`a - (b - c)`。如果当前操作符优先级小于外部操作符的优先级，那`oper`就要被放在括号里，不然按原样返回。
+
+具体实现：
+
 {{{class="brush: scala"
       case BinOp(op, left, right) => 
         val opPrec = precedence(op)
@@ -688,13 +948,98 @@ b * c   n
         else elem("(") beside oper beside elem(")")
 }}}
 
-{{{class="brush: scala"
-      case BinOp("/", left, right) => ...
-}}}
+最后再给一个公开的方法，不用优先级参数就可以格式化公式：
 
 {{{class="brush: scala"
-  BinOp("-", Var("a"), BinOp("-", Var("b"), Var("c")))
+    def format(e: Expr): Element = format(e, 0)
 }}}
+
+全部代码：
+
+{{{class="brush: scala"
+//compile this along with ../compo-inherit/LayoutElement.scala
+
+  package org.stairwaybook.expr
+  import layout.Element.elem
+  
+  sealed abstract class Expr
+  case class Var(name: String) extends Expr
+  case class Number(num: Double) extends Expr
+  case class UnOp(operator: String, arg: Expr) extends Expr
+  case class BinOp(operator: String, 
+      left: Expr, right: Expr) extends Expr
+  
+  class ExprFormatter {
+  
+    // Contains operators in groups of increasing precedence
+    private val opGroups =
+      Array(
+        Set("|", "||"),
+        Set("&", "&&"),
+        Set("^"),
+        Set("==", "!="),
+        Set("<", "<=", ">", ">="),
+        Set("+", "-"),
+        Set("*", "%")
+      )
+  
+    // A mapping from operators to their precedence
+    private val precedence = {
+      val assocs =
+        for {
+          i <- 0 until opGroups.length
+          op <- opGroups(i)
+        } yield op -> i
+      Map() ++ assocs
+    }
+  
+    private val unaryPrecedence = opGroups.length
+    private val fractionPrecedence = -1
+  
+    // continued in Listing 15.21...
+
+  import org.stairwaybook.layout.Element
+
+  // ...continued from Listing 15.20
+  
+  private def format(e: Expr, enclPrec: Int): Element =
+  
+    e match {
+  
+      case Var(name) => 
+        elem(name)
+  
+      case Number(num) => 
+        def stripDot(s: String) = 
+          if (s endsWith ".0") s.substring(0, s.length - 2)
+          else s
+        elem(stripDot(num.toString))
+  
+      case UnOp(op, arg) => 
+        elem(op) beside format(arg, unaryPrecedence)
+  
+      case BinOp("/", left, right) => 
+        val top = format(left, fractionPrecedence)
+        val bot = format(right, fractionPrecedence)
+        val line = elem('-', top.width max bot.width, 1)
+        val frac = top above line above bot
+        if (enclPrec != fractionPrecedence) frac
+        else elem(" ") beside frac beside elem(" ")
+  
+      case BinOp(op, left, right) => 
+        val opPrec = precedence(op)
+        val l = format(left, opPrec) 
+        val r = format(right, opPrec + 1)
+        val oper = l beside elem(" "+ op +" ") beside r 
+        if (enclPrec <= opPrec) oper
+        else elem("(") beside oper beside elem(")")
+    }
+  
+    def format(e: Expr): Element = format(e, 0)
+  }
+}}}
+
+具体调用的例子：
 
 {{{class="brush: scala"
   import org.stairwaybook.expr._
@@ -719,8 +1064,193 @@ b * c   n
   scala Express
 }}}
 
-{{{class="brush: scala"
+
+= 使用列表 =
+
+== 列表字面量 ==
+
+再简单回顾一下：
+
+{{{class=
+  val fruit = List("apples", "oranges", "pears")
+  val nums = List(1, 2, 3, 4)
+  val diag3 =
+    List(
+      List(1, 0, 0),
+      List(0, 1, 0),
+      List(0, 0, 1)
+    )
+  val empty = List()"brush: scala"
 }}}
+
+注意列表是不呆变的。
+
+== 列表类型 ==
+
+列表是同质化的（homogeneous），所有的成员都有相同的类型，中括号描述成员类型`List[T]`。
+
+{{{class="brush: scala"
+	val fruit: List[String] = List("apples", "oranges", "pears")
+  val nums: List[Int] = List(1, 2, 3, 4)
+  val diag3: List[List[Int]] =
+    List(
+      List(1, 0, 0),
+      List(0, 1, 0),
+      List(0, 0, 1)
+    )
+  val empty: List[Nothing] = List()
+}}}
+
+Scala里的列表类是协变的（covariant）。如果`S`是`T`的子类，那`List[S]`也是`List[T]`的子类。
+
+由于`Nothing`是所有类的子类，所以`List[Nothing]`是所有`List[T]`类型的子类：
+
+{{{class="brush: scala"
+  // List() is also of type List[String]!
+  val xs: List[String] = List()  
+}}}
+
+== 构造列表 ==
+
+`Nil`代表空列表；`::`（发音为“cons”），`elm::list`把单个元素`elm`接在列表`list`的前面。
+
+{{{class="brush: scala"
+  val fruit = "apples" :: ("oranges" :: ("pears" :: Nil))
+  val nums  = 1 :: (2 :: (3 :: (4 :: Nil)))
+  val diag3 = (1 :: (0 :: (0 :: Nil))) ::
+              (0 :: (1 :: (0 :: Nil))) ::
+              (0 :: (0 :: (1 :: Nil))) :: Nil
+  val empty = Nil
+}}}
+
+由于操作符`::`是右结合性，所以：
+
+{{{class="brush: scala"
+	A :: (B :: C)
+}}}
+
+相当于：
+
+{{{class="brush: scala"
+	A :: B :: C
+}}}
+
+所以前一个例子中很多括号都可以省略：
+
+{{{class="brush: scala"
+  val nums = 1 :: 2 :: 3 :: 4 :: Nil
+}}}
+
+== 列表的基本操作 ==
+
+三个基本操作：`head`、`tail`、`isEmpty`。
+
+{{{class="brush: scala"
+  val fruit = "apples" :: "oranges" :: "pears" :: Nil
+  val nums = 1 :: 2 :: 3 :: 4 :: Nil
+  val diag3 = (1 :: (0 :: (0 :: Nil))) ::
+              (0 :: (1 :: (0 :: Nil))) ::
+              (0 :: (0 :: (1 :: Nil))) :: Nil
+  val empty = Nil
+  
+	empty.isEmpty    // true
+	fruit.isEmpty    // flase
+	fruit.head       // "apples"
+	fruit.tail.head  // "organges"
+	diag3.head       //  List(1, 0, 0)
+}}}
+
+`head`与`tail`只能用在非空列表上，不然抛异常：
+
+{{{class="brush: scala"
+  scala> Nil.head
+  java.util.NoSuchElementException: head of empty list
+}}}
+
+一个排序的例子，使用插入排序：对于非空列表`x::xs`可以先排序`xs`。然后再把`x`插入正确的地方：
+
+{{{class="brush: scala"
+  def isort(xs: List[Int]): List[Int] =
+    if (xs.isEmpty) Nil
+    else insert(xs.head, isort(xs.tail))
+
+  def insert(x: Int, xs: List[Int]): List[Int] = 
+    if (xs.isEmpty || x <= xs.head) x :: xs
+    else xs.head :: insert(x, xs.tail)
+}}}
+
+
+== 列表模式 ==
+
+简单的模式匹配，在确定长度的情况下取出列表里的元素：
+
+{{{class="brush: scala"
+  scala> val List(a, b, c) = fruit
+  a: String = apples
+  b: String = oranges
+  c: String = pears
+}}}
+
+不确定具体长度但知道至少有几个，或是只要取前几个：
+
+{{{class="brush: scala"
+  scala> val a :: b :: rest = fruit
+  a: String = apples
+  b: String = oranges
+  rest: List[String] = List(pears)
+}}}
+
+要注意这里的`List(...)`和`::`并不是之前定义的模式匹配。
+
+实际上`List(...)`是将来会在抽取器章节介绍的抽取器模式。
+
+“cos”模式`x::xs`是中缀操作符模式的特例，一般中缀表达式`p op q`视为`p.op(q)`。但是如果作为模式，其实是被当作构造器模式的`op(p,q)`形式。
+
+对应这个构造器模式的类是`scala.::`，它可以创建非空列表的类。还有一个`List`类的方法`::`用来实例化`scala.::`的对象。在将来的“实现列表”章节中会有进一步的描述。
+
+再次用模式匹配的方式来实现前面已经实现过的插入排序法：
+
+{{{class="brush: scala"
+  def isort(xs: List[Int]): List[Int] = xs match {
+    case List()   => List()
+    case x :: xs1 => insert(x, isort(xs1))
+  }
+
+  def insert(x: Int, xs: List[Int]): List[Int] = xs match {
+    case List()  => List(x)
+    case y :: ys => if (x <= y) x :: xs 
+                    else y :: insert(x, ys)
+  }
+}}}
+
+== List类的一阶方法 ==
+
+=== 连接列表 ===
+
+连接两个列表的操作符是`:::`，它也是右结合的。
+
+{{{class="brush: scala"
+	xs ::: ys ::: zs
+}}}
+
+想当于：
+
+{{{class="brush: scala"
+	xs ::: (ys ::: zs)
+}}}
+
+{{{class="brush: scala"
+  scala> List(1, 2) ::: List(3, 4, 5)
+  res0: List[Int] = List(1, 2, 3, 4, 5)
+
+  scala> List() ::: List(1, 2, 3)
+  res1: List[Int] = List(1, 2, 3)
+
+  scala> List(1, 2, 3) ::: List(4)
+  res2: List[Int] = List(1, 2, 3, 4)
+}}}
+
+
 
 {{{class="brush: scala"
 }}}
@@ -752,7 +1282,8 @@ b * c   n
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
+
+{{{class="brush: scala" 
 }}}
 
 {{{class="brush: scala"
@@ -761,8 +1292,6 @@ b * c   n
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
-}}}
 
 {{{class="brush: scala"
 }}}
@@ -770,8 +1299,6 @@ b * c   n
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
-}}}
 
 {{{class="brush: scala"
 }}}
@@ -779,8 +1306,20 @@ b * c   n
 {{{class="brush: scala"
 }}}
 
+
 {{{class="brush: scala"
 }}}
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
 
 {{{class="brush: scala"
 }}}
