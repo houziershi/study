@@ -67,6 +67,16 @@
 <li><a href="#toc_2.6">List类的一阶方法</a>
 <ul>
 <li><a href="#toc_2.6.1">连接列表</a>
+<li><a href="#toc_2.6.2">分治原则</a>
+<li><a href="#toc_2.6.3">列表长度</a>
+<li><a href="#toc_2.6.4">取头和尾</a>
+<li><a href="#toc_2.6.5">反转列表</a>
+<li><a href="#toc_2.6.6">前缀与后缀</a>
+<li><a href="#toc_2.6.7">取得指定元素</a>
+<li><a href="#toc_2.6.8">zip</a>
+<li><a href="#toc_2.6.9">toString 和 mkString</a>
+<li><a href="#toc_2.6.10">列表的转换</a>
+<li><a href="#toc_2.6.11">例：归并排序</a>
 </ul>
 </ul>
 </ul>
@@ -1554,20 +1564,8 @@ Scala里的列表类是协变的（covariant）。如果<code>S</code>是<code>T
 <h3 id="toc_2.6.1">连接列表</h3>
 
 <p>
-连接两个列表的操作符是<code>:::</code>，它也是右结合的。
+连接两个列表的操作符是<code>:::</code>，例如：
 </p>
-
-<pre class="brush: scala">
-	xs ::: ys ::: zs
-</pre>
-
-<p>
-想当于：
-</p>
-
-<pre class="brush: scala">
-	xs ::: (ys ::: zs)
-</pre>
 
 <pre class="brush: scala">
   scala&gt; List(1, 2) ::: List(3, 4, 5)
@@ -1580,6 +1578,455 @@ Scala里的列表类是协变的（covariant）。如果<code>S</code>是<code>T
   res2: List[Int] = List(1, 2, 3, 4)
 </pre>
 
+<p>
+它也是右结合的：
+</p>
+
+<pre class="brush: scala">
+	xs ::: ys ::: zs
+</pre>
+
+<p>
+相当于：
+</p>
+
+<pre class="brush: scala">
+	xs ::: (ys ::: zs)
+</pre>
+
+
+<h3 id="toc_2.6.2">分治原则</h3>
+
+<p>
+手动实现一个连接列表的<code>append</code>方法。先用模式匹配把输入的列表拆分为更加简单的样本：
+</p>
+
+<pre class="brush: scala">
+  def append[T](xs: List[T], ys: List[T]): List[T] =
+    xs match { 
+      case List() =&gt; ys
+      case x :: xs1 =&gt; x :: append(xs1, ys)
+    }
+</pre>
+
+<p>
+以上代码的让<code>ys</code>操持完整而<code>xs</code>被一步步拆分并放到<code>ys</code>前面，所以把注意集中到<code>xs</code>的模式匹配上。
+</p>
+
+<p>
+再通过递归调用层层套用剩下的元素，通过添加单个元素的方法<code>::</code>连接列表。
+</p>
+
+<h3 id="toc_2.6.3">列表长度</h3>
+
+<pre class="brush: scala">
+  scala&gt; List(1, 2, 3).length
+  res3: Int = 3
+</pre>
+
+<p>
+<code>length</code>方法要遍历整个列表来取得长度，所以判断是否为空一般用<code>isEmpty</code>而不用<code>length</code>。
+</p>
+
+<h3 id="toc_2.6.4">取头和尾</h3>
+
+<p>
+<code>head</code>取头，<code>tail</code>取的是除了第一个元素外剩下列表。这两个方法的运行时间是常量。
+</p>
+
+<p>
+<code>last</code>取尾，<code>init</code>取最后一个以外的列表。这两个方法会遍历整个列表。
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val abcde = List('a', 'b', 'c', 'd', 'e')
+  abcde: List[Char] = List(a, b, c, d, e)
+
+  scala&gt; abcde.last
+  res4: Char = e
+
+  scala&gt; abcde.init
+  res5: List[Char] = List(a, b, c, d)
+</pre>
+
+<p>
+对于空列表会抛异常
+</p>
+
+<pre class="brush: scala">
+  scala&gt; List().init
+  java.lang.UnsupportedOperationException: Nil.init
+  	at scala.List.init(List.scala:544)
+  	at ...
+
+  scala&gt; List().last
+  java.util.NoSuchElementException: Nil.last
+  	at scala.List.last(List.scala:563)
+  	at ...
+</pre>
+
+<h3 id="toc_2.6.5">反转列表</h3>
+
+<p>
+<code>reverse</code>是创建了一个新列表：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; abcde.reverse 
+  res6: List[Char] = List(e, d, c, b, a)
+
+  scala&gt; abcde
+  res7: List[Char] = List(a, b, c, d, e)
+</pre>
+
+<p>
+一些简单的规律：
+</p>
+
+<pre class="brush: scala">
+xs.reverse.reverse  equals  xs
+
+xs.reverse.init  equals  xs.tail.reverse
+xs.reverse.tail  equals  xs.init.reverse
+xs.reverse.head  equals  xs.last
+xs.reverse.last  equals  xs.head
+</pre>
+
+<p>
+通过连接操作<code>:::</code>来实现反转，当然这样的效率低得很：
+</p>
+
+<pre class="brush: scala">
+  def rev[T](xs: List[T]): List[T] = xs match {
+    case List() =&gt; xs
+    case x :: xs1 =&gt; rev(xs1) ::: List(x)
+  }
+</pre>
+
+<h3 id="toc_2.6.6">前缀与后缀</h3>
+
+<p>
+<code>take</code>和<code>drop</code>取得或舍去列表指定长度个元素，长度超过时不会抛异常而是返回整个列表或空列表。
+</p>
+
+<pre class="brush: scala">
+  scala&gt; abcde take 2
+  res8: List[Char] = List(a, b)
+
+  scala&gt; abcde drop 2
+  res9: List[Char] = List(c, d, e)
+</pre>
+
+<p>
+<code>splitAt</code>在指定位置拆分列表。
+</p>
+
+<pre class="brush: scala">
+xs splitAt n
+
+// equals
+
+(xs take n, xs drop n)
+</pre>
+
+<p>
+例：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; abcde splitAt 2
+  res10: (List[Char], List[Char]) = (List(a, b),List(c, d, e))
+</pre>
+
+<h3 id="toc_2.6.7">取得指定元素</h3>
+
+<p>
+通过索引取得指定元素：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; abcde apply 2 // rare in Scala
+  res11: Char = c
+
+  scala&gt; abcde(2)      // rare in Scala
+  res12: Char = c
+</pre>
+
+<p>
+<code>includes</code>方法取得所有的索引列表：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; abcde.indices
+  res13: List[Int] = List(0, 1, 2, 3, 4)
+</pre>
+
+<h3 id="toc_2.6.8">zip</h3>
+
+<p>
+把两个列表组成对偶（二元组），如果长度不一样会丢弃长出来的：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; abcde.indices zip abcde
+  res14: List[(Int, Char)] = List((0,a), (1,b), (2,c), (3,d), 
+  (4,e))
+
+  scala&gt; val zipped = abcde zip List(1, 2, 3)
+  zipped: List[(Char, Int)] = List((a,1), (b,2), (c,3))
+</pre>
+
+<p>
+如果是为了把元素和索引zip在一起，用<code>zipWithIndex</code>方法更有效：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; abcde.zipWithIndex
+  res15: List[(Char, Int)] = List((a,0), (b,1), (c,2), (d,3), (e,4))
+</pre>
+
+<h3 id="toc_2.6.9">toString 和 mkString</h3>
+
+<p>
+<code>toString</code>简单字符串化列表
+</p>
+
+<pre class="brush: scala">
+  scala&gt; abcde.toString
+  res16: String = List(a, b, c, d, e)
+</pre>
+
+<p>
+<code>mkString</code>通过三个参数来指定前后包列表的字符和分隔列表元素的字符：
+</p>
+
+<pre class="brush: scala">
+xs mkString (pre, sep, post)
+</pre>
+
+<p>
+还有两个变体：
+</p>
+
+<pre class="brush: scala">
+xs mkString sep
+// equals
+xs mkString ("", sep, "")
+
+sx mkString
+// equals
+xs mkString ""
+</pre>
+
+<p>
+例子：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; abcde mkString ("[", ",", "]")
+  res17: String = [a,b,c,d,e]
+
+  scala&gt; abcde mkString ""
+  res18: String = abcde
+
+  scala&gt; abcde.mkString
+  res19: String = abcde
+
+  scala&gt; abcde mkString ("List(", ", ", ")")
+  res20: String = List(a, b, c, d, e)
+</pre>
+
+<p>
+还有一个<code>addSting</code>变体让结果添加到<code>StringBuilder</code>中，而不是作为结果返回：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val buf = new StringBuilder
+  buf: StringBuilder = 
+
+  scala&gt; abcde addString (buf, "(", ";", ")")
+  res21: StringBuilder = (a;b;c;d;e)
+</pre>
+
+
+<h3 id="toc_2.6.10">列表的转换</h3>
+
+<p>
+<code>List</code>类的<code>toArray</code>和<code>Array</code>类的<code>toList</code>，列表和数组转来转去。
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val arr = abcde.toArray
+  arr: Array[Char] = Array(a, b, c, d, e)
+
+  scala&gt; arr.toString
+  res22: String = Array(a, b, c, d, e)
+
+  scala&gt; arr.toList
+  res23: List[Char] = List(a, b, c, d, e)
+</pre>
+
+<p>
+<code>copyToArray</code>把列表复制到数组中一会连续的空间内：
+</p>
+
+<pre class="brush: scala">
+  xs copyToArray (arr, start)
+</pre>
+
+<p>
+<code>start</code>为开始的位置。当然还要保证数组中有足够的空间。例子：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val arr2 = new Array[Int](10)
+  arr2: Array[Int] = Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+  scala&gt; List(1, 2, 3) copyToArray (arr2, 3)
+
+  scala&gt; arr2.toString
+  res25: String = Array(0, 0, 0, 1, 2, 3, 0, 0, 0, 0)
+</pre>
+
+<p>
+<code>elements</code>提供了通过枚举器访问列表元素的方法：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val it = abcde.elements
+  it: Iterator[Char] = non-empty iterator
+
+  scala&gt; it.next
+  res26: Char = a
+
+  scala&gt; it.next
+  res27: Char = b
+</pre>
+
+<h3 id="toc_2.6.11">例：归并排序</h3>
+
+<p>
+归并排序：如果列表长度为0或是1，就算是已经排序好的，直接返回。长度大于1的列表可以拆成两个长度接近的，每个再递归调用完成排序，再把返回的两个排序好的列表合并。
+</p>
+
+<p>
+函数的实现用到了柯里化，接收元素之间的比较大小的函数和要排序的列表：
+</p>
+
+<pre class="brush: scala">
+  def msort[T](less: (T, T) =&gt; Boolean)
+      (xs: List[T]): List[T] = {
+
+    def merge(xs: List[T], ys: List[T]): List[T] =
+      (xs, ys) match {
+        case (Nil, _) =&gt; ys
+        case (_, Nil) =&gt; xs
+        case (x :: xs1, y :: ys1) =&gt;
+          if (less(x, y)) x :: merge(xs1, ys)
+          else y :: merge(xs, ys1)
+      }
+
+    val n = xs.length / 2
+    if (n == 0) xs
+    else {
+      val (ys, zs) = xs splitAt n
+      merge(msort(less)(ys), msort(less)(zs))
+    }
+  }
+</pre>
+
+
+<pre class="brush: scala">
+  scala&gt; msort((x: Int, y: Int) =&gt; x &lt; y)(List(5, 7, 1, 3))
+  res28: List[Int] = List(1, 3, 5, 7)
+</pre>
+
+
+<pre class="brush: scala">
+  scala&gt; val intSort = msort((x: Int, y: Int) =&gt; x &lt; y) _
+  intSort: (List[Int]) =&gt; List[Int] = &lt;function&gt;
+</pre>
+
+
+<pre class="brush: scala">
+  scala&gt; val reverseIntSort = msort((x: Int, y: Int) =&gt; x &gt; y) _
+  reverseIntSort: (List[Int]) =&gt; List[Int] = &lt;function&gt;
+</pre>
+
+
+<pre class="brush: scala">
+  scala&gt; val mixedInts = List(4, 1, 9, 0, 5, 8, 3, 6, 2, 7)
+  mixedInts: List[Int] = List(4, 1, 9, 0, 5, 8, 3, 6, 2, 7)
+
+  scala&gt; intSort(mixedInts)
+  res0: List[Int] = List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+
+  scala&gt; reverseIntSort(mixedInts)
+  res1: List[Int] = List(9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
 
 <pre class="brush: scala">
 </pre>
