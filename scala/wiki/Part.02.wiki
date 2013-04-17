@@ -1630,8 +1630,6 @@ xs mkString ""
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
-}}}
 
 {{{class="brush: scala"
 }}}
