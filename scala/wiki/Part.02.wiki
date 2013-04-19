@@ -1225,6 +1225,8 @@ Scala里的列表类是协变的（covariant）。如果`S`是`T`的子类，那
 
 == List类的一阶方法 ==
 
+这里介绍的方法是List类的方法，所以是在独立的对象上被调用。
+
 === 连接列表 ===
 
 连接两个列表的操作符是`:::`，例如：
@@ -1573,6 +1575,8 @@ xs mkString ""
 
 == List类的高阶函数 ==
 
+这里介绍的方法是List类的方法，所以是在独立的对象上被调用。
+
 Scala中以操作符形式出现的高阶函数更加简洁地处理Java中用循环来处理的问题。
 
 === 列表间映射 ===
@@ -1710,60 +1714,344 @@ xs span p
   res45: Boolean = false
 }}}
 
+=== 折叠列表 ===
+
+左折叠操作符`/:`，格式为：`(z /: xs) (op)`。其中`z`为开始值，`xs`为列表，`op`为二元操作。
 
 {{{class="brush: scala"
+(z /: List(a, b, c)) (op)
+// equals
+op(op(op(z,a), b), c)
 }}}
+
+用树表示：
 
 {{{class="brush: scala"
+      op
+     /  \
+    op   c
+   /  \
+  op   b
+ /  \
+z     a
 }}}
 
+举例：
 
 {{{class="brush: scala"
+  scala> def sum(xs: List[Int]): Int = (0 /: xs) (_ + _) 
+  sum: (List[Int])Int
+  
+  scala> sum(List(1, 2, 3))  // equals 0 + 1 + 2 + 3
+  res1: Int = 6
+
+  scala> def product(xs: List[Int]): Int = (1 /: xs) (_ * _) 
+  product: (List[Int])Int
+  
+  scala> product(List(1, 2, 3))  // equals 1 * 1 * 2 * 3
+  res2: Int = 6
 }}}
+
+用空格连接所有单词：
 
 {{{class="brush: scala"
+  scala>  ("" /: words) (_ +" "+ _)
+  res46: java.lang.String =  the quick brown fox
 }}}
+
+头上多了一个空格，这样去掉它：
 
 {{{class="brush: scala"
+  scala> (words.head /: words.tail)  (_ +" "+ _)
+  res47: java.lang.String = the quick brown fox
 }}}
+
+相对的还有右倾斜操作树`:\`：
 
 {{{class="brush: scala"
+(List(a, b, c) :\ z) (op)
+// equals
+op(a, op(b, op(c, z)))
 }}}
 
+对于组合操作来说，左右折叠是等价的，但效率上有差异。下面两个把元素连接在一起地方法：
 
 {{{class="brush: scala"
+  def flattenLeft[T](xss: List[List[T]]) =
+      (List[T]() /: xss) (_ ::: _)
+
+  def flattenRight[T](xss: List[List[T]]) =
+      (xss :\ List[T]()) (_ ::: _)
 }}}
+
+采用右折叠的`flattenLeft`需要复制第一个元素列表`xss.head`一共`xss.length-1`次，所以效率差一些。
+
+注意这里两个版本的实现都要对作为折叠开始值的空列表做类型标注。这是由Scala类型推断的局限性无法推断出正确的类型。不标注的话会有以下错误：
 
 {{{class="brush: scala"
+  scala> def flattenRight[T](xss: List[List[T]]) =
+       |     (xss :\ List()) (_ ::: _)
+  <console>:15: error: type mismatch;
+   found   : List[T]
+   required: List[Nothing]
+             (xss :\ List()) (_ ::: _)
+                                ^
 }}}
+
+在以后的“实现列表”章节中讨论类型推断失败的原因。
+
+如果觉得`/:`和`:\`看起来不清楚，可以用List提供的`foldLeft`和`foldRight`方法代替。
+
+=== 例子：使用折叠实现列表反转 ===
 
 {{{class="brush: scala"
+def reverseLeft[T](xs: List[T]) = (startvalue /: xs) (operation)
 }}}
+
+为了写出正确的`startvalue`和`operation`，从可以出现的最小的列表`List()`开始推导：
 
 {{{class="brush: scala"
+List()
+// equals
+reverseLeft(List())
+// equals
+(startvalue /: List()) (operation)
+// equals
+startvalue
 }}}
+
+所以`startvalue`一定是`List()`。再代入推导`operation`：
 
 {{{class="brush: scala"
+List(x)
+// equals
+reverseLeft(List(x))
+// equals
+(startvalue /: List(x)) (operation)
+// equals
+operation(List(), x)
+// equals
+x :: List()
 }}}
+
+所以具体实现为：
 
 {{{class="brush: scala"
+  def reverseLeft[T](xs: List[T]) =
+    (List[T]() /: xs) {(ys, y) => y :: ys}
 }}}
+
+=== 排序 ===
+
+`xs sort before`，`xs`是列表，`before`是比较元素`x`是否在`y`前面的方法。
 
 {{{class="brush: scala"
+  scala> List(1, -3, 4, 2, 6) sort (_ < _)
+  res48: List[Int] = List(-3, 1, 2, 4, 6)
+
+  scala> words sort (_.length > _.length)
+  res49: List[java.lang.String] = List(quick, brown, fox, the)
 }}}
+
+注意前面还提到过一个`msort`方法，那个是定义在列表外的。`sort`是List类的方法。
+
+== List对象的方法 ==
+
+下面介绍的方法是伴生对象`scala.List`的，创建列表的工厂方法和特定类型列表的操作。
+
+=== 通过元素创建列表 ===
+
+`apply`方法：
 
 {{{class="brush: scala"
+List(1, 2, 3)
+// is actually
+List.apply(1, 2, 3)
 }}}
+
+=== 按数值范围创建列表 ===
+
+`range`参数可以是：开始、结束、步长：
 
 {{{class="brush: scala"
+  scala> List.range(1, 5)
+  res51: List[Int] = List(1, 2, 3, 4)
+
+  scala> List.range(1, 9, 2)
+  res52: List[Int] = List(1, 3, 5, 7)
+
+  scala> List.range(9, 1, -3)
+  res53: List[Int] = List(9, 6, 3)
 }}}
+
+=== 创建重复元素的列表 ===
+
+`make`方法：
 
 {{{class="brush: scala"
+  scala> List.make(5, 'a')
+  res54: List[Char] = List(a, a, a, a, a)
+
+  scala> List.make(3, "hello")
+  res55: List[java.lang.String] = List(hello, hello, hello)
 }}}
 
+=== 解除Zip列表 ===
+
+`unzip`把二元组列表分成两个列表：
 
 {{{class="brush: scala" 
+  scala> val zipped = "abcde".toList zip List(1, 2, 3)
+  zipped: List[(Char, Int)] = List((a,1), (b,2), (c,3))
+
+  scala> List.unzip(zipped)
+  res56: (List[Char], List[Int]) = (List(a, b, c),
+      List(1, 2, 3))
 }}}
+
+Scala类型系统要求类方法能处理所有类型，而unzip只处理二元组列表。所以unzip不能像zip方法一样放在类里而只能放在伴生对象里。
+
+=== 连接列表 ===
+
+`flatten`方法只能处理包含子列表的列表，所以不能放在List类里。只能放在伴生对象中。
+
+{{{class="brush: scala"
+  scala> val xss =
+       |   List(List('a', 'b'), List('c'), List('d', 'e'))
+  xss: List[List[Char]] = List(List(a, b), List(c), List(d, e))
+
+  scala> List.flatten(xss)
+  res57: List[Char] = List(a, b, c, d, e)
+}}}
+
+`concat`方法把多个列表作为可变长参数形式接收：
+
+{{{class="brush: scala"
+  scala> List.concat(List('a', 'b'), List('c'))
+  res58: List[Char] = List(a, b, c)
+
+  scala> List.concat(List(), List('b'), List('c'))
+  res59: List[Char] = List(b, c)
+  
+  scala> List.concat()
+  res60: List[Nothing] = List()
+}}}
+
+
+=== 映射与测试配对 ===
+
+`map2`方法接收两个列表，分别作为方法的两个参数：
+
+{{{class="brush: scala"
+  scala> List.map2(List(10, 20), List(3, 4, 5)) (_ * _)
+  res61: List[Int] = List(30, 80)
+}}}
+
+`exist2`也是接收两个列表，分别作为方法的两个参数：
+
+{{{class="brush: scala"
+  scala> List.forall2(List("abc", "de"),
+       |     List(3, 2)) (_.length == _)
+  res62: Boolean = true
+
+  scala> List.exists2(List("abc", "de"),
+       |     List(3, 2)) (_.length != _)
+  res63: Boolean = false
+}}}
+
+== 了解Scala的类型推断方法 ==
+
+下面是用占位符`_`推导出的参数类型：
+
+{{{class="brush: scala"
+  scala> abcde sort (_ > _)
+  res65: List[Char] = List(e, d, c, b, a)
+}}}
+
+但是`msort`方法却不能用占位符：
+
+{{{class="brush: scala"
+  scala> msort((x: Char, y: Char) => x > y)(abcde)
+  res64: List[Char] = List(e, d, c, b, a)
+  
+  scala> msort(_ > _)(abcde)
+  <console>:12: error: missing parameter type for expanded 
+  function ((x$1, x$2) => x$1.$greater(x$2))
+         msort(_ > _)(abcde)
+               ^
+}}}
+
+因为Scala的类型推导器是基于流的。对于｀func(args)｀这样的方法，先看`func`是否有已经的类型。如果有的话这个类型就被用来做参数预期类型的推断。
+
+例如对于`List[Char]`类型的列表`abcd`，`abcd`的成员都是`Char`所以`abcd.sort(_ > _)`的两个参数也只会是`Char`。所以：
+
+{{{class="brush: scala"
+(_ > _)
+// trans to 
+((x: Char, y: Char) => x > y)
+}}}
+
+而对于`msort(_ > _)(abcde)`这个类型是柯里化的、多态的方法类型，参数类型是`(T, T) => Boolean`，返回类型是从`List[T]`到`List[T]`的函数。无法推断第一个参数的类型。所以类型推断器要参数的类型信息。
+
+想要用占位符的话，只能把参数类型传给`msort`：
+
+{{{class="brush: scala"
+  scala> msort[Char](_ > _)(abcde)
+  res66: List[Char] = List(e, d, c, b, a)
+}}}
+
+还有一个方法是交换参数顺序，这样可以用第一个列表的类型来推断比较方法的类型了：
+
+{{{class="brush: scala"
+  // same implementation as msort,
+  // but with arguments swapped
+  def msortSwapped[T](xs: List[T])(less:
+      (T, T) => Boolean): List[T] = {
+  }
+  
+  scala> msortSwapped(abcde)(_ > _)
+  res67: List[Char] = List(e, d, c, b, a)
+}}}
+
+需要推断多态方法类型时只会参考第一个参数列表，所以在柯里化方法有两个参数列表时第二个参数不会用来决定方法类型参数。
+
+所以这种方案隐含以下的库方法设计原则：
+
+如果参数包括若干个非函数参数与一个函数参数的组合时，要把函数参数独自放在柯里化参数列表的最后面。这样方法的正确实例类型就可以通过非函数参数推断出来，推断出来的类型还可以转面用来完成函数参数的类型检查。调用函数的时候也可以写出更加简洁的字面量。
+
+再来看更加复杂的折叠操作：
+
+{{{class="brush: scala"
+  (xss :\ List[T]()) (_ ::: _)
+}}}
+
+上面的表达式提供了明确的类型参数的原因是这个右折叠操作的类型取决于两个变量：
+
+{{{class="brush: scala"
+  (xs :\ z) (op)
+}}}
+
+这里把列表`xs`的类型记为`A`，如：`xs: List[A]`；而开始值`z`有可能是类型`B`。对应的操作`op`必须以`A`和`B`的值为参数并返回类型`B`的结果，即：`op: (A, B) => B`。
+
+从上面的描述可以看出：这里的`op`方法要知道`A`与`B`两个类型。`A`一定与`List`有关但是`B`不一定与`List`有关，所以推不出来。所以下面的表达式是编译不过的：
+
+{{{class="brush: scala"
+  (xss :\ List()) (_ ::: _)  // this won't compile
+}}}
+
+上面表达式中`z`的类型为`List[Nothing]`，据此推断器把`B`的类型定为`Nothing`：
+
+{{{class="brush: scala"
+  (List[T], List[Nothing]) => List[Nothing]
+}}}
+
+这就意味着输出与输出都是空列表。
+
+就是因为这个问题，所以在柯里化的方法中，方法类型只取决于第一段参数。但是如果不这样做的话，推断器还是没有办法取得`op`的类型。所以只能程序员明确指定类型。
+
+所以Scala采用的局部的、基于流的类型推断方法还是比较有局限性的；不如ML或是Haskell采用的更加全局化的Hindley-Milner类型推断方式。但是对于面向对象的分支类型处理比Hindley-Mlner更加优雅。由于这些局限性在比较极端的情况下才遇到，所以就在极端情况下明确标类型吧。
+
+另外在遇到多态类型错误时，添加上你认为应该是正确的类型标注也是一种排错方式。
 
 {{{class="brush: scala"
 }}}
@@ -1771,34 +2059,8 @@ xs span p
 {{{class="brush: scala"
 }}}
 
-
 {{{class="brush: scala"
 }}}
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
 
 {{{class="brush: scala"
 }}}
