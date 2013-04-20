@@ -121,6 +121,19 @@
 <li><a href="#toc_3.4.4">有序的集体和映射</a>
 <li><a href="#toc_3.4.5">同步的Set和Map</a>
 </ul>
+<li><a href="#toc_3.5">可变与不可变类型的比较</a>
+<li><a href="#toc_3.6">初始化集合</a>
+<ul>
+<li><a href="#toc_3.6.1">数组与列表之间转换</a>
+<li><a href="#toc_3.6.2">Set与Map的可变与不可变互转</a>
+</ul>
+<li><a href="#toc_3.7">元组</a>
+</ul>
+<li><a href="#toc_4">有状态的对象</a>
+<ul>
+<li><a href="#toc_4.1">案例：离散事件模拟</a>
+<li><a href="#toc_4.2">为数字电路定制语言</a>
+<li><a href="#toc_4.3">Simulation API</a>
 </ul>
 </ul>
 </div>
@@ -3527,92 +3540,519 @@ scala.collection.immutable.HashMap
         mutable.SynchronizedSet[Int]
 </pre>
 
-<pre class="brush: scala">
-</pre>
+<h2 id="toc_3.5">可变与不可变类型的比较</h2>
+
+<p>
+为了方便在可变与不可变类型之间地转换，Scala提供了一些语法糖。
+</p>
+
+<p>
+如，不可变类型不支持<code>+=</code>操作：
+</p>
 
 <pre class="brush: scala">
+  scala&gt; val people = Set("Nancy", "Jane")
+  people: scala.collection.immutable.Set[java.lang.String] =
+    Set(Nancy, Jane)
+
+  scala&gt; people += "Bob"
+  &lt;console&gt;:6: error: reassignment to val
+         people += "Bob"
+                ^
 </pre>
 
-<pre class="brush: scala">
-</pre>
+<p>
+但是如果把变量从<code>val</code>改成<code>var</code>，Scala还是可以返回一个添加后的新对象来模拟：
+</p>
 
 <pre class="brush: scala">
+  scala&gt; var people = Set("Nancy", "Jane")
+  people: scala.collection.immutable.Set[java.lang.String] = 
+    Set(Nancy, Jane)
+ 
+  scala&gt; people += "Bob"
+
+  scala&gt; people
+  res42: scala.collection.immutable.Set[java.lang.String] = 
+    Set(Nancy, Jane, Bob)
 </pre>
 
-<pre class="brush: scala">
-</pre>
+<p>
+类似的还有其他的操作：
+</p>
 
 <pre class="brush: scala">
+  scala&gt; people -= "Jane"
+
+  scala&gt; people ++= List("Tom", "Harry")
+
+  scala&gt; people
+  res45: scala.collection.immutable.Set[java.lang.String] = 
+    Set(Nancy, Bob, Tom, Harry)
 </pre>
 
-<pre class="brush: scala">
-</pre>
+<p>
+这样的语法糖方便在可变与不可变类型之间转换：
+</p>
 
 <pre class="brush: scala">
+  var capital = Map("US" -&gt; "Washington", "France" -&gt; "Paris")
+  capital += ("Japan" -&gt; "Tokyo")
+  println(capital("France")) 
+
+  import scala.collection.mutable.Map  // only change needed!
+  var capital = Map("US" -&gt; "Washington", "France" -&gt; "Paris")
+  capital += ("Japan" -&gt; "Tokyo")
+  println(capital("France")) 
 </pre>
 
-<pre class="brush: scala">
-</pre>
+<p>
+这样的语法糖还可以用在其他类型上。如浮点：
+</p>
 
 <pre class="brush: scala">
+  scala&gt; var roughlyPi = 3.0
+  roughlyPi: Double = 3.0
+
+  scala&gt; roughlyPi += 0.1
+
+  scala&gt; roughlyPi += 0.04
+
+  scala&gt; roughlyPi
+  res48: Double = 3.14
 </pre>
 
-<pre class="brush: scala">
-</pre>
+<p>
+基本上<code>+=</code>、<code>-=</code>、<code>*=</code>这类以<code>=</code>结尾的操作符都可以。
+</p>
+
+<h2 id="toc_3.6">初始化集合</h2>
+
+<p>
+最典型的是用伴生对象的工厂方法：
+</p>
 
 <pre class="brush: scala">
+  scala&gt; List(1, 2, 3)
+  res0: List[Int] = List(1, 2, 3)
+
+  scala&gt; Set('a', 'b', 'c')
+  res1: scala.collection.immutable.Set[Char] = Set(a, b, c)
+
+  scala&gt; import scala.collection.mutable
+  import scala.collection.mutable
+
+  scala&gt; mutable.Map("hi" -&gt; 2, "there" -&gt; 5)
+  res2: scala.collection.mutable.Map[java.lang.String,Int] =
+    Map(hi -&gt; 2, there -&gt; 5)
+
+  scala&gt; Array(1.0, 2.0, 3.0)
+  res3: Array[Double] = Array(1.0, 2.0, 3.0)
 </pre>
 
-<pre class="brush: scala">
-</pre>
+<p>
+会根据工厂方法推断类型：
+</p>
 
 <pre class="brush: scala">
+  scala&gt; import scala.collection.mutable
+  import scala.collection.mutable
+
+  scala&gt; val stuff = mutable.Set(42)
+  stuff: scala.collection.mutable.Set[Int] = Set(42)
+
+  scala&gt; stuff += "abracadabra"
+  &lt;console&gt;:7: error: type mismatch;
+   found   : java.lang.String("abracadabra")
+   required: Int
+         stuff += "abracadabra"
+                  ^
 </pre>
 
-<pre class="brush: scala">
-</pre>
+<p>
+但是可以手动声明类型：
+</p>
 
 <pre class="brush: scala">
+  scala&gt; val stuff = mutable.Set[Any](42)
+  stuff: scala.collection.mutable.Set[Any] = Set(42)
 </pre>
 
-<pre class="brush: scala">
-</pre>
+<p>
+还有一种情况，不能直接把<code>List</code>传递给<code>Set</code>的工厂方法：
+</p>
 
 <pre class="brush: scala">
+  scala&gt; val colors = List("blue", "yellow", "red", "green")
+  colors: List[java.lang.String] =
+    List(blue, yellow, red, green)
+
+
+  scala&gt; import scala.collection.immutable.TreeSet
+  import scala.collection.immutable.TreeSet
+
+  scala&gt; val treeSet = TreeSet(colors)                 
+  &lt;console&gt;:6: error: no implicit argument matching
+    parameter type (List[java.lang.String]) =&gt;
+      Ordered[List[java.lang.String]] was found.
+         val treeSet = TreeSet(colors)
+                       ^
 </pre>
 
-<pre class="brush: scala">
-</pre>
+<p>
+可行的方案是建立空的<code>TreeSet[String]</code>对象并用<code>TreeSet</code>的<code>++</code>操作把元素加进去：
+</p>
 
 <pre class="brush: scala">
+  scala&gt; val treeSet = TreeSet[String]() ++ colors
+  treeSet: scala.collection.immutable.SortedSet[String] =
+     Set(blue, green, red, yellow)
 </pre>
 
-<pre class="brush: scala">
-</pre>
+<h3 id="toc_3.6.1">数组与列表之间转换</h3>
 
 <pre class="brush: scala">
+  scala&gt; treeSet.toList
+  res54: List[String] = List(blue, green, red, yellow)
+
+  scala&gt; treeSet.toArray
+  res55: Array[String] = Array(blue, green, red, yellow)
 </pre>
 
-<pre class="brush: scala">
-</pre>
+<h3 id="toc_3.6.2">Set与Map的可变与不可变互转</h3>
+
+<p>
+在转为不可变类型时，一般是建一个空的不可变集，再一个一个加上去：
+</p>
 
 <pre class="brush: scala">
+  scala&gt; import scala.collection.mutable
+  import scala.collection.mutable
+
+  scala&gt; treeSet
+  res5: scala.collection.immutable.SortedSet[String] =
+    Set(blue, green, red, yellow)
+
+  scala&gt; val mutaSet = mutable.Set.empty ++ treeSet
+  mutaSet: scala.collection.mutable.Set[String] =
+    Set(yellow, blue, red, green)
+
+  scala&gt; val immutaSet = Set.empty ++ mutaSet
+  immutaSet: scala.collection.immutable.Set[String] =
+    Set(yellow, blue, red, green)
+
+  scala&gt; val muta = mutable.Map("i" -&gt; 1, "ii" -&gt; 2)
+  muta: scala.collection.mutable.Map[java.lang.String,Int] =
+     Map(ii -&gt; 2, i -&gt; 1)
+
+  scala&gt; val immu = Map.empty ++ muta
+  immu: scala.collection.immutable.Map[java.lang.String,Int] =
+     Map(ii -&gt; 2, i -&gt; 1)
 </pre>
 
-<pre class="brush: scala">
-</pre>
+<h2 id="toc_3.7">元组</h2>
+
+<p>
+元组可以存放不同的类型：
+</p>
 
 <pre class="brush: scala">
+  (1, "hello", Console)
 </pre>
 
-<pre class="brush: scala">
-</pre>
+<p>
+元组经常被用来返回多个函数结果，如下面的函数要同时返回单词和索引：
+</p>
 
 <pre class="brush: scala">
+  def longestWord(words: Array[String]) = {
+    var word = words(0)
+    var idx = 0
+    for (i &lt;- 1 until words.length)
+      if (words(i).length &gt; word.length) {
+        word = words(i)
+        idx = i
+      }
+    (word, idx)
+  }
+  
+  scala&gt; val longest = 
+       |   longestWord("The quick brown fox".split(" "))
+  longest: (String, Int) = (quick,1)
 </pre>
 
+<p>
+然后可以访问各个元素：
+</p>
+
 <pre class="brush: scala">
+  scala&gt; longest._1
+  res56: String = quick
+
+  scala&gt; longest._2
+  res57: Int = 1
 </pre>
+
+<p>
+还可以赋值给自己的变量（其实就是模式匹配）：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val (word, idx) = longest
+  word: String = quick
+  idx: Int = 1
+
+  scala&gt; word
+  res58: String = quick
+</pre>
+
+<p>
+注意括号不能去掉，不然就是给两个变量赋值了两份：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val word, idx = longest
+  word: (String, Int) = (quick,1)
+  idx: (String, Int) = (quick,1)
+</pre>
+
+<h1 id="toc_4">有状态的对象</h1>
+
+<p>
+类似于JavaBean的getter和setter方法，Scala对象的非私有<code>var x</code>有自动生成的访问方法<code>x</code>和设值方法<code>x_=</code>。
+</p>
+
+<p>
+对于类中的字段：
+</p>
+
+<pre class="brush: scala">
+var hour = 12
+</pre>
+
+<p>
+会有额外的getter方法<code>hour</code>和setter方法<code>hour_=</code>。方法的访问性与字段一致。
+</p>
+
+<p>
+拿这个例子来说：
+</p>
+
+<pre class="brush: scala">
+  class Time {
+    var hour = 12
+    var minute = 0
+  }
+</pre>
+
+<p>
+和下面的代码是一样的：
+</p>
+
+<pre class="brush: scala">
+  class Time {
+
+    private[this] var h = 12
+    private[this] var m = 0
+
+    def hour: Int = h
+    def hour_=(x: Int) { h = x }
+
+    def minute: Int = m
+    def minute_=(x: Int) { m = x }
+  } 
+</pre>
+
+<p>
+所以可以直接定义getter和setter。
+</p>
+
+<p>
+下面的代码在setter前进行检查：
+</p>
+
+<pre class="brush: scala">
+  class Time {
+
+    private[this] var h = 12
+    private[this] var m = 12
+
+    def hour: Int = h
+    def hour_= (x: Int) {
+      require(0 &lt;= x &amp;&amp; x &lt; 24)
+      h = x
+    }
+
+    def minute = m
+    def minute_= (x: Int) {
+      require(0 &lt;= x &amp;&amp; x &lt; 60)
+      m = x
+    }
+  } 
+</pre>
+
+<p>
+再看一个温度的例子：
+</p>
+
+<pre class="brush: scala">
+  class Thermometer {
+
+    var celsius: Float = _
+
+    def fahrenheit = celsius * 9 / 5 + 32
+    def fahrenheit_= (f: Float) {
+      celsius = (f - 32) * 5 / 9
+    }
+    override def toString = fahrenheit +"F/"+ celsius +"C"
+  }
+</pre>
+
+<p>
+注意变量<code>celsius</code>的值为<code>_</code>，表示初始化值。对于数值代表<code>0</code>，对于布尔类型代表<code>false</code>，引用类型则代表<code>null</code>。
+</p>
+
+<p>
+Scala中的初始化器<code>=_</code>，如果写成：
+</p>
+
+<pre class="brush: scala">
+var celsius
+</pre>
+
+<p>
+这样就成了抽象变量（以后到了“抽象成员”这一章介绍），而不是一个没有初始化的变量。这个和Java的习惯很不一样。
+</p>
+
+<p>
+使用的例子：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val t = new Thermometer
+  t: Thermometer = 32.0F/0.0C
+
+  scala&gt; t.celsius = 100
+
+  scala&gt; t
+  res3: Thermometer = 212.0F/100.0C
+
+  scala&gt; t.fahrenheit = -40
+
+  scala&gt; t
+  res4: Thermometer = -40.0F/-40.0C
+</pre>
+
+<h2 id="toc_4.1">案例：离散事件模拟</h2>
+
+<p>
+来个SICP（Structure and Interpretation of Computer Programs，计算机程序的构造与解释）里的例子。
+</p>
+
+<h2 id="toc_4.2">为数字电路定制语言</h2>
+
+<p>
+<img src="images/18.01.png" />
+</p>
+
+<p>
+为了实现这三种基本的门，我们建立一个<code>Wire</code>类代表线路。可以这样构造线路：
+</p>
+
+<pre class="brush: scala">
+val a = new Wire
+val b = new Wire
+val c = new Wire
+</pre>
+
+<p>
+或简洁地写成：
+</p>
+
+<pre class="brush: scala">
+val a, b, c = new Wire
+</pre>
+
+<p>
+三个基本的门电路由以下三个过程模拟：
+</p>
+
+<pre class="brush: scala">
+  def inverter(input: Wire, output: Wire)
+  def andGate(a1: Wire, a2: Wire, output: Wire)
+  def orGate(o1: Wire, o2: Wire, output: Wire)
+</pre>
+
+<p>
+注意这里的过程都没有返回值。按照函数式的思想，应该是返回构造好的门对象。但是在这里我们选择了没有返回值，而是通过副作用来模拟门电路。
+</p>
+
+<p>
+在这副作用让一步步渐进地构造复杂的电路更加容易，如<code>inverter(a,b)</code>在<code>a</code>与<code>b</code>之间放置反转电路。
+</p>
+
+<p>
+还有这里的方法名没有用动词而是用了名词，这是为了方便说明制造的是哪个门电路。这反映了DSL说明的本质：应该描述电路，而不是如何制造它。
+</p>
+
+<p>
+下面是一个半加法器（half-adder）。它根据两个输入<code>a</code>和<code>b</code>产生累加和<code>s</code>。
+</p>
+
+<p>
+累加的定义为：<code>s= (a+b)%2</code>及进位<code>c</code>，其中的<code>c = (a+b)/2</code>。
+</p>
+
+<p>
+半加法器电路图：
+</p>
+
+<p>
+<img src="images/18.02.png" />
+</p>
+
+<p>
+用我们的代码描述：
+</p>
+
+<pre class="brush: scala">
+  def halfAdder(a: Wire, b: Wire, s: Wire, c: Wire) {
+    val d, e = new Wire
+    orGate(a, b, d)
+    andGate(a, b, c)
+    inverter(c, e)
+    andGate(d, e, s)
+  }
+</pre>
+
+<p>
+接下来是一个全加法器，定义为根据参数<code>a</code>和<code>b</code>还有进位<code>cin</code>得到两个输出。一个是和<code>sum = (a+b+cin)%2</code>，另一个是进位输出<code>count = (a+b+cin)/2</code>：
+</p>
+
+<p>
+<img src="images/18.03.png" />
+</p>
+
+<p>
+代码为：
+</p>
+
+<pre class="brush: scala">
+  def fullAdder(a: Wire, b: Wire, cin: Wire,
+      sum: Wire, cout: Wire) {
+
+    val s, c1, c2 = new Wire
+    halfAdder(a, cin, s, c1)
+    halfAdder(b, s, sum, c2)
+    orGate(c1, c2, cout)
+  }
+</pre>
+
+<p>
+这是内部DSL很好的例子：通过宿主语言将特定的语言定义为库面不是完全实现这种语言。
+</p>
+
+<h2 id="toc_4.3">Simulation API</h2>
 
 <pre class="brush: scala">
 </pre>
