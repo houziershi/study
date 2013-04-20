@@ -98,6 +98,30 @@
 </ul>
 <li><a href="#toc_2.9">了解Scala的类型推断方法</a>
 </ul>
+<li><a href="#toc_3">集体类型</a>
+<ul>
+<li><a href="#toc_3.1">概览</a>
+<li><a href="#toc_3.2">序列</a>
+<ul>
+<li><a href="#toc_3.2.1">列表</a>
+<li><a href="#toc_3.2.2">列表缓存</a>
+<li><a href="#toc_3.2.3">数组</a>
+</ul>
+<li><a href="#toc_3.3">数组缓存</a>
+<ul>
+<li><a href="#toc_3.3.1">队列</a>
+<li><a href="#toc_3.3.2">栈</a>
+<li><a href="#toc_3.3.3">字符串</a>
+</ul>
+<li><a href="#toc_3.4">Set与Map</a>
+<ul>
+<li><a href="#toc_3.4.1">使用Set</a>
+<li><a href="#toc_3.4.2">Map</a>
+<li><a href="#toc_3.4.3">默认的Set和Map</a>
+<li><a href="#toc_3.4.4">有序的集体和映射</a>
+<li><a href="#toc_3.4.5">同步的Set和Map</a>
+</ul>
+</ul>
 </ul>
 </div>
 
@@ -2601,6 +2625,1264 @@ Scala类型系统要求类方法能处理所有类型，而unzip只处理二元�
 <p>
 另外在遇到多态类型错误时，添加上你认为应该是正确的类型标注也是一种排错方式。
 </p>
+
+<h1 id="toc_3">集体类型</h1>
+
+<h2 id="toc_3.1">概览</h2>
+
+<p>
+<code>scala</code>包中主要特质<code>Iterable</code>，三个子特质：
+</p>
+
+<ul>
+<li>
+<code>Seq</code>：有序集合。
+
+<li>
+<code>Set</code>：对于<code>==</code>方法不可重复的元素集合。
+
+<li>
+<code>Map</code>：键值映射。
+
+</ul>
+
+<p>
+特技<code>Iterable</code>有个抽象方法<code>elements</code>：
+</p>
+
+<pre class="brush: scala">
+  def elements: Iterator[A]
+</pre>
+
+<p>
+注意返回类型是一个迭代器<code>iterator</code>，不是<code>iterate</code>别看错了！
+</p>
+
+<p>
+迭代器用来从头到尾遍历一遍集合。如果要再遍历一遍的话，只能用<code>elements</code>方法再生成一个新的迭代器。。
+</p>
+
+<p>
+迭代器<code>Iterator</code>继承自<code>AnyRef</code>。<code>Iterator</code>提供的具体方法都实现了<code>next</code>和<code>hasNext</code>抽象方法实现：
+</p>
+
+<pre class="brush: scala">
+  def hasNext: Boolean
+  def next: A
+</pre>
+
+<h2 id="toc_3.2">序列</h2>
+
+<h3 id="toc_3.2.1">列表</h3>
+
+<p>
+列表不能通过索引直接访问元素，只能遍历；但可以支持在头上快速添加和删除。这点像是链式表。
+</p>
+
+<p>
+在头上快速添加和删除元素很好地适合模式匹配。
+</p>
+
+<p>
+但是因为只能对列表头快速访问，而尾部不行。所以如果要操作尾部的话可以先建一个反序的列表，再<code>reverse</code>把顺序反过来。
+</p>
+
+<h3 id="toc_3.2.2">列表缓存</h3>
+
+<p>
+还有一人方式是使用<code>scala.collection.mutable.ListBuffer</code>。
+</p>
+
+<p>
+<code>+=</code>在尾部添加元素；<code>+:</code>加在头上；完成之后用<code>toList</code>生成<code>List</code>：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; import scala.collection.mutable.ListBuffer
+  import scala.collection.mutable.ListBuffer
+
+  scala&gt; val buf = new ListBuffer[Int]             
+  buf: scala.collection.mutable.ListBuffer[Int] = ListBuffer()
+
+  scala&gt; buf += 1                                  
+
+  scala&gt; buf += 2                                  
+
+  scala&gt; buf     
+  res11: scala.collection.mutable.ListBuffer[Int]
+    = ListBuffer(1, 2)
+
+  scala&gt; 3 +: buf                                  
+  res12: scala.collection.mutable.Buffer[Int]
+    = ListBuffer(3, 1, 2)
+
+  scala&gt; buf.toList
+  res13: List[Int] = List(3, 1, 2)
+</pre>
+
+<p>
+<code>List</code>结合前置添加元素和递归算法增长列表时，如果用的递归算法不是尾递归，就有栈溢出的风险；而<code>ListBuffer</code>可以结合循环替代递归。
+</p>
+
+<h3 id="toc_3.2.3">数组</h3>
+
+<p>
+数组适合按索引快速访问元素。
+</p>
+
+<p>
+按长度产数组：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val fiveInts = new Array[Int](5)
+  fiveInts: Array[Int] = Array(0, 0, 0, 0, 0)
+</pre>
+
+<p>
+按元素产数组：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val fiveToOne = Array(5, 4, 3, 2, 1)
+  fiveToOne: Array[Int] = Array(5, 4, 3, 2, 1)
+</pre>
+
+<p>
+通过<code>()</code>指定索引：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; fiveInts(0) = fiveToOne(4)
+
+  scala&gt; fiveInts
+  res1: Array[Int] = Array(1, 0, 0, 0, 0)
+</pre>
+
+<h2 id="toc_3.3">数组缓存</h2>
+
+<p>
+<code>ArrayBuffer</code>可以在头尾添加元素：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; import scala.collection.mutable.ArrayBuffer
+  import scala.collection.mutable.ArrayBuffer
+
+  scala&gt; val buf = new ArrayBuffer[Int]()
+  buf: scala.collection.mutable.ArrayBuffer[Int] = 
+    ArrayBuffer()
+
+  scala&gt; buf += 12
+  scala&gt; buf += 15
+
+  scala&gt; buf
+  res16: scala.collection.mutable.ArrayBuffer[Int] = 
+    ArrayBuffer(12, 15)
+
+  scala&gt; buf.length
+  res17: Int = 2
+
+  scala&gt; buf(0)
+  res18: Int = 12
+</pre>
+
+<h3 id="toc_3.3.1">队列</h3>
+
+<p>
+不可变的队列：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; import scala.collection.immutable.Queue
+  import scala.collection.immutable.Queue
+
+  scala&gt; val empty = new Queue[Int]             
+  empty: scala.collection.immutable.Queue[Int] = Queue()
+
+	// add one element
+  scala&gt; val has1 = empty.enqueue(1)
+  has1: scala.collection.immutable.Queue[Int] = Queue(1)
+
+	// use collection to add many elements
+  scala&gt; val has123 = has1.enqueue(List(2, 3))
+  has123: scala.collection.immutable.Queue[Int] = Queue(1,2,3)
+
+  scala&gt; val (element, has23) = has123.dequeue
+  element: Int = 1
+  has23: scala.collection.immutable.Queue[Int] = Queue(2,3)
+</pre>
+
+<p>
+注意上面取后一个出队操作<code>dequeue</code>返回的是一个二元组，包括出来的元素和剩下的队列。
+</p>
+
+<p>
+可变的队列也差不多，就是用<code>+=</code>和<code>++=</code>添加元素，<code>dequeue</code>方法只返回一个出除的元素。
+</p>
+
+<pre class="brush: scala">
+  scala&gt; import scala.collection.mutable.Queue                
+  import scala.collection.mutable.Queue
+
+  scala&gt; val queue = new Queue[String]
+  queue: scala.collection.mutable.Queue[String] = Queue()
+
+  scala&gt; queue += "a"
+
+  scala&gt; queue ++= List("b", "c")
+
+  scala&gt; queue
+  res21: scala.collection.mutable.Queue[String] = Queue(a, b, c)
+
+  scala&gt; queue.dequeue
+  res22: String = a
+
+  scala&gt; queue
+  res23: scala.collection.mutable.Queue[String] = Queue(b, c)
+</pre>
+
+<h3 id="toc_3.3.2">栈</h3>
+
+<p>
+可变的栈：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; import scala.collection.mutable.Stack
+  import scala.collection.mutable.Stack
+
+  scala&gt; val stack = new Stack[Int]           
+  stack: scala.collection.mutable.Stack[Int] = Stack()
+
+  scala&gt; stack.push(1)
+
+  scala&gt; stack
+  res1: scala.collection.mutable.Stack[Int] = Stack(1)
+
+  scala&gt; stack.push(2)
+
+  scala&gt; stack
+  res3: scala.collection.mutable.Stack[Int] = Stack(1, 2)
+
+  scala&gt; stack.top
+  res8: Int = 2
+
+  scala&gt; stack
+  res9: scala.collection.mutable.Stack[Int] = Stack(1, 2)
+
+  scala&gt; stack.pop    
+  res10: Int = 2
+
+  scala&gt; stack    
+  res11: scala.collection.mutable.Stack[Int] = Stack(1)
+</pre>
+
+<p>
+不可变的栈略。
+</p>
+
+<pre class="brush: scala">
+</pre>
+
+<h3 id="toc_3.3.3">字符串</h3>
+
+<p>
+因为<code>Predef</code>包含了从<code>String</code>到<code>RichString</code>的隐式转换，所以可以把任务字符串当作<code>Seq[Char]</code>。
+</p>
+
+<pre class="brush: scala">
+  scala&gt; def hasUpperCase(s: String) = s.exists(_.isUpperCase)
+  hasUpperCase: (String)Boolean
+
+  scala&gt; hasUpperCase("Robert Frost")
+  res14: Boolean = true
+
+  scala&gt; hasUpperCase("e e cummings")
+  res15: Boolean = false
+</pre>
+
+<p>
+<code>exists</code>方法不在<code>String</code>里，所以隐匿转换为包含<code>exists</code>方法的<code>RichString</code>类。
+</p>
+
+<h2 id="toc_3.4">Set与Map</h2>
+
+<p>
+因为<code>Predef</code>对象通过<code>type</code>关键字指定默认引用了Set与Map的不可变版本：
+</p>
+
+<pre class="brush: scala">
+  object Predef {
+    type Set[T] = scala.collection.immutable.Set[T]
+    type Map[K, V] = scala.collection.immutable.Map[K, V]
+    val Set = scala.collection.immutable.Set
+    val Map = scala.collection.immutable.Map
+    // ...
+  }
+</pre>
+
+<p>
+所以可变版的要手动声明：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; import scala.collection.mutable
+  import scala.collection.mutable
+
+  scala&gt; val mutaSet = mutable.Set(1, 2, 3)          
+  mutaSet: scala.collection.mutable.Set[Int] = Set(3, 1, 2)
+</pre>
+
+<h3 id="toc_3.4.1">使用Set</h3>
+
+<p>
+Set的关键在于用对象的<code>==</code>检查唯一性。
+</p>
+
+<p>
+例子：统计出现的单词
+</p>
+
+<p>
+用正则 <code>[ !,.]+</code> 分隔成单词:
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val text = "See Spot run. Run, Spot. Run!"
+  text: java.lang.String = See Spot run. Run, Spot. Run!
+
+  scala&gt; val wordsArray = text.split("[ !,.]+")    
+  wordsArray: Array[java.lang.String] =
+     Array(See, Spot, run, Run, Spot, Run)
+</pre>
+
+<p>
+建立Set并存入：
+</p>
+
+<pre class="brush: scala">
+  scala&gt;  val words = mutable.Set.empty[String]
+  words: scala.collection.mutable.Set[String] = Set()
+
+  scala&gt; for (word &lt;- wordsArray)
+       |   words += word.toLowerCase
+
+  scala&gt; words
+  res25: scala.collection.mutable.Set[String] =
+    Set(spot, run, see)
+</pre>
+
+<p>
+常用方法：
+</p>
+
+<table>
+<tr>
+<td>
+val nums = Set(1, 2, 3)
+</td>
+<td>
+（返回）
+</td>
+</tr>
+<tr>
+<td>
+nums + 5
+</td>
+<td>
+（返回）
+</td>
+</tr>
+<tr>
+<td>
+nums - 3
+</td>
+<td>
+（返回）
+</td>
+</tr>
+<tr>
+<td>
+nums ++ List(5, 6)
+</td>
+<td>
+（返回）
+</td>
+</tr>
+<tr>
+<td>
+nums -- List(1, 2)
+</td>
+<td>
+（返回）
+</td>
+</tr>
+<tr>
+<td>
+nums ** Set(1, 3, 5, 7)
+</td>
+<td>
+交集（返回Set(3)）
+</td>
+</tr>
+<tr>
+<td>
+nums.size
+</td>
+<td>
+（返回）
+</td>
+</tr>
+<tr>
+<td>
+nums.contains(3)
+</td>
+<td>
+（返回）
+</td>
+</tr>
+<tr>
+<td>
+import scala.collection.mutable
+</td>
+<td>
+（返回）
+</td>
+</tr>
+<tr>
+<td>
+val words = mutable.Set.empty[String]
+</td>
+<td>
+创建空的可变集
+</td>
+</tr>
+<tr>
+<td>
+words += "the"
+</td>
+<td>
+（返回）
+</td>
+</tr>
+<tr>
+<td>
+words -= "the"
+</td>
+<td>
+（返回）
+</td>
+</tr>
+<tr>
+<td>
+words ++= List("do", "re", "mi")
+</td>
+<td>
+（返回）
+</td>
+</tr>
+<tr>
+<td>
+words --= List("do", "re")
+</td>
+<td>
+（返回）
+</td>
+</tr>
+<tr>
+<td>
+words.clear
+</td>
+<td>
+（返回）
+</td>
+</tr>
+</table>
+
+<h3 id="toc_3.4.2">Map</h3>
+
+<p>
+使用可变的Map：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val map = mutable.Map.empty[String, Int]
+  map: scala.collection.mutable.Map[String,Int] = Map()
+
+  scala&gt; val map = mutable.Map.empty[String, Int]
+  map: scala.collection.mutable.Map[String,Int] = Map()
+
+  scala&gt; map("hello") = 1
+
+  scala&gt; map("there") = 2
+
+  scala&gt; map
+  res28: scala.collection.mutable.Map[String,Int] =
+    Map(hello -&gt; 1, there -&gt; 2)
+
+  scala&gt; map("hello")
+  res29: Int = 1
+</pre>
+
+<p>
+统计单词出现次数的例子：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; def countWords(text: String) = {
+       |   val counts = mutable.Map.empty[String, Int]
+       |   for (rawWord &lt;- text.split("[ ,!.]+")) {
+       |     val word = rawWord.toLowerCase
+       |     val oldCount = 
+       |       if (counts.contains(word)) counts(word)
+       |       else 0
+       |     counts += (word -&gt; (oldCount + 1))
+       |   }
+       |   counts
+       | }
+  countWords: (String)scala.collection.mutable.Map[String,Int]
+  
+
+  scala&gt; countWords("See Spot run! Run, Spot. Run!")
+  res30: scala.collection.mutable.Map[String,Int] =
+    Map(see -&gt; 1, run -&gt; 3, spot -&gt; 2)
+</pre>
+
+<p>
+常用方法：
+</p>
+
+<table>
+<tr>
+<td>
+val nums = Map("i"-&gt;1, "ii"-&gt;2)
+</td>
+<td>
+返回
+</td>
+</tr>
+<tr>
+<td>
+nums + ("vi"-&gt;6)
+</td>
+<td>
+返回
+</td>
+</tr>
+<tr>
+<td>
+nums - "ii"
+</td>
+<td>
+返回
+</td>
+</tr>
+<tr>
+<td>
+nums ++ List("iii"-&gt;3, "v"-&gt;5)
+</td>
+<td>
+返回
+</td>
+</tr>
+<tr>
+<td>
+nums -- List("i", "ii")
+</td>
+<td>
+返回
+</td>
+</tr>
+<tr>
+<td>
+nums.size
+</td>
+<td>
+返回
+</td>
+</tr>
+<tr>
+<td>
+nums.contains("ii")
+</td>
+<td>
+返回
+</td>
+</tr>
+<tr>
+<td>
+nums("ii")
+</td>
+<td>
+返回
+</td>
+</tr>
+<tr>
+<td>
+nums.keys
+</td>
+<td>
+返回迭代器
+</td>
+</tr>
+<tr>
+<td>
+nums.keySet
+</td>
+<td>
+返回
+</td>
+</tr>
+<tr>
+<td>
+nums.values
+</td>
+<td>
+返回
+</td>
+</tr>
+<tr>
+<td>
+nums.isEmpty
+</td>
+<td>
+返回
+</td>
+</tr>
+<tr>
+<td>
+import scala.collection.mutable
+</td>
+<td>
+返回
+</td>
+</tr>
+<tr>
+<td>
+val words = mutalbe.Map.empty[String, Int]
+</td>
+<td>
+返回
+</td>
+</tr>
+<tr>
+<td>
+words += ("one"-&gt;1)
+</td>
+<td>
+返回
+</td>
+</tr>
+<tr>
+<td>
+words -= "one"
+</td>
+<td>
+返回
+</td>
+</tr>
+<tr>
+<td>
+words ++= List("one"-&gt;1, "two"-&gt;2, "three"-&gt;3))
+</td>
+<td>
+返回
+</td>
+</tr>
+<tr>
+<td>
+words --= List("one", "two")
+</td>
+<td>
+返回
+</td>
+</tr>
+</table>
+
+<h3 id="toc_3.4.3">默认的Set和Map</h3>
+
+<p>
+不可变的类会对数量优化一些工厂方法返回的默认的实现。
+</p>
+
+<p>
+不可变的<code>scala.collection.immutable.Set()</code>工厂方法返回：
+</p>
+
+<table>
+<tr>
+<td>
+元素的数量
+</td>
+<td>
+实现
+</td>
+</tr>
+<tr>
+<td>
+0
+</td>
+<td>
+scala.collection.immutable.EmptySet
+</td>
+</tr>
+<tr>
+<td>
+1
+</td>
+<td>
+scala.collection.immutable.Set1
+</td>
+</tr>
+<tr>
+<td>
+2
+</td>
+<td>
+scala.collection.immutable.Set2
+</td>
+</tr>
+<tr>
+<td>
+3
+</td>
+<td>
+scala.collection.immutable.Set3
+</td>
+</tr>
+<tr>
+<td>
+4
+</td>
+<td>
+scala.collection.immutable.Set4
+</td>
+</tr>
+<tr>
+<td>
+&gt;=5
+</td>
+<td>
+scala.collection.immutable.HashSet
+</td>
+</tr>
+</table>
+
+<p>
+不可变的<code>scala.collection.immutable.Map()</code>工厂方法返回：
+</p>
+
+<table>
+<tr>
+<td>
+元素的数量
+</td>
+<td>
+实现
+</td>
+</tr>
+<tr>
+<td>
+0
+</td>
+<td>
+scala.collection.immutable.EmptyMap
+</td>
+</tr>
+<tr>
+<td>
+1
+</td>
+<td>
+scala.collection.immutable.Map1
+</td>
+</tr>
+<tr>
+<td>
+2
+</td>
+<td>
+scala.collection.immutable.Map2
+</td>
+</tr>
+<tr>
+<td>
+3
+</td>
+<td>
+scala.collection.immutable.Map3
+</td>
+</tr>
+<tr>
+<td>
+4
+</td>
+<td>
+scala.collection.immutable.Map4
+</td>
+</tr>
+<tr>
+<td>
+&gt;=5
+</td>
+<td>
+scala.collection.immutable.HashMap
+</td>
+</tr>
+</table>
+
+<h3 id="toc_3.4.4">有序的集体和映射</h3>
+
+<p>
+<code>TreeSet</code>和<code>TreeMap</code>分别实现了<code>SortedSet</code>和<code>SortedMap</code>特质。都用红黑树保存元素，顺序由<code>Ordered</code>特质决定。这些类只有不可变的版本：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; import scala.collection.immutable.TreeSet
+  import scala.collection.immutable.TreeSet
+
+  scala&gt; val ts = TreeSet(9, 3, 1, 8, 0, 2, 7, 4, 6, 5)
+  ts: scala.collection.immutable.SortedSet[Int] =
+    Set(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+
+  scala&gt; val cs = TreeSet('f', 'u', 'n')
+  cs: scala.collection.immutable.SortedSet[Char] = Set(f, n, u)
+
+
+  scala&gt; import scala.collection.immutable.TreeMap
+  import scala.collection.immutable.TreeMap
+
+  scala&gt; var tm = TreeMap(3 -&gt; 'x', 1 -&gt; 'x', 4 -&gt; 'x')
+  tm: scala.collection.immutable.SortedMap[Int,Char] =
+    Map(1 -&gt; x, 3 -&gt; x, 4 -&gt; x)
+
+  scala&gt; tm += (2 -&gt; 'x')
+
+  scala&gt; tm
+  res38: scala.collection.immutable.SortedMap[Int,Char] =
+    Map(1 -&gt; x, 2 -&gt; x, 3 -&gt; x, 4 -&gt; x)
+</pre>
+
+<h3 id="toc_3.4.5">同步的Set和Map</h3>
+
+<p>
+把<code>SynchronizedMap</code>特质混入到实现中。下面单例对象中的<code>makeMap</code>方法：
+</p>
+
+<pre class="brush: scala">
+  import scala.collection.mutable.{Map,
+      SynchronizedMap, HashMap}
+
+  object MapMaker {
+
+    def makeMap: Map[String, String] = {
+
+        new HashMap[String, String] with
+            SynchronizedMap[String, String] {
+
+          override def default(key: String) =
+            "Why do you want to know?"
+        }
+    }
+  }
+</pre>
+
+<p>
+上面的方法会返回一个<code>HashMap</code>并且重写了<code>default</code>方法在没有对应的key时有默认的返回。
+</p>
+
+<p>
+单线程访问的情况如下：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val capital = MapMaker.makeMap  
+  capital: scala.collection.mutable.Map[String,String] = Map()
+
+  scala&gt; capital ++ List("US" -&gt; "Washington",
+       |      "Paris" -&gt; "France", "Japan" -&gt; "Tokyo")
+  res0: scala.collection.mutable.Map[String,String] =
+    Map(Paris -&gt; France, US -&gt; Washington, Japan -&gt; Tokyo)
+
+  scala&gt; capital("Japan")
+  res1: String = Tokyo
+
+  scala&gt; capital("New Zealand")
+  res2: String = Why do you want to know?
+
+  scala&gt; capital += ("New Zealand" -&gt; "Wellington")
+
+  scala&gt; capital("New Zealand")                    
+  res3: String = Wellington
+</pre>
+
+<p>
+类似的同步的Set：
+</p>
+
+<pre class="brush: scala">
+  val synchroSet =
+    new mutable.HashSet[Int] with
+        mutable.SynchronizedSet[Int]
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
 
 <pre class="brush: scala">
 </pre>
