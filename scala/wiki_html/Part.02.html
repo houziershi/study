@@ -156,6 +156,14 @@
 <li><a href="#toc_5.3.1">变化型和数组</a>
 </ul>
 <li><a href="#toc_5.4">检查变化型注解</a>
+<li><a href="#toc_5.5">电路模拟</a>
+<ul>
+<li><a href="#toc_5.5.1">Wire类</a>
+<li><a href="#toc_5.5.2">反转操作</a>
+<li><a href="#toc_5.5.3">与门和或门操作</a>
+<li><a href="#toc_5.5.4">模拟输出</a>
+<li><a href="#toc_5.5.5">运行模拟器</a>
+</ul>
 </ul>
 </ul>
 </div>
@@ -4074,6 +4082,9 @@ val a, b, c = new Wire
 这是内部DSL很好的例子：通过宿主语言将特定的语言定义为库面不是完全实现这种语言。
 </p>
 
+
+
+
 <h2 id="toc_4.3">Simulation API</h2>
 
 <p>
@@ -4995,37 +5006,539 @@ Scala中数组是不可协变的：
       println(Math.sqrt(x))
       super.append(x)
     }
+=======
+type Action = () =&gt; Unit
+</pre>
+
+<p>
+私有变量保存时间，但提供对时间的公开访问：
+</p>
+
+<pre class="brush: scala">
+  private var curtime: Int = 0
+
+  def currentTime: Int = curtime
+</pre>
+
+<p>
+在特定时间执行的的操作定义为工作项目（work item）：
+</p>
+
+<pre class="brush: scala">
+  case class WorkItem(time: Int, action: Action)
+</pre>
+
+<p>
+注意这里用的是样本类，所以用工厂方法创建实例就可以自动获得访问构造器参数<code>time</code>和<code>action</code>的方法。
+</p>
+
+<p>
+还有一个类来保存末执行工作条目的排程表（agenda），它是按时间排序的：
+</p>
+
+<pre class="brush: scala">
+  private var agenda: List[WorkItem] = List()
+</pre>
+
+<p>
+提供在一定 时延后加入新的工作条目的方法，加入操作也要排序：
+</p>
+
+<pre class="brush: scala">
+  def afterDelay(delay: Int)(block: =&gt; Unit) {
+    val item = WorkItem(currentTime + delay, () =&gt; block)
+    agenda = insert(agenda, item)
+  }
+
+  private def insert(ag: List[WorkItem], 
+      item: WorkItem): List[WorkItem] =  {
+
+    if (ag.isEmpty || item.time &lt; ag.head.time) item :: ag
+    else ag.head :: insert(ag.tail, item)
   }
 </pre>
 
-<pre class="brush: scala">
-</pre>
+<p>
+核心是<code>run</code>方法：
+</p>
 
 <pre class="brush: scala">
+  def run() {
+    afterDelay(0) {
+      println("*** simulation started, time = "+
+          currentTime +" ***")
+    }
+    while (!agenda.isEmpty) next()
+  }
+  
+  private def next() {
+    (agenda: @unchecked) match {
+      case item :: rest =&gt; 
+        agenda = rest 
+        curtime = item.time
+        item.action()
+    }
+  }
 </pre>
 
-<pre class="brush: scala">
-</pre>
+<p>
+注意这里为了方便去掉了空列表的情况。为了防止编译器警告我们在模式匹配里故意漏掉了列表为空的情况，在这里使用了<code>(agenda: @unchecked) match</code>而不是<code>agenda match</code>。
+</p>
+
+<p>
+完整的代码在包<code>org.stairwaybook.simulation</code>里：
+</p>
 
 <pre class="brush: scala">
+  abstract class Simulation {
+
+    type Action = () =&gt; Unit
+
+    case class WorkItem(time: Int, action: Action)
+
+    private var curtime = 0
+    def currentTime: Int = curtime
+
+    private var agenda: List[WorkItem] = List()
+
+    private def insert(ag: List[WorkItem],
+        item: WorkItem): List[WorkItem] = {
+
+      if (ag.isEmpty || item.time &lt; ag.head.time) item :: ag
+      else ag.head :: insert(ag.tail, item)
+    }
+
+    def afterDelay(delay: Int)(block: =&gt; Unit) {
+      val item = WorkItem(currentTime + delay, () =&gt; block)
+      agenda = insert(agenda, item)
+    }
+
+    private def next() {
+      (agenda: @unchecked) match {
+        case item :: rest =&gt; 
+          agenda = rest 
+          curtime = item.time
+          item.action()
+      }
+    }
+
+    def run() {
+      afterDelay(0) {
+        println("*** simulation started, time = "+
+            currentTime +" ***")
+      }
+      while (!agenda.isEmpty) next()
+    }
+  }
 </pre>
 
-<pre class="brush: scala">
-</pre>
+
+
+<h2 id="toc_5.5">电路模拟</h2>
+
+<p>
+这里创建了<code>BasicCircuitSiomulation</code>来模拟电路。
+</p>
+
+<p>
+为了模拟电路和延迟声明了三个方法：<code>InverterDelay</code>、<code>AndGateDelay</code>、<code>OrGateDelay</code>。由于不同模拟电路的技术参数不同，所以这三个方法是抽象方法。
+</p>
+
+<h3 id="toc_5.5.1">Wire类</h3>
+
+<p>
+需要支持的三种基本动作：
+</p>
+
+<p>
+<code>getSignal: Boolean</code>：返回当前线路上的信号。
+</p>
+
+<p>
+<code>setSignal(sig: Boolean)</code>：设置线路信号。
+</p>
+
+<p>
+<code>addAction(p: Action)</code>：添加动作到线路上。基本思想是所有附加在某线路上的动作过程在每次信号改变时被执行。通过连接组件可以为线路添加该组件的功能。加上的动作会在被加到线路时以及每次线路信号改变时被执行。
+</p>
+
+<p>
+实现代码<code>sigVal</code>代表当前信号，<code>actions</code>是附加的动作过程。需要注意的是<code>setSignal</code>方法，当信号改变时，新的信号首先被保存在变量<code>sigVal</code>中，然后执行所有线路附加动作：
+</p>
 
 <pre class="brush: scala">
+  class Wire {
+    private var sigVal = false
+    private var actions: List[Action] = List()
+
+    def getSignal = sigVal
+
+    def setSignal(s: Boolean) = 
+      if (s != sigVal) {
+        sigVal = s
+        actions foreach (_ ()) 
+      }
+
+    def addAction(a: Action) = {
+      actions = a :: actions
+      a()
+    }
+  }
 </pre>
 
-<pre class="brush: scala">
-</pre>
+<p>
+注意上面的缩写格式：<code>actions forearch(_())</code>代表对每个元素执行<code>_()</code>。在“函数和装饰”这一章的“占位符”部分说明过，函数<code>_()</code>是<code>f =&gt; f()</code>的缩写，代表空参数函数。
+</p>
+
+<h3 id="toc_5.5.2">反转操作</h3>
+
+<p>
+<code>inverter</code>方法会在安装之后以及每次线路信号变化时被调用。它通过<code>setSignal</code>把输出设为输入的反值。
+</p>
+
+<p>
+另外，由于还要模拟电路的响应时间，所以输入值改变以后，还要等<code>InverterDelay</code>单位的模拟时间后，才发生改变：
+</p>
 
 <pre class="brush: scala">
+  def inverter(input: Wire, output: Wire) = {
+    def invertAction() {
+      val inputSig = input.getSignal
+      afterDelay(InverterDelay) {
+        output setSignal !inputSig 
+      }
+    }
+    input addAction invertAction
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; 62fc1aca9864b146cf16374c2a7002cd50a06e47
+  }
 </pre>
 
-<pre class="brush: scala">
-</pre>
+<p>
+注意这里的<code>afterDelay</code>方法是把这个操作加到队列的最后面。
+</p>
+
+<h3 id="toc_5.5.3">与门和或门操作</h3>
+
+<p>
+大致思想和上面类似：
+</p>
 
 <pre class="brush: scala">
+  def andGate(a1: Wire, a2: Wire, output: Wire) = {
+    def andAction() = {
+      val a1Sig = a1.getSignal
+      val a2Sig = a2.getSignal
+      afterDelay(AndGateDelay) {
+        output setSignal (a1Sig &amp; a2Sig) 
+      }
+    }
+    a1 addAction andAction
+    a2 addAction andAction
+  }
+
+  def orGate(o1: Wire, o2: Wire, output: Wire) {
+    def orAction() {
+      val o1Sig = o1.getSignal
+      val o2Sig = o2.getSignal
+      afterDelay(OrGateDelay) {
+        output setSignal (o1Sig | o2Sig)
+      }
+    }
+    o1 addAction orAction
+    o2 addAction orAction
+  }
+</pre>
+
+<h3 id="toc_5.5.4">模拟输出</h3>
+
+<p>
+通过探针（probe）观察线路上信号的改变。
+</p>
+
+<p>
+还是在信号改变时被调用，显示输出线路的名称、模拟时间、信号值：
+</p>
+
+<pre class="brush: scala">
+  def probe(name: String, wire: Wire) {
+    def probeAction() {
+      println(name +" "+ currentTime +
+          " new-value = "+ wire.getSignal)
+    }
+    wire addAction probeAction
+  }
+</pre>
+
+<h3 id="toc_5.5.5">运行模拟器</h3>
+
+<p>
+<code>BasicCircuitSimulation</code>继承了<code>CircuitSimulation</code>
+</p>
+
+<pre class="brush: scala">
+  package org.stairwaybook.simulation
+
+  abstract class CircuitSimulation
+    extends BasicCircuitSimulation {
+
+    def halfAdder(a: Wire, b: Wire, s: Wire, c: Wire) {
+      val d, e = new Wire
+      orGate(a, b, d)
+      andGate(a, b, c)
+      inverter(c, e)
+      andGate(d, e, s)
+    }
+
+    def fullAdder(a: Wire, b: Wire, cin: Wire,
+        sum: Wire, cout: Wire) {
+
+      val s, c1, c2 = new Wire
+      halfAdder(a, cin, s, c1)
+      halfAdder(b, s, sum, c2)
+      orGate(c1, c2, cout)
+    }
+  }
+</pre>
+
+<p>
+剩下的电路延迟时间和定义被模拟的电路都留在Scala交互Shell中实现：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; import org.stairwaybook.simulation._
+  import org.stairwaybook.simulation._
+</pre>
+
+<p>
+定义延迟时间：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; object MySimulation extends CircuitSimulation {
+       |   def InverterDelay = 1
+       |   def AndGateDelay = 3
+       |   def OrGateDelay = 5
+       | }
+  defined module MySimulation
+</pre>
+
+<p>
+定义一下简化以后对<code>MySimulation</code>的引用：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; import MySimulation._
+  import MySimulation._
+</pre>
+
+<p>
+定义线路的部分。先定义四根线路，再把探针放在其中的两根上。探针会立即输出结果：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val input1, input2, sum, carry = new Wire
+  input1: MySimulation.Wire =
+      simulator.BasicCircuitSimulation$Wire@111089b
+  input2: MySimulation.Wire =
+      simulator.BasicCircuitSimulation$Wire@14c352e
+  sum: MySimulation.Wire =
+      simulator.BasicCircuitSimulation$Wire@37a04c
+  carry: MySimulation.Wire =
+      simulator.BasicCircuitSimulation$Wire@1fd10fa
+
+  scala&gt; probe("sum", sum)
+  sum 0 new-value = false
+
+  scala&gt; probe("carry", carry)
+  carry 0 new-value = false
+</pre>
+
+<p>
+加上半加法器：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; halfAdder(input1, input2, sum, carry)
+</pre>
+
+<p>
+逐次把两根输入线信号设为<code>true</code>，并执行模拟过程：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; input1 setSignal true
+
+  scala&gt; run()
+  *** simulation started, time = 0 ***
+  sum 8 new-value = true
+
+  scala&gt; input2 setSignal true
+
+  scala&gt; run()
+  *** simulation started, time = 8 ***
+  carry 11 new-value = true
+  sum 15 new-value = false
+</pre>
+
+<p>
+全部代码如下：
+</p>
+
+<pre class="brush: scala">
+package org.stairwaybook.simulation
+
+abstract class BasicCircuitSimulation extends Simulation {
+
+  def InverterDelay: Int
+  def AndGateDelay: Int
+  def OrGateDelay: Int
+
+  class Wire {
+
+    private var sigVal = false
+    private var actions: List[Action] = List()
+
+    def getSignal = sigVal
+
+    def setSignal(s: Boolean) = 
+      if (s != sigVal) {
+        sigVal = s
+        actions foreach (_ ()) 
+      }
+
+    def addAction(a: Action) = {
+      actions = a :: actions
+      a()
+    }
+  }
+
+  def inverter(input: Wire, output: Wire) = {
+    def invertAction() {
+      val inputSig = input.getSignal
+      afterDelay(InverterDelay) {
+        output setSignal !inputSig 
+      }
+    }
+    input addAction invertAction
+  }
+
+  // continued in Listing 18.10...
+  // ...continued from Listing 18.9
+  def andGate(a1: Wire, a2: Wire, output: Wire) = {
+    def andAction() = {
+      val a1Sig = a1.getSignal
+      val a2Sig = a2.getSignal
+      afterDelay(AndGateDelay) {
+        output setSignal (a1Sig &amp; a2Sig) 
+      }
+    }
+    a1 addAction andAction
+    a2 addAction andAction
+  }
+
+  def orGate(o1: Wire, o2: Wire, output: Wire) {
+    def orAction() {
+      val o1Sig = o1.getSignal
+      val o2Sig = o2.getSignal
+      afterDelay(OrGateDelay) {
+        output setSignal (o1Sig | o2Sig)
+      }
+    }
+    o1 addAction orAction
+    o2 addAction orAction
+  }
+
+  def probe(name: String, wire: Wire) {
+    def probeAction() {
+      println(name +" "+ currentTime +
+          " new-value = "+ wire.getSignal)
+    }
+    wire addAction probeAction
+  }
+}
+
+abstract class Simulation {
+
+  type Action = () =&gt; Unit
+
+  case class WorkItem(time: Int, action: Action)
+
+  private var curtime = 0
+  def currentTime: Int = curtime
+
+  private var agenda: List[WorkItem] = List()
+
+  private def insert(ag: List[WorkItem],
+      item: WorkItem): List[WorkItem] = {
+
+    if (ag.isEmpty || item.time &lt; ag.head.time) item :: ag
+    else ag.head :: insert(ag.tail, item)
+  }
+
+  def afterDelay(delay: Int)(block: =&gt; Unit) {
+    val item = WorkItem(currentTime + delay, () =&gt; block)
+    agenda = insert(agenda, item)
+  }
+
+  private def next() {
+    (agenda: @unchecked) match {
+      case item :: rest =&gt; 
+        agenda = rest 
+        curtime = item.time
+        item.action()
+    }
+  }
+
+  def run() {
+    afterDelay(0) {
+      println("*** simulation started, time = "+
+          currentTime +" ***")
+    }
+    while (!agenda.isEmpty) next()
+  }
+}
+
+
+abstract class CircuitSimulation
+  extends BasicCircuitSimulation {
+
+  def halfAdder(a: Wire, b: Wire, s: Wire, c: Wire) {
+    val d, e = new Wire
+    orGate(a, b, d)
+    andGate(a, b, c)
+    inverter(c, e)
+    andGate(d, e, s)
+  }
+
+  def fullAdder(a: Wire, b: Wire, cin: Wire,
+      sum: Wire, cout: Wire) {
+
+    val s, c1, c2 = new Wire
+    halfAdder(a, cin, s, c1)
+    halfAdder(b, s, sum, c2)
+    orGate(c1, c2, cout)
+  }
+}
+
+ object MySimulation extends CircuitSimulation {
+           def InverterDelay = 1
+           def AndGateDelay = 3
+           def OrGateDelay = 5
+
+  def main(args: Array[String]) {
+    val input1, input2, sum, carry = new Wire
+
+    probe("sum", sum)
+    probe("carry", carry)
+    halfAdder(input1, input2, sum, carry)
+
+    input1 setSignal true
+    run()
+
+    input2 setSignal true
+    run()
+  }
+}
 </pre>
 
 <pre class="brush: scala">
