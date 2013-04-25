@@ -1,4 +1,3 @@
-
 %title Part II
 
 %toc Part II
@@ -14,12 +13,12 @@
 
 === 样本类 ===
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   abstract class Expr
   case class Var(name: String) extends Expr
   case class Number(num: Double) extends Expr
   case class UnOp(operator: String, arg: Expr) extends Expr
-  case class BinOp(operator: String, 
+  case class BinOp(operator: String,
       left: Expr, right: Expr) extends Expr
 }}}
 
@@ -27,19 +26,19 @@
 
 样本类在使用工厂方法创建时可以省掉`new`：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
 val v = Var("x")
 }}}
 
 这个特点让方法嵌套时少写`new`让代码看起来更加简洁：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
 val op = binOp("+", Number(1), v)
 }}}
 
 样本类的另一个特点是参数列表中所有的参数隐式获得了`val`前缀，被作为字段维护：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
 scala> v.name
 res0: String = x
 
@@ -49,7 +48,7 @@ res1: Expr = Number(1.0)
 
 编译器为样本类添加了可读性更强的`toString`、`hashCode`和`equals`方法：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   scala> println(op)
   BinOp(+,Number(1.0),Var(x))
 
@@ -59,32 +58,32 @@ res1: Expr = Number(1.0)
 
 先来看一下格式。在格式上相当于把Java的`switch`格式：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   switch (selector) { alternatives }
 }}}
 
 中括号里的选择器移到了`match`关键字的前面：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   selector match { alternatives }
 }}}
 
 
 下面了一些基本的数学简化操作。下面的操作不用计算，因为值是不会变的：
 
-{{{class="brush: scala" 
-  UnOp("-", UnOp("-", e))  => e   // 负负得正
-  BinOp("+", e, Number(0)) => e   // 加0
-  BinOp("*", e, Number(1)) => e   // 乘1
+{{{class="brush: scala"
+  UnOp("-", UnOp("-", e)) => e // 负负得正
+  BinOp("+", e, Number(0)) => e // 加0
+  BinOp("*", e, Number(1)) => e // 乘1
 }}}
 
 定义一个`simplifyTop`来简化运算：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   def simplifyTop(expr: Expr): Expr = expr match {
-    case UnOp("-", UnOp("-", e))  => e   // Double negation
-    case BinOp("+", e, Number(0)) => e   // Adding zero
-    case BinOp("*", e, Number(1)) => e   // Multiplying by one
+    case UnOp("-", UnOp("-", e)) => e // Double negation
+    case BinOp("+", e, Number(0)) => e // Adding zero
+    case BinOp("*", e, Number(1)) => e // Multiplying by one
     case _ => expr
   }
 }}}
@@ -92,7 +91,7 @@ res1: Expr = Number(1.0)
 方法`simplifyTop`接收一个`Expr`类型的参数。这里参数`expr`作为选择器匹配各个备选项，`_`为通配模式能匹配所有的值，相当于Java中的default。箭头`=>`分开的模式与表达式。
 调用：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   scala> simplifyTop(UnOp("-", UnOp("-", Var("x"))))
   res4: Expr = Var(x)
 }}}
@@ -102,7 +101,7 @@ res1: Expr = Number(1.0)
 * 一个case不会走到下一个case。
 * 如果一项也没有匹配成功，会抛出`MatchError`异常。如果不想要异常要么把所有可能性都写上；要么加一个`_`的默认情况。
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   expr match {
     case BinOp(op, left, right) =>
       println(expr +" is a binary operation")
@@ -119,7 +118,7 @@ res1: Expr = Number(1.0)
 
 通配模式“`_`”匹配所有的结果：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   expr match {
     case BinOp(op, left, right) =>
       println(expr +"is a binary operation")
@@ -129,7 +128,7 @@ res1: Expr = Number(1.0)
 
 通配符还可以省略省略不用关注的内容，比如函数的参数名：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   expr match {
     case BinOp(_, _, _) => println(expr +"is a binary operation")
     case _ => println("It's something else")
@@ -140,7 +139,7 @@ res1: Expr = Number(1.0)
 
 任何字面量都可以用作常量，如`nil`，`5`，`true`和`"hello"`：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   def describe(x: Any) = x match {
     case 5 => "five"
     case true => "truth"
@@ -152,7 +151,7 @@ res1: Expr = Number(1.0)
 
 效果：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   scala> describe(5)
   res5: java.lang.String = five
 
@@ -173,7 +172,7 @@ res1: Expr = Number(1.0)
 
 变量类似通配模式，只不过有个变量名所以可以在后面的表达式中操作这个变量：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   expr match {
     case 0 => "zero"
     case somethingElse => "not zero: "+ somethingElse
@@ -184,13 +183,13 @@ res1: Expr = Number(1.0)
 
 常量不止有字面形式，还有用符号名的（比如`Nil`）。这样看起来就很容易与变量模式搞混：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   scala> import Math.{E, Pi}
   import Math.{E, Pi}
 
   scala> E match {
-       |   case Pi => "strange math? Pi = "+ Pi
-       |   case _ => "OK"
+       | case Pi => "strange math? Pi = "+ Pi
+       | case _ => "OK"
        | }
   res10: java.lang.String = OK
 }}}
@@ -198,34 +197,34 @@ res1: Expr = Number(1.0)
 上面的`E`与`Pi`都是常量。对Scala编译器来说小写字母开头都作为变量，其他引用被认为是常量。下面的例子中想建立一个小写的`pi`就匹配到常量`Pi`了：
 
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   scala> val pi = Math.Pi
   pi: Double = 3.141592653589793
 
   scala> E match {
-       |   case pi => "strange math? Pi = "+ pi
+       | case pi => "strange math? Pi = "+ pi
        | }
   res11: java.lang.String = strange math? Pi = 2.7182818...
 }}}
 
 在这个变量模式情况下，不能使用通配模式。因为变量模式已经可以匹配所有情况了：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   scala> E match {
-       |   case pi => "strange math? Pi = "+ pi
-       |   case _ => "OK"  
+       | case pi => "strange math? Pi = "+ pi
+       | case _ => "OK"
        | }
   <console>:9: error: unreachable code
-           case _ => "OK"  
+           case _ => "OK"
                      ^
 }}}
 
 其实也有强制使用小写常量名的方式：`this.pi`或`obj.pi`的形式表示是常量模式；如果这样还没有用，可以用反引号包起来，如：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   scala> E match {
-       |   case `pi` => "strange math? Pi = "+ pi
-       |   case _ => "OK"
+       | case `pi` => "strange math? Pi = "+ pi
+       | case _ => "OK"
        | }
   res13: java.lang.String = OK
 }}}
@@ -233,7 +232,7 @@ res1: Expr = Number(1.0)
 反引号也可以用来处理其他的编码问题，如对于标识符来说，因为`yield`是Scala的保留字
 所以不能写`Thread.yield()`，但可以写成：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
 Thread.`yield`()
 }}}
 
@@ -245,7 +244,7 @@ Scala的模式支持深度匹配（deep match）。不止检查对象是否一�
 
 如下面的代码不仅检查了顶层的对象是`BinOp`，而且第三个构造参数是`Number`，而且它的值为`0`：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   expr match {
     case BinOp("+", e, Number(0)) => println("a deep match")
     case _ =>
@@ -256,7 +255,7 @@ Scala的模式支持深度匹配（deep match）。不止检查对象是否一�
 
 指定匹配序列中任意元素，如指定开始为0：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   expr match {
     case List(0, _, _) => println("found it")
     case _ =>
@@ -265,7 +264,7 @@ Scala的模式支持深度匹配（deep match）。不止检查对象是否一�
 
 不固定长度用`_*`：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   expr match {
     case List(0, _*) => println("found it")
     case _ =>
@@ -274,17 +273,17 @@ Scala的模式支持深度匹配（deep match）。不止检查对象是否一�
 
 === 元组模式 ===
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   def tupleDemo(expr: Any) =
     expr match {
-      case (a, b, c)  =>  println("matched "+ a + b + c)
+      case (a, b, c) => println("matched "+ a + b + c)
       case _ =>
     }
 }}}
 
 调用：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   scala> tupleDemo(("a ", 3, "-tuple"))
   matched a 3-tuple
 }}}
@@ -293,7 +292,7 @@ Scala的模式支持深度匹配（deep match）。不止检查对象是否一�
 
 可以当成类型测试和类型转换的简易替代：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   def generalSize(x: Any) = x match {
     case s: String => s.length
     case m: Map[_, _] => m.size
@@ -303,7 +302,7 @@ Scala的模式支持深度匹配（deep match）。不止检查对象是否一�
 
 调用的例子：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   scala> generalSize("abc")
   res14: Int = 3
 
@@ -318,19 +317,19 @@ Scala的模式支持深度匹配（deep match）。不止检查对象是否一�
 
 另一个测试类型的方法：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
 expr.isInstanceOf[String]
 }}}
 
 另一个转换类型的方法：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
 expr.asInstanceOf[String]
 }}}
 
 使用类型转换的例子：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   if (x.isInstanceOf[String]) {
     val s = x.asInstanceOf[String]
     s.length
@@ -338,25 +337,25 @@ expr.asInstanceOf[String]
 }}}
 
 
-===  类型擦除  ===
+=== 类型擦除 ===
 
 和Java一样，对于除了数组以外其他集合都采用了泛型擦除（erasure）。就是在运行时不知道集合泛型类型。
 
 如对于`Map[Int,Int]`，到了运行时就不知道两个类型是什么类型了。所以对于泛型的模式匹配，编译器会有警告信息：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   scala> def isIntIntMap(x: Any) = x match {
-       |   case m: Map[Int, Int] => true
-       |   case _ => false
+       | case m: Map[Int, Int] => true
+       | case _ => false
        | }
-  warning: there were unchecked warnings; re-run with 
+  warning: there were unchecked warnings; re-run with
      -unchecked for details
   isIntIntMap: (Any)Boolean
 }}}
 
 在启动编译器时加上检查开关可以看到更多详细信息：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   scala> :quit
   $ scala -unchecked
   Welcome to Scala version 2.7.2
@@ -364,9 +363,9 @@ expr.asInstanceOf[String]
   Type in expressions to have them evaluated.
   Type :help for more information.
 
-scala>  def isIntIntMap(x: Any) = x match {
-     |   case m: Map[Int, Int] => true
-     |   case _ => false
+scala> def isIntIntMap(x: Any) = x match {
+     | case m: Map[Int, Int] => true
+     | case _ => false
      | }
   <console>:5: warning: non variable type-argument Int in
   type pattern is unchecked since it is eliminated by erasure
@@ -376,7 +375,7 @@ scala>  def isIntIntMap(x: Any) = x match {
 
 所以对于不同的类型，上面函数结果都是`true`：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   scala> isIntIntMap(Map(1 -> 1))
   res17: Boolean = true
 
@@ -386,10 +385,10 @@ scala>  def isIntIntMap(x: Any) = x match {
 
 数组和Java一样，是没有类型擦除的：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   scala> def isStringArray(x: Any) = x match {
-       |   case a: Array[String] => "yes"
-       |   case _ => "no"
+       | case a: Array[String] => "yes"
+       | case _ => "no"
        | }
   isStringArray: (Any)java.lang.String
 
@@ -412,7 +411,7 @@ scala>  def isIntIntMap(x: Any) = x match {
 
 比如要匹配`abs`出现了两次的地方（做了两次绝对值计算等于没有算）：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   expr match {
     case UnOp("abs", e @ UnOp("abs", _)) => e
     case _ =>
@@ -425,22 +424,22 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
 
 如，想要把`e+e`这个重复加法替换成乘法`e*2`：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   BinOp("+", Var("x"), Var("x"))
 }}}
 
 等于：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   BinOp("*", Var("x"), Number(2))
 }}}
 
 用下面的方式`x`重复出现了，所以有问题：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   scala> def simplifyAdd(e: Expr) = e match {
-       |   case BinOp("+", x, x) => BinOp("*", x, Number(2))
-       |   case _ => e
+       | case BinOp("+", x, x) => BinOp("*", x, Number(2))
+       | case _ => e
        | }
   <console>:10: error: x is already defined as value x
            case BinOp("+", x, x) => BinOp("*", x, Number(2))
@@ -449,36 +448,36 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
 
 守卫模式（pattern guard）很像`for`循环中的`if`过滤条件。接在匹配模式后面的、用`if`开始的、使用模式中变量的表达式：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   scala> def simplifyAdd(e: Expr) = e match {
-       |   case BinOp("+", x, y) if x == y =>
-       |     BinOp("*", x, Number(2))
-       |   case _ => e
+       | case BinOp("+", x, y) if x == y =>
+       | BinOp("*", x, Number(2))
+       | case _ => e
        | }
   simplifyAdd: (Expr)Expr
 }}}
 
 其他的例子，如只匹配正整数和只匹配以`a`开始的字符串：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   // match only positive integers
-  case n: Int if 0 < n => ...  
+  case n: Int if 0 < n => ...
 
   // match only strings starting with the letter `a'
-  case s: String if s(0) == 'a' => ... 
+  case s: String if s(0) == 'a' => ...
 }}}
 
 == 模式重叠 ==
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   def simplifyAll(expr: Expr): Expr = expr match {
     case UnOp("-", UnOp("-", e)) =>
-      simplifyAll(e)   // `-' is its own inverse
+      simplifyAll(e) // `-' is its own inverse
     case BinOp("+", e, Number(0)) =>
-      simplifyAll(e)   // `0' is a neutral element for `+'
+      simplifyAll(e) // `0' is a neutral element for `+'
     case BinOp("*", e, Number(1)) =>
-      simplifyAll(e)   // `1' is a neutral element for `*'
-    case UnOp(op, e) => 
+      simplifyAll(e) // `1' is a neutral element for `*'
+    case UnOp(op, e) =>
       UnOp(op, simplifyAll(e))
     case BinOp(op, l, r) =>
       BinOp(op, simplifyAll(l), simplifyAll(r))
@@ -490,10 +489,10 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
 
 如下面的第一个样本能匹配任何第二个样本能匹配的情况：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   scala> def simplifyBad(expr: Expr): Expr = expr match {
-       |   case UnOp(op, e) => UnOp(op, simplifyBad(e))
-       |   case UnOp("-", UnOp("-", e)) => e
+       | case UnOp(op, e) => UnOp(op, simplifyBad(e))
+       | case UnOp("-", UnOp("-", e)) => e
        | }
   <console>:17: error: unreachable code
            case UnOp("-", UnOp("-", e)) => e
@@ -508,21 +507,21 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
 
 所以有一个方案：让样本类的超类被封闭（sealed），这样就不能在别的文件中添加新的子类。格式只要加一个`sealed`关键字：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   sealed abstract class Expr
   case class Var(name: String) extends Expr
   case class Number(num: Double) extends Expr
   case class UnOp(operator: String, arg: Expr) extends Expr
-  case class BinOp(operator: String, 
+  case class BinOp(operator: String,
       left: Expr, right: Expr) extends Expr
 }}}
 
 如果代码里漏掉可能的模式：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   def describe(e: Expr): String = e match {
     case Number(_) => "a number"
-    case Var(_)    => "a variable"
+    case Var(_) => "a variable"
   }
 }}}
 
@@ -530,8 +529,8 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
 
 {{{class="brush: scala"
   warning: match is not exhaustive!
-  missing combination           UnOp
-  missing combination          BinOp
+  missing combination UnOp
+  missing combination BinOp
 }}}
 
 如果程序员确实知道这两种情况不可能发生，就是要在这两种情况下抛异常。可以手动加上让编译器闭嘴：
@@ -549,7 +548,7 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
 {{{class="brush: scala"
   def describe(e: Expr): String = (e: @unchecked) match {
     case Number(_) => "a number"
-    case Var(_)    => "a variable"
+    case Var(_) => "a variable"
   }
 }}}
 
@@ -561,9 +560,9 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
 非必填类型：可以存值，也可以为`None`对象代表没有值。形式为`Some(x)`，`x`表示非必要。比如Scala的Map类型：
 
 {{{class="brush: scala"
-  scala> val capitals = 
-       |   Map("France" -> "Paris", "Japan" -> "Tokyo")
-  capitals: 
+  scala> val capitals =
+       | Map("France" -> "Paris", "Japan" -> "Tokyo")
+  capitals:
     scala.collection.immutable.Map[java.lang.String,
     java.lang.String] = Map(France -> Paris, Japan -> Tokyo)
 
@@ -578,8 +577,8 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
 
 {{{class="brush: scala"
   scala> def show(x: Option[String]) = x match {
-       |   case Some(s) => s
-       |   case None => "?"
+       | case Some(s) => s
+       | case None => "?"
        | }
   show: (Option[String])String
 
@@ -681,7 +680,7 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
 
 {{{class="brush: scala"
   <console>:17: warning: match is not exhaustive!
-  missing combination            Nil
+  missing combination Nil
 }}}
 
 如果传递给它一个三元素列表，它的执行没有问题。但是一个空列表就不行了：
@@ -692,8 +691,8 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
 
   scala> second(List())
   scala.MatchError: List()
-  	at $anonfun$1.apply(<console>:17)
-  	at $anonfun$1.apply(<console>:17)
+   at $anonfun$1.apply(<console>:17)
+   at $anonfun$1.apply(<console>:17)
 }}}
 
 如果要检查一个偏函数是否有定义，一定要告诉编译器正在使用的函数是偏函数。类型`Lint[Int] => Int`包含了不管是否是偏函数的，从整数列表到整数的所有函数。仅包含整数列表到的偏函数的，应该写成`Partialfunction[List[Int],Int]。
@@ -723,7 +722,7 @@ Scala在编译器在把这样的表达式转为偏函数时会对模式进行两
 {{{class="brush: scala"
   new PartialFunction[List[Int], Int] {
     def apply(xs: List[Int]) = xs match {
-      case x :: y :: _ => y 
+      case x :: y :: _ => y
     }
     def isDefinedAt(xs: List[Int]) = xs match {
       case x :: y :: _ => true
@@ -742,7 +741,7 @@ Scala在编译器在把这样的表达式转为偏函数时会对模式进行两
 
 {{{class="brush: scala"
   scala> for ((country, city) <- capitals)
-       |   println("The capital of "+ country +" is "+ city)
+       | println("The capital of "+ country +" is "+ city)
   The capital of France is Paris
   The capital of Japan is Tokyo
 }}}
@@ -751,8 +750,8 @@ Scala在编译器在把这样的表达式转为偏函数时会对模式进行两
 
 {{{class="brush: scala"
   scala> val results = List(Some("apple"), None,
-       |     Some("orange"))
-  results: List[Option[java.lang.String]] = List(Some(apple), 
+       | Some("orange"))
+  results: List[Option[java.lang.String]] = List(Some(apple),
       None, Some(orange))
 
   scala> for (Some(fruit) <- results) println(fruit)
@@ -765,9 +764,9 @@ Scala在编译器在把这样的表达式转为偏函数时会对模式进行两
 目标是生成公式`((a / (b * c) + 1 / n) / 3)`显示形式为：
 
 {{{class="brush: scala"
-  a     1
+  a 1
 ----- + -
-b * c   n
+b * c n
 ---------
     3
 }}}
@@ -775,10 +774,10 @@ b * c   n
 先来看：
 
 {{{class="brush: scala"
-  BinOp("+", 
-        BinOp("*", 
-              BinOp("+", Var("x"), Var("y")), 
-              Var("z")), 
+  BinOp("+",
+        BinOp("*",
+              BinOp("+", Var("x"), Var("y")),
+              Var("z")),
         Number(1))
 }}}
 
@@ -833,19 +832,19 @@ b * c   n
 
     e match {
 
-      case Var(name) => 
+      case Var(name) =>
         elem(name)
 
-      case Number(num) => 
-        def stripDot(s: String) = 
+      case Number(num) =>
+        def stripDot(s: String) =
           if (s endsWith ".0") s.substring(0, s.length - 2)
           else s
         elem(stripDot(num.toString))
 
-      case UnOp(op, arg) => 
+      case UnOp(op, arg) =>
         elem(op) beside format(arg, unaryPrecedence)
 
-      case BinOp("/", left, right) => 
+      case BinOp("/", left, right) =>
         val top = format(left, fractionPrecedence)
         val bot = format(right, fractionPrecedence)
         val line = elem('-', top.width max bot.width, 1)
@@ -853,11 +852,11 @@ b * c   n
         if (enclPrec != fractionPrecedence) frac
         else elem(" ") beside frac beside elem(" ")
 
-      case BinOp(op, left, right) => 
+      case BinOp(op, left, right) =>
         val opPrec = precedence(op)
-        val l = format(left, opPrec) 
+        val l = format(left, opPrec)
         val r = format(right, opPrec + 1)
-        val oper = l beside elem(" "+ op +" ") beside r 
+        val oper = l beside elem(" "+ op +" ") beside r
         if (enclPrec <= opPrec) oper
         else elem("(") beside oper beside elem(")")
     }
@@ -871,15 +870,15 @@ b * c   n
 如果是变量，结果就是变量名。
 
 {{{class="brush: scala"
-  case Var(name) => 
+  case Var(name) =>
     elem(name)
 }}}
 
 如果是数字，结果是格式化后的数字，如`2.0`格式化为`2`：
 
 {{{class="brush: scala"
-      case Number(num) => 
-        def stripDot(s: String) = 
+      case Number(num) =>
+        def stripDot(s: String) =
           if (s endsWith ".0") s.substring(0, s.length - 2)
           else s
         elem(stripDot(num.toString))
@@ -888,7 +887,7 @@ b * c   n
 对于一元操作符的处理结果为操作`op`和最高环境优先级格式化参数`arg`的结果组成。这样如果`arg`是除了分数以外的二元操作就不会出现在括号中。
 
 {{{class="brush: scala"
-      case UnOp(op, arg) => 
+      case UnOp(op, arg) =>
         elem(op) beside format(arg, unaryPrecedence)
 }}}
 
@@ -915,7 +914,7 @@ c
 实现的代码这个样子的：
 
 {{{class="brush: scala"
-      case BinOp("/", left, right) => 
+      case BinOp("/", left, right) =>
         val top = format(left, fractionPrecedence)
         val bot = format(right, fractionPrecedence)
         val line = elem('-', top.width max bot.width, 1)
@@ -939,11 +938,11 @@ BinOp("-", Var("a"), BinOp("-", Var("b"), Var("c")))
 具体实现：
 
 {{{class="brush: scala"
-      case BinOp(op, left, right) => 
+      case BinOp(op, left, right) =>
         val opPrec = precedence(op)
-        val l = format(left, opPrec) 
+        val l = format(left, opPrec)
         val r = format(right, opPrec + 1)
-        val oper = l beside elem(" "+ op +" ") beside r 
+        val oper = l beside elem(" "+ op +" ") beside r
         if (enclPrec <= opPrec) oper
         else elem("(") beside oper beside elem(")")
 }}}
@@ -966,7 +965,7 @@ BinOp("-", Var("a"), BinOp("-", Var("b"), Var("c")))
   case class Var(name: String) extends Expr
   case class Number(num: Double) extends Expr
   case class UnOp(operator: String, arg: Expr) extends Expr
-  case class BinOp(operator: String, 
+  case class BinOp(operator: String,
       left: Expr, right: Expr) extends Expr
   
   class ExprFormatter {
@@ -1006,19 +1005,19 @@ BinOp("-", Var("a"), BinOp("-", Var("b"), Var("c")))
   
     e match {
   
-      case Var(name) => 
+      case Var(name) =>
         elem(name)
   
-      case Number(num) => 
-        def stripDot(s: String) = 
+      case Number(num) =>
+        def stripDot(s: String) =
           if (s endsWith ".0") s.substring(0, s.length - 2)
           else s
         elem(stripDot(num.toString))
   
-      case UnOp(op, arg) => 
+      case UnOp(op, arg) =>
         elem(op) beside format(arg, unaryPrecedence)
   
-      case BinOp("/", left, right) => 
+      case BinOp("/", left, right) =>
         val top = format(left, fractionPrecedence)
         val bot = format(right, fractionPrecedence)
         val line = elem('-', top.width max bot.width, 1)
@@ -1026,11 +1025,11 @@ BinOp("-", Var("a"), BinOp("-", Var("b"), Var("c")))
         if (enclPrec != fractionPrecedence) frac
         else elem(" ") beside frac beside elem(" ")
   
-      case BinOp(op, left, right) => 
+      case BinOp(op, left, right) =>
         val opPrec = precedence(op)
-        val l = format(left, opPrec) 
+        val l = format(left, opPrec)
         val r = format(right, opPrec + 1)
-        val oper = l beside elem(" "+ op +" ") beside r 
+        val oper = l beside elem(" "+ op +" ") beside r
         if (enclPrec <= opPrec) oper
         else elem("(") beside oper beside elem(")")
     }
@@ -1048,16 +1047,16 @@ BinOp("-", Var("a"), BinOp("-", Var("b"), Var("c")))
 
     val f = new ExprFormatter
 
-    val e1 = BinOp("*", BinOp("/", Number(1), Number(2)), 
+    val e1 = BinOp("*", BinOp("/", Number(1), Number(2)),
                         BinOp("+", Var("x"), Number(1)))
-    val e2 = BinOp("+", BinOp("/", Var("x"), Number(2)), 
+    val e2 = BinOp("+", BinOp("/", Var("x"), Number(2)),
                         BinOp("/", Number(1.5), Var("x")))
     val e3 = BinOp("/", e1, e2)
 
     def show(e: Expr) = println(f.format(e)+ "\n\n")
 
     for (val e <- Array(e1, e2, e3)) show(e)
-	}
+}
 }}}
 
 {{{class="brush: scala"
@@ -1090,7 +1089,7 @@ BinOp("-", Var("a"), BinOp("-", Var("b"), Var("c")))
 列表是同质化的（homogeneous），所有的成员都有相同的类型，中括号描述成员类型`List[T]`。
 
 {{{class="brush: scala"
-	val fruit: List[String] = List("apples", "oranges", "pears")
+val fruit: List[String] = List("apples", "oranges", "pears")
   val nums: List[Int] = List(1, 2, 3, 4)
   val diag3: List[List[Int]] =
     List(
@@ -1107,7 +1106,7 @@ Scala里的列表类是协变的（covariant）。如果`S`是`T`的子类，那
 
 {{{class="brush: scala"
   // List() is also of type List[String]!
-  val xs: List[String] = List()  
+  val xs: List[String] = List()
 }}}
 
 == 构造列表 ==
@@ -1116,7 +1115,7 @@ Scala里的列表类是协变的（covariant）。如果`S`是`T`的子类，那
 
 {{{class="brush: scala"
   val fruit = "apples" :: ("oranges" :: ("pears" :: Nil))
-  val nums  = 1 :: (2 :: (3 :: (4 :: Nil)))
+  val nums = 1 :: (2 :: (3 :: (4 :: Nil)))
   val diag3 = (1 :: (0 :: (0 :: Nil))) ::
               (0 :: (1 :: (0 :: Nil))) ::
               (0 :: (0 :: (1 :: Nil))) :: Nil
@@ -1126,13 +1125,13 @@ Scala里的列表类是协变的（covariant）。如果`S`是`T`的子类，那
 由于操作符`::`是右结合性，所以：
 
 {{{class="brush: scala"
-	A :: (B :: C)
+A :: (B :: C)
 }}}
 
 相当于：
 
 {{{class="brush: scala"
-	A :: B :: C
+A :: B :: C
 }}}
 
 所以前一个例子中很多括号都可以省略：
@@ -1153,11 +1152,11 @@ Scala里的列表类是协变的（covariant）。如果`S`是`T`的子类，那
               (0 :: (0 :: (1 :: Nil))) :: Nil
   val empty = Nil
   
-	empty.isEmpty    // true
-	fruit.isEmpty    // flase
-	fruit.head       // "apples"
-	fruit.tail.head  // "organges"
-	diag3.head       //  List(1, 0, 0)
+empty.isEmpty // true
+fruit.isEmpty // flase
+fruit.head // "apples"
+fruit.tail.head // "organges"
+diag3.head // List(1, 0, 0)
 }}}
 
 `head`与`tail`只能用在非空列表上，不然抛异常：
@@ -1174,7 +1173,7 @@ Scala里的列表类是协变的（covariant）。如果`S`是`T`的子类，那
     if (xs.isEmpty) Nil
     else insert(xs.head, isort(xs.tail))
 
-  def insert(x: Int, xs: List[Int]): List[Int] = 
+  def insert(x: Int, xs: List[Int]): List[Int] =
     if (xs.isEmpty || x <= xs.head) x :: xs
     else xs.head :: insert(x, xs.tail)
 }}}
@@ -1212,13 +1211,13 @@ Scala里的列表类是协变的（covariant）。如果`S`是`T`的子类，那
 
 {{{class="brush: scala"
   def isort(xs: List[Int]): List[Int] = xs match {
-    case List()   => List()
+    case List() => List()
     case x :: xs1 => insert(x, isort(xs1))
   }
 
   def insert(x: Int, xs: List[Int]): List[Int] = xs match {
-    case List()  => List(x)
-    case y :: ys => if (x <= y) x :: xs 
+    case List() => List(x)
+    case y :: ys => if (x <= y) x :: xs
                     else y :: insert(x, ys)
   }
 }}}
@@ -1245,13 +1244,13 @@ Scala里的列表类是协变的（covariant）。如果`S`是`T`的子类，那
 它也是右结合的：
 
 {{{class="brush: scala"
-	xs ::: ys ::: zs
+xs ::: ys ::: zs
 }}}
 
 相当于：
 
 {{{class="brush: scala"
-	xs ::: (ys ::: zs)
+xs ::: (ys ::: zs)
 }}}
 
 
@@ -1261,7 +1260,7 @@ Scala里的列表类是协变的（covariant）。如果`S`是`T`的子类，那
 
 {{{class="brush: scala"
   def append[T](xs: List[T], ys: List[T]): List[T] =
-    xs match { 
+    xs match {
       case List() => ys
       case x :: xs1 => x :: append(xs1, ys)
     }
@@ -1302,13 +1301,13 @@ Scala里的列表类是协变的（covariant）。如果`S`是`T`的子类，那
 {{{class="brush: scala"
   scala> List().init
   java.lang.UnsupportedOperationException: Nil.init
-  	at scala.List.init(List.scala:544)
-  	at ...
+   at scala.List.init(List.scala:544)
+   at ...
 
   scala> List().last
   java.util.NoSuchElementException: Nil.last
-  	at scala.List.last(List.scala:563)
-  	at ...
+   at scala.List.last(List.scala:563)
+   at ...
 }}}
 
 === 反转列表 ===
@@ -1316,7 +1315,7 @@ Scala里的列表类是协变的（covariant）。如果`S`是`T`的子类，那
 `reverse`是创建了一个新列表：
 
 {{{class="brush: scala"
-  scala> abcde.reverse 
+  scala> abcde.reverse
   res6: List[Char] = List(e, d, c, b, a)
 
   scala> abcde
@@ -1326,12 +1325,12 @@ Scala里的列表类是协变的（covariant）。如果`S`是`T`的子类，那
 一些简单的规律：
 
 {{{class="brush: scala"
-xs.reverse.reverse  equals  xs
+xs.reverse.reverse equals xs
 
-xs.reverse.init  equals  xs.tail.reverse
-xs.reverse.tail  equals  xs.init.reverse
-xs.reverse.head  equals  xs.last
-xs.reverse.last  equals  xs.head
+xs.reverse.init equals xs.tail.reverse
+xs.reverse.tail equals xs.init.reverse
+xs.reverse.head equals xs.last
+xs.reverse.last equals xs.head
 }}}
 
 通过连接操作`:::`来实现反转，当然这样的效率低得很：
@@ -1380,7 +1379,7 @@ xs splitAt n
   scala> abcde apply 2 // rare in Scala
   res11: Char = c
 
-  scala> abcde(2)      // rare in Scala
+  scala> abcde(2) // rare in Scala
   res12: Char = c
 }}}
 
@@ -1397,7 +1396,7 @@ xs splitAt n
 
 {{{class="brush: scala"
   scala> abcde.indices zip abcde
-  res14: List[(Int, Char)] = List((0,a), (1,b), (2,c), (3,d), 
+  res14: List[(Int, Char)] = List((0,a), (1,b), (2,c), (3,d),
   (4,e))
 
   scala> val zipped = abcde zip List(1, 2, 3)
@@ -1458,7 +1457,7 @@ xs mkString ""
 
 {{{class="brush: scala"
   scala> val buf = new StringBuilder
-  buf: StringBuilder = 
+  buf: StringBuilder =
 
   scala> abcde addString (buf, "(", ";", ")")
   res21: StringBuilder = (a;b;c;d;e)
@@ -1601,11 +1600,11 @@ Scala中以操作符形式出现的高阶函数更加简洁地处理Java中用�
 
 {{{class="brush: scala"
   scala> words map (_.toList)
-  res32: List[List[Char]] = List(List(t, h, e), List(q, u, i, 
+  res32: List[List[Char]] = List(List(t, h, e), List(q, u, i,
       c, k), List(b, r, o, w, n), List(f, o, x))
 
   scala> words flatMap (_.toList)
-  res33: List[Char] = List(t, h, e, q, u, i, c, k, b, r, o, w, 
+  res33: List[Char] = List(t, h, e, q, u, i, c, k, b, r, o, w,
       n, f, o, x)
 }}}
 
@@ -1613,9 +1612,9 @@ Scala中以操作符形式出现的高阶函数更加简洁地处理Java中用�
 
 {{{class="brush: scala"
   scala> List.range(1, 5) flatMap (
-       |   i => List.range(1, i) map (j => (i, j))
+       | i => List.range(1, i) map (j => (i, j))
        | )
-  res34: List[(Int, Int)] = List((2,1), (3,1), (3,2), (4,1), 
+  res34: List[(Int, Int)] = List((2,1), (3,1), (3,2), (4,1),
       (4,2), (4,3))
 }}}
 
@@ -1629,7 +1628,7 @@ Scala中以操作符形式出现的高阶函数更加简洁地处理Java中用�
 
 `foreach`没有返回结果（或返回`Unit`）。如下对`sum`变量累加，但是没有返回值：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   scala> var sum = 0
   sum: Int = 0
 
@@ -1669,10 +1668,10 @@ xs partition p
 `find`方法只返回第一个符合的元素，一个都不符合返回`None`：
 
 {{{class="brush: scala"
-  scala>  List(1, 2, 3, 4, 5) find (_ % 2 == 0)
+  scala> List(1, 2, 3, 4, 5) find (_ % 2 == 0)
   res40: Option[Int] = Some(2)
 
-  scala>  List(1, 2, 3, 4, 5) find (_ <= 0)
+  scala> List(1, 2, 3, 4, 5) find (_ <= 0)
   res41: Option[Int] = None
 }}}
 
@@ -1706,8 +1705,8 @@ xs span p
 `xs forall p`全部符合，`xs exits p`存在符合的元素。
 
 {{{class="brush: scala"
-  scala> def hasZeroRow(m: List[List[Int]]) = 
-       |   m exists (row => row forall (_ == 0))
+  scala> def hasZeroRow(m: List[List[Int]]) =
+       | m exists (row => row forall (_ == 0))
   hasZeroRow: (List[List[Int]])Boolean
 
   scala> hasZeroRow(diag3)
@@ -1728,41 +1727,41 @@ op(op(op(z,a), b), c)
 
 {{{class="brush: scala"
       op
-     /  \
-    op   c
-   /  \
-  op   b
- /  \
-z     a
+     / \
+    op c
+   / \
+  op b
+ / \
+z a
 }}}
 
 举例：
 
 {{{class="brush: scala"
-  scala> def sum(xs: List[Int]): Int = (0 /: xs) (_ + _) 
+  scala> def sum(xs: List[Int]): Int = (0 /: xs) (_ + _)
   sum: (List[Int])Int
   
-  scala> sum(List(1, 2, 3))  // equals 0 + 1 + 2 + 3
+  scala> sum(List(1, 2, 3)) // equals 0 + 1 + 2 + 3
   res1: Int = 6
 
-  scala> def product(xs: List[Int]): Int = (1 /: xs) (_ * _) 
+  scala> def product(xs: List[Int]): Int = (1 /: xs) (_ * _)
   product: (List[Int])Int
   
-  scala> product(List(1, 2, 3))  // equals 1 * 1 * 2 * 3
+  scala> product(List(1, 2, 3)) // equals 1 * 1 * 2 * 3
   res2: Int = 6
 }}}
 
 用空格连接所有单词：
 
 {{{class="brush: scala"
-  scala>  ("" /: words) (_ +" "+ _)
-  res46: java.lang.String =  the quick brown fox
+  scala> ("" /: words) (_ +" "+ _)
+  res46: java.lang.String = the quick brown fox
 }}}
 
 头上多了一个空格，这样去掉它：
 
 {{{class="brush: scala"
-  scala> (words.head /: words.tail)  (_ +" "+ _)
+  scala> (words.head /: words.tail) (_ +" "+ _)
   res47: java.lang.String = the quick brown fox
 }}}
 
@@ -1790,9 +1789,9 @@ op(a, op(b, op(c, z)))
 
 {{{class="brush: scala"
   scala> def flattenRight[T](xss: List[List[T]]) =
-       |     (xss :\ List()) (_ ::: _)
+       | (xss :\ List()) (_ ::: _)
   <console>:15: error: type mismatch;
-   found   : List[T]
+   found : List[T]
    required: List[Nothing]
              (xss :\ List()) (_ ::: _)
                                 ^
@@ -1900,7 +1899,7 @@ List.apply(1, 2, 3)
 
 `unzip`把二元组列表分成两个列表：
 
-{{{class="brush: scala" 
+{{{class="brush: scala"
   scala> val zipped = "abcde".toList zip List(1, 2, 3)
   zipped: List[(Char, Int)] = List((a,1), (b,2), (c,3))
 
@@ -1917,7 +1916,7 @@ Scala类型系统要求类方法能处理所有类型，而unzip只处理二元�
 
 {{{class="brush: scala"
   scala> val xss =
-       |   List(List('a', 'b'), List('c'), List('d', 'e'))
+       | List(List('a', 'b'), List('c'), List('d', 'e'))
   xss: List[List[Char]] = List(List(a, b), List(c), List(d, e))
 
   scala> List.flatten(xss)
@@ -1951,11 +1950,11 @@ Scala类型系统要求类方法能处理所有类型，而unzip只处理二元�
 
 {{{class="brush: scala"
   scala> List.forall2(List("abc", "de"),
-       |     List(3, 2)) (_.length == _)
+       | List(3, 2)) (_.length == _)
   res62: Boolean = true
 
   scala> List.exists2(List("abc", "de"),
-       |     List(3, 2)) (_.length != _)
+       | List(3, 2)) (_.length != _)
   res63: Boolean = false
 }}}
 
@@ -1975,7 +1974,7 @@ Scala类型系统要求类方法能处理所有类型，而unzip只处理二元�
   res64: List[Char] = List(e, d, c, b, a)
   
   scala> msort(_ > _)(abcde)
-  <console>:12: error: missing parameter type for expanded 
+  <console>:12: error: missing parameter type for expanded
   function ((x$1, x$2) => x$1.$greater(x$2))
          msort(_ > _)(abcde)
                ^
@@ -1987,7 +1986,7 @@ Scala类型系统要求类方法能处理所有类型，而unzip只处理二元�
 
 {{{class="brush: scala"
 (_ > _)
-// trans to 
+// trans to
 ((x: Char, y: Char) => x > y)
 }}}
 
@@ -2036,7 +2035,7 @@ Scala类型系统要求类方法能处理所有类型，而unzip只处理二元�
 从上面的描述可以看出：这里的`op`方法要知道`A`与`B`两个类型。`A`一定与`List`有关但是`B`不一定与`List`有关，所以推不出来。所以下面的表达式是编译不过的：
 
 {{{class="brush: scala"
-  (xss :\ List()) (_ ::: _)  // this won't compile
+  (xss :\ List()) (_ ::: _) // this won't compile
 }}}
 
 上面表达式中`z`的类型为`List[Nothing]`，据此推断器把`B`的类型定为`Nothing`：
@@ -2100,18 +2099,18 @@ Scala类型系统要求类方法能处理所有类型，而unzip只处理二元�
   scala> import scala.collection.mutable.ListBuffer
   import scala.collection.mutable.ListBuffer
 
-  scala> val buf = new ListBuffer[Int]             
+  scala> val buf = new ListBuffer[Int]
   buf: scala.collection.mutable.ListBuffer[Int] = ListBuffer()
 
-  scala> buf += 1                                  
+  scala> buf += 1
 
-  scala> buf += 2                                  
+  scala> buf += 2
 
-  scala> buf     
+  scala> buf
   res11: scala.collection.mutable.ListBuffer[Int]
     = ListBuffer(1, 2)
 
-  scala> 3 +: buf                                  
+  scala> 3 +: buf
   res12: scala.collection.mutable.Buffer[Int]
     = ListBuffer(3, 1, 2)
 
@@ -2157,14 +2156,14 @@ Scala类型系统要求类方法能处理所有类型，而unzip只处理二元�
   import scala.collection.mutable.ArrayBuffer
 
   scala> val buf = new ArrayBuffer[Int]()
-  buf: scala.collection.mutable.ArrayBuffer[Int] = 
+  buf: scala.collection.mutable.ArrayBuffer[Int] =
     ArrayBuffer()
 
   scala> buf += 12
   scala> buf += 15
 
   scala> buf
-  res16: scala.collection.mutable.ArrayBuffer[Int] = 
+  res16: scala.collection.mutable.ArrayBuffer[Int] =
     ArrayBuffer(12, 15)
 
   scala> buf.length
@@ -2182,14 +2181,14 @@ Scala类型系统要求类方法能处理所有类型，而unzip只处理二元�
   scala> import scala.collection.immutable.Queue
   import scala.collection.immutable.Queue
 
-  scala> val empty = new Queue[Int]             
+  scala> val empty = new Queue[Int]
   empty: scala.collection.immutable.Queue[Int] = Queue()
 
-	// add one element
+// add one element
   scala> val has1 = empty.enqueue(1)
   has1: scala.collection.immutable.Queue[Int] = Queue(1)
 
-	// use collection to add many elements
+// use collection to add many elements
   scala> val has123 = has1.enqueue(List(2, 3))
   has123: scala.collection.immutable.Queue[Int] = Queue(1,2,3)
 
@@ -2203,7 +2202,7 @@ Scala类型系统要求类方法能处理所有类型，而unzip只处理二元�
 可变的队列也差不多，就是用`+=`和`++=`添加元素，`dequeue`方法只返回一个出除的元素。
 
 {{{class="brush: scala"
-  scala> import scala.collection.mutable.Queue                
+  scala> import scala.collection.mutable.Queue
   import scala.collection.mutable.Queue
 
   scala> val queue = new Queue[String]
@@ -2231,7 +2230,7 @@ Scala类型系统要求类方法能处理所有类型，而unzip只处理二元�
   scala> import scala.collection.mutable.Stack
   import scala.collection.mutable.Stack
 
-  scala> val stack = new Stack[Int]           
+  scala> val stack = new Stack[Int]
   stack: scala.collection.mutable.Stack[Int] = Stack()
 
   scala> stack.push(1)
@@ -2250,10 +2249,10 @@ Scala类型系统要求类方法能处理所有类型，而unzip只处理二元�
   scala> stack
   res9: scala.collection.mutable.Stack[Int] = Stack(1, 2)
 
-  scala> stack.pop    
+  scala> stack.pop
   res10: Int = 2
 
-  scala> stack    
+  scala> stack
   res11: scala.collection.mutable.Stack[Int] = Stack(1)
 }}}
 
@@ -2299,7 +2298,7 @@ Scala类型系统要求类方法能处理所有类型，而unzip只处理二元�
   scala> import scala.collection.mutable
   import scala.collection.mutable
 
-  scala> val mutaSet = mutable.Set(1, 2, 3)          
+  scala> val mutaSet = mutable.Set(1, 2, 3)
   mutaSet: scala.collection.mutable.Set[Int] = Set(3, 1, 2)
 }}}
 
@@ -2315,7 +2314,7 @@ Set的关键在于用对象的`==`检查唯一性。
   scala> val text = "See Spot run. Run, Spot. Run!"
   text: java.lang.String = See Spot run. Run, Spot. Run!
 
-  scala> val wordsArray = text.split("[ !,.]+")    
+  scala> val wordsArray = text.split("[ !,.]+")
   wordsArray: Array[java.lang.String] =
      Array(See, Spot, run, Run, Spot, Run)
 }}}
@@ -2323,11 +2322,11 @@ Set的关键在于用对象的`==`检查唯一性。
 建立Set并存入：
 
 {{{class="brush: scala"
-  scala>  val words = mutable.Set.empty[String]
+  scala> val words = mutable.Set.empty[String]
   words: scala.collection.mutable.Set[String] = Set()
 
   scala> for (word <- wordsArray)
-       |   words += word.toLowerCase
+       | words += word.toLowerCase
 
   scala> words
   res25: scala.collection.mutable.Set[String] =
@@ -2336,21 +2335,21 @@ Set的关键在于用对象的`==`检查唯一性。
 
 常用方法：
 
-| val nums = Set(1, 2, 3)               |（返回）          |
-| nums + 5                              |（返回）          |
-| nums - 3                              |（返回）          |
-| nums ++ List(5, 6)                    |（返回）          |
-| nums -- List(1, 2)                    |（返回）          |
-| nums ** Set(1, 3, 5, 7)               |交集（返回Set(3)）|
-| nums.size                             |（返回）          |
-| nums.contains(3)                      |（返回）          |
-| import scala.collection.mutable       |（返回）          |
-| val words = mutable.Set.empty[String] |创建空的可变集    |
-| words += "the"                        |（返回）          |
-| words -= "the"                        |（返回）          |
-| words ++= List("do", "re", "mi")      |（返回）          |
-| words --= List("do", "re")            |（返回）          |
-| words.clear                           |（返回）          |
+| val nums = Set(1, 2, 3) |（返回） |
+| nums + 5 |（返回） |
+| nums - 3 |（返回） |
+| nums ++ List(5, 6) |（返回） |
+| nums -- List(1, 2) |（返回） |
+| nums ** Set(1, 3, 5, 7) |交集（返回Set(3)）|
+| nums.size |（返回） |
+| nums.contains(3) |（返回） |
+| import scala.collection.mutable |（返回） |
+| val words = mutable.Set.empty[String] |创建空的可变集 |
+| words += "the" |（返回） |
+| words -= "the" |（返回） |
+| words ++= List("do", "re", "mi") |（返回） |
+| words --= List("do", "re") |（返回） |
+| words.clear |（返回） |
 
 === Map ===
 
@@ -2379,15 +2378,15 @@ Set的关键在于用对象的`==`检查唯一性。
 
 {{{class="brush: scala"
   scala> def countWords(text: String) = {
-       |   val counts = mutable.Map.empty[String, Int]
-       |   for (rawWord <- text.split("[ ,!.]+")) {
-       |     val word = rawWord.toLowerCase
-       |     val oldCount = 
-       |       if (counts.contains(word)) counts(word)
-       |       else 0
-       |     counts += (word -> (oldCount + 1))
-       |   }
-       |   counts
+       | val counts = mutable.Map.empty[String, Int]
+       | for (rawWord <- text.split("[ ,!.]+")) {
+       | val word = rawWord.toLowerCase
+       | val oldCount =
+       | if (counts.contains(word)) counts(word)
+       | else 0
+       | counts += (word -> (oldCount + 1))
+       | }
+       | counts
        | }
   countWords: (String)scala.collection.mutable.Map[String,Int]
   
@@ -2399,24 +2398,24 @@ Set的关键在于用对象的`==`检查唯一性。
 
 常用方法：
 
-|val nums = Map("i"->1, "ii"->2)                |返回|
-|nums + ("vi"->6)                               |返回|
-|nums - "ii"                                    |返回|
-|nums ++ List("iii"->3, "v"->5)                 |返回|
-|nums -- List("i", "ii")                        |返回|
-|nums.size                                      |返回|
-|nums.contains("ii")                            |返回|
-|nums("ii")                                     |返回|
-|nums.keys                                      |返回迭代器|
-|nums.keySet                                    |返回|
-|nums.values                                    |返回|
-|nums.isEmpty                                   |返回|
-|import scala.collection.mutable                |返回|
-|val words = mutalbe.Map.empty[String, Int]     |返回|
-|words += ("one"->1)                            |返回|
-|words -= "one"                                 |返回|
+|val nums = Map("i"->1, "ii"->2) |返回|
+|nums + ("vi"->6) |返回|
+|nums - "ii" |返回|
+|nums ++ List("iii"->3, "v"->5) |返回|
+|nums -- List("i", "ii") |返回|
+|nums.size |返回|
+|nums.contains("ii") |返回|
+|nums("ii") |返回|
+|nums.keys |返回迭代器|
+|nums.keySet |返回|
+|nums.values |返回|
+|nums.isEmpty |返回|
+|import scala.collection.mutable |返回|
+|val words = mutalbe.Map.empty[String, Int] |返回|
+|words += ("one"->1) |返回|
+|words -= "one" |返回|
 |words ++= List("one"->1, "two"->2, "three"->3))|返回|
-|words --= List("one", "two")                   |返回|
+|words --= List("one", "two") |返回|
 
 === 默认的Set和Map ===
 
@@ -2424,23 +2423,23 @@ Set的关键在于用对象的`==`检查唯一性。
 
 不可变的`scala.collection.immutable.Set()`工厂方法返回：
 
-| 元素的数量 | 实现                                |
-| 0          | scala.collection.immutable.EmptySet |
-| 1          | scala.collection.immutable.Set1     |
-| 2          | scala.collection.immutable.Set2     |
-| 3          | scala.collection.immutable.Set3     |
-| 4          | scala.collection.immutable.Set4     |
-| >=5        | scala.collection.immutable.HashSet  |
+| 元素的数量 | 实现 |
+| 0 | scala.collection.immutable.EmptySet |
+| 1 | scala.collection.immutable.Set1 |
+| 2 | scala.collection.immutable.Set2 |
+| 3 | scala.collection.immutable.Set3 |
+| 4 | scala.collection.immutable.Set4 |
+| >=5 | scala.collection.immutable.HashSet |
 
 不可变的`scala.collection.immutable.Map()`工厂方法返回：
 
-| 元素的数量 | 实现                                |
-| 0          | scala.collection.immutable.EmptyMap |
-| 1          | scala.collection.immutable.Map1     |
-| 2          | scala.collection.immutable.Map2     |
-| 3          | scala.collection.immutable.Map3     |
-| 4          | scala.collection.immutable.Map4     |
-| >=5        | scala.collection.immutable.HashMap  |
+| 元素的数量 | 实现 |
+| 0 | scala.collection.immutable.EmptyMap |
+| 1 | scala.collection.immutable.Map1 |
+| 2 | scala.collection.immutable.Map2 |
+| 3 | scala.collection.immutable.Map3 |
+| 4 | scala.collection.immutable.Map4 |
+| >=5 | scala.collection.immutable.HashMap |
 
 === 有序的集体和映射 ===
 
@@ -2499,11 +2498,11 @@ Set的关键在于用对象的`==`检查唯一性。
 单线程访问的情况如下：
 
 {{{class="brush: scala"
-  scala> val capital = MapMaker.makeMap  
+  scala> val capital = MapMaker.makeMap
   capital: scala.collection.mutable.Map[String,String] = Map()
 
   scala> capital ++ List("US" -> "Washington",
-       |      "Paris" -> "France", "Japan" -> "Tokyo")
+       | "Paris" -> "France", "Japan" -> "Tokyo")
   res0: scala.collection.mutable.Map[String,String] =
     Map(Paris -> France, US -> Washington, Japan -> Tokyo)
 
@@ -2515,7 +2514,7 @@ Set的关键在于用对象的`==`检查唯一性。
 
   scala> capital += ("New Zealand" -> "Wellington")
 
-  scala> capital("New Zealand")                    
+  scala> capital("New Zealand")
   res3: String = Wellington
 }}}
 
@@ -2548,13 +2547,13 @@ Set的关键在于用对象的`==`检查唯一性。
 
 {{{class="brush: scala"
   scala> var people = Set("Nancy", "Jane")
-  people: scala.collection.immutable.Set[java.lang.String] = 
+  people: scala.collection.immutable.Set[java.lang.String] =
     Set(Nancy, Jane)
  
   scala> people += "Bob"
 
   scala> people
-  res42: scala.collection.immutable.Set[java.lang.String] = 
+  res42: scala.collection.immutable.Set[java.lang.String] =
     Set(Nancy, Jane, Bob)
 }}}
 
@@ -2566,7 +2565,7 @@ Set的关键在于用对象的`==`检查唯一性。
   scala> people ++= List("Tom", "Harry")
 
   scala> people
-  res45: scala.collection.immutable.Set[java.lang.String] = 
+  res45: scala.collection.immutable.Set[java.lang.String] =
     Set(Nancy, Bob, Tom, Harry)
 }}}
 
@@ -2575,12 +2574,12 @@ Set的关键在于用对象的`==`检查唯一性。
 {{{class="brush: scala"
   var capital = Map("US" -> "Washington", "France" -> "Paris")
   capital += ("Japan" -> "Tokyo")
-  println(capital("France")) 
+  println(capital("France"))
 
-  import scala.collection.mutable.Map  // only change needed!
+  import scala.collection.mutable.Map // only change needed!
   var capital = Map("US" -> "Washington", "France" -> "Paris")
   capital += ("Japan" -> "Tokyo")
-  println(capital("France")) 
+  println(capital("France"))
 }}}
 
 这样的语法糖还可以用在其他类型上。如浮点：
@@ -2632,7 +2631,7 @@ Set的关键在于用对象的`==`检查唯一性。
 
   scala> stuff += "abracadabra"
   <console>:7: error: type mismatch;
-   found   : java.lang.String("abracadabra")
+   found : java.lang.String("abracadabra")
    required: Int
          stuff += "abracadabra"
                   ^
@@ -2656,7 +2655,7 @@ Set的关键在于用对象的`==`检查唯一性。
   scala> import scala.collection.immutable.TreeSet
   import scala.collection.immutable.TreeSet
 
-  scala> val treeSet = TreeSet(colors)                 
+  scala> val treeSet = TreeSet(colors)
   <console>:6: error: no implicit argument matching
     parameter type (List[java.lang.String]) =>
       Ordered[List[java.lang.String]] was found.
@@ -2733,8 +2732,8 @@ Set的关键在于用对象的`==`检查唯一性。
     (word, idx)
   }
   
-  scala> val longest = 
-       |   longestWord("The quick brown fox".split(" "))
+  scala> val longest =
+       | longestWord("The quick brown fox".split(" "))
   longest: (String, Int) = (quick,1)
 }}}
 
@@ -2801,7 +2800,7 @@ var hour = 12
 
     def minute: Int = m
     def minute_=(x: Int) { m = x }
-  } 
+  }
 }}}
 
 所以可以直接定义getter和setter。
@@ -2825,7 +2824,7 @@ var hour = 12
       require(0 <= x && x < 60)
       m = x
     }
-  } 
+  }
 }}}
 
 再看一个温度的例子：
@@ -2986,8 +2985,8 @@ type Action = () => Unit
     agenda = insert(agenda, item)
   }
 
-  private def insert(ag: List[WorkItem], 
-      item: WorkItem): List[WorkItem] =  {
+  private def insert(ag: List[WorkItem],
+      item: WorkItem): List[WorkItem] = {
 
     if (ag.isEmpty || item.time < ag.head.time) item :: ag
     else ag.head :: insert(ag.tail, item)
@@ -3007,8 +3006,8 @@ type Action = () => Unit
   
   private def next() {
     (agenda: @unchecked) match {
-      case item :: rest => 
-        agenda = rest 
+      case item :: rest =>
+        agenda = rest
         curtime = item.time
         item.action()
     }
@@ -3045,8 +3044,8 @@ type Action = () => Unit
 
     private def next() {
       (agenda: @unchecked) match {
-        case item :: rest => 
-          agenda = rest 
+        case item :: rest =>
+          agenda = rest
           curtime = item.time
           item.action()
       }
@@ -3089,10 +3088,10 @@ type Action = () => Unit
 
     def getSignal = sigVal
 
-    def setSignal(s: Boolean) = 
+    def setSignal(s: Boolean) =
       if (s != sigVal) {
         sigVal = s
-        actions foreach (_ ()) 
+        actions foreach (_ ())
       }
 
     def addAction(a: Action) = {
@@ -3115,7 +3114,7 @@ type Action = () => Unit
     def invertAction() {
       val inputSig = input.getSignal
       afterDelay(InverterDelay) {
-        output setSignal !inputSig 
+        output setSignal !inputSig
       }
     }
     input addAction invertAction
@@ -3134,7 +3133,7 @@ type Action = () => Unit
       val a1Sig = a1.getSignal
       val a2Sig = a2.getSignal
       afterDelay(AndGateDelay) {
-        output setSignal (a1Sig & a2Sig) 
+        output setSignal (a1Sig & a2Sig)
       }
     }
     a1 addAction andAction
@@ -3210,9 +3209,9 @@ type Action = () => Unit
 
 {{{class="brush: scala"
   scala> object MySimulation extends CircuitSimulation {
-       |   def InverterDelay = 1
-       |   def AndGateDelay = 3
-       |   def OrGateDelay = 5
+       | def InverterDelay = 1
+       | def AndGateDelay = 3
+       | def OrGateDelay = 5
        | }
   defined module MySimulation
 }}}
@@ -3285,10 +3284,10 @@ abstract class BasicCircuitSimulation extends Simulation {
 
     def getSignal = sigVal
 
-    def setSignal(s: Boolean) = 
+    def setSignal(s: Boolean) =
       if (s != sigVal) {
         sigVal = s
-        actions foreach (_ ()) 
+        actions foreach (_ ())
       }
 
     def addAction(a: Action) = {
@@ -3301,7 +3300,7 @@ abstract class BasicCircuitSimulation extends Simulation {
     def invertAction() {
       val inputSig = input.getSignal
       afterDelay(InverterDelay) {
-        output setSignal !inputSig 
+        output setSignal !inputSig
       }
     }
     input addAction invertAction
@@ -3314,7 +3313,7 @@ abstract class BasicCircuitSimulation extends Simulation {
       val a1Sig = a1.getSignal
       val a2Sig = a2.getSignal
       afterDelay(AndGateDelay) {
-        output setSignal (a1Sig & a2Sig) 
+        output setSignal (a1Sig & a2Sig)
       }
     }
     a1 addAction andAction
@@ -3367,8 +3366,8 @@ abstract class Simulation {
 
   private def next() {
     (agenda: @unchecked) match {
-      case item :: rest => 
-        agenda = rest 
+      case item :: rest =>
+        agenda = rest
         curtime = item.time
         item.action()
     }
@@ -3427,10 +3426,328 @@ abstract class CircuitSimulation
 }}}
 
 
+= 参数类型化 =
 
+类型化参数能实现编写泛型类和特质。Scala中的泛型实例都应该写明具体类型（如：Set[Int]，Set[Int]），而不像Java中可以不带泛型类型。
+
+== 开发纯函数式队列 ==
+
+函数式的队列是不可变的，添加元素操作会返回一个新的队列。三个基本方法：
+
+* `head`返回队列的第一个元素。
+* `tail`返回第一个元素以外的队列。
+* `append`返回在尾部添加指定元素的列队。
+
+理想情况下，希望三种基本操作都可以在常量时间中完成。
+
+一个实现方案是以`List`作为功能表达类型，可以用现成的`head`和`tail`方法。`append`方法调用连接操作：
+
+{{{class="brush: scala"
+  class SlowAppendQueue[T](elems: List[T]) { // Not efficient
+    def head = elems.head
+    def tail = new SlowAppendQueue(elems.tail)
+    def append(x: T) = new SlowAppendQueue(elems ::: List(x))
+  }
+}}}
+
+但这样`append`操作的时间会按元素的数量而增加，那换一种思路，把列表倒过来排序，这样会让原来最后加进来的元素出现在列表的最前面：
+
+{{{class="brush: scala"
+  class SlowHeadQueue[T](smele: List[T]) { // Not efficient
+    // smele is elems reversed
+    def head = smele.last
+    def tail = new SlowHeadQueue(smele.init)
+    def append(x: T) = new SlowHeadQueue(x :: smele)
+  }
+}}}
+
+现在表现也倒过来了：`append`操作时间为常量，但`head`和`tail`耗时与元素数量成正比了。
+
+试一下结合两种列表的方案：
+
+用两个列表`leading`放前面一半；`trailing`放后一半反向排的元素。这样全部内容就是`leading ::: trailing.reverse`。
+
+添加新元素：`i :: trailing`，这样常量时间就可以完成。但这样前一半的`leading`就不放进内容了，所以在对空的`leading`进行第一次`head`或`tail`操作前都要把`trailing`反转并复制给`leading`。这个操作被定义为`mirror`。
+
+虽然`mirror`操作与队列长度成正比，但是这只发生在`leading`为空时才会被调用。因为如果`leading`不为空它将直接返回。
+
+{{{class="brush: scala"
+  class Queue[T](
+    private val leading: List[T],
+    private val trailing: List[T]
+  ) {
+    private def mirror =
+      if (leading.isEmpty)
+        new Queue(trailing.reverse, Nil)
+      else
+        this
+
+    def head = mirror.leading.head
+
+    def tail = {
+      val q = mirror
+      new Queue(q.leading.tail, q.trailing)
+    }
+
+    def append(x: T) =
+      new Queue(leading, x :: trailing)
+  }
+}}}
+
+== 信息隐藏 ==
+
+前面的`Queue`实现暴露了太多实现细节，比如构造器的两个参数还有一个是反转的。
+
+=== 私有构造器及工厂方法 ===
+
+{{{class="brush: scala"
+  class Queue[T] private (
+    private val leading: List[T],
+    private val trailing: List[T]
+  )
+}}}
+
+这样防止外部调用主构造器：
+
+{{{class="brush: scala"
+  scala> new Queue(List(1, 2), List(3))
+  <console>:6: error: constructor Queue cannot be accessed in
+    object $iw
+         new Queue(List(1, 2), List(3))
+         ^
+}}}
+
+客户代码只能调用辅助构造器：
+
+{{{class="brush: scala"
+  def this() = this(Nil, Nil)
+}}}
+
+改良一下，让它可以带上初始队列元素列表：
+
+{{{class="brush: scala"
+  def this(elems: T*) = this(elems.toList, Nil)
+}}}
+
+其中的`T*`是重复参数标记，在前面“函数与闭包”一章中已经介绍。
+
+还有一种让客户代码构造的方法是在类定义同一个文件内建立伴生类的工厂方法：
+
+{{{class="brush: scala"
+  object Queue {
+    // constructs a queue with initial elements `xs'
+    def apply[T](xs: T*) = new Queue[T](xs.toList, Nil)
+  }
+}}}
+
+=== 可选方案：私有类 ===
+
+除了私有构造器和私有成员，还可以直接隐藏掉类本身，只提供暴露类公共接口的特质：
+
+{{{class="brush: scala"
+  trait Queue[T] {
+    def head: T
+    def tail: Queue[T]
+    def append(x: T): Queue[T]
+  }
+
+  object Queue {
+
+    def apply[T](xs: T*): Queue[T] =
+      new QueueImpl[T](xs.toList, Nil)
+
+    private class QueueImpl[T](
+      private val leading: List[T],
+      private val trailing: List[T]
+    ) extends Queue[T] {
+
+      def mirror =
+        if (leading.isEmpty)
+          new QueueImpl(trailing.reverse, Nil)
+        else
+          this
+
+      def head: T = mirror.leading.head
+
+      def tail: QueueImpl[T] = {
+        val q = mirror
+        new QueueImpl(q.leading.tail, q.trailing)
+      }
+
+      def append(x: T) =
+        new QueueImpl(leading, x :: trailing)
+    }
+  }
+}}}
+
+
+== 变化型注解 ==
+
+上面的`Queue`物质创建实例时一定要加类型参数：
+
+{{{class="brush: scala"
+  scala> def doesNotCompile(q: Queue) {}
+  <console>:5: error: trait Queue takes type parameters
+         def doesNotCompile(q: Queue) {}
+
+  scala> def doesCompile(q: Queue[AnyRef]) {}
+  doesCompile: (Queue[AnyRef])Unit
+}}}
+
+Scala的泛型在默认情况下是非协变的（nonvariant），即`Queue[String]`不是`Queue[AnyRef]`的子类。但还是可以设置为协变（covariant）的。
+
+用`+`表明子类型化协变，即`Queue[String]`是`Queue[AnyRef]`的子类：
+
+{{{class="brush: scala"
+  trait Queue[+T] { ... }
+}}}
+
+用`-`表示逆变（contravariant）子类型化，如果`T`类型是`S`的子类型，将隐含`Queue[S]`是`Queue[T]`的子类型：
 
 {{{class="brush: scala"
   trait Queue[-T] { ... }
+}}}
+
+在纯函数式中，许多类型都是自然协变的。然而一旦引入了可变数据，情况就改变了。假设一个简单的只能读写一个元素的单元格（Cell）类型：
+
+{{{class="brush: scala"
+  class Cell[T](init: T) {
+    private[this] var current = init
+    def get = current
+    def set(x: T) { current = x }
+  }
+}}}
+
+上面的`Cell`是非协变的。我们现成假设它是协变的，声明为`Cell[+T]`并发送给Scala编译器。于是我们可以构建如下存在问题的语句序列：
+
+{{{class="brush: scala"
+  val c1 = new Cell[String]("abc")
+}}}
+
+建立`String`放在`c1`中，OK。
+
+{{{class="brush: scala"
+  val c2: Cell[Any] = c1
+}}}
+
+`c2`类型是`Cell[Any]`，也OK。
+
+{{{class="brush: scala"
+  c2.set(1)
+}}}
+
+`c2`里存数字，也OK。
+
+{{{class="brush: scala"
+  val s: String = c1.get
+}}}
+
+`c1`里的字符串，赋给字符串也OK。
+
+上面四行都OK，但是看看这四行放在一起，就出问题了：
+
+{{{class="brush: scala"
+  val c1 = new Cell[String]("abc")
+  val c2: Cell[Any] = c1
+  c2.set(1)
+  val s: String = c1.get
+
+  Cell.scala:7: error: covariant type T occurs in
+  contravariant position in type T of value x
+     def set(x: T) = current = x
+                ^
+}}}
+
+这四行代码是要把整数`1`赋值给字符串`s`，这样破坏了类型声明。问题出在第二行，`Cell[Any]`和`Cell[String]`的类型的协变引起了错误。
+
+=== 变化型和数组 ===
+
+以前面的`Cell`类为例与Java中的数组比较，Java中的数组是协变的：
+
+{{{class="brush: scala"
+  // this is Java
+  String[] a1 = { "abc" };
+  Object[] a2 = a1;
+  a2[0] = new Integer(17);
+  String s = a1[0];
+}}}
+
+虽然可以通过编译，但是运行时第四行会报错。Java运行时保存了数组元素类型，在更新时对新元素进行合法性校验。类型错误时抛出`ArrayStore`：
+
+{{{class="brush: scala"
+  Exception in thread "main" java.lang.ArrayStoreException:
+  java.lang.Integer
+          at JavaArrays.main(JavaArrays.java:8)
+}}}
+
+这样看起来好像即没有用又浪费性能。按James Gosling的说法是希望有一个通用处理数组的简单方法，如需要排序所有元素时：
+
+{{{class="brush: scala"
+  void sort(Object[] a, Comparator cmp) { ... }
+}}}
+
+这样确保任意参数类型的数组都可以传入排序方法。当然后来Java有了泛型以后数组的协变不再有用了，为了向以前老版本兼容才留着。
+
+Scala中数组是不可协变的：
+
+{{{class="brush: scala"
+  scala> val a1 = Array("abc")
+  a1: Array[java.lang.String] = Array(abc)
+
+  scala> val a2: Array[Any] = a1
+  <console>:5: error: type mismatch;
+   found : Array[java.lang.String]
+   required: Array[Any]
+         val a2: Array[Any] = a1
+                              ^
+}}}
+
+但有时还是要数组能泛型手段与Java遗留方法进行交互。所以Scala允许把`T`类型的数组造型为任意`T`的超类的数组：
+
+{{{class="brush: scala"
+  scala> val a2: Array[Object] =
+       | a1.asInstanceOf[Array[Object]]
+  a2: Array[java.lang.Object] = Array(abc)
+}}}
+
+== 检查变化型注解 ==
+
+再看几个不合适的协变例子：
+
+把前面的队列改成协变的，然后创建指定元素类型为`Int`的队列，并重载`append`方法：
+
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
 }}}
 
 {{{class="brush: scala"
