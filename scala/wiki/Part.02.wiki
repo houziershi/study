@@ -3426,37 +3426,11 @@ abstract class CircuitSimulation
 }
 }}}
 
-{{{class="brush: scala"
-}}}
+
+
 
 {{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
+  trait Queue[-T] { ... }
 }}}
 
 {{{class="brush: scala"
