@@ -155,6 +155,7 @@
 <li><a href="#toc_5.3.1">变化型和数组</a>
 </ul>
 <li><a href="#toc_5.4">检查变化型注解</a>
+<li><a href="#toc_5.5">下界</a>
 </ul>
 </ul>
 </div>
@@ -4988,12 +4989,109 @@ Scala中数组是不可协变的：
 </p>
 
 <p>
-把前面的队列改成协变的，然后创建指定元素类型为<code>Int</code>的队列，并重载<code>append</code>方法：
+把前面的队列改成协变的，然后创建指定元素类型为<code>Int</code>的队列。并重载<code>append</code>方法使其在添加前先输出它参数的平方根：
 </p>
 
+<pre class="brush: scala">
+  class StrangeIntQueue extends Queue[Int] {
+    override def append(x: Int) = {
+      println(Math.sqrt(x))
+      super.append(x)
+    }
+  }
+</pre>
+
+<p>
+假设上面的代码是协变的，对应以下的调用：
+</p>
 
 <pre class="brush: scala">
+  val x: Queue[Any] = new StrangeIntQueue
+  x.append("abc")
 </pre>
+
+<p>
+上面的因为协变所以第一行是有效的，但第二行就有问题了……对字符串求平方根……
+</p>
+
+<p>
+在更加广泛的情况下，只要把泛型作为方法参数类型，包含它的类或特质就有可能不能与这个类型参数一直协变，对于队列来说，<code>append</code>方法违反了以下情况：
+</p>
+
+<pre class="brush: scala">
+  class Queue[+T] {
+    def append(x: T) = 
+     ...
+  }
+</pre>
+
+<p>
+所以编译器会报错：
+</p>
+
+<pre class="brush: scala">
+  Queues.scala:11: error: covariant type T occurs in
+  contravariant position in type T of value x
+    def append(x: T) = 
+               ^
+</pre>
+
+<p>
+不要对可重新赋值的字段使用<code>+</code>的协变参数类型。如<code>var x:T</code>在Scala里被看作自带<code>getter</code>方法<code>def x:T</code>、<code>def x_= (y:T)</code>，所以将不是协变的。
+</p>
+
+<p>
+深入讲述一些概念前，首选，我们把类和物质都简单称为“类”。然后对于这些类可能会用到类型参数的地方被分为正、负、中立。编译器检查类的类型参数的每一个用法。
+</p>
+
+<p>
+<code>+</code>的类型参数只能被用在正的位置上，<code>-</code>的类型参数只能用在负的位置上。没有变化型注解的类型可以用于任何位置，所以它是唯一能被用在类结构体的中性位置上的类型参数。
+</p>
+
+<p>
+编译器对位置分类是从类型声明开始进入更深的内嵌层。处于声明类最顶层被划为正的位置。默认情况下内层位置的分类会和外层一致。
+</p>
+
+<p>
+但总有例外：方法值参数位置是方法外部的位置的翻转类别，这里正位置传为负，负转为正，而中性位置仍然保持中性。
+</p>
+
+<p>
+除了方法值参数位置外，方法的类型参数的当前类别也会被翻转。而类型参数的位置，如<code>C[Arg]</code>中的<code>Arg</code>也有可以被翻转，这取决于对应类型参数的变化型：
+</p>
+
+<p>
+如果<code>C</code>的类型参数标了<code>+</code>号，那么类别不变；如果标了<code>-</code>号，则当前类别被翻转；如果<code>C</code>的类型参数没有变化型注解，那么当前类型将改为中性。
+</p>
+
+<p>
+下面的例子比较生编硬造，下面类型定义中的若干位置变化弄被标了正<code>+</code>或<code>-</code>负：
+</p>
+
+<pre class="brush: scala">
+  abstract class Cat[-T, +U] {
+    def meow[W-](volume: T-, listener: Cat[U+, T-]-)
+      : Cat[Cat[U+, T-]-, U+]+
+  }
+</pre>
+
+<p>
+类型参数<code>W</code>与两个值参数<code>volume</code>和<code>listener</code>的位置都是负的。
+</p>
+
+<p>
+注意<code>meow</code>的结果类型，第一个<code>Cat[U, T]</code>参数的位置是负的。因为<code>Cat</code>的第一个类型参数<code>[T]</code>被标了<code>-</code>。这个参数中的类型<code>U</code>重新转为正的位置（两次翻转），而参数中的类型<code>T</code>仍然是负位置。
+</p>
+
+<p>
+总的来说：人脑想跟上变化型位置的变化是很困难的，所以Scala编译器自动来完成这项工作。计算机变化型过程中，编译器检查每个类型参数是否仅用于分类正确的位置上。
+</p>
+
+<p>
+就上面的例子来说，<code>T</code>仅用在负位置上，而<code>U</code>仅用于正的位置上。所以这个<code>Cat</code>类是正确的。
+</p>
+
+<h2 id="toc_5.5">下界</h2>
 
 <pre class="brush: scala">
 </pre>
