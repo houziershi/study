@@ -142,24 +142,6 @@
 <li><a href="#toc_4.4.5">运行模拟器</a>
 </ul>
 </ul>
-<li><a href="#toc_5">参数类型化</a>
-<ul>
-<li><a href="#toc_5.1">开发纯函数式队列</a>
-<li><a href="#toc_5.2">信息隐藏</a>
-<ul>
-<li><a href="#toc_5.2.1">私有构造器及工厂方法</a>
-<li><a href="#toc_5.2.2">可选方案：私有类</a>
-</ul>
-<li><a href="#toc_5.3">变化型注解</a>
-<ul>
-<li><a href="#toc_5.3.1">变化型和数组</a>
-</ul>
-<li><a href="#toc_5.4">检查变化型注解</a>
-<ul>
-<li><a href="#toc_5.4.1">变化型注解的验证方式</a>
-</ul>
-<li><a href="#toc_5.5">下界</a>
-</ul>
 </ul>
 </div>
 
@@ -1170,132 +1152,6 @@ b * c n
 </pre>
 
 <p>
-下一个问题是格式化方法的实现。定义一个<code>format</code>方法，参数为表达式类型的<code>e: Expr</code>和操作符的优先级<code>enclPrec: Int</code>（如果没有这个操作符，那优先级就应该是0）。
-</p>
-
-<p>
-注意<code>format</code>是私有方法，完成大部分工作。最后一个公开的同名方法<code>format</code>提供入口。内部还有一个<code>stripDot</code>方法来去掉如<code>2.0</code>的<code>.0</code>部分。
-</p>
-
-<pre class="brush: scala">
-  private def format(e: Expr, enclPrec: Int): Element =
-
-    e match {
-
-      case Var(name) =&gt;
-        elem(name)
-
-      case Number(num) =&gt;
-        def stripDot(s: String) =
-          if (s endsWith ".0") s.substring(0, s.length - 2)
-          else s
-        elem(stripDot(num.toString))
-
-      case UnOp(op, arg) =&gt;
-        elem(op) beside format(arg, unaryPrecedence)
-
-      case BinOp("/", left, right) =&gt;
-        val top = format(left, fractionPrecedence)
-        val bot = format(right, fractionPrecedence)
-        val line = elem('-', top.width max bot.width, 1)
-        val frac = top above line above bot
-        if (enclPrec != fractionPrecedence) frac
-        else elem(" ") beside frac beside elem(" ")
-
-      case BinOp(op, left, right) =&gt;
-        val opPrec = precedence(op)
-        val l = format(left, opPrec)
-        val r = format(right, opPrec + 1)
-        val oper = l beside elem(" "+ op +" ") beside r
-        if (enclPrec &lt;= opPrec) oper
-        else elem("(") beside oper beside elem(")")
-    }
-
-    def format(e: Expr): Element = format(e, 0)
-  }
-</pre>
-
-<p>
-分析具体的逻辑：
-</p>
-
-<p>
-如果是变量，结果就是变量名。
-</p>
-
-<pre class="brush: scala">
-  case Var(name) =&gt;
-    elem(name)
-</pre>
-
-<p>
-如果是数字，结果是格式化后的数字，如<code>2.0</code>格式化为<code>2</code>：
-</p>
-
-<pre class="brush: scala">
-      case Number(num) =&gt;
-        def stripDot(s: String) =
-          if (s endsWith ".0") s.substring(0, s.length - 2)
-          else s
-        elem(stripDot(num.toString))
-</pre>
-
-<p>
-对于一元操作符的处理结果为操作<code>op</code>和最高环境优先级格式化参数<code>arg</code>的结果组成。这样如果<code>arg</code>是除了分数以外的二元操作就不会出现在括号中。
-</p>
-
-<pre class="brush: scala">
-      case UnOp(op, arg) =&gt;
-        elem(op) beside format(arg, unaryPrecedence)
-</pre>
-
-<p>
-如果是分数，则按上下位置放置。但仅仅上下的位置还不够。因为这样公不清主次：
-</p>
-
-<pre class="brush: scala">
-a
--
-b
--
-c
-</pre>
-
-<p>
-有必要强化层次：
-</p>
-
-<pre class="brush: scala">
- a
- -
- b
----
- c
-</pre>
-
-<p>
-实现的代码这个样子的：
-</p>
-
-<pre class="brush: scala">
-      case BinOp("/", left, right) =&gt;
-        val top = format(left, fractionPrecedence)
-        val bot = format(right, fractionPrecedence)
-        val line = elem('-', top.width max bot.width, 1)
-        val frac = top above line above bot
-        if (enclPrec != fractionPrecedence) frac
-        else elem(" ") beside frac beside elem(" ")
-</pre>
-
-<p>
-然后了除法以外的其他二元操作符。在这里要注意一下优先级问题：
-</p>
-
-<p>
-左操作数的优先级是操作符<code>op</code>的<code>opPrec</code>，而右操作数的优先级要再加1。这样保证了括号也同样反映正确的优先级。
-</p>
-
-<p>
 如：
 </p>
 
@@ -1442,6 +1298,133 @@ BinOp("-", Var("a"), BinOp("-", Var("b"), Var("c")))
 <pre class="brush: scala">
   scala Express
 </pre>
+
+
+<p>
+下一个问题是格式化方法的实现。定义一个<code>format</code>方法，参数为表达式类型的<code>e: Expr</code>和操作符的优先级<code>enclPrec: Int</code>（如果没有这个操作符，那优先级就应该是0）。
+</p>
+
+<p>
+注意<code>format</code>是私有方法，完成大部分工作。最后一个公开的同名方法<code>format</code>提供入口。内部还有一个<code>stripDot</code>方法来去掉如<code>2.0</code>的<code>.0</code>部分。
+</p>
+
+<pre class="brush: scala">
+  private def format(e: Expr, enclPrec: Int): Element =
+
+    e match {
+
+      case Var(name) =&gt;
+        elem(name)
+
+      case Number(num) =&gt;
+        def stripDot(s: String) =
+          if (s endsWith ".0") s.substring(0, s.length - 2)
+          else s
+        elem(stripDot(num.toString))
+
+      case UnOp(op, arg) =&gt;
+        elem(op) beside format(arg, unaryPrecedence)
+
+      case BinOp("/", left, right) =&gt;
+        val top = format(left, fractionPrecedence)
+        val bot = format(right, fractionPrecedence)
+        val line = elem('-', top.width max bot.width, 1)
+        val frac = top above line above bot
+        if (enclPrec != fractionPrecedence) frac
+        else elem(" ") beside frac beside elem(" ")
+
+      case BinOp(op, left, right) =&gt;
+        val opPrec = precedence(op)
+        val l = format(left, opPrec)
+        val r = format(right, opPrec + 1)
+        val oper = l beside elem(" "+ op +" ") beside r
+        if (enclPrec &lt;= opPrec) oper
+        else elem("(") beside oper beside elem(")")
+    }
+
+    def format(e: Expr): Element = format(e, 0)
+  }
+</pre>
+
+<p>
+分析具体的逻辑：
+</p>
+
+<p>
+如果是变量，结果就是变量名。
+</p>
+
+<pre class="brush: scala">
+  case Var(name) =&gt;
+    elem(name)
+</pre>
+
+<p>
+如果是数字，结果是格式化后的数字，如<code>2.0</code>格式化为<code>2</code>：
+</p>
+
+<pre class="brush: scala">
+      case Number(num) =&gt;
+        def stripDot(s: String) =
+          if (s endsWith ".0") s.substring(0, s.length - 2)
+          else s
+        elem(stripDot(num.toString))
+</pre>
+
+<p>
+对于一元操作符的处理结果为操作<code>op</code>和最高环境优先级格式化参数<code>arg</code>的结果组成。这样如果<code>arg</code>是除了分数以外的二元操作就不会出现在括号中。
+</p>
+
+<pre class="brush: scala">
+      case UnOp(op, arg) =&gt;
+        elem(op) beside format(arg, unaryPrecedence)
+</pre>
+
+<p>
+如果是分数，则按上下位置放置。但仅仅上下的位置还不够。因为这样公不清主次：
+</p>
+
+<pre class="brush: scala">
+a
+-
+b
+-
+c
+</pre>
+
+<p>
+有必要强化层次：
+</p>
+
+<pre class="brush: scala">
+ a
+ -
+ b
+---
+ c
+</pre>
+
+<p>
+实现的代码这个样子的：
+</p>
+
+<pre class="brush: scala">
+      case BinOp("/", left, right) =&gt;
+        val top = format(left, fractionPrecedence)
+        val bot = format(right, fractionPrecedence)
+        val line = elem('-', top.width max bot.width, 1)
+        val frac = top above line above bot
+        if (enclPrec != fractionPrecedence) frac
+        else elem(" ") beside frac beside elem(" ")
+</pre>
+
+<p>
+然后了除法以外的其他二元操作符。在这里要注意一下优先级问题：
+</p>
+
+<p>
+左操作数的优先级是操作符<code>op</code>的<code>opPrec</code>，而右操作数的优先级要再加1。这样保证了括号也同样反映正确的优先级。
+</p>
 
 
 <h1 id="toc_2">使用列表</h1>
@@ -4622,709 +4605,6 @@ abstract class CircuitSimulation
     run()
   }
 }
-</pre>
-
-
-<h1 id="toc_5">参数类型化</h1>
-
-<p>
-类型化参数能实现编写泛型类和特质。Scala中的泛型实例都应该写明具体类型（如：Set[Int]，Set[Int]），而不像Java中可以不带泛型类型。
-</p>
-
-<h2 id="toc_5.1">开发纯函数式队列</h2>
-
-<p>
-函数式的队列是不可变的，添加元素操作会返回一个新的队列。三个基本方法：
-</p>
-
-<ul>
-<li>
-<code>head</code>返回队列的第一个元素。
-
-<li>
-<code>tail</code>返回第一个元素以外的队列。
-
-<li>
-<code>append</code>返回在尾部添加指定元素的列队。
-
-</ul>
-
-<p>
-理想情况下，希望三种基本操作都可以在常量时间中完成。
-</p>
-
-<p>
-一个实现方案是以<code>List</code>作为功能表达类型，可以用现成的<code>head</code>和<code>tail</code>方法。<code>append</code>方法调用连接操作：
-</p>
-
-<pre class="brush: scala">
-  class SlowAppendQueue[T](elems: List[T]) { // Not efficient
-    def head = elems.head
-    def tail = new SlowAppendQueue(elems.tail)
-    def append(x: T) = new SlowAppendQueue(elems ::: List(x))
-  }
-</pre>
-
-<p>
-但这样<code>append</code>操作的时间会按元素的数量而增加，那换一种思路，把列表倒过来排序，这样会让原来最后加进来的元素出现在列表的最前面：
-</p>
-
-<pre class="brush: scala">
-  class SlowHeadQueue[T](smele: List[T]) { // Not efficient
-    // smele is elems reversed
-    def head = smele.last
-    def tail = new SlowHeadQueue(smele.init)
-    def append(x: T) = new SlowHeadQueue(x :: smele)
-  }
-</pre>
-
-<p>
-现在表现也倒过来了：<code>append</code>操作时间为常量，但<code>head</code>和<code>tail</code>耗时与元素数量成正比了。
-</p>
-
-<p>
-试一下结合两种列表的方案：
-</p>
-
-<dl>
-<dt>用两个列表<code>leading</code>放前面一半；<code>trailing</code>放后一半反向排的元素。这样全部内容就是`leading :</dt>
-<dd>trailing.reverse`。</dd>
-</dl>
-
-<dl>
-<dt>添加新元素：`i </dt>
-<dd>trailing<code>，这样常量时间就可以完成。但这样前一半的</code>leading<code>就不放进内容了，所以在对空的</code>leading<code>进行第一次</code>head<code>或</code>tail<code>操作前都要把</code>trailing<code>反转并复制给</code>leading<code>。这个操作被定义为</code>mirror`。</dd>
-</dl>
-
-<p>
-虽然<code>mirror</code>操作与队列长度成正比，但是这只发生在<code>leading</code>为空时才会被调用。因为如果<code>leading</code>不为空它将直接返回。
-</p>
-
-<pre class="brush: scala">
-  class Queue[T](
-    private val leading: List[T],
-    private val trailing: List[T]
-  ) {
-    private def mirror =
-      if (leading.isEmpty)
-        new Queue(trailing.reverse, Nil)
-      else
-        this
-
-    def head = mirror.leading.head
-
-    def tail = {
-      val q = mirror
-      new Queue(q.leading.tail, q.trailing)
-    }
-
-    def append(x: T) =
-      new Queue(leading, x :: trailing)
-  }
-</pre>
-
-<h2 id="toc_5.2">信息隐藏</h2>
-
-<p>
-前面的<code>Queue</code>实现暴露了太多实现细节，比如构造器的两个参数还有一个是反转的。
-</p>
-
-<h3 id="toc_5.2.1">私有构造器及工厂方法</h3>
-
-<pre class="brush: scala">
-  class Queue[T] private (
-    private val leading: List[T],
-    private val trailing: List[T]
-  )
-</pre>
-
-<p>
-这样防止外部调用主构造器：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; new Queue(List(1, 2), List(3))
-  &lt;console&gt;:6: error: constructor Queue cannot be accessed in
-    object $iw
-         new Queue(List(1, 2), List(3))
-         ^
-</pre>
-
-<p>
-客户代码只能调用辅助构造器：
-</p>
-
-<pre class="brush: scala">
-  def this() = this(Nil, Nil)
-</pre>
-
-<p>
-改良一下，让它可以带上初始队列元素列表：
-</p>
-
-<pre class="brush: scala">
-  def this(elems: T*) = this(elems.toList, Nil)
-</pre>
-
-<p>
-其中的<code>T*</code>是重复参数标记，在前面“函数与闭包”一章中已经介绍。
-</p>
-
-<p>
-还有一种让客户代码构造的方法是在类定义同一个文件内建立伴生类的工厂方法：
-</p>
-
-<pre class="brush: scala">
-  object Queue {
-    // constructs a queue with initial elements `xs'
-    def apply[T](xs: T*) = new Queue[T](xs.toList, Nil)
-  }
-</pre>
-
-<h3 id="toc_5.2.2">可选方案：私有类</h3>
-
-<p>
-除了私有构造器和私有成员，还可以直接隐藏掉类本身，只提供暴露类公共接口的特质：
-</p>
-
-<pre class="brush: scala">
-  trait Queue[T] {
-    def head: T
-    def tail: Queue[T]
-    def append(x: T): Queue[T]
-  }
-
-  object Queue {
-
-    def apply[T](xs: T*): Queue[T] =
-      new QueueImpl[T](xs.toList, Nil)
-
-    private class QueueImpl[T](
-      private val leading: List[T],
-      private val trailing: List[T]
-    ) extends Queue[T] {
-
-      def mirror =
-        if (leading.isEmpty)
-          new QueueImpl(trailing.reverse, Nil)
-        else
-          this
-
-      def head: T = mirror.leading.head
-
-      def tail: QueueImpl[T] = {
-        val q = mirror
-        new QueueImpl(q.leading.tail, q.trailing)
-      }
-
-      def append(x: T) =
-        new QueueImpl(leading, x :: trailing)
-    }
-  }
-</pre>
-
-
-<h2 id="toc_5.3">变化型注解</h2>
-
-<p>
-上面的<code>Queue</code>物质创建实例时一定要加类型参数：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; def doesNotCompile(q: Queue) {}
-  &lt;console&gt;:5: error: trait Queue takes type parameters
-         def doesNotCompile(q: Queue) {}
-
-  scala&gt; def doesCompile(q: Queue[AnyRef]) {}
-  doesCompile: (Queue[AnyRef])Unit
-</pre>
-
-<p>
-Scala的泛型在默认情况下是非协变的（nonvariant），即<code>Queue[String]</code>不是<code>Queue[AnyRef]</code>的子类。但还是可以设置为协变（covariant）的。
-</p>
-
-<p>
-用<code>+</code>表明子类型化协变，即<code>Queue[String]</code>是<code>Queue[AnyRef]</code>的子类：
-</p>
-
-<pre class="brush: scala">
-  trait Queue[+T] { ... }
-</pre>
-
-<p>
-用<code>-</code>表示逆变（contravariant）子类型化，如果<code>T</code>类型是<code>S</code>的子类型，将隐含<code>Queue[S]</code>是<code>Queue[T]</code>的子类型：
-</p>
-
-<pre class="brush: scala">
-  trait Queue[-T] { ... }
-</pre>
-
-<p>
-在纯函数式中，许多类型都是自然协变的。然而一旦引入了可变数据，情况就改变了。假设一个简单的只能读写一个元素的单元格（Cell）类型：
-</p>
-
-<pre class="brush: scala">
-  class Cell[T](init: T) {
-    private[this] var current = init
-    def get = current
-    def set(x: T) { current = x }
-  }
-</pre>
-
-<p>
-上面的<code>Cell</code>是非协变的。我们现成假设它是协变的，声明为<code>Cell[+T]</code>并发送给Scala编译器。于是我们可以构建如下存在问题的语句序列：
-</p>
-
-<pre class="brush: scala">
-  val c1 = new Cell[String]("abc")
-</pre>
-
-<p>
-建立<code>String</code>放在<code>c1</code>中，OK。
-</p>
-
-<pre class="brush: scala">
-  val c2: Cell[Any] = c1
-</pre>
-
-<p>
-<code>c2</code>类型是<code>Cell[Any]</code>，也OK。
-</p>
-
-<pre class="brush: scala">
-  c2.set(1)
-</pre>
-
-<p>
-<code>c2</code>里存数字，也OK。
-</p>
-
-<pre class="brush: scala">
-  val s: String = c1.get
-</pre>
-
-<p>
-<code>c1</code>里的字符串，赋给字符串也OK。
-</p>
-
-<p>
-上面四行都OK，但是看看这四行放在一起，就出问题了：
-</p>
-
-<pre class="brush: scala">
-  val c1 = new Cell[String]("abc")
-  val c2: Cell[Any] = c1
-  c2.set(1)
-  val s: String = c1.get
-
-  Cell.scala:7: error: covariant type T occurs in
-  contravariant position in type T of value x
-     def set(x: T) = current = x
-                ^
-</pre>
-
-<p>
-这四行代码是要把整数<code>1</code>赋值给字符串<code>s</code>，这样破坏了类型声明。问题出在第二行，<code>Cell[Any]</code>和<code>Cell[String]</code>的类型的协变引起了错误。
-</p>
-
-<h3 id="toc_5.3.1">变化型和数组</h3>
-
-<p>
-以前面的<code>Cell</code>类为例与Java中的数组比较，Java中的数组是协变的：
-</p>
-
-<pre class="brush: scala">
-  // this is Java
-  String[] a1 = { "abc" };
-  Object[] a2 = a1;
-  a2[0] = new Integer(17);
-  String s = a1[0];
-</pre>
-
-<p>
-虽然可以通过编译，但是运行时第四行会报错。Java运行时保存了数组元素类型，在更新时对新元素进行合法性校验。类型错误时抛出<code>ArrayStore</code>：
-</p>
-
-<pre class="brush: scala">
-  Exception in thread "main" java.lang.ArrayStoreException:
-  java.lang.Integer
-          at JavaArrays.main(JavaArrays.java:8)
-</pre>
-
-<p>
-这样看起来好像即没有用又浪费性能。按James Gosling的说法是希望有一个通用处理数组的简单方法，如需要排序所有元素时：
-</p>
-
-<pre class="brush: scala">
-  void sort(Object[] a, Comparator cmp) { ... }
-</pre>
-
-<p>
-这样确保任意参数类型的数组都可以传入排序方法。当然后来Java有了泛型以后数组的协变不再有用了，为了向以前老版本兼容才留着。
-</p>
-
-<p>
-Scala中数组是不可协变的：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val a1 = Array("abc")
-  a1: Array[java.lang.String] = Array(abc)
-
-  scala&gt; val a2: Array[Any] = a1
-  &lt;console&gt;:5: error: type mismatch;
-   found : Array[java.lang.String]
-   required: Array[Any]
-         val a2: Array[Any] = a1
-                              ^
-</pre>
-
-<p>
-但有时还是要数组能泛型手段与Java遗留方法进行交互。所以Scala允许把<code>T</code>类型的数组造型为任意<code>T</code>的超类的数组：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val a2: Array[Object] =
-       | a1.asInstanceOf[Array[Object]]
-  a2: Array[java.lang.Object] = Array(abc)
-</pre>
-
-<h2 id="toc_5.4">检查变化型注解</h2>
-
-<p>
-再看几个不合适的协变例子：
-</p>
-
-<p>
-把前面的队列改成协变的，然后创建指定元素类型为<code>Int</code>的队列。并重载<code>append</code>方法使其在添加前先输出它参数的平方根：
-</p>
-
-<pre class="brush: scala">
-  class StrangeIntQueue extends Queue[Int] {
-    override def append(x: Int) = {
-      println(Math.sqrt(x))
-      super.append(x)
-    }
-  }
-</pre>
-
-<p>
-假设上面的代码是协变的，对应以下的调用：
-</p>
-
-<pre class="brush: scala">
-  val x: Queue[Any] = new StrangeIntQueue
-  x.append("abc")
-</pre>
-
-<p>
-上面的因为协变所以第一行是有效的，但第二行就有问题了……对字符串求平方根……
-</p>
-
-<p>
-在更加广泛的情况下，只要把泛型作为方法参数类型，包含它的类或特质就有可能不能与这个类型参数一直协变，对于队列来说，<code>append</code>方法违反了以下情况：
-</p>
-
-<pre class="brush: scala">
-  class Queue[+T] {
-    def append(x: T) = 
-     ...
-  }
-</pre>
-
-<p>
-所以编译器会报错：
-</p>
-
-<pre class="brush: scala">
-  Queues.scala:11: error: covariant type T occurs in
-  contravariant position in type T of value x
-    def append(x: T) = 
-               ^
-</pre>
-
-<p>
-不要对可重新赋值的字段使用<code>+</code>的协变参数类型。如<code>var x:T</code>在Scala里被看作自带<code>getter</code>方法<code>def x:T</code>、<code>def x_= (y:T)</code>，所以将不是协变的。
-</p>
-
-<h3 id="toc_5.4.1">变化型注解的验证方式</h3>
-
-<p>
-深入讲述一些概念前，首选，我们把类和物质都简单称为“类”。然后对于这些类可能会用到类型参数的地方被分为正、负、中立。编译器检查类的类型参数的每一个用法。
-</p>
-
-<p>
-<code>+</code>的类型参数只能被用在正的位置上，<code>-</code>的类型参数只能用在负的位置上。没有变化型注解的类型可以用于任何位置，所以它是唯一能被用在类结构体的中性位置上的类型参数。
-</p>
-
-<p>
-编译器对位置分类是从类型声明开始进入更深的内嵌层。处于声明类最顶层被划为正的位置。默认情况下内层位置的分类会和外层一致。
-</p>
-
-<p>
-但总有例外：方法值参数位置是方法外部的位置的翻转类别，这里正位置传为负，负转为正，而中性位置仍然保持中性。
-</p>
-
-<p>
-除了方法值参数位置外，方法的类型参数的当前类别也会被翻转。而类型参数的位置，如<code>C[Arg]</code>中的<code>Arg</code>也有可以被翻转，这取决于对应类型参数的变化型：
-</p>
-
-<p>
-如果<code>C</code>的类型参数标了<code>+</code>号，那么类别不变；如果标了<code>-</code>号，则当前类别被翻转；如果<code>C</code>的类型参数没有变化型注解，那么当前类型将改为中性。
-</p>
-
-<p>
-下面的例子比较生编硬造，下面类型定义中的若干位置变化弄被标了正<code>+</code>或<code>-</code>负：
-</p>
-
-<p>
-类型参数<code>W</code>与两个值参数<code>volume</code>和<code>listener</code>的位置都是负的。
-</p>
-
-<p>
-<img src='images/19.01.png' />
-</p>
-
-<p>
-注意<code>meow</code>的结果类型，第一个<code>Cat[U, T]</code>参数的位置是负的。因为<code>Cat</code>的第一个类型参数<code>[T]</code>被标了<code>-</code>。这个参数中的类型<code>U</code>重新转为正的位置（两次翻转），而参数中的类型<code>T</code>仍然是负位置。
-</p>
-
-<p>
-总的来说：人脑想跟上变化型位置的变化是很困难的，所以Scala编译器自动来完成这项工作。计算机变化型过程中，编译器检查每个类型参数是否仅用于分类正确的位置上。
-</p>
-
-<p>
-就上面的例子来说，<code>T</code>仅用在负位置上，而<code>U</code>仅用于正的位置上。所以这个<code>Cat</code>类是正确的。
-</p>
-
-<h2 id="toc_5.5">下界</h2>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
-</pre>
-
-<pre class="brush: scala">
 </pre>
 
 
