@@ -605,29 +605,190 @@ object Customer extends Application {
 </p>
 
 <p>
-再来看<code>printBookList</code>的参数：指定的类型是<code>Book =&gt; AnyRef</code>，但实际调用时给的时<code>Publication =&gt; String</code>。参数是你类（<code>Book</code>的父类<code>Publication</code>）而结果是子类（<code>AnyRef</code>的子类<code>String</code>）。
+再来看<code>printBookList</code>的参数：指定的类型是<code>Book =&gt; AnyRef</code>，但实际调用时给的时<code>Publication =&gt; String</code>。参数是父类（<code>Book</code>的父类<code>Publication</code>）而结果是子类（<code>AnyRef</code>的子类<code>String</code>）。
+</p>
+
+<h2 id="toc_1.6">对象私有数据</h2>
+
+<p>
+之前的<code>Queue</code>类待改进内容：当<code>leading</code>列表为空时如果重复调用<code>head</code>，那么<code>mirror</code>操作会重复地把<code>trailing</code>复制到<code>leading</code>列表。
+</p>
+
+<p>
+改动：
+</p>
+
+<p>
+<code>leading</code>和<code>trailing</code>都是可变变量，<code>mirror</code>操作在当前列表上产生副作用而不是返回新的队列。由于它们都是对外不可见的私有变量，所以<code>Queue</code>还是算纯函数对象。
 </p>
 
 <pre class="brush: scala">
+ class Queue[+T] private (
+   private[this] var leading: List[T], 
+   private[this] var trailing: List[T]
+ ) {
+
+   private def mirror() = 
+     if (leading.isEmpty) {
+       while (!trailing.isEmpty) {
+         leading = trailing.head :: leading
+         trailing = trailing.tail
+       }
+     }
+
+   def head: T = { 
+     mirror()
+     leading.head 
+   }
+
+   def tail: Queue[T] = { 
+     mirror()
+     new Queue(leading.tail, trailing) 
+   }
+
+   def append[U &gt;: T](x: U) = 
+     new Queue[U](leading, x :: trailing)
+ }
+</pre>
+
+<p>
+在两个可变私有成员变量的情况下<code>Queue</code>还可以使用协变。因为对于对象的私有值访问来说不可能有比定义的对象类型更弱的静态类型对象引用。
+</p>
+
+<p>
+所以Scala的类型变化检查对于对象私有成员，在遇到带有<code>+</code>或<code>-</code>的类型参数只出现在具有相同变化型分类的位置上时，会被忽略。
+</p>
+
+<p>
+所以如果去掉<code>private</code>修饰符的<code>[this]</code>限定会编译不过：
+</p>
+
+<pre class="brush: scala">
+  Queues.scala:1: error: covariant type T occurs in 
+  contravariant position in type List[T] of parameter of
+  setter leading_=
+  class Queue[+T] private (private var leading: List[T],
+                                       ^
+  Queues.scala:1: error: covariant type T occurs in 
+  contravariant position in type List[T] of parameter of
+  setter trailing_=
+                           private var trailing: List[T]) {
+                                       ^
+</pre>
+
+<p>
+上面分别报错的原因是：协变类型<code>T</code>出现在setter函数<code>leading_=</code>参数类型List[T]的逆变位置上；协变类型<code>T</code>出现在setter函数<code>trailing_=</code>参数类型List[T]的逆变位置上。
+</p>
+
+<h2 id="toc_1.7">上界</h2>
+
+<p>
+之前在“使用列表”章的第一节“列表字面量”中实现一个归并排序的方法。它的第一个参数是比较函数，第二个柯里化的参数是要排序的列表。对这个函数的另一种组织方法大概 就是把列表类型混入到<code>ordered</code>特质中。
+</p>
+
+<p>
+通过把<code>Ordered</code>特质混入到类中并实现抽象的比较方法<code>Compare</code>，就可以对实例进行比较：
+</p>
+
+<pre class="brush: scala">
+  class Person(val firstName: String, val lastName: String)
+      extends Ordered[Person] {
+
+    def compare(that: Person) = {
+      val lastNameComparison =
+        lastName.compareToIgnoreCase(that.lastName)
+      if (lastNameComparison != 0)
+        lastNameComparison
+      else
+        firstName.compareToIgnoreCase(that.firstName)
+    }
+
+    override def toString = firstName +" "+ lastName
+  }
 </pre>
 
 <pre class="brush: scala">
+  scala&gt; val robert = new Person("Robert", "Jones")
+  robert: Person = Robert Jones
+
+  scala&gt; val sally = new Person("Sally", "Smith")
+  sally: Person = Sally Smith
+
+  scala&gt; robert &lt; sally
+  res0: Boolean = true
 </pre>
 
-<pre class="brush: scala">
-</pre>
+<p>
+为了让列表类型混入到<code>Ordered</code>中，需要使用上界，符号<code>&lt;:</code>。
+</p>
+
+<p>
+<code>T &lt;:  Ordered[T]</code>表明类型必须是<code>Ordered</code>的子类型。比如<code>Person</code>，因为<code>Person</code>混入了<code>Ordered</code>特质：
+</p>
 
 <pre class="brush: scala">
+  def orderedMergeSort[T &lt;: Ordered[T]](xs: List[T]): List[T] = {
+    def merge(xs: List[T], ys: List[T]): List[T] =
+      (xs, ys) match {
+        case (Nil, _) =&gt; ys
+        case (_, Nil) =&gt; xs
+        case (x :: xs1, y :: ys1) =&gt;
+          if (x &lt; y) x :: merge(xs1, ys)
+          else y :: merge(xs, ys1)
+      }
+    val n = xs.length / 2
+    if (n == 0) xs
+    else {
+      val (ys, zs) = xs splitAt n
+      merge(orderedMergeSort(ys), orderedMergeSort(zs))
+    }
+  }
 </pre>
 
-<pre class="brush: scala">
-</pre>
+<p>
+使用：
+</p>
 
 <pre class="brush: scala">
+  scala&gt; val people = List(
+       |   new Person("Larry", "Wall"),
+       |   new Person("Anders", "Hejlsberg"),
+       |   new Person("Guido", "van Rossum"),
+       |   new Person("Alan", "Kay"),
+       |   new Person("Yukihiro", "Matsumoto")
+       | )
+  people: List[Person] = List(Larry Wall, Anders Hejlsberg,
+    Guido van Rossum, Alan Kay, Yukihiro Matsumoto)
+
+
+  scala&gt; val sortedPeople = orderedMergeSort(people)
+  sortedPeople: List[Person] = List(Anders Hejlsberg, Alan Kay,
+    Yukihiro Matsumoto, Guido van Rossum, Larry Wall)
 </pre>
 
+<p>
+以上的解决方案还是有限制，比如不能适应整数列表。因为<code>Int</code>不是<code>Ordered[Int]</code>的子类：
+</p>
+
 <pre class="brush: scala">
+  scala&gt; val wontCompile = orderedMergeSort(List(3, 2, 1))
+  &lt;console&gt;:5: error: inferred type arguments [Int] do
+     not conform to method orderedMergeSort's type
+       parameter bounds [T &lt;: Ordered[T]]
+         val wontCompile = orderedMergeSort(List(3, 2, 1))
+                           ^
 </pre>
+
+<p>
+在以后的“隐式类型转换和参数”的“视界”一节中介绍通过采用隐式参数与检查约束来实现更加通用的方案。
+</p>
+
+
+
+
+<h1 id="toc_2">抽象成员</h1>
+
+
 
 <pre class="brush: scala">
 </pre>
