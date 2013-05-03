@@ -355,23 +355,85 @@ Scala中数组是不可协变的：
 
 == 下界 ==
 
-{{{class="brush: scala"
-}}}
+在之前的“可选方案：私有类”这一节中展示的是没有办法协变的实现`Queue[T]`。因为类型`T`作为参数出现在`append`方法中，而这个位置是负的。
+
+所幸有一个办法：可能通过把`append`变为金矿以使其泛型化并使用它的类型参数的下界：
 
 {{{class="brush: scala"
+  class Queue[+T] (private val leading: List[T],
+      private val trailing: List[T] ) {
+    def append[U >: T](x: U) = 
+      new Queue[U](leading, x :: trailing) // ...
+  }
 }}}
 
-{{{class="brush: scala"
-}}}
+`append`方法指定的类型参数`U`，并通过语法`U >: T`定义了`T`为`U`的下界，即：`U`必须是`T`的超类。返回类型也成了`Queue[U]`。
+
+要注意对于同一个类来说，即是超类也是子类。所以`T`是`U`下界，用`T`传入也是可以的。
+
+例子：对于`Fruit`和两个子类`Orange`和`Apple`，可以把`Orange`对象传入`Queue[Apple]`而返回`Queue[Fruit]`。
+
+从技术角度来看，这里的情况发生了下界的翻转：类型参数`U`处于负位置（1次翻转），面下界`>: T`处于正的位置（两次翻转）。
+
+
+=== 逆变 ===
+
+前面所有的例子不是协变的就是非协变的。还有一些情况下会有逆变：
 
 {{{class="brush: scala"
+  trait OutputChannel[-T] {
+    def write(x: T)
+  }
 }}}
 
-{{{class="brush: scala"
-}}}
+举例来说：这种情况下`AnyRef`作为`String`的子类型。如：把一个`OutputChannel[AnyRef]`赋给`OutputChannel[String]`是安全的，反过来把一个`OutputChannel[String]`赋给`OutputChannel[AnyRef]`却是不安全的。
+
+当然这要有前提：`AnyRef`要支持`String`在这这里会用到的操作。
+
+Scala函数物质中协变与逆变混在一起用的情况会比较多。对于`S => T`类型的函数会定义`Function[S, T]`，这时对参数`A`逆变而对结果`B`协变就是一种有用的策略：
 
 {{{class="brush: scala"
+  trait Function1[-S, +T] {
+    def apply(x: S): T
+  }
 }}}
+
+应用的例子：
+
+父类出版物的构造函数有一个标题参数，子类书的构造函数会调用父类的构造函数。
+
+{{{class="brush: scala"
+class Publication(val title: String)
+class Book(title: String) extends Publication(title)
+}}}
+
+单例对象`Library`定义了书的集，以及打印书单的方法`printBookList`的唯一参数是以`Book => AnyRef`类型的方法为参数。
+
+{{{class="brush: scala"
+object Library {
+ val books: Set[Book] =
+   Set(
+     new Book("Programming in Scala"),
+     new Book("Walden")
+   )
+ def printBookList(info: Book => AnyRef) {
+   for (book <- books) println(info(book))
+ }
+}
+}}}
+
+单例对象`Customer`定义了方法`getTitle`根据出版物取得标题。最后一行调用`Library`的打印书单方法：
+
+{{{class="brush: scala"
+object Customer extends Application {
+ def getTitle(p: Publication): String = p.title
+ Library.printBookList(getTitle)
+}
+}}}
+
+`printBookList`中的`println`方法会用到`toString`，这对所有`String`及`AnyRef`子类都有用，这里用到了函数结果类型的协变。
+
+再来看`printBookList`的参数：指定的类型是`Book => AnyRef`，但实际调用时给的时`Publication => String`。参数是你类（`Book`的父类`Publication`）而结果是子类（`AnyRef`的子类`String`）。
 
 {{{class="brush: scala"
 }}}

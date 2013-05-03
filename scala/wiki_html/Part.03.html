@@ -496,23 +496,117 @@ Scala中数组是不可协变的：
 
 <h2 id="toc_1.5">下界</h2>
 
-<pre class="brush: scala">
-</pre>
+<p>
+在之前的“可选方案：私有类”这一节中展示的是没有办法协变的实现<code>Queue[T]</code>。因为类型<code>T</code>作为参数出现在<code>append</code>方法中，而这个位置是负的。
+</p>
+
+<p>
+所幸有一个办法：可能通过把<code>append</code>变为金矿以使其泛型化并使用它的类型参数的下界：
+</p>
 
 <pre class="brush: scala">
+  class Queue[+T] (private val leading: List[T],
+      private val trailing: List[T] ) {
+    def append[U &gt;: T](x: U) = 
+      new Queue[U](leading, x :: trailing) // ...
+  }
 </pre>
 
-<pre class="brush: scala">
-</pre>
+<p>
+<code>append</code>方法指定的类型参数<code>U</code>，并通过语法<code>U &gt;: T</code>定义了<code>T</code>为<code>U</code>的下界，即：<code>U</code>必须是<code>T</code>的超类。返回类型也成了<code>Queue[U]</code>。
+</p>
+
+<p>
+要注意对于同一个类来说，即是超类也是子类。所以<code>T</code>是<code>U</code>下界，用<code>T</code>传入也是可以的。
+</p>
+
+<p>
+例子：对于<code>Fruit</code>和两个子类<code>Orange</code>和<code>Apple</code>，可以把<code>Orange</code>对象传入<code>Queue[Apple]</code>而返回<code>Queue[Fruit]</code>。
+</p>
+
+<p>
+从技术角度来看，这里的情况发生了下界的翻转：类型参数<code>U</code>处于负位置（1次翻转），面下界<code>&gt;: T</code>处于正的位置（两次翻转）。
+</p>
+
+
+<h3 id="toc_1.5.1">逆变</h3>
+
+<p>
+前面所有的例子不是协变的就是非协变的。还有一些情况下会有逆变：
+</p>
 
 <pre class="brush: scala">
+  trait OutputChannel[-T] {
+    def write(x: T)
+  }
 </pre>
 
-<pre class="brush: scala">
-</pre>
+<p>
+举例来说：这种情况下<code>AnyRef</code>作为<code>String</code>的子类型。如：把一个<code>OutputChannel[AnyRef]</code>赋给<code>OutputChannel[String]</code>是安全的，反过来把一个<code>OutputChannel[String]</code>赋给<code>OutputChannel[AnyRef]</code>却是不安全的。
+</p>
+
+<p>
+当然这要有前提：<code>AnyRef</code>要支持<code>String</code>在这这里会用到的操作。
+</p>
+
+<p>
+Scala函数物质中协变与逆变混在一起用的情况会比较多。对于<code>S =&gt; T</code>类型的函数会定义<code>Function[S, T]</code>，这时对参数<code>A</code>逆变而对结果<code>B</code>协变就是一种有用的策略：
+</p>
 
 <pre class="brush: scala">
+  trait Function1[-S, +T] {
+    def apply(x: S): T
+  }
 </pre>
+
+<p>
+应用的例子：
+</p>
+
+<p>
+父类出版物的构造函数有一个标题参数，子类书的构造函数会调用父类的构造函数。
+</p>
+
+<pre class="brush: scala">
+class Publication(val title: String)
+class Book(title: String) extends Publication(title)
+</pre>
+
+<p>
+单例对象<code>Library</code>定义了书的集，以及打印书单的方法<code>printBookList</code>的唯一参数是以<code>Book =&gt; AnyRef</code>类型的方法为参数。
+</p>
+
+<pre class="brush: scala">
+object Library {
+ val books: Set[Book] =
+   Set(
+     new Book("Programming in Scala"),
+     new Book("Walden")
+   )
+ def printBookList(info: Book =&gt; AnyRef) {
+   for (book &lt;- books) println(info(book))
+ }
+}
+</pre>
+
+<p>
+单例对象<code>Customer</code>定义了方法<code>getTitle</code>根据出版物取得标题。最后一行调用<code>Library</code>的打印书单方法：
+</p>
+
+<pre class="brush: scala">
+object Customer extends Application {
+ def getTitle(p: Publication): String = p.title
+ Library.printBookList(getTitle)
+}
+</pre>
+
+<p>
+<code>printBookList</code>中的<code>println</code>方法会用到<code>toString</code>，这对所有<code>String</code>及<code>AnyRef</code>子类都有用，这里用到了函数结果类型的协变。
+</p>
+
+<p>
+再来看<code>printBookList</code>的参数：指定的类型是<code>Book =&gt; AnyRef</code>，但实际调用时给的时<code>Publication =&gt; String</code>。参数是你类（<code>Book</code>的父类<code>Publication</code>）而结果是子类（<code>AnyRef</code>的子类<code>String</code>）。
+</p>
 
 <pre class="brush: scala">
 </pre>
