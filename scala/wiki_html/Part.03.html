@@ -45,6 +45,19 @@
 <ul>
 <li><a href="#toc_1.5.1">逆变</a>
 </ul>
+<li><a href="#toc_1.6">对象私有数据</a>
+<li><a href="#toc_1.7">上界</a>
+</ul>
+<li><a href="#toc_2">抽象成员</a>
+<ul>
+<li><a href="#toc_2.1">抽象成员的快速浏览</a>
+<li><a href="#toc_2.2">类型成员</a>
+<li><a href="#toc_2.3">抽象val</a>
+<li><a href="#toc_2.4">抽象var</a>
+<li><a href="#toc_2.5">初始化抽象val</a>
+<ul>
+<li><a href="#toc_2.5.1">fields预初始化字段</a>
+</ul>
 </ul>
 </ul>
 </div>
@@ -632,8 +645,613 @@ object Customer extends Application {
 </p>
 
 <p>
-再来看<code>printBookList</code>的参数：指定的类型是<code>Book =&gt; AnyRef</code>，但实际调用时给的时<code>Publication =&gt; String</code>。参数是你类（<code>Book</code>的父类<code>Publication</code>）而结果是子类（<code>AnyRef</code>的子类<code>String</code>）。
+再来看<code>printBookList</code>的参数：指定的类型是<code>Book =&gt; AnyRef</code>，但实际调用时给的时<code>Publication =&gt; String</code>。参数是父类（<code>Book</code>的父类<code>Publication</code>）而结果是子类（<code>AnyRef</code>的子类<code>String</code>）。
 </p>
+
+<h2 id="toc_1.6">对象私有数据</h2>
+
+<p>
+之前的<code>Queue</code>类待改进内容：当<code>leading</code>列表为空时如果重复调用<code>head</code>，那么<code>mirror</code>操作会重复地把<code>trailing</code>复制到<code>leading</code>列表。
+</p>
+
+<p>
+改动：
+</p>
+
+<p>
+<code>leading</code>和<code>trailing</code>都是可变变量，<code>mirror</code>操作在当前列表上产生副作用而不是返回新的队列。由于它们都是对外不可见的私有变量，所以<code>Queue</code>还是算纯函数对象。
+</p>
+
+<pre class="brush: scala">
+ class Queue[+T] private (
+   private[this] var leading: List[T], 
+   private[this] var trailing: List[T]
+ ) {
+
+   private def mirror() = 
+     if (leading.isEmpty) {
+       while (!trailing.isEmpty) {
+         leading = trailing.head :: leading
+         trailing = trailing.tail
+       }
+     }
+
+   def head: T = { 
+     mirror()
+     leading.head 
+   }
+
+   def tail: Queue[T] = { 
+     mirror()
+     new Queue(leading.tail, trailing) 
+   }
+
+   def append[U &gt;: T](x: U) = 
+     new Queue[U](leading, x :: trailing)
+ }
+</pre>
+
+<p>
+在两个可变私有成员变量的情况下<code>Queue</code>还可以使用协变。因为对于对象的私有值访问来说不可能有比定义的对象类型更弱的静态类型对象引用。
+</p>
+
+<p>
+所以Scala的类型变化检查对于对象私有成员，在遇到带有<code>+</code>或<code>-</code>的类型参数只出现在具有相同变化型分类的位置上时，会被忽略。
+</p>
+
+<p>
+所以如果去掉<code>private</code>修饰符的<code>[this]</code>限定会编译不过：
+</p>
+
+<pre class="brush: scala">
+  Queues.scala:1: error: covariant type T occurs in 
+  contravariant position in type List[T] of parameter of
+  setter leading_=
+  class Queue[+T] private (private var leading: List[T],
+                                       ^
+  Queues.scala:1: error: covariant type T occurs in 
+  contravariant position in type List[T] of parameter of
+  setter trailing_=
+                           private var trailing: List[T]) {
+                                       ^
+</pre>
+
+<p>
+上面分别报错的原因是：协变类型<code>T</code>出现在setter函数<code>leading_=</code>参数类型List[T]的逆变位置上；协变类型<code>T</code>出现在setter函数<code>trailing_=</code>参数类型List[T]的逆变位置上。
+</p>
+
+<h2 id="toc_1.7">上界</h2>
+
+<p>
+之前在“使用列表”章的第一节“列表字面量”中实现一个归并排序的方法。它的第一个参数是比较函数，第二个柯里化的参数是要排序的列表。对这个函数的另一种组织方法大概 就是把列表类型混入到<code>ordered</code>特质中。
+</p>
+
+<p>
+通过把<code>Ordered</code>特质混入到类中并实现抽象的比较方法<code>Compare</code>，就可以对实例进行比较：
+</p>
+
+<pre class="brush: scala">
+  class Person(val firstName: String, val lastName: String)
+      extends Ordered[Person] {
+
+    def compare(that: Person) = {
+      val lastNameComparison =
+        lastName.compareToIgnoreCase(that.lastName)
+      if (lastNameComparison != 0)
+        lastNameComparison
+      else
+        firstName.compareToIgnoreCase(that.firstName)
+    }
+
+    override def toString = firstName +" "+ lastName
+  }
+</pre>
+
+<pre class="brush: scala">
+  scala&gt; val robert = new Person("Robert", "Jones")
+  robert: Person = Robert Jones
+
+  scala&gt; val sally = new Person("Sally", "Smith")
+  sally: Person = Sally Smith
+
+  scala&gt; robert &lt; sally
+  res0: Boolean = true
+</pre>
+
+<p>
+为了让列表类型混入到<code>Ordered</code>中，需要使用上界，符号<code>&lt;:</code>。
+</p>
+
+<p>
+<code>T &lt;:  Ordered[T]</code>表明类型必须是<code>Ordered</code>的子类型。比如<code>Person</code>，因为<code>Person</code>混入了<code>Ordered</code>特质：
+</p>
+
+<pre class="brush: scala">
+  def orderedMergeSort[T &lt;: Ordered[T]](xs: List[T]): List[T] = {
+    def merge(xs: List[T], ys: List[T]): List[T] =
+      (xs, ys) match {
+        case (Nil, _) =&gt; ys
+        case (_, Nil) =&gt; xs
+        case (x :: xs1, y :: ys1) =&gt;
+          if (x &lt; y) x :: merge(xs1, ys)
+          else y :: merge(xs, ys1)
+      }
+    val n = xs.length / 2
+    if (n == 0) xs
+    else {
+      val (ys, zs) = xs splitAt n
+      merge(orderedMergeSort(ys), orderedMergeSort(zs))
+    }
+  }
+</pre>
+
+<p>
+使用：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val people = List(
+       |   new Person("Larry", "Wall"),
+       |   new Person("Anders", "Hejlsberg"),
+       |   new Person("Guido", "van Rossum"),
+       |   new Person("Alan", "Kay"),
+       |   new Person("Yukihiro", "Matsumoto")
+       | )
+  people: List[Person] = List(Larry Wall, Anders Hejlsberg,
+    Guido van Rossum, Alan Kay, Yukihiro Matsumoto)
+
+
+  scala&gt; val sortedPeople = orderedMergeSort(people)
+  sortedPeople: List[Person] = List(Anders Hejlsberg, Alan Kay,
+    Yukihiro Matsumoto, Guido van Rossum, Larry Wall)
+</pre>
+
+<p>
+以上的解决方案还是有限制，比如不能适应整数列表。因为<code>Int</code>不是<code>Ordered[Int]</code>的子类：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val wontCompile = orderedMergeSort(List(3, 2, 1))
+  &lt;console&gt;:5: error: inferred type arguments [Int] do
+     not conform to method orderedMergeSort's type
+       parameter bounds [T &lt;: Ordered[T]]
+         val wontCompile = orderedMergeSort(List(3, 2, 1))
+                           ^
+</pre>
+
+<p>
+在以后的“隐式类型转换和参数”的“视界”一节中介绍通过采用隐式参数与检查约束来实现更加通用的方案。
+</p>
+
+
+
+<h1 id="toc_2">抽象成员</h1>
+
+<p>
+Scala中不仅可以指定方法为抽象，还可以声明字段甚至抽象类型为类和特质的成员。
+</p>
+
+<h2 id="toc_2.1">抽象成员的快速浏览</h2>
+
+<p>
+在特质中分别对类型（T）、方法（transform）、val（initial）、var（current）的抽象声明：
+</p>
+
+<pre class="brush: scala">
+  trait Abstract {
+    type T
+    def transform(x: T): T
+    val initial: T
+    var current: T
+  }
+</pre>
+
+<p>
+实现：
+</p>
+
+<pre class="brush: scala">
+  class Concrete extends Abstract {
+    type T = String
+    def transform(x: String) = x + x
+    val initial = "hi"
+    var current = initial
+  }
+</pre>
+
+<h2 id="toc_2.2">类型成员</h2>
+
+<p>
+（略）
+</p>
+
+<h2 id="toc_2.3">抽象val</h2>
+
+<p>
+val是不可变的，抽象的val指定了类型与变量名，不指定值：
+</p>
+
+<pre class="brush: scala">
+  val initial: String
+</pre>
+
+<p>
+实现时指定值：
+</p>
+
+<pre class="brush: scala">
+  val initial = "hi"
+</pre>
+
+<p>
+如果不知道类中定义的确切内容，但是确定对于每个实例来说值都是不可变的。在这样的情况下可以使用抽象的val声明，格式类似于无参数方法声明：
+</p>
+
+<pre class="brush: scala">
+  def initial: String
+</pre>
+
+<p>
+客户代码将使用统一的<code>obj.initial</code>方法引用val及方法。如果<code>initial</code>是抽象val，那么客户就可以保证每次引用都将得到同样的值。如果<code>initial</code>是抽象方法那就无法保证，因为在不同的实现中<code>initial</code>可以被实现为每次调用都返回不同的值。
+</p>
+
+<p>
+换名话说抽象的val限制了合法实现的方式：任何实现都必须是<code>val</code>类型的定义不可以是<code>var</code>。另一方面，抽象方法声明可以被实现为具体的方法定义或具体的<code>val</code>定义。
+</p>
+
+<p>
+所以在下面的代码中，<code>Apple</code>是合法的子类面<code>BadApple</code>不是：
+</p>
+
+<pre class="brush: scala">
+  abstract class Fruit {
+    val v: String // `v' for value
+    def m: String // `m' for method
+  }
+
+  abstract class Apple extends Fruit {
+    val v: String
+    val m: String // OK to override a `def' with a `val'
+  }
+
+  abstract class BadApple extends Fruit {
+    def v: String // ERROR: cannot override a `val' with a `def'
+    def m: String
+  }
+</pre>
+
+<h2 id="toc_2.4">抽象var</h2>
+
+<p>
+在特质里使用，只声明类型与名称，没有初始值：
+</p>
+
+<pre class="brush: scala">
+  trait AbstractTime {
+    var hour: Int
+    var minute: Int
+  }
+</pre>
+
+<p>
+也会有自动扩展的<code>getter</code>与<code>setter</code>方法，相当于：
+</p>
+
+<pre class="brush: scala">
+  trait AbstractTime {
+    def hour: Int          // getter for `hour'
+    def hour_=(x: Int)     // setter for `hour'
+    def minute: Int        // getter for `minute'
+    def minute_=(x: Int)   // setter for `minute'
+  }
+</pre>
+
+<h2 id="toc_2.5">初始化抽象val</h2>
+
+<p>
+结合特质来使用，抽象val可以让子类扩展提供父类没有的参数与细节。因为特质缺省能用来传递参数的构造器。
+</p>
+
+<p>
+拿前面的实数类来作例子，以下特质：
+</p>
+
+<pre class="brush: scala">
+  trait RationalTrait { 
+    val numerArg: Int 
+    val denomArg: Int 
+  } 
+</pre>
+
+<p>
+为了实例化这个特质，先要实现val。在这里我们要用到新的<code>new</code>语法结构：
+</p>
+
+<pre class="brush: scala">
+  new RationalTrait {
+    val numerArg = 1
+    val denomArg = 2
+  }
+</pre>
+
+<p>
+上面的代码会产混入了物质的匿名类实例，类似于<code>new Rational(1, 2)</code>。当然区别还是有的：
+</p>
+
+<pre class="brush: scala">
+  new Rational(expr1, expr2)
+</pre>
+
+<p>
+上面的两个表达式会在类初始化前计算，而相反的：
+</p>
+
+<pre class="brush: scala">
+  new RationalTrait {
+    val numerArg = expr1
+    val denomArg = expr2
+  }
+</pre>
+
+<p>
+上面的两个表达式会作为匿名类初始化的一部分计算。而匿名类初始化在<code>RationalTrait</code>之后执行，所以<code>numerArg</code>和<code>denomArg</code>的值在<code>RationalTrait</code>初始化期间还没有准备好，都是<code>Int</code>类型的默认值<code>0</code>。
+</p>
+
+<p>
+所以对下面的代码来说，这会成为一个问题，因为其中定义了经过约分后的分子与分母：
+</p>
+
+<pre class="brush: scala">
+  trait RationalTrait { 
+    val numerArg: Int 
+    val denomArg: Int 
+    require(denomArg != 0)
+    private val g = gcd(numerArg, denomArg)
+    val numer = numerArg / g
+    val denom = denomArg / g
+    private def gcd(a: Int, b: Int): Int = 
+      if (b == 0) a else gcd(b, a % b)
+    override def toString = numer +"/"+ denom
+  }
+</pre>
+
+<p>
+如果尝试使用某种分子和分母的表达式面不是简单的字面量实例化这个特质，会引起以下错误：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val x = 2
+  x: Int = 2
+
+  scala&gt; new RationalTrait {
+       |   val numerArg = 1 * x
+       |   val denomArg = 2 * x
+       | }
+  java.lang.IllegalArgumentException: requirement failed
+          at scala.Predef$.require(Predef.scala:107)
+          at RationalTrait$class.$init$(&lt;console&gt;:7)
+          at $anon$1.&lt;init&gt;(&lt;console&gt;:7)
+          ....
+</pre>
+
+<p>
+解决方案有两个，分别是预初始化字段和懒加载val。
+</p>
+
+<h3 id="toc_2.5.1">fields预初始化字段</h3>
+
+<p>
+给字段定义加上花括号，放在超类的构造器之前：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; new { 
+       |   val numerArg = 1 * x
+       |   val denomArg = 2 * x 
+       | } with RationalTrait
+  res15: java.lang.Object with RationalTrait = 1/2
+</pre>
+
+<p>
+不仅匿名类，对象或是有名称的类也可以用。预初始化段落在下面每个定义的<code>extends</code>关键字之后：
+</p>
+
+<pre class="brush: scala">
+  object twoThirds extends {
+    val numerArg = 2
+    val denomArg = 3
+  } with RationalTrait
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
 
 
 </body>
