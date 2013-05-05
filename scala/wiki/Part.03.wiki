@@ -587,196 +587,528 @@ object Customer extends Application {
 
 
 
-
 = 抽象成员 =
 
+Scala中不仅可以指定方法为抽象，还可以声明字段甚至抽象类型为类和特质的成员。
+
+== 抽象成员的快速浏览 ==
+
+在特质中分别对类型（T）、方法（transform）、val（initial）、var（current）的抽象声明：
+
+{{{class="brush: scala"
+  trait Abstract {
+    type T
+    def transform(x: T): T
+    val initial: T
+    var current: T
+  }
+}}}
+
+实现：
+
+{{{class="brush: scala"
+  class Concrete extends Abstract {
+    type T = String
+    def transform(x: String) = x + x
+    val initial = "hi"
+    var current = initial
+  }
+}}}
+
+== 类型成员 ==
+
+（略）
+
+== 抽象val ==
+
+val是不可变的，抽象的val指定了类型与变量名，不指定值：
+
+{{{class="brush: scala"
+  val initial: String
+}}}
+
+实现时指定值：
+
+{{{class="brush: scala"
+  val initial = "hi"
+}}}
+
+如果不知道类中定义的确切内容，但是确定对于每个实例来说值都是不可变的。在这样的情况下可以使用抽象的val声明，格式类似于无参数方法声明：
+
+{{{class="brush: scala"
+  def initial: String
+}}}
+
+客户代码将使用统一的`obj.initial`方法引用val及方法。如果`initial`是抽象val，那么客户就可以保证每次引用都将得到同样的值。如果`initial`是抽象方法那就无法保证，因为在不同的实现中`initial`可以被实现为每次调用都返回不同的值。
+
+换名话说抽象的val限制了合法实现的方式：任何实现都必须是`val`类型的定义不可以是`var`。另一方面，抽象方法声明可以被实现为具体的方法定义或具体的`val`定义。
+
+所以在下面的代码中，`Apple`是合法的子类面`BadApple`不是：
+
+{{{class="brush: scala"
+  abstract class Fruit {
+    val v: String // `v' for value
+    def m: String // `m' for method
+  }
+
+  abstract class Apple extends Fruit {
+    val v: String
+    val m: String // OK to override a `def' with a `val'
+  }
+
+  abstract class BadApple extends Fruit {
+    def v: String // ERROR: cannot override a `val' with a `def'
+    def m: String
+  }
+}}}
+
+== 抽象var ==
+
+在特质里使用，只声明类型与名称，没有初始值：
+
+{{{class="brush: scala"
+  trait AbstractTime {
+    var hour: Int
+    var minute: Int
+  }
+}}}
+
+也会有自动扩展的`getter`与`setter`方法，相当于：
+
+{{{class="brush: scala"
+  trait AbstractTime {
+    def hour: Int          // getter for `hour'
+    def hour_=(x: Int)     // setter for `hour'
+    def minute: Int        // getter for `minute'
+    def minute_=(x: Int)   // setter for `minute'
+  }
+}}}
+
+== 初始化抽象val ==
+
+结合特质来使用，抽象val可以让子类扩展提供父类没有的参数与细节。因为特质缺省能用来传递参数的构造器。
+
+拿前面的实数类来作例子，以下特质：
+
+{{{class="brush: scala"
+  trait RationalTrait { 
+    val numerArg: Int 
+    val denomArg: Int 
+  } 
+}}}
+
+为了实例化这个特质，先要实现val。在这里我们要用到新的`new`语法结构：
+
+{{{class="brush: scala"
+  new RationalTrait {
+    val numerArg = 1
+    val denomArg = 2
+  }
+}}}
+
+上面的代码会产混入了物质的匿名类实例，类似于`new Rational(1, 2)`。当然区别还是有的：
+
+{{{class="brush: scala"
+  new Rational(expr1, expr2)
+}}}
+
+上面的两个表达式会在类初始化前计算，而相反的：
+
+{{{class="brush: scala"
+  new RationalTrait {
+    val numerArg = expr1
+    val denomArg = expr2
+  }
+}}}
+
+上面的两个表达式会作为匿名类初始化的一部分计算。而匿名类初始化在`RationalTrait`之后执行，所以`numerArg`和`denomArg`的值在`RationalTrait`初始化期间还没有准备好，都是`Int`类型的默认值`0`。
+
+所以对下面的代码来说，这会成为一个问题，因为其中定义了经过约分后的分子与分母：
+
+{{{class="brush: scala"
+  trait RationalTrait { 
+    val numerArg: Int 
+    val denomArg: Int 
+    require(denomArg != 0)
+    private val g = gcd(numerArg, denomArg)
+    val numer = numerArg / g
+    val denom = denomArg / g
+    private def gcd(a: Int, b: Int): Int = 
+      if (b == 0) a else gcd(b, a % b)
+    override def toString = numer +"/"+ denom
+  }
+}}}
+
+如果尝试使用某种分子和分母的表达式面不是简单的字面量实例化这个特质，会引起以下错误：
+
+{{{class="brush: scala"
+  scala> val x = 2
+  x: Int = 2
+
+  scala> new RationalTrait {
+       |   val numerArg = 1 * x
+       |   val denomArg = 2 * x
+       | }
+  java.lang.IllegalArgumentException: requirement failed
+          at scala.Predef$.require(Predef.scala:107)
+          at RationalTrait$class.$init$(<console>:7)
+          at $anon$1.<init>(<console>:7)
+          ....
+}}}
+
+解决方案有两个，分别是预初始化字段和懒加载val。
+
+
+=== fields预初始化字段 ===
+
+给字段定义加上花括号，放在超类的构造器之前：
+
+{{{class="brush: scala"
+  scala> new { 
+       |   val numerArg = 1 * x
+       |   val denomArg = 2 * x 
+       | } with RationalTrait
+  res15: java.lang.Object with RationalTrait = 1/2
+}}}
+
+不仅匿名类可以用预加载，有名称的类和对象也可以。
+
+注意要放在关键字`extends`后面：
+
+{{{class="brush: scala"
+  object twoThirds extends {
+    val numerArg = 2
+    val denomArg = 3
+  } with RationalTrait
+}}}
+
 
 
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
-}}}
+
 
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
-}}}
+
 
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
-}}}
+
 
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
-}}}
+
 
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
-}}}
+
 
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
-}}}
+
 
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
-}}}
+
 
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
-}}}
+
 
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
-}}}
+
 
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
-}}}
+
 
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
-}}}
+
 
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
-}}}
+
 
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
-}}}
+
 
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
-}}}
+
 
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
-}}}
+
 
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
-}}}
+
 
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
-}}}
+
 
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
-}}}
+
 
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
-}}}
+
 
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
-}}}
+
 
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
-}}}
+
 
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
-}}}
+
 
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
-}}}
+
 
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
-}}}
+
 
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
-}}}
+
 
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
-}}}
+
 
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
-}}}
+
 
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
-}}}
+
 
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
-}}}
+
 
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
-}}}
+
 
 {{{class="brush: scala"
 }}}
 
-{{{class="brush: scala"
-}}}
+
 
 {{{class="brush: scala"
 }}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+

@@ -1,3 +1,6 @@
+%title Part III
+
+%toc Part III
 
 = 参数类型化 =
 
@@ -584,7 +587,6 @@ object Customer extends Application {
 
 
 
-
 = 抽象成员 =
 
 Scala中不仅可以指定方法为抽象，还可以声明字段甚至抽象类型为类和特质的成员。
@@ -775,169 +777,6 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
     val numerArg = 2
     val denomArg = 3
   } with RationalTrait
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
-}}}
-
-{{{class="brush: scala"
 }}}
 
 
