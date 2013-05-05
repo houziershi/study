@@ -782,226 +782,626 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
   } with RationalTrait
 }}}
 
-
+由于预初始化的字段的超类构造器调用前被初始化，所以不能引用正在被构造的对象。所以对于`this`实际指向的是正被构造的类或对象的对象，而来是被构造的对象本身：
 
 {{{class="brush: scala"
+  scala> new {
+     |   val numerArg = 1
+     |   val denomArg = this.numerArg * 2
+     | } with RationalTrait
+  <console>:8: error: value numerArg is not a
+       member of object $iw
+           val denomArg = this.numerArg * 2
+                               ^
+}}}
+
+`$iw`是合成对象，解释器把用户输出语句放在这个对象中。
+
+{{{class="brush: scala"
+  class RationalClass(n: Int, d: Int) extends {
+    val numerArg = n
+    val denomArg = d
+  } with RationalTrait {
+    def + (that: RationalClass) = new RationalClass(
+      numer * that.denom + that.numer * denom,
+      denom * that.denom
+    )
+  }
 }}}
 
 
 
+=== 懒加载val ===
+
+懒加载让表达式在`val`第一次被使用的时候才计算机。格式为把`lazy`修饰加在`val`上。
+
+普通情况下初始化与类初始化一起的：
+
 {{{class="brush: scala"
+  scala> object Demo {
+       |   val x = { println("initializing x"); "done" }
+       | }
+  defined module Demo
+
+
+  scala> Demo
+  initializing x
+  res19: Demo.type = Demo$@97d1ff
+
+  scala> Demo.x
+  res20: java.lang.String = done
+}}}
+
+使用了懒加载以后，`val`的初始化延迟到第一次使用时：
+
+{{{class="brush: scala"
+  scala> object Demo {
+       |   lazy val x = { println("initializing x"); "done" }
+       | }
+  defined module Demo
+
+  scala> Demo
+  res21: Demo.type = Demo$@d81341
+
+  scala> Demo.x
+  initializing x
+  res22: java.lang.String = done
+}}}
+
+上面的情况有点像是用`def`把`x`定义为一个无参的方法，不同于`def`的是计算只进行一次。
+
+通过上面两个例子可以看出，单例对象的初始化也很像懒加载。它们在第一次被使用时进行初始化。
+
+通过懒加载重新实现`RationalTrait`，与前一版本的主要变化是`require`子句从物质的方法体移动到了计算`numerArg`和`denomArg`最大公约数的私有字段`g`的初始化器中。所以这个版本中`LasyRationalTrait`初始化器已经用不干啥事儿了：
+
+{{{class="brush: scala"
+  trait LazyRationalTrait { 
+    val numerArg: Int 
+    val denomArg: Int 
+    lazy val numer = numerArg / g
+    lazy val denom = denomArg / g
+    override def toString = numer +"/"+ denom
+    private lazy val g = {
+      require(denomArg != 0)
+      gcd(numerArg, denomArg)
+    }
+    private def gcd(a: Int, b: Int): Int = 
+      if (b == 0) a else gcd(b, a % b)
+  }
+
+
+  scala> val x = 2
+  x: Int = 2
+
+  scala> new LazyRationalTrait {
+       |   val numerArg = 1 * x
+       |   val denomArg = 2 * x
+       | }
+  res1: java.lang.Object with LazyRationalTrait = 1/2
+}}}
+
+在特质中的两个懒加载对象`number`和`denom`是在`toString`方法调用时才初始化。计算它们的表达式要用到同样是懒加载的`g`。
+
+应用懒加载还是要注意副作用，在有副作用的情况下跟踪加载顺序是很重要的事情。无副作用的纯函数式应用配合懒加载是相当合适的。
+
+== 抽象类型 ==
+
+抽象类型声明`type T`应用在尚不可知的类型上，不同的子类可以提供不同的`T`实现。
+
+以一个动物食性的例子来解释应用环境，动物吃食物：
+
+{{{class="brush: scala"
+  class Food
+  abstract class Animal {
+    def eat(food: Food)
+  }
+}}}
+
+会在想让它们的子类牛吃草时遇到麻烦。`eat`方法不能重写，因为参数不能从`Food`转为子类`Grass`：
+
+{{{class="brush: scala"
+  class Grass extends Food
+  class Cow extends Animal {
+    override def eat(food: Grass) {} // This won't compile
+  }
+
+  BuggyAnimals.scala:7: error: class Cow needs to be
+  abstract, since method eat in class Animal of type
+      (Food)Unit is not defined
+  class Cow extends Animal {
+        ^
+  BuggyAnimals.scala:8: error: method eat overrides nothing
+    override def eat(food: Grass) {}
+                 ^
+}}}
+
+这样看来类型检查太严格了，应该允许子类？但是如果这样做的话又会失去类型检验保障。
+
+比如说喂牛吃鱼：
+
+{{{class="brush: scala"
+  class Food
+  abstract class Animal {
+    def eat(food: Food)
+  }
+  class Grass extends Food
+  class Cow extends Animal {
+    override def eat(food: Grass) {} // This won't compile,
+  }                                  // but if it did,...
+  class Fish extends Food
+  val bessy: Animal = new Cow
+  bessy eat (new Fish)     // ...you could feed fish to cows.
+}}}
+
+更加精确的方式是能按不同的动物决定食物的种类，父类中指定动物只能吃食物：
+
+{{{class="brush: scala"
+  class Food
+  abstract class Animal {
+    type SuitableFood <: Food
+    def eat(food: SuitableFood)
+  }
+}}}
+
+`SuitableFood`被定义为抽象类，而且有上界`Food`。以后动物类中指定具体的食物子类：
+
+{{{class="brush: scala"
+  class Grass extends Food
+  class Cow extends Animal {
+    type SuitableFood = Grass
+    override def eat(food: Grass) {}
+  }
+}}}
+
+现在得到了比较合适的类型检查：
+
+{{{class="brush: scala"
+  scala> class Fish extends Food
+  defined class Fish
+
+  scala> val bessy: Animal = new Cow
+  bessy: Animal = Cow@674bf6
+
+  scala> bessy eat (new Fish)
+  <console>:10: error: type mismatch;
+   found   : Fish
+   required: bessy.SuitableFood
+         bessy eat (new Fish)
+                    ^
 }}}
 
 
 
+== 路径依赖类型 ==
+
+看一下前面例子的最后一条错误信息。它说明需要的类型是`bessy.SuitableFood`，这里的`SuitableFood`是`bessy`引用的对象的成员。
+
+这样的类型被称为路径依赖类型，路径指的是对象的引用。不同路径将产不同的类型：
+
 {{{class="brush: scala"
+  class DogFood extends Food
+  class Dog extends Animal {
+    type SuitableFood = DogFood
+    override def eat(food: DogFood) {}
+  }
+
+  scala> val bessy = new Cow
+  bessy: Cow = Cow@10cd6d
+
+  scala> val lassie = new Dog
+  bootsie: Dog = Dog@d11fa6
+
+  scala> lassie eat (new bessy.SuitableFood)
+  <console>:13: error: type mismatch;
+   found   : Grass
+   required: DogFood
+         lassie eat (new bessy.SuitableFood)
+                     ^
+}}}
+
+`bessy.SuitableFood`不能匹配`lassie.SuitableFood`，但如果同样是`Dog`的话，情况又不同。因为`Dog`的`SuitableFood`被定义为`DogFood`类的别名，所以实际上是一样的：
+
+{{{class="brush: scala"
+  scala> val bootsie = new Dog
+  bootsie: Dog = Dog@54ca71
+
+  scala> lassie eat (new bootsie.SuitableFood)
+}}}
+
+路径依赖有点像Java里的内部类，但区别是：路径依赖表达了外在的对象，而内部类表达了外在的类。Java的内部类在Scala表达为两个类：
+
+{{{class="brush: scala"
+  class Outer {
+    class Inner
+  }
+}}}
+
+与Java的`Outer.Inner`不同，Scala中表达为`Outer#Inner`。`.`语法留给对象使用：
+
+{{{class="brush: scala"
+  val o1 = new Outer
+  val o2 = new Outer
+}}}
+
+虽然`o1.Inner`和`o2.Inner`是不同的两个路径依赖类型，但两个都能匹配更加通用的`Outer#Inner`。
+
+和Java中一样，Scala的内部类实例也有对外部类实例的引用。所以不能只有内部类实例面没有外部类实例。有两个方式实例化内部类：
+
+1）直接在外部类方法体中实例化，这样可以用`this`引用外部类对象。
+
+2）使用路径依赖类型。如`o1.Inner`。返回的内部类有对`01`的引用。例子如下：
+
+{{{class="brush: scala"
+  scala> new o1.Inner
+  res1: o1.Inner = Outer$Inner@13727f
+}}}
+
+相对的，类型`Outer#Inner`是没有指向对象的引用的，所以不能创建它的实例：
+
+{{{class="brush: scala"
+  scala> new Outer#Inner
+  <console>:6: error: Outer is not a legal prefix for
+    a constructor
+         new Outer#Inner
+                   ^
 }}}
 
 
+== 枚举 ==
+
+标准库中的类`scala.Enumeration`用来扩展枚举类：
 
 {{{class="brush: scala"
+  object Color extends Enumeration {
+    val Red = Value
+    val Green = Value
+    val Blue = Value
+  }
 }}}
 
-
+还可以简化：
 
 {{{class="brush: scala"
+  object Color extends Enumeration {
+    val Red, Green, Blue = Value
+  }
 }}}
 
-
+可以`Color`的全部成员，然后直接写颜色名：
 
 {{{class="brush: scala"
+  import Color._
 }}}
 
-
+前面定义的`Red`、`Green`和`Blue`这些值的类型为`Enumeration`定义的内部类，名为`Value`。同名无参数方法`Value`返回该类的新对象，即`Color.Red`类的值类型是`Color.Value`。而且是依赖路径的。如：
 
 {{{class="brush: scala"
+  object Direction extends Enumeration {
+    val North, East, South, West = Value
+  }
 }}}
 
+上面就定义了一个完全不同的类型，因为路径不同。
 
+还可以重载`Value`方法把名称与值对应起来：
 
 {{{class="brush: scala"
+  object Direction extends Enumeration {
+    val North = Value("North")
+    val East = Value("East")
+    val South = Value("South")
+    val West = Value("West")
+  }
 }}}
 
-
+遍历：
 
 {{{class="brush: scala"
+  scala> for (d <- Direction) print(d +" ")
+  North East South West 
 }}}
 
-
+枚举的值从`0`开始增加，用成员方法`id`可以取出值：
 
 {{{class="brush: scala"
+  scala> Direction.East.id
+  res5: Int = 1
 }}}
 
-
+反过来也可以通过非零整数取得`id`：
 
 {{{class="brush: scala"
+  scala> Direction(1)
+  res6: Direction.Value = East
 }}}
 
+== 案例研究：货币 ==
 
+设计一个货币类能处理不同的货币。定义抽象类可以扩展为具体不同的货币。当然第一个版本肯定是不完善的：
 
 {{{class="brush: scala"
+  // A first (faulty) design of the Currency class
+  abstract class Currency {
+    val amount: Long
+    def designation: String 
+    override def toString = amount +" "+ designation
+    def + (that: Currency): Currency = ...
+    def * (x: Double): Currency = ...
+  }
 }}}
 
-
+`amount`和`designation`分别代表金额的符号。其他方法还有加法和乘法操作。这个版本的问题是，在语法上两个不同的子类可以相加：
 
 {{{class="brush: scala"
+  abstract class Dollar extends Currency {
+    def designation = "USD"
+  }
+  abstract class Euro extends Currency {
+    def designation = "Euro"
+  }
 }}}
 
-
+这样不同货币的相加是有问题的。所以下一个改进版本用抽象类型来标明末知的类型：
 
 {{{class="brush: scala"
+  abstract class AbstractCurrency {
+    type Currency <: AbstractCurrency
+    val amount: Long
+    def designation: String 
+    override def toString = amount +" "+ designation
+    def + (that: Currency): Currency = ...
+    def * (x: Double): Currency = ...
+  }
 }}}
 
-
+每个子类都要把`Currency`指定为这个类自身，扩展实现是类似于这样：
 
 {{{class="brush: scala"
+  abstract class Dollar extends AbstractCurrency {
+    type Currency = Dollar
+    def designation = "USD"
+  }
 }}}
 
-
+这个版本的问题在于加法与乘法的定义。首先想到的把金额转为正确类型的货币的方法可能是这样的：
 
 {{{class="brush: scala"
+  def + (that: Currency): Currency = new Currency {
+    val amount = this.amount + that.amount
+  }
 }}}
 
-
+但这通不过编译，因为Scala不能用抽象类型创建实例，也不能用抽象类型作为其他类型的父类：
 
 {{{class="brush: scala"
+  error: class type required
+    def + (that: Currency): Currency = new Currency {
 }}}
 
-
+使用工厂方法是个解决方案：用声明抽象方法代替直接创建抽象类的实例：
 
 {{{class="brush: scala"
+  abstract class AbstractCurrency {
+    type Currency <: AbstractCurrency // abstract type
+    def make(amount: Long): Currency  // factory method
+    ...                               // rest of class
+  }
 }}}
 
-
+但这样有别的问题，因为这样不得不把工厂方法放到`AbstractCurrency`类中，所有的实例都有了创建货币的能力：
 
 {{{class="brush: scala"
+  myDollar.make(100)  // here are a hundred more!
 }}}
 
-
+所以把工厂方法移到一个新的类中，新的类叫`CurrencyZone`。把`AbstractCurrency`和`Currency`也作为它的内部类：
 
 {{{class="brush: scala"
+  abstract class CurrencyZone {
+    type Currency <: AbstractCurrency
+    def make(x: Long): Currency
+    abstract class AbstractCurrency {
+      val amount: Long
+      def designation: String 
+      override def toString = amount +" "+ designation
+      def + (that: Currency): Currency = 
+        make(this.amount + that.amount)
+      def * (x: Double): Currency = 
+        make((this.amount * x).toLong)
+    }
+  }
 }}}
 
-
+这样按不同货币来扩展：
 
 {{{class="brush: scala"
+  object US extends CurrencyZone {
+    abstract class Dollar extends AbstractCurrency {
+      def designation = "USD"
+    }
+    type Currency = Dollar
+    def make(x: Long) = new Dollar { val amount = x }
+  }
 }}}
 
+`US`中定义了类`Dollar`。它的类型是`US.Dollar`。
 
+继续改进设计：关于单位，单位不仅是美元，还有美分。所以让`amount`以美分为单位更加合适。所以用多一个字段`CurrencyUnit`记录单位：
 
 {{{class="brush: scala"
+  class CurrencyZone { 
+    ... 
+    val CurrencyUnit: Currency 
+  } 
 }}}
 
-
+子类里再加上两个方法直接把1美元代表100美分的逻辑描述出来：
 
 {{{class="brush: scala"
+  object US extends CurrencyZone {
+    abstract class Dollar extends AbstractCurrency {
+      def designation = "USD"
+    }
+    type Currency = Dollar
+    def make(cents: Long) = new Dollar {
+      val amount = cents
+    }
+    val Cent = make(1)
+    val Dollar = make(100)
+    val CurrencyUnit = Dollar
+  }
 }}}
 
-
+还有显示问题，用多数内部类型上都带的`format`方法格式化美元与美分的小数显示，如“`10.23 USD`”：
 
 {{{class="brush: scala"
+    ((amount.toDouble / CurrencyUnit.amount.toDouble)
+     formatted ("%."+ decimals(CurrencyUnit.amount) +"f")
+     +" "+ designation)
 }}}
 
-
+输出字符的长度是通过`decimals`方法得出的。`decimals`方法返回十进制数字所要占用的字符长度。如对于`decimals(10)`代表0到9，会占用一个字符，而`decimals`(100)是0到99会占用两个字符。`decimals`方法通过简单递归实现：
 
 {{{class="brush: scala"
+  private def decimals(n: Long): Int = 
+    if (n == 1) 0 else 1 + decimals(n / 10)
 }}}
 
-
+相对的看一下欧元的实现：
 
 {{{class="brush: scala"
+  object Europe extends CurrencyZone {
+    abstract class Euro extends AbstractCurrency {
+      def designation = "EUR"
+    }
+    type Currency = Euro
+    def make(cents: Long) = new Euro {
+      val amount = cents
+    }
+    val Cent = make(1)
+    val Euro = make(100)
+    val CurrencyUnit = Euro
+  }
+
+  object Japan extends CurrencyZone {
+    abstract class Yen extends AbstractCurrency {
+      def designation = "JPY"
+    }
+    type Currency = Yen
+    def make(yen: Long) = new Yen {
+      val amount = yen
+    }
+    val Yen = make(1)
+    val CurrencyUnit = Yen
+  }
 }}}
 
-
+再改进一下，增加汇率的功能。先用一个新的对象来记录汇率：
 
 {{{class="brush: scala"
+  object Converter {
+    var exchangeRate = Map(
+      "USD" -> Map("USD" -> 1.0   , "EUR" -> 0.7596, 
+                   "JPY" -> 1.211 , "CHF" -> 1.223),
+      "EUR" -> Map("USD" -> 1.316 , "EUR" -> 1.0   , 
+                   "JPY" -> 1.594 , "CHF" -> 1.623),
+      "JPY" -> Map("USD" -> 0.8257, "EUR" -> 0.6272, 
+                   "JPY" -> 1.0   , "CHF" -> 1.018),
+      "CHF" -> Map("USD" -> 0.8108, "EUR" -> 0.6160, 
+                   "JPY" -> 0.982 , "CHF" -> 1.0  )
+    )
+  }
 }}}
 
-
+在货币中增加根据汇率来转换的功能。接收一个外币类型，把自己的金额转成这个外币的金额：
 
 {{{class="brush: scala"
+  def from(other: CurrencyZone#AbstractCurrency): Currency = 
+    make(Math.round(
+      other.amount.toDouble * Converter.exchangeRate
+        (other.designation)(this.designation)))
 }}}
 
+参数是末知的`CurrencyZone#AbstractCurrency`，所以能处理任意外币类型。
 
+全部的货币代码，假设都放在`org.stairwaybook.currencies`包中：
 
 {{{class="brush: scala"
+  abstract class CurrencyZone {
+
+    type Currency <: AbstractCurrency
+    def make(x: Long): Currency
+
+    abstract class AbstractCurrency {
+
+      val amount: Long
+      def designation: String 
+
+      def + (that: Currency): Currency = 
+        make(this.amount + that.amount)
+      def * (x: Double): Currency = 
+        make((this.amount * x).toLong)
+      def - (that: Currency): Currency = 
+        make(this.amount - that.amount)
+      def / (that: Double) = 
+        make((this.amount / that).toLong)
+      def / (that: Currency) = 
+        this.amount.toDouble / that.amount
+
+      def from(other: CurrencyZone#AbstractCurrency): Currency = 
+        make(Math.round(
+          other.amount.toDouble * Converter.exchangeRate
+            (other.designation)(this.designation)))
+
+      private def decimals(n: Long): Int = 
+        if (n == 1) 0 else 1 + decimals(n / 10)
+
+      override def toString = 
+        ((amount.toDouble / CurrencyUnit.amount.toDouble)
+         formatted ("%."+ decimals(CurrencyUnit.amount) +"f")
+         +" "+ designation)
+    }
+
+    val CurrencyUnit: Currency
+  }
 }}}
 
-
+调用的例子：
 
 {{{class="brush: scala"
+  scala> import org.stairwaybook.currencies._
+
+  scala> Japan.Yen from US.Dollar * 100
+  res16: Japan.Currency = 12110 JPY
+
+  scala> Europe.Euro from res16
+  res17: Europe.Currency = 75.95 EUR
+
+  scala> US.Dollar from res17
+  res18: US.Currency = 99.95 USD
 }}}
 
-
+相同类型的货币可以相加，不同类型的不可以相加：
 
 {{{class="brush: scala"
+  scala> US.Dollar * 100 + res18
+  res19: currencies.US.Currency = 199.95
+
+
+  scala> US.Dollar + Europe.Euro
+  <console>:7: error: type mismatch;
+   found   : currencies.Europe.Euro
+   required: currencies.US.Currency
+         US.Dollar + Europe.Euro
+                            ^
 }}}
 
-
-
-{{{class="brush: scala"
-}}}
+类型抽象实现了不同货币不能相加的功能。像是1999年9月23日，混用英制单位和公制单位引起的火星航天器坠毁事件不会再重演了。
 
 
 
-{{{class="brush: scala"
-}}}
 
-
-
-{{{class="brush: scala"
-}}}
-
-
-
-{{{class="brush: scala"
-}}}
-
-
-
-{{{class="brush: scala"
-}}}
-
-
-
-{{{class="brush: scala"
-}}}
-
-
-
-{{{class="brush: scala"
-}}}
-
-
-
-{{{class="brush: scala"
-}}}
-
-
-
-{{{class="brush: scala"
-}}}
-
-
-
-{{{class="brush: scala"
-}}}
-
-
-
-{{{class="brush: scala"
-}}}
-
-
-
-{{{class="brush: scala"
-}}}
-
-
-
-{{{class="brush: scala"
-}}}
-
+= 隐式转换和参数 =
 
 
 {{{class="brush: scala"
