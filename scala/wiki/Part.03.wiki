@@ -1403,6 +1403,391 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 
 = 隐式转换和参数 =
 
+== 隐式转换 ==
+
+Scala里有一个很有用的特质`RandomAccessSeq[T]`提供了可以随机访问的序列。它有很多功能，所以它的子类都自动继承这些功能。
+
+现在有个问题，我们要用到`String`没有混入`RandomAccessSeq`特质，所以用不到那些方便的功能。
+
+隐式转换可以让`String`表现得像`RandomAccessSeq`的子类。为了达到这一目的，需要定义从`String`到`RandomAccessSeq`的隐匿转换。
+
+{{{class="brush: scala"
+  implicit def stringWrapper(s: String) = 
+    new RandomAccessSeq[Char] {
+      def length = s.length
+      def apply(i: Int) = s.charAt(i)
+    }
+}}}
+
+然后就可以转换它了：
+
+{{{class="brush: scala"
+  scala> stringWrapper("abc123") exists (_.isDigit)
+  res0: Boolean = true
+}}}
+
+也可以省略转换直接当作`RandomAccessSeq`来用：
+
+{{{class="brush: scala"
+  scala> "abc123" exists (_.isDigit)
+  res1: Boolean = true
+}}}
+
+隐式转换的优点是可以在某个点转成需要的类型。
+
+顺便提一下：`Predef`对象已经用类似的方式定义了`stringWrapper`转换，所以其实不用定义也可以隐匿转换了。
+
+
+== 隐式操作规则 ==
+
+标记规则 :: 只有标记为`implicit`的定义才是可用的。可以用来标记任何变量、函数或对象定义。
+
+作用域规则 :: 必须以单一标识符的形式处于作用域中，或与转换的源或目标类型关联在一起。
+
+就是不能用`aaa.convert(x)`，这不是单一的。要先`import aaa`，然后`convert(x)`，这样才是单一的。
+
+“单一标识符”规则有个例外。转换的“目标”与“源”的类型的“伴生对象”中的隐式转换定义会被编译器找到。如从`Dollar`转为`Euro`，可以把隐匿转换放在这两者之一的的伴生对象中：
+
+{{{class="brush: scala"
+  object Dollar {
+    implicit def dollarToEuro(x: Dollar): Euro = ...
+  }
+  class Dollar { ... }
+}}}
+
+这样就不用手动引入了。
+
+无歧义规则 :: 不能有其他转换，如果有两个可用的从类A到类B的转换，会报错。可以移除一个转换函数，或是显式指明一个方法，如：`convertFunc2(x) + y`
+
+单一调用原则 :: 不会嵌套地转换，如：`convert1(convert2(x)) + y`。
+
+显式操作先行规则 :: 如果不用转换类型就可以用，编译器不会再画蛇添足地转换。
+
+这是一个供程序员把握的度：如果代码太冗长，用隐式转换来精简代码；如果代码看起来太简单不明确，用显式的转换来减少歧义和二义性。
+
+命名隐式转换 :: 转换方法的命名可以随意，但要考虑到两个情况：是不是需要在方法应用中明确写明，以及决定在哪个隐式转换在程序的任何地方都有效。
+
+拿第二点来说，设一个对象带两个隐式转换：
+
+{{{class="brush: scala"
+  object MyConversions {
+    implicit def stringWrapper(s: String):
+        RandomAccessSeq[Char] = ...
+    implicit def intToString(x: Int): String = ...
+  }
+}}}
+
+现在只需要`stringWrapper`，不想要`intToString`。可以只引入一个：
+
+{{{class="brush: scala"
+  import MyConversions.stringWrapper
+  ... // code making use of stringWrapper
+}}}
+
+这样的情况下会用到转换方法的名字。
+
+Scala中有三个地方会用到隐式转换：转换为需要的类型、指定（方法）调用者的转换、隐式参数。接下来的三节分别讨论这三种情况。
+
+
+== 隐式转换为期望的类型 ==
+
+有一个双精度数，但是表达式要用到整数，所以就要隐式转换：
+
+{{{class="brush: scala"
+  scala> val i: Int = 3.5
+  <console>:5: error: type mismatch;
+   found   : Double(3.5)
+   required: Int
+         val i: Int = 3.5
+                      ^
+}}}
+
+定义隐式转换就可以用了：
+
+{{{class="brush: scala"
+  scala> implicit def doubleToInt(x: Double) = x.toInt
+  doubleToInt: (Double)Int
+
+  scala> val i: Int = 3.5
+  i: Int = 3
+}}}
+
+相当于：
+
+{{{class="brush: scala"
+  val i: Int = doubleToInt(3.5)
+}}}
+
+因为从`Double`到`Int`会丢失精度，所以`Predef`中没有默认定义；但是反过来在`Predef`中已经有定义了：
+
+{{{class="brush: scala"
+  implicit def int2double(x: Int): Double = x.toDouble
+}}}
+
+
+== 转换方法调用的接收者 ==
+
+如果`obj`没有`doIt`方法，但程序里有这一行，就试着转成有`doIt`的类型。
+
+=== 与新类型的交互操作 ===
+
+给新类型加上它没有实现的功能。以实数类为例：
+
+{{{class="brush: scala"
+  class Rational(n: Int, d: Int) {
+    ...
+    def + (that: Rational): Rational = ...
+    def + (that: Int): Rational = ...
+  }
+}}}
+
+加法可以处理`Rational`和`Int`：
+
+{{{class="brush: scala"
+  scala> val oneHalf = new Rational(1, 2)
+  oneHalf: Rational = 1/2
+
+  scala> oneHalf + oneHalf
+  res4: Rational = 1/1
+
+  scala> oneHalf + 1
+  res5: Rational = 3/2
+}}}
+
+但是一个`Int`没有办法加上`Rational`：
+
+{{{class="brush: scala"
+  scala> 1 + oneHalf
+  <console>:6: error: overloaded method value + with
+  alternatives (Double)Double <and> ... cannot be applied
+  to (Rational)
+       1 + oneHalf
+         ^
+}}}
+
+办法是让`Int`转为`Rational`：
+
+{{{class="brush: scala"
+  scala> implicit def intToRational(x: Int) = 
+       |   new Rational(x, 1)
+  intToRational: (Int)Rational
+  
+  scala> 1 + oneHalf
+  res6: Rational = 3/2
+}}}
+
+相当于：
+
+{{{class="brush: scala"
+  intToRational(1) + oneHalf
+}}}
+
+=== 模拟新的语法 ===
+
+隐式转换还可以用来模拟新的语法。其实`Map`对象里的`->`都不是内建语法：
+
+{{{class="brush: scala"
+  Map(1 -> "one", 2 -> "two", 3 -> "three")
+}}}
+
+实际上是定义在`scala.Predef`中的类`ArrowAssoc`的方法。还定义了从`Any`到`ArrowAssoc`的隐式转换。
+
+对于`1 -> "one"`其实是从`1`到`ArrowAssoc`的转换。相差定义如下：
+
+{{{class="brush: scala"
+  package scala
+  object Predef {
+    class ArrowAssoc[A](x: A) {
+      def -> [B](y: B): Tuple2[A, B] = Tuple2(x, y)
+    }
+    implicit def any2ArrowAssoc[A](x: A): ArrowAssoc[A] = 
+      new ArrowAssoc(x)
+    ...
+  }
+}}}
+
+== 隐式参数 ==
+
+省略柯里化后的参数列表。编译器会用`someCall(a)(b,c,d)`代替`someCall(a)`。能这样做的前题是不仅`b``c``d`三个要定义`implicit`，连`someCall`或`someCall`定义的最后一个参数列表都必须被标记为`implicit`。
+
+举例有一个类实现了命令行提示符：
+
+{{{class="brush: scala"
+  class PreferredPrompt(val preference: String)
+}}}
+
+还有一个`Greeter`类的方法`greet`有两个参数列表。分别是用户名和前面的命令行提示符类：
+
+{{{class="brush: scala"
+  object Greeter {
+    def greet(name: String)(implicit prompt: PreferredPrompt) {
+      println("Welcome, "+ name +". The system is ready.")
+      println(prompt.preference)
+    }
+  }
+}}}
+
+后一个参数列表被声明为`implicit`，表示可以隐式提供。当然要显式提供也可以：
+
+{{{class="brush: scala"
+  scala> val bobsPrompt = new PreferredPrompt("relax> ")
+  bobsPrompt: PreferredPrompt = PreferredPrompt@ece6e1
+
+  scala> Greeter.greet("Bob")(bobsPrompt)                    
+  Welcome, Bob. The system is ready.
+  relax> 
+}}}
+
+为了隐式提供参数，要定义期望类型的变量：
+
+{{{class="brush: scala"
+  object JoesPrefs {
+    implicit val prompt = new PreferredPrompt("Yes, master> ")
+  }
+}}}
+
+注意它本身也要被定义为`implicit`，不然是不会被用来作为隐式变量的。而且如果不是在同一作用域的话，也不能用：
+
+{{{class="brush: scala"
+  scala> Greeter.greet("Joe")
+  <console>:7: error: no implicit argument matching parameter
+    type PreferredPrompt was found.
+         Greeter.greet("Joe")
+                 ^
+}}}
+
+不过引入后就可以用了：
+
+{{{class="brush: scala"
+  scala> import JoesPrefs._         
+  import JoesPrefs._
+
+  scala> Greeter.greet("Joe")
+  Welcome, Joe. The system is ready.
+  Yes, master> 
+}}}
+
+注意`implicit`关键字要用于全体参数列表而不是单独参数。下面的例子中`Greeter`的`greet`方法最后的参数列表再次被标记为`implicit`，它有两个参数：`prompt: PrefferredPrompt`和`drink: PrefferedDrink`。
+
+{{{class="brush: scala"
+  class PreferredPrompt(val preference: String)
+  class PreferredDrink(val preference: String)
+
+  object Greeter {
+    def greet(name: String)(implicit prompt: PreferredPrompt,
+        drink: PreferredDrink) {
+
+      println("Welcome, "+ name +". The system is ready.")
+      print("But while you work, ")
+      println("why not enjoy a cup of "+ drink.preference +"?")
+      println(prompt.preference)
+    }
+  }
+
+  object JoesPrefs {
+    implicit val prompt = new PreferredPrompt("Yes, master> ")
+    implicit val drink = new PreferredDrink("tea")
+  }
+}}}
+
+伴生对象中定义了两个隐式的变量，只要它们不作为单一标识符处于作用域内，不然就不能用来填充缺少的参数列表：
+
+{{{class="brush: scala"
+  scala> Greeter.greet("Joe") 
+  <console>:8: error: no implicit argument matching parameter
+    type PreferredPrompt was found.
+         Greeter.greet("Joe")
+                 ^
+}}}
+
+用`import`导入：
+
+{{{class="brush: scala"
+  scala> import JoesPrefs._
+  import JoesPrefs._
+}}}
+
+可以自动填充了：
+
+{{{class="brush: scala"
+  scala> Greeter.greet("Joe")(prompt, drink)
+  Welcome, Joe. The system is ready.
+  But while you work, why not enjoy a cup of tea?
+  Yes, master> 
+
+
+  scala> Greeter.greet("Joe")
+  Welcome, Joe. The system is ready.
+  But while you work, why not enjoy a cup of tea?
+  Yes, master> 
+}}}
+
+注意这里的没有用`String`这样的常用类型来作为`prompt`或`drink`的类型。就是为了防止被过多地匹配到隐式转换。
+
+隐式类型转换常见用法是为了提供显式标明的参数列表信息。考虑下面的代码，它返回传入的列表参数中的最大元素：
+
+{{{class="brush: scala"
+  def maxListUpBound[T <: Ordered[T]](elements: List[T]): T = 
+    elements match {
+      case List() =>
+        throw new IllegalArgumentException("empty list!")
+      case List(x) => x
+      case x :: rest =>
+        val maxRest = maxListUpBound(rest)
+        if (x > maxRest) x
+        else maxRest
+    }
+}}}
+
+注意参数类型已经被限制为`T <: Ordered[T]`，必须是可排序元素的列表。但是缺点是`Int`列表不行，因为`Int`不是`Ordered[T]`的子类。
+
+更加泛用的方法是不限制类型，但是再加一个参数把`T`转为`Ordered[T]`的函数。
+
+下面的例子中第二个参数被标记为`implicit`。
+
+{{{class="brush: scala"
+  def maxListImpParm[T](elements: List[T])
+        (implicit orderer: T => Ordered[T]): T =
+
+    elements match {
+      case List() => 
+        throw new IllegalArgumentException("empty list!")
+      case List(x) => x
+      case x :: rest =>
+        val maxRest = maxListImpParm(rest)(orderer)
+        if (orderer(x) > maxRest) x
+        else maxRest
+    }
+}}}
+
+要排序的列表是必须显式提供的，所以元素的类型`T`是在编译时就确定的。确定了类型`T`之后就可以判断`T => Ordered[T]`类型的隐式定义是否存在于作用域中。如果存在就隐式传入排序函数`order`。
+
+这种方式在很多Scala的通用库中也用到，它们提供了隐式的排序方法。所以我们上面写的方法可以用在很多类型上：
+
+{{{class="brush: scala"
+  scala> maxListImpParm(List(1,5,10,3))
+  res10: Int = 10
+
+  scala> maxListImpParm(List(1.5, 5.2, 10.7, 3.14159))
+  res11: Double = 10.7
+
+  scala> maxListImpParm(List("one", "two", "three"))
+  res12: java.lang.String = two
+}}}
+
+隐式参数样式规则 :: 就是在要用到隐式转换的地方最好是从自定义的类型开始转面不是从`String`这样的很常见的类型开始转。如果`maxListImpParm`直接写成下面这样的方法签名：
+
+{{{class="brush: scala"
+  def maxListPoorStyle[T](elments: List[T])
+        (implicit orderer: (T, T) => Boolean): T
+}}}
+
+这样`(T,T) => Boolean`的类型太常见了，很容易被匹配到到不希望匹配到的方法上去。
+
+所以简单地说：至少用一个确定的名称为隐式参数类型命名。
+
+
+== 视界 ==
 
 {{{class="brush: scala"
 }}}
@@ -1511,4 +1896,32 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 
 {{{class="brush: scala"
 }}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+
+
+
+
+
 
