@@ -29,6 +29,7 @@
 <li><a href="#toc_1">配置</a>
 <ul>
 <li><a href="#toc_1.1">初始化个人信息</a>
+<li><a href="#toc_1.2">自动转换换行</a>
 </ul>
 <li><a href="#toc_2">代码托管服务商GitHub</a>
 <ul>
@@ -61,6 +62,9 @@
 <li><a href="#toc_6.2">发布本地提交的内容</a>
 <li><a href="#toc_6.3">取得其他人提交的内容</a>
 <li><a href="#toc_6.4">冲突处理</a>
+<ul>
+<li><a href="#toc_6.4.1">使用vimdiff</a>
+</ul>
 </ul>
 <li><a href="#toc_7">查看提交记录</a>
 </ul>
@@ -74,6 +78,41 @@
 <pre class="brush: bash">
 git config --global user.name "Jade Shan"
 git config --global user.email aaa@bbb.com
+</pre>
+
+
+<h2 id="toc_1.2">自动转换换行</h2>
+
+<p>
+如果合作人里面有个废柴要在win下开发，让他打开以下开关实现：
+</p>
+
+<p>
+提交时，自动把<code>&lt;CR&gt;&lt;LF&gt;</code>转为<code>&lt;LF&gt;</code>；
+</p>
+
+<p>
+签出时，自动把<code>&lt;LF&gt;</code>转为<code>&lt;CR&gt;&lt;LF&gt;</code>：
+</p>
+
+<pre class="brush: bash">
+git config --global core.autocrlf true
+</pre>
+
+<p>
+只在提交时把<code>&lt;CR&gt;&lt;LF&gt;</code>转为<code>&lt;LF&gt;</code>:
+</p>
+
+<pre class="brush: bash">
+git config --global core.autocrlf input
+</pre>
+
+<p>
+当然也会有整个团队都是win环境的废柴团队，那就不用转了:
+</p>
+
+<pre class="brush: bash">
+git config --global core.autocrlf false
 </pre>
  
  
@@ -287,6 +326,27 @@ git status
 如果要删除一个文件，要先用<code>git rm</code>命令。如果只在文件系统上删除而没有<code>git rm</code>的话，只会让这个文件的状态回到<code>Change but not update</code>状态。
 </p>
 
+<p>
+移动文件
+</p>
+
+<pre class="brush: bash">
+git mv file-from file-to
+</pre>
+
+<p>
+相当于下面三条命令:
+</p>
+
+<pre class="brush: bash">
+mv file-from file-to
+git rm file-from
+git add file-to
+</pre>
+
+ 
+
+
 <h2 id="toc_4.3">回退</h2>
 
 <p>
@@ -320,6 +380,47 @@ git reset --hard
 
 <pre class="brush: bash">
 git reset -- src/aa.c
+</pre>
+
+<p>
+取消对文件的修改
+</p>
+
+<pre class="brush: bash">
+git checkout -- benchmarks.rb
+</pre>
+
+
+<p>
+修改最后一次提交
+</p>
+
+<p>
+有时候我们提交完了才发现漏掉了几个文件没有加，或者提交信息写错了。想要撤消刚才的提交操作，可以使用 --amend 选项重新提交：
+</p>
+
+<pre class="brush: bash">
+git commit --amend
+</pre>
+
+
+
+<p>
+此命令将使用当前的暂存区域快照提交。如果刚才提交完没有作任何改动，直接运行此命令的话，相当于有机会重新编辑提交说明，而所提交的文件快照和之前的一样。
+</p>
+
+<p>
+启动文本编辑器后，会看到上次提交时的说明，编辑它确认没问题后保存退出，就会使用新的提交说明覆盖刚才失误的提交。
+</p>
+
+<p>
+如果刚才提交时忘了暂存某些修改，可以先补上暂存操作，然后再运行 --amend 提交：
+</p>
+
+<pre class="brush: bash">
+git commit -m 'initial commit'
+git add forgotten_file
+git commit --amend 
 </pre>
 
 
@@ -594,6 +695,72 @@ Automatic merge failed; fix conflicts and then commit the result.
 git commit -a
 </pre>
 
+<h3 id="toc_6.4.1">使用vimdiff</h3>
+
+<p>
+设置合并工具为vimdiff，修改<code>~/.gitconfig</code>：
+</p>
+
+<pre class="brush: xml">
+[diff]
+        tool = vimdiff
+[merge]
+        tool = vimdiff
+[difftool]
+        prompt = false
+</pre>
+
+<p>
+以后merge会调用vimdiff：
+</p>
+
+<pre class="brush: bash">
+git mergetool
+</pre>
+
+<p>
+在vimdiff窗口中会上面一半会分别显示本地版本、原始版本、过程版本，下半部分是冲突的版本：
+</p>
+
+<p>
+<img src="images/vimdiff.ui.png" />
+</p>
+
+<p>
+窗口切换：<code>CONTROL+w w</code>
+</p>
+
+<p>
+跳到上一个、下一个冲突点：<code>[c</code>、<code>]c</code>
+</p>
+
+<p>
+取得某窗口中的内容：<code>:diffget window</code>
+</p>
+
+<p>
+放置内容到某窗口：<code>:diffput window</code>
+</p>
+
+<p>
+<code>diffget</code>和<code>diffput</code>都要指定窗口，怎么指定窗口呢？有两个方法：
+</p>
+
+<p>
+一个方法是用<code>:buffers</code>查出来Buffer编号。一般来说下半编号是1，上面三个是从2到4。
+</p>
+
+<p>
+另一个方法是用关键字匹配。vimdiff一般把上面三个窗口中的文件名为XXXX.REMOTE.yyy，XXXX.BASE.yyy，XXXX.LOCAL.yyy。用<code>diffget REMOTE</code>就是取远程的。
+</p>
+
+<p>
+经过合并以后的版面会有点乱，可以用<code>:diffupdate</code>重新生成<code>diff</code>格式。
+</p>
+
+<p>
+保存当前窗口用<code>w</code>，关闭全部窗口用<code>a</code>。
+</p>
 
 <h1 id="toc_7">查看提交记录</h1>
 
@@ -628,6 +795,42 @@ git show 1e193e9a7bf1699392c6bbe3d53d786b93e6570b
 <pre class="brush: bash">
 git show 1e193e9
 </pre>
+
+<p>
+查看记录时格式化显示:
+</p>
+
+<pre class="brush: bash">
+git log --pretty=fromat:"%h - %an, %ar : %s"
+</pre>
+
+<p>
+具体说明:
+</p>
+
+<pre class="brush: bash">
+%H	提交对象（commit）的完整哈希字串
+%h	提交对象的简短哈希字串
+%T	树对象（tree）的完整哈希字串
+%t	树对象的简短哈希字串
+%P	父对象（parent）的完整哈希字串
+%p	父对象的简短哈希字串
+%an	作者（author）的名字
+%ae	作者的电子邮件地址
+%ad	作者修订日期（可以用 -date= 选项定制格式）
+%ar	作者修订日期，按多久以前的方式显示
+%cn	提交者(committer)的名字
+%ce	提交者的电子邮件地址
+%cd	提交日期
+%cr	提交日期，按多久以前的方式显示
+%s	提交说明
+</pre>
+
+<p>
+用<code>oneline</code>或<code>format</code>时结合<code>--graph</code>选项，可以看到开头多出一些 ASCII 字符串表示的简单图形，形象地展示了每个提交所在的分支及其分化衍合情况。
+</p>
+
+ 
 
 <p>
 也可以指定查看分支的名字：

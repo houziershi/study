@@ -456,6 +456,46 @@ Automatic merge failed; fix conflicts and then commit the result.
 git commit -a
 }}}
 
+=== 使用vimdiff ===
+
+设置合并工具为vimdiff，修改`~/.gitconfig`：
+
+{{{class="brush: xml"
+[diff]
+        tool = vimdiff
+[merge]
+        tool = vimdiff
+[difftool]
+        prompt = false
+}}}
+
+以后merge会调用vimdiff：
+
+{{{class="brush: bash"
+git mergetool
+}}}
+
+在vimdiff窗口中会上面一半会分别显示本地版本、原始版本、过程版本，下半部分是冲突的版本：
+
+<img src="images/vimdiff.ui.png" />
+
+窗口切换：`CONTROL+w w`
+
+跳到上一个、下一个冲突点：`[c`、`]c`
+
+取得某窗口中的内容：`:diffget window`
+
+放置内容到某窗口：`:diffput window`
+
+`diffget`和`diffput`都要指定窗口，怎么指定窗口呢？有两个方法：
+
+一个方法是用`:buffers`查出来Buffer编号。一般来说下半编号是1，上面三个是从2到4。
+
+另一个方法是用关键字匹配。vimdiff一般把上面三个窗口中的文件名为XXXX.REMOTE.yyy，XXXX.BASE.yyy，XXXX.LOCAL.yyy。用`diffget REMOTE`就是取远程的。
+
+经过合并以后的版面会有点乱，可以用`:diffupdate`重新生成`diff`格式。
+
+保存当前窗口用`w`，关闭全部窗口用`a`。
 
 = 查看提交记录 =
 
