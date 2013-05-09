@@ -691,8 +691,30 @@ Automatic merge failed; fix conflicts and then commit the result.
 <p>
 这个时候要手动排除冲突，源代码被会git修改。以“====”分隔冲突的两边。修改完成了以后可以再次提交：
 </p>
+
 <pre class="brush: bash">
 git commit -a
+</pre>
+
+<p>
+有一点要注意，git会自动在merge完成以后添加一个原始冲突的备份<code>.orig</code>文件。如果嫌这个文件碍眼的话可以设置不生成这个东西：
+</p>
+
+<p>
+用命令：
+</p>
+
+<pre class="brush: bash">
+git config --global mergetool.keepBackup false
+</pre>
+
+<p>
+或直接改配置：
+</p>
+
+<pre class="brush: bash">
+[mergetool]
+	keepBackup = false
 </pre>
 
 <h3 id="toc_6.4.1">使用vimdiff</h3>
