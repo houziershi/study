@@ -1,10 +1,16 @@
 *.class
 *.swp
+*.log
 
 # eclipse files #
 .metadata/
-bin/
 .settings/
+.classpath
+.project
+bin/
+
+# ExtJsfiles #
+extjs/
 
 # maven files #
 target/
