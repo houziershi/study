@@ -194,29 +194,418 @@ throw new Error('['+ Ext.getDisplayName(arguments.callee) +'] Some message here'
 
 = MVC架构 =
 
+model      :: 模型，如用户有`username`和`password`。
+view       :: 可以是任何组件：树形菜单、面板等。
+controller :: 做程序运作起来的代码。
 
+== 文件结构 ==
+
+<img src="images/0201.png" />
+
+{{{class="brush: javascript" title="app.js"
+Ext.application({
+	requires : [ 'Ext.container.Viewport' ],
+	name : 'AM',
+	appFolder : 'app',
+	
+	launch : function() {
+		Ext.create('Ext.container.Viewport', {
+			layout : 'fit',
+			items : [ {
+				xtype : 'panel',
+				title : 'Users',
+				html : 'List of users will go here'
+			} ]
+		});
+	}
+});
+}}}
+
+上面建立一个`Ext.application`实例，指定名称为`AM`。这个`AM`会自动成为全局变量， 注册命名空间到`Ext.Loader`对应`appFolder`指定的路径`app`。`launch`指定的回调方法创建了一个`Viewport`实例。里面有一个占满整个屏幕的`Panel`。
+
+<img src="images/0202.png" />
+
+== 定义控制器 ==
+
+控制器监听事件并调用对应的动作。
+
+{{{class="brush: javascript" title="app/controller/Users.js"
+Ext.define('AM.controller.Users', {
+	extend : 'Ext.app.Controller',
+
+	init : function() {
+		console.log('Initialized Users! This happens '
+				+ 'before the Application launch function is called');
+	}
+});
+}}}
+
+把上面的控制器加到`application`中去：
+
+{{{class="brush: javascript" title="app.js"
+Ext.application({
+    ...
+    controllers: [ 'Users' ],
+    ...
+});
+}}}
+
+这样页面加载时控制器被调用，在浏览器控制台输出：
 
 {{{class="brush: javascript"
+Initialized Users! This happens before the Application launch function is called
+}}}
+
+控制器还有一个`control`方法可以监听视图上的控件。下面的例子中我们在初始化方法里指定监听页面上`viewport`里的`panel`的渲染事件：
+
+{{{class="brush: javascript" title="app/controller/Users.js"
+Ext.define('AM.controller.Users', {
+	extend : 'Ext.app.Controller',
+
+	init : function() {
+		this.control({
+			'viewport > panel' : {
+				render : this.onPanelRendered
+			}
+		});
+	},
+
+	onPanelRendered : function() {
+		console.log('The panel was rendered');
+	}
+});
+}}}
+
+控制台输出：
+
+{{{class="brush: javascript"
+The panel was rendered
+}}}
+
+注意指定监听对象的格式和css选择器很像。`'viewport > panel'`表示“所有直接属于`viewport`的`panel`”。详细规则查看文档目录下的：
+
+`docs/index.html#!/api/Ext.ComponentQuery`
+
+== 定义视图 ==
+
+一个查询结果的列表视图：
+
+{{{class="brush: javascript" title="app/view/user/List.js"
+Ext.define('AM.view.user.List', {
+	extend : 'Ext.grid.Panel',
+	alias : 'widget.userlist',
+	title : 'All Users',
+
+	initComponent : function() {
+		this.store = {
+			fields : [ 'name', 'email' ],
+			data : [ 
+				{ name : 'Ed', email : 'ed@sencha.com' }, 
+				{ name : 'Tommy', email : 'tommy@sencha.com' } 
+			]
+		};
+
+		this.columns = [ 
+			{ header : 'Name', dataIndex : 'name', flex : 1 }, 
+			{ header : 'Email', dataIndex : 'email', flex : 1 }
+		];
+
+		this.callParent(arguments);
+	}
+})
+}}}
+
+上面的视图类型是`AM.view.user.List`，别名是`widget.userlist`：
+
+在控制器里根据类型`AM.view.user.List`加上视图：
+
+{{{class="brush: javascript" title="app/controller/Users.js"
+Ext.define('AM.controller.Users', {
+    extend: 'Ext.app.Controller',
+
+    views: [ 'user.List' ],
+
+    init: ...
+
+    onPanelRendered: ...
+});
+}}}
+
+把原来`application`里`Viewport`里的`panel`换成我们的视图`userList`（根据别名）：
+
+{{{class="brush: javascript" title="app.js"
+Ext.application({
+	...
+	launch : function() {
+        Ext.create('Ext.container.Viewport', {
+            layout: 'fit',
+            items: { xtype: 'userlist' }
+        });
+	}
+});
+}}}
+
+<img src="images/0203.png" />
+
+== 控制grid ==
+
+注意`onPanelRander`还是被会调用，因为grid类还是`panel`的子类可以匹配`viewport > panel`选择器。
+
+再给表格里的行添加双击事件，可以弹出对应记录编辑框：
+
+{{{class="brush: javascript" title="app/controller/Users.js"
+Ext.define('AM.controller.Users', {
+	...
+
+	editUser : function(grid, record) {
+		console.log('Double clicked on ' + record.get('name'));
+	},
+
+	init : function() {
+		...
+
+		this.control({
+			'userlist' : {
+				itemdblclick : this.editUser
+			}
+		});
+	}
+});
+}}}
+
+现在双击后能在控制抬输出信息。接下来要给编辑框做个视图：
+
+{{{class="brush: javascript" title="app/view/user/Edit.js"
+Ext.define('AM.view.user.Edit', {
+	extend : 'Ext.window.Window',
+	alias : 'widget.useredit',
+
+	title : 'Edit User',
+	layout : 'fit',
+	autoShow : true,
+
+	initComponent : function() {
+		this.items = [ {
+			xtype : 'form',
+			items : [ {
+				xtype : 'textfield',
+				name : 'name',
+				fieldLabel : 'Name'
+			}, {
+				xtype : 'textfield',
+				name : 'email',
+				fieldLabel : 'Email'
+			} ]
+		} ];
+
+		this.buttons = [ {
+			text : 'Save',
+			action : 'save'
+		}, {
+			text : 'Cancel',
+			scope : this,
+			handler : this.close
+		} ];
+
+		this.callParent(arguments);
+	}
+});
+}}}
+
+别忘记有了新视图要加到controller里，对应的事件里再弹出编辑框：
+
+{{{class="brush: javascript" title="app/controller/Users.js"
+Ext.define('AM.controller.Users', {
+    extend: 'Ext.app.Controller',
+
+    views: [
+        'user.List',
+        'user.Edit'
+    ],
+
+    init: ...
+
+    editUser: function(grid, record) {
+        var view = Ext.widget('useredit');
+        view.down('form').loadRecord(record);
+    }
+});
+}}}
+
+== 创建Model和Store ==
+
+目前的版本记录都是硬编码在视图里的，现在改成根据通过专门的模块读取的：
+
+{{{class="brush: javascript" title="app/store/Users.js"
+Ext.define('AM.store.Users', {
+	extend : 'Ext.data.Store',
+
+	fields : [ 'name', 'email' ],
+
+	data : [ 
+		{ name : 'Ed', email : 'ed@sencha.com' }, 
+		{ name : 'Tommy', email : 'tommy@sencha.com' } 
+	]
+});
+}}}
+
+修改控制器添加`stores`模块把读取记录的源代码包含进来：
+
+{{{class="brush: javascript"
+Ext.define('AM.controller.Users', {
+    extend: 'Ext.app.Controller',
+    
+    stores: [ 'Users' ],
+    ...
+});
+}}}
+
+去掉视图里的硬编码记录：
+
+{{{class="brush: javascript"
+Ext.define('AM.view.user.List' ,{
+    extend: 'Ext.grid.Panel',
+    alias: 'widget.userlist',
+    title: 'All Users',
+
+    // we no longer define the Users store in the `initComponent` method
+    store: 'Users',
+
+    initComponent: function() {
+        this.columns = [
+        ...
+});
+}}}
+
+到目前为止我们已经把数据集合和程序分开了。但是还有可以改进的地方，因为每第记录里有哪些字段是定义在结果集里的。我们再把每个记录的结构抽象出来作为model：
+
+{{{class="brush: javascript" title="app/model/User.js"
+Ext.define('AM.model.User', {
+	extend : 'Ext.data.Model',
+	fields : [ 'name', 'email' ]
+});
+}}}
+
+把原来store里声明列名的地方用model代替：
+
+{{{class="brush: javascript"
+Ext.define('AM.store.Users', {
+    extend: 'Ext.data.Store',
+    model: 'AM.model.User',
+
+    data: [
+        {name: 'Ed',    email: 'ed@sencha.com'},
+        {name: 'Tommy', email: 'tommy@sencha.com'}
+    ]
+});
+}}}
+
+Controller里指定model：
+
+{{{class="brush: javascript"
+Ext.define('AM.controller.Users', {
+    extend: 'Ext.app.Controller',
+    stores: ['Users'],
+    models: ['User'],
+    ...
+});
 }}}
 
 
 
+== 通过Model保存对象 ==
+
+controller里给保存按钮加上事件：
+
 {{{class="brush: javascript"
+Ext.define('AM.controller.Users', {
+    ...
+    init: function() {
+        this.control({
+            'viewport > userlist': {
+                itemdblclick: this.editUser
+            },
+            'useredit button[action=save]': {
+                click: this.updateUser
+            }
+        });
+    },
+    ...
+    updateUser: function(button) {
+        console.log('clicked the Save button');
+    }
+    ...
+});
 }}}
 
+== 从服务器读取记录 ==
 
+把硬编码在Store里的记录改成通过`proxy`从服务器上读取，注意加上`autoLoad`让它自动读取：
 
 {{{class="brush: javascript"
+Ext.define('AM.store.Users', {
+    extend: 'Ext.data.Store',
+    model: 'AM.model.User',
+    
+    autoLoad: true,
+
+    proxy: {
+        type: 'ajax',
+        url: 'data/users.json',
+        reader: {
+            type: 'json',
+            root: 'users',
+            successProperty: 'success'
+        }
+    }
+});
 }}}
 
-
+服务器端的程序就不写了，用个静态文件代替响应：
 
 {{{class="brush: javascript"
+{
+    "success": true,
+    "users": [
+        {"id": 1, "name": 'Ed',    "email": "ed@sencha.com"},
+        {"id": 2, "name": 'Tommy', "email": "tommy@sencha.com"}
+    ]
+}
 }}}
 
+== 提交更新到服务器 ==
 
+提交函数中调用`Store`的`Sync()`方法：
 
 {{{class="brush: javascript"
+updateUser: function(button) {
+    var win    = button.up('window'),
+        form   = win.down('form'),
+        record = form.getRecord(),
+        values = form.getValues();
+
+    record.set(values);
+    win.close();
+    // synchronize the store after editing the record
+    this.getUsersStore().sync();
+}
+}}}
+
+更新Store中的`proxy`，为读写方法指定不同的接口：
+
+{{{class="brush: javascript"
+	proxy : {
+		type : 'ajax',
+		api : {
+			read : 'data/users.json',
+			update : 'data/updateUsers.json'
+		},
+		reader : {
+			type : 'json',
+			root : 'users',
+			successProperty : 'success'
+		}
+	}
 }}}
 
 
