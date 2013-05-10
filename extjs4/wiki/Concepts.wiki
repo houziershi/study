@@ -1,0 +1,309 @@
+
+%title Concepts
+
+%toc Concepts
+
+= 类型系统 =
+
+== 命名规范 ==
+
+=== 类 ===
+
+类名只有字母数字，大写开头。命名空间可以有多层，最外层命名空间开头大写。只有Sencha官方发布的可以用`Ext`作为最外层命名空间。
+
+驼峰风格，不能有连着两个字符大写。
+
+=== 源代码 ===
+
+“源代码文件与目录”严格对应“类名与命名空间”。
+
+=== 方法与变量 ===
+
+同类，但以小写开头。
+
+=== 属性 ===
+
+同上。但要注意静态属性以大写开头：
+
+{{{class="brush: javascript"
+Ext.MessageBox.YES = "Yes"
+Ext.MessageBox.NO = "No"
+MyCompany.alien.Math.PI = "4.13"
+}}}
+
+
+
+== 实践 ==
+
+=== 声明 ===
+
+使用`Ext.define`定义类：
+
+{{{class="brush: javascript"
+Ext.define(className, members, onClassCreated);
+}}}
+
+className      :: 类名。
+members        :: 一组类成员的键值对。
+onClassCreated :: （可选）回调函数。
+
+例子：
+
+{{{class="brush: javascript"
+Ext.define( 'My.sample.Person', {
+    name: 'Unknown',
+    constructor: function(name) {
+        if (name) {
+            this.name = name;
+        }
+    },
+    eat: function(foodType) {
+        alert(this.name + " is eating: " + foodType);
+    }
+});
+
+var aaron = Ext.create('My.sample.Person', 'Aaron');
+aaron.eat("Salad"); // alert("Aaron is eating: Salad");
+}}}
+
+上面用`Ext.create`方法创建实例，而不推荐用`new My.sample.Person()`。`Ext.create`是动态加载的实例。第一个参数是类名，后面的参数给类的构造函数。
+
+=== 配置 ===
+
+`config`成员通过`Ext.Class`的预处理器在类被创建前初始化：
+
+* `config`成员和类的其他成员放在一起。
+* `config`成员会在类创建期间自动生成没有被显式定义的getter/setter与相关方法。
+* 对每个`config`成员自动生成`apply`方法。在自动生成的`setter`方法设值前加入处理逻辑。
+
+例子：
+
+{{{class="brush: javascript"
+Ext.define('My.own.Window', {
+   /** @readonly */
+    isWindow: true,
+
+    config: {
+        title: 'Title Here',
+
+        bottomBar: {
+            enabled: true,
+            height: 50,
+            resizable: false
+        }
+    },
+
+    constructor: function(config) {
+        this.initConfig(config);
+    },
+
+    applyTitle: function(title) {
+        if (!Ext.isString(title) || title.length === 0) {
+            alert('Error: Title must be a valid non-empty string');
+        }
+        else {
+            return title;
+        }
+    },
+
+    applyBottomBar: function(bottomBar) {
+        if (bottomBar && bottomBar.enabled) {
+            if (!this.bottomBar) {
+                return Ext.create('My.own.WindowBottomBar', bottomBar);
+            }
+            else {
+                this.bottomBar.setConfig(bottomBar);
+            }
+        }
+    }
+});
+}}}
+
+调用方法：
+
+{{{class="brush: javascript"
+var myWindow = Ext.create('My.own.Window', {
+    title: 'Hello World',
+    bottomBar: {
+        height: 60
+    }
+});
+
+alert(myWindow.getTitle()); // alerts "Hello World"
+
+myWindow.setTitle('Something New');
+
+alert(myWindow.getTitle()); // alerts "Something New"
+
+myWindow.setTitle(null); // alerts "Error: Title must be a valid non-empty string"
+
+myWindow.setBottomBar({ height: 100 }); // Bottom bar's height is changed to 100
+}}}
+
+=== 静态成员 ===
+
+定义静态成员：
+
+{{{class="brush: javascript"
+Ext.define('Computer', {
+    statics: {
+        instanceCount: 0,
+        factory: function(brand) {
+            // 'this' in static methods refer to the class itself
+            return new this({brand: brand});
+        }
+    },
+
+    config: {
+        brand: null
+    },
+
+    constructor: function(config) {
+        this.initConfig(config);
+
+        // the 'self' property of an instance refers to its class
+        this.self.instanceCount ++;
+    }
+});
+
+var dellComputer = Computer.factory('Dell');
+var appleComputer = Computer.factory('Mac');
+
+alert(appleComputer.getBrand()); // using the auto-generated getter to get the value of a config property. Alerts "Mac"
+
+alert(Computer.instanceCount); // Alerts "2"
+}}}
+
+== 异常处理与调试 ==
+
+抛异常时使用`Ext.getDisplayName()`取得任何方法的显示名。
+
+{{{class="brush: javascript"
+throw new Error('['+ Ext.getDisplayName(arguments.callee) +'] Some message here');
+}}}
+
+任何由`Ext.define()`定义的类型抛出异常可以看到类名与方法名。
+
+
+
+
+
+
+
+
+
+= MVC架构 =
+
+
+
+{{{class="brush: javascript"
+}}}
+
+
+
+{{{class="brush: javascript"
+}}}
+
+
+
+{{{class="brush: javascript"
+}}}
+
+
+
+{{{class="brush: javascript"
+}}}
+
+
+
+{{{class="brush: javascript"
+}}}
+
+
+
+{{{class="brush: javascript"
+}}}
+
+
+
+{{{class="brush: javascript"
+}}}
+
+
+
+{{{class="brush: javascript"
+}}}
+
+
+
+{{{class="brush: javascript"
+}}}
+
+
+
+{{{class="brush: javascript"
+}}}
+
+
+
+{{{class="brush: javascript"
+}}}
+
+
+
+{{{class="brush: javascript"
+}}}
+
+
+
+{{{class="brush: javascript"
+}}}
+
+
+
+{{{class="brush: javascript"
+}}}
+
+
+
+{{{class="brush: javascript"
+}}}
+
+
+
+{{{class="brush: javascript"
+}}}
+
+
+
+{{{class="brush: javascript"
+}}}
+
+
+
+{{{class="brush: javascript"
+}}}
+
+
+
+{{{class="brush: javascript"
+}}}
+
+
+
+{{{class="brush: javascript"
+}}}
+
+
+
+{{{class="brush: javascript"
+}}}
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,100 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="hl-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="hl-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="hl-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="hl-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="hl-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="theme/styles/style.css" />
+
+<script type="text/javascript" src="theme/scripts/script.js"></script>
+
+
+<title>Overview</title>
+</head>
+<body>
+
+
+
+
+<h1>overview</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">Getting Start</a>
+</ul>
+</div>
+
+<h1 id="toc_1">Getting Start</h1>
+
+<p>
+目录结构：
+</p>
+
+<pre class="brush: javascript">
+- appname
+	- app
+		- namespace
+			- Class1.js
+			- Class2.js
+			- ...
+	- extjs
+	- resources
+		- css
+		- images
+		- ...
+	- app.js
+	- index.html
+</pre>
+
+<p>
+最简单的例子：
+</p>
+
+<pre class="brush: javascript">
+- appname
+	- extjs
+	- app.js
+	- index.html
+</pre>
+
+<pre class="brush: html" title="index.html">
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"&gt;
+&lt;html&gt;
+&lt;head&gt;
+	&lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8"&gt;
+	&lt;title&gt;Hello Ext&lt;/title&gt;
+	&lt;link rel="stylesheet" type="text/css" href="extjs/resources/css/ext-all.css"&gt;
+	&lt;script type="text/javascript" src="extjs/ext-debug.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="app.js"&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</pre>
+
+<pre class="brush: javascript" title="app.js">
+Ext.application({
+	name: 'HelloExt',
+	launch: function() {
+		Ext.create('Ext.container.Viewport', {
+			layout: 'fit',
+			items: [
+				{
+					title: 'Hello Ext',
+					html : 'Hello! Welcome to Ext JS.'
+				}
+			]
+		});
+	}
+});
+</pre>
+
+
+</body>
+</html>

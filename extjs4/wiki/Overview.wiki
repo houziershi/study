@@ -1,0 +1,66 @@
+
+%title Overview
+
+%toc overview
+
+= Getting Start =
+
+目录结构：
+
+{{{class="brush: javascript"
+- appname
+	- app
+		- namespace
+			- Class1.js
+			- Class2.js
+			- ...
+	- extjs
+	- resources
+		- css
+		- images
+		- ...
+	- app.js
+	- index.html
+}}}
+
+最简单的例子：
+
+{{{class="brush: javascript"
+- appname
+	- extjs
+	- app.js
+	- index.html
+}}}
+
+{{{class="brush: html" title="index.html"
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Hello Ext</title>
+	<link rel="stylesheet" type="text/css" href="extjs/resources/css/ext-all.css">
+	<script type="text/javascript" src="extjs/ext-debug.js"></script>
+	<script type="text/javascript" src="app.js"></script>
+</head>
+<body>
+</body>
+</html>
+}}}
+
+{{{class="brush: javascript" title="app.js"
+Ext.application({
+	name: 'HelloExt',
+	launch: function() {
+		Ext.create('Ext.container.Viewport', {
+			layout: 'fit',
+			items: [
+				{
+					title: 'Hello Ext',
+					html : 'Hello! Welcome to Ext JS.'
+				}
+			]
+		});
+	}
+});
+}}}
+
