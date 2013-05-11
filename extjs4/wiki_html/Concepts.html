@@ -30,29 +30,42 @@
 <ul>
 <li><a href="#toc_1.1">命名规范</a>
 <ul>
-<li><a href="#toc_1.1.1">类</a>
-<li><a href="#toc_1.1.2">源代码</a>
-<li><a href="#toc_1.1.3">方法与变量</a>
-<li><a href="#toc_1.1.4">属性</a>
+<li><a href="#toc_1.1.1">类 </a>
+<li><a href="#toc_1.1.2">源代码 </a>
+<li><a href="#toc_1.1.3">方法与变量 </a>
+<li><a href="#toc_1.1.4">属性 </a>
 </ul>
 <li><a href="#toc_1.2">实践</a>
 <ul>
 <li><a href="#toc_1.2.1">声明</a>
 <li><a href="#toc_1.2.2">配置</a>
-<li><a href="#toc_1.2.3">静态成员</a>
+<li><a href="#toc_1.2.3">静态成员 </a>
 </ul>
-<li><a href="#toc_1.3">异常处理与调试</a>
+<li><a href="#toc_1.3">异常处理与调试 </a>
 </ul>
 <li><a href="#toc_2">MVC架构</a>
 <ul>
 <li><a href="#toc_2.1">文件结构</a>
-<li><a href="#toc_2.2">定义控制器</a>
+<li><a href="#toc_2.2">定义控制器 </a>
 <li><a href="#toc_2.3">定义视图</a>
 <li><a href="#toc_2.4">控制grid</a>
 <li><a href="#toc_2.5">创建Model和Store</a>
 <li><a href="#toc_2.6">通过Model保存对象</a>
 <li><a href="#toc_2.7">从服务器读取记录</a>
 <li><a href="#toc_2.8">提交更新到服务器</a>
+</ul>
+<li><a href="#toc_3">布局与容器 </a>
+<ul>
+<li><a href="#toc_3.1">容器</a>
+<li><a href="#toc_3.2">布局</a>
+<ul>
+<li><a href="#toc_3.2.1">使用布局</a>
+<li><a href="#toc_3.2.2">布局是如何工作的</a>
+</ul>
+</ul>
+<li><a href="#toc_4">组件</a>
+<ul>
+<li><a href="#toc_4.1">组件组合结构</a>
 </ul>
 </ul>
 </div>
@@ -61,7 +74,7 @@
 
 <h2 id="toc_1.1">命名规范</h2>
 
-<h3 id="toc_1.1.1">类</h3>
+<h3 id="toc_1.1.1">类 </h3>
 
 <p>
 类名只有字母数字，大写开头。命名空间可以有多层，最外层命名空间开头大写。只有Sencha官方发布的可以用<code>Ext</code>作为最外层命名空间。
@@ -71,19 +84,19 @@
 驼峰风格，不能有连着两个字符大写。
 </p>
 
-<h3 id="toc_1.1.2">源代码</h3>
+<h3 id="toc_1.1.2">源代码 </h3>
 
 <p>
 “源代码文件与目录”严格对应“类名与命名空间”。
 </p>
 
-<h3 id="toc_1.1.3">方法与变量</h3>
+<h3 id="toc_1.1.3">方法与变量 </h3>
 
 <p>
 同类，但以小写开头。
 </p>
 
-<h3 id="toc_1.1.4">属性</h3>
+<h3 id="toc_1.1.4">属性 </h3>
 
 <p>
 同上。但要注意静态属性以大写开头：
@@ -140,7 +153,7 @@ aaron.eat("Salad"); // alert("Aaron is eating: Salad");
 </pre>
 
 <p>
-上面用<code>Ext.create</code>方法创建实例，而不推荐用<code>new My.sample.Person()</code>。<code>Ext.create</code>是动态加载的实例。第一个参数是类名，后面的参数给类的构造函数。
+上面用`Ext.create<code>方法创建实例，而不推荐用`new My.sample.Person()</code>。`Ext.create`是动态加载的实例。第一个参数是类名，后面的参数给类的构造函数。
 </p>
 
 <h3 id="toc_1.2.2">配置</h3>
@@ -157,7 +170,7 @@ aaron.eat("Salad"); // alert("Aaron is eating: Salad");
 <code>config</code>成员会在类创建期间自动生成没有被显式定义的getter/setter与相关方法。
 
 <li>
-对每个<code>config</code>成员自动生成<code>apply</code>方法。在自动生成的<code>setter</code>方法设值前加入处理逻辑。
+对每个`config<code>成员自动生成</code>apply<code>方法。在自动生成的`setter</code>方法设值前加入处理逻辑。
 
 </ul>
 
@@ -229,7 +242,7 @@ myWindow.setTitle(null); // alerts "Error: Title must be a valid non-empty strin
 myWindow.setBottomBar({ height: 100 }); // Bottom bar's height is changed to 100
 </pre>
 
-<h3 id="toc_1.2.3">静态成员</h3>
+<h3 id="toc_1.2.3">静态成员 </h3>
 
 <p>
 定义静态成员：
@@ -265,7 +278,7 @@ alert(appleComputer.getBrand()); // using the auto-generated getter to get the v
 alert(Computer.instanceCount); // Alerts "2"
 </pre>
 
-<h2 id="toc_1.3">异常处理与调试</h2>
+<h2 id="toc_1.3">异常处理与调试 </h2>
 
 <p>
 抛异常时使用<code>Ext.getDisplayName()</code>取得任何方法的显示名。
@@ -276,7 +289,7 @@ throw new Error('['+ Ext.getDisplayName(arguments.callee) +'] Some message here'
 </pre>
 
 <p>
-任何由<code>Ext.define()</code>定义的类型抛出异常可以看到类名与方法名。
+任何由`Ext.define()`定义的类型抛出异常可以看到类名与方法名。
 </p>
 
 
@@ -291,7 +304,7 @@ throw new Error('['+ Ext.getDisplayName(arguments.callee) +'] Some message here'
 
 <dl>
 <dt>model      </dt>
-<dd>模型，如用户有<code>username</code>和<code>password</code>。</dd>
+<dd>模型，如用户有`username<code>和`password</code>。</dd>
 <dt>view       </dt>
 <dd>可以是任何组件：树形菜单、面板等。</dd>
 <dt>controller </dt>
@@ -324,14 +337,14 @@ Ext.application({
 </pre>
 
 <p>
-上面建立一个<code>Ext.application</code>实例，指定名称为<code>AM</code>。这个<code>AM</code>会自动成为全局变量， 注册命名空间到<code>Ext.Loader</code>对应<code>appFolder</code>指定的路径<code>app</code>。<code>launch</code>指定的回调方法创建了一个<code>Viewport</code>实例。里面有一个占满整个屏幕的<code>Panel</code>。
+上面建立一个`Ext.application<code>实例，指定名称为</code>AM<code>。这个`AM</code>会自动成为全局变量， 注册命名空间到`Ext.Loader<code>对应</code>appFolder<code>指定的路径`app</code>。`launch<code>指定的回调方法创建了一个`Viewport</code>实例。里面有一个占满整个屏幕的<code>Panel</code>。
 </p>
 
 <p>
 <img src="images/0202.png" />
 </p>
 
-<h2 id="toc_2.2">定义控制器</h2>
+<h2 id="toc_2.2">定义控制器 </h2>
 
 <p>
 控制器监听事件并调用对应的动作。
@@ -349,7 +362,7 @@ Ext.define('AM.controller.Users', {
 </pre>
 
 <p>
-把上面的控制器加到<code>application</code>中去：
+把上面的控制器加到`application`中去：
 </p>
 
 <pre class="brush: javascript" title="app.js">
@@ -369,7 +382,7 @@ Initialized Users! This happens before the Application launch function is called
 </pre>
 
 <p>
-控制器还有一个<code>control</code>方法可以监听视图上的控件。下面的例子中我们在初始化方法里指定监听页面上<code>viewport</code>里的<code>panel</code>的渲染事件：
+控制器还有一个`control<code>方法可以监听视图上的控件。下面的例子中我们在初始化方法里指定监听页面上`viewport</code>里的<code>panel</code>的渲染事件：
 </p>
 
 <pre class="brush: javascript" title="app/controller/Users.js">
@@ -399,7 +412,7 @@ The panel was rendered
 </pre>
 
 <p>
-注意指定监听对象的格式和css选择器很像。<code>'viewport &gt; panel'</code>表示“所有直接属于<code>viewport</code>的<code>panel</code>”。详细规则查看文档目录下的：
+注意指定监听对象的格式和css选择器很像。`'viewport &gt; panel'<code>表示“所有直接属于`viewport</code>的`panel`”。详细规则查看文档目录下的：
 </p>
 
 <p>
@@ -442,7 +455,7 @@ Ext.define('AM.view.user.List', {
 </p>
 
 <p>
-在控制器里根据类型<code>AM.view.user.List</code>加上视图：
+在控制器里根据类型`AM.view.user.List`加上视图：
 </p>
 
 <pre class="brush: javascript" title="app/controller/Users.js">
@@ -458,7 +471,7 @@ Ext.define('AM.controller.Users', {
 </pre>
 
 <p>
-把原来<code>application</code>里<code>Viewport</code>里的<code>panel</code>换成我们的视图<code>userList</code>（根据别名）：
+把原来`application<code>里`Viewport</code>里的<code>panel</code>换成我们的视图`userList`（根据别名）：
 </p>
 
 <pre class="brush: javascript" title="app.js">
@@ -480,7 +493,7 @@ Ext.application({
 <h2 id="toc_2.4">控制grid</h2>
 
 <p>
-注意<code>onPanelRander</code>还是被会调用，因为grid类还是<code>panel</code>的子类可以匹配<code>viewport &gt; panel</code>选择器。
+注意<code>onPanelRander</code>还是被会调用，因为grid类还是`panel<code>的子类可以匹配`viewport &gt; panel</code>选择器。
 </p>
 
 <p>
@@ -590,7 +603,7 @@ Ext.define('AM.store.Users', {
 </pre>
 
 <p>
-修改控制器添加<code>stores</code>模块把读取记录的源代码包含进来：
+修改控制器添加`stores`模块把读取记录的源代码包含进来：
 </p>
 
 <pre class="brush: javascript">
@@ -732,7 +745,7 @@ Ext.define('AM.store.Users', {
 <h2 id="toc_2.8">提交更新到服务器</h2>
 
 <p>
-提交函数中调用<code>Store</code>的<code>Sync()</code>方法：
+提交函数中调用`Store<code>的`Sync()</code>方法：
 </p>
 
 <pre class="brush: javascript">
@@ -770,24 +783,175 @@ updateUser: function(button) {
 
 
 
+
+
+
+
+<h1 id="toc_3">布局与容器 </h1>
+
+<h2 id="toc_3.1">容器</h2>
+
+<p>
+更多关于组件的信息：
+</p>
+
+<p>
+<code>docs/index.html#/guide/components</code>
+</p>
+
+<p>
+容器中可以放置组件或其他容器。如我们在页面上加一个`Panel<code>，`Panel</code>里再加两个子<code>Panel</code>：
+</p>
+
 <pre class="brush: javascript">
+Ext.create('Ext.panel.Panel', {
+    renderTo: Ext.getBody(),
+    width: 400,
+    height: 300,
+    title: 'Container Panel',
+    items: [
+        {
+            xtype: 'panel',
+            title: 'Child Panel 1',
+            height: 100,
+            width: '75%'
+        },
+        {
+            xtype: 'panel',
+            title: 'Child Panel 2',
+            height: 100,
+            width: '75%'
+        }
+    ]
+});
+</pre>
+
+<p>
+<img src="images/0301.png" />
+</p>
+
+<h2 id="toc_3.2">布局</h2>
+
+<p>
+容器都有布局属性来描述它内部的组件。
+</p>
+
+<h3 id="toc_3.2.1">使用布局</h3>
+
+<p>
+在上面的例子中布局是上下放的，就和HTML的DOM行为一样。现在用<code>colum</code>指定左右放：
+</p>
+
+<pre class="brush: javascript">
+Ext.create('Ext.panel.Panel', {
+    renderTo: Ext.getBody(),
+    width: 400,
+    height: 200,
+    title: 'Container Panel',
+    layout: 'column',
+    items: [
+        {
+            xtype: 'panel',
+            title: 'Child Panel 1',
+            height: 100,
+            columnWidth: 0.5
+        },
+        {
+            xtype: 'panel',
+            title: 'Child Panel 2',
+            height: 100,
+            columnWidth: 0.5
+        }
+    ]
+});
+</pre>
+
+<p>
+<img src="images/0302.png" />
+</p>
+
+
+<h3 id="toc_3.2.2">布局是如何工作的</h3>
+
+<p>
+窗口的布局负责初始化所有内部组件的大小和初始位置。在内部框架调用窗口的`doLayout<code>方法，而`doLayout</code>方法是层层包含的，所以所有内部成员的<code>doLayout</code>方法都会被调用。
+</p>
+
+<p>
+窗口大小的调整与内部组件的添加删除都会触发重新布局。虽然一般布局的调用都由框架来处理，但有些情况下我们希望等我们做好一些工作以后手动触发。这种情况下我们打开<code>suspendLayout</code>标记来防止自动布局。等处理完成以后再关闭`suspendLayout`来调用布局：
+</p>
+
+<pre class="brush: javascript">
+var containerPanel = Ext.create('Ext.panel.Panel', {
+    renderTo: Ext.getBody(),
+    width: 400,
+    height: 200,
+    title: 'Container Panel',
+    layout: 'column',
+    suspendLayout: true // Suspend automatic layouts while we do several different things that could trigger a layout on their own
+});
+// Add a couple of child items.  We could add these both at the same time by passing an array to add(),
+// but lets pretend we needed to add them separately for some reason.
+containerPanel.add({
+    xtype: 'panel',
+    title: 'Child Panel 1',
+    height: 100,
+    columnWidth: 0.5
+});
+containerPanel.add({
+    xtype: 'panel',
+    title: 'Child Panel 2',
+    height: 100,
+    columnWidth: 0.5
+});
+// Turn the suspendLayout flag off.
+containerPanel.suspendLayout = false;
+// Trigger a layout.
+containerPanel.doLayout();
 </pre>
 
 
 
+
+<h1 id="toc_4">组件</h1>
+
+<p>
+所有的组件都继承自<code>Ext.Component</code>。
+</p>
+
+<h2 id="toc_4.1">组件组合结构</h2>
+
+<p>
+<code>Container</code>是一种特殊的组件，负责管理内部组件的生命周期与渲染工作。它包含的成员一般用下图来表示，顶部是`Viewport`容器。
+</p>
+
+<p>
+<img src="images/0401.png" />
+</p>
+
+<p>
+<code>Ext.create()</code>创建组件实例，`items`指定窗口内部成员：
+</p>
+
 <pre class="brush: javascript">
+var childPanel1 = Ext.create('Ext.panel.Panel', {
+    title: 'Child Panel 1',
+    html: 'A Panel'
+});
+
+var childPanel2 = Ext.create('Ext.panel.Panel', {
+    title: 'Child Panel 2',
+    html: 'Another Panel'
+});
+
+Ext.create('Ext.container.Viewport', {
+    items: [ childPanel1, childPanel2 ]
+});
 </pre>
 
-
-
-<pre class="brush: javascript">
-</pre>
-
-
-
-<pre class="brush: javascript">
-</pre>
-
+<p>
+<img src="images/0402.png" />
+</p>
 
 
 <pre class="brush: javascript">
