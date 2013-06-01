@@ -3,7 +3,7 @@
 
 %toc Scala入门
 
-[[准备工作]]
+[[preparation]]
 
 [[Part.01]]
 

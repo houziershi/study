@@ -110,7 +110,9 @@ img {
 
 code {
     padding: 2px 4px;
-    color: #cae3b6;
+		border : 1px solid #000000;
+    background: #1B2426;
+    color: #00FF00;
     font-family: 'Lucida Console', 'Courier New', Courier, monospace;
 }
 
