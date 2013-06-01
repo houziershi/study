@@ -23,6 +23,8 @@
 	- index.html
 }}}
 
+在这里需要的ExtJs模块有`src`和`resources`目录，以及`ext-debug.js`文件。
+
 最简单的例子：
 
 {{{class="brush: javascript"

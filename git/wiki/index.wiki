@@ -644,6 +644,29 @@ git log experimental..stable
 git log stable ..experimental
 }}}
 
+
+一个美化日志输出的模式：
+
+{{{class="brush: bash"
+git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --
+}}}
+
+效果是这样的：
+
+<img src="images/git.log.png" />
+
+当然这样的命令太长了，所以给定义一个别名：
+
+{{{class="brush: bash"
+git config --global alias.lg "log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --"
+}}}
+
+以后这样查看：
+
+{{{class="brush: bash"
+git lg
+}}}
+
 gitk也可以定位具体的历史记录。将在GUI中显示自2周前到现在为止的，且位于drivers目录下的分支记录信息：
 
 {{{class="brush: bash"

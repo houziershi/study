@@ -54,6 +54,19 @@
 <li><a href="#toc_2.7">从服务器读取记录</a>
 <li><a href="#toc_2.8">提交更新到服务器</a>
 </ul>
+<li><a href="#toc_3">布局与容器</a>
+<ul>
+<li><a href="#toc_3.1">容器</a>
+<li><a href="#toc_3.2">布局</a>
+<ul>
+<li><a href="#toc_3.2.1">使用布局</a>
+<li><a href="#toc_3.2.2">布局是如何工作的</a>
+</ul>
+</ul>
+<li><a href="#toc_4">组件</a>
+<ul>
+<li><a href="#toc_4.1">组件组合结构</a>
+</ul>
 </ul>
 </div>
 
@@ -770,24 +783,175 @@ updateUser: function(button) {
 
 
 
+
+
+
+
+<h1 id="toc_3">布局与容器</h1>
+
+<h2 id="toc_3.1">容器</h2>
+
+<p>
+更多关于组件的信息：
+</p>
+
+<p>
+<code>docs/index.html#/guide/components</code>
+</p>
+
+<p>
+容器中可以放置组件或其他容器。如我们在页面上加一个<code>Panel</code>，<code>Panel</code>里再加两个子<code>Panel</code>：
+</p>
+
 <pre class="brush: javascript">
+Ext.create('Ext.panel.Panel', {
+    renderTo: Ext.getBody(),
+    width: 400,
+    height: 300,
+    title: 'Container Panel',
+    items: [
+        {
+            xtype: 'panel',
+            title: 'Child Panel 1',
+            height: 100,
+            width: '75%'
+        },
+        {
+            xtype: 'panel',
+            title: 'Child Panel 2',
+            height: 100,
+            width: '75%'
+        }
+    ]
+});
+</pre>
+
+<p>
+<img src="images/0301.png" />
+</p>
+
+<h2 id="toc_3.2">布局</h2>
+
+<p>
+容器都有布局属性来描述它内部的组件。
+</p>
+
+<h3 id="toc_3.2.1">使用布局</h3>
+
+<p>
+在上面的例子中布局是上下放的，就和HTML的DOM行为一样。现在用<code>colum</code>指定左右放：
+</p>
+
+<pre class="brush: javascript">
+Ext.create('Ext.panel.Panel', {
+    renderTo: Ext.getBody(),
+    width: 400,
+    height: 200,
+    title: 'Container Panel',
+    layout: 'column',
+    items: [
+        {
+            xtype: 'panel',
+            title: 'Child Panel 1',
+            height: 100,
+            columnWidth: 0.5
+        },
+        {
+            xtype: 'panel',
+            title: 'Child Panel 2',
+            height: 100,
+            columnWidth: 0.5
+        }
+    ]
+});
+</pre>
+
+<p>
+<img src="images/0302.png" />
+</p>
+
+
+<h3 id="toc_3.2.2">布局是如何工作的</h3>
+
+<p>
+窗口的布局负责初始化所有内部组件的大小和初始位置。在内部框架调用窗口的<code>doLayout</code>方法，而<code>doLayout</code>方法是层层包含的，所以所有内部成员的<code>doLayout</code>方法都会被调用。
+</p>
+
+<p>
+窗口大小的调整与内部组件的添加删除都会触发重新布局。虽然一般布局的调用都由框架来处理，但有些情况下我们希望等我们做好一些工作以后手动触发。这种情况下我们打开<code>suspendLayout</code>标记来防止自动布局。等处理完成以后再关闭<code>suspendLayout</code>来调用布局：
+</p>
+
+<pre class="brush: javascript">
+var containerPanel = Ext.create('Ext.panel.Panel', {
+    renderTo: Ext.getBody(),
+    width: 400,
+    height: 200,
+    title: 'Container Panel',
+    layout: 'column',
+    suspendLayout: true // Suspend automatic layouts while we do several different things that could trigger a layout on their own
+});
+// Add a couple of child items.  We could add these both at the same time by passing an array to add(),
+// but lets pretend we needed to add them separately for some reason.
+containerPanel.add({
+    xtype: 'panel',
+    title: 'Child Panel 1',
+    height: 100,
+    columnWidth: 0.5
+});
+containerPanel.add({
+    xtype: 'panel',
+    title: 'Child Panel 2',
+    height: 100,
+    columnWidth: 0.5
+});
+// Turn the suspendLayout flag off.
+containerPanel.suspendLayout = false;
+// Trigger a layout.
+containerPanel.doLayout();
 </pre>
 
 
 
+
+<h1 id="toc_4">组件</h1>
+
+<p>
+所有的组件都继承自<code>Ext.Component</code>。
+</p>
+
+<h2 id="toc_4.1">组件组合结构</h2>
+
+<p>
+<code>Container</code>是一种特殊的组件，负责管理内部组件的生命周期与渲染工作。它包含的成员一般用下图来表示，顶部是<code>Viewport</code>容器。
+</p>
+
+<p>
+<img src="images/0401.png" />
+</p>
+
+<p>
+<code>Ext.create()</code>创建组件实例，<code>items</code>指定窗口内部成员：
+</p>
+
 <pre class="brush: javascript">
+var childPanel1 = Ext.create('Ext.panel.Panel', {
+    title: 'Child Panel 1',
+    html: 'A Panel'
+});
+
+var childPanel2 = Ext.create('Ext.panel.Panel', {
+    title: 'Child Panel 2',
+    html: 'Another Panel'
+});
+
+Ext.create('Ext.container.Viewport', {
+    items: [ childPanel1, childPanel2 ]
+});
 </pre>
 
-
-
-<pre class="brush: javascript">
-</pre>
-
-
-
-<pre class="brush: javascript">
-</pre>
-
+<p>
+<img src="images/0402.png" />
+</p>
 
 
 <pre class="brush: javascript">
