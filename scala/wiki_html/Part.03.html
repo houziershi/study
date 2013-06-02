@@ -158,6 +158,7 @@
     else f(head) :: tail.map(f)
 </pre>
 
+
 <h3 id="toc_1.1.4">列表构建</h3>
 
 <dl>
@@ -307,6 +308,7 @@
   buf.toList
 </pre>
 
+
 <h2 id="toc_1.3">实际的List类实现</h2>
 
 <p>
@@ -348,7 +350,7 @@
 </p>
 
 <p>
-<code>ListBuffer</code>的元素被表示为列表，而添加新元素操作只对列表中最后一个<code>::</code>单元的<code>t1</code>字段修改：
+ListBuffer的元素被表示为列表，而添加新元素操作只对列表中最后一个<code>::</code>单元的 t1 字段修改：
 </p>
 
 <pre class="brush: scala">
@@ -357,7 +359,6 @@
     private var start: List[T] = Nil       // 所有元素的列表
     private var last0: ::[T] = _           // 最后一个 '::' 成员
     private var exported: Boolean = false  // 是否执行过toList操作
-    ...
 </pre>
 
 <p>
@@ -393,6 +394,7 @@
 上面的逻辑中可以看出，如果没有被<code>toList</code>过，还可以在原来的列表上修改。如果已经生成过列表了，那复制操作就不可避免。
 </p>
 
+
 <h2 id="toc_1.4">外在的函数式风格</h2>
 
 <p>
@@ -402,18 +404,6 @@
 <p>
 Scala官方的实现方式让程序在外部看来是函数式，而内部实现在不得已的情况下使用指令式实现。这样的实现可以被称作“外在函数式风格”。
 </p>
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
