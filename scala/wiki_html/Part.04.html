@@ -22,6 +22,1427 @@
 
 
 
+<h3 id="toc_0.0.1">列表构建</h3>
+
+<dl>
+<dt>对于冒号结束的操作符<code>::</code>和<code>:::</code>都是绑定在右操作数上的。即，`x </dt>
+<dd>xs<code>被看作是</code>xs.::(x)<code>。因为</code>x<code>是列表元素可以是任意类型，所以不能假设它正好是具有</code>::<code>方法的类型。也由于这个原因</code>::`方法应该生成一个新的列表。</dd>
+</dl>
+
+<p>
+还有值得讨论的地方是新加入元素的类型。思维惯性上会认为和列表元素是同一类型，但实际上可用的范围更大。以下面的层级关系为例：
+</p>
+
+<pre class="brush: scala">
+  abstract class Fruit 
+  class Apple extends Fruit
+  class Orange extends Fruit
+
+
+  scala&gt; val apples = new Apple :: Nil
+  apples: List[Apple] = List(Apple@585fa9)
+
+  scala&gt; val fruits = new Orange :: apples
+  fruits: List[Fruit] = List(Orange@cd6798, Apple@585fa9)
+</pre>
+
+<p>
+上面的例子说明新加入的元素可以产生超类类型的列表。实现这样弹性的<code>::</code>方法：
+</p>
+
+<pre class="brush: scala">
+  def ::[U &gt;: T](x: U): List[U] = new scala.::(x, this)
+</pre>
+
+<p>
+注意方法本身是多态的，类型参数是<code>U</code>，添加的元素类型必须是<code>U</code>，返回结果类型是<code>List[U]</code>。<code>[U &gt;: T]</code>限定列表元素<code>T</code>的超类。
+</p>
+
+<p>
+结合前面的例子，<code>U</code>被实例化为<code>Fruit</code>。因为<code>List[Apple]</code>中的<code>Apple</code>是<code>Fruit</code>的子类，于是<code>U</code>的下界被满足。
+</p>
+
+<p>
+<img src="images/22.02.png" />
+</p>
+
+<p>
+实际上对带有下界的<code>T</code>定义不只是为了方便，更加是为类型正确。因为<code>List</code>是协变的，如果用下面的形式：
+</p>
+
+<pre class="brush: scala">
+  // Error
+  def ::(x: T): List[T] = new scala.::(x, this)
+</pre>
+
+<p>
+因为方法参数被认为是逆变位置，所以上面的列表元素类型<code>T</code>处于逆变位置。这样<code>List</code>就不能被声明为<code>T</code>保持协变了。所以使用下界<code>[U &gt;: T]</code>即加强了类型检查，又让使用更加有弹性。
+</p>
+
+<h3 id="toc_0.0.2">连接列表方法</h3>
+
+<p>
+连接列表的实现方法差不多：
+</p>
+
+<pre class="brush: scala">
+    def :::[U &gt;: T](prefix: List[U]): List[U] = 
+      if (prefix.isEmpty) this
+      else prefix.head :: prefix.tail ::: this
+</pre>
+
+<p>
+因为<code>::</code>与<code>:::</code>是右关联的，所以下面四个语句其实相等：
+</p>
+
+<pre class="brush: scala">
+  prefix.head :: prefix.tail ::: this
+  prefix.head :: (prefix.tail ::: this)
+  (prefix.tail ::: this).::(prefix.head)
+  this.:::(prefix.tail).::(prefix.head)
+</pre>
+
+
+<h2 id="toc_0.1">ListBuffer类</h2>
+
+<p>
+列表的典型访问模式是递归，比如有一个让列表所有元素自加１的方法：
+</p>
+
+<pre class="brush: scala">
+  def incAll(xs: List[Int]): List[Int] = xs match {
+    case List() =&gt; List()
+    case x :: xs1 =&gt; x + 1 :: incAll(xs1)
+  }
+</pre>
+
+<p>
+这个方法有个问题：<code>incAll</code>是在<code>::</code>运算里面的，不是尾递归，堆栈的爆掉的危险。
+</p>
+
+<p>
+换个方案，用循环：
+</p>
+
+<pre class="brush: scala">
+  for (x &lt;- xs) // ??
+</pre>
+
+<p>
+那循环体内怎么写？前面的<code>incAll</code>递归方案可以通过加前缀操作；循环只能通过加后缀，但<code>:::</code>操作时间与第一个列表长度成正比，效率很差：
+</p>
+
+<pre class="brush: scala">
+  var result = List[Int]()    // a very inefficient approach
+  for (x &lt;- xs) result = result ::: List(x + 1)
+  result
+</pre>
+
+<p>
+较好的办法是使用列表缓冲（list buffer）收集元素，最后用<code>toList</code>方法一次转换为列表。
+</p>
+
+<p>
+类<code>ListBuffer</code>位于<code>scala.collection.mutable</code>包中。
+</p>
+
+<pre class="brush: scala">
+  import scala.collection.mutable.ListBuffer
+
+  val buf = new ListBuffer[Int]
+  for (x &lt;- xs) buf += x + 1
+  buf.toList
+</pre>
+
+<h2 id="toc_0.2">实际的List类实现</h2>
+
+<p>
+虽然我们自己实现的<code>List</code>类很简洁，但实际上在遍历列表时为了避免递归一般都使用列表缓冲与循环结合的方式。
+</p>
+
+<p>
+比如真正的<code>List</code>类是这样实现<code>map</code>方法的：
+</p>
+
+<pre class="brush: scala">
+  final override def map[U](f: T =&gt; U): List[U] = {
+    val b = new ListBuffer[U]
+    var these = this
+    while (!these.isEmpty) {
+      b += f(these.head)
+      these = these.tail
+    }
+    b.toList
+  }
+</pre>
+
+<p>
+看了以上的代码后，大家可能会对最后<code>b.toList</code>的效率感兴趣。实际上它的效率与列表的长度无关。关于原因可以看一下<code>::</code>类的实现：
+</p>
+
+<pre class="brush: scala">
+  final case class ::[U](hd: U, 
+      private[scala] var tl: List[U]) extends List[U] {
+
+    def head = hd
+    def tail = tl
+    override def isEmpty: Boolean = false
+  }
+</pre>
+
+<p>
+可以看到参数<code>tl</code>的类型是<code>var</code>，所以列表除了头一个元素以下的部分还是可以改变的。而且修饰符<code>private[scala]</code>限定只有<code>scala</code>包中可以访问它。而修改它的是<code>scala.collection.mutable</code>中的<code>ListBuffer</code>。
+</p>
+
+<p>
+<code>ListBuffer</code>的元素被表示为列表，而添加新元素操作只对列表中最后一个<code>::</code>单元的<code>t1</code>字段修改：
+</p>
+
+<pre class="brush: scala">
+  package scala.collection.immutable
+  final class ListBuffer[T] extends Buffer[T] {
+    private var start: List[T] = Nil       // 所有元素的列表
+    private var last0: ::[T] = _           // 最后一个 '::' 成员
+    private var exported: Boolean = false  // 是否执行过toList操作
+    ...
+</pre>
+
+<p>
+<code>toList</code>方法的实现也很简单。它返回由<code>start</code>指向的列表，如果列表非空，就设置<code>exported</code>为<code>true</code>：
+</p>
+
+<pre class="brush: scala">
+  override def toList: List[T] = {
+    exported = !start.isEmpty
+    start
+  }
+</pre>
+
+<p>
+<code>toList</code>返回的列表应该是不可变的实例。那如果在这以后又被添加了元素的话，就不得不改变<code>start</code>指向的列表。所以为了维护正确性，由<code>+=</code>方法转向对一个新列表进行操作：
+</p>
+
+<pre class="brush: scala">
+  override def += (x: T) {
+    if (exported) copy()
+    if (start.isEmpty) {
+      last0 = new scala.::(x, Nil)
+      start = last0
+    } else {
+      val last1 = last0
+      last0 = new scala.::(x, Nil)
+      last1.tl = last0
+    }
+  }
+</pre>
+
+<p>
+上面的逻辑中可以看出，如果没有被<code>toList</code>过，还可以在原来的列表上修改。如果已经生成过列表了，那复制操作就不可避免。
+</p>
+
+<h2 id="toc_0.3">外在的函数式风格</h2>
+
+<p>
+回顾本章的内容可以感受到：指使式方案可以避免重复复制以提高效率；函数式风格以不可改点与不共享数据让程序变得更加可靠。
+</p>
+
+<p>
+Scala官方的实现方式让程序在外部看来是函数式，而内部实现在不得已的情况下使用指令式实现。这样的实现可以被称作“外在函数式风格”。
+</p>
+
+
+
+<h1 id="toc_1">重温for表达式</h1>
+
+<p>
+先讨论一个例子，<code>Person</code>类有名字，性别，孩子三个成员：
+</p>
+
+<pre class="brush: scala">
+  case class Person(name: String, isMale: Boolean, children: Person*)
+</pre>
+
+<p>
+根据这个类建立一些实例：
+</p>
+
+<pre class="brush: scala">
+  val lara = Person("Lara", false)
+  val bob = Person("Bob", true)
+  val julie = Person("Julie", false, lara, bob)
+  val persons = List(lara, bob, julie)
+</pre>
+
+<p>
+如果要找出所有母亲与孩子的结对，方案一是使用<code>map</code>、<code>flatMap</code>和<code>filter</code>这样的高阶函数组成这样的查询操作：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; persons filter (p =&gt; !p.isMale) flatMap (p =&gt;
+       |     (p.children map (c =&gt; (p.name, c.name))))
+  res5: List[(String, String)] = List((Julie,Lara),
+      (Julie,Bob))
+</pre>
+
+<p>
+上面的代码很看起来挺难理解的，用for表达式来实现另一个版本：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; for (p &lt;- persons; if !p.isMale; c &lt;- p.children) 
+       | yield (p.name, c.name)
+  res6: List[(String, String)] = List((Julie,Lara),
+      (Julie,Bob))
+</pre>
+
+<p>
+for循环比高阶函数可读性更加好一些。但实际上Scala编译器把循环版本转为高阶函数版本：
+</p>
+
+<ul>
+<li>
+所有有<code>yield</code>结果的for表达式会被转为<code>map</code>、<code>flatMap</code>与<code>filter</code>组合的调用。
+
+<li>
+所有无<code>yield</code>结果的for表达式被转为<code>filter</code>与<code>foreach</code>的调用。
+
+</ul>
+
+<h2 id="toc_1.1">For表达式</h2>
+
+<p>
+for表达式的一般形式：
+</p>
+
+<pre class="brush: scala">
+  for ( seq ) yield expr
+</pre>
+
+<p>
+其中的<code>seq</code>部分由生成器、定义、过滤器组成，以分号分隔：
+</p>
+
+<pre class="brush: scala">
+  for (p &lt;- persons; n = p.name; if (n startsWith "To")) 
+  yield n
+</pre>
+
+<p>
+小括号可以由大括号代替，并且在用大括号的情况下还能省略分号：
+</p>
+
+<pre class="brush: scala">
+  for {
+    p &lt;- persons              // 生成器
+    n = p.name                // 定义
+    if (n startsWith "To")    // 过滤器
+  } yield n
+</pre>
+
+<p>
+如果有多个生成器，后面的生成器在内层的循环：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; for (x &lt;- List(1, 2); y &lt;- List("one", "two")) 
+       | yield (x, y)
+  res0: List[(Int, java.lang.String)] = 
+    List((1,one), (1,two), (2,one), (2,two))
+</pre>
+
+<h2 id="toc_1.2">8皇后问题</h2>
+
+<p>
+8皇后问题：标准棋盘上放8个皇后，相互之间不能处理叫吃的位置上（同行、同列、同对角线）。
+</p>
+
+<p>
+对于这个问题，把它扩展为任意尺寸的棋盘：在N*N的棋盘上放N个皇后，反而更加简单。现在左上角的坐标是(1,1)，右下角是(N,N)。
+</p>
+
+<p>
+定义好了问题以后再看解决方案：
+</p>
+
+<p>
+同一行的会被叫吃，所以每行只能放一个。那就一行一行地放皇后并检查会不会被叫吃。在处理过程中还会遇到第K行的皇后把从1到k-1行的皇后全都叫吃的局面，这时就要放弃这部分操作继续另外一种从1到k-1行皇后的配置方案。
+</p>
+
+<p>
+另外一个方案更加具有函数式风格：
+</p>
+
+<p>
+穷举出所有在N*N棋盘上放k个皇后的方案（0&lt;k&lt;N）。那么每个方案都可以用长度的k的列表表示，为了处理方便顺序要按堆栈的方式把第k行在最顶层，k-1到k行依次向下。所有的堆栈在一起组成了所有解决方案的列表。
+</p>
+
+<p>
+现在我们把在第k+1行放皇后的操作变为对前一个方案多加一个皇后的所有可能的扩展。这会产一个长度为k+1的列表。
+</p>
+
+<p>
+下面的<code>placeQueens</code>函数实现了这一算法：
+</p>
+
+<pre class="brush: scala">
+  def queens(n: Int): List[List[(Int, Int)]] = {
+    def placeQueens(k: Int): List[List[(Int, Int)]] =
+      if (k == 0) 
+        List(List())
+      else 
+        for {
+          queens &lt;- placeQueens(k - 1)
+          column &lt;- 1 to n
+          queen = (k, column)
+          if isSafe(queen, queens) 
+        } yield queen :: queens
+
+    placeQueens(n)
+  }
+</pre>
+
+<p>
+两个生成器：<code>queens &lt;- placeQueens(k - 1)</code>遍历所有行（递归调用），<code>column &lt;- 1 to n</code>遍历所有列。
+</p>
+
+<p>
+过滤器来检查有没有叫吃情况发生。
+</p>
+
+<pre class="brush: scala">
+  def isSafe(queen: (Int, Int), queens: List[(Int, Int)]) = 
+    queens forall (q =&gt; !inCheck(queen, q))
+
+  def inCheck(q1: (Int, Int), q2: (Int, Int)) = 
+    q1._1 == q2._1 ||                          // 同一行
+    q1._2 == q2._2 ||                          // 同一列
+    (q1._1 - q2._1).abs == (q1._2 - q2._2).abs // 对角线
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
 
 </body>
 </html>

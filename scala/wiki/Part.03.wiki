@@ -4,90 +4,90 @@
 
 = 实现列表 =
 
+列表不是Scala语言的内建结构，而是定义在`Scala`包中的`List`抽象类。它有一个子类`::`和一个子对象`Nil`。
+
+== List类实现原理 ==
+
+本节的目的是实现一个简化的List实现：
 
 {{{class="brush: scala"
+  package scala
+  abstract class List[+T] { ... }
 }}}
 
+作为一个抽象类`List`不能用像`new List`这样的空构造器构建。
 
+再来看类型参数`[+T]`表明列表是协变的：
 
 {{{class="brush: scala"
+  scala> val xs = List(1, 2, 3)
+  xs: List[Int] = List(1, 2, 3)
+
+  scala> var ys: List[Any] = xs
+  ys: List[Any] = List(1, 2, 3)
 }}}
 
-
+实现的目标要有以下三个功能：
 
 {{{class="brush: scala"
+    def isEmpty: Boolean
+    def head: T
+    def tail: List[T]
 }}}
 
+这三个方法在`List`类中是抽象的，被定义在`Nil`和`::`中。
 
+=== Nil对象 ===
+
+`Nil`对象继承自`List[Nothing]`，它定义了空列表。因为协变的作为它可以兼容任何类型的`List`实例：
 
 {{{class="brush: scala"
+  case object Nil extends List[Nothing] {
+    override def isEmpty = true
+    def head: Nothing =
+      throw new NoSuchElementException("head of empty list")
+    def tail: List[Nothing] =
+      throw new NoSuchElementException("tail of empty list")
+  }
 }}}
 
+成员方法`head`的实现方法是抛出异常，因为对于成员类型`Nothing`来说，返回结果必须是`Nothing`，而`Nothing`是个根本不存在的类型，所以它无法正常返回结果，只能抛出异常。
 
+=== ::类 ===
+
+`::`类读作“cons”，意思是“构造”，它实现了非空列表。冒号对应中缀模式，会被当作构造器使用：`x :: xs`是对类`::`的构造器调用`::(x, xs)`。
 
 {{{class="brush: scala"
+  final case class ::[T](hd: T, tl: List[T]) extends List[T] {
+    def head = hd
+    def tail = tl
+    override def isEmpty: Boolean = false
+  }
 }}}
 
-
+上面的代码可以简化，直接由参数实现超类`List`的`head`和`tail`方法：
 
 {{{class="brush: scala"
+  final case class ::[T](head: T, tail: List[T])
+      extends List[T] {
+
+    override def isEmpty: Boolean = false
+  }
 }}}
 
-
+=== 其他的类方法 ===
 
 {{{class="brush: scala"
+  def length: Int = 
+    if (isEmpty) 0 else 1 + tail.length
+
+  def drop(n: Int): List[T] = 
+    if (isEmpty) Nil
+    else if (n <= 0) this
+    else tail.drop(n - 1)
+
+  def map[U](f: T => U): List[U] =
+    if (isEmpty) Nil
+    else f(head) :: tail.map(f)
 }}}
-
-
-
-{{{class="brush: scala"
-}}}
-
-
-
-{{{class="brush: scala"
-}}}
-
-
-
-{{{class="brush: scala"
-}}}
-
-
-
-{{{class="brush: scala"
-}}}
-
-
-
-{{{class="brush: scala"
-}}}
-
-
-
-{{{class="brush: scala"
-}}}
-
-
-
-{{{class="brush: scala"
-}}}
-
-
-
-{{{class="brush: scala"
-}}}
-
-
-
-{{{class="brush: scala"
-}}}
-
-
-
-
-
-
-
-
 
