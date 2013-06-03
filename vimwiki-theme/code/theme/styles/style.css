@@ -8,6 +8,7 @@ html {
 }
 body {
     max-width: 1200px;
+    padding: 25px 25px;
     position: relative;
     margin: 40px auto 15px;
     font: 100 14px/1.5 "Trebuchet MS", Helvetica, SimSun, sans-serif;
