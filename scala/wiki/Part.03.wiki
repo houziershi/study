@@ -410,29 +410,91 @@ for表达式的一般形式：
 }}}
 
 
-{{{class="brush: scala"
-}}}
+== 使用for表达式进行查询 ==
 
-
-{{{class="brush: scala"
-}}}
-
+模拟一个查找图书的应用：
 
 {{{class="brush: scala"
+  case class Book(title: String, authors: String*)
+
+  val books: List[Book] =
+    List(
+      Book(
+        "Structure and Interpretation of Computer Programs",
+        "Abelson, Harold", "Sussman, Gerald J."
+      ),
+      Book(
+        "Principles of Compiler Design",
+        "Aho, Alfred", "Ullman, Jeffrey"
+      ),
+      Book(
+        "Programming in Modula-2",
+        "Wirth, Niklaus"
+      ),
+      Book(
+        "Elements of ML Programming",
+        "Ullman, Jeffrey"
+      ),
+      Book(
+        "The Java Language Specification", "Gosling, James",
+        "Joy, Bill", "Steele, Guy", "Bracha, Gilad"
+      )
+    )
 }}}
 
+查找作者姓“Gosling”的书名：
 
 {{{class="brush: scala"
+  scala> for (b <- books; a <- b.authors
+       |      if a startsWith "Gosling")
+       | yield b.title
+  res0: List[String] = List(The Java Language Specification)
 }}}
 
+查找书名含“Program”：
 
 {{{class="brush: scala"
+  scala> for (b <- books if (b.title indexOf "Program") >= 0)
+       | yield b.title
+  res4: List[String] = List(Structure and Interpretation of
+    Computer Programs, Programming in Modula-2, Elements
+      of ML Programming)
 }}}
 
+查找编写了两本书以上的作者：
 
 {{{class="brush: scala"
+  scala> for (b1 <- books; b2 <- books if b1 != b2;
+       |     a1 <- b1.authors; a2 <- b2.authors if a1 == a2)
+       | yield a1
+  res5: List[String] = List(Ullman, Jeffrey, Ullman, Jeffrey)
 }}}
 
+上面的代码有缺陷，同一个作者会出现多次。下面的代码完成去重：
+
+{{{class="brush: scala"
+  scala> def removeDuplicates[A](xs: List[A]): List[A] = {
+       |   if (xs.isEmpty) xs
+       |   else
+       |     xs.head :: removeDuplicates(
+       |       xs.tail filter (x => x != xs.head)
+       |     )
+       | }
+  removeDuplicates: [A](List[A])List[A]
+
+  scala> removeDuplicates(res5)
+  res6: List[java.lang.String] = List(Ullman, Jeffrey)
+}}}
+
+最后一个表达式可以使用for表达式表现为：
+
+{{{class="brush: scala"
+   xs.head :: removeDuplicates(
+     for (x <- xs.tail if x != xs.head) yield x
+   )
+}}}
+
+== for表达式的转译 ==
 
 {{{class="brush: scala"
 }}}
