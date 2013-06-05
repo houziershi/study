@@ -1,10 +1,13 @@
+var hlCodePath = 'hl-code/scripts/';
+var hlCodePath = '../../vimwiki-theme/hightlight-code/scripts/';
+
 function path() {
   var args = arguments,
       result = []
       ;
        
   for(var i = 0; i < args.length; i++)
-      result.push(args[i].replace('@', 'hl-code/scripts/'));
+      result.push(args[i].replace('@', hlCodePath ));
        
   return result
 };
@@ -72,5 +75,6 @@ $(document).ready(function() {
 	//'xml xhtml xslt html    scripts/shBrushXml.js'
 	//);
 	//
+
 	loadCodeHightlight();
 });
