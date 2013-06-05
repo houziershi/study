@@ -1,0 +1,123 @@
+%title Tomcat权威指南
+
+%toc Tomcat权威指南
+
+= Tomcat开幕式 =
+
+== 启动与停止 ==
+
+启动与停止：
+
+{{{class="brush: bash"
+bin/catalina.sh run     // 启动
+bin/catalina.sh start   // 启动，但输出重定向到文件
+bin/startup             // 同上一条
+
+bin/catalina.sh stop    // 停止
+bin/shutdown.sh         // 停止
+}}}
+
+`startup`与`catalina.sh run`会把输入重定向到文件：
+
+`$TOMCAT_HOME/logs/catalina.out`
+
+catalina脚本启动参数
+
+| -config <server.xml file> | 指定`server.xml`配置文件     |
+| -nonaming                 | 禁用JNDI                     |
+| debug                     | 调试模式                     |
+| embedded                  | 在嵌入模式中测试，开发时常用 |
+| jpda start                | JPDA调试器方式启动           |
+
+设置启动参数到全局Java环境变量：
+
+{{{class="brush: bash"
+export JAVA_OPTS="-Xmx256M"
+}}}
+
+其他重要参数：
+
+| CATALINA_HOME   | 静态程序部分         |
+| CATALINA_BASE   | 动态的网站与配置部分 |
+| CATALINA_OPTS   | 传递给Java的参数     |
+| CATALINA_TMPDIR | 临时文件的目录       |
+
+== 重启 ==
+
+要重启时判断什么时候真正被关掉是一个麻烦。`shutdown.sh`以后要查看进程是不是还在。
+
+方法一：java带的命令：
+
+{{{class="brush: bash"
+jps | grep Bootstrap
+}}}
+
+方法二：系统工具；
+
+{{{class="brush: bash"
+ps auwwx | grep catalina.startup.Bootstrap
+}}}
+
+= 配置Tomcat =
+
+== 指定独立网站目录 ==
+
+生成一专门的tomcat用户与用户组：
+
+{{{class="brush: bash"
+sudo grpadd tomcat
+sudo useradd tomcat -g tomcat -d /home/tomcat -s /usr/bin/zsh
+sudo mkdir /home/tomcat
+sudo cp .zshrc /home/tomcat
+sudo cp .vimrc /home/tomcat 
+sudo cp .tmux.conf /home/tomcat 
+sudo chgrp -R tomcat /home/tomcat
+sudo chown -R tomcat /home/tomcat
+}}}
+
+生成目录放所有的网站，下面各个网站再那家独立的目录：
+
+{{{class="brush: bash"
+cd /home/tomcat
+mkdir tomcat-instance
+cd tomcat-instance
+mkdir groovywigs.com
+}}}
+
+网站目录下复制tomcat程序里的`config`目录，还有其他目录：
+
+{{{class="brush: bash"
+cp -a $CATALINA_HOME/conf .
+cp -a $CATALINA_HOME/temp .
+}}}
+
+编辑`conf/server.xml`，设置端口与目录位置：
+
+{{{class="brush: bash"
+<Server port="8007" shutdown="SHUTDOWN">  
+
+<Connector port="8081" protocol="HTTP/1.1"
+	connectionTimeout="20000" redirectPort="8443" />  
+}}}
+
+建立启动脚本`bin/startup.sh`：
+
+{{{class="brush: bash"
+#!/bin/sh
+export CATALINA_BASE=/home/tomcat/tomcat-instance/groovywigs.com              
+$CATALINA_HOME/bin/catalina.sh run   
+}}}
+
+== Java VM配置 ==
+
+| -Xms384M                        |                                       |
+| -XmX384M                        |                                       |
+| -Djava.security.debug=all       | 为安全输出所有调试信息                |
+| -Djava.awt.headless=true        | 允许在没有图形显示安装软件情况下运行  |
+| -Duser.language=en              |                                       |
+| -Dfile.encoding=UTF-8           |                                       |
+| -Djava.net.preferIPv4Stack=true | 使用IPv4而不是IPv6，有些BSD系统上要开 |
+| -enableassertions               | 启用assertion检查                     |
+| -verbose:class                  |                                       |
+| -verbose:gc                     |                                       |
+
