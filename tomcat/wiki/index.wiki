@@ -121,3 +121,117 @@ $CATALINA_HOME/bin/catalina.sh run
 | -verbose:class                  |                                       |
 | -verbose:gc                     |                                       |
 
+打开远程调试：
+
+{{{class="brush: bash"
+JAVA_OPTS="-Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n"
+// 
+}}}
+
+通过JMX实现本地管理与监控：
+
+{{{class="brush: bash"
+CATALINA_OPTS = " - Dcom.sun.management.jmxremote=true \
+	- Dcom.sun.management.jmxremote.ssl = false  \
+	- Dcom.sun.management.jmxremote.authenticate = false"
+}}}
+
+如果要通过远程管理与监控：
+
+{{{class="brush: bash"
+CATALINA_OPTS = " - Dcom.sun.management.jmxremote.port = 8008 \
+	- Dcom.sun.management.jmxremote.ssl = false  \
+	- Dcom.sun.management.jmxremote.authenticate = false \
+	- Dcom.sun.management.jmxremote.password.file=/path/to/pw/file"
+}}}
+
+防止因为服务器没有图形界面而出错：
+
+{{{class="brush: bash"
+-Djava.awt.headless=true
+}}}
+
+指定语言环境信息，可以直接在shell中完成：
+
+{{{class="brush: bash"
+$ LANG=en_US
+$ catalina.sh start
+}}}
+
+== 自动重新部署Servlet ==
+
+开发过程中自动重部署修改过的Servlet是个方便的功能，但生产环境这样就太浪费了。修改对应WebApp`web.xml`文件的`Context`元素中设定`reload-able`属性并重启Tomcat。这样也可以在`Manager`应用程序中手动重载工程。
+
+== Tomcat Admin webapp ==
+
+Tomcat Admin webapp在Tomcat6以后就没有了……
+
+在配置文件`CATALINA_HOME/conf/tomcat-users.xml`中添加`admin`角色,与对应的用户：
+
+{{{class="brush: xml"
+<?xml version='1.0' encoding='utf-8'?>
+<tomcat-users>
+  <role rolename="manager"/>
+  <role rolename="admin"/>
+  <user username="admin" password="admin" roles="manager,admin"/>
+</tomcat-users>
+}}}
+
+管理程序的入口为： http://yourhost:8080/admin/html
+
+
+
+= 部署Java Web应用 =
+
+Tomcat的配置把Web应用称谓`context`。配置在：
+
+`$CATALINA_HOME/conf/[EngineName]/[HostName]`
+
+== 主机 ==
+
+{{{class="brush: bash"
+}}}
+
+
+{{{class="brush: bash"
+}}}
+
+
+{{{class="brush: bash"
+}}}
+
+
+{{{class="brush: bash"
+}}}
+
+
+{{{class="brush: bash"
+}}}
+
+
+{{{class="brush: bash"
+}}}
+
+
+{{{class="brush: bash"
+}}}
+
+
+{{{class="brush: bash"
+}}}
+
+
+{{{class="brush: bash"
+}}}
+
+
+{{{class="brush: bash"
+}}}
+
+
+{{{class="brush: bash"
+}}}
+
+
+{{{class="brush: bash"
+}}}
