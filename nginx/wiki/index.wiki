@@ -222,6 +222,16 @@ http
 
 === 基于IP的虚拟主机 ===
 
+绑定两个IP地址到eth0网卡：
+
+{{{class="brush: bash"
+ifconfig eth0:1 192.168.8.43 broadcast 192.168.8.255 netmask 255.255.255.0 up
+route add -host 192.168.8.43 dev eth0:1
+
+ifconfig eth0:1 192.168.8.44 broadcast 192.168.8.255 netmask 255.255.255.0 up
+route add -host 192.168.8.44 dev eth0:1
+}}}
+
 === 基于子域名的虚拟主机 ===
 
 === 基于端口的虚拟主机 ===
