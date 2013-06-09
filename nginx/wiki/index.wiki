@@ -232,9 +232,117 @@ ifconfig eth0:1 192.168.8.44 broadcast 192.168.8.255 netmask 255.255.255.0 up
 route add -host 192.168.8.44 dev eth0:1
 }}}
 
+现在根据在个IP地址`192.168.8.43-45`三个地址搞三个虚拟主机：
+
+{{{class="brush: bash"
+http
+{
+	server
+	{
+		listen			192.168.8.43:80
+		server_name 192.168.8.43;
+		# log file
+		assess_log	logs/server1.assess.log combined;
+		location /
+		{
+			# default home page
+			index index.html index.htm
+			# root path of web
+			root /data0/htdocs/server1;
+		}
+	}
+	server
+	{
+		listen			192.168.8.44:80
+		server_name 192.168.8.44;
+		# log file
+		assess_log	logs/server2.assess.log combined;
+		location /
+		{
+			# default home page
+			index index.html index.htm
+			# root path of web
+			root /data0/htdocs/server2;
+		}
+	}
+	server
+	{
+		listen			192.168.8.45:80
+		server_name 192.168.8.45;
+		# log file
+		assess_log	logs/server3.assess.log combined;
+		location /
+		{
+			# default home page
+			index index.html index.htm
+			# root path of web
+			root /data0/htdocs/server3;
+		}
+	}
+}
+}}}
+
 === 基于子域名的虚拟主机 ===
 
-=== 基于端口的虚拟主机 ===
+通过dns域名来节约IP地址。现在同一个地址被在个域名映射：
+
+`aaa.domain.com`、`bbb.domain.com`为两个不同的目录，
+
+`www.domain.com`、`*.domain.com`或是`domain.com`都被映射到第三个目录。
+
+{{{class="brush: bash"
+http
+{
+	server
+	{
+		listen			80
+		server_name aaa.domain.com;
+		# log file
+		assess_log	logs/aaa.domain.com.assess.log combined;
+		location /
+		{
+			# default home page
+			index index.html index.htm
+			# root path of web
+			root /data0/htdocs/aaa.domain.com;
+		}
+	}
+	server
+	{
+		listen			80
+		server_name bbb.domain.com;
+		# log file
+		assess_log	logs/bbb.domain.com.assess.log combined;
+		location /
+		{
+			# default home page
+			index index.html index.htm
+			# root path of web
+			root /data0/htdocs/bbb.domain.com;
+		}
+	}
+	server
+	{
+		listen			80
+		server_name www.domain.com domain.com *.domain.com;
+		# log file
+		assess_log	logs/www.domain.com.assess.log combined;
+		location /
+		{
+			# default home page
+			index index.html index.htm
+			# root path of web
+			root /data0/htdocs/ccc.domain.com;
+		}
+	}
+}
+}}}
+
+== 日志文件配置与切割 ==
+
+`log_format`设置日志格式；`access_log`设置存放的位置、格式与缓存大小。
+
+这两条在`http{...}`与`server{...}`块中都可以放置。
 
 {{{class="brush: bash"
 }}}
