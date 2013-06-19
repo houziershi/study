@@ -370,44 +370,45 @@ http
 {
 	server
 	{
-		listen			80
+		listen 80;
 		server_name aaa.domain.com;
 		# log file
-		assess_log	logs/aaa.domain.com.assess.log combined;
+		access_log /var/log/nginx/aaa.domain.com.assess.log combined;
 		location /
 		{
 			# default home page
-			index index.html index.htm
+			index index.html index.htm;
 			# root path of web
 			root /data0/htdocs/aaa.domain.com;
 		}
 	}
 	server
 	{
-		listen			80
+		listen 80;
 		server_name bbb.domain.com;
 		# log file
-		assess_log	logs/bbb.domain.com.assess.log combined;
+		access_log /var/log/nginx/bbb.domain.com.assess.log combined;
 		location /
 		{
 			# default home page
-			index index.html index.htm
+			index index.html index.htm;
 			# root path of web
 			root /data0/htdocs/bbb.domain.com;
 		}
 	}
 	server
 	{
-		listen			80
-		server_name www.domain.com domain.com *.domain.com;
+		listen 80;
+		server_name www.jade-dungon.com;
 		# log file
-		assess_log	logs/www.domain.com.assess.log combined;
+		# assess_log  logs/www.domain.com.assess.log combined;
+		access_log /var/log/nginx/www.jade-dungeon.net.assess.log combined;
 		location /
 		{
 			# default home page
-			index index.html index.htm
+			index index.html index.htm;
 			# root path of web
-			root /data0/htdocs/ccc.domain.com;
+			root /home/tomcat/nginx-instance/www.jade-dungeon.net;
 		}
 	}
 }

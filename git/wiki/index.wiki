@@ -85,7 +85,16 @@ git push
   git remote add origin git@github.com:Jade-Shan/study.git
   git push -u origin master
 }}}
-      
+
+== 导出一个GitHub上已经存在的项目 ==
+
+把本地的项目加到github上的空库中：
+
+{{{class="brush: bash"
+  git remote add origin git@github.com:Jade-Shan/study.git
+  git push -u origin master
+}}}
+
 
 == 导出一个GitHub上已经存在的项目 ==
 
