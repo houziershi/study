@@ -31,23 +31,85 @@
 <li><a href="#toc_1.1">MAC地址</a>
 <li><a href="#toc_1.2">IP地址格式</a>
 <li><a href="#toc_1.3">拆分子网</a>
-<li><a href="#toc_1.4">IP地址的类型 </a>
+<li><a href="#toc_1.4">IP地址的类型</a>
 <li><a href="#toc_1.5">路由</a>
 <li><a href="#toc_1.6">TCP协议</a>
 <li><a href="#toc_1.7">三次握手建立连线</a>
 <li><a href="#toc_1.8">UDP协议</a>
+<li><a href="#toc_1.9">ICMP协议</a>
 </ul>
 <li><a href="#toc_2">网络配置</a>
 <ul>
-<li><a href="#toc_2.1">检查网卡 </a>
+<li><a href="#toc_2.1">检查网卡</a>
 <li><a href="#toc_2.2">网络的启动与关闭</a>
-<li><a href="#toc_2.3">配置主机名 </a>
+<li><a href="#toc_2.3">配置主机名</a>
 <li><a href="#toc_2.4">网卡设定</a>
 <li><a href="#toc_2.5">域名解析</a>
 <li><a href="#toc_2.6">无线网络</a>
-<li><a href="#toc_2.7">查找无线网络</a>
 </ul>
 <li><a href="#toc_3">基本工具</a>
+<ul>
+<li><a href="#toc_3.1">ifconfig</a>
+<ul>
+<li><a href="#toc_3.1.1">观察所有的网络接口</a>
+<li><a href="#toc_3.1.2">给网卡增加地址</a>
+<li><a href="#toc_3.1.3">清除网卡上的设定</a>
+</ul>
+<li><a href="#toc_3.2">route</a>
+<ul>
+<li><a href="#toc_3.2.1">查看路由表</a>
+<li><a href="#toc_3.2.2">增加删除路由规则</a>
+</ul>
+<li><a href="#toc_3.3">ip</a>
+<ul>
+<li><a href="#toc_3.3.1">ip link</a>
+<li><a href="#toc_3.3.2">显示所有网络接口的信息</a>
+<li><a href="#toc_3.3.3">开关指定接口</a>
+<li><a href="#toc_3.3.4">修改網路卡代號、MAC 等參數</a>
+</ul>
+<li><a href="#toc_3.4">ip addr</a>
+<ul>
+<li><a href="#toc_3.4.1">显示所有网络接口的IP</a>
+<li><a href="#toc_3.4.2">增加网络接口</a>
+<li><a href="#toc_3.4.3">删除网络接口</a>
+</ul>
+<li><a href="#toc_3.5">ip route</a>
+<ul>
+<li><a href="#toc_3.5.1">显示所有路由信息</a>
+<li><a href="#toc_3.5.2">增加路由到本地</a>
+<li><a href="#toc_3.5.3">增加可以通往外部的路由</a>
+<li><a href="#toc_3.5.4">增加預設路由</a>
+<li><a href="#toc_3.5.5">刪除路由</a>
+</ul>
+<li><a href="#toc_3.6">通过DHCP取得IP</a>
+<li><a href="#toc_3.7">两部主机连通测试ping</a>
+<ul>
+<li><a href="#toc_3.7.1">检查主机是否存在</a>
+<li><a href="#toc_3.7.2">用ping追蹤路徑中的最大MTU數值</a>
+</ul>
+<li><a href="#toc_3.8">两部主机之间节点分析</a>
+<ul>
+<li><a href="#toc_3.8.1">检查本机到对方各节点的状态</a>
+</ul>
+<li><a href="#toc_3.9">查看网络使用状态</a>
+<ul>
+<li><a href="#toc_3.9.1">列出目前的路由表狀態</a>
+<li><a href="#toc_3.9.2">查看网络连接状态</a>
+<li><a href="#toc_3.9.3">列出启用的网络服务</a>
+<li><a href="#toc_3.9.4">本机上所有网络的连接状态</a>
+</ul>
+<li><a href="#toc_3.10">查看主机名：host</a>
+<li><a href="#toc_3.11">查看主机名：nslookup</a>
+<ul>
+<li><a href="#toc_3.11.1">按域名查IP</a>
+<li><a href="#toc_3.11.2">按IP查域名</a>
+</ul>
+<li><a href="#toc_3.12">抓包工具：tcpdump</a>
+<ul>
+<li><a href="#toc_3.12.1">按IP与端口抓包</a>
+</ul>
+<li><a href="#toc_3.13">启动 TCP/UDP 端口连接： nc</a>
+</ul>
 </ul>
 </div>
 
@@ -56,7 +118,7 @@
 <h2 id="toc_1.1">MAC地址</h2>
 
 <p>
-我们的主机上网路卡可以透过 <code>ifconfig</code>来查询到MAC，如第一个以太网为一般叫作`eth0`：
+我们的主机上网路卡可以透过 <code>ifconfig</code>来查询到MAC，如第一个以太网为一般叫作<code>eth0</code>：
 </p>
 
 <pre class="brush: bash">
@@ -159,7 +221,7 @@ C Class : 110xxxxx.xxxxxxxx.xxxxxxxx.xxxxxxxx ==&gt; NetI_D 的开头是 110
 </pre>
 
 <p>
-A类网中还有一个`127.xxx.xxx.xxx`被操作系统占用作为圆环调用（lookback）。
+A类网中还有一个<code>127.xxx.xxx.xxx</code>被操作系统占用作为圆环调用（lookback）。
 </p>
 
 <p>
@@ -229,7 +291,7 @@ Broadcast2: 11000000.10101000.00000000.11111111 ==&gt; 192.168.0.255
 192.168.0.128/25 或 192.168.0.128/255.255.255.128
 </pre>
 
-<h2 id="toc_1.4">IP地址的类型 </h2>
+<h2 id="toc_1.4">IP地址的类型</h2>
 
 <p>
 在IPv4里面就只有两种IP的类别，分别是：
@@ -287,7 +349,7 @@ C Class:192.168.0.0 - 192.168.255.255
 </p>
 
 <p>
-每个机器都有路由表，可以通过route命令查看。参数`-n`表示以ip地址形式查看：
+每个机器都有路由表，可以通过route命令查看。参数<code>-n</code>表示以ip地址形式查看：
 </p>
 
 <pre class="brush: bash">
@@ -505,9 +567,7 @@ UDP协议中不用进行三次握手验证所以速度快，但可靠性也低�
 </pre>
 
 
-<p>
-ICMP协议
-</p>
+<h2 id="toc_1.9">ICMP协议</h2>
 
 <p>
 ICMP的全称是Internet Control Message Protocol，网际网路讯息控制协定。基本上ICMP是一个错误侦测与回报的机制，最大的功能就是可以确保我们网路的连线状态与连线的正确性。最简单的指令就是ping与traceroute。这两个指令可以透过ICMP封包的辅助来确认与回报网路主机的状态。
@@ -516,20 +576,49 @@ ICMP的全称是Internet Control Message Protocol，网际网路讯息控制协�
 
 <p>
 类别代号对应的名称与意义：
-0 Echo Reply (代表一个回应信息)
-3 Destination Unreachable (表示目的地不可到达)
-4 Source Quench (当 router 的负载过高时,此类别码可用来让发送端停止发送讯息)
-5 Redirect (用来重新导向路由路径的资讯)
-8 Echo Request (请求回应讯息)
-11 Time Exceeded for a Datagram (当资料封包在某些路由传送的现象中造成逾时状态,此类别码可告知来源该封包已被忽略的讯息)
-12 Parameter Problem on a Datagram (当一个 ICMP 封包重复之前的错误时,会回覆来源主机关于参数错误的讯息)
-13 Timestamp Request (要求对方送出时间讯息,用以计算路由时间的差异,以满足同步性协定的要求)
-14 Timestamp Reply (此讯息纯粹是回应 Timestamp Request 用的)
-15 Information Request (在 RARP 协定应用之前,此讯息是用来在开机时取得网路信息)
-16 Information Reply (用以回应 Infromation Request 讯息)
-17 Address Mask Request (这讯息是用来查询子网路 mask 设定信息)
-18 Address Mask Reply (回应子网路 mask 查询讯息的)
 </p>
+
+<ul>
+<li>
+0 Echo Reply (代表一个回应信息)
+
+<li>
+3 Destination Unreachable (表示目的地不可到达)
+
+<li>
+4 Source Quench (当 router 的负载过高时,此类别码可用来让发送端停止发送讯息)
+
+<li>
+5 Redirect (用来重新导向路由路径的资讯)
+
+<li>
+8 Echo Request (请求回应讯息)
+
+<li>
+11 Time Exceeded for a Datagram (当资料封包在某些路由传送的现象中造成逾时状态,此类别码可告知来源该封包已被忽略的讯息)
+
+<li>
+12 Parameter Problem on a Datagram (当一个 ICMP 封包重复之前的错误时,会回覆来源主机关于参数错误的讯息)
+
+<li>
+13 Timestamp Request (要求对方送出时间讯息,用以计算路由时间的差异,以满足同步性协定的要求)
+
+<li>
+14 Timestamp Reply (此讯息纯粹是回应 Timestamp Request 用的)
+
+<li>
+15 Information Request (在 RARP 协定应用之前,此讯息是用来在开机时取得网路信息)
+
+<li>
+16 Information Reply (用以回应 Infromation Request 讯息)
+
+<li>
+17 Address Mask Request (这讯息是用来查询子网路 mask 设定信息)
+
+<li>
+18 Address Mask Reply (回应子网路 mask 查询讯息的)
+
+</ul>
 
 <p>
 在设定防火墙的时候, 我们最容易忽略的就是这个 ICMP 的封包了,因为只会记住TCP/UDP 而已~事实上, ICMP 封包可以帮助连线的状态回报,除了上述的 8 可以考虑关闭之外,基本上, ICMP 封包也不应该全部都挡掉喔!
@@ -537,14 +626,14 @@ ICMP的全称是Internet Control Message Protocol，网际网路讯息控制协�
 
 <h1 id="toc_2">网络配置</h1>
 
-<h2 id="toc_2.1">检查网卡 </h2>
+<h2 id="toc_2.1">检查网卡</h2>
 
 <p>
 检查网卡是否被系统内核检测到：
 </p>
 
 <pre class="brush: bash">
-# dmesg | grep -in eth                                                                                                                                                                                         ──(Tue,Sep11)─┘
+# dmesg | grep -in eth
 ...
 1063:[   17.994372] sky2 0000:86:00.0: eth0: Link is up at 1000 Mbps, full duplex, flow control rx
 1064:[   17.994846] ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
@@ -552,7 +641,7 @@ ICMP的全称是Internet Control Message Protocol，网际网路讯息控制协�
 </pre>
 
 <p>
-可以看到etho对应的模块号“0000:86:00.0”。通过这个号找到网卡对应的相关模块信息：
+可以看到etho对应的模块号<code>0000:86:00.0</code>。通过这个号找到网卡对应的相关模块信息：
 </p>
 
 <pre class="brush: bash">
@@ -585,11 +674,6 @@ debug:3c59x debug level (0-6)
 </pre>
 
 
-
-
-
-
-
 <h2 id="toc_2.2">网络的启动与关闭</h2>
 
 <p>
@@ -597,8 +681,11 @@ debug:3c59x debug level (0-6)
 </p>
 <pre class="brush: bash">
 /etc/init.d/network restart
+</pre>
+<p>
 Debian系：
-{{{class="brush: bash"
+</p>
+<pre class="brush: bash">
 /etc/init.d/networking restart
 </pre>
 
@@ -619,7 +706,7 @@ ifconfig eth0 down
 
 
 
-<h2 id="toc_2.3">配置主机名 </h2>
+<h2 id="toc_2.3">配置主机名</h2>
  
 <pre class="brush: bash">
 /etc/sysconfig/network
@@ -635,7 +722,7 @@ Debian系为：
 
 <h2 id="toc_2.4">网卡设定</h2>
 <p>
-Debian系配置文件为： /etc/network/interfaces                                                                                                                                                     ──(Tue,Sep11)─┘
+Debian系配置文件为： <code>/etc/network/interfaces</code>
 </p>
 
 <p>
@@ -668,7 +755,6 @@ sudo dhclient eth0
 </pre>
 
 
-
 <h2 id="toc_2.5">域名解析</h2>
 
 <p>
@@ -679,12 +765,7 @@ sudo dhclient eth0
 </pre>
 
 <p>
-DNS域名解析：
-</p>
-<pre class="brush: bash">
-/etc/resolv.conf
-</pre>
-<p>
+DNS域名解析： <code>/etc/resolv.conf</code>
 内容形式为：
 </p>
 <pre class="brush: bash">
@@ -696,7 +777,7 @@ nameserver 202.119.230.8
 </p>
             
 <pre class="brush: bash">
-# nslookup www.google.com                                                                                                                                                         ──(Tue,Sep11)─┘
+# nslookup www.google.com
 Server:		127.0.0.1
 Address:	127.0.0.1#53
 
@@ -718,23 +799,18 @@ Address: 74.125.141.99
 
 
 <p>
-TCP/IP服务对应的端口：  
+TCP/IP服务对应的端口：<code>/etc/services</code>
 </p>
-<pre class="brush: bash">
-/etc/services
-</pre>
 
 <p>
-IP封包设定：      
+IP封包设定：<code>/etc/protocols</code>
 </p>
-<pre class="brush: bash">
-/etc/protocols
-</pre>
 
 
 
 
 <h2 id="toc_2.6">无线网络</h2>
+
 <p>
 每一台AP都有一个ESSID/SSID。
 </p>
@@ -743,7 +819,7 @@ IP封包设定：
 查看无线连接信息：  
 </p>
 <pre class="brush: bash">
-# iwconfig                                                                                                                                                                        ──(Tue,Sep11)─┘
+# iwconfig
 lo        no wireless extensions.
 
 wlan0     IEEE 802.11abgn  ESSID:off/any  
@@ -755,10 +831,12 @@ eth0      no wireless extensions.
 </pre>
 
 
-<h2 id="toc_2.7">查找无线网络</h2>
+<p>
+查找无线网络：
+</p>
 
 <pre class="brush: bash">
-# iwlist scanning                                                                                                                                                                 ──(Tue,Sep11)─┘
+# iwlist scanning
 lo        Interface doesn't support scanning.
 
 wlan0     Scan completed :
@@ -854,48 +932,35 @@ eth0      Interface doesn't support scanning.
 
 <h1 id="toc_3">基本工具</h1>
 
-
-
-<ol>
-<li>
-===========================
-
-</ol>
-<p>
-#
-</p>
-<ol>
-<li>
-ifconfig
-
-</ol>
-<p>
-#
-</p>
-<ol>
-<li>
-===========================
-
-</ol>
+<h2 id="toc_3.1">ifconfig</h2>
 
 <p>
 ifconfig 主要是可以手动的启动、观察与修改网络接口的相关参数:
 </p>
 
-<p>
+<pre class="brush: bash">
 [root@www ~]# ifconfig {interface} {up|down} &lt;== 观察与启动接口
 [root@www ~]# ifconfig interface {options}   &lt;== 设定与修改接口
-</p>
+</pre>
 
 <p>
 选项与参数:
-	interface:网络卡接口代号,包括 eth0, eth1, ppp0 等等
-	options :可以接的参数,包括如下:
-	up, down :启动 (up) 或关闭 (down) 该网络接口(不涉及任何参数)
-	mtu :可以设定不同的 MTU 数值,例如 mtu 1500 (单位为 byte)
-	netmask :就是子屏蔽网络;
-	broadcast:就是广播地址啊!
 </p>
+
+<dl>
+<dt>interface </dt>
+<dd>网络卡接口代号,包括 eth0, eth1, ppp0 等等</dd>
+<dt>options </dt>
+<dd>可以接的参数,包括如下:</dd>
+<dt>up / down </dt>
+<dd>启动 (up) 或关闭 (down) 该网络接口(不涉及任何参数)</dd>
+<dt>mtu </dt>
+<dd>可以设定不同的 MTU 数值,例如 mtu 1500 (单位为 byte)</dd>
+<dt>netmask </dt>
+<dd>就是子屏蔽网络;</dd>
+<dt>broadcast </dt>
+<dd>就是广播地址啊!</dd>
+</dl>
 
 <p>
 一般来说, 直接输入 ifconfig 就会列出目前已经被启动的卡,不论这个卡是否有给予都会被显示出来。 
@@ -905,13 +970,13 @@ ifconfig 主要是可以手动的启动、观察与修改网络接口的相关�
 而如果是输入 ifconfig eth0, 则仅会秀出这张接口的相关数据, IP, 而不管该接口是否有启动。
 </p>
 
-<ol>
-<li>
-范例一:观察所有的网络接口(直接输入 ifconfig)
-
-</ol>
+<h3 id="toc_3.1.1">观察所有的网络接口</h3>
 
 <p>
+直接输入<code>ifconfig</code>：
+</p>
+
+<pre class="brush: bash">
 [root@www ~]# ifconfig eth0
 Link encap:Ethernet HWaddr 08:00:27:71:85:BD
 inet addr:192.168.1.100 Bcast:192.168.1.255 Mask:255.255.255.0
@@ -921,93 +986,126 @@ RX packets:2555 errors:0 dropped:0 overruns:0 frame:0
 TX packets:70 errors:0 dropped:0 overruns:0 carrier:0 
 collisions:0 txqueuelen:1000
 RX bytes:239892 (234.2 KiB) TX bytes:11153 (10.8 KiB)
-</p>
+</pre>
 
 <p>
 各参数的意义：
-	eth0:就是网络卡的代号,也有 lo 这个 loopback ;
-	HWaddr:就是网络卡的硬件地址,俗称的 MAC 是也;
-	inet addr:IPv4 的 IP 地址,
-		后续的 Bcast, Mask 分别代表的是Broadcast 与 netmask
-	inet6 addr:是 IPv6 的版本的 IP ,我们没有使用,所以略过;
-	MTU:就是第二章谈到的 MTU 啊!
-	RX:那一行代表的是网络由启动到目前为止的封包接收情况, 
-		packets 代表封包数、
-		errors 代表封包发生错误的数量、 
-		dropped 代表封包由于有问题而遭丢弃的数量等等
-	TX:与 RX 相反,为网络由启动到目前为止的传送情况;
-	collisions:代表封包碰撞的情况,如果发生太多次, 表示你的网络状况不太好;
-	txqueuelen:代表用来传输数据的缓冲区的储存长度;
-	RX bytes, TX bytes:总接收、发送字节总量
 </p>
+<ul>
+<li>
+eth0:就是网络卡的代号,也有 lo 这个 loopback ;
 
+<li>
+hWaddr:就是网络卡的硬件地址,俗称的 MAC 是也;
+
+<li>
+inet addr:IPv4 的 IP 地址,
+
+<ul>
+<li>
+后续的 Bcast, Mask 分别代表的是Broadcast 与 netmask
+
+</ul>
+<li>
+inet6 addr:是 IPv6 的版本的 IP ,我们没有使用,所以略过;
+
+<li>
+mTU:就是第二章谈到的 MTU 啊!
+
+<li>
+rX:那一行代表的是网络由启动到目前为止的封包接收情况, 
+
+<ul>
+<li>
+packets 代表封包数、
+
+<li>
+errors 代表封包发生错误的数量、 
+
+<li>
+dropped 代表封包由于有问题而遭丢弃的数量等等
+
+</ul>
+<li>
+tX:与 RX 相反,为网络由启动到目前为止的传送情况;
+
+<li>
+collisions:代表封包碰撞的情况,如果发生太多次, 表示你的网络状况不太好;
+
+<li>
+txqueuelen:代表用来传输数据的缓冲区的储存长度;
+
+<li>
+rX bytes, TX bytes:总接收、发送字节总量
+
+</ul>
+
+<h3 id="toc_3.1.2">给网卡增加地址</h3>
 
 <p>
-范例二:暂时修改网络接口,给予 eth0 一个 192.168.100.100/24 的参数
+暂时修改网络接口,给予 eth0 一个<code>192.168.100.100/24</code>的参数
+</p>
+
+<p>
 如果不加任何其他参数,则系统会依照该 IP 所在的 class 范围,自动的 计算出netmask 以及 network, broadcast 等 IP 参数,
 </p>
 
-<p>
+<pre class="brush: bash">
 [root@www ~]# ifconfig eth0 192.168.100.100
-</p>
+</pre>
 
 <p>
 若想改其他参数则:
 </p>
 
 <p>
+设定不同参数的网络接口,同时设定 MTU 的数值：
+</p>
+
+<pre class="brush: bash">
 [root@www ~]# ifconfig eth0 192.168.100.100 netmask 255.255.255.128 mtu 8000
-</p>
-<ol>
-<li>
-设定不同参数的网络接口,同时设定 MTU 的数值!
-
-</ol>
+</pre>
 
 <p>
-[root@www ~]# ifconfig eth0 mtu 9000
-</p>
-<ol>
-<li>
 仅修改该接口的 MTU 数值,其他的保持不动!
-
-</ol>
-
-<p>
-[root@www ~]# ifconfig eth0:0 192.168.50.50
 </p>
-<ol>
-<li>
-仔细看那个界面是 eth0:0 那就是在该实体网卡上,再仿真一个网络接口, 即是在一张网络卡上面设定多个 IP。 
-
-</ol>
+ 
+<pre class="brush: bash">
+[root@www ~]# ifconfig eth0 mtu 9000
+</pre>
 
 <p>
+张网络卡上面设定多个 IP：
+</p>
+
+<pre class="brush: bash">
+[root@www ~]# ifconfig eth0:0 192.168.50.50
+</pre>
+
+<p>
+仔细看那个界面是 eth0:0 那就是在该实体网卡上,再仿真一个网络接口, 即是在一张网络卡上面设定多个 IP。 
+</p>
+
+<pre class="brush: bash">
 [root@www ~]# ifconfig
 eth0   Link encap:Ethernet HWaddr 08:00:27:71:85:BD
-</p>
-<blockquote>
-inet addr:192.168.100.100 Bcast:192.168.100.127
-Mask:255.255.255.128
-inet6 addr: fe80::a00:27ff:fe71:85bd/64 Scope:Link
-UP BROADCAST RUNNING MULTICAST MTU:9000 Metric:1
-RX packets:2555 errors:0 dropped:0 overruns:0 frame:0
-TX packets:70 errors:0 dropped:0 overruns:0 carrier:0
-collisions:0 txqueuelen:1000
-RX bytes:239892 (234.2 KiB) TX bytes:11153 (10.8 KiB)
-</blockquote>
+       inet addr:192.168.100.100 Bcast:192.168.100.127
+       Mask:255.255.255.128
+       inet6 addr: fe80::a00:27ff:fe71:85bd/64 Scope:Link
+       UP BROADCAST RUNNING MULTICAST MTU:9000 Metric:1
+       RX packets:2555 errors:0 dropped:0 overruns:0 frame:0
+       TX packets:70 errors:0 dropped:0 overruns:0 carrier:0
+       collisions:0 txqueuelen:1000
+       RX bytes:239892 (234.2 KiB) TX bytes:11153 (10.8 KiB)
 
-<p>
 eth0:0 Link encap:Ethernet HWaddr 08:00:27:71:85:BD
-</p>
-<blockquote>
-inet addr:192.168.50.50 Bcast:192.168.50.255
-Mask:255.255.255.0
-UP BROADCAST RUNNING MULTICAST MTU:9000 Metric:1
-</blockquote>
+       inet addr:192.168.50.50 Bcast:192.168.50.255
+       Mask:255.255.255.0
+       UP BROADCAST RUNNING MULTICAST MTU:9000 Metric:1
+</pre>
 
 <p>
-与硬件有关的信息都相同，因为是同一张网卡。
+从上面的结果中可以看到与硬件有关的信息都相同，因为是同一张网卡。
 </p>
 
 <p>
@@ -1015,32 +1113,32 @@ UP BROADCAST RUNNING MULTICAST MTU:9000 Metric:1
 </p>
 
 <p>
-[root@www ~]# ifconfig eth0:0 down
-</p>
-<ol>
-<li>
 关掉 eth0:0 这个界面。
-
-</ol>
+</p>
+<pre class="brush: bash">
+[root@www ~]# ifconfig eth0:0 down
+</pre>
 
 <p>
-那如果想用默认值启动 eth1: ifconfig eth1 up 即可达成
+那如果想用默认值启动eth1: <code>ifconfig eth1 up</code>
 </p>
 
-<p>
-范例三:将手动的处理全部取消,使用原有的设定值重建网络参数:
-</p>
+<h3 id="toc_3.1.3">清除网卡上的设定</h3>
 
 <p>
+将手动的处理全部取消,使用原有的设定值重建网络参数:
+</p>
+
+<pre class="brush: bash">
 [root@www ~]# /etc/init.d/network restart
-</p>
+</pre>
 
 <p>
 这样刚刚设定的数据全部失效,会以 ifcfg-ethX 的设定为主!
 </p>
 
 <p>
-可以利用 /etc/init.d/network restart 来重新启动整个网络接口,那么之前手动的设定数据会全部失效。
+可以利用<code>/etc/init.d/network restart</code>来重新启动整个网络接口,那么之前手动的设定数据会全部失效。
 </p>
 
 <p>
@@ -1048,66 +1146,53 @@ UP BROADCAST RUNNING MULTICAST MTU:9000 Metric:1
 </p>
 
 
-
-
-<ol>
-<li>
-===========================
-
-</ol>
-<p>
-#
-</p>
-<ol>
-<li>
-route
-
-</ol>
-<p>
-#
-</p>
-<ol>
-<li>
-===========================
-
-</ol>
+<h2 id="toc_3.2">route</h2>
 
 <p>
 只要有网络接口, 接口就会产生一个路由, 所以主机有一个 eth0 的接口, 看起来就会是这样:
 </p>
 
-<p>
+<pre class="brush: bash">
 [root@www ~]# route [-nee]
 [root@www ~]# route add [-net|-host] [网域或主机] netmask [mask] [gw|dev]
 [root@www ~]# route del [-net|-host] [网域或主机] netmask [mask] [gw|dev]
-</p>
+</pre>
 
 <p>
 参数说明:
 </p>
 
-<p>
-	-n :不要使用通讯协议或主机名,直接使用 IP 或 port number;
-	-ee :使用更详细的信息来显示
-</p>
+<dl>
+<dt>-n </dt>
+<dd>不要使用通讯协议或主机名,直接使用 IP 或 port number;</dd>
+<dt>-ee </dt>
+<dd>使用更详细的信息来显示</dd>
+</dl>
 
 <p>
 增加 (add) 与删除 (del) 路由的相关参数:
 </p>
 
-<p>
-	-net :表示后面接的路由为一个网域;
-	-host :表示后面接的为连接到单部主机的路由;
-	netmask :与网域有关,可以设定 netmask 决定网域的大小;
-	gw :gateway 的简写,后续接的是 IP 的数值喔,与 dev 不同;
-	dev :如果只是要指定由那一块网络卡联机出去,则使用这个设定, 后面接 eth0 等
-</p>
+<dl>
+<dt>-net </dt>
+<dd>表示后面接的路由为一个网域;</dd>
+<dt>-host </dt>
+<dd>表示后面接的为连接到单部主机的路由;</dd>
+<dt>netmask </dt>
+<dd>与网域有关,可以设定 netmask 决定网域的大小;</dd>
+<dt>gw </dt>
+<dd>gateway 的简写,后续接的是 IP 的数值喔,与 dev 不同;</dd>
+<dt>dev </dt>
+<dd>如果只是要指定由那一块网络卡联机出去,则使用这个设定, 后面接 eth0 等</dd>
+</dl>
+
+<h3 id="toc_3.2.1">查看路由表</h3>
 
 <p>
-范例一:单纯的观察路由状态
+单纯的观察路由状态：
 </p>
 
-<p>
+<pre class="brush: bash">
 ┌─(morgan@morgan-laptop:pts/3)────────────────────────(~/workspace/study/net)─┐
 └─(130:19:40:%)── route                                         ──(Wed,Sep12)─┘
 Kernel IP routing table
@@ -1115,9 +1200,9 @@ Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 default         192.168.1.1     0.0.0.0         UG    0      0        0 wlan0
 link-local      *               255.255.0.0     U     1000   0        0 wlan0
 192.168.1.0     *               255.255.255.0   U     2      0        0 wlan0
-</p>
+</pre>
 
-<p>
+<pre class="brush: bash">
 ┌─(morgan@morgan-laptop:pts/3)────────────────────────(~/workspace/study/net)─┐
 └─(19:40:%)── route -n                                          ──(Wed,Sep12)─┘
 Kernel IP routing table
@@ -1125,43 +1210,73 @@ Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 0.0.0.0         192.168.1.1     0.0.0.0         UG    0      0        0 wlan0
 169.254.0.0     0.0.0.0         255.255.0.0     U     1000   0        0 wlan0
 192.168.1.0     0.0.0.0         255.255.255.0   U     2      0        0 wlan0
-</p>
+</pre>
 
 <p>
-不加-n会去查主机名。有加 -n 参数的主要是显示出 IP，所以加了-n能省去了查IP的时间。
+不加<code>-n</code>会去查主机名。有加<code>-n</code>参数的主要是显示出IP，所以加了<code>-n</code>能省去了查IP的时间。
 </p>
 
 <p>
 从上面也可以知道 default = 0.0.0.0/0.0.0.0
 </p>
 
+<dl>
+<dt>Destination与Genmask </dt>
+<dd>这两个玩意儿就是分别是 network 与 netmask。所以这两个就组合成为一个完整的网域!</dd>
+<dt>Gateway </dt>
+<dd>该网域是通过哪个 gateway 连接出去的?如果显示 0.0.0.0 表示该路由是直接由本机传送,亦即可以透过局域网络的 MAC 直接传讯;如果有显示 IP 的话,表示该路由需要经过路由器 (通讯闸) 的帮忙才能够传送出去。</dd>
+<dt>Flags </dt>
+<dd>总共有多个旗标,代表的意义如下: </dd>
+</dl>
+<ul>
+<li>
+U (route is up):该路由是启动的;
+
+<li>
+H (target is a host):目标是一部主机 (IP) 而非网域;
+
+<li>
+G (use gateway):需要透过外部的主机 (gateway) 来转递封包;
+
+<li>
+R (reinstate route for dynamic routing):使用动态路由时,恢复路由信息的旗标;
+
+<li>
+D (dynamically installed by daemon or redirect):已经由服务或转 port 功能设定为动态路由
+
+<li>
+M (modified from routing daemon or redirect):路由已经被修改了;
+
+<li>
+! (reject route): 这个路由将不会被接受(用来抵挡不安全的网域!)
+
+</ul>
+<dl>
+<dt>Iface </dt>
+<dd>这个路由传递封包的接口。</dd>
+</dl>
+
 <p>
-Destination, Genmask:这两个玩意儿就是分别是 network 与 netmask 啦!  所以这两个就组合成为一个完整的网域!
-Gateway:该网域是通过哪个 gateway 连接出去的?如果显示 0.0.0.0 表示该路由是直接由本机传送,亦即可以透过局域网络的 MAC 直接传讯;如果有显示 IP 的话,表示该路由需要经过路由器 (通讯闸) 的帮忙才能够传送出去。
-Flags:总共有多个旗标,代表的意义如下: 
-	U (route is up):该路由是启动的;
-	H (target is a host):目标是一部主机 (IP) 而非网域;
-	G (use gateway):需要透过外部的主机 (gateway) 来转递封包;
-	R (reinstate route for dynamic routing):使用动态路由时,恢复路由信息的旗标;
-	D (dynamically installed by daemon or redirect):已经由服务或转 port 功能设定为动态路由
-	M (modified from routing daemon or redirect):路由已经被修改了;
-	! (reject route): 这个路由将不会被接受(用来抵挡不安全的网域!)
-Iface:这个路由传递封包的接口。
+此外,观察一下上面的路由排列顺序喔,依序是由小网域 (<code>192.168.1.0/24</code>是Class C),逐渐到大网域 (<code>169.254.0.0/16</code>是Class B) 最后则是预设路由 (<code>0.0.0.0/0.0.0.0</code>)。 然后当我们要判断某个网络封包应该如何传送的时候,该封包会经由这个路由的过程来判断喔! 
+举例来说,我上头仅有三个路由,若我有一个传往<code>192.168.1.20</code>的封包要传递, 那首先会找<code>192.168.1.0/24</code>这个网域的路由, 找到了! 所以直接由<code>eth0</code>传送出去;
 </p>
 
 <p>
-此外,观察一下上面的路由排列顺序喔,依序是由小网域 (192.168.1.0/24 是 Class C),逐渐到大网域 (169.254.0.0/16 Class B) 最后则是预设路由 (0.0.0.0/0.0.0.0)。 然后当我们要判断某个网络封包应该如何传送的时候,该封包会经由这个路由的过程来判断喔! 
+如果是传送到 Yahoo 的主机呢? Yahoo的主机IP是<code>119.160.246.241</code>, 我们通过判断： 
 </p>
+<ol>
+<li>
+不是 192.168.1.0/24 
+
+<li>
+不是 169.254.0.0/16 
+
+<li>
+到达0.0.0.0/0时,OK!  传出去了,把封包传给一条的网关192.168.1.1主机
+
+</ol>
 
 <p>
-举例来说,我上头仅有三个路由,若我有一个传往 192.168.1.20 的封包要传递, 那首先会找 192.168.1.0/24 这个网域的路由, 找到了! 所以直接由 eth0 传送出去;
-</p>
-
-<p>
-如果是传送到 Yahoo 的主机呢? Yahoo 的主机 IP 是 119.160.246.241, 我们通过判断 
-1)不是 192.168.1.0/24 
-2)不是 169.254.0.0/16 
-3)到达0.0.0.0/0时,OK!  传出去了,把封包传给一条的网关192.168.1.1主机
 所以说,路由是有顺序的。
 </p>
 
@@ -1169,617 +1284,523 @@ Iface:这个路由传递封包的接口。
 因此当你重复设定多个同样的路由时, 例如在你的主机上的两张网络卡设定为相同网域的 IP 时,会出现如下的情况:
 </p>
 
-<p>
+<pre class="brush: bash">
 ┌─(morgan@morgan-laptop:pts/3)────────────────────────(~/workspace/study/net)─┐
 └─(19:40:%)── route -n                                          ──(Wed,Sep12)─┘
 Kernel IP routing table
 Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 192.168.1.0     0.0.0.0         255.255.255.0   U     2      0        0 eth0 
 192.168.1.0     0.0.0.0         255.255.255.0   U     2      0        0 eth1
-</p>
+</pre>
 
 <p>
 也就是说, 由于路由是依照顺序来排列与传送的, 所以不论封包是由那个界面 (eth0, eth1) 所接收,都会由上述的 eth0 传送出去, 所以,在一部主机上面设定两个相同 网域的 IP 本身没有什么意义!有点多此一举就是了。 除非是类似虚拟机 (Xen, VMware 等软件) 所架设的多主机时,才会有这个必要。
 </p>
 
-<ol>
-<li>
-范例二:路由的增加与删除
+<h3 id="toc_3.2.2">增加删除路由规则</h3>
 
-</ol>
-
-<p>
+<pre class="brush: bash">
 [root@www ~]# route del -net 169.254.0.0 netmask 255.255.0.0 dev eth0
-</p>
+</pre>
 
 <p>
-上面这个动作可以删除掉 169.254.0.0/16 这个网域。请注意,在删除的时候,需要将路由表上面出现的信息都写入包括 netmask , dev 等等参数。
+上面这个动作可以删除掉<code>169.254.0.0/16</code>这个网域。请注意,在删除的时候,需要将路由表上面出现的信息都写入包括<code>netmask</code>,<code>dev</code>等等参数。
 </p>
 
-<p>
+<pre class="brush: bash">
 [root@www ~]# route add -net 192.168.100.0 netmask 255.255.255.0 dev eth0
-</p>
+</pre>
 
 <p>
-透过 route add 来增加一个路由!请注意,这个路由的设定必须要能够与你的网络互通。举例来说,如果我下达底下的指令就会显示错误:
+透过<code>route add</code>来增加一个路由!请注意,这个路由的设定必须要能够与你的网络互通。举例来说,如果我下达底下的指令就会显示错误:
 </p>
 
-<p>
+<pre class="brush: bash">
 route add -net 192.168.200.0 netmask 255.255.255.0 gw 192.168.200.254
+</pre>
+
+<p>
+因为我的主机内仅有<code>192.168.1.11</code>这个IP,所以不能直接与<code>192.168.200.254</code>这个网段直接使用MAC互通。
 </p>
 
 <p>
-因为我的主机内仅有 192.168.1.11 这个 IP ,所以不能直接与 192.168.200.254这个网段直接使用 MAC 互通。
+增加预设路由的方法：
 </p>
 
-<p>
+<pre class="brush: bash">
 [root@www ~]# route add default gw 192.168.1.250
-增加预设路由的方法!请注意,只要有一个预设路由就够了喔!
-同样的,那个 192.168.1.250 的 IP 也需要能与你的 LAN 沟通才行!
-在这个地方如果你随便设定后,记得使用底下的指令重新设定你的网络
-/etc/init.d/network restart
-</p>
+</pre>
 
 <p>
-其实,使用 man route里面的数据就很丰富了!仔细查阅一下啰! 你只要记得,当出现『SIOCADDRT: Network is unreachable』 这个错误时,肯定是由于 gw 后面接的 IP 无法直接与你的网域沟通 (Gateway 并不在你的网域内), 所以,赶紧检查一下是否输入错误啊!
+请注意,只要有一个预设路由就够了喔!  同样的,那个<code>192.168.1.250</code>的IP也需要能与你的 LAN 沟通才行!在这个地方如果你随便设定后,记得使用底下的指令重新设定你的网络：
+</p>
+
+<pre class="brush: bash">
+/etc/init.d/network restart
+</pre>
+
+<p>
+其实,使用<code>man route</code>里面的数据就很丰富了!仔细查阅一下啰! 你只要记得,当出现<code>SIOCADDRT: Network is unreachable</code>这个错误时,肯定是由于gw后面接的 IP 无法直接与你的网域沟通 (Gateway 并不在你的网域内), 所以,赶紧检查一下是否输入错误啊!
 </p>
 
 <p>
 Tips:
-一般来说,鸟哥如果接触到一个新的环境内的主机,在不想要更动
-原系统的配置文件情况下,然后预计使用本书的网络环境设定时,
-手动的处理就变成:『ifconfig eth0 192.168.1.100; route add
-default gw 192.168.1.254』这样就搞定了! 直接联网与测试。等
-到完成测试后,
-再给她 /etc/init.d/network restart 恢复原系统
-的网络即可
-</p>
-
-
-
-
-<ol>
-<li>
-===========================
-
-</ol>
-<p>
-#
-</p>
-<ol>
-<li>
-ip
-
-</ol>
-<p>
-#
-</p>
-<ol>
-<li>
-===========================
-
-</ol>
-
-<p>
-ip 是個指令喔！並不是那個 TCP/IP 的 IP 啦！這個 ip 指令的功能可多了！基本上，他就是整合了 ifconfig 與 route 這兩個指令囉～不過， ip 可以達成的功能卻又多更多！真是個相當厲害的指令。如果你有興趣的話，請自行 vi /sbin/ifup ，就知道整個 ifup 就是利用 ip 這個指令來達成的。好了，如何使用呢？讓我們來瞧一瞧先！
 </p>
 
 <p>
+一般来说,鸟哥如果接触到一个新的环境内的主机,在不想要更动原系统的配置文件情况下,然后预计使用本书的网络环境设定时,手动的处理就变成:
+</p>
+
+<pre class="brush: bash">
+ifconfig eth0 192.168.1.100; route add
+default gw 192.168.1.254
+</pre>
+
+<p>
+这样就搞定了! 直接联网与测试。等到完成测试后,再给：
+</p>
+
+<pre class="brush: bash">
+/etc/init.d/network restart 
+</pre>
+
+<p>
+恢复原系统的网络即可
+</p>
+
+<h2 id="toc_3.3">ip</h2>
+
+<p>
+ip 是個指令喔！並不是那個 TCP/IP 的 IP 啦！這個 ip 指令的功能可多了！基本上，他就是整合了<code>ifconfig</code>與<code>route</code>這兩個指令囉～不過， ip 可以達成的功能卻又多更多！真是個相當厲害的指令。如果你有興趣的話，請自行<code>vi /sbin/ifup</code>，就知道整個<code>ifup</code>就是利用 ip 這個指令來達成的。好了，如何使用呢？讓我們來瞧一瞧先！
+</p>
+
+<pre class="brush: bash">
 [root@www ~]# ip [option] [動作] [指令]
-</p>
+</pre>
 
 <p>
 選項與參數：
 </p>
 
-<p>
-option ：設定的參數，主要有：
-</p>
-<blockquote>
--s ：顯示出該裝置的統計數據(statistics)，例如總接受封包數等；
-</blockquote>
+<ul>
+<li>
+<code>option</code>是設定的參數，主要是<code>-s</code>顯示出該裝置的統計數據(statistics)，例如總接受封包數等；
 
-<p>
+<li>
 動作：亦即是可以針對哪些網路參數進行動作，包括有：
-</p>
-<blockquote>
-link  ：關於裝置 (device) 的相關設定，包括 MTU, MAC 位址等等
-addr/address ：關於額外的 IP 協定，例如多 IP 的達成等等；
-route ：與路由有關的相關設定
-</blockquote>
+
+<ul>
+<li>
+<code>link</code>  關於裝置 (device) 的相關設定，包括 MTU, MAC 位址等等
+
+<li>
+<code>addr</code>/<code>address</code> 關於額外的 IP 協定，例如多 IP 的達成等等；
+
+<li>
+<code>route</code> 與路由有關的相關設定
+
+</ul>
+</ul>
 
 <p>
 底下我們就分三個部分 (link, addr, route) 來介紹這個 ip 指令吧！
 </p>
 
 
-<ol>
-<li>
-===========================
-
-</ol>
-<p>
-#
-</p>
-<ol>
-<li>
-ip link
-
-</ol>
-<p>
-#
-</p>
-<ol>
-<li>
-===========================
-
-</ol>
+<h3 id="toc_3.3.1">ip link</h3>
 
 <p>
-關於裝置介面 (device) 的相關設定： ip link
+關於裝置介面 (device) 的相關設定：<code>ip link</code>
 </p>
 
 <p>
-ip link 可以設定與裝置 (device) 有關的相關參數，包括 MTU 以及該網路介面的 MAC 等等，當然也可以啟動 (up) 或關閉 (down) 某個網路介面啦！整個語法是這樣的：
+<code>ip link</code>可以設定與裝置 (device) 有關的相關參數，包括 MTU 以及該網路介面的 MAC 等等，當然也可以啟動 (up) 或關閉 (down) 某個網路介面啦！整個語法是這樣的：
 </p>
 
-<p>
+<pre class="brush: bash">
 [root@www ~]# ip [-s] link show  &lt;== 單純的查閱該裝置相關的資訊
 [root@www ~]# ip link set [device] [動作與參數]
+</pre>
+
+<p>
 選項與參數：
-show：僅顯示出這個裝置的相關內容，如果加上 -s 會顯示更多統計數據；
-set ：可以開始設定項目， device 指的是 eth0, eth1 等等介面代號；
-動作與參數：包括有底下的這些動作：
-   up|down  ：啟動 (up) 或關閉 (down) 某個介面，其他參數使用預設的乙太網路；
-   address  ：如果這個裝置可以更改 MAC 的話，用這個參數修改！
-   name     ：給予這個裝置一個特殊的名字；
-   mtu      ：就是最大傳輸單元啊！
 </p>
 
-<ol>
-<li>
-範例一：顯示出所有的介面資訊
+<dl>
+<dt>show </dt>
+<dd>僅顯示出這個裝置的相關內容，如果加上 -s 會顯示更多統計數據；</dd>
+<dt>set </dt>
+<dd>可以開始設定項目， device 指的是 eth0, eth1 等等介面代號；</dd>
+</dl>
 
-</ol>
 <p>
+動作與參數：包括有底下的這些動作：
+</p>
+
+<dl>
+<dt>up|down </dt>
+<dd>啟動 (up) 或關閉 (down) 某個介面，其他參數使用預設的乙太網路；</dd>
+<dt>address </dt>
+<dd>如果這個裝置可以更改 MAC 的話，用這個參數修改！</dd>
+<dt>name </dt>
+<dd>給予這個裝置一個特殊的名字；</dd>
+<dt>mtu </dt>
+<dd>就是最大傳輸單元啊！</dd>
+</dl>
+
+<h3 id="toc_3.3.2">显示所有网络接口的信息</h3>
+
+<pre class="brush: bash">
 [root@www ~]# ip link show
 1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 16436 qdisc noqueue state UNKNOWN
-</p>
-<blockquote>
-link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
-</blockquote>
-<p>
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
 2: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast state UP qlen 1000
-</p>
-<blockquote>
-link/ether 08:00:27:71:85:bd brd ff:ff:ff:ff:ff:ff
-</blockquote>
-<p>
+    link/ether 08:00:27:71:85:bd brd ff:ff:ff:ff:ff:ff
 3: eth1: &lt;BROADCAST,MULTICAST&gt; mtu 1500 qdisc noop state DOWN qlen 1000
-</p>
-<blockquote>
-link/ether 08:00:27:2a:30:14 brd ff:ff:ff:ff:ff:ff
-</blockquote>
-<p>
+    link/ether 08:00:27:2a:30:14 brd ff:ff:ff:ff:ff:ff
 4: sit0: &lt;NOARP&gt; mtu 1480 qdisc noop state DOWN
-</p>
-<blockquote>
-link/sit 0.0.0.0 brd 0.0.0.0
-</blockquote>
+    link/sit 0.0.0.0 brd 0.0.0.0
+</pre>
 
-<p>
+<pre class="brush: bash">
 [root@www ~]# ip -s link show eth0
 2: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast state UP qlen 1000
-</p>
-<blockquote>
-link/ether 08:00:27:71:85:bd brd ff:ff:ff:ff:ff:ff
-RX: bytes  packets  errors  dropped overrun mcast
-314685     3354     0       0       0       0
-TX: bytes  packets  errors  dropped carrier collsns
-27200      199      0       0       0       0
-</blockquote>
+    link/ether 08:00:27:71:85:bd brd ff:ff:ff:ff:ff:ff
+    RX: bytes  packets  errors  dropped overrun mcast
+    314685     3354     0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    27200      199      0       0       0       0
+</pre>
 
 <p>
 使用 ip link show 可以顯示出整個裝置介面的硬體相關資訊，如上所示，包括網卡位址(MAC)、MTU等等， 比較有趣的應該是那個 sit0 的介面了，那個 sit0 的介面是用在 IPv4 及 IPv6 的封包轉換上的， 對於我們僅使用 IPv4 的網路是沒有作用的。 lo 及 sit0 都是主機內部所自行設定的。 而如果加上 -s 的參數後，則這個網路卡的相關統計資訊就會被列出來， 包括接收 (RX) 及傳送 (TX) 的封包數量等等，詳細的內容與 ifconfig 所輸出的結果相同的。
 </p>
 
-<ol>
-<li>
-範例二：啟動、關閉與設定裝置的相關資訊
+<h3 id="toc_3.3.3">开关指定接口</h3>
 
-</ol>
 <p>
-[root@www ~]# ip link set eth0 up
-</p>
-<ol>
-<li>
 啟動 eth0 這個裝置介面；
-
-</ol>
+</p>
+ 
+<pre class="brush: bash">
+[root@www ~]# ip link set eth0 up
+</pre>
 
 <p>
-[root@www ~]# ip link set eth0 down
-</p>
-<ol>
-<li>
 阿就關閉啊！簡單的要命～
+</p>
 
-</ol>
+<pre class="brush: bash">
+[root@www ~]# ip link set eth0 down
+</pre>
 
 <p>
-[root@www ~]# ip link set eth0 mtu 1000
-</p>
-<ol>
-<li>
 更改 MTU 的值，達到 1000 bytes，單位就是 bytes 啊！
+</p>
 
-</ol>
+<pre class="brush: bash">
+[root@www ~]# ip link set eth0 mtu 1000
+</pre>
 
 <p>
 更新網路卡的 MTU 使用 ifconfig 也可以達成啊！沒啥了不起，不過，如果是要更改『網路卡代號、 MAC 位址的資訊』的話，那可就得使用 ip 囉～不過，設定前可能得要先關閉該網路卡，否則會不成功。 如下所示：
 </p>
 
-<ol>
-<li>
-範例三：修改網路卡代號、MAC 等參數
+<h3 id="toc_3.3.4">修改網路卡代號、MAC 等參數</h3>
 
-</ol>
 <p>
+因為該裝置目前是啟動的，所以不能這樣做設定：
+</p>
+
+<pre class="brush: bash">
 [root@www ~]# ip link set eth0 name vbird
 SIOCSIFNAME: Device or resource busy
-</p>
-<ol>
-<li>
-因為該裝置目前是啟動的，所以不能這樣做設定。你應該要這樣做：
-
-</ol>
+</pre>
 
 <p>
+你應該要這樣做：
+</p>
+
+<pre class="brush: bash">
 [root@www ~]# ip link set eth0 down       &lt;==關閉介面
 [root@www ~]# ip link set eth0 name vbird &lt;==重新設定
 [root@www ~]# ip link show                &lt;==觀察一下
 2: vbird: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast state UP qlen 1000
-</p>
-<blockquote>
-link/ether 08:00:27:71:85:bd brd ff:ff:ff:ff:ff:ff
-</blockquote>
-<ol>
-<li>
+    link/ether 08:00:27:71:85:bd brd ff:ff:ff:ff:ff:ff
+</pre>
+<p>
 怕了吧！連網路卡代號都可以改變！不過，玩玩後記得改回來啊！
-
-<li>
-因為我們的 ifcfg-eth0 還是使用原本的裝置代號！避免有問題，要改回來
-
-</ol>
-
-<p>
-[root@www ~]# ip link set vbird name eth0 &lt;==介面改回來
 </p>
 
 <p>
+因為我們的 ifcfg-eth0 還是使用原本的裝置代號！避免有問題，要改回來
+</p>
+
+<pre class="brush: bash">
+[root@www ~]# ip link set vbird name eth0 &lt;==介面改回來
+
 [root@www ~]# ip link set eth0 address aa:aa:aa:aa:aa:aa
 [root@www ~]# ip link show eth0
+</pre>
+
+<p>
+如果你的網路卡支援硬體位址(MAC)可以更改的話，上面這個動作就可以更改你的網路卡位址了！厲害吧！不過，還是那句老話，測試完之後請立刻改回來啊！
 </p>
-<ol>
-<li>
-如果你的網路卡支援硬體位址(MAC)可以更改的話，上面這個動作就可以更改
-
-<li>
-你的網路卡位址了！厲害吧！不過，還是那句老話，測試完之後請立刻改回來啊！
-
-</ol>
 
 <p>
 在這個裝置的硬體相關資訊設定上面，包括 MTU, MAC 以及傳輸的模式等等，都可以在這裡設定。 有趣的是那個 address 的項目，那個項目後面接的可是硬體位址 (MAC) 而不是 IP 喔！ 很容易搞錯啊！切記切記！更多的硬體參數可以使用 man ip 查閱一下與 ip link 有關的設定。
 </p>
 
 
+<h2 id="toc_3.4">ip addr</h2>
 
-
-<ol>
-<li>
-===========================
-
-</ol>
-<p>
-#
-</p>
-<ol>
-<li>
-ip addr
-
-</ol>
-<p>
-#
-</p>
-<ol>
-<li>
-===========================
-
-</ol>
+<pre class="brush: bash">
+[root@www ~]# ip address show   &lt;==就是查閱 IP 參數啊！
+</pre>
 
 <p>
 如果說 ip link 是與 OSI 七層協定 的第二層資料連階層有關的話，那麼 ip address (ip addr) 就是與第三層網路層有關的參數啦！ 主要是在設定與 IP 有關的各項參數，包括 netmask, broadcast 等等。
 </p>
 
-<p>
-[root@www ~]# ip address show   &lt;==就是查閱 IP 參數啊！
-</p>
-
-<p>
+<pre class="brush: bash">
 [root@www ~]# ip address [add|del] [IP參數] [dev 裝置名] [相關參數]
+</pre>
+
+<p>
 選項與參數：
-show    ：單純的顯示出介面的 IP 資訊啊；
-add|del ：進行相關參數的增加 (add) 或刪除 (del) 設定，主要有：
 </p>
-<blockquote>
-IP 參數：主要就是網域的設定，例如 192.168.100.100/24 之類的設定喔；
-dev    ：這個 IP 參數所要設定的介面，例如 eth0, eth1 等等；
+
+<ul>
+<li>
+show：單純的顯示出介面的 IP 資訊啊；
+
+<li>
+add|del：進行相關參數的增加 (add) 或刪除 (del) 設定，主要有：
+
+<ul>
+<li>
+IP參數：主要就是網域的設定，例如 192.168.100.100/24 之類的設定喔；
+
+<li>
+dev：這個 IP 參數所要設定的介面，例如 eth0, eth1 等等；
+
+<li>
 相關參數：主要有底下這些：
+
+<ul>
+<li>
 broadcast：設定廣播位址，如果設定值是 + 表示『讓系統自動計算』
-label    ：亦即是這個裝置的別名，例如 eth0:0 就是了！
-scope    ：這個介面的領域，通常是這幾個大類：
-global ：允許來自所有來源的連線；
-site   ：僅支援 IPv6 ，僅允許本主機的連線；
-link   ：僅允許本裝置自我連線；
-host   ：僅允許本主機內部的連線；
-所以當然是使用 global 囉！預設也是 global 啦！
-</blockquote>
 
-<p>
-範例一：顯示出所有的介面之 IP 參數：
-</p>
+<li>
+label：亦即是這個裝置的別名，例如 eth0:0 就是了！
 
-<p>
+<li>
+scope：這個介面的領域，通常是這幾個大類：
+
+<ul>
+<li>
+global：允許來自所有來源的連線，所以預設也是 global；
+
+<li>
+site：僅支援 IPv6 ，僅允許本主機的連線；
+
+<li>
+link：僅允許本裝置自我連線；
+
+<li>
+host：僅允許本主機內部的連線；
+
+</ul>
+</ul>
+</ul>
+</ul>
+
+<h3 id="toc_3.4.1">显示所有网络接口的IP</h3>
+
+<pre class="brush: bash">
 [root@www ~]# ip address show
 1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 16436 qdisc noqueue state UNKNOWN
-</p>
-<blockquote>
-link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
-inet 127.0.0.1/8 scope host lo
-inet6 ::1/128 scope host
-valid_lft forever preferred_lft forever
-</blockquote>
-<p>
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+    inet6 ::1/128 scope host
+       valid_lft forever preferred_lft forever
 2: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast state UP qlen 1000
-</p>
-<blockquote>
-link/ether 08:00:27:71:85:bd brd ff:ff:ff:ff:ff:ff
-inet 192.168.1.100/24 brd 192.168.1.255 scope global eth0
-inet6 fe80::a00:27ff:fe71:85bd/64 scope link
-valid_lft forever preferred_lft forever
-</blockquote>
-<p>
+    link/ether 08:00:27:71:85:bd brd ff:ff:ff:ff:ff:ff
+    inet 192.168.1.100/24 brd 192.168.1.255 scope global eth0
+    inet6 fe80::a00:27ff:fe71:85bd/64 scope link
+       valid_lft forever preferred_lft forever
 3: eth1: &lt;BROADCAST,MULTICAST&gt; mtu 1500 qdisc noop state DOWN qlen 1000
-</p>
-<blockquote>
-link/ether 08:00:27:2a:30:14 brd ff:ff:ff:ff:ff:ff
-</blockquote>
-<p>
+    link/ether 08:00:27:2a:30:14 brd ff:ff:ff:ff:ff:ff
 4: sit0: &lt;NOARP&gt; mtu 1480 qdisc noop state DOWN
-</p>
-<blockquote>
-link/sit 0.0.0.0 brd 0.0.0.0
-</blockquote>
+    link/sit 0.0.0.0 brd 0.0.0.0
+</pre>
 
 <p>
 看到上面那個
 </p>
-<blockquote>
-inet 192.168.1.100/24 brd 192.168.1.255 scope global eth0
-</blockquote>
+
+<pre class="brush: bash">
+    inet 192.168.1.100/24 brd 192.168.1.255 scope global eth0
+</pre>
+
 <p>
 沒錯！那就是 IP 參數啦！也是 ip address 最主要的功能。 底下我們進一步來新增虛擬的網路介面試看看：
 </p>
 
-<p>
-範例二：新增一個介面，名稱假設為 eth0:vbird 
-</p>
+<h3 id="toc_3.4.2">增加网络接口</h3>
 
 <p>
+新增一個介面，名稱假設為<code>eth0:vbird</code>
+</p>
+
+<pre class="brush: bash">
 [root@www ~]# ip address add 192.168.50.50/24 broadcast + \
 &gt; dev eth0 label eth0:vbird
 [root@www ~]# ip address show eth0
 2: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast state UP qlen 1000
-</p>
-<blockquote>
-link/ether 08:00:27:71:85:bd brd ff:ff:ff:ff:ff:ff
-inet 192.168.1.100/24 brd 192.168.1.255 scope global eth0
-inet 192.168.50.50/24 brd 192.168.50.255 scope global eth0:vbird
-inet6 fe80::a00:27ff:fe71:85bd/64 scope link
-valid_lft forever preferred_lft forever
-</blockquote>
+    link/ether 08:00:27:71:85:bd brd ff:ff:ff:ff:ff:ff
+    inet 192.168.1.100/24 brd 192.168.1.255 scope global eth0
+    inet 192.168.50.50/24 brd 192.168.50.255 scope global eth0:vbird
+    inet6 fe80::a00:27ff:fe71:85bd/64 scope link
+       valid_lft forever preferred_lft forever
+</pre>
 
 <p>
-看到上面的
-这一行了吧？多出了一行新的介面，且名稱是 eth0:vbird
-至於那個 broadcast + 也可以寫成 broadcast 192.168.50.255 啦！
+看到上面的这一行了吧？多出了一行新的介面，且名稱是<code>eth0:vbird</code>
+至於那個<code>broadcast +</code>也可以寫成<code>broadcast 192.168.50.255</code>啦！
 </p>
 
-<p>
+<pre class="brush: bash">
 [root@www ~]# ifconfig
 eth0:vbird Link encap:Ethernet  HWaddr 08:00:27:71:85:BD
-</p>
-<blockquote>
-inet addr:192.168.50.50  Bcast:192.168.50.255  Mask:255.255.255.0
-UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-</blockquote>
+          inet addr:192.168.50.50  Bcast:192.168.50.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+</pre>
 
 <p>
-如果使用 ifconfig 就能夠看到這個怪東西了！可愛吧！ <sup><small>_</small></sup>
+如果使用<code>ifconfig</code>就能夠看到這個怪東西了！可愛吧！ <sup><small>_</small></sup>
 </p>
 
-<ol>
-<li>
-範例三：將剛剛的介面刪除 
+<h3 id="toc_3.4.3">删除网络接口</h3>
 
-</ol>
 <p>
+刪除就比較簡單啊！
+</p>
+
+<pre class="brush: bash">
 [root@www ~]# ip address del 192.168.50.50/24 dev eth0
-</p>
-<ol>
-<li>
-刪除就比較簡單啊！ <sup><small>_</small></sup>
+</pre>
 
-</ol>
+<h2 id="toc_3.5">ip route</h2>
 
-
-
-
-<ol>
-<li>
-===========================
-
-</ol>
-<p>
-#
-</p>
-<ol>
-<li>
-ip route
-
-</ol>
-<p>
-#
-</p>
-<ol>
-<li>
-===========================
-
-</ol>
-
-<p>
+<pre class="brush: bash">
 [root@www ~]# ip route show  &lt;==單純的顯示出路由的設定而已
 [root@www ~]# ip route [add|del] [IP或網域] [via gateway] [dev 裝置]
-選項與參數：
-show ：單純的顯示出路由表，也可以使用 list ；
-add|del ：增加 (add) 或刪除 (del) 路由的意思。
-</p>
-<blockquote>
-IP或網域：可使用 192.168.50.0/24 之類的網域或者是單純的 IP ；
-via     ：從那個 gateway 出去，不一定需要；
-dev     ：由那個裝置連出去，這就需要了！
-mtu     ：可以額外的設定 MTU 的數值喔！
-</blockquote>
+</pre>
 
-<ol>
-<li>
-範例一：顯示出目前的路由資料
-
-</ol>
 <p>
+選項與參數：
+</p>
+
+<ul>
+<li>
+show ：單純的顯示出路由表，也可以使用 list ；
+
+<li>
+add|del ：增加 (add) 或刪除 (del) 路由的意思。
+
+<ul>
+<li>
+IP或網域：可使用 192.168.50.0/24 之類的網域或者是單純的 IP ；
+
+<li>
+via     ：從那個 gateway 出去，不一定需要；
+
+<li>
+dev     ：由那個裝置連出去，這就需要了！
+
+<li>
+mtu     ：可以額外的設定 MTU 的數值喔！
+
+</ul>
+</ul>
+
+<h3 id="toc_3.5.1">显示所有路由信息</h3>
+
+<pre class="brush: bash">
 [root@www ~]# ip route show
 192.168.1.0/24 dev eth0  proto kernel  scope link  src 192.168.1.100
 169.254.0.0/16 dev eth0  scope link  metric 1002
 default via 192.168.1.254 dev eth0
-</p>
+</pre>
 
 <p>
 如上表所示，最簡單的功能就是顯示出目前的路由資訊，其實跟 route 這個指令相同啦！ 指示必須要注意幾個小東西：
 </p>
-<blockquote>
-proto：此路由的路由協定，主要有 redirect, kernel, boot, static, ra 等， 其中 kernel 指的是直接由核心判斷自動設定。
-scope：路由的範圍，主要是 link ，亦即是與本裝置有關的直接連線。
-</blockquote>
 
-<ol>
-<li>
-範例二：增加路由，主要是本機直接可溝通的網域
+<dl>
+<dt>proto </dt>
+<dd>此路由的路由協定，主要有 redirect, kernel, boot, static, ra 等， 其中 kernel 指的是直接由核心判斷自動設定。</dd>
+<dt>scope </dt>
+<dd>路由的範圍，主要是 link ，亦即是與本裝置有關的直接連線。</dd>
+</dl>
 
-</ol>
+<h3 id="toc_3.5.2">增加路由到本地</h3>
+
 <p>
-[root@www ~]# ip route add 192.168.5.0/24 dev eth0
+增加路由，主要是本機直接可溝通的網域。針對本機直接溝通的網域設定好路由，不需要透過外部的路由器
 </p>
-<ol>
-<li>
-針對本機直接溝通的網域設定好路由，不需要透過外部的路由器
 
-</ol>
-<p>
+<pre class="brush: bash">
+[root@www ~]# ip route add 192.168.5.0/24 dev eth0
+
 [root@www ~]# ip route show
 192.168.5.0/24 dev eth0  scope link
 ....(以下省略)....
+</pre>
+
+<h3 id="toc_3.5.3">增加可以通往外部的路由</h3>
+
+<p>
+需透過 router 喔！
 </p>
 
-<ol>
-<li>
-範例三：增加可以通往外部的路由，需透過 router 喔！
-
-</ol>
-<p>
+<pre class="brush: bash">
 [root@www ~]# ip route add 192.168.10.0/24 via 192.168.5.100 dev eth0
 [root@www ~]# ip route show
 192.168.5.0/24 dev eth0  scope link
 ....(其他省略)....
 192.168.10.0/24 via 192.168.5.100 dev eth0
-</p>
-<ol>
-<li>
+</pre>
+
+<p>
 仔細看喔，因為我有 192.168.5.0/24 的路由存在 (我的網卡直接聯繫)，
-
-<li>
 所以才可以將 192.168.10.0/24 的路由丟給 192.168.5.100 
-
-<li>
 那部主機來幫忙傳遞喔！與之前提到的 route 指令是一樣的限制！
-
-</ol>
-
-<ol>
-<li>
-範例四：增加預設路由
-
-</ol>
-<p>
-[root@www ~]# ip route add default via 192.168.1.254 dev eth0
 </p>
-<ol>
-<li>
-那個 192.168.1.254 就是我的預設路由器 (gateway) 的意思啊！ <sup><small>_</small></sup>
 
-<li>
-真的記得，只要一個預設路由就 OK ！
+<h3 id="toc_3.5.4">增加預設路由</h3>
 
-</ol>
-
-<ol>
-<li>
-範例五：刪除路由
-
-</ol>
+<pre class="brush: bash">
+[root@www ~]# ip route add default via 192.168.1.254 dev eth0
+</pre>
 <p>
+那個 192.168.1.254 就是我的預設路由器 (gateway) 的意思啊！只要一個預設路由就 OK ！
+</p>
+
+<h3 id="toc_3.5.5">刪除路由</h3>
+
+<pre class="brush: bash">
 [root@www ~]# ip route del 192.168.10.0/24
 [root@www ~]# ip route del 192.168.5.0/24
-</p>
+</pre>
 
 
+<h2 id="toc_3.6">通过DHCP取得IP</h2>
 
-
-<ol>
-<li>
-===========================
-
-</ol>
-<p>
-#
-</p>
-<ol>
-<li>
-手动使用DHCP
-
-</ol>
-<p>
-#
-</p>
-<ol>
-<li>
-===========================
-
-</ol>
-
-<p>
+<pre class="brush: bash">
 [root@www ~]# dhclient eth0
-</p>
+</pre>
 
 <p>
 夠簡單吧！這樣就可以立刻叫我們的網路卡以 dhcp 協定去嘗試取得 IP 喔！
@@ -1787,91 +1808,95 @@ scope：路由的範圍，主要是 link ，亦即是與本裝置有關的直接
 
 
 
+<h2 id="toc_3.7">两部主机连通测试ping</h2>
 
-<ol>
-<li>
-===========================
-
-</ol>
-<p>
-#
-</p>
-<ol>
-<li>
-两部主机连通测试 ping
-
-</ol>
-<p>
-#
-</p>
-<ol>
-<li>
-===========================
-
-</ol>
-
-<p>
+<pre class="brush: bash">
 [root@www ~]# ping [選項與參數] IP
+</pre>
+
+<p>
 選項與參數：
--c 數值：後面接的是執行 ping 的次數，例如 -c 5 ；
--n     ：在輸出資料時不進行 IP 與主機名稱的反查，直接使用 IP 輸出(速度較快)；
--s 數值：發送出去的 ICMP 封包大小，預設為 56bytes，不過你可以放大此一數值；
--t 數值：TTL 的數值，預設是 255，每經過一個節點就會少一；
--W 數值：等待回應對方主機的秒數。
--M [do|dont] ：主要在偵測網路的 MTU 數值大小，兩個常見的項目是：
-   do  ：代表傳送一個 DF (Don't Fragment) 旗標，讓封包不能重新拆包與打包；
-   dont：代表不要傳送 DF 旗標，表示封包可以在其他主機上拆包與打包
 </p>
 
-<ol>
+<ul>
 <li>
-範例一：偵測一下 168.95.1.1 這部 DNS 主機是否存在？
+-c 數值：後面接的是執行 ping 的次數，例如 -c 5 ；
 
-</ol>
+<li>
+-n     ：在輸出資料時不進行 IP 與主機名稱的反查，直接使用 IP 輸出(速度較快)；
+
+<li>
+-s 數值：發送出去的 ICMP 封包大小，預設為 56bytes，不過你可以放大此一數值；
+
+<li>
+-t 數值：TTL 的數值，預設是 255，每經過一個節點就會少一；
+
+<li>
+-W 數值：等待回應對方主機的秒數。
+
+<li>
+-M [do|dont] ：主要在偵測網路的 MTU 數值大小，兩個常見的項目是：
+
+<ul>
+<li>
+do  ：代表傳送一個 DF (Don't Fragment) 旗標，讓封包不能重新拆包與打包；
+
+<li>
+dont：代表不要傳送 DF 旗標，表示封包可以在其他主機上拆包與打包
+
+</ul>
+</ul>
+
+<h3 id="toc_3.7.1">检查主机是否存在</h3>
+
 <p>
+偵測一下 168.95.1.1 這部 DNS 主機是否存在？
+</p>
+
+<pre class="brush: bash">
 [root@www ~]# ping -c 3 168.95.1.1
 PING 168.95.1.1 (168.95.1.1) 56(84) bytes of data.
 64 bytes from 168.95.1.1: icmp_seq=1 ttl=245 time=15.4 ms
 64 bytes from 168.95.1.1: icmp_seq=2 ttl=245 time=10.0 ms
 64 bytes from 168.95.1.1: icmp_seq=3 ttl=245 time=10.2 ms
-</p>
 
-<p>
 --- 168.95.1.1 ping statistics ---
 3 packets transmitted, 3 received, 0% packet loss, time 2047ms
 rtt min/avg/max/mdev = 10.056/11.910/15.453/2.506 ms
-</p>
+</pre>
 
 <p>
 ping 最簡單的功能就是傳送 ICMP 封包去要求對方主機回應是否存在於網路環境中，上面的回應訊息當中，幾個重要的項目是這樣的：
 </p>
-<blockquote>
+
+<ul>
+<li>
 64 bytes：表示這次傳送的 ICMP 封包大小為 64 bytes 這麼大，這是預設值， 在某些特殊場合中，例如要搜索整個網路內最大的 MTU 時，可以使用 -s 2000 之類的數值來取代；
-</blockquote>
-<blockquote>
+
+<li>
 icmp_seq=1：ICMP 所偵測進行的次數，第一次編號為 1 ；
-</blockquote>
-<blockquote>
+
+<li>
 ttl=243：TTL 與 IP 封包內的 TTL 是相同的，每經過一個帶有 MAC 的節點 (node) 時，例如 router, bridge 時， TTL 就會減少一，預設的 TTL 為 255 ， 你可以透過 -t 150 之類的方法來重新設定預設 TTL 數值；
-</blockquote>
-<blockquote>
+
+<li>
 time=15.4 ms：回應時間，單位有 ms(0.001秒)及 us(0.000001秒)， 一般來說，越小的回應時間，表示兩部主機之間的網路連線越良好！
-</blockquote>
+
+</ul>
 
 <p>
 特別注意一下，如果你的主機與待偵測主機並不在同一個網域內， 那麼 TTL 預設使用 255 ，如果是同一個網域內，那麼 TTL 預設則使用 64 喔！
 </p>
 
-
-
 <p>
-例題：
-寫一支腳本程式 ping.sh ，透過這支腳本程式，你可以用 ping 偵測整個網域的主機是否有回應。此外，每部主機的偵測僅等待一秒鐘，也僅偵測一次。
-答：
-由於僅偵測一次且等待一秒，因此 ping 的選項為： -W1 -c1 ，而位於本機所在的區網為 192.168.1.0/24 ，所以可以這樣寫 (vim /root/bin/ping.sh)：
+例題： 寫一支腳本程式 ping.sh ，透過這支腳本程式，你可以用 ping 偵測整個網域的主機是否有回應。此外，每部主機的偵測僅等待一秒鐘，也僅偵測一次。
 </p>
 
 <p>
+答： 由於僅偵測一次且等待一秒，因此 ping 的選項為： -W1 -c1 ，而位於本機所在的區網為 192.168.1.0/24 ，所以可以這樣寫 (vim /root/bin/ping.sh)：
+</p>
+
+<pre class="brush: bash">
 #!/bin/bash
 for siteip in $(seq 1 254)
 do
@@ -1883,14 +1908,10 @@ do
 		echo "$site is DOWN"
 	fi
 done
-</p>
+</pre>
 
 
-
-
-<p>
-用 ping 追蹤路徑中的最大 MTU 數值
-</p>
+<h3 id="toc_3.7.2">用ping追蹤路徑中的最大MTU數值</h3>
 
 <p>
 我們由第二章的網路基礎裡面談到加大訊框 (frame) 時， 對於網路效能是有幫助的，因為封包打包的次數會減少，加上如果整個傳輸的媒體都能夠接受這個 frame 而不需要重新進行封包的拆解與重組的話，那麼效能當然會更好，那個修改 frame 大小的參數就是 MTU 啦！
@@ -1900,35 +1921,28 @@ done
 好了，現在我們知道網路卡的 MTU 修改可以透過 ifconfig 或者是 ip 等指令來達成，那麼追蹤整個網路傳輸的最大 MTU 時，又該如何查詢？呵呵！最簡單的方法當然是透過 ping 傳送一個大封包， 並且不許中繼的路由器或 switch 將該封包重組，那就能夠處理啦！沒錯！可以這樣的：
 </p>
 
-<ol>
-<li>
-範例二：找出最大的 MTU 數值
-
-</ol>
 <p>
+找出最大的 MTU 數值
+</p>
+
+<pre class="brush: bash">
 [root@www ~]# ping -c 2 -s 1000 -M do 192.168.1.254
 PING 192.168.1.254 (192.168.1.254) 1000(1028) bytes of data.
 1008 bytes from 192.168.1.254: icmp_seq=1 ttl=64 time=0.311 ms
-</p>
-<ol>
-<li>
-如果有回應，那就是可以接受這個封包，如果無回應，那就表示這個 MTU 太大了。
-
-</ol>
+</pre>
 
 <p>
+如果有回應，那就是可以接受這個封包，如果無回應，那就表示這個 MTU 太大了。
+</p>
+
+<pre class="brush: bash">
 [root@www ~]# ping -c 2 -s 8000 -M do 192.168.1.254
 PING 192.168.1.254 (192.168.1.254) 8000(8028) bytes of data.
 From 192.168.1.100 icmp_seq=1 Frag needed and DF set (mtu = 1500)
+</pre>
+<p>
+這個錯誤訊息是說，本地端的 MTU 才到 1500 而已，你要偵測 8000 的 MTU 根本就是無法達成的！那要如何是好？用前一小節介紹的<code>ip link</code>來進行 MTU 設定吧！
 </p>
-<ol>
-<li>
-這個錯誤訊息是說，本地端的 MTU 才到 1500 而已，你要偵測 8000 的 MTU
-
-<li>
-根本就是無法達成的！那要如何是好？用前一小節介紹的 ip link 來進行 MTU 設定吧！
-
-</ol>
 
 <p>
 不過，你需要知道的是，由於 IP 封包表頭 (不含 options) 就已經佔用了 20 bytes ，再加上 ICMP 的表頭有 8 bytes ，所以當然你在使用 -s size 的時候，那個封包的大小就得要先扣除 (20+8=28) 的大小了。 因此如果要使用 MTU 為 1500 時，就得要下達『 ping -s 1472 -M do xx.yy.zz.ip 』才行啊！
@@ -1941,81 +1955,122 @@ From 192.168.1.100 icmp_seq=1 Frag needed and DF set (mtu = 1500)
 <p>
 不過這個 MTU 不要隨便調整啊！除非真的有問題。通常調整 MTU 的時間是在這個時候：
 </p>
-<blockquote>
-因為全部的主機群都是在內部的區網，例如叢集架構 (cluster) 的環境下， 由於內部的網路節點都是我們可以控制的，因此可以透過修改 MTU 來增進網路效能；
-因為作業系統預設的 MTU 與你的網域不符，導致某些網站可以順利連線，某些網站則無法連線。 以 Windows 作業系統作為連線分享的主機時，在 Client 端挺容易發生這個問題；
-</blockquote>
 
+<p>
+因為全部的主機群都是在內部的區網，例如叢集架構 (cluster) 的環境下， 由於內部的網路節點都是我們可以控制的，因此可以透過修改 MTU 來增進網路效能；
+</p>
+
+<p>
+因為作業系統預設的 MTU 與你的網域不符，導致某些網站可以順利連線，某些網站則無法連線。 以 Windows 作業系統作為連線分享的主機時，在 Client 端挺容易發生這個問題；
+</p>
 
 <p>
 如果是要連上 Internet 的主機，注意不要隨便調整 MTU ，因為我們無法知道 Internet 上面的每部機器能夠支援的 MTU 到多大，因為......不是我們能夠管的到的嘛 <sup><small>_</small></sup>！ 另外，其實每種連線方式都有不同的 MTU 值，常見的各種介面的 MTU 值分別為︰
 </p>
 
+<table>
+<tr>
+<td>
+網路介面
+</td>
+<td>
+MTU
+</td>
+</tr>
+<tr>
+<td>
+Ethernet
+</td>
+<td>
+1500
+</td>
+</tr>
+<tr>
+<td>
+PPPoE
+</td>
+<td>
+1492
+</td>
+</tr>
+<tr>
+<td>
+Dial-up(Modem)
+</td>
+<td>
+576
+</td>
+</tr>
+</table>
+
+
+<h2 id="toc_3.8">两部主机之间节点分析</h2>
+
 <p>
-網路介面		MTU
-Ethernet		1500
-PPPoE			1492
-Dial-up(Modem)	576
-</p>
-
-
-
-
-
-
-
-
-<ol>
-<li>
-===========================
-
-</ol>
-<p>
-#
-</p>
-<ol>
-<li>
 两部主机之间节点的分析： traceroute
-
-</ol>
-<p>
-#
-</p>
-<ol>
-<li>
-===========================
-
-</ol>
-
-<p>
-我們前面談到的指令大多數都是針對主機的網路參數設定所需要的，而 ping 是兩部主機之間的回聲與否判斷， 那麼有沒有指令可以追蹤兩部主機之間通過的各個節點 (node) 通訊狀況的好壞呢？舉例來說，如果我們連線到 yahoo 的速度比平常慢，你覺得是 (1)自己的網路環境有問題？ (2)還是外部的 Internet 有問題？如果是 (1) 的話，我們當然需要檢查自己的網路環境啊，看看是否又有誰中毒了？但如果是 Internet 的問題呢？那只有『等等等』啊！ 判斷是 (1) 還是 (2) 就得要使用 traceroute 這個指令啦！
 </p>
 
 <p>
+我們前面談到的指令大多數都是針對主機的網路參數設定所需要的，而 ping 是兩部主機之間的回聲與否判斷， 那麼有沒有指令可以追蹤兩部主機之間通過的各個節點 (node) 通訊狀況的好壞呢？
+</p>
+
+<p>
+舉例來說，如果我們連線到 yahoo 的速度比平常慢，你覺得是：
+</p>
+
+<p>
+(1)自己的網路環境有問題？ 
+</p>
+
+<p>
+(2)還是外部的 Internet 有問題？
+</p>
+
+<p>
+如果是 (1) 的話，我們當然需要檢查自己的網路環境啊，看看是否又有誰中毒了？但如果是 Internet 的問題呢？那只有『等等等』啊！ 判斷是 (1) 還是 (2) 就得要使用 traceroute 這個指令啦！
+</p>
+
+<pre class="brush: bash">
 [root@www ~]# traceroute [選項與參數] IP
+</pre>
+
+<p>
 選項與參數：
--n ：可以不必進行主機的名稱解析，單純用 IP ，速度較快！
--U ：使用 UDP 的 port 33434 來進行偵測，這是預設的偵測協定；
--I ：使用 ICMP 的方式來進行偵測；
--T ：使用 TCP 來進行偵測，一般使用 port 80 測試
--w ：若對方主機在幾秒鐘內沒有回聲就宣告不治...預設是 5 秒
--p 埠號：若不想使用 UDP 與 TCP 的預設埠號來偵測，可在此改變埠號。
--i 裝置：用在比較複雜的環境，如果你的網路介面很多很複雜時，才會用到這個參數；
-</p>
-<blockquote>
-舉例來說，你有兩條 ADSL 可以連接到外部，那你的主機會有兩個 ppp，
-你可以使用 -i 來選擇是 ppp0 還是 ppp1 啦！
-</blockquote>
-<p>
--g 路由：與 -i 的參數相仿，只是 -g 後面接的是 gateway 的 IP 就是了。
 </p>
 
-<ol>
+<ul>
 <li>
-範例一：偵測本機到 yahoo 去的各節點連線狀態
+-n ：可以不必進行主機的名稱解析，單純用 IP ，速度較快！
 
-</ol>
+<li>
+-U ：使用 UDP 的 port 33434 來進行偵測，這是預設的偵測協定；
+
+<li>
+-I ：使用 ICMP 的方式來進行偵測；
+
+<li>
+-T ：使用 TCP 來進行偵測，一般使用 port 80 測試
+
+<li>
+-w ：若對方主機在幾秒鐘內沒有回聲就宣告不治...預設是 5 秒
+
+<li>
+-p 埠號：若不想使用 UDP 與 TCP 的預設埠號來偵測，可在此改變埠號。
+
+<li>
+-i 裝置：用在比較複雜的環境，如果你的網路介面很多很複雜時，才會用到這個參數； 舉例來說，你有兩條 ADSL 可以連接到外部，那你的主機會有兩個 ppp，你可以使用<code>-i</code>來選擇是 ppp0 還是 ppp1 啦！
+
+<li>
+-g 路由：與 -i 的參數相仿，只是 -g 後面接的是 gateway 的 IP 就是了。
+
+</ul>
+
+<h3 id="toc_3.8.1">检查本机到对方各节点的状态</h3>
+
 <p>
+ 範例一：偵測本機到 yahoo 去的各節點連線狀態
+</p>
+<pre class="brush: bash">
 [root@www ~]# traceroute -n tw.yahoo.com
 traceroute to tw.yahoo.com (119.160.246.241), 30 hops max, 40 byte packets
  1  192.168.1.254  0.279 ms  0.156 ms  0.169 ms
@@ -2030,7 +2085,7 @@ traceroute to tw.yahoo.com (119.160.246.241), 30 hops max, 40 byte packets
 10  * * *
 11  119.160.240.1  10.688 ms  10.590 ms 119.160.240.3  10.047 ms
 12  * * * &lt;==可能有防火牆裝置等情況發生所致
-</p>
+</pre>
 
 <p>
 這個 traceroute 挺有意思的，這個指令會針對欲連接的目的地之所有 node 進行 UDP 的逾時等待， 例如上面的例子當中，由鳥哥的主機連接到 Yahoo 時，他會經過 12 個節點以上，traceroute 會主動的對這 12 個節點做 UDP 的回聲等待，並偵測回覆的時間，每節點偵測三次，最終回傳像上頭顯示的結果。 你可以發現每個節點其實回覆的時間大約在 50 ms 以內，算是還可以的 Internet 環境了。
@@ -2044,47 +2099,26 @@ traceroute to tw.yahoo.com (119.160.246.241), 30 hops max, 40 byte packets
 由於目前 UDP/ICMP 的攻擊層出不窮，因此很多路由器可能就此取消這兩個封包的回應功能。所以我們可以使用 TCP 來偵測呦！ 例如使用同樣的方法，透過等待時間 1 秒，以及 TCP 80 埠口的情況下，可以這樣做：
 </p>
 
-<p>
+<pre class="brush: bash">
 [root@www ~]# traceroute -w 1 -n -T tw.yahoo.com
-</p>
+</pre>
 
 
 
+<h2 id="toc_3.9">查看网络使用状态</h2>
 
-
-
-
-
-<ol>
-<li>
-===========================
-
-</ol>
 <p>
-#
+查看本机与网络的后门：<code>netstat</code>
 </p>
-<ol>
-<li>
-查看本机与网络的后门： netstat
-
-</ol>
-<p>
-#
-</p>
-<ol>
-<li>
-===========================
-
-</ol>
 
 <p>
 如果你覺得你的某個網路服務明明就啟動了，但是就是無法造成連線的話，那麼應該怎麼辦？ 首先你應該要查詢一下自己的網路介面所監聽的埠口 (port) 來看看是否真的有啟動，因為有時候螢幕上面顯示的 [OK] 並不一定是 OK 啊！ <sup><small>_</small></sup>
 </p>
 
-<p>
+<pre class="brush: bash">
 [root@www ~]# netstat -[rn]       &lt;==與路由有關的參數
 [root@www ~]# netstat -[antulpc]  &lt;==與網路介面有關的參數
-</p>
+</pre>
 
 <p>
 選項與參數：
@@ -2092,48 +2126,68 @@ traceroute to tw.yahoo.com (119.160.246.241), 30 hops max, 40 byte packets
 
 <p>
 與路由 (route) 有關的參數說明：
-	-r  ：列出路由表(route table)，功能如同 route 這個指令；
-	-n  ：不使用主機名稱與服務名稱，使用 IP 與 port number ，如同 route -n
 </p>
+
+<ul>
+<li>
+-r  ：列出路由表(route table)，功能如同 route 這個指令；
+
+<li>
+-n  ：不使用主機名稱與服務名稱，使用 IP 與 port number ，如同 route -n
+
+</ul>
 
 <p>
 與網路介面有關的參數：
-	-a  ：列出所有的連線狀態，包括 tcp/udp/unix socket 等；
-	-t  ：僅列出 TCP 封包的連線；
-	-u  ：僅列出 UDP 封包的連線；
-	-l  ：僅列出有在 Listen (監聽) 的服務之網路狀態；
-	-p  ：列出 PID 與 Program 的檔名；
-	-c  ：可以設定幾秒鐘後自動更新一次，例如 -c 5 每五秒更新一次網路狀態的顯示；
 </p>
 
-<ol>
+<ul>
 <li>
-範例一：列出目前的路由表狀態，且以 IP 及 port number 顯示：
+-a  ：列出所有的連線狀態，包括 tcp/udp/unix socket 等；
 
-</ol>
+<li>
+-t  ：僅列出 TCP 封包的連線；
+
+<li>
+-u  ：僅列出 UDP 封包的連線；
+
+<li>
+-l  ：僅列出有在 Listen (監聽) 的服務之網路狀態；
+
+<li>
+-p  ：列出 PID 與 Program 的檔名；
+
+<li>
+-c  ：可以設定幾秒鐘後自動更新一次，例如 -c 5 每五秒更新一次網路狀態的顯示；
+
+</ul>
+
+<h3 id="toc_3.9.1">列出目前的路由表狀態</h3>
 
 <p>
+列出目前的路由表狀態，且以 IP 及 port number 顯示：
+</p>
+
+<pre class="brush: bash">
 [root@www ~]# netstat -rn
 Kernel IP routing table
 Destination     Gateway         Genmask         Flags   MSS Window  irtt Iface
 192.168.1.0     0.0.0.0         255.255.255.0   U         0 0          0 eth0
 169.254.0.0     0.0.0.0         255.255.0.0     U         0 0          0 eth0
 0.0.0.0         192.168.1.254   0.0.0.0         UG        0 0          0 eth0
-</p>
-
-<ol>
-<li>
-其實這個參數就跟 route -n 一模一樣，對吧！這不是 netstat 的主要功能啦！
-
-</ol>
-
-<ol>
-<li>
-範例二：列出目前的所有網路連線狀態，使用 IP 與 port number
-
-</ol>
+</pre>
 
 <p>
+其實這個參數就跟 route -n 一模一樣，對吧！這不是 netstat 的主要功能啦！
+</p>
+
+<h3 id="toc_3.9.2">查看网络连接状态</h3>
+
+<p>
+列出目前的所有網路連線狀態，使用 IP 與 port number
+</p>
+
+<pre class="brush: bash">
 [root@www ~]# netstat -an
 Active Internet connections (servers and established)
 Proto Recv-Q Send-Q Local Address     Foreign Address     State
@@ -2148,42 +2202,71 @@ unix  2      [ ACC ]  STREAM  LISTENING  11075  @/var/run/hald/dbus-uukdg1qMPh
 unix  2      [ ACC ]  STREAM  LISTENING  10952  /var/run/dbus/system_bus_socket
 unix  2      [ ACC ]  STREAM  LISTENING  11032  /var/run/acpid.socket
 ....(底下省略)....
-</p>
+</pre>
 
 <p>
 netstat 的輸出主要分為兩大部分，分別是 TCP/IP 的網路介面部分，以及傳統的 Unix socket 部分。 還記得我們在基礎篇裡面曾經談到檔案的類型嗎？那個 socket 與 FIFO 檔案還記得吧？ 那就是在 Unix 介面用來做為程式資料交流的介面了，也就是上頭表格內看到的 Active Unix domain sockets 的內容囉～
 </p>
 
 <p>
-通常鳥哥都是建議加上『 -n 』這個參數的，因為可以避過主機名稱與服務名稱的反查，直接以 IP 及埠口號碼 (port number) 來顯示，顯示的速度上會快很多！至於在輸出的訊息當中， 我們先來談一談關於網路連線狀態的輸出部分，他主要是分為底下幾個大項：
+通常鳥哥都是建議加上<code>-n</code>這個參數的，因為可以避過主機名稱與服務名稱的反查，直接以 IP 及埠口號碼 (port number) 來顯示，顯示的速度上會快很多！至於在輸出的訊息當中， 我們先來談一談關於網路連線狀態的輸出部分，他主要是分為底下幾個大項：
 </p>
-<blockquote>
+
+<ul>
+<li>
 Proto：該連線的封包協定，主要為 TCP/UDP 等封包；
+
+<li>
 Recv-Q：非由使用者程式連接所複製而來的總 bytes 數；
+
+<li>
 Send-Q：由遠端主機所傳送而來，但不具有 ACK 標誌的總 bytes 數， 意指主動連線 SYN 或其他標誌的封包所佔的 bytes 數；
+
+<li>
 Local Address：本地端的位址，可以是 IP (-n 參數存在時)， 也可以是完整的主機名稱。使用的格是就是『 IP:port 』只是 IP 的格式有 IPv4 及 IPv6 的差異。 如上所示，在 port 22 的介面中，使用的 :::22 就是針對 IPv6 的顯示，事實上他就相同於 0.0.0.0:22 的意思。 至於 port 25 僅針對 lo 介面開放，意指 Internet 基本上是無法連接到我本機的 25 埠口啦！
+
+<li>
 Foreign Address：遠端的主機 IP 與 port number
+
+<li>
 stat：狀態列，主要的狀態含有：
+
+<ul>
+<li>
 ESTABLISED：已建立連線的狀態；
+
+<li>
 SYN_SENT：發出主動連線 (SYN 標誌) 的連線封包；
+
+<li>
 SYN_RECV：接收到一個要求連線的主動連線封包；
+
+<li>
 FIN_WAIT1：該插槽服務(socket)已中斷，該連線正在斷線當中；
+
+<li>
 FIN_WAIT2：該連線已掛斷，但正在等待對方主機回應斷線確認的封包；
+
+<li>
 TIME_WAIT：該連線已掛斷，但 socket 還在網路上等待結束；
+
+<li>
 LISTEN：通常用在服務的監聽 port ！可使用『 -l 』參數查閱。
-</blockquote>
+
+</ul>
+</ul>
 
 <p>
 基本上，我們常常談到的 netstat 的功能，就是在觀察網路的連線狀態了，而網路連線狀態中， 又以觀察『我目前開了多少的 port 在等待用戶端的連線』以及 『目前我的網路連線狀態中，有多少連線已建立或產生問題』最常見。 那你如何瞭解與觀察呢？通常鳥哥是這樣處理的：
 </p>
 
-<ol>
-<li>
-範例三：秀出目前已經啟動的網路服務
-
-</ol>
+<h3 id="toc_3.9.3">列出启用的网络服务</h3>
 
 <p>
+秀出目前已經啟動的網路服務
+</p>
+
+<pre class="brush: bash">
 [root@www ~]# netstat -tulnp
 Active Internet connections (only servers)
 Proto Recv-Q Send-Q Local Address  Foreign Address   State   PID/Program name
@@ -2193,24 +2276,23 @@ tcp        0      0 127.0.0.1:25   0.0.0.0:*         LISTEN 1231/master
 tcp        0      0 :::22          :::*              LISTEN 1155/sshd
 udp        0      0 0.0.0.0:111    0.0.0.0:*                969/rpcbind
 ....(底下省略)....
-</p>
-<ol>
-<li>
-上面最重要的其實是那個 -l 的參數，因為可以僅列出有在 Listen 的 port
+</pre>
 
-</ol>
+<p>
+上面最重要的其實是那個<code>-l</code>的參數，因為可以僅列出有在 Listen 的 port
+</p>
 
 <p>
 你可以發現很多的網路服務其實僅針對本機的 lo 開放而已，網際網路是連接不到該埠口與服務的。 而由上述的資料我們也可以看到，啟動 port 111 的，其實就是 rpcbind 那隻程式，那如果想要關閉這個埠口， 你可以使用 kill 刪除 PID 969，也可以使用 killall 刪除 rpcbind 這個程序即可。如此一來， 很輕鬆的你就能知道哪個程式啟動了哪些埠口囉！
 </p>
 
-<ol>
-<li>
-範例四：觀察本機上頭所有的網路連線狀態
-
-</ol>
+<h3 id="toc_3.9.4">本机上所有网络的连接状态</h3>
 
 <p>
+觀察本機上頭所有的網路連線狀態
+</p>
+
+<pre class="brush: bash">
 [root@www ~]# netstat -atunp
 Active Internet connections (servers and established)
 Proto Recv-Q Send-Q Local Address     Foreign Address     State       PID/Program
@@ -2219,7 +2301,7 @@ tcp        0      0 0.0.0.0:22        0.0.0.0:*           LISTEN      1155/sshd
 tcp        0      0 127.0.0.1:25      0.0.0.0:*           LISTEN      1231/master
 tcp        0     52 192.168.1.100:22  192.168.1.101:1937  ESTABLISHED 4716/0
 ....(底下省略)....
-</p>
+</pre>
 
 <p>
 看到上頭的最后一行吧？那代表目前已經建立連線的一條網路連線，他是由遠端主機 192.168.1.101 啟動一個大於 1024 的埠口向本地端主機 192.168.1.100 的 port 22 進行的一條連線， 你必須要想起來的是：『Client 端是隨機取一個大於 1024 以上的 port 進行連線』，此外『只有 root 可以啟動小於 1024 以下的 port 』，那就看的懂上頭那條連線囉！如果這條連線你想要砍掉他的話， 看到最右邊的 4716 了沒？ kill 會用吧！ <sup><small>_</small></sup>
@@ -2231,246 +2313,200 @@ tcp        0     52 192.168.1.100:22  192.168.1.101:1937  ESTABLISHED 4716/0
 
 <p>
 例題： 請說明服務名稱與 port number 的對應在 Linux 當中，是用那個檔案來設定對應的？
-  答： /etc/services 
+答：<code>/etc/services</code>
 </p>
 
 
-
-
-
-
-
-
-
-<ol>
-<li>
-===========================
-
-</ol>
-<p>
-#
-</p>
-<ol>
-<li>
-查看主机名：host
-
-</ol>
-<p>
-#
-</p>
-<ol>
-<li>
-===========================
-
-</ol>
+<h2 id="toc_3.10">查看主机名：host</h2>
 
 <p>
 這個指令可以用來查出某個主機名稱的 IP 喔！舉例來說，我們想要知道 tw.yahoo.com 的 IP 時，可以這樣做：
 </p>
 
-<p>
+<pre class="brush: bash">
 [root@www ~]# host [-a] hostname [server]
-</p>
+</pre>
 
 <p>
 選項與參數：
-	-a ：列出該主機詳細的各項主機名稱設定資料
-	[server] ：可以使用非為 /etc/resolv.conf 的 DNS 伺服器 IP 來查詢。
 </p>
-
-<ol>
+<ul>
 <li>
-範例一：列出 tw.yahoo.com 的 IP 
+-a ：列出該主機詳細的各項主機名稱設定資料
 
-</ol>
+<li>
+[server] ：可以使用非為 /etc/resolv.conf 的 DNS 伺服器 IP 來查詢。
+
+</ul>
 
 <p>
+列出主机所拥有的IP
+</p>
+
+<p>
+列出 tw.yahoo.com 的 IP 
+</p>
+
+<pre class="brush: bash">
 [root@www ~]# host tw.yahoo.com
 tw.yahoo.com is an alias for tw-cidr.fyap.b.yahoo.com.
 tw-cidr.fyap.b.yahoo.com is an alias for tw-tpe-fo.fyap.b.yahoo.com.
 tw-tpe-fo.fyap.b.yahoo.com has address 119.160.246.241
-</p>
+</pre>
 
 <p>
 瞧！IP 是 119.160.246.241 啊！很簡單就可以查詢到 IP 了！那麼這個 IP 是向誰查詢的呢？其實就是寫在 /etc/resolv.conf 那個檔案內的 DNS 伺服器 IP 啦！如果不想要使用該檔案內的主機來查詢，也可以這樣做：
 </p>
 
-<p>
+<pre class="brush: bash">
 [root@www ~]# host tw.yahoo.com 168.95.1.1
 Using domain server:
 Name: 168.95.1.1
 Address: 168.95.1.1#53
 Aliases:
-</p>
 
-<p>
 tw.yahoo.com is an alias for tw-cidr.fyap.b.yahoo.com.
 tw-cidr.fyap.b.yahoo.com is an alias for tw-tpe-fo.fyap.b.yahoo.com.
 tw-tpe-fo.fyap.b.yahoo.com has address 119.160.246.241
-</p>
+</pre>
 
 <p>
-會告訴我們所使用來查詢的主機是哪一部吶！這樣就夠清楚了吧！不過，再怎麼清楚也比不過 dig 這個指令的，所以這個指令僅是參考參考啦！
+會告訴我們所使用來查詢的主機是哪一部吶！這樣就夠清楚了吧！不過，再怎麼清楚也比不過<code>dig</code>這個指令的，所以這個指令僅是參考參考啦！
 </p>
 
 
 
-
-
-
-
-
-<ol>
-<li>
-===========================
-
-</ol>
-<p>
-#
-</p>
-<ol>
-<li>
-查看主机名：nslookup
-
-</ol>
-<p>
-#
-</p>
-<ol>
-<li>
-===========================
-
-</ol>
+<h2 id="toc_3.11">查看主机名：nslookup</h2>
 
 <p>
-這玩意兒的用途與 host 基本上是一樣的，就是用來作為 IP 與主機名稱對應的檢查， 同樣是使用 /etc/resolv.conf 這個檔案來作為 DNS 伺服器的來源選擇。
+這玩意兒的用途與 host 基本上是一樣的，就是用來作為 IP 與主機名稱對應的檢查， 同樣是使用<code>/etc/resolv.conf</code>這個檔案來作為DNS伺服器的來源選擇。
 </p>
 
-<p>
+<pre class="brush: bash">
 [root@www ~]# nslookup [-query=[type]] [hostname|IP]
-</p>
+</pre>
 
 <p>
 選項與參數：
-	-query=type：查詢的類型，除了傳統的 IP 與主機名稱對應外，DNS 還有很多資訊，
 </p>
-<blockquote>
-所以我們可以查詢很多不同的資訊，包括 mx, cname 等等，
-例如： -query=mx 的查詢方法！
-</blockquote>
 
-<ol>
+<ul>
 <li>
-範例一：找出 www.google.com 的 IP
+-query=type：查詢的類型，除了傳統的 IP 與主機名稱對應外，DNS 還有很多資訊， 所以我們可以查詢很多不同的資訊，包括 mx, cname 等等， 例如：<code>-query=mx</code>的查詢方法！
 
-</ol>
+</ul>
+
+<h3 id="toc_3.11.1">按域名查IP</h3>
 
 <p>
+找出 www.google.com 的 IP
+</p>
+
+<pre class="brush: bash">
 [root@www ~]# nslookup www.google.com
 Server:         168.95.1.1
 Address:        168.95.1.1#53
-</p>
 
-<p>
 Non-authoritative answer:
 www.google.com  canonical name = www.l.google.com.
 Name:   www.l.google.com
 Address: 74.125.71.106
 ....(底下省略)....
-</p>
+</pre>
 
-<ol>
-<li>
-範例二：找出 168.95.1.1 的主機名稱
-
-</ol>
+<h3 id="toc_3.11.2">按IP查域名</h3>
 
 <p>
+找出 168.95.1.1 的主機名稱
+</p>
+
+<pre class="brush: bash">
 [root@www ~]# nslookup 168.95.1.1
 Server:         168.95.1.1
 Address:        168.95.1.1#53
-</p>
 
-<p>
 1.1.95.168.in-addr.arpa name = dns.hinet.net.
-</p>
+</pre>
 
 <p>
-如何，看起來與 host 差不多吧！不過，這個 nslookup 還可以由 IP 找出主機名稱喔！ 例如那個範例二，他的主機名稱是： dns.hinet.net 哩！目前大家都建議使用 dig 這個指令來取代 nslookup ，我們會在第十九章 DNS 伺服器那時再來好好談一談吧！
+如何，看起來與 host 差不多吧！不過，這個 nslookup 還可以由 IP 找出主機名稱喔！ 例如那個範例二，他的主機名稱是： dns.hinet.net 哩！目前大家都建議使用<code>dig</code>這個指令來取代 nslookup ，我們會在第十九章 DNS 伺服器那時再來好好談一談吧！
 </p>
 
 
 
-
-
-
-
-
-<ol>
-<li>
-===========================
-
-</ol>
-<p>
-#
-</p>
-<ol>
-<li>
-抓包工具：tcpdump
-
-</ol>
-<p>
-#
-</p>
-<ol>
-<li>
-===========================
-
-</ol>
+<h2 id="toc_3.12">抓包工具：tcpdump</h2>
 
 <p>
 說實在的，對於 tcpdump 這個軟體來說，你甚至可以說這個軟體其實就是個駭客軟體， 因為他不但可以分析封包的流向，連封包的內容也可以進行『監聽』， 如果你使用的傳輸資料是明碼的話，不得了，在 router 或 hub 上面就可能被人家監聽走了！ 我們在第二章談到的 CSMA/CD 流程中，不是說過有所謂的『監聽軟體』嗎？這個 tcpdump 就是啦！ 很可怕吶！所以，我們也要來瞭解一下這個軟體啊！(註：這個 tcpdump 必須使用 root 的身份執行)
 </p>
 
-<p>
+<pre class="brush: bash">
 [root@www ~]# tcpdump [-AennqX] [-i 介面] [-w 儲存檔名] [-c 次數] \
-</p>
-<blockquote>
-[-r 檔案] [所欲擷取的封包資料格式]
-</blockquote>
+                      [-r 檔案] [所欲擷取的封包資料格式]
+</pre>
 
 <p>
 選項與參數：
-	-A ：封包的內容以 ASCII 顯示，通常用來捉取 WWW 的網頁封包資料。
-	-e ：使用資料連接層 (OSI 第二層) 的 MAC 封包資料來顯示；
-	-nn：直接以 IP 及 port number 顯示，而非主機名與服務名稱
-	-q ：僅列出較為簡短的封包資訊，每一行的內容比較精簡
-	-X ：可以列出十六進位 (hex) 以及 ASCII 的封包內容，對於監聽封包內容很有用
-	-i ：後面接要『監聽』的網路介面，例如 eth0, lo, ppp0 等等的介面；
-	-w ：如果你要將監聽所得的封包資料儲存下來，用這個參數就對了！後面接檔名
-	-r ：從後面接的檔案將封包資料讀出來。那個『檔案』是已經存在的檔案，
-		 並且這個『檔案』是由 -w 所製作出來的。
-	-c ：監聽的封包數，如果沒有這個參數， tcpdump 會持續不斷的監聽，
-		 直到使用者輸入 [ctrl]-c 為止。
 </p>
-
-<p>
-所欲擷取的封包資料格式：我們可以專門針對某些通訊協定或者是 IP 來源進行封包擷取，
-	 那就可以簡化輸出的結果，並取得最有用的資訊。常見的表示方法有：
-	 'host foo', 'host 127.0.0.1' ：針對單部主機來進行封包擷取
-	 'net 192.168' ：針對某個網域來進行封包的擷取；
-	 'src host 127.0.0.1' 'dst net 192.168'：同時加上來源(src)或目標(dst)限制
-	 'tcp port 21'：還可以針對通訊協定偵測，如 tcp, udp, arp, ether 等
-	 還可以利用 and 與 or 來進行封包資料的整合顯示呢！
-</p>
-
-<ol>
+<ul>
 <li>
-範例一：以 IP 與 port number 捉下 eth0 這個網路卡上的封包，持續 3 秒
+-A ：封包的內容以 ASCII 顯示，通常用來捉取 WWW 的網頁封包資料。
 
-</ol>
+<li>
+-e ：使用資料連接層 (OSI 第二層) 的 MAC 封包資料來顯示；
+
+<li>
+-nn：直接以 IP 及 port number 顯示，而非主機名與服務名稱
+
+<li>
+-q ：僅列出較為簡短的封包資訊，每一行的內容比較精簡
+
+<li>
+-X ：可以列出十六進位 (hex) 以及 ASCII 的封包內容，對於監聽封包內容很有用
+
+<li>
+-i ：後面接要『監聽』的網路介面，例如 eth0, lo, ppp0 等等的介面；
+
+<li>
+-w ：如果你要將監聽所得的封包資料儲存下來，用這個參數就對了！後面接檔名
+
+<li>
+-r ：從後面接的檔案將封包資料讀出來。那個『檔案』是已經存在的檔案，並且這個『檔案』是由 -w 所製作出來的。
+
+<li>
+-c ：監聽的封包數，如果沒有這個參數， tcpdump 會持續不斷的監聽，直到使用者輸入 [ctrl]-c 為止。
+
+</ul>
 
 <p>
+所欲擷取的封包資料格式：我們可以專門針對某些通訊協定或者是 IP 來源進行封包擷取，那就可以簡化輸出的結果，並取得最有用的資訊。常見的表示方法有：
+</p>
+<ul>
+<li>
+<code>host foo</code>/<code>host 127.0.0.1</code> ：針對單部主機來進行封包擷取
+
+<li>
+<code>net 192.168</code> ：針對某個網域來進行封包的擷取；
+
+<li>
+<code>src host 127.0.0.1</code>/<code>dst net 192.168</code>：同時加上來源(src)或目標(dst)限制
+
+<li>
+<code>tcp port 21</code>：還可以針對通訊協定偵測，如 tcp, udp, arp, ether 等
+
+</ul>
+
+<p>
+還可以利用 and 與 or 來進行封包資料的整合顯示呢！
+</p>
+
+<h3 id="toc_3.12.1">按IP与端口抓包</h3>
+
+<p>
+以 IP 與 port number 捉下 eth0 這個網路卡上的封包，持續 3 秒：
+</p>
+
+<pre class="brush: bash">
 [root@www ~]# tcpdump -i eth0 -nn
 tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
 listening on eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
@@ -2482,19 +2518,32 @@ listening on eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
 6680 packets captured              &lt;==捉下來的封包數量
 14250 packets received by filter   &lt;==由過濾所得的總封包數量
 7512 packets dropped by kernel     &lt;==被核心所丟棄的封包
-</p>
+</pre>
 
 <p>
 如果你是第一次看 tcpdump 的 man page 時，肯定一個頭兩個大，因為 tcpdump 幾乎都是分析封包的表頭資料，使用者如果沒有簡易的網路封包基礎，要看懂粉難吶！ 所以，至少你得要回到網路基礎裡面去將 TCP 封包的表頭資料理解理解才好啊！ <sup><small>_</small></sup>！至於那個範例一所產生的輸出範例中，我們可以約略區分為數個欄位， 我們以範例一當中第二行來說明一下：
 </p>
-<blockquote>
+
+<ul>
+<li>
 17:01:47.362139：這個是此封包被擷取的時間，『時:分:秒』的單位；
+
+<li>
 IP：透過的通訊協定是 IP ；
+
+<li>
 192.168.1.100.22 &gt; ：傳送端是 192.168.1.100 這個 IP，而傳送的 port number 為 22，你必須要瞭解的是，那個大於 (&gt;) 的符號指的是封包的傳輸方向喔！
+
+<li>
 192.168.1.101.1937：接收端的 IP 是 192.168.1.101， 且該主機開啟 port 1937 來接收；
+
+<li>
 [P.], seq 196:472：這個封包帶有 PUSH 的資料傳輸標誌， 且傳輸的資料為整體資料的 196~472 byte；
+
+<li>
 ack 1：ACK 的相關資料。
-</blockquote>
+
+</ul>
 
 <p>
 最簡單的說法，就是該封包是由 192.168.1.100 傳到 192.168.1.101，透過的 port 是由 22 到 1937 ， 使用的是 PUSH 的旗標，而不是 SYN 之類的主動連線標誌。呵呵！不容易看的懂吧！所以說，上頭才講請務必到 TCP 表頭資料的部分去瞧一瞧的啊！
@@ -2504,7 +2553,7 @@ ack 1：ACK 的相關資料。
 再來，一個網路狀態很忙的主機上面，你想要取得某部主機對你連線的封包資料而已時， 使用 tcpdump 配合管線命令與正規表示法也可以，不過，畢竟不好捉取！ 我們可以透過 tcpdump 的表示法功能，就能夠輕易的將所需要的資料獨立的取出來。 在上面的範例一當中，我們僅針對 eth0 做監聽，所以整個 eth0 介面上面的資料都會被顯示到螢幕上， 不好分析啊！那麼我們可以簡化嗎？例如只取出 port 21 的連線封包，可以這樣做：
 </p>
 
-<p>
+<pre class="brush: bash">
 [root@www ~]# tcpdump -i eth0 -nn port 21
 tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
 listening on eth0, link-type EN10MB (Ethernet), capture size 96 bytes
@@ -2514,21 +2563,26 @@ listening on eth0, link-type EN10MB (Ethernet), capture size 96 bytes
 01:54:42.79 IP 192.168.1.101.1240 &gt; 192.168.1.100.21: P 1:17(16) ack 21 win 65515
 01:54:42.79 IP 192.168.1.100.21 &gt; 192.168.1.101.1240: . ack 17 win 5840
 01:54:42.79 IP 192.168.1.100.21 &gt; 192.168.1.101.1240: P 21:55(34) ack 17 win 5840
-</p>
+</pre>
 
 <p>
 瞧！這樣就僅提出 port 21 的資訊而已，且仔細看的話，你會發現封包的傳遞都是雙向的， client 端發出『要求』而 server 端則予以『回應』，所以，當然是有去有回啊！ 而我們也就可以經過這個封包的流向來瞭解到封包運作的過程。舉例來說：
 </p>
-<blockquote>
+
+<ul>
+<li>
 我們先在一個終端機視窗輸入『 tcpdump -i lo -nn 』 的監聽，
+
+<li>
 再另開一個終端機視窗來對本機 (127.0.0.1) 登入『ssh localhost』
-</blockquote>
+
+</ul>
 
 <p>
 那麼輸出的結果會是如何？
 </p>
 
-<p>
+<pre class="brush: bash">
 [root@www ~]# tcpdump -i lo -nn
  1 tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
  2 listening on lo, link-type EN10MB (Ethernet), capture size 96 bytes
@@ -2543,17 +2597,26 @@ listening on eth0, link-type EN10MB (Ethernet), capture size 96 bytes
    &lt;nop,nop,timestamp 236681334 236681316&gt;
  7 11:02:54.272375 IP 127.0.0.1.32936 &gt; 127.0.0.1.22: . ack 23 win 8192 &lt;nop,
    nop,timestamp 236681334 236681334&gt;
-</p>
+</pre>
 
 <p>
 上表顯示的頭兩行是 tcpdump 的基本說明，然後：
 </p>
-<blockquote>
+
+<ul>
+<li>
 第 3 行顯示的是『來自 client 端，帶有 SYN 主動連線的封包』，
+
+<li>
 第 4 行顯示的是『來自 server 端，除了回應 client 端之外(ACK)，還帶有 SYN 主動連線的標誌；
+
+<li>
 第 5 行則顯示 client 端回應 server 確定連線建立 (ACK)
+
+<li>
 第 6 行以後則開始進入資料傳輸的步驟。
-</blockquote>
+
+</ul>
 
 <p>
 從第 3-5 行的流程來看，熟不熟悉啊？沒錯！那就是三向交握的基礎流程啦！夠有趣吧！ 不過 tcpdump 之所以被稱為駭客軟體之一可不止上頭介紹的功能吶！ 上面介紹的功能可以用來作為我們主機的封包連線與傳輸的流程分析， 這將有助於我們瞭解到封包的運作，同時瞭解到主機的防火牆設定規則是否有需要修訂的地方。
@@ -2563,30 +2626,26 @@ listening on eth0, link-type EN10MB (Ethernet), capture size 96 bytes
 更神奇的使用要來啦！如果我們使用 tcpdump 在 router 上面監聽『明碼』的傳輸資料時， 例如 FTP 傳輸協定，你覺得會發生什麼問題呢？ 我們先在主機端下達『 tcpdump -i lo port 21 -nn -X 』然後再以 ftp 登入本機，並輸入帳號與密碼， 結果你就可以發現如下的狀況：
 </p>
 
-<p>
+<pre class="brush: bash">
 [root@www ~]# tcpdump -i lo -nn -X 'port 21'
-</p>
-<blockquote>
-0x0000:  4500 0048 2a28 4000 4006 1286 7f00 0001  E..H*(@.@.......
-0x0010:  7f00 0001 0015 80ab 8355 2149 835c d825  .........U!I.\.%
-0x0020:  8018 2000 fe3c 0000 0101 080a 0e2e 0b67  .....&lt;.........g
-0x0030:  0e2e 0b61 3232 3020 2876 7346 5450 6420  ...a220.(vsFTPd.
-0x0040:  322e 302e 3129 0d0a                      2.0.1)..
-</blockquote>
-<blockquote>
-0x0000:  4510 0041 d34b 4000 4006 6959 7f00 0001  E..A.K@.@.iY....
-0x0010:  7f00 0001 80ab 0015 835c d825 8355 215d  .........\.%.U!]
-0x0020:  8018 2000 fe35 0000 0101 080a 0e2e 1b37  .....5.........7
-0x0030:  0e2e 0b67 5553 4552 2064 6d74 7361 690d  ...gUSER.dmtsai.
-0x0040:  0a                                       .
-</blockquote>
-<blockquote>
-0x0000:  4510 004a d34f 4000 4006 694c 7f00 0001  E..J.O@.@.iL....
-0x0010:  7f00 0001 80ab 0015 835c d832 8355 217f  .........\.2.U!.
-0x0020:  8018 2000 fe3e 0000 0101 080a 0e2e 3227  .....&gt;........2'
-0x0030:  0e2e 1b38 5041 5353 206d 7970 6173 7377  ...8PASS.mypassw
-0x0040:  6f72 6469 7379 6f75 0d0a                 ordisyou..
-</blockquote>
+    0x0000:  4500 0048 2a28 4000 4006 1286 7f00 0001  E..H*(@.@.......
+    0x0010:  7f00 0001 0015 80ab 8355 2149 835c d825  .........U!I.\.%
+    0x0020:  8018 2000 fe3c 0000 0101 080a 0e2e 0b67  .....&lt;.........g
+    0x0030:  0e2e 0b61 3232 3020 2876 7346 5450 6420  ...a220.(vsFTPd.
+    0x0040:  322e 302e 3129 0d0a                      2.0.1)..
+
+    0x0000:  4510 0041 d34b 4000 4006 6959 7f00 0001  E..A.K@.@.iY....
+    0x0010:  7f00 0001 80ab 0015 835c d825 8355 215d  .........\.%.U!]
+    0x0020:  8018 2000 fe35 0000 0101 080a 0e2e 1b37  .....5.........7
+    0x0030:  0e2e 0b67 5553 4552 2064 6d74 7361 690d  ...gUSER.dmtsai.
+    0x0040:  0a                                       .
+
+    0x0000:  4510 004a d34f 4000 4006 694c 7f00 0001  E..J.O@.@.iL....
+    0x0010:  7f00 0001 80ab 0015 835c d832 8355 217f  .........\.2.U!.
+    0x0020:  8018 2000 fe3e 0000 0101 080a 0e2e 3227  .....&gt;........2'
+    0x0030:  0e2e 1b38 5041 5353 206d 7970 6173 7377  ...8PASS.mypassw
+    0x0040:  6f72 6469 7379 6f75 0d0a                 ordisyou..
+</pre>
 
 <p>
 上面的輸出結果已經被簡化過了，你必須要自行在你的輸出結果當中搜尋相關的字串才行。 從上面輸出結果的特殊字體中，我們可以發現『該 FTP 軟體使用的是 vsftpd ，並且使用者輸入 dmtsai 這個帳號名稱，且密碼是 mypasswordisyou』 嘿嘿！你說可不可怕啊！如果使用的是明碼的方式來傳輸你的網路資料？ 所以我們才常常在講啊，網路是很不安全滴！
@@ -2598,47 +2657,30 @@ listening on eth0, link-type EN10MB (Ethernet), capture size 96 bytes
 
 <p>
 例題： 如何使用 tcpdump 監聽 
-(1)來自 eth0 介面卡且 
-(2)通訊協定為 port 22 ，
-(3)封包來源為 192.168.1.101 的封包資料？
 </p>
+<ul>
+<li>
+來自 eth0 介面卡且 
+
+<li>
+通訊協定為 port 22 ，
+
+<li>
+封包來源為 192.168.1.101 的封包資料？
+
+</ul>
 
 <p>
 答：
 </p>
 
-<p>
+<pre class="brush: bash">
 tcpdump -i eth0 -nn 'port 22 and src host 192.168.1.101'
-</p>
+</pre>
 
 
 
-
-
-
-
-
-<ol>
-<li>
-===========================
-
-</ol>
-<p>
-#
-</p>
-<ol>
-<li>
-启动 TCP/UDP 端口连接： nc
-
-</ol>
-<p>
-#
-</p>
-<ol>
-<li>
-===========================
-
-</ol>
+<h2 id="toc_3.13">启动 TCP/UDP 端口连接： nc</h2>
 
 
 </body>
