@@ -1,0 +1,37 @@
+
+%title notes
+
+%toc notes
+
+= 编程 =
+
+== 语言 ==
+
+[[scala]]
+
+[[ExtJS]]
+
+
+= 常用工具 =
+
+[[git]]
+
+[[vimwiki]]
+
+
+= 服务器 =
+
+[[nginx]]
+
+[[tomcat]]
+
+= Linux =
+
+== 常用工具 ==
+
+[[linux.base]]
+
+== 网络 ==
+
+[[linux.net]]
+

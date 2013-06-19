@@ -1,0 +1,473 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=cp936">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+
+
+<title>Tomcat权威指南</title>
+</head>
+<body>
+
+
+
+
+<h1>Tomcat权威指南</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">Tomcat开幕式</a>
+<ul>
+<li><a href="#toc_1.1">启动与停止</a>
+<li><a href="#toc_1.2">重启</a>
+</ul>
+<li><a href="#toc_2">配置Tomcat</a>
+<ul>
+<li><a href="#toc_2.1">指定独立网站目录</a>
+<li><a href="#toc_2.2">Java VM配置</a>
+<li><a href="#toc_2.3">自动重新部署Servlet</a>
+<li><a href="#toc_2.4">Tomcat Admin webapp</a>
+</ul>
+<li><a href="#toc_3">部署Java Web应用</a>
+<ul>
+<li><a href="#toc_3.1">主机</a>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">Tomcat开幕式</h1>
+
+<h2 id="toc_1.1">启动与停止</h2>
+
+<p>
+启动与停止：
+</p>
+
+<pre class="brush: bash">
+bin/catalina.sh run     // 启动
+bin/catalina.sh start   // 启动，但输出重定向到文件
+bin/startup             // 同上一条
+
+bin/catalina.sh stop    // 停止
+bin/shutdown.sh         // 停止
+</pre>
+
+<p>
+<code>startup</code>与<code>catalina.sh run</code>会把输入重定向到文件：
+</p>
+
+<p>
+<code>$TOMCAT_HOME/logs/catalina.out</code>
+</p>
+
+<p>
+catalina脚本启动参数
+</p>
+
+<table>
+<tr>
+<td>
+-config &lt;server.xml file&gt;
+</td>
+<td>
+指定<code>server.xml</code>配置文件
+</td>
+</tr>
+<tr>
+<td>
+-nonaming
+</td>
+<td>
+禁用JNDI
+</td>
+</tr>
+<tr>
+<td>
+debug
+</td>
+<td>
+调试模式
+</td>
+</tr>
+<tr>
+<td>
+embedded
+</td>
+<td>
+在嵌入模式中测试，开发时常用
+</td>
+</tr>
+<tr>
+<td>
+jpda start
+</td>
+<td>
+JPDA调试器方式启动
+</td>
+</tr>
+</table>
+
+<p>
+设置启动参数到全局Java环境变量：
+</p>
+
+<pre class="brush: bash">
+export JAVA_OPTS="-Xmx256M"
+</pre>
+
+<p>
+其他重要参数：
+</p>
+
+<table>
+<tr>
+<td>
+CATALINA_HOME
+</td>
+<td>
+静态程序部分
+</td>
+</tr>
+<tr>
+<td>
+CATALINA_BASE
+</td>
+<td>
+动态的网站与配置部分
+</td>
+</tr>
+<tr>
+<td>
+CATALINA_OPTS
+</td>
+<td>
+传递给Java的参数
+</td>
+</tr>
+<tr>
+<td>
+CATALINA_TMPDIR
+</td>
+<td>
+临时文件的目录
+</td>
+</tr>
+</table>
+
+<h2 id="toc_1.2">重启</h2>
+
+<p>
+要重启时判断什么时候真正被关掉是一个麻烦。<code>shutdown.sh</code>以后要查看进程是不是还在。
+</p>
+
+<p>
+方法一：java带的命令：
+</p>
+
+<pre class="brush: bash">
+jps | grep Bootstrap
+</pre>
+
+<p>
+方法二：系统工具；
+</p>
+
+<pre class="brush: bash">
+ps auwwx | grep catalina.startup.Bootstrap
+</pre>
+
+<h1 id="toc_2">配置Tomcat</h1>
+
+<h2 id="toc_2.1">指定独立网站目录</h2>
+
+<p>
+生成一专门的tomcat用户与用户组：
+</p>
+
+<pre class="brush: bash">
+sudo grpadd tomcat
+sudo useradd tomcat -g tomcat -d /home/tomcat -s /usr/bin/zsh
+sudo mkdir /home/tomcat
+sudo cp .zshrc /home/tomcat
+sudo cp .vimrc /home/tomcat 
+sudo cp .tmux.conf /home/tomcat 
+sudo chgrp -R tomcat /home/tomcat
+sudo chown -R tomcat /home/tomcat
+</pre>
+
+<p>
+生成目录放所有的网站，下面各个网站再那家独立的目录：
+</p>
+
+<pre class="brush: bash">
+cd /home/tomcat
+mkdir tomcat-instance
+cd tomcat-instance
+mkdir groovywigs.com
+</pre>
+
+<p>
+网站目录下复制tomcat程序里的<code>config</code>目录，还有其他目录：
+</p>
+
+<pre class="brush: bash">
+cp -a $CATALINA_HOME/conf .
+cp -a $CATALINA_HOME/temp .
+</pre>
+
+<p>
+编辑<code>conf/server.xml</code>，设置端口与目录位置：
+</p>
+
+<pre class="brush: bash">
+&lt;Server port="8007" shutdown="SHUTDOWN"&gt;  
+
+&lt;Connector port="8081" protocol="HTTP/1.1"
+	connectionTimeout="20000" redirectPort="8443" /&gt;  
+</pre>
+
+<p>
+建立启动脚本<code>bin/startup.sh</code>：
+</p>
+
+<pre class="brush: bash">
+#!/bin/sh
+export CATALINA_BASE=/home/tomcat/tomcat-instance/groovywigs.com              
+$CATALINA_HOME/bin/catalina.sh run   
+</pre>
+
+<h2 id="toc_2.2">Java VM配置</h2>
+
+<table>
+<tr>
+<td>
+-Xms384M
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+-XmX384M
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+-Djava.security.debug=all
+</td>
+<td>
+为安全输出所有调试信息
+</td>
+</tr>
+<tr>
+<td>
+-Djava.awt.headless=true
+</td>
+<td>
+允许在没有图形显示安装软件情况下运行
+</td>
+</tr>
+<tr>
+<td>
+-Duser.language=en
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+-Dfile.encoding=UTF-8
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+-Djava.net.preferIPv4Stack=true
+</td>
+<td>
+使用IPv4而不是IPv6，有些BSD系统上要开
+</td>
+</tr>
+<tr>
+<td>
+-enableassertions
+</td>
+<td>
+启用assertion检查
+</td>
+</tr>
+<tr>
+<td>
+-verbose:class
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+-verbose:gc
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+</table>
+
+<p>
+打开远程调试：
+</p>
+
+<pre class="brush: bash">
+JAVA_OPTS="-Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n"
+// 
+</pre>
+
+<p>
+通过JMX实现本地管理与监控：
+</p>
+
+<pre class="brush: bash">
+CATALINA_OPTS = " - Dcom.sun.management.jmxremote=true \
+	- Dcom.sun.management.jmxremote.ssl = false  \
+	- Dcom.sun.management.jmxremote.authenticate = false"
+</pre>
+
+<p>
+如果要通过远程管理与监控：
+</p>
+
+<pre class="brush: bash">
+CATALINA_OPTS = " - Dcom.sun.management.jmxremote.port = 8008 \
+	- Dcom.sun.management.jmxremote.ssl = false  \
+	- Dcom.sun.management.jmxremote.authenticate = false \
+	- Dcom.sun.management.jmxremote.password.file=/path/to/pw/file"
+</pre>
+
+<p>
+防止因为服务器没有图形界面而出错：
+</p>
+
+<pre class="brush: bash">
+-Djava.awt.headless=true
+</pre>
+
+<p>
+指定语言环境信息，可以直接在shell中完成：
+</p>
+
+<pre class="brush: bash">
+$ LANG=en_US
+$ catalina.sh start
+</pre>
+
+<h2 id="toc_2.3">自动重新部署Servlet</h2>
+
+<p>
+开发过程中自动重部署修改过的Servlet是个方便的功能，但生产环境这样就太浪费了。修改对应WebApp<code>web.xml</code>文件的<code>Context</code>元素中设定<code>reload-able</code>属性并重启Tomcat。这样也可以在<code>Manager</code>应用程序中手动重载工程。
+</p>
+
+<h2 id="toc_2.4">Tomcat Admin webapp</h2>
+
+<p>
+Tomcat Admin webapp在Tomcat6以后就没有了……
+</p>
+
+<p>
+在配置文件<code>CATALINA_HOME/conf/tomcat-users.xml</code>中添加<code>admin</code>角色,与对应的用户：
+</p>
+
+<pre class="brush: xml">
+&lt;?xml version='1.0' encoding='utf-8'?&gt;
+&lt;tomcat-users&gt;
+  &lt;role rolename="manager"/&gt;
+  &lt;role rolename="admin"/&gt;
+  &lt;user username="admin" password="admin" roles="manager,admin"/&gt;
+&lt;/tomcat-users&gt;
+</pre>
+
+<p>
+管理程序的入口为： <a href="http://yourhost:8080/admin/html">http://yourhost:8080/admin/html</a>
+</p>
+
+
+
+<h1 id="toc_3">部署Java Web应用</h1>
+
+<p>
+Tomcat的配置把Web应用称谓<code>context</code>。配置在：
+</p>
+
+<p>
+<code>$CATALINA_HOME/conf/[EngineName]/[HostName]</code>
+</p>
+
+<h2 id="toc_3.1">主机</h2>
+
+<pre class="brush: bash">
+</pre>
+
+
+<pre class="brush: bash">
+</pre>
+
+
+<pre class="brush: bash">
+</pre>
+
+
+<pre class="brush: bash">
+</pre>
+
+
+<pre class="brush: bash">
+</pre>
+
+
+<pre class="brush: bash">
+</pre>
+
+
+<pre class="brush: bash">
+</pre>
+
+
+<pre class="brush: bash">
+</pre>
+
+
+<pre class="brush: bash">
+</pre>
+
+
+<pre class="brush: bash">
+</pre>
+
+
+<pre class="brush: bash">
+</pre>
+
+
+<pre class="brush: bash">
+</pre>
+
+
+</body>
+</html>

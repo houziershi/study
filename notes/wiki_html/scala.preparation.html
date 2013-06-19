@@ -1,0 +1,392 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+
+
+<title>准备工作</title>
+</head>
+<body>
+
+
+
+
+
+
+<h1>准备工作</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">配置</a>
+<ul>
+<li><a href="#toc_1.1">字符编码问题</a>
+<li><a href="#toc_1.2">Vim插件</a>
+</ul>
+<li><a href="#toc_2">使用</a>
+<ul>
+<li><a href="#toc_2.1">Scala Shell</a>
+<li><a href="#toc_2.2">脚本</a>
+<ul>
+<li><a href="#toc_2.2.1">OS可执行脚本</a>
+</ul>
+<li><a href="#toc_2.3">Scala程序</a>
+<li><a href="#toc_2.4">Ant任务</a>
+<li><a href="#toc_2.5">脚本与程序的区别</a>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">配置</h1>
+
+<h2 id="toc_1.1">字符编码问题</h2>
+
+<p>
+在默认字符编码为UTF-8的Linux下没问题。
+</p>
+
+<p>
+Mac OS X系统的默认字符编码早就改成了UTF-8但它bundle的Java默认字符编码却一直是MacRoman。在启动REPL时传入参数<code>-Dfile.encoding=UTF-8</code>。
+</p>
+
+<p>
+用vim、emacs或者你习惯的文本编辑器打开scala命令，比如：
+</p>
+<pre class="brush: bash">
+$ vim `which scala`
+</pre>
+
+<p>
+找到如下行：
+</p>
+<pre class="brush: bash">
+[ -n "$JAVA_OPTS" ] || JAVA_OPTS="-Xmx256M -Xms32M"
+</pre>
+
+<p>
+把-D参数加到JAVA_OPTS里即可。
+</p>
+
+<h2 id="toc_1.2">Vim插件</h2>
+
+<p>
+到[[<a href="https://github.com/scala/scala-dist][相关工具]]上下载，复制">https://github.com/scala/scala-dist][相关工具]]上下载，复制</a><code>tool-support/src/vim</code>到<code>.vim</code>目录下。
+</p>
+
+
+<h1 id="toc_2">使用</h1>
+ 
+<h2 id="toc_2.1">Scala Shell</h2>
+
+<p>
+使用进入REPL环境的方式：
+</p>
+
+<pre class="brush: bash">
+--(morgan-laptop:pts/8)-(13-03-15 9:04:57)-(~/workspace/study/scala)
+\-(morgan:%) &gt;&gt;&gt; scala
+Welcome to Scala version 2.9.2 (OpenJDK 64-Bit Server VM, Java 1.7.0_15).
+Type in expressions to have them evaluated.
+Type :help for more information.
+
+scala&gt; 
+</pre>
+
+<p>
+输入回车自动换行。
+</p>
+
+<p>
+发现输错了，再按几个回车就退出了。
+</p>
+
+<p>
+退出<code>Scala Shell</code>：<code>:quit</code>或<code>:q</code>
+</p>
+
+<p>
+在REPL环境中只能一行一行读取，所以如果要换行的话，不能让一行在语法上看起来已经结束：
+</p>
+
+<pre class="brush: scala">
+scala&gt; if(x &gt; 0) { 1
+     | } else if(x == 0) 0 else -1
+res1: Int = 1
+</pre>
+
+<p>
+另一个方法是在REPL中输入<code>:paste</code>粘贴代码，按下<code>Control + D</code>。
+</p>
+
+<h2 id="toc_2.2">脚本</h2>
+
+<p>
+脚本文件，可以接收一个参数并输出欢迎信息：
+</p>
+
+<pre class="brush: scala" title="helloarg.scala">
+/* 可以接收一个参数 */
+println("Hello, " + args(0) + "!")
+</pre>
+
+<p>
+调用脚本：scala命令、文件名、参数
+</p>
+
+<pre class="brush: bash">
+--(morgan-laptop:pts/8)-(13-03-14 23:28:27)-(~/workspace/study/scala/tmp)
+\-(morgan:%) &gt;&gt;&gt; scala helloarg.scala Jade
+Hello, Jade!
+</pre>
+
+<p>
+可以通过循环处理多个参数的：
+</p>
+
+<pre class="brush: scala" title="pa.scala">
+args.foreach( arg =&gt; println(arg) )
+</pre>
+
+<p>
+调用：
+</p>
+
+<pre class="brush: bash">
+--(morgan-laptop:pts/8)-(13-03-14 23:49:39)-(~/workspace/study/scala/tmp)
+\-(morgan:%) &gt;&gt;&gt; scala pa.scala Scala is even more fun      
+Scala
+is
+even
+more
+fun
+</pre>
+
+<h3 id="toc_2.2.1">OS可执行脚本</h3>
+
+<p>
+Unix下可执行脚本：
+</p>
+
+<pre class="brush: scala" title="helloarg">
+#!/bin/sh
+	exec scala "$0" "$@"
+!#
+
+println("hello," + arg(0) + "!")
+</pre>
+
+<p>
+执行：
+</p>
+
+<pre class="brush: bash">
+$ chmod +x helloarg
+
+$ ./helloarg globe
+</pre>
+
+<p>
+Windows下可执行脚本：
+</p>
+
+<pre class="brush: scala" title="helloarg.bat">
+::#!
+@echo off
+call scala %0 %*
+goto :eof
+::!#
+
+println("hello," + arg(0) + "!")
+</pre>
+
+<p>
+执行：
+</p>
+
+<pre class="brush: bash">
+&gt; helloarg.bat globe
+</pre>
+
+
+<h2 id="toc_2.3">Scala程序</h2>
+
+<p>
+先看一个工具类，它根据字符串来计算出检验和：
+</p>
+<pre class="brush: scala" title="ChecksumAccumulator.scala">
+import scala.collection.mutable.Map
+
+class ChecksumAccumulator {
+	private var sum = 0
+	def add(b: Byte) { sum += b }
+	def checksum(): Int =  ~(sum &amp;0xFF) + 1
+}
+
+object ChecksumAccumulator {
+	private val cache = Map[String, Int]()
+
+	def calculate(s: String): Int =
+		if( cache.contains(s) ) {
+			cache(s)
+		} else {
+			val acc = new ChecksumAccumulator
+			for (c &lt;- s)
+				acc.add(c.toByte)
+			val cs = acc.checksum()
+			cache += (s -&gt; cs)
+			cs
+		}
+}
+</pre>
+
+<p>
+然后是主程序。独立运行的程序一定要有<code>main</code>方法（仅有一个参数<code>Array[String]</code>而且结果类型为<code>Unit</code>）的单例对象。
+</p>
+
+<pre class="brush: scala" title="Summer.scala">
+import ChecksumAccumulator.calculate
+
+object Summer {
+
+	def main(args: Array[String]) {
+		for (arg &lt;- args)
+			println(arg + " -&gt; " + calculate(arg))
+	}
+
+}
+</pre>
+
+<p>
+编译Scala程序：
+</p>
+<pre class="brush: bash">
+--(morgan-laptop:pts/8)-(13-03-15 0:28:39)-(~/workspace/study/scala/tmp)
+\-(morgan:%) &gt;&gt;&gt; scalac ChecksumAccumulator.scala Summer.scala
+</pre>
+
+<p>
+有一个<code>fast Scala compiler</code>的后台进程可以在第一次被调用后一直跑在后台，节省一下每次编译的速度：
+</p>
+<pre class="brush: bash">
+--(morgan-laptop:pts/8)-(13-03-15 0:29:11)-(~/workspace/study/scala/tmp)
+\-(morgan:%) &gt;&gt;&gt; fsc ChecksumAccumulator.scala Summer.scala   
+</pre>
+
+<p>
+可以关掉这个后台进程：
+</p>
+<pre class="brush: bash">
+--(morgan-laptop:pts/8)-(13-03-15 0:29:11)-(~/workspace/study/scala/tmp)
+\-(morgan:%) &gt;&gt;&gt; fsc -shutdown
+</pre>
+
+<p>
+编译完后可以看到生成的<code>.class</code>文件：
+</p>
+<pre class="brush: bash">
+--(morgan-laptop:pts/8)-(13-03-15 0:44:31)-(~/workspace/study/scala/tmp)
+\-(morgan:%) &gt;&gt;&gt; ls *.class
+ChecksumAccumulator$$anonfun$calculate$1.class  ChecksumAccumulator$.class    Summer.class
+ChecksumAccumulator.class                       Summer$$anonfun$main$1.class  Summer$.class
+</pre>
+
+<p>
+运行编译出来的类文件：
+</p>
+<pre class="brush: bash">
+--(morgan-laptop:pts/8)-(13-03-15 0:30:58)-(~/workspace/study/scala/tmp)
+\-(morgan:%) &gt;&gt;&gt; scala Summer of love
+of -&gt; -213
+love -&gt; -182
+</pre>
+
+<p>
+还有一个加入的<code>Application</code>特质的方式实现应用程序，但是有局限：不能访问命令行参数、只能在单线程下用。所以不推荐用它。
+</p>
+
+<p>
+形式类似于：
+</p>
+<pre class="brush: scala" title="myApp.scala">
+object MyApp extends Application {
+	println("Hello")
+}	
+</pre>
+
+<h2 id="toc_2.4">Ant任务</h2>
+
+<p>
+相关的Ant任务有<code>scalac</code>、<code>fsc</code>和<code>scaladoc</code>，这里只介绍<code>scalac</code>。
+</p>
+
+<pre class="brush: bash" title="build.properties">
+scala.home=/opt/morganstudio/language/scala
+compile.version=1.7
+deploy.name=scala-example
+</pre>
+
+<pre class="brush: xml" title="build.xml">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;project name="scala-example" default="init" basedir="."&gt;
+	&lt;description&gt;scala example&lt;/description&gt;
+	&lt;property file="build.properties" /&gt;
+
+	&lt;property name="sources.dir" value="sources" /&gt;
+	&lt;property name="build.dir" value="build" /&gt;
+
+	&lt;target name="init"&gt;
+		&lt;property name="scala-library.jar" 
+			value="${scala.home}/lib/scala-library.jar" /&gt;
+		&lt;path id="build.classpath"&gt;
+			&lt;pathelement location="${scala-library.jar}"   /&gt;
+			&lt;pathelement location="${build.dir}"   /&gt;
+		&lt;/path&gt;
+		&lt;taskdef resource="scala/tools/ant/antlib.xml"&gt;
+			&lt;classpath&gt;
+				&lt;pathelement location="${scala.home}/lib/scala-compiler.jar"   /&gt;
+				&lt;pathelement location="${scala-library.jar}"   /&gt;
+			&lt;/classpath&gt;
+		&lt;/taskdef&gt;
+	&lt;/target&gt;
+
+	&lt;target name="build" depends="init"&gt;
+		&lt;mkdir dir="${build.dir}"   /&gt;
+		&lt;scalac srcdir="${sources.dir}"
+			destdir="${build.dir}"
+			classpathref="build.classpath"&gt;
+			&lt;include name="**/*.scala"   /&gt;
+		&lt;/scalac&gt;
+	&lt;/target&gt;
+
+	&lt;target name="run" depends="build"&gt;
+		&lt;java classname="Summer"
+			classpathref="build.classpath"&gt;
+		&lt;/java&gt;
+	&lt;/target&gt;
+&lt;/project&gt;
+</pre>
+
+<p>
+以后可能会用到的jar包还有<code>scala-actors.jar</code>和<code>scala-dbc.jar</code>.
+</p>
+
+
+<h2 id="toc_2.5">脚本与程序的区别</h2>
+
+<p>
+脚本必须以表达式结束，而程序以定义结尾。尝试以<code>scala</code>解释器运行程序会报错。
+</p>
+
+
+</body>
+</html>

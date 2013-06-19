@@ -1,0 +1,65 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+
+
+<title>Linux基本操作</title>
+</head>
+<body>
+
+
+
+
+
+<h1>Linux基本操作</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">文件操作</a>
+<ul>
+<li><a href="#toc_1.1">压缩</a>
+<ul>
+<li><a href="#toc_1.1.1">bzip2</a>
+</ul>
+<li><a href="#toc_1.2">查找</a>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">文件操作</h1>
+
+<h2 id="toc_1.1">压缩</h2>
+
+<h3 id="toc_1.1.1">bzip2</h3>
+
+<pre class="brush: bash">
+$ bzip2 -v log.txt 
+  log.txt:  3.953:1,  2.024 bits/byte, 74.70% saved, 336 in, 85 out.
+$ bunzip2 -v log.txt.bz2 
+  log.txt.bz2: done
+$ ls
+log.txt
+$ 
+</pre>
+
+<h2 id="toc_1.2">查找</h2>
+
+<pre class="brush: bash">
+find / -name "*.conf" | xargs grep "alias" 
+</pre>
+
+
+</body>
+</html>
