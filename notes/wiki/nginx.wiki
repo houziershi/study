@@ -1,0 +1,364 @@
+%title Nginx
+
+%toc Nginx
+
+= 安装与配置 =
+
+== 安装 == 
+
+== 启动、停止、重启 ==
+
+先看一下help：
+
+{{{class="brush: bash"
+$ nginx -h    
+nginx version: nginx/1.1.19
+Usage: nginx [-?hvVtq] [-s signal] [-c filename] [-p prefix] [-g directives]
+
+Options:
+  -?,-h         : this help
+  -v            : show version and exit
+  -V            : show version and configure options then exit
+  -t            : test configuration and exit
+  -q            : suppress non-error messages during configuration testing
+  -s signal     : send signal to a master process: stop, quit, reopen, reload
+  -p prefix     : set prefix path (default: /etc/nginx/)
+  -c filename   : set configuration file (default: /etc/nginx/nginx.conf)
+  -g directives : set global directives out of configuration file
+}}}
+
+从上面可以看出来配置文件都在`/etc/nginx`目录下。
+
+先检查配置文件是否正确：
+
+{{{class="brush: bash"
+$ sudo nginx -t -c /etc/nginx/nginx.conf
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+}}}
+
+如果有错的话会报错在第几行。
+
+ubuntu环境下基本命令：
+
+{{{class="brush: bash"
+sudo /etc/init.d/nginx stop
+sudo /etc/init.d/nginx start
+sudo /etc/init.d/nginx restart
+}}}
+
+其他方法：
+
+启动：
+
+{{{class="brush: bash"
+nginx -c /etc/nginx/nginx.conf
+}}}
+
+停止用`kill`：
+
+{{{class="brush: bash"
+// 等待退出
+kill - QUIT <进程号>
+// 或
+kill - QUIT `/usr/local/webserver/nginx/logs/nginx.pid`
+
+// 马上退出
+kill - TERM <进程号>
+// 或
+kill - TERM `/usr/local/webserver/nginx/logs/nginx.pid`
+// 或
+kill - INT <进程号>
+// 或
+kill - INT `/usr/local/webserver/nginx/logs/nginx.pid`
+
+// 强杀
+kill -9 <进程号>
+}}}
+
+
+
+= 基本配置 =
+
+配置文件`nginx.conf`基本结构：
+
+{{{class="brush: bash"
+...
+
+events { ...  }
+
+http {
+	...
+	server { ...  }
+	server { ...  }
+	...
+}
+}}}
+
+实际的例子：
+
+{{{class="brush: bash"
+user www-data;                                                                                                                             
+worker_processes 4;                                                             
+pid /var/run/nginx.pid;                                                         
+                                                                                
+events {                                                                        
+  worker_connections 768;                                                       
+  # multi_accept on;                                                            
+}                                                                               
+                                                                                
+http {                                                                          
+                                                                                
+  ##                                                                            
+  # Basic Settings                                                              
+  ##                                                                            
+                                                                                
+  sendfile on;                                                                  
+  tcp_nopush on;                                                                
+  tcp_nodelay on;                                                               
+  keepalive_timeout 65;                                                         
+  types_hash_max_size 2048;                                                     
+  # server_tokens off;                                                          
+                                                                                
+  # server_names_hash_bucket_size 64;                                           
+  # server_name_in_redirect off;                                                
+                                                                                
+  include /etc/nginx/mime.types;                                                
+  default_type application/octet-stream;                                        
+                                                                                
+  ##                                                                            
+  # Logging Settings                                                            
+  ##                                                                            
+                                                                                
+  access_log /var/log/nginx/access.log;                                         
+  error_log /var/log/nginx/error.log;         
+                                                                                
+  ##                                                                            
+  # Gzip Settings                                                               
+  ##                                                                            
+                                                                                
+  gzip on;                                                                      
+  gzip_disable "msie6";                                                         
+                                                                                
+  # gzip_vary on;                                                               
+  # gzip_proxied any;                                                           
+  # gzip_comp_level 6;                                                          
+  # gzip_buffers 16 8k;                                                         
+  # gzip_http_version 1.1;                                                      
+  # gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
+                                                                                
+  ##                                                                            
+  # nginx-naxsi config                                                          
+  ##                                                                            
+  # Uncomment it if you installed nginx-naxsi                                   
+  ##                                                                            
+                                                                                
+  #include /etc/nginx/naxsi_core.rules;                                         
+                                                                                
+  ##                                                                            
+  # nginx-passenger config                                                      
+  ##                                                                            
+  # Uncomment it if you installed nginx-passenger                               
+  ##                                                                            
+                                                                                
+  #passenger_root /usr;                                                         
+  #passenger_ruby /usr/bin/ruby;                                                
+                                                                                
+  ##                                                                            
+  # Virtual Host Configs                                                        
+  ##                                                                            
+                 
+  include /etc/nginx/conf.d/*.conf;                                             
+  include /etc/nginx/sites-enabled/*;                                           
+}                                                                               
+                                                                                
+                                                                                
+#mail {                                                                         
+# # See sample authentication script at:                                        
+# # http://wiki.nginx.org/ImapAuthenticateWithApachePhpScript                   
+#                                                                               
+# # auth_http localhost/auth.php;                                               
+# # pop3_capabilities "TOP" "USER";                                             
+# # imap_capabilities "IMAP4rev1" "UIDPLUS";                                    
+#                                                                               
+# server {                                                                      
+#   listen     localhost:110;                                                   
+#   protocol   pop3;                                                            
+#   proxy      on;                                                              
+# }                                                                             
+#                                                                               
+# server {                                                                      
+#   listen     localhost:143;                                                   
+#   protocol   imap;                                                            
+#   proxy      on;                                                              
+# }                                                                             
+#}  
+}}}
+
+
+== 虚拟主机的配置 ==
+
+=== 虚拟主机 ===
+
+在同一台服务器、同一组Nginx进程作为多台虚拟的主机，最简配置：
+
+{{{class="brush: bash"
+http 
+{
+	server
+	{
+		listen				80 default;
+		server_name   _  *;
+		access_log		logs/default.access.log combined;
+		location / {
+			index index.html;
+			root	/data0/htdocs/htdocs;
+		}
+	}
+}
+}}}
+
+与Apache一样虚拟主机可以通过三种方式实现：基于IP、基于子域名、基于端口。
+
+=== 基于IP的虚拟主机 ===
+
+绑定两个IP地址到eth0网卡：
+
+{{{class="brush: bash"
+ifconfig eth0:1 192.168.8.43 broadcast 192.168.8.255 netmask 255.255.255.0 up
+route add -host 192.168.8.43 dev eth0:1
+
+ifconfig eth0:1 192.168.8.44 broadcast 192.168.8.255 netmask 255.255.255.0 up
+route add -host 192.168.8.44 dev eth0:1
+}}}
+
+现在根据在个IP地址`192.168.8.43-45`三个地址搞三个虚拟主机：
+
+{{{class="brush: bash"
+http
+{
+	server
+	{
+		listen			192.168.8.43:80
+		server_name 192.168.8.43;
+		# log file
+		assess_log	logs/server1.assess.log combined;
+		location /
+		{
+			# default home page
+			index index.html index.htm
+			# root path of web
+			root /data0/htdocs/server1;
+		}
+	}
+	server
+	{
+		listen			192.168.8.44:80
+		server_name 192.168.8.44;
+		# log file
+		assess_log	logs/server2.assess.log combined;
+		location /
+		{
+			# default home page
+			index index.html index.htm
+			# root path of web
+			root /data0/htdocs/server2;
+		}
+	}
+	server
+	{
+		listen			192.168.8.45:80
+		server_name 192.168.8.45;
+		# log file
+		assess_log	logs/server3.assess.log combined;
+		location /
+		{
+			# default home page
+			index index.html index.htm
+			# root path of web
+			root /data0/htdocs/server3;
+		}
+	}
+}
+}}}
+
+=== 基于子域名的虚拟主机 ===
+
+通过dns域名来节约IP地址。现在同一个地址被在个域名映射：
+
+`aaa.domain.com`、`bbb.domain.com`为两个不同的目录，
+
+`www.domain.com`、`*.domain.com`或是`domain.com`都被映射到第三个目录。
+
+{{{class="brush: bash"
+http
+{
+	server
+	{
+		listen			80
+		server_name aaa.domain.com;
+		# log file
+		assess_log	logs/aaa.domain.com.assess.log combined;
+		location /
+		{
+			# default home page
+			index index.html index.htm
+			# root path of web
+			root /data0/htdocs/aaa.domain.com;
+		}
+	}
+	server
+	{
+		listen			80
+		server_name bbb.domain.com;
+		# log file
+		assess_log	logs/bbb.domain.com.assess.log combined;
+		location /
+		{
+			# default home page
+			index index.html index.htm
+			# root path of web
+			root /data0/htdocs/bbb.domain.com;
+		}
+	}
+	server
+	{
+		listen			80
+		server_name www.domain.com domain.com *.domain.com;
+		# log file
+		assess_log	logs/www.domain.com.assess.log combined;
+		location /
+		{
+			# default home page
+			index index.html index.htm
+			# root path of web
+			root /data0/htdocs/ccc.domain.com;
+		}
+	}
+}
+}}}
+
+== 日志文件配置与切割 ==
+
+`log_format`设置日志格式；`access_log`设置存放的位置、格式与缓存大小。
+
+这两条在`http{...}`与`server{...}`块中都可以放置。
+
+{{{class="brush: bash"
+}}}
+
+
+{{{class="brush: bash"
+}}}
+
+
+{{{class="brush: bash"
+}}}
+
+
+{{{class="brush: bash"
+}}}
+
+
+{{{class="brush: bash"
+}}}

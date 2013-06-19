@@ -1,0 +1,28 @@
+
+
+%title Linux基本操作
+
+%toc Linux基本操作
+
+= 文件操作 =
+
+== 压缩 ==
+
+=== bzip2 ===
+
+{{{class="brush: bash"
+$ bzip2 -v log.txt 
+  log.txt:  3.953:1,  2.024 bits/byte, 74.70% saved, 336 in, 85 out.
+$ bunzip2 -v log.txt.bz2 
+  log.txt.bz2: done
+$ ls
+log.txt
+$ 
+}}}
+
+== 查找 ==
+
+{{{class="brush: bash"
+find / -name "*.conf" | xargs grep "alias" 
+}}}
+
