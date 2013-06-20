@@ -1,0 +1,426 @@
+
+%title Java常用代码
+
+%toc Java常用代码
+
+= Java 应用 =
+
+== 文件操作 ==
+
+=== 生成验证码 ===
+
+{{{class="brush: java"
+    import java.awt.Color;  
+    import java.awt.Font;  
+    import java.awt.Graphics2D;  
+    import java.awt.image.BufferedImage;  
+    import java.io.File;  
+    import java.io.IOException;  
+    import java.util.Random;  
+      
+    import javax.imageio.ImageIO;  
+      
+    import org.springframework.stereotype.Component;  
+      
+    /** 
+     * CheckCode.java 
+     *  
+     * @author King<br/> 
+     *          
+     * @Description 验证码生成类 
+     * @since 1.0.0 
+     * @Date 2012-2-29下午1:50:25 
+     */  
+    @Component  
+    public class CheckCode {  
+        private int width = 102;  
+        private int height = 28;  
+        private int codeCount = 4;  
+      
+        private Random random = new Random();  
+      
+        /** 
+         * 验证码图片 
+         */  
+        private BufferedImage buffImg;  
+        /** 
+         * 验证码字符串 
+         */  
+        private String checkCodeStr;  
+      
+        /** 
+         *  
+         * @Description:创建验证码对象 
+         * @since 1.0.0 
+         * @Date:2012-3-1 上午10:26:20 
+         * @return CheckCode 
+         */  
+        public CheckCode createCheckCode() {  
+            CheckCode checkCode = new CheckCode();  
+            checkCode.setCheckCodeStr(createRandomCode());  
+            checkCode.setBuffImg(disturb());  
+            return checkCode;  
+        }  
+      
+        /** 
+         *  
+         * @Description:随机产生的验证码 
+         * @since 1.0.0 
+         * @Date:2012-3-1 上午10:20:05 
+         * @return String 
+         */  
+        private String createRandomCode() {  
+            StringBuffer randomCode = new StringBuffer();  
+      
+            String strRand = null;  
+            int xx = width / (codeCount + 1);  
+            int codeY = height - 4;  
+            char[] codeSequence = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J',  
+                    'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W',  
+                    'X', 'Y', 'Z', '2', '3', '4', '5', '6', '7', '8', '9' };  
+      
+            Graphics2D graphics = graphicsInit();  
+            graphics.setColor(createColor());  
+      
+            for (int i = 0; i < codeCount; i++) {  
+                strRand = String.valueOf(codeSequence[random.nextInt(32)]);  
+                randomCode.append(strRand);  
+      
+                graphics.drawString(strRand, (i + 1) * xx, codeY);  
+            }  
+      
+            return randomCode.toString();  
+        }  
+      
+        /** 
+         *  
+         * @Description:创建颜色 
+         * @since 1.0.0 
+         * @Date:2012-2-29 下午4:47:14 
+         * @return Color 
+         */  
+        private Color createColor() {  
+            Color color[] = new Color[10];  
+            color[0] = new Color(113, 31, 71);  
+            color[1] = new Color(37, 0, 37);  
+            color[2] = new Color(111, 33, 36);  
+            color[3] = new Color(0, 0, 112);  
+            color[4] = new Color(14, 51, 16);  
+            color[5] = new Color(1, 1, 1);  
+            color[6] = new Color(72, 14, 73);  
+            color[7] = new Color(65, 67, 29);  
+            color[8] = new Color(116, 86, 88);  
+            color[9] = new Color(41, 75, 71);  
+      
+            return color[random.nextInt(10)];  
+        }  
+      
+        /** 
+         *  
+         * @Description:绘制类初始化 
+         * @since 1.0.0 
+         * @Date:2012-3-1 上午10:17:52 
+         * @return Graphics2D 
+         */  
+        private Graphics2D graphicsInit() {  
+            Graphics2D graphics = buffImgInit().createGraphics();  
+            graphics.setColor(Color.WHITE);  
+            graphics.fillRect(0, 0, width, height);  
+            graphics.setFont(new Font("Fixedsys", Font.BOLD, height - 2));  
+            graphics.drawRect(0, 0, width - 1, height - 1);  
+            return graphics;  
+        }  
+      
+        /** 
+         *  
+         * @Description:BufferedImage初始化 
+         * @since 1.0.0 
+         * @Date:2012-3-1 上午11:07:18 
+         * @return BufferedImage 
+         */  
+        private BufferedImage buffImgInit() {  
+            buffImg = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);  
+            return buffImg;  
+        }  
+      
+        /** 
+         *  
+         * @Description:绘制干扰特性 
+         * @since 1.0.0 
+         * @Date:2012-3-1 上午11:45:32 
+         * @return BufferedImage 
+         */  
+        private BufferedImage disturb() {  
+            drawDisturbLine(buffImg.createGraphics());  
+            return twistImage();  
+        }  
+      
+        /** 
+         *  
+         * @Description:画干扰线使图象中的认证码不易被其它程序探测到 
+         * @since 1.0.0 
+         * @Date:2012-2-29 下午4:28:23 
+         * @param graphics 
+         *            void 
+         */  
+        private void drawDisturbLine(Graphics2D graphics) {  
+            graphics.setColor(Color.BLACK);  
+            int x = 0;  
+            int y = 0;  
+            int xl = 0;  
+            int yl = 0;  
+            for (int i = 0; i < 15; i++) {  
+                x = random.nextInt(width);  
+                y = random.nextInt(height);  
+                xl = random.nextInt(20);  
+                yl = random.nextInt(10);  
+                graphics.drawLine(x, y, x + xl, y + yl);  
+            }  
+        }  
+      
+        /** 
+         *  
+         * @Description:正弦曲线Wave扭曲图片 
+         * @since 1.0.0 
+         * @Date:2012-3-1 下午12:49:47 
+         * @return BufferedImage 
+         */  
+        private BufferedImage twistImage() {  
+            double dMultValue = random.nextInt(7) + 3;// 波形的幅度倍数，越大扭曲的程序越高，一般为3  
+            double dPhase = random.nextInt(6);// 波形的起始相位，取值区间（0-2＊PI）  
+      
+            BufferedImage destBi = new BufferedImage(buffImg.getWidth(),  
+                    buffImg.getHeight(), BufferedImage.TYPE_INT_RGB);  
+      
+            for (int i = 0; i < destBi.getWidth(); i++) {  
+                for (int j = 0; j < destBi.getHeight(); j++) {  
+                    int nOldX = getXPosition4Twist(dPhase, dMultValue,  
+                            destBi.getHeight(), i, j);  
+                    int nOldY = j;  
+                    if (nOldX >= 0 && nOldX < destBi.getWidth() && nOldY >= 0  
+                            && nOldY < destBi.getHeight()) {  
+                        destBi.setRGB(nOldX, nOldY, buffImg.getRGB(i, j));  
+                    }  
+                }  
+            }  
+            return destBi;  
+        }  
+      
+        /** 
+         *  
+         * @Description:获取扭曲后的x轴位置 
+         * @since 1.0.0 
+         * @Date:2012-3-1 下午3:17:53 
+         * @param dPhase 
+         * @param dMultValue 
+         * @param height 
+         * @param xPosition 
+         * @param yPosition 
+         * @return int 
+         */  
+        private int getXPosition4Twist(double dPhase, double dMultValue,  
+                int height, int xPosition, int yPosition) {  
+            double PI = 3.1415926535897932384626433832799; // 此值越大，扭曲程度越大  
+            double dx = (double) (PI * yPosition) / height + dPhase;  
+            double dy = Math.sin(dx);  
+            return xPosition + (int) (dy * dMultValue);  
+        }  
+      
+        /** 
+         *  
+         * @Description:将图像进行输出到文件 
+         * @since 1.0.0 
+         * @Date:2012-3-1 上午11:56:19 
+         * @param pathName 
+         * @return String 
+         */  
+        public String createImgFile(String pathName) {  
+            File file = new File(pathName);  
+            if (file.isFile() && file.exists()) {  
+                file.delete();  
+            }  
+            try {  
+                ImageIO.write(buffImg, "jpeg", file);  
+            } catch (IOException e) {  
+                e.printStackTrace();  
+            }  
+            return pathName;  
+        }  
+      
+        public BufferedImage getBuffImg() {  
+            return buffImg;  
+        }  
+      
+        public void setBuffImg(BufferedImage buffImg) {  
+            this.buffImg = buffImg;  
+        }  
+      
+        public String getCheckCodeStr() {  
+            return checkCodeStr;  
+        }  
+      
+        public void setCheckCodeStr(String checkCodeStr) {  
+            this.checkCodeStr = checkCodeStr;  
+        }  
+      
+        public int getWidth() {  
+            return width;  
+        }  
+      
+        public void setWidth(int width) {  
+            this.width = width;  
+        }  
+      
+        public int getHeight() {  
+            return height;  
+        }  
+      
+        public void setHeight(int height) {  
+            this.height = height;  
+        }  
+      
+        public int getCodeCount() {  
+            return codeCount;  
+        }  
+      
+        public void setCodeCount(int codeCount) {  
+            this.codeCount = codeCount;  
+        }  
+      
+    }  
+}}}
+
+测试：
+
+{{{class="brush: java"
+    import org.junit.Assert;  
+    import org.junit.Test;  
+      
+    /** 
+     * CheckCodeTest.java 
+     * @author King<br/> 
+     *         
+     * @Description 描述一下这个文件 
+     * @since 1.0.0 
+     * @Date 2012-2-29下午1:51:13 
+     */  
+    public class CheckCodeTest {  
+        @Test  
+        public void testCheckCodeCreate(){  
+            CheckCode checkCode=new CheckCode();  
+              
+            checkCode=checkCode.createCheckCode();  
+            String checkCodeStr=checkCode.getCheckCodeStr();  
+            System.out.println(checkCodeStr);  
+            Assert.assertNotNull(checkCodeStr);  
+            Assert.assertEquals(4, checkCodeStr.length());  
+              
+            Assert.assertNotNull(checkCode.getBuffImg());  
+              
+    //      for (int i = 0; i < 10; i++) {  
+    //          checkCode=checkCode.createCheckCode();  
+    //          String checkCodeStr=checkCode.getCheckCodeStr();  
+    //          System.out.println(checkCodeStr);  
+    //          Assert.assertNotNull(checkCodeStr);  
+    //          Assert.assertEquals(4, checkCodeStr.length());  
+    //            
+    //          String filePathName="C:\\test"+i+".jpg";  
+    //          checkCode.createImgFile(filePathName);  
+    //          File file=new File(filePathName);  
+    //            
+    //          Assert.assertTrue(file.exists());  
+    //      }  
+        }  
+    }  
+}}}
+
+= Web C/S 应用 =
+
+== Servlet ==
+
+=== MIME操作 ===
+
+格式：
+
+{{{class="brush: java"
+Content-Type: [type]/[subtype]; parameter 
+}}}
+
+
+其中`type`有下面的形式：
+
+Text :: 用于标准化地表示的文本信息，文本消息可以是多种字符集和或者多种格式的；
+Multipart :: 用于连接消息体的多个部分构成一个消息，这些部分可以是不同类型的数据；
+Application :: 用于传输应用程序数据或者二进制数据；
+Message :: 用于包装一个E-mail消息；
+Image :: 用于传输静态图片数据；
+Audio :: 用于传输音频或者音声数据；
+Video :: 用于传输动态影像数据，可以是与音频编辑在一起的视频数据格式。
+
+`subtype`用于指定`type`的详细形式。`content-type/subtype`配对的集合和与此相关的参数，将随着时间而增长。为了确保这些值在一个有序而且公开的状态下开发，MIME使用Internet Assigned Numbers Authority (IANA)作为中心的注册机制来管理这些值。常用的`subtype`值如下所示：
+
+
+* text/plain（纯文本 ）
+* text/html（HTML文档）
+* application/xhtml+xml（XHTML文档）
+* image/gif（GIF图像）
+* image/jpeg（JPEG图像）【PHP中为：image/pjpeg】
+* image/png（PNG图像）【PHP中为：image/x-png】
+* video/mpeg（MPEG动画）
+* application/octet-stream（任意的二进制数据）
+* application/pdf（PDF文档）
+* application/msword（Microsoft Word文件）
+* message/rfc822（RFC822 形式）
+* multipart/alternative（HTML邮件的HTML形式和纯文本形式，相同内容使用不同形式表示）
+* application/x-www-form-urlencoded（使用HTTP的POST方法提交的表单）
+* multipart/form-data（同上，但主要用于表单提交时伴随文件上传的场合）
+
+此外，尚未被接受为正式数据类型的subtype，可以使用x-开始的独立名称（例如`application/x-gzip`）。vnd-开始的固有名称也可以使用（例：`application/vnd.ms-excel`）。
+
+`parameter`可以用来指定附加的信息，更多情况下是用于指定`text/plain`和`text/htm`等的文字编码方式的`charset`参数。 MIME根据`type`制定了默认的`subtype`，当客户端不能确定消息的`subtype`的情况下，消息被看作默认的`subtype`进行处理。`Text`默认是`text/plain`，`Application`默认是`application/octet-stream`，而`Multipart`默认情况下被看作`multipart/mixed`。
+
+
+== Content-Disposition简介 ==
+
+`Content-Disposition`是HTTP Response Header的一个参数。但是这个不是标准参数，HTTP/1.1的规范文档中，对于这个参数的解释大意如下：
+
+`Content-Disposition`参数本来是为了在客户端另存文件时提供一个建议的文件名，但是考虑到安全的原因，就从规范中去掉了这个参数。但是由于很多浏览器已经能够支持这个参数，所以只是在规范文档中列出，但是要注意这个不是HTTP/1.1的标准参数。
+
+其实IE是根据`Content-Disposition`中`filename`这个段中文件名的后缀来识别这个文件类型的。
+
+{{{class="brush: java"
+response.addHeader("Content-Disposition", "attachment;filename=test.xls"); 
+}}}
+
+那么，在进行Web开发时，可能遇到遇到以下几种需求：
+
+* 希望某类或者某已知MIME 类型的文件（比如：*.gif;*.txt;*.htm）能够在访问时弹出“文件下载”对话框。
+* 希望客户端下载时以指定文件名显示。
+* 希望某文件直接在浏览器上显示而不是弹出文件下载对话框。
+
+对于上面的需求，使用`Content-Disposition`属性就可以解决。下面是代码示例（Java语言）：
+
+{{{class="brush: java"
+response.setHeader("Content-disposition", "attachment;filename=" + fileName);
+}}}
+
+* `Content-disposition`为属性名。
+* `attachment`表示以附件方式下载。如果要在页面中打开，则改为`inline`。
+* `filename`如果为中文，则会出现乱码。解决办法有两种：
+
+{{{class="brush: java"
+fileName = new String(fileName.getBytes(“GBK”), "ISO-8859-1");
+}}}
+
+或：
+
+{{{class="brush: java"
+fileName = HttpUtility.UrlEncode(filename, System.Text.Encoding.UTF8);
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
