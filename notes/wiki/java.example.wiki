@@ -380,7 +380,7 @@ Video :: 用于传输动态影像数据，可以是与音频编辑在一起的�
 `parameter`可以用来指定附加的信息，更多情况下是用于指定`text/plain`和`text/htm`等的文字编码方式的`charset`参数。 MIME根据`type`制定了默认的`subtype`，当客户端不能确定消息的`subtype`的情况下，消息被看作默认的`subtype`进行处理。`Text`默认是`text/plain`，`Application`默认是`application/octet-stream`，而`Multipart`默认情况下被看作`multipart/mixed`。
 
 
-== Content-Disposition简介 ==
+=== Content-Disposition简介 ===
 
 `Content-Disposition`是HTTP Response Header的一个参数。但是这个不是标准参数，HTTP/1.1的规范文档中，对于这个参数的解释大意如下：
 
