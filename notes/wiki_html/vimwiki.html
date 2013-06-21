@@ -86,8 +86,17 @@
 </pre>
 
 <p>
-其中<code>\(VIMFILES</code>就是您的vimfiles目录。这是需要在vimrc中定义的系统变量，Windows下应该是<code>\)VIM/vimfiles</code>，Linux下是<code>~/.vim/</code>。如果vimrc没有显式指定，可以加上：
+其中<code>$VIMFILES</code>就是您的vimfiles目录。这是需要在vimrc中定义的系统变量。
 </p>
+
+<p>
+Windows下应该是：<code>$VIM/vimfiles</code>；Linux下是：<code>~/.vim/</code>
+</p>
+
+<p>
+如果vimrc没有显式指定，可以加上：
+</p>
+
 <pre class="brush: js;">
 if has("win32")
   let $VIMFILES = $VIM.'/vimfiles'

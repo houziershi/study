@@ -20,7 +20,12 @@
 :helptags $VIMFILES/doc
 }}}
 
-其中`$VIMFILES`就是您的vimfiles目录。这是需要在vimrc中定义的系统变量，Windows下应该是`$VIM/vimfiles`，Linux下是`~/.vim/`。如果vimrc没有显式指定，可以加上：
+其中`$VIMFILES`就是您的vimfiles目录。这是需要在vimrc中定义的系统变量。
+
+Windows下应该是：`$VIM/vimfiles`；Linux下是：`~/.vim/`
+
+如果vimrc没有显式指定，可以加上：
+
 {{{class="brush: js;"
 if has("win32")
   let $VIMFILES = $VIM.'/vimfiles'
