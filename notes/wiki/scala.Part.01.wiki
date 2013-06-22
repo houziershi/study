@@ -120,12 +120,17 @@ res2: java.lang.String = This String get returned!
 
 {{{class="brush: scala"
 args.foreach( (arg: String) => println(arg) )
+}}}
 
-//这里的String类型可以自动推导出来：
+这里的String类型可以自动推导出来：
+{{{class="brush: scala"
 args.foreach( arg => println(arg) )
+}}}
 
-//在这种字面量只有一行而且只有一个参数情况下，可以省掉参数列表
+在这种字面量只有一行而且只有一个参数情况下，可以省掉参数列表：
+{{{class="brush: scala"
 args.foreach( println )
+}}}
 }}}
 
 
@@ -134,7 +139,6 @@ args.foreach( println )
 {{{class="brush: scala"
 scala> for (i <- 0 to 10) print(i)
 012345678910
-
 }}}
 
 
@@ -158,6 +162,7 @@ scala中没有操作符的重载，因为操作符也是方法的名字：
 {{{class="brush: scala"
 1 + 2
 }}}
+
 相当于：
 {{{class="brush: scala"
 (1).+(2)
@@ -170,7 +175,7 @@ Scala在构成标识符方面有四种非常灵活的规则：
 
 == 字母数字标识符（alphanumeric identifier） ==
 
-字母数字标识符起始于一个字母或下划线，之后可以跟字母，数字，或下划线。‘$’字符也被当作是字母，但是被保留作为Scala编译器产生的标识符之用。用户程序里的标识符不应该包含‘$’字符，尽管能够编译通过；但是这样做有可能导致与Scala编译器产生的标识符发生名称冲撞。
+字母数字标识符起始于一个字母或下划线，之后可以跟字母，数字，或下划线。美元符也被当作是字母，但是被保留作为Scala编译器产生的标识符之用。用户程序里的标识符不应该包含美元字符，尽管能够编译通过；但是这样做有可能导致与Scala编译器产生的标识符发生名称冲撞。
 
 Scala遵循Java的驼峰式标识符习俗。尽管下划线在标识符内是合法的，但在Scala程序里并不常用，部分原因是为了保持与Java一致，同样也由于下划线在Scala代码里有许多其它非标识符用法。因此，最好避免使用像`to_string`，`__init__`，或`name`这样的标识符。
  
@@ -191,7 +196,11 @@ Scala与Java的习惯不一致的地方在于常量名。Scala里，constant这�
 + ++ ::: <?> :->
 }}}
 
- Scala编译器将内部“粉碎”操作符标识符以转换成合法的内嵌`$`的Java标识符。例如，标识符`:->`将被内部表达为`$colon$minus$greater`。若你想从Java代码访问这个标识符，就应使用这个内部表达。 
+Scala编译器将内部“粉碎”操作符标识符以转换成合法的的内嵌美元符的Java标识符。例如，标识符`:->`将在内部将被表达为：
+{{{class="brush: scala"  
+$colon$minus$greater
+}}}
+若你想从Java代码访问这个标识符，就应使用这个内部表达。 
  
 Scala里的操作符标识符可以变得任意长，因此在Java和Scala间有一些小差别。Java里，输入`x<-y`将会被拆分成四个词汇符号，所以写成`x < - y`也没什么不同。Scala里，`<-`将被作为一个标识符拆分，而得到`x <- y`。如果你想要得到第一种解释，你要在`<`和`-`字符间加一个空格。这大概不会是实际应用中的问题，因为没什么人会在Java里写`x<-y`的时候不注意加空格或括号的。
 
@@ -216,6 +225,7 @@ Thread.`yield`()
 }}}
 
 
+= 常用工具 =
 
 == 类型参数化数组 ==
 
@@ -226,7 +236,6 @@ val gs: Array[String] = new Array[String](3)
 }}}
 
 {{{class="brush: scala"
-
 scala> val gs = new Array[String](3)
 gs: Array[String] = Array(null, null, null)
 
@@ -276,7 +285,7 @@ scala> val ll = List(1,2,3)
 ll: List[Int] = List(1, 2, 3)
 }}}
 
-`::`把一个元素加到列表的头上； 用`:::`连起两个列表：
+`::`（读作cons）把一个元素加到列表的头上； 用`:::`连起两个列表：
 
 {{{class="brush: scala"
 scala> 0 :: ll
@@ -297,28 +306,6 @@ nl: List[Int] = List(1, 2, 3)
 }}}
 
 List只能把元素加在头上，如果要加在后面的话，一个方法是在加到头上以后再调用`reverse`方法；还有一个方案是使用ListBuffer，它有`append`方法。
-
-=== 方法关联性 ===
-
-所有以`:`结尾的方法其实是后一个操作数调用前一个操作数，所以：
-
-{{{class="brush: scala"
-0 :: ll
-// 其实是
-ll.::(0)
-
-ll ::: ll2
-// 其实是
-ll2.:::(ll)
-}}}
-
-回到前面的串列表操作：
-
-{{{class="brush: scala"
-val nl = 1 :: 2 :: 3 :: Nil
-}}}
-
-如果没有最后的`Nil`，就变成了`3.::(2)`。因为数字没有`::`方法，这样就会报错。
 
 === List常用方法 ===
 
@@ -355,6 +342,28 @@ thrill.tail                            // 返回除掉第一个元素的thrill�
 }}}
 
 
+== 方法关联性 ==
+
+所有以`:`结尾的方法其实是后一个操作数调用前一个操作数，所以：
+
+{{{class="brush: scala"
+0 :: ll
+// 其实是
+ll.::(0)
+
+ll ::: ll2
+// 其实是
+ll2.:::(ll)
+}}}
+
+回到前面的串列表操作：
+
+{{{class="brush: scala"
+val nl = 1 :: 2 :: 3 :: Nil
+}}}
+
+如果没有最后的`Nil`，就变成了`3.::(2)`。因为数字没有`::`方法，这样就会报错。
+
 == 元组（Tuple） ==
 
 元组像列表，但可以放不同类型的元素。这样类似于Java Bean，但写起来更加简单。元组的类型按字段个数来识别，有2个字段的就是`Tuple2`、3个就是`Tuple3`，Scala最多支持到`Tuple22`：
@@ -377,6 +386,10 @@ Luft
 
 == 集（Set）和映射（Map） ==
 对于Map和Set，Scala都分别提供了可变和不变的版本（放一不同的包里）。可变版本的操作会在本地修改，不可变的版本会返回一个新的对象。一般默认会使用不可变版本。
+
+虽然都提供了`+=`方法添加元素，但只可变实现都是返回一个新的对象。
+
+=== Set ===
 
 Set继承关系：
 
@@ -428,8 +441,9 @@ Set(Chilies, Tomatoes, Coriander)
 
 Map继承关系：
 
+=== Map ===
 
-<img src="images/Selection_016.png" alt="Map继承关系" />
+<img src="images/scala/Selection_016.png" alt="Map继承关系" />
 
 
 默认的Map用不可变的类型：
@@ -617,7 +631,9 @@ if (args.length > 0) {
 
 = 基本类型 =
 
-基本类型包括`java.lang`包下的`String`和`scala`包下的`Byte`、`Short`、`Int`、`Long`、`Float`、`Double`、`Char`、`Boolean`。还有在`scala.runtime`包下对应的包装器类`Rich...`，如：`RichInt`。
+基本类型包括`java.lang`包下的`String`和`scala`包下的`Byte`、`Short`、`Int`、`Long`、`Float`、`Double`、`Char`、`Boolean`。还有在`scala.runtime`包下对应的包装器类`Rich...`。
+
+如：`Int`对应的包装器类型为`scala.runtime.RichInt`。
 
 == 字符串 ==
 
@@ -649,9 +665,9 @@ Type "HELP" for help.
 
 == 符号 ==
 
-格式为`'symb`，这里的`symb`可以是任何字母或数字。这种字面量被直接映射为类`scala.Symbol`的实例，解释器调用工厂方法`Symbol("symb")`产生。
+格式为`'symb`，这里的`symb`可以是任何字母或数字。这种字面量被直接映射为类`scala.Symbol`的实例，解释器调用工厂方法`Symbol("symb")`产生。符号变量是被限定（interned）的，如果同一个字面量出现两次，其实指向的是同一个`Symble`实例。
 
-符号变量什么事情都做不了，只能显示自己的名字，而且符号变量是被限定（interned）的，如果同一个字面量出现两次，其实指向的是同一个`Symble`实例：
+符号变量什么事情都做不了，只能显示自己的名字：
 
 {{{class="brush: scala"
 scala> val s = 'aSymbol
@@ -661,12 +677,24 @@ scala> s.name
 res3: String = aSymbol
 }}}
 
-那符号能用来干嘛？比如说，下面的函数更新记录，`field`是字段名、`value`是值：
+那符号能用来干嘛？典型应用是作为动态语言中的标签符。比如说，下面的函数用来更新记录，两个参数`field`是字段名、`value`是值：
 
 {{{class="brush: scala"
 scala> def updateRecordByName(field: Symbol, value: Any){ }
 updateRecordByName: (field: Symbol, value: Any)Unit
+}}}
 
+Scala是静态语言，所以不可以随便写一个标识符：
+
+{{{class="brush: scala"
+scala> updateRecordByName(pcOK, "OK Computer")
+<console>6: error : not fount: value pcOK
+          updateRecordByName: (field: Symbol, value: Any)Unit
+}}}
+
+这是就要用到符号了：
+
+{{{class="brush: scala"
 scala> updateRecordByName('pcOK, "OK Computer")
 }}}
 
@@ -674,7 +702,7 @@ scala> updateRecordByName('pcOK, "OK Computer")
 
 == 操作符与方法 ==
 
-操作符也是普通方法的另一种写法，操作符的重载也就是方法的重载。
+操作符也是普通方法的另一种写法。方法可以当操作符写；操作符也可以当作方法写；操作符的重载也就是方法的重载。
 
 === 中缀操作符（infix） ===
 
@@ -691,7 +719,7 @@ res7: Int = 8
 
 === 前缀操作符 ===
 
-前缀操作符以`unary_`开头，能有四种`+`、`-`、`!`、`~`：
+前缀操作符以`unary_`开头，能有四种`+`、`-`、`!`、`~`分别用表示`unary_+`、`unary_-`、`unary_!`、`unary_~`：
 
 {{{class="brush: scala"
 scala> - 2.0
@@ -705,7 +733,7 @@ res9: Double = -2.0
 
 === 后缀操作符 ===
 
-后缀操作符其实就是没有参数的函数。一般习惯上没有副作用的话就加上括号，如：`println()`；如果没有副作用就不加括号，如：`String.toLowerCase`
+后缀操作符其实就是没有参数的函数。一般习惯上有副作用的话就加上括号，如：`println()`；如果没有副作用就不加括号，如：`String.toLowerCase`
 
 {{{class="brush: scala"
 scala> "Hello".toLowerCase
@@ -715,10 +743,18 @@ scala> "Hello" toLowerCase
 res11: java.lang.String = hello
 }}}
 
+== 位移操作 ==
+
+左移（填零）、右移（填符号位）、无符号右移（填零）：
+
+{{{class="brush: scala"
+<<     >     >>>
+}}}
+
 
 == 对象相等性 ==
 
-操作符`==`与`!=`不仅比较基本类型，也可以比较对象，甚至是不同类的对象也可以比较，也可以和`null`比不会有异常抛出：
+操作符`==`与`!=`与Java中的不同，更加像Java中的`equals`比较是内容的含意是否相等。而且在Scala中不仅比较基本类型，也可以比较对象，甚至是不同类的对象也可以比较，也可以和`null`比不会有异常抛出：
 
 {{{class="brush: scala"
 scala>  1 == 2
@@ -749,7 +785,7 @@ scala> ("he" + "llo") == "hello"
 res20: Boolean = true
 }}}
 
-
+而且与Java中`==`和`!=`类似的比较是否是同一个实例的操作分别是`eq`和`ne`。
 
 = 类 =
 

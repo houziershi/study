@@ -42,172 +42,180 @@
 <li><a href="#toc_2.2">操作符标识符（operator identifier）</a>
 <li><a href="#toc_2.3">混合标识符（mixed identifier）</a>
 <li><a href="#toc_2.4">文本标识符（literal identifier）</a>
-<li><a href="#toc_2.5">类型参数化数组</a>
-<li><a href="#toc_2.6">apply与update方法</a>
-<li><a href="#toc_2.7">列表</a>
-<ul>
-<li><a href="#toc_2.7.1">方法关联性</a>
-<li><a href="#toc_2.7.2">List常用方法</a>
 </ul>
-<li><a href="#toc_2.8">元组（Tuple）</a>
-<li><a href="#toc_2.9">集（Set）和映射（Map）</a>
-<li><a href="#toc_2.10">函数式风格</a>
+<li><a href="#toc_3">常用工具</a>
 <ul>
-<li><a href="#toc_2.10.1">典型的指令式风格</a>
-<li><a href="#toc_2.10.2">去除变量的使用</a>
-<li><a href="#toc_2.10.3">去除副作用</a>
+<li><a href="#toc_3.1">类型参数化数组</a>
+<li><a href="#toc_3.2">apply与update方法</a>
+<li><a href="#toc_3.3">列表</a>
+<ul>
+<li><a href="#toc_3.3.1">List常用方法</a>
 </ul>
-<li><a href="#toc_2.11">读取文本文件</a>
+<li><a href="#toc_3.4">方法关联性</a>
+<li><a href="#toc_3.5">元组（Tuple）</a>
+<li><a href="#toc_3.6">集（Set）和映射（Map）</a>
+<ul>
+<li><a href="#toc_3.6.1">Set</a>
+<li><a href="#toc_3.6.2">Map</a>
 </ul>
-<li><a href="#toc_3">基本类型</a>
+<li><a href="#toc_3.7">函数式风格</a>
 <ul>
-<li><a href="#toc_3.1">字符串</a>
-<li><a href="#toc_3.2">符号</a>
-<li><a href="#toc_3.3">操作符与方法</a>
-<ul>
-<li><a href="#toc_3.3.1">中缀操作符（infix）</a>
-<li><a href="#toc_3.3.2">前缀操作符</a>
-<li><a href="#toc_3.3.3">后缀操作符</a>
+<li><a href="#toc_3.7.1">典型的指令式风格</a>
+<li><a href="#toc_3.7.2">去除变量的使用</a>
+<li><a href="#toc_3.7.3">去除副作用</a>
 </ul>
-<li><a href="#toc_3.4">对象相等性</a>
+<li><a href="#toc_3.8">读取文本文件</a>
 </ul>
-<li><a href="#toc_4">类</a>
+<li><a href="#toc_4">基本类型</a>
 <ul>
-<li><a href="#toc_4.1">创建新类型</a>
-<li><a href="#toc_4.2">主构造器：primary constructor</a>
-<li><a href="#toc_4.3">先决条件（precondition）</a>
-<li><a href="#toc_4.4">字段</a>
-<li><a href="#toc_4.5">方法</a>
-<li><a href="#toc_4.6">自指向</a>
-<li><a href="#toc_4.7">从构造器</a>
-<li><a href="#toc_4.8">私有字段和方法</a>
-<li><a href="#toc_4.9">定义操作符</a>
-<li><a href="#toc_4.10">方法覆盖（override）</a>
-<li><a href="#toc_4.11">方法重载（overload）</a>
-<li><a href="#toc_4.12">隐式转换</a>
-<li><a href="#toc_4.13">完整的Rational代码</a>
+<li><a href="#toc_4.1">字符串</a>
+<li><a href="#toc_4.2">符号</a>
+<li><a href="#toc_4.3">操作符与方法</a>
+<ul>
+<li><a href="#toc_4.3.1">中缀操作符（infix）</a>
+<li><a href="#toc_4.3.2">前缀操作符</a>
+<li><a href="#toc_4.3.3">后缀操作符</a>
 </ul>
-<li><a href="#toc_5">单例对象</a>
-<li><a href="#toc_6">伴生对象</a>
-<li><a href="#toc_7">内建控制结构</a>
-<ul>
-<li><a href="#toc_7.1">if表达式</a>
-<li><a href="#toc_7.2">while循环</a>
-<ul>
-<li><a href="#toc_7.2.1">while循环与Unit</a>
-<li><a href="#toc_7.2.2">while循环与函数式风格</a>
+<li><a href="#toc_4.4">位移操作</a>
+<li><a href="#toc_4.5">对象相等性</a>
 </ul>
-<li><a href="#toc_7.3">for表达式</a>
+<li><a href="#toc_5">类</a>
 <ul>
-<li><a href="#toc_7.3.1">生成器（generator）</a>
-<li><a href="#toc_7.3.2">for是表达式</a>
-<li><a href="#toc_7.3.3">过滤器（filter）</a>
-<li><a href="#toc_7.3.4">for循环嵌套</a>
-<li><a href="#toc_7.3.5">（流间）变量绑定（mid-stream）</a>
-<li><a href="#toc_7.3.6">制造新集合</a>
+<li><a href="#toc_5.1">创建新类型</a>
+<li><a href="#toc_5.2">主构造器：primary constructor</a>
+<li><a href="#toc_5.3">先决条件（precondition）</a>
+<li><a href="#toc_5.4">字段</a>
+<li><a href="#toc_5.5">方法</a>
+<li><a href="#toc_5.6">自指向</a>
+<li><a href="#toc_5.7">从构造器</a>
+<li><a href="#toc_5.8">私有字段和方法</a>
+<li><a href="#toc_5.9">定义操作符</a>
+<li><a href="#toc_5.10">方法覆盖（override）</a>
+<li><a href="#toc_5.11">方法重载（overload）</a>
+<li><a href="#toc_5.12">隐式转换</a>
+<li><a href="#toc_5.13">完整的Rational代码</a>
 </ul>
-<li><a href="#toc_7.4">try表达式与异常</a>
+<li><a href="#toc_6">单例对象</a>
+<li><a href="#toc_7">伴生对象</a>
+<li><a href="#toc_8">内建控制结构</a>
 <ul>
-<li><a href="#toc_7.4.1">抛出异常</a>
-<li><a href="#toc_7.4.2">捕获异常</a>
+<li><a href="#toc_8.1">if表达式</a>
+<li><a href="#toc_8.2">while循环</a>
+<ul>
+<li><a href="#toc_8.2.1">while循环与Unit</a>
+<li><a href="#toc_8.2.2">while循环与函数式风格</a>
 </ul>
-<li><a href="#toc_7.5">finally子句</a>
+<li><a href="#toc_8.3">for表达式</a>
 <ul>
-<li><a href="#toc_7.5.1">try-cache-finally产生的值</a>
+<li><a href="#toc_8.3.1">生成器（generator）</a>
+<li><a href="#toc_8.3.2">for是表达式</a>
+<li><a href="#toc_8.3.3">过滤器（filter）</a>
+<li><a href="#toc_8.3.4">for循环嵌套</a>
+<li><a href="#toc_8.3.5">（流间）变量绑定（mid-stream）</a>
+<li><a href="#toc_8.3.6">制造新集合</a>
 </ul>
-<li><a href="#toc_7.6">match表达式</a>
+<li><a href="#toc_8.4">try表达式与异常</a>
 <ul>
-<li><a href="#toc_7.6.1">不要用break和contine</a>
+<li><a href="#toc_8.4.1">抛出异常</a>
+<li><a href="#toc_8.4.2">捕获异常</a>
 </ul>
-<li><a href="#toc_7.7">变量作用域</a>
+<li><a href="#toc_8.5">finally子句</a>
 <ul>
-<li><a href="#toc_7.7.1">重构指令式风格的代码</a>
+<li><a href="#toc_8.5.1">try-cache-finally产生的值</a>
 </ul>
+<li><a href="#toc_8.6">match表达式</a>
+<ul>
+<li><a href="#toc_8.6.1">不要用break和contine</a>
 </ul>
-<li><a href="#toc_8">函数与闭包</a>
+<li><a href="#toc_8.7">变量作用域</a>
 <ul>
-<li><a href="#toc_8.1">方法（method）</a>
-<li><a href="#toc_8.2">本地函数</a>
-<li><a href="#toc_8.3">头等函数与函数字面量（literal）</a>
-<li><a href="#toc_8.4">函数字面量的短格式</a>
-<li><a href="#toc_8.5">占位符语法（Placeholder syntax）</a>
-<li><a href="#toc_8.6">部分应用函数（partially applied function）</a>
-<li><a href="#toc_8.7">闭包（Closures）</a>
-<li><a href="#toc_8.8">重复参数</a>
-<li><a href="#toc_8.9">尾递归（tail recursive）</a>
-<ul>
-<li><a href="#toc_8.9.1">跟踪尾递归函数</a>
-<li><a href="#toc_8.9.2">尾递归的局限</a>
+<li><a href="#toc_8.7.1">重构指令式风格的代码</a>
 </ul>
 </ul>
-<li><a href="#toc_9">控制抽象</a>
+<li><a href="#toc_9">函数与闭包</a>
 <ul>
-<li><a href="#toc_9.1">可复用的代码</a>
-<li><a href="#toc_9.2">简化客户端代码</a>
-<li><a href="#toc_9.3">柯里化（Currying）</a>
-<li><a href="#toc_9.4">编写新的控制结构</a>
-<li><a href="#toc_9.5">传名参数</a>
-</ul>
-<li><a href="#toc_10">组合与继承</a>
+<li><a href="#toc_9.1">方法（method）</a>
+<li><a href="#toc_9.2">本地函数</a>
+<li><a href="#toc_9.3">头等函数与函数字面量（literal）</a>
+<li><a href="#toc_9.4">函数字面量的短格式</a>
+<li><a href="#toc_9.5">占位符语法（Placeholder syntax）</a>
+<li><a href="#toc_9.6">部分应用函数（partially applied function）</a>
+<li><a href="#toc_9.7">闭包（Closures）</a>
+<li><a href="#toc_9.8">重复参数</a>
+<li><a href="#toc_9.9">尾递归（tail recursive）</a>
 <ul>
-<li><a href="#toc_10.1">定制一个二维布局库</a>
-<li><a href="#toc_10.2">抽象类</a>
-<li><a href="#toc_10.3">定义无参数方法</a>
-<li><a href="#toc_10.4">扩展类</a>
-<li><a href="#toc_10.5">重载方法和字段</a>
-<li><a href="#toc_10.6">定义参数化字段</a>
-<li><a href="#toc_10.7">调用超类构造器</a>
-<li><a href="#toc_10.8">使用override修饰符</a>
-<li><a href="#toc_10.9">多态和动态绑定</a>
-<li><a href="#toc_10.10">定义final成员</a>
-<li><a href="#toc_10.11">使用组合与继承</a>
-<li><a href="#toc_10.12">实现示例中的功能</a>
-<li><a href="#toc_10.13">定义工厂对象</a>
-<li><a href="#toc_10.14">变高变宽</a>
-<li><a href="#toc_10.15">完整的示例代码</a>
-</ul>
-<li><a href="#toc_11">Scala类的层级</a>
-<ul>
-<li><a href="#toc_11.1">Scala类的概览</a>
-<ul>
-<li><a href="#toc_11.1.1">值类型（AnyVal）</a>
-<li><a href="#toc_11.1.2">引用类型（AnyRef）</a>
-</ul>
-<li><a href="#toc_11.2">原始类型是如何实现的</a>
-<li><a href="#toc_11.3">底层类型</a>
-</ul>
-<li><a href="#toc_12">特质（Traits）</a>
-<ul>
-<li><a href="#toc_12.1">概念</a>
-<li><a href="#toc_12.2">比较瘦接口与胖接口</a>
-<li><a href="#toc_12.3">样例：长方形对象</a>
-<li><a href="#toc_12.4">实现Ordered特质来排序</a>
-<li><a href="#toc_12.5">特质的继承</a>
-<li><a href="#toc_12.6">特质的叠加</a>
-<li><a href="#toc_12.7">为什么不是多重继承</a>
-<li><a href="#toc_12.8">什么情况下要用特质</a>
-</ul>
-<li><a href="#toc_13">包和引用</a>
-<ul>
-<li><a href="#toc_13.1">引用包</a>
-<li><a href="#toc_13.2">隐式引用</a>
-<li><a href="#toc_13.3">访问修饰符</a>
-<ul>
-<li><a href="#toc_13.3.1">private</a>
-<li><a href="#toc_13.3.2">protected</a>
-<li><a href="#toc_13.3.3">public</a>
-<li><a href="#toc_13.3.4">保护的范围</a>
-<li><a href="#toc_13.3.5">伴生对象的可见度性</a>
+<li><a href="#toc_9.9.1">跟踪尾递归函数</a>
+<li><a href="#toc_9.9.2">尾递归的局限</a>
 </ul>
 </ul>
-<li><a href="#toc_14">断言和测试</a>
+<li><a href="#toc_10">控制抽象</a>
 <ul>
-<li><a href="#toc_14.1">断言</a>
-<li><a href="#toc_14.2">测试</a>
+<li><a href="#toc_10.1">可复用的代码</a>
+<li><a href="#toc_10.2">简化客户端代码</a>
+<li><a href="#toc_10.3">柯里化（Currying）</a>
+<li><a href="#toc_10.4">编写新的控制结构</a>
+<li><a href="#toc_10.5">传名参数</a>
+</ul>
+<li><a href="#toc_11">组合与继承</a>
 <ul>
-<li><a href="#toc_14.2.1">ScalaTest</a>
-<li><a href="#toc_14.2.2">Junit 4</a>
-<li><a href="#toc_14.2.3">混合ScalaTest与JUnit</a>
+<li><a href="#toc_11.1">定制一个二维布局库</a>
+<li><a href="#toc_11.2">抽象类</a>
+<li><a href="#toc_11.3">定义无参数方法</a>
+<li><a href="#toc_11.4">扩展类</a>
+<li><a href="#toc_11.5">重载方法和字段</a>
+<li><a href="#toc_11.6">定义参数化字段</a>
+<li><a href="#toc_11.7">调用超类构造器</a>
+<li><a href="#toc_11.8">使用override修饰符</a>
+<li><a href="#toc_11.9">多态和动态绑定</a>
+<li><a href="#toc_11.10">定义final成员</a>
+<li><a href="#toc_11.11">使用组合与继承</a>
+<li><a href="#toc_11.12">实现示例中的功能</a>
+<li><a href="#toc_11.13">定义工厂对象</a>
+<li><a href="#toc_11.14">变高变宽</a>
+<li><a href="#toc_11.15">完整的示例代码</a>
+</ul>
+<li><a href="#toc_12">Scala类的层级</a>
+<ul>
+<li><a href="#toc_12.1">Scala类的概览</a>
+<ul>
+<li><a href="#toc_12.1.1">值类型（AnyVal）</a>
+<li><a href="#toc_12.1.2">引用类型（AnyRef）</a>
+</ul>
+<li><a href="#toc_12.2">原始类型是如何实现的</a>
+<li><a href="#toc_12.3">底层类型</a>
+</ul>
+<li><a href="#toc_13">特质（Traits）</a>
+<ul>
+<li><a href="#toc_13.1">概念</a>
+<li><a href="#toc_13.2">比较瘦接口与胖接口</a>
+<li><a href="#toc_13.3">样例：长方形对象</a>
+<li><a href="#toc_13.4">实现Ordered特质来排序</a>
+<li><a href="#toc_13.5">特质的继承</a>
+<li><a href="#toc_13.6">特质的叠加</a>
+<li><a href="#toc_13.7">为什么不是多重继承</a>
+<li><a href="#toc_13.8">什么情况下要用特质</a>
+</ul>
+<li><a href="#toc_14">包和引用</a>
+<ul>
+<li><a href="#toc_14.1">引用包</a>
+<li><a href="#toc_14.2">隐式引用</a>
+<li><a href="#toc_14.3">访问修饰符</a>
+<ul>
+<li><a href="#toc_14.3.1">private</a>
+<li><a href="#toc_14.3.2">protected</a>
+<li><a href="#toc_14.3.3">public</a>
+<li><a href="#toc_14.3.4">保护的范围</a>
+<li><a href="#toc_14.3.5">伴生对象的可见度性</a>
+</ul>
+</ul>
+<li><a href="#toc_15">断言和测试</a>
+<ul>
+<li><a href="#toc_15.1">断言</a>
+<li><a href="#toc_15.2">测试</a>
+<ul>
+<li><a href="#toc_15.2.1">ScalaTest</a>
+<li><a href="#toc_15.2.2">Junit 4</a>
+<li><a href="#toc_15.2.3">混合ScalaTest与JUnit</a>
 </ul>
 </ul>
 </ul>
@@ -363,13 +371,24 @@ res2: java.lang.String = This String get returned!
 
 <pre class="brush: scala">
 args.foreach( (arg: String) =&gt; println(arg) )
+</pre>
 
-//这里的String类型可以自动推导出来：
+<p>
+这里的String类型可以自动推导出来：
+</p>
+<pre class="brush: scala">
 args.foreach( arg =&gt; println(arg) )
+</pre>
 
-//在这种字面量只有一行而且只有一个参数情况下，可以省掉参数列表
+<p>
+在这种字面量只有一行而且只有一个参数情况下，可以省掉参数列表：
+</p>
+<pre class="brush: scala">
 args.foreach( println )
 </pre>
+<p>
+}}}
+</p>
 
 
 <h2 id="toc_1.5">for循环</h2>
@@ -377,7 +396,6 @@ args.foreach( println )
 <pre class="brush: scala">
 scala&gt; for (i &lt;- 0 to 10) print(i)
 012345678910
-
 </pre>
 
 
@@ -407,6 +425,7 @@ scala中没有操作符的重载，因为操作符也是方法的名字：
 <pre class="brush: scala">
 1 + 2
 </pre>
+
 <p>
 相当于：
 </p>
@@ -424,7 +443,7 @@ Scala在构成标识符方面有四种非常灵活的规则：
 <h2 id="toc_2.1">字母数字标识符（alphanumeric identifier）</h2>
 
 <p>
-字母数字标识符起始于一个字母或下划线，之后可以跟字母，数字，或下划线。‘\(’字符也被当作是字母，但是被保留作为Scala编译器产生的标识符之用。用户程序里的标识符不应该包含‘\)’字符，尽管能够编译通过；但是这样做有可能导致与Scala编译器产生的标识符发生名称冲撞。
+字母数字标识符起始于一个字母或下划线，之后可以跟字母，数字，或下划线。美元符也被当作是字母，但是被保留作为Scala编译器产生的标识符之用。用户程序里的标识符不应该包含美元字符，尽管能够编译通过；但是这样做有可能导致与Scala编译器产生的标识符发生名称冲撞。
 </p>
 
 <p>
@@ -459,7 +478,13 @@ Scala与Java的习惯不一致的地方在于常量名。Scala里，constant这�
 </pre>
 
 <p>
- Scala编译器将内部“粉碎”操作符标识符以转换成合法的内嵌<code>\(</code>的Java标识符。例如，标识符<code>:-&gt;</code>将被内部表达为<code>\)colon\(minus\)greater</code>。若你想从Java代码访问这个标识符，就应使用这个内部表达。 
+Scala编译器将内部“粉碎”操作符标识符以转换成合法的的内嵌美元符的Java标识符。例如，标识符<code>:-&gt;</code>将在内部将被表达为：
+</p>
+<pre class="brush: scala">
+$colon$minus$greater
+</pre>
+<p>
+若你想从Java代码访问这个标识符，就应使用这个内部表达。 
 </p>
  
 <p>
@@ -493,8 +518,9 @@ Thread.`yield`()
 </pre>
 
 
+<h1 id="toc_3">常用工具</h1>
 
-<h2 id="toc_2.5">类型参数化数组</h2>
+<h2 id="toc_3.1">类型参数化数组</h2>
 
 <p>
 长度为3的数组，存放的元素类型为<code>String</code>：
@@ -505,7 +531,6 @@ val gs: Array[String] = new Array[String](3)
 </pre>
 
 <pre class="brush: scala">
-
 scala&gt; val gs = new Array[String](3)
 gs: Array[String] = Array(null, null, null)
 
@@ -524,7 +549,7 @@ scala&gt; ns.foreach(print)
 </pre>
 
 
-<h2 id="toc_2.6">apply与update方法</h2>
+<h2 id="toc_3.2">apply与update方法</h2>
 
 <p>
 对一个对象的后面加上括号的操作其实是调用了这个对象的<code>apply</code>方法。所以数组的元素索引操作其实是<code>apply</code>方法调用：
@@ -550,7 +575,7 @@ gs.update(0, "aa")
 </pre>
 
 
-<h2 id="toc_2.7">列表</h2>
+<h2 id="toc_3.3">列表</h2>
 
 <p>
 与<code>java.util.List</code>不同，<code>scala.List</code>是不可变的。不可变的对象更加符合函数式风格。
@@ -562,7 +587,7 @@ ll: List[Int] = List(1, 2, 3)
 </pre>
 
 <p>
-<code>::</code>把一个元素加到列表的头上； 用<code>:::</code>连起两个列表：
+<code>::</code>（读作cons）把一个元素加到列表的头上； 用<code>:::</code>连起两个列表：
 </p>
 
 <pre class="brush: scala">
@@ -589,35 +614,7 @@ nl: List[Int] = List(1, 2, 3)
 List只能把元素加在头上，如果要加在后面的话，一个方法是在加到头上以后再调用<code>reverse</code>方法；还有一个方案是使用ListBuffer，它有<code>append</code>方法。
 </p>
 
-<h3 id="toc_2.7.1">方法关联性</h3>
-
-<p>
-所有以<code>:</code>结尾的方法其实是后一个操作数调用前一个操作数，所以：
-</p>
-
-<pre class="brush: scala">
-0 :: ll
-// 其实是
-ll.::(0)
-
-ll ::: ll2
-// 其实是
-ll2.:::(ll)
-</pre>
-
-<p>
-回到前面的串列表操作：
-</p>
-
-<pre class="brush: scala">
-val nl = 1 :: 2 :: 3 :: Nil
-</pre>
-
-<p>
-如果没有最后的<code>Nil</code>，就变成了<code>3.::(2)</code>。因为数字没有<code>::</code>方法，这样就会报错。
-</p>
-
-<h3 id="toc_2.7.2">List常用方法</h3>
+<h3 id="toc_3.3.1">List常用方法</h3>
 
 <pre class="brush: scala">
 List() 或 Nil                          // 空List
@@ -652,7 +649,35 @@ thrill.tail                            // 返回除掉第一个元素的thrill�
 </pre>
 
 
-<h2 id="toc_2.8">元组（Tuple）</h2>
+<h2 id="toc_3.4">方法关联性</h2>
+
+<p>
+所有以<code>:</code>结尾的方法其实是后一个操作数调用前一个操作数，所以：
+</p>
+
+<pre class="brush: scala">
+0 :: ll
+// 其实是
+ll.::(0)
+
+ll ::: ll2
+// 其实是
+ll2.:::(ll)
+</pre>
+
+<p>
+回到前面的串列表操作：
+</p>
+
+<pre class="brush: scala">
+val nl = 1 :: 2 :: 3 :: Nil
+</pre>
+
+<p>
+如果没有最后的<code>Nil</code>，就变成了<code>3.::(2)</code>。因为数字没有<code>::</code>方法，这样就会报错。
+</p>
+
+<h2 id="toc_3.5">元组（Tuple）</h2>
 
 <p>
 元组像列表，但可以放不同类型的元素。这样类似于Java Bean，但写起来更加简单。元组的类型按字段个数来识别，有2个字段的就是<code>Tuple2</code>、3个就是<code>Tuple3</code>，Scala最多支持到<code>Tuple22</code>：
@@ -676,10 +701,16 @@ Luft
 </pre>
 
 
-<h2 id="toc_2.9">集（Set）和映射（Map）</h2>
+<h2 id="toc_3.6">集（Set）和映射（Map）</h2>
 <p>
 对于Map和Set，Scala都分别提供了可变和不变的版本（放一不同的包里）。可变版本的操作会在本地修改，不可变的版本会返回一个新的对象。一般默认会使用不可变版本。
 </p>
+
+<p>
+虽然都提供了<code>+=</code>方法添加元素，但只可变实现都是返回一个新的对象。
+</p>
+
+<h3 id="toc_3.6.1">Set</h3>
 
 <p>
 Set继承关系：
@@ -741,9 +772,10 @@ Set(Chilies, Tomatoes, Coriander)
 Map继承关系：
 </p>
 
+<h3 id="toc_3.6.2">Map</h3>
 
 <p>
-<img src="images/Selection_016.png" alt="Map继承关系" />
+<img src="images/scala/Selection_016.png" alt="Map继承关系" />
 </p>
 
 
@@ -786,13 +818,13 @@ Find big X on ground.
 
 
 
-<h2 id="toc_2.10">函数式风格</h2>
+<h2 id="toc_3.7">函数式风格</h2>
 
 <p>
 函数式风格极力避免使用变量（就是用到变量也尽量用val这种不可变的变量）与副作用。
 </p>
 
-<h3 id="toc_2.10.1">典型的指令式风格</h3>
+<h3 id="toc_3.7.1">典型的指令式风格</h3>
 
 <p>
 先来看一个指令式的for循环：
@@ -812,7 +844,7 @@ scala&gt; def printArgs(args: Array[String]): Unit = {
 printArgs: (args: Array[String])Unit
 </pre>
 
-<h3 id="toc_2.10.2">去除变量的使用</h3>
+<h3 id="toc_3.7.2">去除变量的使用</h3>
 
 <p>
 通过去掉val的使用变得更加函数式风格：
@@ -836,7 +868,7 @@ scala&gt; def printArgs(args: Array[String]): Unit = {
 printArgs: (args: Array[String])Unit
 </pre>
 
-<h3 id="toc_2.10.3">去除副作用</h3>
+<h3 id="toc_3.7.3">去除副作用</h3>
 
 <p>
 光去掉了变量的使用还不是函数式的。因为这个例子中还有副作用：打印到输出流。
@@ -862,7 +894,7 @@ scala&gt; println(formatArgs(args))
 
 
 
-<h2 id="toc_2.11">读取文本文件</h2>
+<h2 id="toc_3.8">读取文本文件</h2>
 
 <p>
 一个读取文本文件的方法，统计每个行里的字符数：
@@ -956,13 +988,17 @@ if (args.length &gt; 0) {
 
 
 
-<h1 id="toc_3">基本类型</h1>
+<h1 id="toc_4">基本类型</h1>
 
 <p>
-基本类型包括<code>java.lang</code>包下的<code>String</code>和<code>scala</code>包下的<code>Byte</code>、<code>Short</code>、<code>Int</code>、<code>Long</code>、<code>Float</code>、<code>Double</code>、<code>Char</code>、<code>Boolean</code>。还有在<code>scala.runtime</code>包下对应的包装器类<code>Rich...</code>，如：<code>RichInt</code>。
+基本类型包括<code>java.lang</code>包下的<code>String</code>和<code>scala</code>包下的<code>Byte</code>、<code>Short</code>、<code>Int</code>、<code>Long</code>、<code>Float</code>、<code>Double</code>、<code>Char</code>、<code>Boolean</code>。还有在<code>scala.runtime</code>包下对应的包装器类<code>Rich...</code>。
 </p>
 
-<h2 id="toc_3.1">字符串</h2>
+<p>
+如：<code>Int</code>对应的包装器类型为<code>scala.runtime.RichInt</code>。
+</p>
+
+<h2 id="toc_4.1">字符串</h2>
 
 <p>
 除了和Java一样的字符串字面量表示方式以外，Scala还提供了原始字符串（raw string）方便照原文解读： 
@@ -996,14 +1032,14 @@ Welcome to Ultamix 3000.
 Type "HELP" for help.
 </pre>
 
-<h2 id="toc_3.2">符号</h2>
+<h2 id="toc_4.2">符号</h2>
 
 <p>
-格式为<code>'symb</code>，这里的<code>symb</code>可以是任何字母或数字。这种字面量被直接映射为类<code>scala.Symbol</code>的实例，解释器调用工厂方法<code>Symbol("symb")</code>产生。
+格式为<code>'symb</code>，这里的<code>symb</code>可以是任何字母或数字。这种字面量被直接映射为类<code>scala.Symbol</code>的实例，解释器调用工厂方法<code>Symbol("symb")</code>产生。符号变量是被限定（interned）的，如果同一个字面量出现两次，其实指向的是同一个<code>Symble</code>实例。
 </p>
 
 <p>
-符号变量什么事情都做不了，只能显示自己的名字，而且符号变量是被限定（interned）的，如果同一个字面量出现两次，其实指向的是同一个<code>Symble</code>实例：
+符号变量什么事情都做不了，只能显示自己的名字：
 </p>
 
 <pre class="brush: scala">
@@ -1015,25 +1051,41 @@ res3: String = aSymbol
 </pre>
 
 <p>
-那符号能用来干嘛？比如说，下面的函数更新记录，<code>field</code>是字段名、<code>value</code>是值：
+那符号能用来干嘛？典型应用是作为动态语言中的标签符。比如说，下面的函数用来更新记录，两个参数<code>field</code>是字段名、<code>value</code>是值：
 </p>
 
 <pre class="brush: scala">
 scala&gt; def updateRecordByName(field: Symbol, value: Any){ }
 updateRecordByName: (field: Symbol, value: Any)Unit
+</pre>
 
+<p>
+Scala是静态语言，所以不可以随便写一个标识符：
+</p>
+
+<pre class="brush: scala">
+scala&gt; updateRecordByName(pcOK, "OK Computer")
+&lt;console&gt;6: error : not fount: value pcOK
+          updateRecordByName: (field: Symbol, value: Any)Unit
+</pre>
+
+<p>
+这是就要用到符号了：
+</p>
+
+<pre class="brush: scala">
 scala&gt; updateRecordByName('pcOK, "OK Computer")
 </pre>
 
 
 
-<h2 id="toc_3.3">操作符与方法</h2>
+<h2 id="toc_4.3">操作符与方法</h2>
 
 <p>
-操作符也是普通方法的另一种写法，操作符的重载也就是方法的重载。
+操作符也是普通方法的另一种写法。方法可以当操作符写；操作符也可以当作方法写；操作符的重载也就是方法的重载。
 </p>
 
-<h3 id="toc_3.3.1">中缀操作符（infix）</h3>
+<h3 id="toc_4.3.1">中缀操作符（infix）</h3>
 
 <pre class="brush: scala">
 scala&gt; val s = "Hello, world!"
@@ -1046,10 +1098,10 @@ scala&gt; s indexOf ('o', 5)
 res7: Int = 8
 </pre>
 
-<h3 id="toc_3.3.2">前缀操作符</h3>
+<h3 id="toc_4.3.2">前缀操作符</h3>
 
 <p>
-前缀操作符以<code>unary_</code>开头，能有四种<code>+</code>、<code>-</code>、<code>!</code>、<code>~</code>：
+前缀操作符以<code>unary_</code>开头，能有四种<code>+</code>、<code>-</code>、<code>!</code>、<code>~</code>分别用表示<code>unary_+</code>、<code>unary_-</code>、<code>unary_!</code>、<code>unary_~</code>：
 </p>
 
 <pre class="brush: scala">
@@ -1064,10 +1116,10 @@ res9: Double = -2.0
 其他的符号就算定义了也不能作为前置操作符解释，如果定义了<code>p.unary_*</code>，在调用<code>*p</code>会被Scala解释为<code>*.p</code>。
 </p>
 
-<h3 id="toc_3.3.3">后缀操作符</h3>
+<h3 id="toc_4.3.3">后缀操作符</h3>
 
 <p>
-后缀操作符其实就是没有参数的函数。一般习惯上没有副作用的话就加上括号，如：<code>println()</code>；如果没有副作用就不加括号，如：<code>String.toLowerCase</code>
+后缀操作符其实就是没有参数的函数。一般习惯上有副作用的话就加上括号，如：<code>println()</code>；如果没有副作用就不加括号，如：<code>String.toLowerCase</code>
 </p>
 
 <pre class="brush: scala">
@@ -1078,11 +1130,21 @@ scala&gt; "Hello" toLowerCase
 res11: java.lang.String = hello
 </pre>
 
-
-<h2 id="toc_3.4">对象相等性</h2>
+<h2 id="toc_4.4">位移操作</h2>
 
 <p>
-操作符<code>==</code>与<code>!=</code>不仅比较基本类型，也可以比较对象，甚至是不同类的对象也可以比较，也可以和<code>null</code>比不会有异常抛出：
+左移（填零）、右移（填符号位）、无符号右移（填零）：
+</p>
+
+<pre class="brush: scala">
+&lt;&lt;     &gt;     &gt;&gt;&gt;
+</pre>
+
+
+<h2 id="toc_4.5">对象相等性</h2>
+
+<p>
+操作符<code>==</code>与<code>!=</code>与Java中的不同，更加像Java中的<code>equals</code>比较是内容的含意是否相等。而且在Scala中不仅比较基本类型，也可以比较对象，甚至是不同类的对象也可以比较，也可以和<code>null</code>比不会有异常抛出：
 </p>
 
 <pre class="brush: scala">
@@ -1114,9 +1176,11 @@ scala&gt; ("he" + "llo") == "hello"
 res20: Boolean = true
 </pre>
 
+<p>
+而且与Java中<code>==</code>和<code>!=</code>类似的比较是否是同一个实例的操作分别是<code>eq</code>和<code>ne</code>。
+</p>
 
-
-<h1 id="toc_4">类</h1>
+<h1 id="toc_5">类</h1>
 
 <p>
 简单定义类与创建对象：
@@ -1198,7 +1262,7 @@ class ChecksumAccumulator {
 
 
 
-<h2 id="toc_4.1">创建新类型</h2>
+<h2 id="toc_5.1">创建新类型</h2>
 
 <p>
 分数（rational number）表示分子（numerator）和分母（denominator）的比率，其中分母不能为零。能让小数部分得到了完全表达，没有舍入或估算。要模型化分数的行为，包括允许它们执行加，减，乘还有除运算。
@@ -1220,7 +1284,7 @@ class ChecksumAccumulator {
 一个分数加到另外一个分数上，产生的结果是一个新的分数。而原来的数不会被“改变”。
 </p>
 
-<h2 id="toc_4.2">主构造器：primary constructor</h2>
+<h2 id="toc_5.2">主构造器：primary constructor</h2>
 
 <p>
 如果类没有主体，就不需要指定一对空的大括号（当然你如果想的话也可以）。
@@ -1250,7 +1314,7 @@ Created 1/2 res0: Rational = Rational@a0b0f5
 你可以像这样打印输出一条消息，因为打印语句也在主构造器中。
 </p>
 
-<h2 id="toc_4.3">先决条件（precondition）</h2>
+<h2 id="toc_5.3">先决条件（precondition）</h2>
 
 <p>
 先决条件是对传递给方法或构造器的值的限制，是调用者必须满足的需求。使用<code>Predef</code>包中的<code>require</code>方法。如果传入的值为真，require将正常返回。反之，require将通过抛出IllegalArgumentException来阻止对象被构造。
@@ -1263,7 +1327,7 @@ class Rational(n: Int, d: Int) {
 </pre>
 
 
-<h2 id="toc_4.4">字段</h2>
+<h2 id="toc_5.4">字段</h2>
 
 <p>
 要注意的是：
@@ -1310,7 +1374,7 @@ res8: Int = 2
 </pre>
 
 
-<h2 id="toc_4.5">方法</h2>
+<h2 id="toc_5.5">方法</h2>
 
 <p>
 添加加法运算，得到另外一个分数后返回一个新对象为二者的和：
@@ -1346,7 +1410,7 @@ res0: Rational = 7/6
 </pre>
 
 
-<h2 id="toc_4.6">自指向</h2>
+<h2 id="toc_5.6">自指向</h2>
 
 <p>
 关键字this指向当前执行方法被调用的对象实例，或者如果使用在构造器里的话，就是正被构建的对象实例。
@@ -1379,7 +1443,7 @@ def max(that: Rational) =
 </p>
 
 
-<h2 id="toc_4.7">从构造器</h2>
+<h2 id="toc_5.7">从构造器</h2>
 
 <p>
 有些时候一个类里需要多个构造器。Scala里主构造器之外的构造器被称为从构造器（auxiliary constructor）。Scala的从构造器开始于<code>def this(...)</code>。
@@ -1409,7 +1473,7 @@ Rational的从构造器主体几乎完全是调用主构造器，直接传递了
 
 
 
-<h2 id="toc_4.8">私有字段和方法</h2>
+<h2 id="toc_5.8">私有字段和方法</h2>
 
 <p>
 分数的分子分母有时可以约掉，添加一个最大公约数的私有方法：
@@ -1431,7 +1495,7 @@ class Rational(n: Int, d: Int) {
 
 
 
-<h2 id="toc_4.9">定义操作符</h2>
+<h2 id="toc_5.9">定义操作符</h2>
 
 <p>
 用通常的数学的符号替换add方法，同样实现一个*方法以实现乘法：
@@ -1482,7 +1546,7 @@ res36: Rational = 5/6
 
 
 
-<h2 id="toc_4.10">方法覆盖（override）</h2>
+<h2 id="toc_5.10">方法覆盖（override）</h2>
 
 <p>
 <code>override</code>修饰符标示了之前的方法定义被重载。Rational类里增加toString方法的方式重载：override缺省的实现，如： 
@@ -1506,7 +1570,7 @@ y: Rational = 5/7
 
 
 
-<h2 id="toc_4.11">方法重载（overload）</h2>
+<h2 id="toc_5.11">方法重载（overload）</h2>
 
 <p>
 方法的参数表不同产生重载。
@@ -1548,7 +1612,7 @@ def /(i: Int): Rational = new Rational(numer, denom * i)
 </pre>
 
 
-<h2 id="toc_4.12">隐式转换</h2>
+<h2 id="toc_5.12">隐式转换</h2>
 
 <p>
 虽然现在可以写<code>r * 2</code>了，但是不能用<code>2 * r</code>这样的写法：
@@ -1588,7 +1652,7 @@ res16: Rational = 4/3
 隐式转换只能在定义的作用范围内起作用，如果隐式方法被定义在<code>Rational</code>类中，就不在解释器的作用范围内，所以要把它定义在解释器内。
 </p>
 
-<h2 id="toc_4.13">完整的Rational代码</h2>
+<h2 id="toc_5.13">完整的Rational代码</h2>
 
 <pre class="brush: scala">
 class Rational(n: Int, d: Int) { 
@@ -1651,7 +1715,7 @@ print("2 * x = ");  println(2 * x)
 
 
 
-<h1 id="toc_5">单例对象</h1>
+<h1 id="toc_6">单例对象</h1>
 
 <p>
 Scala中没有像Java那样的静态成员而是用单例对象（Singleton Object）来代替。
@@ -1667,7 +1731,7 @@ object ObjNam{
 }
 </pre>
 
-<h1 id="toc_6">伴生对象</h1>
+<h1 id="toc_7">伴生对象</h1>
 
 <p>
 如果一个单例对象的名字和类一样，并且必须在同一个文件里。那它就是这个类的伴生对象（Companion Object），类是它的伴生类（Companion Class）。它们可以相互访问私有成员。
@@ -1716,9 +1780,9 @@ println(res2)
 
 
 
-<h1 id="toc_7">内建控制结构</h1>
+<h1 id="toc_8">内建控制结构</h1>
 
-<h2 id="toc_7.1">if表达式</h2>
+<h2 id="toc_8.1">if表达式</h2>
 
 <p>
 if表达式返回执行分支的结果：
@@ -1750,7 +1814,7 @@ println(if (!args.isEmpty) args(0) else "default.txt")
 
 
 
-<h2 id="toc_7.2">while循环</h2>
+<h2 id="toc_8.2">while循环</h2>
 
 <p>
 用do-while算最大公约数：
@@ -1778,7 +1842,7 @@ do {
 } while (line != "")
 </pre>
 
-<h3 id="toc_7.2.1">while循环与Unit</h3>
+<h3 id="toc_8.2.1">while循环与Unit</h3>
 
 <p>
 注意这里没有叫它“表达式”。原因是它不会有返回值（类型为<code>Unit</code>，写作“<code>()</code>”），所以不是表达式。
@@ -1824,7 +1888,7 @@ while ((line = readline()) != "") {  // always true !!!
 </pre>
 
 
-<h3 id="toc_7.2.2">while循环与函数式风格</h3>
+<h3 id="toc_8.2.2">while循环与函数式风格</h3>
 
 <p>
 由于while没有返回值，所以常常被函数式语言舍弃。例如对于同样一个求最大公约数的函数，对比一下指令式与函数式的区别。
@@ -1855,14 +1919,14 @@ while循环是没有返回值的，那就一定要用副作用：不是更新var
 </p>
 
 
-<h2 id="toc_7.3">for表达式</h2>
+<h2 id="toc_8.3">for表达式</h2>
 
 
 <p>
 Scale中的for表达式是遍历集合类的强大工具，包括了过滤与构造新集合的功能。
 </p>
 
-<h3 id="toc_7.3.1">生成器（generator）</h3>
+<h3 id="toc_8.3.1">生成器（generator）</h3>
 
 <p>
 生成器语法<code>item &lt;- collection</code>，对应每步遍历时集合中对应的项：
@@ -1896,7 +1960,7 @@ for (i &lt;-0 to filesList.length -1)
 	println(fileList(i))
 </pre>
 
-<h3 id="toc_7.3.2">for是表达式</h3>
+<h3 id="toc_8.3.2">for是表达式</h3>
 
 
 <p>
@@ -1904,7 +1968,7 @@ for表达式之所以被称为“表达式”是因为它能产生令人感兴�
 </p>
 
 
-<h3 id="toc_7.3.3">过滤器（filter）</h3>
+<h3 id="toc_8.3.3">过滤器（filter）</h3>
 
 <p>
 只要处理以<code>.scala</code>结尾的文件：
@@ -1937,7 +2001,7 @@ for (
 ) println(file)
 </pre>
 
-<h3 id="toc_7.3.4">for循环嵌套</h3>
+<h3 id="toc_8.3.4">for循环嵌套</h3>
 
 <p>
 通过多个<code>&lt;-</code>得到嵌套：
@@ -1966,7 +2030,7 @@ grep(".*gcd.*")
 在前面提到过的Scala的断句原则时提到，在小括号里被认为是一条语句，所以多个for嵌套时要加上分号分隔；花括号里可以放多条，根据换行可以正确断句。
 </p>
 
-<h3 id="toc_7.3.5">（流间）变量绑定（mid-stream）</h3>
+<h3 id="toc_8.3.5">（流间）变量绑定（mid-stream）</h3>
 
 <p>
 请注意前面的代码段中重复出现的表达式line.trim。这不是个可忽略的计算，因此你或许想每次只算一遍。通过用等号<code>=</code>把结果绑定到新变量可以做到这点。绑定的变量被当作val引入和使用，不过不用带关键字val。
@@ -1982,7 +2046,7 @@ def grep(pattern: String) =
 </pre>
 
 
-<h3 id="toc_7.3.6">制造新集合</h3>
+<h3 id="toc_8.3.6">制造新集合</h3>
 
 <p>
 到现在为止所有的例子都只是对枚举值进行操作然后就放过，除此之外，你还可以创建一个值去记住每一次的迭代。只要在for表达式之前加上关键字<code>yield</code>。
@@ -2029,9 +2093,9 @@ val forLineLengths =
 	} yield trimmed.length
 </pre>
 
-<h2 id="toc_7.4">try表达式与异常</h2>
+<h2 id="toc_8.4">try表达式与异常</h2>
 
-<h3 id="toc_7.4.1">抛出异常</h3>
+<h3 id="toc_8.4.1">抛出异常</h3>
 
 <pre class="brush: scala">
 throw new IllegalArgumentException
@@ -2047,7 +2111,7 @@ val half =
 	else throw new RuntimeException("n must be even")
 </pre>
 
-<h3 id="toc_7.4.2">捕获异常</h3>
+<h3 id="toc_8.4.2">捕获异常</h3>
 
 <p>
 捕获异常的语法选择catch子句的形式。这样设计的原因是为了与Scala很重要的部分：模式匹配（pattern matching）保持一致。模式匹配是一种很强大的特征，将在稍后概述并在另外的章节中详述。
@@ -2070,7 +2134,7 @@ try {
 与Java的一个差别是Scala里不需要你捕获检查异常（checked exception）或把它们声明在throws子句中。如果你愿意，可以用ATthrows标注声明一个throws子句，但这不是必需的。
 </p>
 
-<h2 id="toc_7.5">finally子句</h2>
+<h2 id="toc_8.5">finally子句</h2>
 
 <p>
 没有啥要特别说明的：
@@ -2087,7 +2151,7 @@ try {
 }
 </pre>
 
-<h3 id="toc_7.5.1">try-cache-finally产生的值</h3>
+<h3 id="toc_8.5.1">try-cache-finally产生的值</h3>
 
 <p>
 和其它大多数Scala控制结构一样，try-catch-finally也产生值。
@@ -2132,7 +2196,7 @@ res2: Int = 1
 
 
 
-<h2 id="toc_7.6">match表达式</h2>
+<h2 id="toc_8.6">match表达式</h2>
 
 <p>
 Scala的匹配表达式允许你在许多可选项（alternative）中做选择，就好象其它语言中的switch语句。通常说来match表达式可以让你使用任意的模式（pattern）做选择，后面会有专门的篇幅介绍。通用的模式可以稍等再说。目前，只要考虑使用match在若干可选项中做选择。 
@@ -2188,7 +2252,7 @@ println(friend)
 </pre>
 
 
-<h3 id="toc_7.6.1">不要用break和contine</h3>
+<h3 id="toc_8.6.1">不要用break和contine</h3>
 
 <p>
 break和continue与函数式文本结合得不好，而且有效利用函数式文本可以让代码写得更加简短。
@@ -2257,7 +2321,7 @@ Scala编译器不会实际对代码7.17展示的代码生成递归函数。因�
 </p>
 
 
-<h2 id="toc_7.7">变量作用域</h2>
+<h2 id="toc_8.7">变量作用域</h2>
 
 <p>
 大括号通常引入了一个新的范围，所以任何定义在打括号里的东西在括号之后就脱离了范围。这条规则有几个例外，因为在Scala里有时候你可以用大括号代替小括号。表达式语法的替代品是这种使用大括号例子的其中之一。
@@ -2316,7 +2380,7 @@ Scala编译器不会实际对代码7.17展示的代码生成递归函数。因�
 </pre>
 
 
-<h3 id="toc_7.7.1">重构指令式风格的代码</h3>
+<h3 id="toc_8.7.1">重构指令式风格的代码</h3>
 
 <p>
 通过指令式风格输出乘法表：
@@ -2413,9 +2477,9 @@ printMultiTable里另一个揭露其指令式风格的信号来自于它的while
 
 
 
-<h1 id="toc_8">函数与闭包</h1>
+<h1 id="toc_9">函数与闭包</h1>
 
-<h2 id="toc_8.1">方法（method）</h2>
+<h2 id="toc_9.1">方法（method）</h2>
 
 <p>
 方法是被定义为某个对象成员的函数，这是最常用的形式。如下面这个工具检查文件中超过指定长度的行：
@@ -2464,7 +2528,7 @@ printMultiTable里另一个揭露其指令式风格的信号来自于它的while
   LongLines.scala: def processFile(filename: String, width: Int) {
 </pre>
 
-<h2 id="toc_8.2">本地函数</h2>
+<h2 id="toc_9.2">本地函数</h2>
 
 <p>
 Java里通过定义private方法来限制访问。在Scala里还可以把方法定义在另一个函数里来限制只有所在的代码块能访问：
@@ -2510,7 +2574,7 @@ Java里通过定义private方法来限制访问。在Scala里还可以把方法�
   }
 </pre>
 
-<h2 id="toc_8.3">头等函数与函数字面量（literal）</h2>
+<h2 id="toc_9.3">头等函数与函数字面量（literal）</h2>
 
 <p>
 Scala拥有头等函数（first-class function），除了定义函数与调用函数外，还可以写成没有名字的函数字面量（literal）。
@@ -2597,7 +2661,7 @@ Scala拥有头等函数（first-class function），除了定义函数与调用�
   10
 </pre>
 
-<h2 id="toc_8.4">函数字面量的短格式</h2>
+<h2 id="toc_9.4">函数字面量的短格式</h2>
 
 <p>
 Scala提供了许多方法去除冗余信息并把函数文本写得更简短。
@@ -2626,7 +2690,7 @@ Scala提供了许多方法去除冗余信息并把函数文本写得更简短。
 </pre>
 
 
-<h2 id="toc_8.5">占位符语法（Placeholder syntax）</h2>
+<h2 id="toc_9.5">占位符语法（Placeholder syntax）</h2>
 
 <p>
 如果想让函数文本更简洁，可以把下划线当做一个或更多参数的占位符，只要每个参数在函数文本内仅出现一次，也就是说，在这种情况下每个下划线都代表一个不同的参数。
@@ -2674,7 +2738,7 @@ Scala提供了许多方法去除冗余信息并把函数文本写得更简短。
   res11: Int = 15
 </pre>
 
-<h2 id="toc_8.6">部分应用函数（partially applied function）</h2>
+<h2 id="toc_9.6">部分应用函数（partially applied function）</h2>
 
 <p>
 下划线不仅能代替一个参数，还可以代替整个参数列表：
@@ -2835,7 +2899,7 @@ Scala编译器根据表达式sum _自动产生的类里的apply方法，简单�
 
 
 
-<h2 id="toc_8.7">闭包（Closures）</h2>
+<h2 id="toc_9.7">闭包（Closures）</h2>
 
 <p>
 函数不仅可以用到参数：
@@ -2957,7 +3021,7 @@ Scala编译器根据表达式sum _自动产生的类里的apply方法，简单�
 </p>
 
 
-<h2 id="toc_8.8">重复参数</h2>
+<h2 id="toc_9.8">重复参数</h2>
 
 <p>
 Scala允许你指明函数的最后一个参数可以是重复的。这可以允许客户向函数传入可变长度参数列表。想要标注一个重复参数，在参数的类型之后放一个星号。例如：
@@ -3016,7 +3080,7 @@ Scala允许你指明函数的最后一个参数可以是重复的。这可以允
 </p>
 
 
-<h2 id="toc_8.9">尾递归（tail recursive）</h2>
+<h2 id="toc_9.9">尾递归（tail recursive）</h2>
 
 <p>
 Scala编译器可以应用一个重要的优化。注意递归调用是函数体执行的最后一件事，那么函数在它们最后一个动作调用自己的函数。这被称为尾递归。
@@ -3030,7 +3094,7 @@ Scala编译器检测到尾递归就用新值更新函数参数，然后把它替
 递归经常是比基于循环的更优美和简明的方案。如果方案是尾递归，就无须付出任何运行期开销。
 </p>
 
-<h3 id="toc_8.9.1">跟踪尾递归函数</h3>
+<h3 id="toc_9.9.1">跟踪尾递归函数</h3>
 
 <p>
 尾递归函数将不会为每个调用制造新的堆栈框架；所有的调用将在一个框架内执行。所以在调试的时候会比较怪。
@@ -3107,7 +3171,7 @@ Scala编译器检测到尾递归就用新值更新函数参数，然后把它替
   ... 
 </pre>
 
-<h3 id="toc_8.9.2">尾递归的局限</h3>
+<h3 id="toc_9.9.2">尾递归的局限</h3>
 
 <p>
 Scala里尾递归的使用局限很大，因为JVM指令集使实现更加先进的尾递归形式变得很困难。Scala仅优化了直接递归调用使其返回同一个函数。如果递归是间接的，就像在下面的例子里两个互相递归的函数，就没有优化的可能性了：
@@ -3138,9 +3202,9 @@ Scala里尾递归的使用局限很大，因为JVM指令集使实现更加先进
 
 
 
-<h1 id="toc_9">控制抽象</h1>
+<h1 id="toc_10">控制抽象</h1>
 
-<h2 id="toc_9.1">可复用的代码</h2>
+<h2 id="toc_10.1">可复用的代码</h2>
 
 <p>
 所有的函数都被分割成通用部分（它们在每次函数调用中都相同）以及非通用部分（在不同的函数调用中可能会变化）。通用部分是函数体，而非通用部分必须由参数提供。
@@ -3262,7 +3326,7 @@ Scala里尾递归的使用局限很大，因为JVM指令集使实现更加先进
   } 
 </pre>
 
-<h2 id="toc_9.2">简化客户端代码</h2>
+<h2 id="toc_10.2">简化客户端代码</h2>
 
 <p>
 高阶函数可以提供更加强大的API，让客户的代码写起来更加简单。
@@ -3312,7 +3376,7 @@ res4: Boolean = true
 </pre>
 
 
-<h2 id="toc_9.3">柯里化（Currying）</h2>
+<h2 id="toc_10.3">柯里化（Currying）</h2>
 
 <p>
 理解柯里化可以帮助理解如何建立自己的控制结构。柯里化就是一个函数有多个参数列表。
@@ -3405,7 +3469,7 @@ first和second函数只演示连接在curriedSum函数上的那两个函数，�
 
 
 
-<h2 id="toc_9.4">编写新的控制结构</h2>
+<h2 id="toc_10.4">编写新的控制结构</h2>
 
 <p>
 在拥有头等函数的编程语言中，可以在方法中以函数作为参数创造自己的控制结构。
@@ -3518,7 +3582,7 @@ first和second函数只演示连接在curriedSum函数上的那两个函数，�
 </p>
 
 
-<h2 id="toc_9.5">传名参数</h2>
+<h2 id="toc_10.5">传名参数</h2>
 
 <p>
 上节展示的withPrintWriter方法不同于语言的内建控制结构，如if和while，在于大括号之间的代码带了参数。withPrintWriter方法需要一个类型为PrintWriter的参数。这个参数以“writer =&gt;”方式显示出来：
@@ -3630,10 +3694,10 @@ myAssert函数将带一个函数值做输入并参考一个标志位来决定该
 
 
 
-<h1 id="toc_10">组合与继承</h1>
+<h1 id="toc_11">组合与继承</h1>
 
 
-<h2 id="toc_10.1">定制一个二维布局库</h2>
+<h2 id="toc_11.1">定制一个二维布局库</h2>
 
 <p>
 作为本章运行的例子，我们将创造一个制造和渲染二维布局元素的库。每个元素将代表一个填充字符的长方形。方便起见，库将提供名为<code>elem</code>的工厂方法来通过传入的数据构造新的元素。例如，你将能通过工厂方法采用下面的写法创建带有字串的元素：
@@ -3663,7 +3727,7 @@ myAssert函数将带一个函数值做输入并参考一个标志位来决定该
    *** world
 </pre>
 
-<h2 id="toc_10.2">抽象类</h2>
+<h2 id="toc_11.2">抽象类</h2>
 
 <p>
 布局元素名为Element，存放的文本内容类型为<code>Array[String]</code>。提供方法<code>contents</code>取得存放的文本内容，但没有定义实现方式，所以这个类是抽象类，要加上<code>abstract</code>关键字：
@@ -3684,7 +3748,7 @@ myAssert函数将带一个函数值做输入并参考一个标志位来决定该
 </p>
 
 
-<h2 id="toc_10.3">定义无参数方法</h2>
+<h2 id="toc_11.3">定义无参数方法</h2>
 
 <p>
 添加显示宽度和高度的方法：
@@ -3768,7 +3832,7 @@ width方法返回第一行的长度，或如果元素没有行记录，返回零
 </p>
 
 
-<h2 id="toc_10.4">扩展类</h2>
+<h2 id="toc_11.4">扩展类</h2>
 
 <p>
 实例化一个元素，我们需要创建扩展了Element并实现抽象的contents方法的子类。
@@ -3810,7 +3874,7 @@ ArrayElement的contents方法重载（或者可说成：实现）了类Element�
 
 
 
-<h2 id="toc_10.5">重载方法和字段</h2>
+<h2 id="toc_11.5">重载方法和字段</h2>
 
 <p>
 字段和方法属于相同的命名空间。这使得字段重载无参数方法成为可能。比如说，你可以改变类ArrayElement中contents的实现，从一个方法变为一个字段，而无需修改类Element中contents的抽象方法定义：
@@ -3875,7 +3939,7 @@ Scala把字段和方法放进同一个命名空间的理由很清楚，因为这
 </p>
 
 
-<h2 id="toc_10.6">定义参数化字段</h2>
+<h2 id="toc_11.6">定义参数化字段</h2>
 
 <p>
 ArrayElement类的定义。它有一个参数conts，其唯一目的是被复制到contents字段。选择conts这个参数的名称只是为了让它看上去更像字段名contents而不会与它发生实际冲突。这是一种“代码异味”，一个表明或许某些不必须的累赘和重复。
@@ -3926,7 +3990,7 @@ Tiger的定义是以下包括重载成员dangerous和private成员age的类定�
 
 
 
-<h2 id="toc_10.7">调用超类构造器</h2>
+<h2 id="toc_11.7">调用超类构造器</h2>
 
 <p>
 如果再要新的子类：
@@ -3944,7 +4008,7 @@ Tiger的定义是以下包括重载成员dangerous和private成员age的类定�
 </p>
 
 
-<h2 id="toc_10.8">使用override修饰符</h2>
+<h2 id="toc_11.8">使用override修饰符</h2>
 
 <p>
 考虑一下这样的场景：
@@ -3975,7 +4039,7 @@ Tiger的定义是以下包括重载成员dangerous和private成员age的类定�
 </p>
 
 
-<h2 id="toc_10.9">多态和动态绑定</h2>
+<h2 id="toc_11.9">多态和动态绑定</h2>
 
 
 <p>
@@ -4079,7 +4143,7 @@ Tiger的定义是以下包括重载成员dangerous和private成员age的类定�
 
 
 
-<h2 id="toc_10.10">定义final成员</h2>
+<h2 id="toc_11.10">定义final成员</h2>
 
 <p>
 要确保成员不被子类重载。Scala里和Java里一样，通过添加final修饰符给成员来做到。
@@ -4105,7 +4169,7 @@ Tiger的定义是以下包括重载成员dangerous和private成员age的类定�
   }
 </pre>
 
-<h2 id="toc_10.11">使用组合与继承</h2>
+<h2 id="toc_11.11">使用组合与继承</h2>
 
 <p>
 组合与继承是利用其它现存类定义新类的两个方法。
@@ -4121,7 +4185,7 @@ Tiger的定义是以下包括重载成员dangerous和private成员age的类定�
 想要把子类类型当作超类类型来用。
 </p>
 
-<h2 id="toc_10.12">实现示例中的功能</h2>
+<h2 id="toc_11.12">实现示例中的功能</h2>
 
 <p>
 把一个元素放在另一个上面是指串连这两个元素的contents值。
@@ -4221,7 +4285,7 @@ zip操作符转换为一个对子的数组（可以称为Tupele2）。zip方法�
 
 
 
-<h2 id="toc_10.13">定义工厂对象</h2>
+<h2 id="toc_11.13">定义工厂对象</h2>
 
 <p>
 最直接的方案是创建类Element的伴生对象并把它做成布局元素的工厂方法。这种方式唯一要暴露给客户
@@ -4328,7 +4392,7 @@ Scala里，你可以在类和单例对象中定义其它的类和单例对象。
 
 
 
-<h2 id="toc_10.14">变高变宽</h2>
+<h2 id="toc_11.14">变高变宽</h2>
 
 <p>
 Element的版本并不完全，因为他不允许客户把不同宽度的元素堆叠在一起，或者不同高度的元素靠在一起。比方说，下面的表达式将不能正常工作，因为组合元素的第二行比第一行要长：
@@ -4396,7 +4460,7 @@ Element的版本并不完全，因为他不允许客户把不同宽度的元素�
   }
 </pre>
 
-<h2 id="toc_10.15">完整的示例代码</h2>
+<h2 id="toc_11.15">完整的示例代码</h2>
 
 <p>
 写一个画给定数量边界的螺旋的程序。
@@ -4461,7 +4525,7 @@ $ scala Spiral 6    $ scala Spiral 11    $ scala Spiral 17
 </pre>
 
 
-<h1 id="toc_11">Scala类的层级</h1>
+<h1 id="toc_12">Scala类的层级</h1>
 
 <p>
 Scala里，每个类都继承自通用的名为Any的超类。因为所有的类都是Any的子类，那么定义在Any中的方
@@ -4479,7 +4543,7 @@ Scala还在层级的底端定义了Null和Nothing，主要都扮演通用的子�
 
 
 
-<h2 id="toc_11.1">Scala类的概览</h2>
+<h2 id="toc_12.1">Scala类的概览</h2>
 
 <p>
 层级的顶端是类Any，定义了包含下列的方法：
@@ -4501,7 +4565,7 @@ Scala还在层级的底端定义了Null和Nothing，主要都扮演通用的子�
 根类Any有两个子类：AnyVal和AnyRef。
 </p>
 
-<h3 id="toc_11.1.1">值类型（AnyVal）</h3>
+<h3 id="toc_12.1.1">值类型（AnyVal）</h3>
 
 <p>
 AnyVal是Scala里每个内建值类型的父类。有九个这样的值类型：Byte，Short，Char，Int，Long，Float，Double，Boolean和Unit。其中的前八个对应到Java的原始类型，它们的值在运行时表示成Java的原始值。
@@ -4580,7 +4644,7 @@ Scala里这些类的实例都写成字面量，不能使用new创造这些类的
 工作原理：方法min，max，until，to和abs都定义在类scala.runtime.RichInt里，并且有一个从类Int到RichInt的隐式转换。当你在Int上调用没有定义在Int上但定义在RichInt上的方法时，这个转换就被应用了：
 </p>
 
-<h3 id="toc_11.1.2">引用类型（AnyRef）</h3>
+<h3 id="toc_12.1.2">引用类型（AnyRef）</h3>
 
 <p>
 类Any的另一个子类是类AnyRef。这个是Scala里所有引用类的基类。正如前面提到的，在Java平台上AnyRef实际就是类java.lang.Object的别名。因此Java里写的类和Scala里写的都继承自AnyRef。
@@ -4600,7 +4664,7 @@ Scala类与Java类不同在于它们还继承自一个名为ScalaObject的特别
 
 
 
-<h2 id="toc_11.2">原始类型是如何实现的</h2>
+<h2 id="toc_12.2">原始类型是如何实现的</h2>
 
 <p>
 Scala以与Java同样的方式存储整数：把它当作32位的字。这对在JVM上的效率以及与Java库的互操作性方面来说都很重要。标准的操作如加法或乘法都被实现为原始操作。然而，当整数需要被当作（Java）对象看待的时候，Scala使用了“备份”类java.lang.Integer。如在整数上调用toString方法或者把整数赋值给Any类型的变量时，就会这么做。
@@ -4704,7 +4768,7 @@ Java里，x与y的比较结果将是false。程序员在这种情况应该用equ
   res15: Boolean = true
 </pre>
 
-<h2 id="toc_11.3">底层类型</h2>
+<h2 id="toc_12.3">底层类型</h2>
 
 <p>
 层级的底部你看到了两个类scala.Null和Scala.Nothing。它们是用统一的方式处理某些Scala的面向对象类型系统的“边界情况”的特殊类型。
@@ -4747,13 +4811,13 @@ error的返回类型是Nothing，告诉用户方法不是正常返回的（代�
 
 
 
-<h1 id="toc_12">特质（Traits）</h1>
+<h1 id="toc_13">特质（Traits）</h1>
 
 <p>
 trait是Scala里代码复用的基础单元。特质封装了方法和字段的定义，并可以通过混入到类中重用它们。
 </p>
 
-<h2 id="toc_12.1">概念</h2>
+<h2 id="toc_13.1">概念</h2>
 
 <p>
 定义， trait NoPoint(x: Int, y: Int) // Does not compile：
@@ -4877,7 +4941,7 @@ phil的类型是Philosophical，一个特质。因此，变量phil可以被初�
 类和特质的另一个差别在于不论在类的哪个角落，super调用都是静态绑定的，在特质中，它们是动态绑定的。如果你在类中写下“super.toString”，你很明确哪个方法实现将被调用。然而如果你在特质中写了同样的东西，在你定义特质的时候super调用的方法实现尚未被定义。调用的实现将在每一次特质被混入到具体类的时候才被决定。这种处理super的有趣的行为是使得特质能以可堆叠的改变（stackable modifications）方式工作的关键。
 </p>
 
-<h2 id="toc_12.2">比较瘦接口与胖接口</h2>
+<h2 id="toc_13.2">比较瘦接口与胖接口</h2>
 
 <p>
 瘦接口与胖接口的对阵体现了面向对象设计中常会面临的在实现者与接口用户之间的权衡。胖接口有更多的方法，对于调用者来说更便捷。客户可以捡一个完全符合他们功能需要的方法。另一方面瘦接口有较少的方法，对于实现者来说更简单。然而调用瘦接口的客户因此要写更多的代码。由于没有更多可选的方法调用，他们或许不得不选一个不太完美匹配他们所需的方法并为了使用它写一些额外的代码。
@@ -4908,7 +4972,7 @@ Java的接口常常是过瘦而非过胖。例如，从Java 1.4开始引入的Ch
 要使用特质丰满接口，只要简单地定义一个具有少量抽象方法的特质——特质接口的瘦部分——和潜在的大量具体方法，所有的都实现在抽象方法之上。然后你就可以把丰满了的特质混入到类中，实现接口的瘦部分，并最终获得具有全部胖接口内容的类。
 </p>
 
-<h2 id="toc_12.3">样例：长方形对象</h2>
+<h2 id="toc_13.3">样例：长方形对象</h2>
 
 <p>
 为了使这些长方形对象便于使用，如果库能够提供诸如width，height，left，right，topLeft，等等方法。
@@ -4996,7 +5060,7 @@ Java的接口常常是过瘦而非过胖。例如，从Java 1.4开始引入的Ch
 </pre>
 
 
-<h2 id="toc_12.4">实现Ordered特质来排序</h2>
+<h2 id="toc_13.4">实现Ordered特质来排序</h2>
 
 <p>
 Scala专门提供了Ordered特质解决排序。以前面用过的分数类型来说，原来已经有了四个比较大小的方法：
@@ -5058,7 +5122,7 @@ Scala专门提供了Ordered特质解决排序。以前面用过的分数类型�
   }
 </pre>
 
-<h2 id="toc_12.5">特质的继承</h2>
+<h2 id="toc_13.5">特质的继承</h2>
 
 <p>
 可以把多个特质加在一个类上，按声明的顺序，它们操作的顺序就像栈一样。
@@ -5163,7 +5227,7 @@ Doubling特质把整数放入队列的时候对它加倍。
 </pre>
 
 
-<h2 id="toc_12.6">特质的叠加</h2>
+<h2 id="toc_13.6">特质的叠加</h2>
 
 <p>
 有两个特质，一个在入队时把值加1；另一个过滤掉负数：
@@ -5229,7 +5293,7 @@ Doubling特质把整数放入队列的时候对它加倍。
 </pre>
 
 
-<h2 id="toc_12.7">为什么不是多重继承</h2>
+<h2 id="toc_13.7">为什么不是多重继承</h2>
 
 <p>
 特质是一种继承多个类似于类的结构的方式，但是它与许多语言中的多重继承有很重要的差别。其中的一个尤为重要：super的解释。对于多重继承来说，super调用导致的方法调用可以在调用发生的地方明确决定。而对于特质来说，方法调用是由类和被混入到类的特质的线性化（linearization）所决定的。这种差别让前一节所描述的改动的堆叠成为可能。
@@ -5343,7 +5407,7 @@ FourLegged : FourLegged, HasLegs, Animal, AnyRef, Any
 Cat : Cat, FourLegged, HasLegs, Furry, Animal, AnyRef, Any
 </pre>
 
-<h2 id="toc_12.8">什么情况下要用特质</h2>
+<h2 id="toc_13.8">什么情况下要用特质</h2>
 
 <p>
 没有固定的规律，但是包含了几条可供考虑的导则。
@@ -5372,7 +5436,7 @@ Cat : Cat, FourLegged, HasLegs, Furry, Animal, AnyRef, Any
 
 
 
-<h1 id="toc_13">包和引用</h1>
+<h1 id="toc_14">包和引用</h1>
 
 <p>
 通过把package子句放在文件顶端的方式把整个文件内容放进包里：
@@ -5480,7 +5544,7 @@ Scala为了简化，采用包风格类似于是相对路径：
 </p>
 
 
-<h2 id="toc_13.1">引用包</h2>
+<h2 id="toc_14.1">引用包</h2>
 
 <p>
 Scala里用import子句来引用包和其成员：
@@ -5634,7 +5698,7 @@ import Fuits.{Pear =&gt; _, _}
 </p>
 
 
-<h2 id="toc_13.2">隐式引用</h2>
+<h2 id="toc_14.2">隐式引用</h2>
 
 <p>
 Scala隐式地添加了一些引用到每个程序中。本质上，就好象下列的三个引用子句已经被加载了：
@@ -5668,13 +5732,13 @@ Predef对象包含了许多Scala程序中常用到的类型，方法和隐式转
 
 
 
-<h2 id="toc_13.3">访问修饰符</h2>
+<h2 id="toc_14.3">访问修饰符</h2>
 
 <p>
 Scala与Java对访问修饰符的对待方式有一些重要的差异。
 </p>
 
-<h3 id="toc_13.3.1">private</h3>
+<h3 id="toc_14.3.1">private</h3>
 
 <p>
 标记为private的成员仅在包含了成员定义的类或对象内部可见。但不同于Java，Scala里这个规则同样应用到了内部类上。这种方式更一致。
@@ -5700,7 +5764,7 @@ Scala里，<code>(new Inner).f()</code>访问非法，因为f在Inner中被声�
 这点与Java不同，Java会允许这两种访问因为它允许外部类访问其内部类的私有成员。
 </p>
 
-<h3 id="toc_13.3.2">protected</h3>
+<h3 id="toc_14.3.2">protected</h3>
 
 <p>
 Java中protected可以被同一个包里的类访问。Scala里，只在定义了成员的类的子类中可以被访问。
@@ -5720,14 +5784,14 @@ Java中protected可以被同一个包里的类访问。Scala里，只在定义�
   } 
 </pre>
 
-<h3 id="toc_13.3.3">public</h3>
+<h3 id="toc_14.3.3">public</h3>
 
 <p>
 没有任何标记就是公开的，可以在任何地方被访问。
 </p>
 
 
-<h3 id="toc_13.3.4">保护的范围</h3>
+<h3 id="toc_14.3.4">保护的范围</h3>
 
 <p>
 Scala里的访问修饰符可以通过使用修饰词增加。格式为<code>private[X]</code>或<code>protected[X]</code>的修饰符表示针对“X”的私有或保护，这里“X”指代某些外围的包，类或单例对象。
@@ -5842,7 +5906,7 @@ Scala还具有一种比private更严格的访问修饰符。被private[this]标�
 把成员标记为private[this]是一个让它不能被同一个类中其它对象访问的保障。这在做文档时比较有用。有时它也能让写出更通用的变体注释（参见以后会讲到的参数类型化章节的变体注释）。
 </p>
 
-<h3 id="toc_13.3.5">伴生对象的可见度性</h3>
+<h3 id="toc_14.3.5">伴生对象的可见度性</h3>
 
 <p>
 Java里，静态成员和实例成员属于同一个类，因此访问修饰符可以统一地应用在他们之上。在Scala里没有静态成员，代之以可以拥有包含成员的仅存在一个的伴生对象。
@@ -5882,9 +5946,9 @@ Scala的访问规则给予了伴生对象和类一些特权。类把它所有的
 
 
 
-<h1 id="toc_14">断言和测试</h1>
+<h1 id="toc_15">断言和测试</h1>
 
-<h2 id="toc_14.1">断言</h2>
+<h2 id="toc_15.1">断言</h2>
 
 <p>
 <code>assert</code>是预定义的方法，<code>assert(condition)</code>会在条件不成立时抛出<code>AssertionError</code>。
@@ -5939,7 +6003,7 @@ Scala的访问规则给予了伴生对象和类一些特权。类把它所有的
 还有一点要明白的是，这里的语法看起来像是对<code>Element</code>类对象调用<code>ensuring</code>方法（把<code>xxx.ensuring(...)</code>中的点换成了空格）。但是实际上<code>Emement</code>对象是没有这个成员方法的，而是被隐式转换成了<code>Ensuring</code>对象。由于存在隐式转换，所以<code>ensuring</code>可以作用在任何类型上。
 </p>
 
-<h2 id="toc_14.2">测试</h2>
+<h2 id="toc_15.2">测试</h2>
 
 <p>
 受益于和Java之间无缝操作。Java的测试库，像JUnit、TestNG，可以直接用于scala的单元测试。ScalaTest是专为scala设计的一个测试框架。ScalaTest提供了一些比较方便的功能。
@@ -5949,7 +6013,7 @@ Scala的访问规则给予了伴生对象和类一些特权。类把它所有的
 注意ScalaTest除了自己的版本号外，对应不同的Scala版本还有不同的对应版本。拿错了是用不了的。
 </p>
 
-<h3 id="toc_14.2.1">ScalaTest</h3>
+<h3 id="toc_15.2.1">ScalaTest</h3>
 
 <p>
 ScalaTest提供了函数式的<code>FunSuite</code>（Function Suite）。<code>test</code>方法为测试方法，说明字符串的内容会显示在输出信息中：
@@ -5995,7 +6059,7 @@ Tests: succeeded 2, failed 0, ignored 0, pending 0
 All tests passed.
 </pre>
 
-<h3 id="toc_14.2.2">Junit 4</h3>
+<h3 id="toc_15.2.2">Junit 4</h3>
 
 <p>
 如果喜欢JUnit4的风格，那么可以写下面这样的单元测试。
@@ -6061,7 +6125,7 @@ Time: 0.026
 OK (2 tests)
 </pre>
 
-<h3 id="toc_14.2.3">混合ScalaTest与JUnit</h3>
+<h3 id="toc_15.2.3">混合ScalaTest与JUnit</h3>
 
 <p>
 <code>org.scalatest.junit.JUnitSuite</code>已经混入了特质<code>AssertionsForJUnit</code>，可以同时被用于JUnit与ScalaTest方法： 
