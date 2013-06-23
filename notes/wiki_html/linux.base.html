@@ -33,7 +33,11 @@
 <ul>
 <li><a href="#toc_1.1.1">bzip2</a>
 </ul>
-<li><a href="#toc_1.2">查找</a>
+</ul>
+<li><a href="#toc_2">文本文件</a>
+<ul>
+<li><a href="#toc_2.1">查找</a>
+<li><a href="#toc_2.2">编码与格式</a>
 </ul>
 </ul>
 </div>
@@ -54,10 +58,33 @@ log.txt
 $ 
 </pre>
 
-<h2 id="toc_1.2">查找</h2>
+<h1 id="toc_2">文本文件</h1>
+
+<h2 id="toc_2.1">查找</h2>
 
 <pre class="brush: bash">
 find / -name "*.conf" | xargs grep "alias" 
+</pre>
+
+<h2 id="toc_2.2">编码与格式</h2>
+
+<p>
+Windows文本文件的<code>^M</code>，注意这个<code>^M</code>的输入方式为<code>CTRL v CTRL m</code>。
+</p>
+
+<p>
+使用<code>dos2unix</code>命令:
+</p>
+
+<pre class="brush: bash">
+$ dos2unix myfile.txt
+</pre>
+
+<p>
+使用sed命令：
+</p>
+<pre class="brush: bash">
+$ sed -e ‘s/^M/\n/g’ myfile.txt
 </pre>
 
 

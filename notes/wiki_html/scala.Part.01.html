@@ -19,9 +19,7 @@
 <title>基础</title>
 </head>
 <body>
-
-
-
+	<div class="note-main"> 
 
 
 <h1>基础</h1>
@@ -111,6 +109,9 @@
 <li><a href="#toc_8.3.2">for是表达式</a>
 <li><a href="#toc_8.3.3">过滤器（filter）</a>
 <li><a href="#toc_8.3.4">for循环嵌套</a>
+<ul>
+<li><a href="#toc_8.3.4.1">花括号代替小括号</a>
+</ul>
 <li><a href="#toc_8.3.5">（流间）变量绑定（mid-stream）</a>
 <li><a href="#toc_8.3.6">制造新集合</a>
 </ul>
@@ -495,7 +496,7 @@ Scala里的操作符标识符可以变得任意长，因此在Java和Scala间有
 <h2 id="toc_2.3">混合标识符（mixed identifier）</h2>
 
 <p>
-混合标识符由字母数字组成，后面跟着下划线和一个操作符标识符。例如，<code>unary_+</code>被用做定义一元的<code>+</code>操作符的方法名。或者，<code>myvar_=</code>被用做定义赋值操作符的方法名。多说一句，混合标识符格式<code>myvar_=</code>是由Scala编译器产生的用来支持属性：<code>property</code>的；第十八章进一步说明。 
+混合标识符由字母数字组成，后面跟着下划线和一个操作符标识符。例如，<code>unary_+</code>被用做定义一元的<code>+</code>操作符的方法名。或者，<code>myvar_=</code>被用做定义赋值操作符的方法名。多说一句，混合标识符格式<code>myvar_=</code>是由Scala编译器产生的用来支持属性：<code>property</code>的。在以后的章节“有状态对象”中进一步说明。 
 </p>
 
 
@@ -510,7 +511,7 @@ Scala里的操作符标识符可以变得任意长，因此在Java和Scala间有
 </pre>
 
 <p>
-它的思路是你可以把任何运行时认可的字串放在反引号之间当作标识符。结果总是Scala标识符。即使包含在反引号间的名称是Scala保留字，这个规则也是有效的。在Java的Thread类中访问静态的yield方法是其典型的用例。你不能写<code>Thread.yield()</code>因为yield是Scala的保留字。然而，你仍可以在反引号里引用方法的名称，例如：
+它的思路是你可以把任何运行时认可的字串放在反引号之间当作标识符。结果总是Scala标识符。即使包含在反引号间的名称是Scala保留字，这个规则也是有效的。在Java的<code>Thread</code>类中访问静态的<code>yield</code>方法是其典型的用例。你不能写<code>Thread.yield()</code>因为<code>yield</code>是Scala的保留字。然而，你仍可以在反引号里引用方法的名称，例如：
 </p>
 
 <pre class="brush: scala">
@@ -1180,6 +1181,8 @@ res20: Boolean = true
 而且与Java中<code>==</code>和<code>!=</code>类似的比较是否是同一个实例的操作分别是<code>eq</code>和<code>ne</code>。
 </p>
 
+
+
 <h1 id="toc_5">类</h1>
 
 <p>
@@ -1265,24 +1268,27 @@ class ChecksumAccumulator {
 <h2 id="toc_5.1">创建新类型</h2>
 
 <p>
-分数（rational number）表示分子（numerator）和分母（denominator）的比率，其中分母不能为零。能让小数部分得到了完全表达，没有舍入或估算。要模型化分数的行为，包括允许它们执行加，减，乘还有除运算。
+我们以实现一个实数（rational number）类的过程作为例子，来说明类的实现细节。
 </p>
 
 <p>
+实数由两部分组成：表示分子（numerator）和分母（denominator）。其中分母不能为零。能让小数部分得到了完全表达，没有舍入或估算。要模型化分数的行为，包括允许它们执行加，减，乘还有除运算。
+</p>
+
+<ul>
+<li>
 要加两个分数，首先要获得公分母，然后才能把两个分子相加。
-</p>
 
-<p>
+<li>
 要乘两个分数，可以简单的两个分子相乘，然后两个分母相乘。
-</p>
 
-<p>
+<li>
 除法是把右操作数分子分母调换，然后做乘法。
-</p>
 
-<p>
+<li>
 一个分数加到另外一个分数上，产生的结果是一个新的分数。而原来的数不会被“改变”。
-</p>
+
+</ul>
 
 <h2 id="toc_5.2">主构造器：primary constructor</h2>
 
@@ -1295,12 +1301,11 @@ class Rational(n: Int, d: Int)
 </pre>
 
 <p>
-在类名Rational之后括号里的n和d，被称为类参数（class parameter）。<code>n</code>和<code>d</code>并不是类中的字段，而是主构造器的两个参数。Scala编译器会收集这两个类参数并创造一个带同样的两个参数的主构造器（primary constructor）。Java类具有可以带参数的构造器，而Scala类可以直接带参数。
+在类名Rational之后括号里的<code>n</code>和<code>d</code>，被称为类参数（class parameter）。<code>n</code>和<code>d</code>并不是类中的字段，而是主构造器的两个参数。Scala编译器会收集这两个类参数并创造一个带同样的两个参数的主构造器（primary constructor）。Java类具有可以带参数的构造器，而Scala类可以直接带参数。
 </p>
 
-
 <p>
-Scala编译器将把你放在类内部的任何不是字段的部分或者方法定义的代码，编译进主构造器。例如：
+注意：Scala编译器将把你放在类内部的任何不是字段的部分或者方法定义的代码，编译进主构造器。例如：
 </p>
 
 <pre class="brush: scala">
@@ -1317,7 +1322,7 @@ Created 1/2 res0: Rational = Rational@a0b0f5
 <h2 id="toc_5.3">先决条件（precondition）</h2>
 
 <p>
-先决条件是对传递给方法或构造器的值的限制，是调用者必须满足的需求。使用<code>Predef</code>包中的<code>require</code>方法。如果传入的值为真，require将正常返回。反之，require将通过抛出IllegalArgumentException来阻止对象被构造。
+先决条件是对传递给方法或构造器的值的限制，是调用者必须满足的需求。使用<code>Predef</code>包中的<code>require</code>方法。如果传入的值为真，<code>require</code>将正常返回。反之，<code>require</code>将通过抛出<code>IllegalArgumentException</code>来阻止对象被构造。
 </p>
 
 <pre class="brush: scala">
@@ -1338,16 +1343,16 @@ scala&gt; class Rational(n: Int, d: Int)
 </pre>
 
 <p>
-在前面主构造器部分已经提别提到：<code>n</code>和<code>d</code>并不是类中的字段，而是主构造器的两个参数。所以下面人代码是无法访问到<code>n</code>和<code>d</code>的：
+在前面主构造器部分已经提别提到：<code>n</code>和<code>d</code>并不是类中的字段，而是主构造器的两个参数。所以下面代码是无法访问到某个实例的<code>n</code>和<code>d</code>的：
 </p>
+
 <pre class="brush: scala">
 def showRational(r: Rational): Rational = println("Rational: "+n+"/"+d) 
 </pre>
 
 <p>
-所以又增加了两个字段，分别是numer和denom，并用类参数n和d初始化它们：
+所以又增加了两个字段，分别是<code>numer</code>和<code>denom</code>，并用类参数<code>n</code>和<code>d</code>初始化它们：
 </p>
-
 
 <pre class="brush: scala" title="Rational.scala">
 class Rational(n: Int, d: Int) {
@@ -1417,7 +1422,7 @@ res0: Rational = 7/6
 </p>
 
 <p>
-例如，我们考虑添加一个方法，lessThan，来测试给定的分数是否小于传入的参数： 
+例如，我们考虑添加一个方法，<code>lessThan</code>，来测试给定的分数是否小于传入的参数： 
 </p>
 
 <pre class="brush: scala">
@@ -1426,11 +1431,11 @@ def lessThan(that: Rational) =
 </pre>
 
 <p>
-这里，this.numer指向lessThan被调用的那个对象的分子。你也可以去掉this前缀而只是写numer；着两种写法是相同的。 
+这里，<code>this.numer</code>指向<code>lessThan</code>被调用的那个对象的分子。你也可以去掉<code>this</code>前缀而只是写numer；着两种写法是相同的。 
 </p>
 
 <p>
-举一个不能缺少this的例子，考虑在Rational类里添加max方法返回指定分数和参数中的较大者： 
+举一个不能缺少<code>this</code>的例子，考虑在<code>Rational</code>类里添加<code>max</code>方法返回指定分数和参数中的较大者： 
 </p>
 
 <pre class="brush: scala">
@@ -1439,7 +1444,7 @@ def max(that: Rational) =
 </pre>
 
 <p>
-这里，第一个this是冗余的，你写成(lessThan(that))也是一样的。但第二个this表示了当测试为假的时候的方法的结果；如果你省略它，就什么都返回不了了。
+这里，第一个<code>this</code>是冗余的，你写成<code>(lessThan(that))</code>也是一样的。但第二个<code>this</code>表示了当测试为假的时候的方法的结果；如果你省略它，就什么都返回不了了。
 </p>
 
 
@@ -1472,7 +1477,6 @@ Rational的从构造器主体几乎完全是调用主构造器，直接传递了
 </p>
 
 
-
 <h2 id="toc_5.8">私有字段和方法</h2>
 
 <p>
@@ -1498,7 +1502,7 @@ class Rational(n: Int, d: Int) {
 <h2 id="toc_5.9">定义操作符</h2>
 
 <p>
-用通常的数学的符号替换add方法，同样实现一个*方法以实现乘法：
+用通常的数学的符号替换<code>add</code>方法，同样实现一个<code>*</code>方法以实现乘法：
 </p>
 
 <pre class="brush: scala">
@@ -1530,7 +1534,7 @@ res32: Rational = 7/6
 </pre>
 
 <p>
-而且实现的加法和乘法都带有优先级：
+而且实现的加法和乘法都带有优先级（与Scala的操作符优先级相同）：
 </p>
 
 <pre class="brush: scala">
@@ -1549,7 +1553,7 @@ res36: Rational = 5/6
 <h2 id="toc_5.10">方法覆盖（override）</h2>
 
 <p>
-<code>override</code>修饰符标示了之前的方法定义被重载。Rational类里增加toString方法的方式重载：override缺省的实现，如： 
+<code>override</code>修饰符表示覆盖之前的方法定义。Rational类里覆盖了<code>toString</code>方法的缺省的实现。如： 
 </p>
 
 <pre class="brush: scala">
@@ -1557,7 +1561,7 @@ class Rational(n: Int, d: Int) { override def toString = n +"/"+ d }
 </pre>
 
 <p>
-方法定义前的override修饰符标示了之前的方法定义被重载；第10章会更进一步说明。现在分数显示得很漂亮了，所以我们去掉了前一个版本的Rational类里面的println除错语句。你可以在解释器里测试Rational的新行为： 
+方法定义前的<code>override</code>修饰符标示了之前的方法定义被重载；第10章会更进一步说明。现在分数显示得很漂亮了，所以我们去掉了前一个版本的<code>Rational</code>类里面的<code>println</code>除错语句。你可以在解释器里测试Rational的新行为： 
 </p>
 
 <pre class="brush: scala">
@@ -1567,7 +1571,6 @@ x: Rational = 1/3
 scala&gt; val y = new Rational(5, 7) 
 y: Rational = 5/7
 </pre>
-
 
 
 <h2 id="toc_5.11">方法重载（overload）</h2>
@@ -1785,7 +1788,7 @@ println(res2)
 <h2 id="toc_8.1">if表达式</h2>
 
 <p>
-if表达式返回执行分支的结果：
+标题里叫它“表达式”，所以是有返回值的。if表达式返回执行分支的结果：
 </p>
 
 <pre class="brush: scala">
@@ -1873,11 +1876,11 @@ res3: Boolean = true
 </pre>
 
 <p>
-注意上面的警告信息：Unit与Unit进行相等运算永远为true；与String相等运算永远false；与String不相等运算永远为true。
+注意上面的警告信息：<code>Unit</code>与<code>Unit</code>进行相等运算永远为<code>true</code>；与<code>String</code>相等运算永远<code>false</code>；与<code>String</code>不相等运算永远为<code>true</code>。
 </p>
 
 <p>
-现在说到重点了：Scala中var赋值操作也是Unit，而不是和Java一样返回变量值。所以下面这种Java中一直用到的写法在Scala中是会出问题的：
+现在说到重点了：Scala中<code>var</code>赋值操作也是<code>Unit</code>，而不是和Java一样返回变量值。所以下面这种Java中一直用到的写法在Scala中是会出问题的：
 </p>
 
 <pre class="brush: scala">
@@ -2026,6 +2029,8 @@ grep(".*gcd.*")
 就像上面的代码那样，花括号可以代替小括号。但是替换的目的是什么呢？
 </p>
 
+<h4 id="toc_8.3.4.1">花括号代替小括号</h4>
+
 <p>
 在前面提到过的Scala的断句原则时提到，在小括号里被认为是一条语句，所以多个for嵌套时要加上分号分隔；花括号里可以放多条，根据换行可以正确断句。
 </p>
@@ -2033,7 +2038,7 @@ grep(".*gcd.*")
 <h3 id="toc_8.3.5">（流间）变量绑定（mid-stream）</h3>
 
 <p>
-请注意前面的代码段中重复出现的表达式line.trim。这不是个可忽略的计算，因此你或许想每次只算一遍。通过用等号<code>=</code>把结果绑定到新变量可以做到这点。绑定的变量被当作val引入和使用，不过不用带关键字val。
+请注意前面的代码段中重复出现的表达式<code>line.trim</code>。这不是个可忽略的计算，因此你或许想每次只算一遍。通过用等号<code>=</code>把结果绑定到新变量可以做到这点。绑定的变量被当作<code>val</code>引入和使用，不过不用带关键字<code>val</code>。
 </p>
 
 <pre class="brush: scala">
@@ -2077,7 +2082,7 @@ def scalaFiles =
 </pre>
 
 <p>
-for表达式在每次执行的时候都会制造一个值，本例中是file。本例中结果为Array[File]，因为filesHere是数组并且产生的表达式类型是File。 
+for表达式在每次执行的时候都会制造一个值，本例中是<code>file</code>。本例中结果为<code>Array[File]</code>，因为<code>filesHere</code>是数组并且产生的表达式类型是<code>File</code>。 
 </p>
 
 <p>
@@ -2114,7 +2119,7 @@ val half =
 <h3 id="toc_8.4.2">捕获异常</h3>
 
 <p>
-捕获异常的语法选择catch子句的形式。这样设计的原因是为了与Scala很重要的部分：模式匹配（pattern matching）保持一致。模式匹配是一种很强大的特征，将在稍后概述并在另外的章节中详述。
+捕获异常的语法选择<code>catch</code>子句的形式。这样设计的原因是为了与Scala很重要的部分：模式匹配（pattern matching）保持一致。模式匹配是一种很强大的特征，将在稍后概述并在另外的章节中详述。
 </p>
 
 <pre class="brush: scala">
@@ -2131,7 +2136,7 @@ try {
 </pre>
 
 <p>
-与Java的一个差别是Scala里不需要你捕获检查异常（checked exception）或把它们声明在throws子句中。如果你愿意，可以用ATthrows标注声明一个throws子句，但这不是必需的。
+与Java的一个差别是Scala里不需要你捕获检查异常（checked exception）或把它们声明在<code>throws</code>子句中。如果你愿意，可以用<code>@throws</code>标注声明一个throws子句，但这不是必需的（详见“Scala结合Java”一章的“注解”一节）。
 </p>
 
 <h2 id="toc_8.5">finally子句</h2>
@@ -2191,9 +2196,8 @@ res2: Int = 1
 </pre>
 
 <p>
-这个不明白是为什么，因此通常最好还是避免从finally子句中返回值。最好是把finally子句当作确保某些副作用，如关闭打开的文件。
+finally中的返回值会覆盖所有的结果，因此通常最好还是避免从finally子句中返回值。最好是把finally子句当作确保某些副作用，如关闭打开的文件。
 </p>
-
 
 
 <h2 id="toc_8.6">match表达式</h2>
@@ -2255,7 +2259,7 @@ println(friend)
 <h3 id="toc_8.6.1">不要用break和contine</h3>
 
 <p>
-break和continue与函数式文本结合得不好，而且有效利用函数式文本可以让代码写得更加简短。
+break和continue与函数字面量结合得不好，而且有效利用函数字面量可以让代码写得更加简短。
 </p>
 
 <p>
@@ -2277,6 +2281,7 @@ break和continue与函数式文本结合得不好，而且有效利用函数式�
     i = i + 1;
   }
 </pre>
+
 <p>
 如果要字面直译成Scala的代码，代之以执行一个if然后continue，你可以写一个if环绕while余下的全部内容。要去掉break，你可以增加一个布尔变量提示是否继续做下去，不过在这里你可以复用foundIt，基本就是这样：
 </p>
@@ -2338,7 +2343,7 @@ Scala编译器不会实际对代码7.17展示的代码生成递归函数。因�
 </pre>
 
 <p>
-然而，你可以在一个内部范围内定义与外部范围里名称相同的变量。下列脚本将编译通过并可以运行。内部变量被说成是遮蔽（shadow）了同名的外部变量，因为在内部范围内外部变量变得不可见了：
+然而，你可以在一个内部范围内定义与外部范围里名称相同的变量（注意之在Java里不行）。下列脚本将编译通过并可以运行。内部变量被说成是遮蔽（shadow）了同名的外部变量，因为在内部范围内外部变量变得不可见了：
 </p>
 
 <pre class="brush: scala">
@@ -2347,7 +2352,7 @@ Scala编译器不会实际对代码7.17展示的代码生成递归函数。因�
     val a = 2 // Compiles just fine
     println(a)
   }
-  p
+  println(a)
 </pre>
 
 <p>
@@ -2520,7 +2525,7 @@ printMultiTable里另一个揭露其指令式风格的信号来自于它的while
 </pre>
 
 <p>
-调用：
+调用，查找一行长度超过45个字符的行：
 </p>
 
 <pre class="brush: scala">
@@ -2746,6 +2751,7 @@ Scala提供了许多方法去除冗余信息并把函数文本写得更简短。
 
 <pre class="brush: scala">
   someNumbers.foreach(println(_))
+  
 </pre>
 
 <p>
@@ -2796,7 +2802,7 @@ Scala把短格式直接看作是你输入了下列代码：
 </pre>
 
 <p>
-有了这个代码，Scala编译器以偏应用函数表达式，<code>sum _</code>，实例化一个带三个缺失整数参数的函数值，并把这个新的函数值的索引赋给变量a。当你把这个新函数值应用于三个参数之上时，它就转回头调用sum，并传入这三个参数：
+有了这个代码，Scala编译器以偏应用函数表达式，<code>sum _</code>，实例化一个带三个缺失整数参数的函数值，并把这个新的函数值的索引赋给变量<code>a</code>。当你把这个新函数值应用于三个参数之上时，它就转回头调用sum，并传入这三个参数：
 </p>
 
 <pre class="brush: scala">
@@ -2809,11 +2815,11 @@ Scala把短格式直接看作是你输入了下列代码：
 </p>
 
 <p>
-名为a的变量指向一个函数值对象。这个函数值是由Scala编译器依照偏应用函数表达式sum _，自动产生的类的一个实例。
+名为<code>a</code>的变量指向一个函数值对象。这个函数值是由Scala编译器依照偏应用函数表达式<code>sum _</code>，自动产生的类的一个实例。
 </p>
 
 <p>
-编译器产生的类有一个apply方法带三个参数（产生的类扩展了特质Function3，定义了三个参数的apply方法）。之所以带三个参数是因为<code>sum _</code>表达式缺少的参数数量为三。Scala编译器把表达式a(1,2,3)翻译成对函数值的apply方法的调用，传入三个参数1，2，3。因此a(1,2,3)是下列代码的短格式：
+编译器产生的类有一个apply方法带三个参数（产生的类扩展了特质Function3，定义了三个参数的apply方法）。之所以带三个参数是因为<code>sum _</code>表达式缺少的参数数量为三。Scala编译器把表达式<code>a(1,2,3)</code>翻译成对函数值的apply方法的调用，传入三个参数1，2，3。因此<code>a(1,2,3)</code>是下列代码的短格式：
 </p>
 
 <pre class="brush: scala">
@@ -2822,7 +2828,7 @@ Scala把短格式直接看作是你输入了下列代码：
 </pre>
 
 <p>
-Scala编译器根据表达式sum _自动产生的类里的apply方法，简单地把这三个缺失的参数前转到sum，并返回结果。本例中apply调用了sum(1,2,3)，并返回sum返回的，6。
+Scala编译器根据表达式<code>sum _</code>自动产生的类里的apply方法，简单地把这三个缺失的参数前转到sum，并返回结果。本例中apply调用了<code>sum(1,2,3)</code>，并返回sum返回的，6。
 </p>
 
 <p>
@@ -2851,7 +2857,7 @@ Scala编译器根据表达式sum _自动产生的类里的apply方法，简单�
 </pre>
 
 <p>
-如果你正在写一个省略所有参数的偏应用程序表达式，如println _或sum _，而且在代码的那个地方正需要一个函数，你可以去掉下划线从而表达得更简明。例如，代之以打印输出someNumbers里的每一个数字：
+如果你正在写一个省略所有参数的偏应用程序表达式，如<code>println _</code>或<code>sum _</code>，而且在代码的那个地方正需要一个函数，你可以去掉下划线从而表达得更简明。例如，代之以打印输出someNumbers里的每一个数字：
 </p>
 
 <pre class="brush: scala">
@@ -2890,13 +2896,12 @@ Scala编译器根据表达式sum _自动产生的类里的apply方法，简单�
 </p>
 
 <p>
-举例来说，如果你误以为List的<code>drop(n: Int)</code>方法如<code>tail(</code>)，那么你会忘记你需要传递给<code>drop</code>一个数字。你或许会写，<code>println(drop)</code>。如果Scala采用偏应用函数在哪儿都OK的经典函数式传统，这个代码就将通过类型检查。然而，你会惊奇地发现这个<code>println</code>语句打印的输出将总是<code>&lt;function&gt;</code>！可能发生的事情是表达式drop将被看作是函数对象。因为<code>println</code>可以带任何类型对象，这个代码可以编译通过，但产生出乎意料的结果。
+举例来说，如果你误以为List的<code>drop(n: Int)</code>方法如<code>tail()</code>，那么你会忘记你需要传递给<code>drop</code>一个数字。你或许会写，<code>println(drop)</code>。如果Scala采用偏应用函数在哪儿都OK的经典函数式传统，这个代码就将通过类型检查。然而，你会惊奇地发现这个<code>println</code>语句打印的输出将总是<code>&lt;function&gt;</code>！可能发生的事情是表达式<code>drop</code>将被看作是函数对象。因为<code>println</code>可以带任何类型对象，这个代码可以编译通过，但产生出乎意料的结果。
 </p>
 
 <p>
  为了避免这样的情况，Scala需要你指定显示省略的函数参数，尽管标志简单到仅用一个<code>_</code>。Scala允许你仅在需要函数类型的地方才能省略这个仅用的_。
 </p>
-
 
 
 <h2 id="toc_9.7">闭包（Closures）</h2>
@@ -2910,7 +2915,7 @@ Scala编译器根据表达式sum _自动产生的类里的apply方法，简单�
 </pre>
 
 <p>
-，more是个自由变量：free variable，因为函数文本自身没有给出其含义。相对的，x变量是一个绑定变量：bound variable，因为它在函数的上下文中有明确意义：被定义为函数的唯一参数，一个Int。如果你尝试独立使用这个函数文本，范围内没有任何more的定义，编译器会报错说：
+more是个自由变量（free variable），因为函数文本自身没有给出其含义。相对的，<code>x</code>变量是一个绑定变量（bound variable），因为它在函数的上下文中有明确意义：被定义为函数的唯一参数，一个<code>Int</code>。如果你尝试独立使用这个函数文本，范围内没有任何<code>more</code>的定义，编译器会报错说：
 </p>
 
 <pre class="brush: scala">
@@ -2936,7 +2941,7 @@ Scala编译器根据表达式sum _自动产生的类里的apply方法，简单�
 </pre>
 
 <p>
-依照这个函数文本在运行时创建的函数值（对象）被称为闭包：closure。名称源自于通过“捕获”自由变量的绑定对函数文本执行的“关闭”行动。
+依照这个函数文本在运行时创建的函数值（对象）被称为闭包（closure）。名称源自于通过“捕获”自由变量的绑定对函数文本执行的“关闭”行动。
 </p>
 
 <p>
@@ -2981,6 +2986,10 @@ Scala编译器根据表达式sum _自动产生的类里的apply方法，简单�
 </pre>
 
 <p>
+上面的代码中变量<code>sum</code>不在函数字面量<code>sun += _</code>（完整形式为：<code>(x) =&gt; sum += x</code>）里，所以这也是一个闭包的应用。
+</p>
+
+<p>
 对于会有不同实例的场景，如：本地变量，闭包会对应到创建时关联的那个变量。
 </p>
 
@@ -2993,7 +3002,7 @@ Scala编译器根据表达式sum _自动产生的类里的apply方法，简单�
 </pre>
 
 <p>
-每次函数被调用时都会创建一个新闭包。每个闭包都会访问闭包创建时活跃的more变量。
+每次函数被调用时都会创建一个新闭包。每个闭包都会访问闭包创建时外部的<code>more</code>变量。
 </p>
 
 <pre class="brush: scala">
@@ -3017,7 +3026,7 @@ Scala编译器根据表达式sum _自动产生的类里的apply方法，简单�
 </pre>
 
 <p>
-尽管本例中more是一个已经返回的方法调用的参数也没有区别。Scala编译器在这种情况下重新安排了它以使得捕获的参数继续存在于堆中，而不是堆栈中，因此可以保留在创建它的方法调用之外。这种重新安排的工作都是自动关照的，因此你不需要操心。请任意捕获你想要的变量：val，var，或参数。
+尽管本例中<code>more</code>是一个已经返回的方法调用的参数也没有区别。Scala编译器在这种情况下重新安排了它以使得捕获的参数继续存在于堆中，而不是堆栈中，因此可以保留在创建它的方法调用之外。这种重新安排的工作都是自动关照的，因此你不需要操心。请任意捕获你想要的变量：val，var，或参数。
 </p>
 
 
@@ -3087,7 +3096,7 @@ Scala编译器可以应用一个重要的优化。注意递归调用是函数体
 </p>
 
 <p>
-Scala编译器检测到尾递归就用新值更新函数参数，然后把它替换成一个回到函数开头的跳转。这样减小了递归调用的开销。
+Scala编译器检测到尾递归就用新值更新函数参数，然后把它替换成一个回到函数开头的跳转。这样减小了递归调用的开销。简单地说，就是每次调用不会用新的栈，而是在原来的框架内。
 </p>
 
 <p>
@@ -3407,7 +3416,7 @@ curry化后的同一个函数，两个列表的各一个参数：
 </pre>
 
 <p>
-实际上背靠背地调用了两个传统函数。第一个函数调用带单个的名为x的Int参数，并返回第二个函数的函数值。第二个函数带Int参数y。下面的名为first的函数实质上执行了curriedSum的第一个传统函数调用会做的事情：
+实际上背靠背地调用了两个传统函数。第一个函数调用带单个的名为<code>x</code>的<code>Int</code>参数，并返回第二个函数的函数值。第二个函数带<code>Int</code>参数<code>y</code>。下面的名为first的函数实质上执行了<code>curriedSum</code>的第一个传统函数调用会做的事情：
 </p>
 
 <pre class="brush: scala">
@@ -3425,7 +3434,11 @@ curry化后的同一个函数，两个列表的各一个参数：
 </pre>
 
 <p>
-调用第二个函数传入2产生结果：
+从上面的结果可以看出我们得到的结果是一个函数，并把这个函数赋值给了变量<code>second</code>。
+</p>
+
+<p>
+通过<code>second</code>调用第二个函数传入参数2产生结果：
 </p>
 
 <pre class="brush: scala">
@@ -3434,7 +3447,7 @@ curry化后的同一个函数，两个列表的各一个参数：
 </pre>
 
 <p>
-first和second函数只演示连接在curriedSum函数上的那两个函数，并不直接连接在curriedSum函数上的那两个函数。但我们仍然有一个方式获得实际指向curriedSum的“第二个”函数的参考。你可以用偏应用函数表达式方式，把占位符标注用在curriedSum里，如：
+<code>first</code>和<code>second</code>函数只演示连接在<code>curriedSum</code>函数上的那两个函数，并不直接连接在<code>curriedSum</code>函数上的那两个函数。但我们仍然有一个方式获得实际指向<code>curriedSum</code>的“第二个”函数的引用。你可以用偏应用函数表达式方式，把占位符标注用在<code>curriedSum</code>里，如：
 </p>
 
 <pre class="brush: scala">
@@ -3443,7 +3456,7 @@ first和second函数只演示连接在curriedSum函数上的那两个函数，�
 </pre>
 
 <p>
-之前说过，当占位符标注用在传统方法上时，如println _，你必须在名称和下划线之间留一个空格。不然编译器会误认为是要调用名为<code>println_</code>的函数。而在这个例子里不需要，因为println_是Scala里合法的标识符，curriedSum(1)_不是。
+之前说过，当占位符标注用在传统方法上时，如<code>println _</code>，你必须在名称和下划线之间留一个空格。不然编译器会误认为是要调用名为<code>println_</code>的函数。而在这个例子里不需要，因为<code>println_</code>是Scala里合法的标识符，<code>curriedSum(1)_</code>不是合法的标识符，所以会被解释为<code>curriedSum(1)</code>与占位符<code>_</code>。
 </p>
 
 <p>
@@ -3518,7 +3531,7 @@ first和second函数只演示连接在curriedSum函数上的那两个函数，�
 </pre>
 
 <p>
-这个技巧被称为贷出模式：loan pattern，因为控制抽象函数，如withPrintWriter，打开了资源并“贷出”给函数。当函数完成的时候，它发出信号说明它不再需要“借”的资源。于是资源被关闭在finally块中，以确信其确实被关闭，而忽略函数是正常结束返回还是抛出了异常。
+这个技巧被称为贷出模式（loan pattern），因为控制抽象函数，如<code>withPrintWriter</code>，打开了资源并“贷出”给函数。当函数完成的时候，它发出信号说明它不再需要“借”的资源。于是资源被关闭在<code>finally</code>块中，以确信其确实被关闭，而忽略函数是正常结束返回还是抛出了异常。
 </p>
 
 <p>
@@ -3585,7 +3598,7 @@ first和second函数只演示连接在curriedSum函数上的那两个函数，�
 <h2 id="toc_10.5">传名参数</h2>
 
 <p>
-上节展示的withPrintWriter方法不同于语言的内建控制结构，如if和while，在于大括号之间的代码带了参数。withPrintWriter方法需要一个类型为PrintWriter的参数。这个参数以“writer =&gt;”方式显示出来：
+上节展示的<code>withPrintWriter</code>方法不同于语言的内建控制结构，如<code>if</code>和<code>while</code>，在于大括号之间的代码带了参数。<code>withPrintWriter</code>方法需要一个类型为<code>PrintWriter</code>的参数。这个参数以<code>writer =&gt;</code>方式显示出来：
 </p>
 
 <pre class="brush: scala">
@@ -3599,11 +3612,11 @@ first和second函数只演示连接在curriedSum函数上的那两个函数，�
 </p>
 
 <p>
-为了举一个有现实意义的例子：虽然Scala提供了它自己的assert，但是用户想自己实现一个称为myAssert的断言架构。
+为了举一个有现实意义的例子：虽然Scala提供了它自己的<code>assert</code>，但是用户想自己实现一个称为<code>myAssert</code>的断言架构。
 </p>
 
 <p>
-myAssert函数将带一个函数值做输入并参考一个标志位来决定该做什么。如果标志位被设置了，myAssert将调用传入的函数并证实其返回true。如果标志位被关闭了，myAssert将安静地什么都不做。 如果没有叫名参数，你可以这样写myAssert：
+<code>myAssert</code>函数将带一个函数值做输入并参考一个标志位来决定该做什么。如果标志位被设置了，<code>myAssert</code>将调用传入的函数并证实其返回<code>true</code>。如果标志位被关闭了，<code>myAssert</code>将安静地什么都不做。 如果没有叫名参数，你可以这样写<code>myAssert</code>：
 </p>
 
 <pre class="brush: scala">
@@ -3615,7 +3628,11 @@ myAssert函数将带一个函数值做输入并参考一个标志位来决定该
 </pre>
 
 <p>
-调用时不能省略<code>() =&gt;</code>：
+用函数字面量的简写方式可以让代码短很多。但函数字面量的简写方式只能用在有参数的情况下，用占位符<code>_</code>来代替参数。没有参数也就不能用函数了面量的简写形式。
+</p>
+
+<p>
+所以说现在不爽的地方是虽然用不到参数，但调用时却不能省略<code>() =&gt;</code>：
 </p>
 
 <pre class="brush: scala">
@@ -3623,6 +3640,7 @@ myAssert函数将带一个函数值做输入并参考一个标志位来决定该
 
   myAssert(5 &gt; 3) // Won't work, because missing () =&gt;  
 </pre>
+
 
 <p>
 传名函数恰好为了实现你的愿望而出现。要实现一个叫传函数，要定义参数的类型开始于<code>=&gt;</code>而不是<code>() =&gt;</code>。如，改<code>() =&gt; Boolean</code>为<code>=&gt; Boolean</code>：
@@ -3647,7 +3665,7 @@ myAssert函数将带一个函数值做输入并参考一个标志位来决定该
 </p>
 
 <p>
-对于myAssert，我们费了这么大的力气，只是为了让函数字面量看起来像表达式，那为什么不直接用Boolean变量作为参数呢？
+对于<code>myAssert</code>，我们费了这么大的力气，只是为了让函数字面量看起来像表达式，那为什么不直接用<code>Boolean</code>变量作为参数呢？
 </p>
 
 <pre class="brush: scala">
@@ -3657,7 +3675,7 @@ myAssert函数将带一个函数值做输入并参考一个标志位来决定该
 </pre>
 
 <p>
-当然这种格式同样合法，并且使用这个版本boolAssert的代码看上去仍然与前面的一样：
+当然这种格式同样合法，并且使用这个版本<code>boolAssert</code>的代码看上去仍然与前面的一样：
 </p>
 
 <pre class="brush: scala">
@@ -3669,7 +3687,7 @@ myAssert函数将带一个函数值做输入并参考一个标志位来决定该
 </p>
 
 <p>
-所以在上面的例子中，如果断言被禁用，你会看到boolAssert括号里的表达式的某些副作用，而byNameAssert却没有。例如，如果断言被禁用，boolAssert的例子里尝试对“x / 0 == 0”的断言将产生一个异常：
+所以在上面的例子中，如果断言被禁用，你会看到<code>boolAssert</code>括号里的表达式的某些副作用，而<code>byNameAssert</code>却没有。例如，如果断言被禁用，<code>boolAssert</code>的例子里尝试对<code>x / 0 == 0</code>的断言将产生一个异常：
 </p>
                     
 <pre class="brush: scala">
@@ -3685,7 +3703,7 @@ myAssert函数将带一个函数值做输入并参考一个标志位来决定该
 </pre>
 
 <p>
-但在byNameAssert的例子里尝试同样代码的断言将不产生异常：
+但在<code>byNameAssert</code>的例子里尝试同样代码的断言将不产生异常：
 </p>
 
 <pre class="brush: scala">
@@ -3709,7 +3727,7 @@ myAssert函数将带一个函数值做输入并参考一个标志位来决定该
 </pre>
 
 <p>
-元素将以名为Element的类型为模型。你将能在元素上调用above或beside，把另一个元素放在当前元素的右边或是上边：
+元素将以名为<code>Element</code>的类型为模型。你将能在元素上调用<code>above</code>或<code>beside</code>，把另一个元素放在当前元素的右边或是上边：
 </p>
 
 <pre class="brush: scala">
@@ -3740,11 +3758,11 @@ myAssert函数将带一个函数值做输入并参考一个标志位来决定该
 </pre>
 
 <p>
-请注意类Element的contents方法并没带有abstract修饰符。不像Java，方法的声明中不需要（或允许）抽象修饰符。如果方法没有实现，它就是抽象的。
+请注意类<code>Element</code>的<code>contents</code>方法并没带有<code>abstract</code>修饰符。不像Java，方法的声明中不需要（或允许）抽象修饰符。如果方法没有实现，它就是抽象的。
 </p>
 
 <p>
-另一个术语用法需要分辨声明（declaration）和定义（definition）。类Element声明了抽象方法contents，但当前没有定义具体方法。
+另一个术语用法需要分辨声明（declaration）和定义（definition）。类<code>Element</code>声明了抽象方法<code>contents</code>，但当前没有定义具体方法。
 </p>
 
 
@@ -3781,7 +3799,7 @@ width方法返回第一行的长度，或如果元素没有行记录，返回零
 </pre>
 
 <p>
-推荐的惯例是在没有参数并且方法仅通过读含有对象的方式访问可变状态（专指其不改变可变状态）时使用无参数方法。这样感觉上就和只读字段一样，其实也可以选择把width和height作为字段而不是方法来实现，只要简单地在每个实现里把def修改成val即可：
+推荐的惯例是在没有参数并且方法仅通过读含有对象的方式访问可变状态（专指其不改变可变状态）时使用无参数方法。这样感觉上就和只读字段一样，其实也可以选择把<code>width</code>和<code>height</code>作为字段而不是方法来实现，只要简单地在每个实现里把<code>def</code>修改成<code>val</code>即可：
 </p>
 
 <pre class="brush: scala">
@@ -6276,7 +6294,6 @@ class ElementSpecChecker extends FlatSpec with ShouldMatchers with Checkers{
     }
 }
 </pre>
-
-
+ </div>
 </body>
 </html>

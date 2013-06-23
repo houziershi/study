@@ -16,87 +16,51 @@
 <script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
 
 
-<title>notes</title>
+<title>Vim</title>
 </head>
 <body>
 
 
 
-
-<h1>notes</h1>
+<h1>Vim</h1>
 <div class="toc">
 <ul>
-<li><a href="#toc_1">编程</a>
+<li><a href="#toc_1">编码格式</a>
 <ul>
-<li><a href="#toc_1.1">语言</a>
-<li><a href="#toc_1.2">常用代码</a>
-</ul>
-<li><a href="#toc_2">常用工具</a>
-<li><a href="#toc_3">服务器</a>
-<li><a href="#toc_4">Linux</a>
-<ul>
-<li><a href="#toc_4.1">常用工具</a>
-<li><a href="#toc_4.2">网络</a>
+<li><a href="#toc_1.1">换行符</a>
 </ul>
 </ul>
 </div>
 
-<h1 id="toc_1">编程</h1>
 
-<h2 id="toc_1.1">语言</h2>
+<h1 id="toc_1">编码格式</h1>
 
-<p>
-<a href="scala.html">scala</a>
-</p>
+<h2 id="toc_1.1">换行符</h2>
 
 <p>
-<a href="ExtJS.html">ExtJS</a>
+替换<code>^M</code>字符
 </p>
 
-<h2 id="toc_1.2">常用代码</h2>
+<pre class="brush: bash">
+:%s/^M$//g # 去掉行尾的^M。
+</pre>
 
-<p>
-<a href="java.example.html">java.example</a>
-</p>
+<pre class="brush: bash">
+:%s/^M//g # 去掉所有的^M。
+</pre>
 
-<h1 id="toc_2">常用工具</h1>
+<pre class="brush: bash">
+:%s/^M/[ctrl-v]+[enter]/g # 将^M替换成回车。
+</pre>
 
-<p>
-<a href="git.html">git</a>
-</p>
+<pre class="brush: bash">
+:%s/^M/\r/g # 将^M替换成回车。
+</pre>
 
-<p>
-<a href="vim.html">vim</a>
-</p>
+<pre class="brush: bash">
 
-<p>
-<a href="vimwiki.html">vimwiki</a>
-</p>
-
-
-<h1 id="toc_3">服务器</h1>
-
-<p>
-<a href="nginx.html">nginx</a>
-</p>
-
-<p>
-<a href="tomcat.html">tomcat</a>
-</p>
-
-<h1 id="toc_4">Linux</h1>
-
-<h2 id="toc_4.1">常用工具</h2>
-
-<p>
-<a href="linux.base.html">linux.base</a>
-</p>
-
-<h2 id="toc_4.2">网络</h2>
-
-<p>
-<a href="linux.net.html">linux.net</a>
-</p>
+注意：这里的`^M`要使用`CTRL-V CTRL-M`生成，而不是直接键入`^M`。 
+</pre>
 
 
 </body>

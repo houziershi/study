@@ -1,0 +1,30 @@
+%title Vim
+
+%toc Vim
+
+
+= 编码格式 =
+
+== 换行符 ==
+
+替换`^M`字符
+
+{{{class="brush: bash"
+:%s/^M$//g # 去掉行尾的^M。
+}}}
+
+{{{class="brush: bash"
+:%s/^M//g # 去掉所有的^M。
+}}}
+
+{{{class="brush: bash"
+:%s/^M/[ctrl-v]+[enter]/g # 将^M替换成回车。
+}}}
+
+{{{class="brush: bash"
+:%s/^M/\r/g # 将^M替换成回车。
+}}}
+
+{{{class="brush: bash"
+
+注意：这里的`^M`要使用`CTRL-V CTRL-M`生成，而不是直接键入`^M`。 

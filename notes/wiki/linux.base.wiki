@@ -20,9 +20,25 @@ log.txt
 $ 
 }}}
 
+= 文本文件 =
+
 == 查找 ==
 
 {{{class="brush: bash"
 find / -name "*.conf" | xargs grep "alias" 
 }}}
 
+== 编码与格式 ==
+
+Windows文本文件的`^M`，注意这个`^M`的输入方式为`CTRL v CTRL m`。
+
+使用`dos2unix`命令:
+
+{{{class="brush: bash"
+$ dos2unix myfile.txt
+}}}
+
+使用sed命令：
+{{{class="brush: bash"
+$ sed -e ‘s/^M/\n/g’ myfile.txt
+}}}
