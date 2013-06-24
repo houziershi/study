@@ -163,7 +163,7 @@
 <li><a href="#toc_11.2">抽象类</a>
 <li><a href="#toc_11.3">定义无参数方法</a>
 <li><a href="#toc_11.4">扩展类</a>
-<li><a href="#toc_11.5">重载方法和字段</a>
+<li><a href="#toc_11.5">重写方法和字段</a>
 <li><a href="#toc_11.6">定义参数化字段</a>
 <li><a href="#toc_11.7">调用超类构造器</a>
 <li><a href="#toc_11.8">使用override修饰符</a>
@@ -3853,7 +3853,7 @@ width方法返回第一行的长度，或如果元素没有行记录，返回零
 <h2 id="toc_11.4">扩展类</h2>
 
 <p>
-实例化一个元素，我们需要创建扩展了Element并实现抽象的contents方法的子类。
+实例化一个元素，我们需要创建扩展了<code>Element</code>并实现抽象的<code>contents</code>方法的子类。
 </p>
 
 <pre class="brush: scala">
@@ -3863,15 +3863,15 @@ width方法返回第一行的长度，或如果元素没有行记录，返回零
 </pre>
 
 <p>
-这种extends子句有两个效果：使类ArrayElement从类Element继承所有非私有的成员，并且使ArrayElement成为Element的子类型。由于ArrayElement扩展了Element，类ArrayElement被称为类Element的子类。反过来，Element是ArrayElement的超类。
+这种<code>extends</code>子句有两个效果：使类<code>ArrayElement</code>从类<code>Element</code>继承所有非私有的成员，并且使<code>ArrayElement</code>成为<code>Element</code>的子类型。由于<code>ArrayElement</code>扩展了<code>Element</code>，类<code>ArrayElement</code>被称为类<code>Element</code>的子类。反过来，<code>Element</code>是<code>ArrayElement</code>的超类。
 </p>
 
 <p>
-如果你省略extends子句，Scala编译器隐式地假设你的类扩展自scala.AnyRef，在Java平台上与java.lang.Object一致。因此，类Element隐式地扩展了类AnyRef。
+如果你省略<code>extends</code>子句，Scala编译器隐式地假设你的类扩展自<code>scala.AnyRef</code>，在Java平台上与<code>java.lang.Object</code>一致。因此，类<code>Element</code>隐式地扩展了类<code>AnyRef</code>。
 </p>
 
 <p>
-ArrayElement的contents方法重载（或者可说成：实现）了类Element的抽象方法contents：
+<code>ArrayElement</code>的<code>contents</code>方法重载（或者可说成：实现）了类<code>Element</code>的抽象方法<code>contents</code>：
 </p>
 
 <pre class="brush: scala">
@@ -3883,19 +3883,21 @@ ArrayElement的contents方法重载（或者可说成：实现）了类Element�
 </pre>
 
 <p>
-子类型化：subtyping是指子类的值可以被用在需要其超类的值的任何地方。例如：
+子类型化（subtyping）是指子类的值可以被用在需要其超类的值的任何地方。例如：
 </p>
 
 <pre class="brush: scala">
   val e: Element = new ArrayElement(Array("hello"))
 </pre>
 
+<p>
+如果子类中的字段与超类同名，或是子类的中的方法名称和参数与超类类完全一样，就会覆盖（override）超类中的版本。
+</p>
 
-
-<h2 id="toc_11.5">重载方法和字段</h2>
+<h2 id="toc_11.5">重写方法和字段</h2>
 
 <p>
-字段和方法属于相同的命名空间。这使得字段重载无参数方法成为可能。比如说，你可以改变类ArrayElement中contents的实现，从一个方法变为一个字段，而无需修改类Element中contents的抽象方法定义：
+字段和方法属于相同的命名空间。这使得字段重写无参数方法成为可能。比如说，你可以改变类<code>ArrayElement</code>中<code>contents</code>的实现，从一个方法变为一个字段，而无需修改类<code>Element</code>中<code>contents</code>的抽象方法定义：
 </p>
 
 <pre class="brush: scala">
@@ -3905,7 +3907,7 @@ ArrayElement的contents方法重载（或者可说成：实现）了类Element�
 </pre>
 
 <p>
-这个ArrayElement的版本里，字段contents（用val定义）完美地实现了类Element里的无参数方法contents（用def定义）。 
+这个<code>ArrayElement</code>的版本里，字段<code>contents</code>（用<code>val</code>定义）完美地实现了类<code>Element</code>里的无参数方法<code>contents</code>（用<code>def</code>定义）。 
 </p>
 
 <p>

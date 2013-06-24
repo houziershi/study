@@ -2937,7 +2937,7 @@ width方法返回第一行的长度，或如果元素没有行记录，返回零
 
 == 扩展类 ==
 
-实例化一个元素，我们需要创建扩展了Element并实现抽象的contents方法的子类。
+实例化一个元素，我们需要创建扩展了`Element`并实现抽象的`contents`方法的子类。
 
 {{{class="brush: scala" 
   class ArrayElement(conts: Array[String]) extends Element {
@@ -2945,11 +2945,11 @@ width方法返回第一行的长度，或如果元素没有行记录，返回零
   }
 }}}
 
-这种extends子句有两个效果：使类ArrayElement从类Element继承所有非私有的成员，并且使ArrayElement成为Element的子类型。由于ArrayElement扩展了Element，类ArrayElement被称为类Element的子类。反过来，Element是ArrayElement的超类。
+这种`extends`子句有两个效果：使类`ArrayElement`从类`Element`继承所有非私有的成员，并且使`ArrayElement`成为`Element`的子类型。由于`ArrayElement`扩展了`Element`，类`ArrayElement`被称为类`Element`的子类。反过来，`Element`是`ArrayElement`的超类。
 
-如果你省略extends子句，Scala编译器隐式地假设你的类扩展自scala.AnyRef，在Java平台上与java.lang.Object一致。因此，类Element隐式地扩展了类AnyRef。
+如果你省略`extends`子句，Scala编译器隐式地假设你的类扩展自`scala.AnyRef`，在Java平台上与`java.lang.Object`一致。因此，类`Element`隐式地扩展了类`AnyRef`。
 
-ArrayElement的contents方法重载（或者可说成：实现）了类Element的抽象方法contents：
+`ArrayElement`的`contents`方法重载（或者可说成：实现）了类`Element`的抽象方法`contents`：
 
 {{{class="brush: scala" 
   scala> val ae = new ArrayElement(Array("hello", "world"))
@@ -2959,17 +2959,17 @@ ArrayElement的contents方法重载（或者可说成：实现）了类Element�
   res1: Int = 5
 }}}
 
-子类型化：subtyping是指子类的值可以被用在需要其超类的值的任何地方。例如：
+子类型化（subtyping）是指子类的值可以被用在需要其超类的值的任何地方。例如：
 
 {{{class="brush: scala" 
   val e: Element = new ArrayElement(Array("hello"))
 }}}
 
+如果子类中的字段与超类同名，或是子类的中的方法名称和参数与超类类完全一样，就会覆盖（override）超类中的版本。
 
+== 重写方法和字段 ==
 
-== 重载方法和字段 ==
-
-字段和方法属于相同的命名空间。这使得字段重载无参数方法成为可能。比如说，你可以改变类ArrayElement中contents的实现，从一个方法变为一个字段，而无需修改类Element中contents的抽象方法定义：
+字段和方法属于相同的命名空间。这使得字段重写无参数方法成为可能。比如说，你可以改变类`ArrayElement`中`contents`的实现，从一个方法变为一个字段，而无需修改类`Element`中`contents`的抽象方法定义：
 
 {{{class="brush: scala" 
   class ArrayElement(conts: Array[String]) extends Element {
@@ -2977,7 +2977,7 @@ ArrayElement的contents方法重载（或者可说成：实现）了类Element�
   }
 }}}
 
-这个ArrayElement的版本里，字段contents（用val定义）完美地实现了类Element里的无参数方法contents（用def定义）。 
+这个`ArrayElement`的版本里，字段`contents`（用`val`定义）完美地实现了类`Element`里的无参数方法`contents`（用`def`定义）。 
 
 另一方面，Scala里禁止在同一个类里用同样的名称定义字段和方法，而在Java里这样做被允许。例如，下面的Java类能够很好地编译：
 
