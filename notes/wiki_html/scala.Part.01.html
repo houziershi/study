@@ -3748,7 +3748,7 @@ curry化后的同一个函数，两个列表的各一个参数：
 <h2 id="toc_11.2">抽象类</h2>
 
 <p>
-布局元素名为Element，存放的文本内容类型为<code>Array[String]</code>。提供方法<code>contents</code>取得存放的文本内容，但没有定义实现方式，所以这个类是抽象类，要加上<code>abstract</code>关键字：
+布局元素名为<code>Element</code>，存放的文本内容类型为<code>Array[String]</code>。提供方法<code>contents</code>取得存放的文本内容，但没有定义实现方式，所以这个类是抽象类，要加上<code>abstract</code>关键字：
 </p>
 
 <pre class="brush: scala">
@@ -3758,7 +3758,7 @@ curry化后的同一个函数，两个列表的各一个参数：
 </pre>
 
 <p>
-请注意类<code>Element</code>的<code>contents</code>方法并没带有<code>abstract</code>修饰符。不像Java，方法的声明中不需要（或允许）抽象修饰符。如果方法没有实现，它就是抽象的。
+请注意类<code>Element</code>的<code>contents</code>方法并没带有<code>abstract</code>修饰符。不像Java，方法的声明中不需要（也不允许）抽象修饰符。如果方法没有实现，它就是抽象的。
 </p>
 
 <p>
@@ -3816,15 +3816,15 @@ width方法返回第一行的长度，或如果元素没有行记录，返回零
 </p>
 
 <p>
-重点是Element类的客户不应在其内部实现改变的时候受影响。
+重点是<code>Element</code>类的客户不应在其内部实现改变的时候受影响。
 </p>
 
 <p>
-特别是如果类的字段变成了访问函数，且访问函数是纯的，就是说它没有副作用并且不依赖于可变状态，那么类Element的客户不需要被重写。客户都不应该需要关心这些。
+特别是如果类的字段变成了访问函数，且访问函数是纯的，就是说它没有副作用并且不依赖于可变状态，那么类<code>Element</code>的客户不需要被重写。客户都不应该需要关心这些。
 </p>
 
 <p>
-目前为止一切良好。但仍然有些琐碎的复杂的东西要去做以协同Java处理事情的方式。问题在于Java没有实现统一访问原则。因此Java里是string.length()，不是string.length（尽管是array.length，不是array.length()）。不用说，这让人很困惑。
+目前为止一切良好。但仍然有些琐碎的复杂的东西要去做以协同Java处理事情的方式。问题在于Java没有实现统一访问原则。因此Java里是<code>string.length()</code>，不是<code>string.length</code>（尽管是<code>array.length</code>，不是<code>array.length()</code>）。不用说，这让人很困惑。
 </p>
 
 <p>

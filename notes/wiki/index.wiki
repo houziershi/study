@@ -19,6 +19,8 @@
 
 [[git]]
 
+[[maven]]
+
 [[vim]]
 
 [[vimwiki]]
@@ -38,5 +40,6 @@
 
 == 网络 ==
 
-[[linux.net]]
+网络配置：[[linux.net]]
 
+网络故障：[[linux.net.problem]]

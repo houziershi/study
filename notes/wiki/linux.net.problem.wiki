@@ -1,0 +1,21 @@
+
+%title 网络常见问题
+
+%toc 网络常见问题
+
+= 网卡 =
+
+== 更新网卡丢失eth0 ==
+
+如果网卡的换了，或是虚拟机重新生成新的网卡，Debian系统会找不到原来的`eh0`或是其他网卡而给新网卡添加到`eth1`。
+
+如果还想让新的网卡当作`eth0`，可以编辑配置文件：
+
+{{{class="brush: bash"
+/etc/udev/rules.d/70-persistent-net.rules
+}}}
+
+去掉原来的`eth0`把`eth1`改成`eth0`；或者干脆清空配置文件的内容让系统重新生成。
+
+还有位于目录`/etc/sysconfig/network-scripts`下的对应`eth0`启动脚本里写的MAC地址可能还没有改过来。把它改成和`ifconfig eth0`里的一样应该就正确了。
+

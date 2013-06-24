@@ -1,0 +1,111 @@
+
+%title Maven入门
+
+%toc Maven入门
+
+
+= 配置 =
+
+环境变量`M2_HOME`指向安装根目录。
+
+检查安装是否成功：
+
+{{{class="brush: bash"
+mvn -v
+}}}
+
+如果有输出版本信息就安装正确。
+
+初始化：
+
+{{{class="brush: bash"
+mvn help:system
+}}}
+
+= 建立工程 =
+
+== 建立普通Java项目结构 ==
+
+{{{class="brush: bash"
+mvn archetype:generate
+}}}
+
+== 建立普通Java EE项目结构 ==
+
+{{{class="brush: bash"
+mvn archetype:generate -DgroupId=hx.frame -DartifactId=frame-web -DarchetypeArtifactId=maven-archetype-webapp
+}}}
+
+= 项目构建 =
+
+== 基本命令 ==
+
+{{{class="brush: bash"
+mvn clean
+mvn validate
+mvn compile
+mvn test
+mvn package
+mvn install
+mvn site
+mvn depoly
+}}}
+
+== 包依赖 ==
+
+=== 检查包依赖 ===
+`mvn dependency:list`查看当前项目的已解析依赖
+
+`mvn dependency:tree`查看当前项目的依赖树
+
+`mvn dependency:analyze`分析当前项目的依赖状况，可以找到一些warning：
+
+* 使用了未声明的依赖
+* 没有使用已声明的依赖（这些或许可以删掉，但是要仔细分析，像spring-core,spring-beans看起来是没有用到，但是他们是spring运行必须的） 
+
+=== 导出所有jar包 ===
+
+导出所有需要的jar包到lib目录下：
+	
+{{{class="brush: bash"
+mvn dependency:copy-dependencies -DoutputDirectory=lib
+}}}
+
+=== 把源代码打成jar包 ===
+
+{{{class="brush: bash"
+mvn source:jar
+}}}
+
+= 发布web项目 =
+
+== Jetty插件 ==
+
+这个插件可以启动一个jetty web服务器，启动速度喜人，一旦启动，修改了jsp，页面上可以直接反应出来，修改了servlet代码，运行一下`mvn compile`也可以立马反应出来，方便开发 
+
+在pom.xml中这样配置： 
+
+{{{class="brush: bash"
+<build>
+	<finalName>frame-web</finalName>
+	<plugins>
+		<plugin>
+		<groupId>org.mortbay.jetty</groupId>
+		<artifactId>jetty-maven-plugin</artifactId>
+		<version>7.1.6.v20100715</version>
+		<configuration>
+			<scanIntervalSeconds>3</scanIntervalSeconds>
+			<webAppConfig>
+				<contextPath>/test</contextPath>
+			</webAppConfig>
+		</configuration>
+		</plugin>
+	</plugins>
+</build>
+}}}
+
+然后命令行运行：`mvn jetty:run`
+访问一下：`localhost:8080/test/`就可以看到你的index.jsp了 
+
+
+
