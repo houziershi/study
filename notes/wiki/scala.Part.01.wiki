@@ -3016,13 +3016,13 @@ Scala把字段和方法放进同一个命名空间的理由很清楚，因为这
 
 ArrayElement类的定义。它有一个参数conts，其唯一目的是被复制到contents字段。选择conts这个参数的名称只是为了让它看上去更像字段名contents而不会与它发生实际冲突。这是一种“代码异味”，一个表明或许某些不必须的累赘和重复。
 
-可以通过在单一的参数化字段：parametric field定义中组合参数和字段避免：
+可以通过在单一的参数化字段（parametric field）定义中组合参数和字段避免：
 
 {{{class="brush: scala" 
   class ArrayElement(val contents: Array[String]) extends Element
 }}}
 
-现在拥有一个可以从类外部访问的，（不能重新赋值的）字段contents。字段使用参数值初始化。等同于：
+注意用的是`val`，所以现在拥有一个可以从类外部访问的，（不能重新赋值的）字段contents。字段使用参数值初始化。等同于：
 
 {{{class="brush: scala"
   class ArrayElement(x123: Array[String]) extends Element { 
@@ -3030,7 +3030,7 @@ ArrayElement类的定义。它有一个参数conts，其唯一目的是被复制
   } 
 }}}
 
-同样也可以使用var前缀类参数，这种情况下相应的字段将能重新被赋值。还有可能添加如private，protected，或override这类的修饰符到这些参数化字段上，就好象你可以在其他类成员上做的事情：
+同样也可以使用`var`前缀类参数，这种情况下相应的字段将能重新被赋值。还有可能添加如private，protected，或override这类的修饰符到这些参数化字段上，就好象你可以在其他类成员上做的事情：
 
 {{{class="brush: scala" 
   class Cat {
@@ -3064,7 +3064,7 @@ Tiger的定义是以下包括重载成员dangerous和private成员age的类定�
   }
 }}}
 
-由于LineElement扩展了ArrayElement，并且ArrayElement的构造器带一个参数（Array[String]），LineElement需要传递一个参数到它的超类的主构造器。要调用超类构造器，只要把你要传递的参数或参数列表放在超类名之后的括号里即可。
+由于LineElement扩展了ArrayElement，并且ArrayElement的构造器带一个参数（Array[String]），LineElement需要传递一个参数到它的超类的主构造器。要调用超类构造器，只要把你要传递的参数或参数列表放在“超类名之后的括号里）即可。
 
 
 == 使用override修饰符 ==
