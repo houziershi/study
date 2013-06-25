@@ -191,7 +191,7 @@
 <li><a href="#toc_13.2">比较瘦接口与胖接口</a>
 <li><a href="#toc_13.3">样例：长方形对象</a>
 <li><a href="#toc_13.4">实现Ordered特质来排序</a>
-<li><a href="#toc_13.5">特质的继承</a>
+<li><a href="#toc_13.5">特质的叠加次序</a>
 <li><a href="#toc_13.6">特质的叠加</a>
 <li><a href="#toc_13.7">为什么不是多重继承</a>
 <li><a href="#toc_13.8">什么情况下要用特质</a>
@@ -4094,7 +4094,7 @@ Tiger的定义是以下包括重载成员dangerous和private成员age的类定�
 </p>
 
 <p>
-为了演示这种行为，我们会从我们的Element类中临时移除所有存在的成员并添加一个名为demo的方法。我们会在ArrayElement和LineElement中重载demo，但UniformElement除外：
+为了演示这种行为，我们会从我们的<code>Element</code>类中临时移除所有存在的成员并添加一个名为<code>demo</code>的方法。我们会在<code>ArrayElement</code>和<code>LineElement</code>中重载<code>demo</code>，但<code>UniformElement</code>除外：
 </p>
 
 <pre class="brush: scala">
@@ -4121,7 +4121,7 @@ Tiger的定义是以下包括重载成员dangerous和private成员age的类定�
 </pre>
 
 <p>
-如果你把这些代码输入到了解释器中，那么你就能定义这个带了一个Element并调用demo的方法：
+如果你把这些代码输入到了解释器中，那么你就能定义这个带了一个<code>Element</code>并调用<code>demo</code>的方法：
 </p>
 
 <pre class="brush: scala">
@@ -4131,16 +4131,15 @@ Tiger的定义是以下包括重载成员dangerous和private成员age的类定�
 </pre>
 
 <p>
-如果你传给invokeDemo一个ArrayElement，你会看到一条消息指明ArrayElement的demo实现被调用，尽管被调用demo的变量e的类型是Element：
+如果你传给<code>invokeDemo</code>一个<code>ArrayElement</code>，你会看到一条消息指明<code>ArrayElement</code>的<code>demo</code>实现被调用，尽管被调用<code>demo</code>的变量<code>e</code>的类型是<code>Element</code>： 
 </p>
-
 <pre class="brush: scala">
   scala&gt; invokeDemo(new ArrayElement)
   ArrayElement's implementation invoked
 </pre>
 
 <p>
-相同的，如果你传递LineElement给invokeDemo，你会看到一条指明LineElement的demo实现被调用的消息：
+相同的，如果你传递<code>LineElement</code>给<code>invokeDemo</code>，你会看到一条指明<code>LineElement</code>的<code>demo</code>实现被调用的消息：
 </p>
 
 <pre class="brush: scala">
@@ -4149,7 +4148,7 @@ Tiger的定义是以下包括重载成员dangerous和private成员age的类定�
 </pre>
 
 <p>
-传递UniformElement时的行为一眼看上去会有些可以，但是正确：
+传递<code>UniformElement</code>时的行为一眼看上去会有些可以，但是正确：
 </p>
 
 <pre class="brush: scala">
@@ -4158,7 +4157,7 @@ Tiger的定义是以下包括重载成员dangerous和private成员age的类定�
 </pre>
 
 <p>
-因为UniformElement没有重载demo，它从它的超类Element继承了demo的实现。因此，当对象的类是UniformElement时，Element的实现就是要调用的demo的正确实现。
+因为<code>UniformElement</code>没有重载<code>demo</code>，它从它的超类<code>Element</code>继承了<code>demo</code>的实现。因此，当对象的类是<code>UniformElement</code>时，<code>Element</code>的实现就是要调用的<code>demo</code>的正确实现。
 </p>
 
 
@@ -4166,7 +4165,7 @@ Tiger的定义是以下包括重载成员dangerous和private成员age的类定�
 <h2 id="toc_11.10">定义final成员</h2>
 
 <p>
-要确保成员不被子类重载。Scala里和Java里一样，通过添加final修饰符给成员来做到。
+要确保成员不被子类重载。Scala里和Java里一样，通过添加<code>final</code>修饰符给成员来做到。
 </p>
 
 <pre class="brush: scala">
@@ -4178,7 +4177,7 @@ Tiger的定义是以下包括重载成员dangerous和private成员age的类定�
 </pre>
 
 <p>
-在类的声明上添加final修饰符把整个类声明为final：
+在类的声明上添加<code>final</code>修饰符把整个类声明为final：
 </p>
 
 <pre class="brush: scala">
@@ -4196,19 +4195,17 @@ Tiger的定义是以下包括重载成员dangerous和private成员age的类定�
 </p>
 
 <p>
-如果你接下来的工作主要是代码重用，通常你应采用组合而不是继承。只有继承受脆基类问题之苦，这
-种情况你可能会无意中通过改变超类而破坏了子类。
+如果你接下来的工作主要是代码重用，通常你应采用组合而不是继承。只有继承受脆基类问题之苦，这种情况你可能会无意中通过改变超类而破坏了子类。
 </p>
 
 <p>
-关于继承关系你可以问自己一个问题，是否它建模了一个is-a关系。你能问的另一个问题是，是否客户
-想要把子类类型当作超类类型来用。
+关于继承关系你可以问自己一个问题，是否它建模了一个is-a关系。你能问的另一个问题是，是否客户想要把子类类型当作超类类型来用。
 </p>
 
 <h2 id="toc_11.12">实现示例中的功能</h2>
 
 <p>
-把一个元素放在另一个上面是指串连这两个元素的contents值。
+把一个元素放在另一个上面是指串连这两个元素的<code>contents</code>值。
 </p>
 
 <pre class="brush: scala">
@@ -4243,8 +4240,7 @@ Tiger的定义是以下包括重载成员dangerous和private成员age的类定�
 </pre>
 
 <p>
-zip操作符转换为一个对子的数组（可以称为Tupele2）。zip方法从它的两个参数中拣出相应的元素并组
-织成对子数组。
+<code>zip</code>操作符转换为一个对子的数组（可以称为<code>Tupele2</code>）。<code>zip</code>方法从它的两个参数中拣出相应的元素并组织成对子数组。
 </p>
 
 <p>
@@ -4308,8 +4304,7 @@ zip操作符转换为一个对子的数组（可以称为Tupele2）。zip方法�
 <h2 id="toc_11.13">定义工厂对象</h2>
 
 <p>
-最直接的方案是创建类Element的伴生对象并把它做成布局元素的工厂方法。这种方式唯一要暴露给客户
-的就是Element的类/对象组合，隐藏它的三个实现类ArrayElement，LineElement和UniformElement。
+最直接的方案是创建类<code>Element</code>的伴生对象并把它做成布局元素的工厂方法。这种方式唯一要暴露给客户的就是<code>Element</code>的类/对象组合，隐藏它的三个实现类<code>ArrayElement</code>，<code>LineElement</code>和<code>UniformElement</code>。
 </p>
 
 <pre class="brush: scala">
@@ -4328,16 +4323,16 @@ zip操作符转换为一个对子的数组（可以称为Tupele2）。zip方法�
 </pre>
 
 <p>
-这些工厂方法使得改变类Element的实现通过使用elem工厂方法实现而不用显式地创建新的ArrayElement
-实例成为可能。
+这些工厂方法使得改变类<code>Element</code>的实现通过使用<code>elem</code>工厂方法实现而不用显式地创建新的<code>ArrayElement</code>实例成为可能。
 </p>
 
 <p>
-为了不使用单例对象的名称，Element，认证而调用工厂方法，我们将在源文件顶上引用Element.elem。
-换句话说，代之以在Element类内部使用Element.elem调用工厂方法，我们将引用Element.elem，这样我
-们只要使用它们的简化名，elem，就可以调用工厂方法。
+为了不使用单例对象的名称，<code>Element</code>，认证而调用工厂方法，我们将在源文件顶上引用<code>Element.elem</code>。
 </p>
 
+<p>
+换句话说，代之以在<code>Element</code>类内部使用<code>Element.elem</code>调用工厂方法，我们将引用<code>Element.elem</code>，这样我们只要使用它们的简化名，<code>elem</code>，就可以调用工厂方法。
+</p>
 
 <pre class="brush: scala">
   import Element.elem
@@ -4366,19 +4361,15 @@ zip操作符转换为一个对子的数组（可以称为Tupele2）。zip方法�
 
 </pre>
 
-
 <p>
-有了工厂方法之后，子类ArrayElement，LineElement和UniformElement不再需要直接被客户访问，所以可以改成是私有的。
+有了工厂方法之后，子类<code>ArrayElement</code>，<code>LineElement</code>和<code>UniformElement</code>不再需要直接被客户访问，所以可以改成是私有的。
 </p>
 
 <p>
-Scala里，你可以在类和单例对象中定义其它的类和单例对象。因此一种让Element的子类私有化的方式
-就是把它们放在Element单例对象中并在那里声明它们为私有。需要的时候，这些类将仍然能被三个elem
-工厂方法访问。
+Scala里，你可以在类和单例对象中定义其它的类和单例对象。因此一种让<code>Element</code>的子类私有化的方式就是把它们放在<code>Element</code>单例对象中并在那里声明它们为私有。需要的时候，这些类将仍然能被三个<code>elem</code>工厂方法访问。
 </p>
 
 <pre class="brush: scala"   object Element {>
-
     private class ArrayElement(
       val contents: Array[String]
     ) extends Element
@@ -4434,7 +4425,7 @@ Element的版本并不完全，因为他不允许客户把不同宽度的元素�
 </pre>
 
 <p>
-添加私有帮助方法widen通过带个宽度做参数并返回那个宽度的Element。heighten，能在竖直方向执行同样的功能。
+添加私有帮助方法<code>widen</code>通过带个宽度做参数并返回那个宽度的<code>Element</code>。<code>heighten</code>，能在竖直方向执行同样的功能。
 </p>
 
 <pre class="brush: scala">
@@ -4548,17 +4539,15 @@ $ scala Spiral 6    $ scala Spiral 11    $ scala Spiral 17
 <h1 id="toc_12">Scala类的层级</h1>
 
 <p>
-Scala里，每个类都继承自通用的名为Any的超类。因为所有的类都是Any的子类，那么定义在Any中的方
-法就是“普遍”方法：它们可以被任何对象调用。
+Scala里，每个类都继承自通用的名为<code>Any</code>的超类。因为所有的类都是<code>Any</code>的子类，那么定义在<code>Any</code>中的方法就是“普遍”方法：它们可以被任何对象调用。
 </p>
 
 <p>
-Scala还在层级的底端定义了Null和Nothing，主要都扮演通用的子类。例如，就像说Any是所有其它类的
-超类，Nothing是所有其它类的子类。
+Scala还在层级的底端定义了<code>Null</code>和<code>Nothing</code>，主要都扮演通用的子类。例如，就像说<code>Any</code>是所有其它类的超类，<code>Nothing</code>是所有其它类的子类。
 </p>
 
 <p>
-<img src="images/scala.hirtc.png" alt="scala.hirtc" />
+<img src="images/scala/scala.hirtc.png" alt="scala.hirtc" />
 </p>
 
 
@@ -4566,7 +4555,7 @@ Scala还在层级的底端定义了Null和Nothing，主要都扮演通用的子�
 <h2 id="toc_12.1">Scala类的概览</h2>
 
 <p>
-层级的顶端是类Any，定义了包含下列的方法：
+层级的顶端是类<code>Any</code>，定义了包含下列的方法：
 </p>
 
 <pre class="brush: scala">
@@ -4578,21 +4567,21 @@ Scala还在层级的底端定义了Null和Nothing，主要都扮演通用的子�
 </pre>
 
 <p>
-类Any里的<code>=</code>和<code>!=</code>，被声明为final，因此它们不能在子类里面重载。实际上，<code>==</code>总是与<code>equals</code>相同，<code>!=</code>总是与<code>equals</code>相反。因此独立的类可以通过重载equals方法修改<code>==</code>或<code>!=</code>的意义。
+类Any里的<code>=</code>和<code>!=</code>，被声明为<code>final</code>，因此它们不能在子类里面重载。实际上，<code>==</code>总是与<code>equals</code>相同，<code>!=</code>总是与<code>equals</code>相反。因此独立的类可以通过重载<code>equals</code>方法修改<code>==</code>或<code>!=</code>的意义。
 </p>
 
 <p>
-根类Any有两个子类：AnyVal和AnyRef。
+根类<code>Any</code>有两个子类：<code>AnyVal</code>和<code>AnyRef</code>。
 </p>
 
 <h3 id="toc_12.1.1">值类型（AnyVal）</h3>
 
 <p>
-AnyVal是Scala里每个内建值类型的父类。有九个这样的值类型：Byte，Short，Char，Int，Long，Float，Double，Boolean和Unit。其中的前八个对应到Java的原始类型，它们的值在运行时表示成Java的原始值。
+<code>AnyVal</code>是Scala里每个内建值类型的父类。有九个这样的值类型：<code>Byte</code>，<code>Short</code>，<code>Char</code>，<code>Int</code>，<code>Long</code>，<code>Float</code>，<code>Double</code>，<code>Boolean</code>和<code>Unit</code>。其中的前八个对应到Java的原始类型，它们的值在运行时表示成Java的原始值。
 </p>
 
 <p>
-Scala里这些类的实例都写成字面量，不能使用new创造这些类的实例。值类都被定义为即是抽象的又是final的，强制贯彻。因此如果你写了<code>new</code>就会出错：
+Scala里这些类的实例都写成字面量，不能使用<code>new</code>创造这些类的实例。值类都被定义为即是抽象的又是<code>final</code>的，强制贯彻。因此如果你写了<code>new</code>就会出错：
 </p>
 
 <pre class="brush: scala">
@@ -4604,40 +4593,11 @@ Scala里这些类的实例都写成字面量，不能使用new创造这些类的
 </pre>
 
 <p>
-另一个值类型，Unit，大约对应于Java的void类型；被用作不返回任何有趣结果的方法的结果类型。Unit只有一个实例值，被写作()。
+另一个值类型<code>Unit</code>大约对应于Java的<code>void</code>类型；被用作不返回任何有趣结果的方法的结果类型。<code>Unit</code>只有一个实例值，被写作<code>()</code>。
 </p>
 
 <p>
-值类型支持作为方法的通用的数学和布尔操作符。例如，Int有名为<code>+</code>和<code>*</code>的方法，Boolean有名为<code>||</code>和<code>&amp;&amp;</code>的方法。值类型也从类Any继承所有的方法：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; 42 max 43
-  res4: Int = 43
-
-  scala&gt; 42 min 43
-  res5: Int = 42
-
-  scala&gt; 1 until 5
-  res6: Range = Range(1, 2, 3, 4)
-
-  scala&gt; 1 to 5
-  res7: Range.Inclusive = Range(1, 2, 3, 4, 5)
-
-  scala&gt; 3.abs
-  res8: Int = 3
-
-  scala&gt; (-3).abs
-  res9: Int = 3
-</pre>
-
-<p>
-值类型的空间是扁平的；所有的值类都是scala.AnyVal的子类型，但是它们不是互相的子类。代之以它们不同的值类型之间可以隐式地互相转换。例如，需要的时候，类scala.Int的实例可以自动放宽（通过隐式转换）到类scala.Long的实例。
-</p>
-
-
-<p>
-隐式转换还用来为值类型添加更多的功能。例如，类型Int支持以下所有的操作：
+值类型支持作为方法的通用的数学和布尔操作符。例如，<code>Int</code>有名为<code>+</code>和<code>*</code>的方法，<code>Boolean</code>有名为<code>||</code>和<code>&amp;&amp;</code>的方法。值类型也从类<code>Any</code>继承所有的方法：
 </p>
 
 <pre class="brush: scala">
@@ -4661,25 +4621,54 @@ Scala里这些类的实例都写成字面量，不能使用new创造这些类的
 </pre>
 
 <p>
-工作原理：方法min，max，until，to和abs都定义在类scala.runtime.RichInt里，并且有一个从类Int到RichInt的隐式转换。当你在Int上调用没有定义在Int上但定义在RichInt上的方法时，这个转换就被应用了：
+值类型的空间是扁平的；所有的值类型都是<code>scala.AnyVal</code>的子类型，但是它们不是互相的子类。代之以它们不同的值类型之间可以隐式地互相转换。例如，需要的时候，类<code>scala.Int</code>的实例可以自动放宽（通过隐式转换）到类<code>scala.Long</code>的实例。
+</p>
+
+
+<p>
+隐式转换还用来为值类型添加更多的功能。例如，类型<code>Int</code>支持以下所有的操作：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; 42 max 43
+  res4: Int = 43
+
+  scala&gt; 42 min 43
+  res5: Int = 42
+
+  scala&gt; 1 until 5
+  res6: Range = Range(1, 2, 3, 4)
+
+  scala&gt; 1 to 5
+  res7: Range.Inclusive = Range(1, 2, 3, 4, 5)
+
+  scala&gt; 3.abs
+  res8: Int = 3
+
+  scala&gt; (-3).abs
+  res9: Int = 3
+</pre>
+
+<p>
+工作原理：方法<code>min</code>，<code>max</code>，<code>until</code>，<code>to</code>和<code>abs</code>都定义在类<code>scala.runtime.RichInt</code>里，并且有一个从类<code>Int</code>到<code>RichInt</code>的隐式转换。当你在Int上调用没有定义在<code>Int</code>上但定义在<code>RichInt</code>上的方法时，这个转换就被应用了：
 </p>
 
 <h3 id="toc_12.1.2">引用类型（AnyRef）</h3>
 
 <p>
-类Any的另一个子类是类AnyRef。这个是Scala里所有引用类的基类。正如前面提到的，在Java平台上AnyRef实际就是类java.lang.Object的别名。因此Java里写的类和Scala里写的都继承自AnyRef。
+类<code>Any</code>的另一个子类是类<code>AnyRef</code>。这个是<code>Scala</code>里所有引用类的基类。正如前面提到的，在Java平台上<code>AnyRef</code>实际就是类<code>java.lang.Object</code>的别名。因此Java里写的类和<code>Scala</code>里写的都继承自<code>AnyRef</code>。
 </p>
 
 <p>
-存在AnyRef别名代替使用java.lang.Object名称的理由是，Scala被设计成可以同时工作在Java和.Net平台。在.NET平台上，AnyRef是System.Object的别名。 
+存在<code>AnyRef</code>别名代替使用<code>java.lang.Object</code>名称的理由是，Scala被设计成可以同时工作在Java和.Net平台。在.NET平台上，<code>AnyRef</code>是<code>System.Object</code>的别名。 
 </p>
 
 <p>
-可以认为java.lang.Object是Java平台上实现AnyRef的方式。因此，尽管你可以在Java平台上的Scala程序里交换使用Object和AnyRef，推荐的风格是在任何地方都只使用AnyRef。
+可以认为<code>java.lang.Object</code>是Java平台上实现<code>AnyRef</code>的方式。因此，尽管你可以在Java平台上的Scala程序里交换使用<code>Object</code>和<code>AnyRef</code>，推荐的风格是在任何地方都只使用<code>AnyRef</code>。
 </p>
 
 <p>
-Scala类与Java类不同在于它们还继承自一个名为ScalaObject的特别的记号特质。理念是ScalaObject包含了Scala编译器定义和实现的方法，目的是让Scala程序的执行更有效。到现在为止，Scala对象包含了单个方法，名为$tag，用于内部以提速模式匹配。
+Scala类与Java类不同在于它们还继承自一个名为<code>ScalaObject</code>的特别的记号特质。理念是<code>ScalaObject</code>包含了Scala编译器定义和实现的方法，目的是让Scala程序的执行更有效。到现在为止，Scala对象包含了单个方法，名为<code>$tag</code>，用于内部以提速模式匹配。
 </p>
 
 
@@ -4687,7 +4676,7 @@ Scala类与Java类不同在于它们还继承自一个名为ScalaObject的特别
 <h2 id="toc_12.2">原始类型是如何实现的</h2>
 
 <p>
-Scala以与Java同样的方式存储整数：把它当作32位的字。这对在JVM上的效率以及与Java库的互操作性方面来说都很重要。标准的操作如加法或乘法都被实现为原始操作。然而，当整数需要被当作（Java）对象看待的时候，Scala使用了“备份”类java.lang.Integer。如在整数上调用toString方法或者把整数赋值给Any类型的变量时，就会这么做。
+Scala以与Java同样的方式存储整数：把它当作32位的字。这对在JVM上的效率以及与Java库的互操作性方面来说都很重要。标准的操作如加法或乘法都被实现为原始操作。然而，当整数需要被当作（Java）对象看待的时候，Scala使用了“备份”类<code>java.lang.Integer</code>。如在整数上调用<code>toString</code>方法或者把整数赋值给Any类型的变量时，就会这么做。
 </p>
 
 <p>
@@ -4703,7 +4692,7 @@ Scala以与Java同样的方式存储整数：把它当作32位的字。这对在
 </pre>
 
 <p>
-当然会得到true。现在，把isEqual的参数类型变为java.lang.Integer（或Object，结果都一样）：
+当然会得到<code>true</code>。现在，把<code>isEqual</code>的参数类型变为<code>java.lang.Integer</code>（或<code>Object</code>，结果都一样）：
 </p>
 
 <pre class="brush: scala">
@@ -4715,11 +4704,11 @@ Scala以与Java同样的方式存储整数：把它当作32位的字。这对在
 </pre>
 
 <p>
-却得到了false！原因是数421被装箱了两次，因此参数x和y是两个不同的对象。
+却得到了<code>false</code>！原因是数<code>421</code>被装箱了两次，因此参数<code>x</code>和<code>y</code>是两个不同的对象。
 </p>
 
 <p>
-因为在引用类型上==表示引用相等，而Integer是引用类型，所以结果是false。这是展示了Java不是纯面向对象语言的一个方面。我们能清楚观察到原始类型和引用类型之间的差别。
+因为在引用类型上<code>==</code>表示引用相等，而<code>Integer</code>是引用类型，所以结果是<code>false</code>。这是展示了Java不是纯面向对象语言的一个方面。我们能清楚观察到原始类型和引用类型之间的差别。
 </p>
 
 <p>
@@ -4741,7 +4730,7 @@ Scala以与Java同样的方式存储整数：把它当作32位的字。这对在
 </pre>
 
 <p>
-实际上Scala里的相等操作==被设计为透明的参考类型代表的东西。对值类型来说，就是自然的（数学或布尔）相等。对于引用类型，==被视为继承自Object的equals方法的别名。这个方法被初始地定义为引用相等，但被许多子类重载实现它们种族的相等概念。这也意味着Scala里你永远也不会落入Java知名的关于字串比较的陷阱。Scala里，字串比较以其应有的方式工作：
+实际上Scala里的相等操作<code>==</code>被设计为透明的参考类型代表的东西。对值类型来说，就是自然的（数学或布尔）相等。对于引用类型，<code>==</code>被视为继承自<code>Object</code>的<code>equals</code>方法的别名。这个方法被初始地定义为引用相等，但被许多子类重载实现它们种族的相等概念。这也意味着Scala里你永远也不会落入Java知名的关于字串比较的陷阱。Scala里，字串比较以其应有的方式工作：
 </p>
 
 <pre class="brush: scala">
@@ -4756,7 +4745,7 @@ Scala以与Java同样的方式存储整数：把它当作32位的字。这对在
 </pre>
 
 <p>
-Java里，x与y的比较结果将是false。程序员在这种情况应该用equals，不过它容易被忘记。
+Java里，<code>x</code>与<code>y</code>的比较结果将是<code>false</code>。程序员在这种情况应该用<code>equals</code>，不过它容易被忘记。
 </p>
 
 <p>
@@ -4764,11 +4753,11 @@ Java里，x与y的比较结果将是false。程序员在这种情况应该用equ
 </p>
 
 <p>
-例如，某些时候效率是首要因素，你想要把某些类哈希合并（hash cons）然后通过引用相等比较它们的实例（类实例的哈希合并是指把创建的所有实例缓存在弱集合中。然后，一旦需要类的新实例，首先检查缓存。如果缓存中已经有一个元素等于你打算创建的，你可以重用存在的实例。这样安排的结果是，任何以equals()判断相等的两个实例同样在引用相等上判断一致。）。
+例如，某些时候效率是首要因素，你想要把某些类哈希合并（hash cons）然后通过引用相等比较它们的实例（类实例的哈希合并是指把创建的所有实例缓存在弱集合中。然后，一旦需要类的新实例，首先检查缓存。如果缓存中已经有一个元素等于你打算创建的，你可以重用存在的实例。这样安排的结果是，任何以<code>equals()</code>判断相等的两个实例同样在引用相等上判断一致。）。
 </p>
 
 <p>
-为这种情况，类AnyRef定义了附加的<code>eq</code>方法，它不能被重载并且实现为引用相等（也就是说，它表现得就像Java里对于引用类型的==那样）。同样也有一个<code>eq</code>的反义词，被称为<code>ne</code>。例如：
+为这种情况，类AnyRef定义了附加的<code>eq</code>方法，它不能被重载并且实现为引用相等（也就是说，它表现得就像Java里对于引用类型的<code>==</code>那样）。同样也有一个<code>eq</code>的反义词，被称为<code>ne</code>。例如：
 </p>
 
 <pre class="brush: scala">
@@ -4791,11 +4780,11 @@ Java里，x与y的比较结果将是false。程序员在这种情况应该用equ
 <h2 id="toc_12.3">底层类型</h2>
 
 <p>
-层级的底部你看到了两个类scala.Null和Scala.Nothing。它们是用统一的方式处理某些Scala的面向对象类型系统的“边界情况”的特殊类型。
+层级的底部你看到了两个类<code>scala.Null</code>和<code>Scala.Nothing</code>。它们是用统一的方式处理某些Scala的面向对象类型系统的“边界情况”的特殊类型。
 </p>
 
 <p>
-类Null是null类型的引用；它是每个引用类（就是说，每个继承自AnyRef的类）的子类。Null不兼容值类型。你不可，比方说，把null值赋给整数变量：
+类<code>Null</code>是<code>null</code>类型的引用；它是每个引用类（就是说，每个继承自<code>AnyRef</code>的类）的子类。<code>Null</code>不兼容值类型。比方说，不可把<code>null</code>值赋给整数变量：
 </p>
 
 <pre class="brush: scala">
@@ -4806,7 +4795,7 @@ Java里，x与y的比较结果将是false。程序员在这种情况应该用equ
 </pre>
 
 <p>
-类型Nothing在Scala的类层级的最底端；它是任何其它类型的子类型。然而，根本没有这个类型的任何值。要一个没有值的类型有什么意思呢？在控制结构的try-catch中讨论过，Nothing的一个用处是它标明了不正常的终止。例如Scala的标准库中的Predef对象有一个error方法，如下定义：
+类型<code>Nothing</code>在<code>Scala</code>的类层级的最底端；它是任何其它类型的子类型。然而，根本没有这个类型的任何值。要一个没有值的类型有什么意思呢？在控制结构的try-catch中讨论过，<code>Nothing</code>的一个用处是它标明了不正常的终止。例如Scala的标准库中的<code>Predef</code>对象有一个<code>error</code>方法，如下定义：
 </p>
 
 <pre class="brush: scala">
@@ -4815,7 +4804,7 @@ Java里，x与y的比较结果将是false。程序员在这种情况应该用equ
 </pre>
 
 <p>
-error的返回类型是Nothing，告诉用户方法不是正常返回的（代之以抛出了异常）。因为Nothing是任何其它类型的子类，你可以非常灵活的使用像error这样的方法。例如：
+<code>error</code>的返回类型是<code>Nothing</code>，告诉用户方法不是正常返回的（代之以抛出了异常）。因为<code>Nothing</code>是任何其它类型的子类，你可以非常灵活的使用像<code>error</code>这样的方法。例如：
 </p>
 
 <pre class="brush: scala">
@@ -4826,7 +4815,7 @@ error的返回类型是Nothing，告诉用户方法不是正常返回的（代�
 </pre>
 
 <p>
-<code>if</code>状态分支，<code>x / y</code>，类型为Int，而<code>else</code>分支，调用了<code>error</code>，类型为<code>Nothing</code>。因为<code>Nothing</code>是Int的子类型，整个状态语句的类型是Int，正如需要的那样。
+<code>if</code>状态分支，<code>x / y</code>，类型为Int，而<code>else</code>分支，调用了<code>error</code>，类型为<code>Nothing</code>。因为<code>Nothing</code>是<code>Int</code>的子类型，整个状态语句的类型是<code>Int</code>，正如需要的那样。
 </p>
 
 
@@ -4840,7 +4829,7 @@ trait是Scala里代码复用的基础单元。特质封装了方法和字段的�
 <h2 id="toc_13.1">概念</h2>
 
 <p>
-定义， trait NoPoint(x: Int, y: Int) // Does not compile：
+定义，关键字<code>trait</code>：
 </p>
 
 <pre class="brush: scala">
@@ -4852,7 +4841,7 @@ trait是Scala里代码复用的基础单元。特质封装了方法和字段的�
 </pre>
 
 <p>
-没有声明超类，因此和类一样，有个缺省的超类AnyRef。一旦特质被定义了，就可以使用extends或with关键字，把它混入到类中：
+没有声明超类，因此和类一样，有个缺省的超类<code>AnyRef</code>。一旦特质被定义了，就可以使用<code>extends</code>或<code>with</code>关键字，把它混入到类中：
 </p>
 
 <pre class="brush: scala">
@@ -4862,7 +4851,7 @@ trait是Scala里代码复用的基础单元。特质封装了方法和字段的�
 </pre>
 
 <p>
-类Frog是AnyRef（Philosophical的超类）的子类并混入了Philosophical。从特质继承的方法可以像从超类继承的方法那样使用：
+类<code>Frog</code>是<code>AnyRef</code>（<code>Philosophical</code>的超类）的子类并混入了<code>Philosophical</code>。从特质继承的方法可以像从超类继承的方法那样使用：
 </p>
 
 <pre class="brush: scala">
@@ -4874,7 +4863,7 @@ trait是Scala里代码复用的基础单元。特质封装了方法和字段的�
 </pre>
 
 <p>
-特质同样也是类型。以下是把Philosophical用作类型的例子：
+特质同样也是类型。以下是把<code>Philosophical</code>用作类型的例子：
 </p>
 
 <pre class="brush: scala">
@@ -4886,11 +4875,11 @@ trait是Scala里代码复用的基础单元。特质封装了方法和字段的�
 </pre>
 
 <p>
-phil的类型是Philosophical，一个特质。因此，变量phil可以被初始化为任何混入了Philosophical特质的类的对象。
+<code>phil</code>的类型是<code>Philosophical</code>，一个特质。因此，变量<code>phil</code>可以被初始化为任何混入了<code>Philosophical</code>特质的类的对象。
 </p>
 
 <p>
-如果想把特质混入到显式扩展超类的类里，可以用extends指明待扩展的超类，用with混入特质：
+如果想把特质混入到显式扩展超类的类里，可以用<code>extends</code>指明待扩展的超类，用<code>with</code>混入特质：
 </p>
 
 <pre class="brush: scala">
@@ -4902,7 +4891,7 @@ phil的类型是Philosophical，一个特质。因此，变量phil可以被初�
 </pre>
 
 <p>
-如果想混入多个特质，都加在with子句里就可以了：
+如果想混入多个特质，都加在<code>with</code>子句里就可以了：
 </p>
 
 <pre class="brush: scala">
@@ -4915,7 +4904,7 @@ phil的类型是Philosophical，一个特质。因此，变量phil可以被初�
 </pre>
 
 <p>
-目前为止你看到的例子中，类Frog都继承了Philosophical的philosophize实现。或者，Frog也可以重载philosophize方法。语法与重载超类中定义的方法一样。举例如下：
+目前为止你看到的例子中，类<code>Frog</code>都继承了<code>Philosophical</code>的<code>philosophize</code>实现。或者，<code>Frog</code>也可以重载<code>philosophize</code>方法。语法与重载超类中定义的方法一样。举例如下：
 </p>
 
 <pre class="brush: scala">
@@ -4930,7 +4919,7 @@ phil的类型是Philosophical，一个特质。因此，变量phil可以被初�
 </pre>
 
 <p>
-因为Frog的这个新定义仍然混入了特质Philosophize，你仍然可以把它当作这种类型的变量使用。但是由于Frog重载了Philosophical的philosophize实现，当你调用它的时候，你会得到新的回应：
+因为<code>Frog</code>的这个新定义仍然混入了特质<code>Philosophize</code>，你仍然可以把它当作这种类型的变量使用。但是由于<code>Frog</code>重载了<code>Philosophical</code>的<code>philosophize</code>实现，当你调用它的时候，你会得到新的回应：
 </p>
 
 <pre class="brush: scala">
@@ -4942,7 +4931,15 @@ phil的类型是Philosophical，一个特质。因此，变量phil可以被初�
 </pre>
 
 <p>
-这时你或许推导出以下哲理：特质就像是带有具体方法的Java接口，不过其实它能做的更多。特质可以，比方说，声明字段和维持状态值。实际上，你可以用特质定义做任何用类定义做的事，并且语法也是一样的，除了两点。第一点，特质不能有任何“类”参数，也就是说，传递给类的主构造器的参数。换句话说，尽管你可以定义如下的类：
+这时你或许推导出以下哲理：特质就像是带有具体方法的Java接口，不过其实它能做的更多：比方说，特质可以声明字段和维持状态值。
+</p>
+
+<p>
+实际上，你可以用特质定义做任何用类定义做的事，并且语法也是一样的，除了两点：
+</p>
+
+<p>
+第一点，特质不能有任何“类”参数，也就是说，传递给类的主构造器的参数。换句话说，尽管你可以定义如下的类：
 </p>
 
 <pre class="brush: scala">
@@ -4958,7 +4955,7 @@ phil的类型是Philosophical，一个特质。因此，变量phil可以被初�
 </pre>
 
 <p>
-类和特质的另一个差别在于不论在类的哪个角落，super调用都是静态绑定的，在特质中，它们是动态绑定的。如果你在类中写下“super.toString”，你很明确哪个方法实现将被调用。然而如果你在特质中写了同样的东西，在你定义特质的时候super调用的方法实现尚未被定义。调用的实现将在每一次特质被混入到具体类的时候才被决定。这种处理super的有趣的行为是使得特质能以可堆叠的改变（stackable modifications）方式工作的关键。
+类和特质的另一个差别在于不论在类的哪个角落，<code>super</code>调用都是静态绑定的，在特质中，它们是动态绑定的。如果你在类中写下<code>super.toString</code>，你很明确哪个方法实现将被调用。然而如果你在特质中写了同样的东西，在你定义特质的时候<code>super</code>调用的方法实现尚未被定义。调用的实现将在每一次特质被混入到具体类的时候才被决定。这种处理<code>super</code>的有趣的行为是使得特质能以可堆叠的改变（stackable modifications）方式工作的关键。
 </p>
 
 <h2 id="toc_13.2">比较瘦接口与胖接口</h2>
@@ -4968,7 +4965,7 @@ phil的类型是Philosophical，一个特质。因此，变量phil可以被初�
 </p>
 
 <p>
-Java的接口常常是过瘦而非过胖。例如，从Java 1.4开始引入的CharSequence接口，是对于字串类型的类来说通用的瘦接口，它持有一个字符序列。下面是把它看作Scala特质的定义：
+Java的接口常常是过瘦而非过胖。例如，从Java 1.4开始引入的<code>CharSequence</code>接口，是对于字串类型的类来说通用的瘦接口，它持有一个字符序列。下面是把它看作Scala特质的定义：
 </p>
 
 <pre class="brush: scala">
@@ -4981,7 +4978,7 @@ Java的接口常常是过瘦而非过胖。例如，从Java 1.4开始引入的Ch
 </pre>
 
 <p>
-尽管类String成打的方法中的大多数都可以用在任何CharSequence上，Java的CharSequence接口定义仅提供了4个方法。如果CharSequence代以包含全部String接口，那它将为CharSequence的实现者压上沉重的负担。任何实现Java里的CharSequence接口的程序员将不得不定义一大堆方法。因为Scala特质可以包含具体方法，这使得创建胖接口大为便捷。
+尽管类<code>String</code>里现有的成打的方法中的大多数都可以用在任何<code>CharSequence</code>上，Java的<code>CharSequence</code>接口定义仅提供了4个方法。如果<code>CharSequence</code>代以包含全部<code>String</code>接口，那它将为<code>CharSequence</code>的实现者压上沉重的负担。任何实现Java里的<code>CharSequence</code>接口的程序员将不得不定义一大堆方法。因为Scala特质可以包含具体方法，这使得创建胖接口大为便捷。
 </p>
 
 <p>
@@ -4995,11 +4992,11 @@ Java的接口常常是过瘦而非过胖。例如，从Java 1.4开始引入的Ch
 <h2 id="toc_13.3">样例：长方形对象</h2>
 
 <p>
-为了使这些长方形对象便于使用，如果库能够提供诸如width，height，left，right，topLeft，等等方法。
+为了使这些长方形对象便于使用，如果库能够提供诸如<code>width</code>，<code>height</code>，<code>left</code>，<code>right</code>，<code>topLeft</code>，等等方法。
 </p>
 
 <p>
-没有特质的代码的话，首先会有一些基本的集合类如Point和Rectangle：
+没有特质的代码的话，首先会有一些基本的集合类如<code>Point</code>和<code>Rectangle</code>：
 </p>
 
 <pre class="brush: scala">
@@ -5014,7 +5011,7 @@ Java的接口常常是过瘦而非过胖。例如，从Java 1.4开始引入的Ch
 </pre>
 
 <p>
-这个Rectangle类在它的主构造器中带两个点，分别是左上角和右下角的坐标。然后它通过对这两个点执行简单的计算实现了许多便捷方法诸如left，right，和width。 图库应该有的另一个类是2-D图像工具：
+这个<code>Rectangle</code>类在它的主构造器中带两个点，分别是左上角和右下角的坐标。然后它通过对这两个点执行简单的计算实现了许多便捷方法诸如<code>left</code>，<code>right</code>，和<code>width</code>。 图库应该有的另一个类是2-D图像工具：
 </p>
 
 <pre class="brush: scala">
@@ -5030,7 +5027,7 @@ Java的接口常常是过瘦而非过胖。例如，从Java 1.4开始引入的Ch
 </pre>
 
 <p>
-注意left，right，和width在两个类中的定义是一模一样。除了少许的变动外，他们将在任何其他的长方形对象的类中保持一致。
+注意<code>left</code>，<code>right</code>，和<code>width</code>在两个类中的定义是一模一样。除了少许的变动外，他们将在任何其他的长方形对象的类中保持一致。
 </p>
 
 <p>
@@ -5050,7 +5047,7 @@ Java的接口常常是过瘦而非过胖。例如，从Java 1.4开始引入的Ch
 </pre>
 
 <p>
-类Component可以混入这个特质并获得Rectangular提供的所有的几何方法：
+类<code>Component</code>可以混入这个特质并获得<code>Rectangular</code>提供的所有的几何方法：
 </p>
 
 <pre class="brush: scala">
@@ -5060,11 +5057,10 @@ Java的接口常常是过瘦而非过胖。例如，从Java 1.4开始引入的Ch
 </pre>
 
 <p>
-可以创建Rectangle对象并对它调用如width或left的几何方法：
+可以创建<code>Rectangle</code>对象并对它调用如<code>width</code>或<code>left</code>的几何方法：
 </p>
 
 <pre class="brush: scala">
-
   scala&gt; val rect = new Rectangle(new Point(1, 1),
        | new Point(10, 10))
   rect: Rectangle = Rectangle@3536fd
@@ -5083,7 +5079,7 @@ Java的接口常常是过瘦而非过胖。例如，从Java 1.4开始引入的Ch
 <h2 id="toc_13.4">实现Ordered特质来排序</h2>
 
 <p>
-Scala专门提供了Ordered特质解决排序。以前面用过的分数类型来说，原来已经有了四个比较大小的方法：
+以前面我们实现的实数类型来说，原来已经有了四个比较大小的方法：
 </p>
 
 <pre class="brush: scala">
@@ -5098,7 +5094,7 @@ Scala专门提供了Ordered特质解决排序。以前面用过的分数类型�
 </pre>
 
 <p>
-现在通过Ordered特质的<code>compare</code>方法来完成一个比大小的功能：
+Scala专门提供了<code>Ordered</code>特质来简化比较工作。只要实现<code>Ordered</code>特质中的<code>compare</code>方法，就可以自动实现其他的<code>&lt;</code>、<code>&gt;</code>、<code>&lt;=</code>、<code>&gt;=</code>功能：
 </p>
 
 <pre class="brush: scala">
@@ -5110,7 +5106,7 @@ Scala专门提供了Ordered特质解决排序。以前面用过的分数类型�
 </pre>
 
 <p>
-上面定义compare方法来比较两个对象，类Rational现在具有了所有4种比较方法：
+上面定义<code>compare</code>方法来比较两个对象，类<code>Rational</code>现在具有了所有4种比较方法：
 </p>
 
 <pre class="brush: scala">
@@ -5142,14 +5138,14 @@ Scala专门提供了Ordered特质解决排序。以前面用过的分数类型�
   }
 </pre>
 
-<h2 id="toc_13.5">特质的继承</h2>
+<h2 id="toc_13.5">特质的叠加次序</h2>
 
 <p>
 可以把多个特质加在一个类上，按声明的顺序，它们操作的顺序就像栈一样。
 </p>
 
 <p>
-IntQueue有一个put方法把整数添加到队列中，和一个get方法移除并返回它们：
+<code>IntQueue</code>有一个<code>put</code>方法把整数添加到队列中，和一个<code>get</code>方法移除并返回它们：
 </p>
 
 <pre class="brush: scala">
@@ -5160,7 +5156,7 @@ IntQueue有一个put方法把整数添加到队列中，和一个get方法移除
 </pre>
 
 <p>
-BasicIntQueue类根据上面的特质实现了一个队列：
+<code>BasicIntQueue</code>类根据上面的特质实现了一个队列：
 </p>
 
 <pre class="brush: scala">
@@ -5194,7 +5190,7 @@ BasicIntQueue类根据上面的特质实现了一个队列：
 
 
 <p>
-Doubling特质把整数放入队列的时候对它加倍。
+<code>Doubling</code>特质把整数放入队列的时候对它加倍。
 </p>
 
 <pre class="brush: scala">
@@ -5204,7 +5200,7 @@ Doubling特质把整数放入队列的时候对它加倍。
 </pre>
 
 <p>
-他定义了超类<code>IntQueue</code>这个定义意味着特质只能混入到扩展了IntQueue的类中。声明为抽象的方法中有一个super调用。这种调用对于普通的类来说是非法的，因为他们在执行时将必然失败。然而对于特质来说，这样的调用实际能够成功。因为特质里的super调用是动态绑定的，特质Doubling的super调用将直到被混入在另一个特质或类之后，有了具体的方法定义时才工作。
+他定义了超类<code>IntQueue</code>这个定义意味着特质只能混入到扩展了<code>IntQueue</code>的类中。声明为抽象的方法中有一个<code>super</code>调用。这种调用对于普通的类来说是非法的，因为继承的超类是个抽象类，所以在执行时将必然失败。然而对于特质来说，这样的调用实际能够成功。因为特质里的<code>super</code>调用是动态绑定的，特质<code>Doubling</code>的<code>super</code>调用将直到被混入在另一个特质或类之后，有了具体的方法定义时才工作。
 </p>
 
 <p>
@@ -5233,7 +5229,7 @@ Doubling特质把整数放入队列的时候对它加倍。
 </p>
 
 <p>
-还可以更加简化到类名都不用写，直接｀new BasicIntQueue with Doubling｀这个父类名加上特质就可以把对象拿到了：
+还可以更加简化到类名都不用写，直接<code>new BasicIntQueue with Doubling</code>这个父类名加上特质就可以把对象拿到了：
 </p>
 
 <pre class="brush: scala">
@@ -5284,11 +5280,11 @@ Doubling特质把整数放入队列的时候对它加倍。
 </pre>
 
 <p>
-粗略地说，越靠近右侧的特质越先起作用。。如果那个方法调用了super，它调用其左侧特质的方法，以此类推。
+粗略地说，越靠近右侧的特质越先起作用。如果那个方法调用了<code>super</code>，它调用其左侧特质的方法，以此类推。
 </p>
 
 <p>
-前面的例子里，Filtering的put首先被调用，因此它移除了开始的负整数。Incrementing的put第二个被调用，因此它对剩下的整数增量。
+前面的例子里，<code>Filtering</code>的<code>put</code>首先被调用，因此它移除了开始的负整数。<code>Incrementing</code>的<code>put</code>第二个被调用，因此它对剩下的整数增量。
 </p>
 
 <p>
@@ -5316,7 +5312,7 @@ Doubling特质把整数放入队列的时候对它加倍。
 <h2 id="toc_13.7">为什么不是多重继承</h2>
 
 <p>
-特质是一种继承多个类似于类的结构的方式，但是它与许多语言中的多重继承有很重要的差别。其中的一个尤为重要：super的解释。对于多重继承来说，super调用导致的方法调用可以在调用发生的地方明确决定。而对于特质来说，方法调用是由类和被混入到类的特质的线性化（linearization）所决定的。这种差别让前一节所描述的改动的堆叠成为可能。
+特质是一种继承多个类似于类的结构的方式，但是它与许多语言中的多重继承有很重要的差别。其中的一个尤为重要：<code>super</code>的解释。对于多重继承来说，<code>super</code>调用导致的方法调用可以在调用发生的地方明确决定。而对于特质来说，方法调用是由类和被混入到类的特质的线性化（linearization）所决定的。这种差别让前一节所描述的改动的堆叠成为可能。
 </p>
 
 <p>
@@ -5329,11 +5325,11 @@ Doubling特质把整数放入队列的时候对它加倍。
 </pre>
 
 <p>
-第一个问题是，哪个put方法会在这个调用中被引用？或许规则会决定最后一个超类胜出，本例中的Doubling将被调用。Doubling将加倍它的参数并调用super.put，大概就是这样。增量操作将不会发生！同样，如果规则决定第一个超类胜出，那么结果队列将增量整数但不会加倍它们。因此怎么排序都不会有效。
+第一个问题是，哪个<code>put</code>方法会在这个调用中被引用？或许规则会决定最后一个超类胜出，本例中的<code>Doubling</code>将被调用。<code>Doubling</code>将加倍它的参数并调用<code>super.put</code>，大概就是这样。增量操作将不会发生！同样，如果规则决定第一个超类胜出，那么结果队列将增量整数但不会加倍它们。因此怎么排序都不会有效。
 </p>
 
 <p>
-或许你会满足于允许程序员显式地指定在他们说super的时候他们想要的到底是哪个超类方法。比方说，假设下列Scala类似代码，super似乎被显式地指定为Incrementing和Doubling调用：
+或许你会满足于允许程序员显式地指定在他们说<code>super</code>的时候他们想要的到底是哪个超类方法。比方说，假设下列Scala类似代码，<code>super</code>似乎被显式地指定为<code>Incrementing</code>和<code>Doubling</code>调用：
 </p>
 
 <pre class="brush: scala">
@@ -5348,23 +5344,23 @@ Doubling特质把整数放入队列的时候对它加倍。
 </pre>
 
 <p>
-这种方式将带给我们新的问题。这种尝试的繁冗几乎不算是问题。实际会发生的是基类的put方法将被调用两次——一次带了增量的值另一次带了加倍的值，但是没有一次是带了增量加倍的值。
+这种方式将带给我们新的问题。这种尝试的繁冗几乎不算是问题。实际会发生的是基类的<code>put</code>方法将被调用两次——一次带了增量的值另一次带了加倍的值，但是没有一次是带了增量加倍的值。
 </p>
 
 <p>
-显然使用多重继承对这个问题来说没有好的方案。你不得不返回到你的设计并分别提炼出代码。相反，Scala里的特质方案很直接。你只要简单地混入Incrementing和Doubling，Scala对super的特别照顾让它迎刃而解。这与传统的多重继承相比必然有不同的地方，但这是什么呢？
+显然使用多重继承对这个问题来说没有好的方案。你不得不返回到你的设计并分别提炼出代码。相反，Scala里的特质方案很直接。你只要简单地混入<code>Incrementing</code>和<code>Doubling</code>，<code>Scala</code>对<code>super</code>的特别照顾让它迎刃而解。这与传统的多重继承相比必然有不同的地方，但这是什么呢？
 </p>
 
 <p>
-就像在前面暗示的，答案就是线性化。当你使用new实例化一个类的时候，Scala把这个类和所有它继承的类还有它的特质以线性：linear的次序放在一起。然后，当你在其中的一个类中调用super，被调用的方法就是链子的下一节。除了最后一个调用super之外的方法，其净结果就是可堆叠的行为。
+就像在前面暗示的，答案就是线性化。当你使用<code>new</code>实例化一个类的时候，Scala把这个类和所有它继承的类还有它的特质以线性（linear）的次序放在一起。然后，当你在其中的一个类中调用<code>super</code>，被调用的方法就是链子的下一节。除了最后一个调用<code>super</code>之外的方法，其净结果就是可堆叠的行为。
 </p>
 
 <p>
-线性化的精确次序由语言的式样书描述。虽然有一点儿复杂，但你需要知道的主旨就是，在任何的线性化中，某个类总是被线性化在所有其超类和混入特质之前。因此，当你写了一个调用super的方法时，这个方法必将改变超类和混入特质的行为，没有其它路可走。
+线性化的精确次序由语言的式样书描述。虽然有一点儿复杂，但你需要知道的主旨就是，在任何的线性化中，某个类总是被线性化在所有其超类和混入特质之前。因此，当你写了一个调用<code>super</code>的方法时，这个方法必将改变超类和混入特质的行为，没有其它路可走。
 </p>
 
 <p>
-Scala的线性化的主要属性可以用下面的例子演示：假设你有一个类Cat，继承自超类Animal以及两个特质Furry和FourLegged。FourLegged又扩展了另一个特质HasLegs：
+Scala的线性化的主要属性可以用下面的例子演示：假设你有一个类<code>Cat</code>，继承自超类<code>Animal</code>以及两个特质<code>Furry</code>和<code>FourLegged</code>。<code>FourLegged</code>又扩展了另一个特质<code>HasLegs</code>：
 </p>
 
 <pre class="brush: scala">
@@ -5384,47 +5380,47 @@ Scala的线性化的主要属性可以用下面的例子演示：假设你有一
 </p>
 
 <pre class="brush: scala">
-Animal : Animal, AnyRef, Any
-Furry : Furry, Animal, AnyRef, Any
-FourLegged : FourLegged, HasLegs, Animal, AnyRef, Any
-HasLegs : HasLegs, Animal, AnyRef, Any
-Cat : Cat, FourLegged, HasLegs, Furry, Animal, AnyRef, Any
+    Animal : Any &lt; AnyRef &lt; Animal
+     Furry : Any &lt; AnyRef &lt; Animal &lt; Furry
+   HasLegs : Any &lt; AnyRef &lt; Animal &lt; HasLegs
+FourLegged : Any &lt; AnyRef &lt; Animal &lt; HasLegs &lt; FourLegged
+       Cat : Any &lt; AnyRef &lt; Animal &lt; Furry &lt; HasLegs &lt; FourLegged &lt; Cat
 </pre>
 
 <p>
-因为Animal没有显式扩展超类或混入任何超特质，因此它缺省地扩展了AnyRef，并随之扩展了Any。
+因为<code>Animal</code>没有显式扩展超类或混入任何超特质，因此它缺省地扩展了<code>AnyRef</code>，并随之扩展了<code>Any</code>。
 </p>
 
 <pre class="brush: scala">
-Animal : Animal, AnyRef, Any
+    Animal : Any &lt; AnyRef &lt; Animal
 </pre>
 
 <p>
-第二部分是第一个混入，特质Furry的线性化，但是所有已经在Animal的线性化之中的类现在被排除在外，因此Cat的线性化中每个类仅出现1次。结果是：
+第二部分是第一个混入，特质<code>Furry</code>的线性化，但是所有已经在<code>Animal</code>的线性化之中的类现在被排除在外，因此<code>Cat</code>的线性化中每个类仅出现1次。结果是：
 </p>
 
 <pre class="brush: scala">
-Furry : Furry, Animal, AnyRef, Any
+     Furry : Any &lt; AnyRef &lt; Animal &lt; Furry
 </pre>
 
 <p>
-它之前是FourLegged的线性化，任何已被复制到线性化中的超类及第一个混入再次被排除在外：
+它之前是<code>FourLegged</code>的线性化，任何已被复制到线性化中的超类及第一个混入再次被排除在外：
 </p>
 
 <pre class="brush: scala">
-FourLegged : FourLegged, HasLegs, Animal, AnyRef, Any
+FourLegged : Any &lt; AnyRef &lt; Animal &lt; HasLegs &lt; FourLegged
 </pre>
 
 <p>
-最后，Cat线性化的第一个类是Cat自己：
+最后，<code>Cat</code>线性化的第一个类是<code>Cat</code>自己：
 </p>
 
 <p>
-当这些类和特质中的任何一个通过super调用了方法，那么被调用的实现将是它线性化的右侧的第一个实现。
+当这些类和特质中的任何一个通过<code>super</code>调用了方法，那么被调用的实现将是它线性化的右侧的第一个实现。
 </p>
 
 <pre class="brush: scala">
-Cat : Cat, FourLegged, HasLegs, Furry, Animal, AnyRef, Any
+       Cat : Any &lt; AnyRef &lt; Animal &lt; Furry &lt; HasLegs &lt; FourLegged &lt; Cat
 </pre>
 
 <h2 id="toc_13.8">什么情况下要用特质</h2>
@@ -5459,7 +5455,7 @@ Cat : Cat, FourLegged, HasLegs, Furry, Animal, AnyRef, Any
 <h1 id="toc_14">包和引用</h1>
 
 <p>
-通过把package子句放在文件顶端的方式把整个文件内容放进包里：
+通过把<code>package</code>子句放在文件顶端的方式把整个文件内容放进包里：
 </p>
 
 <pre class="brush: scala">
@@ -5468,7 +5464,7 @@ Cat : Cat, FourLegged, HasLegs, Furry, Animal, AnyRef, Any
 </pre>
 
 <p>
-另一种方式很像C#的命名空间。在package子句之后用大括号包起来一段要放到包里去的定义。除此之外，这种语法还能把同一个文件内的不同部分放在不同的包里。
+另一种方式很像C#的命名空间。在<code>package</code>子句之后用大括号包起来一段要放到包里去的定义。除此之外，这种语法还能把同一个文件内的不同部分放在不同的包里。
 </p>
 
 <pre class="brush: scala">
@@ -5556,7 +5552,7 @@ Scala为了简化，采用包风格类似于是相对路径：
 </pre>
 
 <p>
-上面的代码中，为了访问Booster3，Scala提供了所有用户可创建的包之外的名为<code>_root_</code>的包。换句话就是，任何你写的顶层包都被当作是<code>_root_</code>包的成员。
+上面的代码中，为了访问<code>Booster3</code>，Scala提供了所有用户可创建的包之外的名为<code>_root_</code>的包。换句话就是，任何你写的顶层包都被当作是<code>_root_</code>包的成员。
 </p>
 
 <p>
@@ -5567,7 +5563,7 @@ Scala为了简化，采用包风格类似于是相对路径：
 <h2 id="toc_14.1">引用包</h2>
 
 <p>
-Scala里用import子句来引用包和其成员：
+Scala里用<code>import</code>子句来引用包和其成员：
 </p>
 
 <pre class="brush: scala">
@@ -5587,7 +5583,7 @@ Scala里用import子句来引用包和其成员：
 </pre>
 
 <p>
-不止是包，其他成员也可以用import来引用：
+不止是包，其他成员也可以用<code>import</code>来引用：
 </p>
 
 <pre class="brush: scala">
@@ -5599,6 +5595,7 @@ Scala里用import子句来引用包和其成员：
 
   // easy access to all members of Fruits
   import bobsdelights.Fruits._ 
+//
 </pre>
 
 <p>
@@ -5606,7 +5603,7 @@ Scala里用import子句来引用包和其成员：
 </p>
 
 <p>
-cala引用可以出现在任何地方，而不是仅仅在编译单元的开始处。同样，它们可以指向任意值。
+<code>cala</code>引用可以出现在任何地方，而不是仅仅在编译单元的开始处。同样，它们可以指向任意值。
 </p>
 
 <pre class="brush: scala">
@@ -5674,15 +5671,17 @@ import Fuites.{Apple =&gt; McIntosh, _}
 
 // 引用了除Pear之外的所有Fruits成员。
 import Fuits.{Pear =&gt; _, _}
+//
 </pre>
 
 <p>
-把某样东西重命名为<code>_</code>就是表示把它隐藏掉。这对避免出现混淆的局面有所帮助。比方说你有两个包，Fruits和Notebooks，它们都定义了类Apple。如果你想只是得到名为Apple的笔记本而不是水果，就需要引用所有的Notebooks和除了Apple之外所有的水果：
+把某样东西重命名为<code>_</code>就是表示把它隐藏掉。这对避免出现混淆的局面有所帮助。比方说你有两个包，<code>Fruits</code>和<code>Notebooks</code>，它们都定义了类<code>Apple</code>。如果你想只是得到名为<code>Apple</code>的笔记本而不是水果，就需要引用所有的<code>Notebooks</code>和除了<code>Apple</code>之外所有的水果：
 </p>
 
 <pre class="brush: scala">
   import Notebooks._
   import Fruits.{Apple =&gt; _, _} 
+//
 </pre>
 
 <p>
@@ -5691,30 +5690,30 @@ import Fuits.{Pear =&gt; _, _}
 
 <ul>
 <li>
-简单名x。把x包含进引用名集。
+简单名<code>x</code>。把<code>x</code>包含进引用名集。
 
 </ul>
 
 <ul>
 <li>
-重命名子句x =&gt; y。让名为x的成员以名称y出现。
-
-</ul>
- 
-<ul>
-<li>
-隐藏子句x =&gt; _。把x排除在引用名集之外。
+重命名子句<code>x =&gt; y</code>。让名为<code>x</code>的成员以名称<code>y</code>出现。
 
 </ul>
  
 <ul>
 <li>
-全包括‘_’。引用除了前面子句提到的之外的全体成员。如果存在全包括，那么必须是引用选择的最后一个。
+隐藏子句<code>x =&gt; _</code>。把<code>x</code>排除在引用名集之外。
+
+</ul>
+ 
+<ul>
+<li>
+全包括<code>_</code>。引用除了前面子句提到的之外的全体成员。如果存在全包括，那么必须是引用选择的最后一个。
 
 </ul>
  
 <p>
-本节最初展示的比较简单的引用子句可以被视为带有选择子句的简写。例如，<code>import p._</code>等价于<code>import p.{_}</code>并且<code>import p.n</code>等价于<code>import p.{n}</code>。
+本节最初展示的比较简单的引用子句可以被视为带有选择子句的简写。例如，<code>import p._</code>等价于<code>import p.{_}</code>：并且<code>import p.n</code>等价于<code>import p.{n}</code>。
 </p>
 
 
@@ -5777,7 +5776,7 @@ Scala与Java对访问修饰符的对待方式有一些重要的差异。
 </pre>
 
 <p>
-Scala里，<code>(new Inner).f()</code>访问非法，因为f在Inner中被声明为private而访问不在类Inner之内。相反，类InnerMost里访问f没有问题，因为这个访问包含在Inner类之内。
+Scala里，<code>(new Inner).f()</code>访问非法，因为<code>f</code>在<code>Inner</code>中被声明为<code>private</code>所以类<code>Inner</code>外面不能被访问。相反，类<code>InnerMost</code>里访问f没有问题，因为这个访问包含在<code>Inner</code>类之内。
 </p>
 
 <p>
@@ -5787,7 +5786,7 @@ Scala里，<code>(new Inner).f()</code>访问非法，因为f在Inner中被声�
 <h3 id="toc_14.3.2">protected</h3>
 
 <p>
-Java中protected可以被同一个包里的类访问。Scala里，只在定义了成员的类的子类中可以被访问。
+Java中<code>protected</code>可以被同一个包里的类访问。Scala里，只在定义了成员的类的子类中可以被访问，同一包中的其他类不能访问。
 </p>
 
 <pre class="brush: scala">
@@ -5814,7 +5813,7 @@ Java中protected可以被同一个包里的类访问。Scala里，只在定义�
 <h3 id="toc_14.3.4">保护的范围</h3>
 
 <p>
-Scala里的访问修饰符可以通过使用修饰词增加。格式为<code>private[X]</code>或<code>protected[X]</code>的修饰符表示针对“X”的私有或保护，这里“X”指代某些外围的包，类或单例对象。
+Scala里的访问修饰符可以通过使用修饰词增加。格式为<code>private[X]</code>或<code>protected[X]</code>的修饰符表示针对<code>X</code>的私有或保护，这里<code>X</code>指代某些外围的包、类或单例对象。
 </p>
 
 <p>
@@ -5842,11 +5841,11 @@ Scala里的访问修饰符可以通过使用修饰词增加。格式为<code>pri
 </pre>
 
 <p>
-类Navigator被标记为private[bobsrockets]。这就是说这个类对包含在bobsrockets包的所有的类和对象可见。特别是对象Vehicle里对Navigator的访问被允许，因为Vehicle包含在包launch中，而launch包在bobsrockets中。另一方面，包bobsrockets包之外的所有代码都不能访问类Navigator。
+类<code>Navigator</code>被标记为<code>private[bobsrockets]</code>。这就是说这个类对包含在<code>bobsrockets</code>包的所有的类和对象可见。特别是对象<code>Vehicle</code>里对<code>Navigator</code>的访问被允许，因为<code>Vehicle</code>包含在包<code>launch</code>中，而<code>launch</code>包在<code>bobsrockets</code>中。另一方面，包<code>bobsrockets</code>包之外的所有代码都不能访问类Navigator。
 </p>
 
 <p>
-private修饰词同样可以直接是外围包。对象Vehicle类的guide对象的访问修饰符是这样的例子。这种访问修饰符等价于Java的包私有访问。
+<code>private</code>修饰词同样可以直接是外围包。对象<code>Vehicle</code>类的<code>guide</code>对象的访问修饰符是这样的例子。这种访问修饰符等价于Java的包私有访问。
 </p>
 
 <table>
@@ -5895,26 +5894,26 @@ Private[LegOfJourney]
 Private[this]
 </td>
 <td>
-仅在同一个对象中可以访问
+仅在类的同一个实例中可以访问
 </td>
 </tr>
 </table>
 
 
 <p>
-所有的修饰词也可以用在protected上，与private意思相同。也就是说，类C的protected[X]修饰符允许C的所有子类和外围的包、类、或对象X访问被标记的定义。例如，useStarChart方法在Navigator所有子类以及包含在navigation包里的所有代码能够被访问。这与Java的protected意思完全一致。
+所有的修饰词也可以用在<code>protected</code>上，与<code>private</code>意思相同。也就是说，类<code>C</code>的<code>protected[X]</code>修饰符允许<code>C</code>的所有子类和外围的包、类、或对象<code>X</code>访问被标记的定义。例如，<code>useStarChart</code>方法在<code>Navigator</code>所有子类以及包含在<code>navigation</code>包里的所有代码能够被访问。这与Java的protected意思完全一致。
 </p>
 
 <p>
-Private的修饰词还能指向外围类或对象。例如LegOfJourney里的distance变量被标记为private[Navigator]，因此它在类Navigator的任何地方都可见。这与Java里的内部类的私有成员具有同样的访问能力。private[C]里的C如果是最外层类，那么private的意思和Java一致。
+<code>Private</code>的修饰词还能指向外围类或对象。例如<code>LegOfJourney</code>里的<code>distance</code>变量被标记为<code>private[Navigator]</code>，因此它在类<code>Navigator</code>的任何地方都可见。这与Java里的内部类的私有成员具有同样的访问能力。<code>private[C]</code>里的<code>C</code>如果是最外层类，那么<code>private</code>的意思和Java一致。
 </p>
 
 <p>
-Scala还具有一种比private更严格的访问修饰符。被private[this]标记的定义仅能在包含了定义的同一个对象中被访问。这种定义被称为对象私有：object-private。例如，代码13.11中，类Navigator的的speed定义就是对象私有的。这就是说所有的访问必须不仅是在Navigator类里，而且还要是同一个Navigator实例发生的。
+Scala还具有一种比<code>private</code>更严格的访问修饰符。被<code>private[this]</code>标记的定义仅能在包含了定义的同一个对象中被访问。这种定义被称为对象私有（object-private）。例如，代码13.11中，类<code>Navigator</code>的的<code>speed</code>定义就是对象私有的。这就是说所有的访问必须不仅是在<code>Navigator</code>类里，而且还要是同一个<code>Navigator</code>实例发生的。
 </p>
 
 <p>
-因此在Navigator内访问“speed”和<code>this.speed</code>是合法的。然而以下的访问，将不被允许，即使它发生在Navigator类之中：
+因此在<code>Navigator</code>内访问<code>speed</code>和<code>this.speed</code>是合法的。然而以下的访问，将不被允许，即使它发生在<code>Navigator</code>类之中：
 </p>
 
 <pre class="brush: scala">
@@ -5923,7 +5922,7 @@ Scala还具有一种比private更严格的访问修饰符。被private[this]标�
 </pre>
 
 <p>
-把成员标记为private[this]是一个让它不能被同一个类中其它对象访问的保障。这在做文档时比较有用。有时它也能让写出更通用的变体注释（参见以后会讲到的参数类型化章节的变体注释）。
+把成员标记为<code>private[this]</code>是一个让它不能被同一个类中其它对象访问的保障。这在做文档时比较有用。有时它也能让写出更通用的变体注释（参见以后会讲到的参数类型化章节的变体注释）。
 </p>
 
 <h3 id="toc_14.3.5">伴生对象的可见度性</h3>
@@ -5957,11 +5956,11 @@ Scala的访问规则给予了伴生对象和类一些特权。类把它所有的
 </p>
 
 <p>
-举个例子，上面的Rocket类可以访问方法fuel，它在Rocket对象中被声明为私有。类似地，Rocket对象也可以访问Rocket类里面的私有方法canGetHome。
+举个例子，上面的<code>Rocket</code>类可以访问方法<code>fuel</code>，它在<code>Rocket</code>对象中被声明为私有。类似地，<code>Rocket</code>对象也可以访问<code>Rocket</code>类里面的私有方法<code>canGetHome</code>。
 </p>
 
 <p>
-有一个例外，说到protected static成员时，Scala和Java的相似性被打破了。Java类C的保护静态成员可以被C的所有子类访问。相反，伴生对象的protected成员没有意义，因为单例对象没有任何子类。
+有一个例外，说到<code>protected static</code>成员时，Scala和Java的相似性被打破了。Java类<code>C</code>的保护静态成员可以被<code>C</code>的所有子类访问。相反，伴生对象的<code>protected</code>成员没有意义，因为单例对象没有任何子类。
 </p>
 
 
