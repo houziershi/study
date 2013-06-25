@@ -3966,7 +3966,7 @@ ArrayElement类的定义。它有一个参数conts，其唯一目的是被复制
 </p>
 
 <p>
-可以通过在单一的参数化字段：parametric field定义中组合参数和字段避免：
+可以通过在单一的参数化字段（parametric field）定义中组合参数和字段避免：
 </p>
 
 <pre class="brush: scala">
@@ -3974,7 +3974,7 @@ ArrayElement类的定义。它有一个参数conts，其唯一目的是被复制
 </pre>
 
 <p>
-现在拥有一个可以从类外部访问的，（不能重新赋值的）字段contents。字段使用参数值初始化。等同于：
+注意用的是<code>val</code>，所以现在拥有一个可以从类外部访问的，（不能重新赋值的）字段contents。字段使用参数值初始化。等同于：
 </p>
 
 <pre class="brush: scala">
@@ -3984,7 +3984,7 @@ ArrayElement类的定义。它有一个参数conts，其唯一目的是被复制
 </pre>
 
 <p>
-同样也可以使用var前缀类参数，这种情况下相应的字段将能重新被赋值。还有可能添加如private，protected，或override这类的修饰符到这些参数化字段上，就好象你可以在其他类成员上做的事情：
+同样也可以使用<code>var</code>前缀类参数，这种情况下相应的字段将能重新被赋值。还有可能添加如private，protected，或override这类的修饰符到这些参数化字段上，就好象你可以在其他类成员上做的事情：
 </p>
 
 <pre class="brush: scala">
@@ -4024,7 +4024,7 @@ Tiger的定义是以下包括重载成员dangerous和private成员age的类定�
 </pre>
 
 <p>
-由于LineElement扩展了ArrayElement，并且ArrayElement的构造器带一个参数（Array[String]），LineElement需要传递一个参数到它的超类的主构造器。要调用超类构造器，只要把你要传递的参数或参数列表放在超类名之后的括号里即可。
+由于LineElement扩展了ArrayElement，并且ArrayElement的构造器带一个参数（Array[String]），LineElement需要传递一个参数到它的超类的主构造器。要调用超类构造器，只要把你要传递的参数或参数列表放在“超类名之后的括号里）即可。
 </p>
 
 
