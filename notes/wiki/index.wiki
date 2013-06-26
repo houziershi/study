@@ -7,12 +7,17 @@
 
 == 语言 ==
 
+=== Scala ===
+
 [[scala]]
 
-[[java.jvm]]
+=== Java ===
 
-[[java.example]]
+虚拟机[[java.jvm]]
 
+代码示例[[java.example]]
+
+=== JavaScript ===
 
 [[ExtJS]]
 
