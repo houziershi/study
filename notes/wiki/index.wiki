@@ -9,11 +9,12 @@
 
 [[scala]]
 
-[[ExtJS]]
-
-== 常用代码 ==
+[[java.jvm]]
 
 [[java.example]]
+
+
+[[ExtJS]]
 
 = 常用工具 =
 
@@ -38,8 +39,14 @@
 
 [[linux.base]]
 
+= 标准 =
+
+网络标准：[[stand.net]]
+
 == 网络 ==
 
 网络配置：[[linux.net]]
 
 网络故障：[[linux.net.problem]]
+
+
