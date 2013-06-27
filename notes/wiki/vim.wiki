@@ -25,6 +25,146 @@
 :%s/^M/\r/g # 将^M替换成回车。
 }}}
 
-{{{class="brush: bash"
-
 注意：这里的`^M`要使用`CTRL-V CTRL-M`生成，而不是直接键入`^M`。 
+
+= 保存 =
+
+== 部分内容另存为 ==
+
+{{{class="brush: bash"
+:5,77w>>tmp.txt
+}}}
+
+* `5,77`表示范围从5行到55行；可以用美元符表示最后一行。
+* `w`是保存，加上了`>>`表示是追加而不是覆写。
+
+
+
+= 文件浏览 =
+
+== 书签 ==
+
+方法是按`Escape`键，再按`M`键，然后输入`a`到`z`中的一个表示书签，所以最多可以有26个书签。
+
+跳转到书签，按`Escape`键，再按反引号加标签。
+
+
+
+= 查找替换 =
+
+== 查找 ==
+
+=== 区分大小写 ===
+
+`:set ignorecase`简写`:set ic`；`:set noignorecase`简`:set noic`。
+
+=== 跨行查找 ===
+
+`;`表示查找跨行内容。 例如在以下文件中查找出现在字符串`{file}+1`后面的字符串`echo`：
+
+{{{class="brush: bash"
+#!/bin/ksh
+echo “Starting”
+file=${1}
+echo ${file}
+if [[ ${file} = 1 ]] ; then
+	((file=${file}+1))
+	echo “Adding one gives ” \
+	${file}
+fi
+echo “Ending”
+exit
+}}}
+
+应该使用`/{file}+1/;/echo/`，会查找到第10行。
+
+== 替换 ==
+
+=== 重新放置搜索模式 ===
+
+就是把要替换的搜索结果放在缓冲区内，在替换时可以通过缓冲区引用号重新放置它们。
+
+方法：
+
+{{{class="brush: bash"
+\(模式\)
+}}}
+
+上面的格式会把模式放在编号的缓冲区（1 到 9）中。在执行替换时，可以用缓冲区引用号：
+
+{{{class="brush: bash"
+\1 到 \9 
+}}}
+
+引用这些缓冲区。
+
+例如，假设要在下面所示的文件中：
+
+{{{class="brush: bash"
+Martin is an IT consultant. Martin likes
+snowboarding and mountain biking. Martin has
+worked on UNIX systems for over 15 years. Martin also
+worked for many years before that on mainframes.
+Martin lives in London.
+}}}
+
+搜索以单词`Martin`开头的行并对每个匹配添加前缀`Mr`和后缀`Wicks`，那么进入命令模式，输入vi 命令
+
+{{{class="brush: bash"
+:%s/^\(Martin\)/Mr \1 Wicks/g
+}}}
+
+对上面命令的解释：
+
+`:%s` :: 指示vi 执行替换。
+`/` :: 模式分隔符。
+`^\(Martin\)` :: 寻找以字符串 Martin 开头的行并把这个字符串保存在缓冲区 1 中。
+`/` :: 模式分隔符。
+`Mr \1 Wicks` :: 把找到的字符串替换为字符串 Mr，加上缓冲区 1 中的内容，再加上字符串 Wicks。
+`/` :: 模式分隔符。
+`g` :: 全局修改（即修改所有匹配的地方）
+
+=== 查找、修改、下一处、重复修改 ===
+
+找到指定内容后，普通模式下`c w`修改为想要的内容。
+
+`n`到下一个匹配的内容，这时用`.`重复前面修改的操作。
+
+
+= 调用外部命令 =
+
+== 外部命令处理指定的文本 ==
+
+=== 通过行号来指定 ===
+
+例如，对全文内容进行排序：
+
+{{{class="brush: bash"
+:1,$!sort
+}}}
+
+注意`1,美元符`表示范围：其中`1`表示是第一行；`美元符`表示最后一行。
+
+然后`sort`命令的结果会替换全文。
+
+=== 通过当前行与后面的行数指定范围 ===
+
+在普通模式下，先是输入行数，然后两个感叹号`!!`来调用外部命令。
+
+如，要对当前行开始的两行排序：要先`Esc`到普通模式，然后`2!!sort`。
+
+=== 用管道连接外部命令 ===
+
+可以使用管道分隔符`|`把 UNIX 命令连接在一起。
+
+例如，要把缓冲区中内容是由空格分成的多个列。现在要进行多个操作：
+* 取第一列
+* 按升序排序
+* 全转换为大写
+
+那么在普通模式下：
+
+{{{class="brush: bash"
+:1,$!awk '{print $1}' | sort | tr [:lower:] [:upper:]
+}}}
+

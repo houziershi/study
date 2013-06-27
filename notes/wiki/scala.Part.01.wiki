@@ -2427,7 +2427,127 @@ Scala里尾递归的使用局限很大，因为JVM指令集使实现更加先进
 
 `funValue`变量指向一个实质是包装了`nestedFun`的调用的函数值。当你把这个函数值应用到参数上，它会转向把`nestedFun`应用到同一个参数，并返回结果。因此你或许希望Scala编译器能执行尾调用优化，但在这个例子里做不到。因此，尾调用优化受限于方法或嵌套函数在最后一个操作调用本身，而没有转到某个函数值或什么其它的中间函数的情况。
 
+= 动态成员 =
 
+静态类型不光是变量类型是确定的，还有比如在使用`qual.sel`时，`sel` 这个属性或是方法(Scala的访问一致性，属性和方法有时候并没有那么大的区别)必须在`qual`的类型中声明了的。
+
+Scala 思考再三还是加入了 Dynamic Types，这个特性在 Scala 2.9 中是试验性的，必须用`-Xexperimental`进行开启，到了 Scala 2.10.0 中，只有代码中 `import scala.language.dynamics`就可用了，或是编译时加`-language:dynamics`选项。
+
+虽然 Scala 2.10.0 加进了 Dynamic Types 特性，但 Scala 仍然是静态类型的语言，因为在编译器同样会检查多出来的类型。
+
+有了 Dynamic Types 之后，Scala 又可更 DSL 了，方法名的动态上可以让它随时包括深刻的业务含义。相比 Java 的 DSL 的能力就太逊了，我们几乎无法在 Java 面前提 DSL 这回事。
+
+通俗点讲动态类型的类必须继承自`Dynamic`。所有的变化就在下面这四个方法中：
+
+`selectDynamic`
+`updateDynamic`
+`applyDynamic`
+`applyDynamicNamed`
+
+* 当使用`qual.sel`，而`Qual`类未定义`sel` 属性或方法时，会调用`selectDynamic(method: String)`方法。
+* 当`qual.name = "Unmi"`时会调用类似`updateDynamic(method: String)(args: Any)`这样的方法。
+* 还有` applyDynamic`，`applyDynamicNamed`这两个方法的自动调用。
+
+
+看个完整的例子，我不打算把上面四个方法的应用规则分开来演示：
+
+{{{class="brush: scala"	
+import scala.language.dynamics
+ 
+class Person extends Dynamic{
+	def selectDynamic(method: String){
+		println(s"selectDynamic->$method called\n")
+	}
+
+	def applyDynamic(method: String)(args: Any*){
+		println(s"applyDynamic->$method called, args: $args\n")
+	}
+
+	def updateDynamic(method: String)(args: Any){
+		println(s"updateDynamic->$method called, args: $args\n")
+	}
+
+	def applyDynamicNamed(method: String)(args: (String, Any)*) {
+		println(s"applyDynamicNamed->$method called, args: $args")
+		for((key, value) <- args){
+			println(s"key: $key, value: $value")
+		}
+	}
+}
+ 
+val p = new Person
+ 
+p.sayHello  //calll selectDynamic
+p.config("Hello","Unmi") //call applyDynamic
+p.products = ("iPhone","Nexus") //call updateDynamic
+p.showInfo(screenName="Unmi", email="fantasia@sina.com") //call applyDynamicNamed
+}}}
+
+上面对`p`的每一个调用都说明了会委派给哪个动态方法，执行结果输出是：
+
+{{{class="brush: scala"
+selectDynamic->sayHello called
+ 
+applyDynamic->config called, args: WrappedArray(Hello, Unmi)
+ 
+updateDynamic->products called, args: (iPhone,Nexus)
+ 
+applyDynamicNamed->showInfo called, args: WrappedArray((screenName,Unmi), (email,fantasia@sina.com))
+key: screenName, value: Unmi
+key: email, value: fantasia@sina.com
+}}}
+
+现在来看发生了什么，`Person`继承自`Dynamic`，并且有引入 `scala.language.dynamics`。对`p`调用的方法(属性)都不存在，但是都调用到了正常的动态方法。所以仍然要对这四个动态方法(确切的讲是四种类型的方法，因为比如你可以定义多个不同的`updateDynamic`方法，其余三个也同此) 分别加以说明。
+
+== selectDynamic ==
+
+在调用找不到了无参方法时，会去寻找它，调用效果如下：
+
+`p.sayHello`也可以写成`p.selectDynamic("sayHello")`
+
+也就是说编译器在看到`p.sayHello`调用会根据`selectDynamic(method: String)`。相当于创建了方法`def sayHello = .......`，也就是把动态方法`selectDynamic(method: String)`换成`sayHello`。所以说 Scala 的`Dynamic`类中的`xxxDynamic` 方法相当是模板方法。
+
+`applyDynamic`，`updateDynamic`和`applyDynamicNamed`这三个方法第二个括号中的参数类型，或个数需根据实际应用来定。这四个动态方法的第一个括号中的参数都是动态调用时的方法名。
+
+== applyDynamic ==
+
+在进行有参数的方法调用时，会去找寻它，调用效果如下：
+
+`p.config("Hello", "Unmi")`可以写成`p.applyDynamic("config")("Hello", "Unmi")`
+
+还是这么理解: 把这个动态方法定义的方法名和第一个括号与参数替换成调用的方法名就知道怎么回事，例如把：
+
+`def applyDynamic(method: String)(args: Any*)`中的`applyDynamic(method: String)`替换成被调用方法名`config`，就是：
+
+{{{class="brush: scala"
+def config(args: Any*)        //p.config("Hello", "Unmi") 要调用的就是这么个方法
+}}}
+
+所以第二个括号中的参数由你自己来定，比如说想这么调用`p.config("Hello", 100, 30)`，那么你可的动态方法可以这么定义：
+
+{{{class="brush: scala"
+def applyDynamic(method: String)(greeting: String, high: Int, low: Int) { ...... }
+}}}
+
+这个规则同样适用于`updateDynamic`和`applyDynamicNamed`这两个方法。
+
+== updateDynamic ==
+
+等号赋值操作时会调用`updateDynamic`方法，调用效果如下：
+
+`p.products = ("iPhone", "Nexus")`可写成`p.updateDynamic("products")(("iPhone", "Nexus"))`，按照同样的理解方法，相当于`Person`中定义了`def products(args: Any)` 方法。
+
+== applyDynamicNamed ==
+
+同样是`apply`开头，所以这个方法是对`applyDynamic`方法的补充，即使没有` applyDynamicNamed`，单用`applyDynamic`也能达成我们的要求。`applyDynamicNamed` 只是让你用命名参数调用时方便，也就是像：
+
+{{{class="brush: scala"
+p.showInfo(screenName="Unmi", email="fantasia@sina.com") 
+}}}
+
+这样用命名参数的方式来调用动态方法时会调用`updateDynamicNamed` 方法。有了这个方法在命名传递参数就方便处理`key/value`值。
+
+这四个方法在一个动态类中只能分别定义一个版本，否则会产生二义性，这和普通方法的重载不一样的。柯里化后的函数第二个括号中的参数可根据实际调用来定义，定义成`(args: Any*)`可包打天下。
 
 
 = 控制抽象 =

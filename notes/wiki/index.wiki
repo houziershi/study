@@ -19,6 +19,8 @@
 
 === JavaScript ===
 
+[[Javascript]]
+
 [[ExtJS]]
 
 = 常用工具 =

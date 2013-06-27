@@ -1,0 +1,614 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+
+
+<title>Javascript</title>
+</head>
+<body>
+	<div class="note-main"> 
+
+
+<h1>Javascript</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">效率问题</a>
+<ul>
+<li><a href="#toc_1.1">JS自身的效率</a>
+<ul>
+<li><a href="#toc_1.1.1">全局导入</a>
+<li><a href="#toc_1.1.2">eval以及类eval问题</a>
+<li><a href="#toc_1.1.3">闭包结束后释放掉不再被引用的变量</a>
+</ul>
+<li><a href="#toc_1.2">Js操作dom的效率</a>
+<ul>
+<li><a href="#toc_1.2.1">减少reflow</a>
+<li><a href="#toc_1.2.2">暂存dom状态信息</a>
+<li><a href="#toc_1.2.3">缩小选择器的查找范围</a>
+<li><a href="#toc_1.2.4">使用事件委托</a>
+</ul>
+</ul>
+<li><a href="#toc_2">类型</a>
+<ul>
+<li><a href="#toc_2.1">instanceof运算符</a>
+<ul>
+<li><a href="#toc_2.1.1">instanceof运算符的常规用法</a>
+<li><a href="#toc_2.1.2">详细剖析</a>
+<li><a href="#toc_2.1.3">JavaScript 原型继承机制</a>
+<li><a href="#toc_2.1.4">instanceof运算符深入剖析</a>
+<li><a href="#toc_2.1.5">instanceofDojo继承机制</a>
+</ul>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">效率问题</h1>
+
+<h2 id="toc_1.1">JS自身的效率</h2>
+
+<h3 id="toc_1.1.1">全局导入</h3>
+
+<p>
+我们在编码过程中多多少少会使用到一些全局变量（<code>window</code>,<code>document</code>,自定义全局变量等等），了解javascript作用域链的人都知道，在局部作用域中访问全局变量需要一层一层遍历整个作用域链直至顶级作用域，而局部变量的访问效率则会更快更高，因此在局部作用域中高频率使用一些全局对象时可以将其导入到局部作用域中，例如：
+</p>
+
+<p>
+作为参数传入模块
+</p>
+<pre class="brush: javascript">
+(function(window,$){
+	var xxx = window.xxx;
+	$("#xxx1").xxx();
+	$("#xxx2").xxx();
+})(window,jQuery);
+</pre>
+
+<p>
+暂存到局部变量
+</p>
+<pre class="brush: javascript">
+function() {
+	var doc = document;
+	var global = window.global;
+}
+</pre>
+
+<h3 id="toc_1.1.2">eval以及类eval问题</h3>
+
+<p>
+我们都知道<code>eval</code>可以将一段字符串当做js代码来执行处理，据说使用eval执行的代码比不使用eval的代码慢100倍以上（具体效率我没有测试，有兴趣同学可以测试一下）
+</p>
+
+<p>
+JavaScript 代码在执行前会进行类似“预编译”的操作：首先会创建一个当前执行环境下的活动对象，并将那些用<code>var</code>申明的变量设置为活动对象的属性，但是此时这些变量的赋值都是<code>undefined</code>，并将那些以<code>function</code>定义的函数也添加为活动对象的属性，而且它们的值正是函数的定义。但是，如果你使用了<code>eval</code>，则其中的代码（实际上为字符串）无法预先识别其上下文，无法被提前解析和优化，即无法进行预编译的操作。所以，其性能也会大幅度降低
+</p>
+
+<p>
+其实现在大家一般都很少会用eval了，这里我想说的是几个类eval的场景(<code>new Function{}</code>,<code>setTimeout</code>,<code>setInterver</code>)
+</p>
+<pre class="brush: javascript">
+setTimtout("alert(1)",1000);
+setInterver("alert(1)",1000);
+(new Function("alert(1)"))();
+</pre>
+
+<p>
+上述几种类型代码执行效率都会比较低，因此建议直接传入匿名方法、或者方法的引用给<code>setTimeout</code>方法。
+</p>
+
+<h3 id="toc_1.1.3">闭包结束后释放掉不再被引用的变量</h3>
+	
+<pre class="brush: javascript">
+var f = (function(){
+	var a = {name:"var3"};
+	var b = ["var1","var2"];
+	var c = document.getElementByTagName("li");
+	//****其它变量
+	//***一些运算
+	var res = function(){
+		alert(a.name);
+	}
+	return res;
+})()
+</pre>
+
+<p>
+上述代码中变量f的返回值是由一个立即执行函数构成的闭包中返回的方法<code>res</code>，该变量保留了对于这个闭包中所有变量（<code>a</code>,<code>b</code>,<code>c</code>等）的引用，因此这两个变量会一直驻留在内存空间中,尤其是对于dom元素的引用对内存的消耗会很大，而我们在<code>res</code>中只使用到了<code>a</code>变量的值，因此，在闭包返回前我们可以将其它变量释放
+</p>
+	
+<pre class="brush: javascript">
+var f = (function(){
+	var a = {name:"var3"};
+	var b = ["var1","var2"];
+	var c = document.getElementByTagName("li");
+	//****其它变量
+	//***一些运算
+	//闭包返回前释放掉不再使用的变量
+	b = c = null;
+	var res = function(){
+		alert(a.name);
+	}
+	return res;
+})()
+</pre>
+
+<h2 id="toc_1.2">Js操作dom的效率</h2>
+
+<h3 id="toc_1.2.1">减少reflow</h3>
+
+<p>
+什么是reflow？
+</p>
+
+<p>
+当 DOM 元素的属性发生变化 (如 color) 时, 浏览器会通知 render 重新描绘相应的元素, 此过程称为 repaint。
+</p>
+
+<p>
+如果该次变化涉及元素布局 (如 width), 浏览器则抛弃原有属性, 重新计算并把结果传递给 render 以重新描绘页面元素, 此过程称为 reflow。
+</p>
+
+<p>
+减少reflow的方法
+</p>
+
+<ol>
+<li>
+先将元素从<code>document</code>中删除，完成修改后再把元素放回原来的位置（当对某元素及其子元素进行大量reflow操作时，1,2两种方法效果才会比较明显）
+
+<li>
+将元素的<code>display</code>设置为<code>none</code>，完成修改后再把<code>display</code>修改为原来的值
+
+<li>
+修改多个样式属性时定义<code>class</code>类代替多次修改<code>style</code>属性
+
+<li>
+大量添加元素到页面时使用<code>documentFragment</code>
+
+</ol>
+
+<p>
+例如：
+</p>
+
+<pre class="brush: javascript">
+for(var i=0;i&lt;100:i++){
+    var child = docuemnt.createElement("li");
+    child.innerHtml = "child";
+    document.getElementById("parent").appendChild(child);
+}
+</pre>
+
+<p>
+上述代码会多次操作dom，效率比较低，可以改为下面的形式：
+</p>
+
+<p>
+创建<code>documentFragment</code>，将所有元素加入到<code>docuemntFragment</code>不会改变dom结构，最后将其添加到页面，只进行了一次reflow。
+</p>
+
+<pre class="brush: javascript">
+var frag = document.createDocumentFragment();
+for(var i=0;i&lt;100:i++){
+        var child = docuemnt.createElement("li");
+        child.innerHtml = "child";
+    frag.appendChild(child);
+}
+document.getElementById("parent").appendChild(frag);
+</pre>
+
+<h3 id="toc_1.2.2">暂存dom状态信息</h3>
+
+<p>
+当代码中需要多次访问元素的状态信息，在状态不变的情况下我们可以将其暂存到变量中，这样可以避免多次访问dom带来内存的开销，典型的例子就是：
+</p>
+
+<pre class="brush: javascript">
+var lis = document.getElementByTagName("li");
+for(var i=1; i&lt;lis.length; i++){
+    //***
+}
+</pre>
+
+<p>
+上述方式会在每一次循环都去访问dom元素，我们可以简单将代码优化如下
+</p>
+
+<pre class="brush: javascript">
+var lis = document.getElementByTagName("li");
+for(var i=1,j=lis.length; i&lt;j; i++) { // 把长度给j，只执行一次
+    //***
+}
+</pre>
+
+<h3 id="toc_1.2.3">缩小选择器的查找范围</h3>
+
+<p>
+查找dom元素时尽量避免大面积遍历页面元素，尽量使用精准选择器，或者指定上下文以缩小查找范围，以jquery为例：
+</p>
+
+<ol>
+<li>
+少用模糊匹配的选择器：例如<code>"[name*='_fix']"</code>，多用诸如<code>id</code>以及逐步缩小范围的复合选择器<code>"li.active"</code>等。
+
+<li>
+指定上下文：例如<code>"#parent .class"</code>，<code>(".class",$el)</code>等。
+
+</ol>
+
+<h3 id="toc_1.2.4">使用事件委托</h3>
+
+<p>
+使用场景：一个有大量记录的列表，每条记录都需要绑定点击事件，在鼠标点击后实现某些功能，我们通常的做法是给每条记录都绑定监听事件，这种做法会导致页面会有大量的事件监听器，效率比较低下。
+</p>
+
+<p>
+基本原理：我们都知道dom规范中事件是会冒泡的，也就是说在不主动阻止事件冒泡的情况下任何一个元素的事件都会按照<code>dom</code>树的结构逐级冒泡至顶端。而<code>event</code>对象中也提供了<code>event.target</code>（IE下是<code>srcElement</code>）指向事件源，因此我们即使在父级元素上监听该事件也可以找到触发该事件的最原始的元素，这就是委托的基本原理。
+</p>
+
+<p>
+示例
+</p>
+
+<pre class="brush: javascript">
+$("ul li").bind("click",function(){
+    alert($(this).attr("data"));
+})
+</pre>
+
+<p>
+上述写法其实是给所有的<code>li</code>元素都绑定了<code>click</code>事件来监听鼠标点击每一个元素的事件，这样页面上会有大量的事件监听器。
+</p>
+
+<p>
+根据上面介绍的监听事件的原理我们来改写一下
+</p>
+
+<pre class="brush: javascript">
+$("ul").bind("click",function(e){
+    if(e.target.nodeName.toLowerCase() ==="li"){
+        alert($(e.target).attr("data"));
+    }
+})
+</pre>
+
+<p>
+这样一来，我们就可以只添加一个事件监听器去捕获所有<code>li</code>上触发的事件，并做出相应的操作。
+</p>
+
+<p>
+当然，我们不必每次都做事件源的判断工作，可以将其抽象一下交给工具类来完成。jquery中的<code>delegate()</code>方法就实现了该功能。
+</p>
+
+<p>
+语法是这样的<code>$(selector).delegate(childSelector,event,data,function)</code>，例如：
+</p>
+
+<pre class="brush: javascript">
+$("div").delegate("button","click",function(){
+  $("p").slideToggle();
+});
+</pre>
+	
+<p>
+参数说明（引自w3school）
+</p>
+
+<table>
+<tr>
+<td>
+参数
+</td>
+<td>
+描述
+</td>
+</tr>
+<tr>
+<td>
+childSelector
+</td>
+<td>
+必需。规定要附加事件处理程序的一个或多个子元素。
+</td>
+</tr>
+<tr>
+<td>
+event
+</td>
+<td>
+必需。规定附加到元素的一个或多个事件。由空格分隔多个事件值。必须是有效的事件。
+</td>
+</tr>
+<tr>
+<td>
+data
+</td>
+<td>
+可选。规定传递到函数的额外数据。
+</td>
+</tr>
+<tr>
+<td>
+function
+</td>
+<td>
+必需。规定当事件发生时运行的函数。
+</td>
+</tr>
+</table>
+
+<p>
+Tips:事件委托还有一个好处就是，即使在事件绑定之后动态添加的元素上触发的事件同样可以监听到哦，这样就不用在每次动态加入元素到页面后都为其绑定事件了。
+</p>
+
+
+<h1 id="toc_2">类型</h1>
+
+<h2 id="toc_2.1">instanceof运算符</h2>
+
+<p>
+在 JavaScript 中，判断一个变量的类型尝尝会用<code>typeof</code>运算符，在使用<code>typeof</code>运算符时采用引用类型存储值会出现一个问题，无论引用的是什么类型的对象，它都返回<code>object</code>。ECMAScript 引入了另一个 Java 运算符 <code>instanceof </code>解决这个问题。<code>instanceof</code>运算符与<code>typeof</code>运算符相似，用于识别正在处理的对象的类型。与<code>typeof</code>方法不同的是，<code>instanceof</code>方法要求开发者明确地确认对象为某特定类型。例如：
+</p>
+
+<pre class="brush: javascript">
+var oStringObject = new String("hello world");
+console.log(oStringObject instanceof String);   // 输出 "true"
+</pre>
+
+
+<h3 id="toc_2.1.1">instanceof运算符的常规用法</h3>
+
+<p>
+通常来讲，使用<code>instanceof</code>就是判断一个实例是否属于某种类型。例如：
+</p>
+
+<pre class="brush: javascript">
+// 判断 foo 是否是 Foo 类的实例
+function Foo(){}
+var foo = new Foo();
+console.log(foo instanceof Foo)//true
+</pre>
+
+<p>
+另外，更重的一点是 instanceof 可以在继承关系中用来判断一个实例是否属于它的父类型。例如：
+</p>
+
+		
+<pre class="brush: javascript">
+// 判断 foo 是否是 Foo 类的实例 , 并且是否是其父类型的实例
+function Aoo(){}
+function Foo(){}
+Foo.prototype = new Aoo();//JavaScript 原型继承
+ 
+var foo = new Foo();
+console.log(foo instanceof Foo)//true
+console.log(foo instanceof Aoo)//true
+</pre>
+
+<p>
+上面的代码中是判断了一层继承关系中的父类，在多层继承关系中，instanceof 运算符同样适用。
+</p>
+
+<p>
+你真的了解 instanceof 操作符吗？
+</p>
+
+<p>
+看了上面的代码示例，是不是觉得 instanceof 操作符很简单，下面来看点复杂的用法。
+</p>
+
+<pre class="brush: javascript">
+	console.log(Object instanceof Object);//true
+	console.log(Function instanceof Function);//true
+	console.log(Number instanceof Number);//false
+	console.log(String instanceof String);//false
+	 
+	console.log(Function instanceof Object);//true
+	 
+	console.log(Foo instanceof Function);//true
+	console.log(Foo instanceof Foo);//false
+</pre>
+
+<p>
+看了上面的代码是不是又晕头转向了？为什么 Object 和 Function instanceof 自己等于 true，而其他类 instanceof 自己却又不等于 true 呢？如何解释？要想从根本上了解 instanceof 的奥秘，需要从两个方面着手：1，语言规范中是如何定义这个运算符的。2，JavaScript 原型继承机制。
+</p>
+
+<h3 id="toc_2.1.2">详细剖析</h3>
+
+<p>
+详细剖析 ECMAScript-262 edition 3 中 instanceof 运算符的定义
+</p>
+
+<p>
+语言规范对中 instanceof 运算符的定义如下：
+</p>
+
+<pre class="brush: javascript">
+RelationalExpression instanceof ShiftExpression is evaluated as follows:
+				  
+1. Evaluate RelationalExpression.
+2. Call GetValue(Result(1)).// 调用 GetValue 方法得到 Result(1) 的值，设为 Result(2)
+3. Evaluate ShiftExpression.
+4. Call GetValue(Result(3)).// 同理，这里设为 Result(4)
+5. If Result(4) is not an object, throw a TypeError exception.
+		// 如果 Result(4) 不是 object，抛出异常
+		/* 如果 Result(4) 没有 [[HasInstance]] 方法，抛出异常。
+			 规范中的所有 [[...]] 方法或者属性都是内部的，
+			 在 JavaScript 中不能直接使用。并且规范中说明，只有 Function 对象实现了
+			 [[HasInstance]] 方法。所以这里可以简单的理解为：
+			 如果 Result(4) 不是 Function 对象，抛出异常 
+		*/
+6. If Result(4) does not have a [[HasInstance]] method, throw a TypeError exception.
+		// 相当于这样调用：Result(4).[[HasInstance]](Result(2))
+7. Call the [[HasInstance]] method of Result(4) with parameter Result(2).
+8. Return Result(7).
+</pre>
+
+<p>
+相关的 HasInstance 方法定义
+</p>
+
+<pre class="brush: javascript">
+15.3.5.3 [[HasInstance]] (V)
+
+	Assume F is a Function object.// 这里 F 就是上面的 Result(4)，V 是 Result(2)
+	When the [[HasInstance]] method of F is called with value V, the following steps are taken:
+
+1. If V is not an object, return false.// 如果 V 不是 object，直接返回 false
+2. Call the [[Get]] method of F with property name "prototype".
+		// 用 [[Get]] 方法取F 的 prototype 属性
+3. Let O be Result(2).//O = F.[[Get]]("prototype")
+4. If O is not an object, throw a TypeError exception.
+5. Let V be the value of the [[Prototype]] property of V.//V = V.[[Prototype]]
+6. If V is null, return false.
+		// 这里是关键，如果 O 和 V 引用的是同一个对象，则返回 true；
+		// 否则，到 Step 8 返回 Step 5 继续循环
+7. If O and V refer to the same object or if they refer to objects joined to 
+		each other (section 13.1.2), return true.
+8. Go to step 5.
+</pre>
+
+<p>
+上面的规范定义很晦涩，而且看起来比较复杂，涉及到很多概念，但把这段规范翻译成 JavaScript 代码却很简单，如下：
+</p>
+
+<pre class="brush: javascript">
+function instance_of(L, R) {//L 表示左表达式，R 表示右表达式
+	var O = R.prototype;// 取 R 的显示原型
+	L = L.__proto__;// 取 L 的隐式原型
+	while (true) {
+		if (L === null) {return false;}
+		// 这里重点：当 O 严格等于 L 时，返回 true
+		if (O === L) {return true;}
+		L = L.__proto__;
+	}
+}
+</pre>
+
+<h3 id="toc_2.1.3">JavaScript 原型继承机制</h3>
+
+<p>
+由于本文主要集中在剖析 JavaScript instanceof 运算符，所以对于 JavaScript 的原型继承机制不再做详细的讲解，下面参考来自 <a href="http://www.mollypages.org/misc/js.mp">http://www.mollypages.org/misc/js.mp</a> 的一张图片，此图片详细的描述了 JavaScript 各种对象的显示和隐式原型链结构。
+</p>
+
+<p>
+由其本文涉及显示原型和隐式原型，所以下面对这两个概念作一下简单说明。在 JavaScript 原型继承结构里面，规范中用<code>[[Prototype]]</code>表示对象隐式的原型，在 JavaScript 中用<code>__proto__</code>表示，并且在 Firefox 和 Chrome 浏览器中是可以访问得到这个属性的，但是 IE 下不行。所有 JavaScript 对象都有<code>__proto__</code>属性，但只有<code>Object.prototype.__proto__</code>为 null，前提是没有在 Firefox 或者 Chrome 下修改过这个属性。这个属性指向它的原型对象。 至于显示的原型，在 JavaScript 里用<code>prototype</code>属性表示，这个是 JavaScript 原型继承的基础知识，在这里就不在叙述了。
+</p>
+
+<p>
+JavaScript 原型链
+</p>
+
+<p>
+<img src="images/javascript/js.figure1.jpg" />
+</p>
+
+<h3 id="toc_2.1.4">instanceof运算符深入剖析</h3>
+
+<p>
+讲解 instanceof 复杂用法
+</p>
+
+<p>
+有了上面 instanceof 运算符的 JavaScript 代码和原型继承图，再来理解 instanceof 运算符将易如反掌。下面将详细讲解<code>Object instanceof Object</code>，<code>Function instanceof Function</code>和<code>Foo instanceof Foo</code>三个示例，其它示例读者可自行推演。
+</p>
+
+<p>
+分析`<code>Object instanceof Object</code>：
+</p>
+
+<pre class="brush: javascript">
+// 为了方便表述，首先区分左侧表达式和右侧表达式
+ObjectL = Object, ObjectR = Object;
+// 下面根据规范逐步推演
+O = ObjectR.prototype = Object.prototype
+L = ObjectL.__proto__ = Function.prototype
+// 第一次判断
+O != L
+// 循环查找 L 是否还有 __proto__
+L = Function.prototype.__proto__ = Object.prototype
+// 第二次判断
+O == L
+// 返回 true
+</pre>
+
+<p>
+分析`<code>Function instanceof Function</code>：
+</p>
+                
+<pre class="brush: javascript">
+// 为了方便表述，首先区分左侧表达式和右侧表达式
+FunctionL = Function, FunctionR = Function;
+// 下面根据规范逐步推演
+O = FunctionR.prototype = Function.prototype
+L = FunctionL.__proto__ = Function.prototype
+// 第一次判断
+O == L
+// 返回 true
+</pre>
+
+<p>
+分析<code>Foo instanceof Foo</code>：
+</p>
+ 
+<pre class="brush: javascript">
+// 为了方便表述，首先区分左侧表达式和右侧表达式
+FooL = Foo, FooR = Foo;
+// 下面根据规范逐步推演
+O = FooR.prototype = Foo.prototype
+L = FooL.__proto__ = Function.prototype
+// 第一次判断
+O != L
+// 循环再次查找 L 是否还有 __proto__
+L = Function.prototype.__proto__ = Object.prototype
+// 第二次判断
+O != L
+// 再次循环查找 L 是否还有 __proto__
+L = Object.prototype.__proto__ = null
+// 第三次判断
+L == null
+// 返回 false
+</pre>
+
+<h3 id="toc_2.1.5">instanceofDojo继承机制</h3>
+
+<p>
+在 JavaScript 中，是没有多重继承这个概念的，就像 Java 一样。但在 Dojo 中使用<code>declare</code>声明类时，是允许继承自多个类的。下面以 Dojo 1.6.1 为例。
+</p>
+
+<p>
+Dojo 中多重继承
+</p>
+        
+<pre class="brush: javascript">
+dojo.declare("Aoo",null,{});
+dojo.declare("Boo",null,{});
+dojo.declare("Foo",[Aoo,Boo],{});
+ 
+var foo = new Foo();
+console.log(foo instanceof Aoo);//true
+console.log(foo instanceof Boo);//false
+ 
+console.log(foo.isInstanceOf(Aoo));//true
+console.log(foo.isInstanceOf(Boo));//true
+</pre>
+
+<p>
+上面的示例中，<code>Foo</code>同时继承自<code>Aoo</code>和<code>Boo</code>，但当使用<code>instanceof</code>运算符来检查<code>foo</code>是否是<code>Boo</code>的实例时，返回的是<code>false</code>。实际上，在 Dojo 的内部，<code>Foo</code>仍然只继承自<code>Aoo</code>，而通过mixin机制把<code>Boo</code>类中的方法和属性拷贝到<code>Foo</code>中，所以当用<code>instanceof</code>运算符来检查是否是<code>Boo</code>的实例时，会返回<code>false</code>。所以 Dojo 为每个类的实例添加了一个新的方法叫<code>isInstanceOf</code>，用这个方法来检查多重继承。
+</p>
+ </div>
+</body>
+</html>

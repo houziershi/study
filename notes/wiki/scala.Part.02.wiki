@@ -14,6 +14,8 @@
 
 === 样本类 ===
 
+带`case`修饰符会被编译器识别为样本类。
+
 {{{class="brush: scala"
   abstract class Expr
   case class Var(name: String) extends Expr
