@@ -27,13 +27,13 @@
 
 上面为表达式定义了一个抽象的基类，四个子类分别代表四种具体的表达式。要注意的是每个子类都有一个`case`修饰符，会被编译器识别为样本类。
 
-样本类在使用工厂方法创建时可以省掉`new`：
+样本类有自动产生的工厂方法，创建时就用不着`new`了：
 
 {{{class="brush: scala"
 val v = Var("x")
 }}}
 
-这个特点让方法嵌套时少写`new`让代码看起来更加简洁：
+这个特点让方法在有很多层嵌套时可以少写很多`new`，这样让代码看起来更加简洁：
 
 {{{class="brush: scala"
 val op = binOp("+", Number(1), v)
@@ -49,7 +49,7 @@ scala> op.left
 res1: Expr = Number(1.0)
 }}}
 
-编译器为样本类添加了可读性更强的`toString`、`hashCode`和`equals`方法：
+编译器为样本类添加了可读性更强的`toString`方法；还有自动提供的`hashCode`和`equals`方法会树型嵌套作用于成员变量：
 
 {{{class="brush: scala"
   scala> println(op)
@@ -58,6 +58,8 @@ res1: Expr = Number(1.0)
   scala> op.right == Var("x")
   res3: Boolean = true
 }}}
+
+=== 模式匹配 ===
 
 先来看一下格式。在格式上相当于把Java的`switch`格式：
 
@@ -72,7 +74,7 @@ res1: Expr = Number(1.0)
 }}}
 
 
-下面了一些基本的数学简化操作。下面的操作不用计算，因为值是不会变的：
+有一些数学运算的值是固定的，所以可以直接写死，算都不用算。比如以下的三个：
 
 {{{class="brush: scala"
   UnOp("-", UnOp("-", e)) => e // 负负得正
@@ -92,6 +94,11 @@ res1: Expr = Number(1.0)
 }}}
 
 方法`simplifyTop`接收一个`Expr`类型的参数。这里参数`expr`作为选择器匹配各个备选项，`_`为通配模式能匹配所有的值，相当于Java中的default。箭头`=>`分开的模式与表达式。
+
+* 其中`-`这样的是常量模式（constant pattern）作相等判断。
+* 其中的`e`这样的变量模式（variable pattern）匹配所有的值，在`=>`右边表示匹配的内容。
+
+
 调用：
 
 {{{class="brush: scala"
