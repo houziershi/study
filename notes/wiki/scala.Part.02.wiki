@@ -95,9 +95,9 @@ res1: Expr = Number(1.0)
 
 方法`simplifyTop`接收一个`Expr`类型的参数。这里参数`expr`作为选择器匹配各个备选项，`_`为通配模式能匹配所有的值，相当于Java中的default。箭头`=>`分开的模式与表达式。
 
-* 其中`-`这样的是常量模式（constant pattern）作相等判断。
-* 其中的`e`这样的变量模式（variable pattern）匹配所有的值，在`=>`右边表示匹配的内容。
-
+* 其中`"-"`、`"*"`、`"*"`等这样的是常量模式（constant pattern）作相等判断。
+* 其中的`e`这样的变量模式（variable pattern）匹配所有的值，在`=>`右边可以操作匹配的部分内容。
+* 其中`Unop("-",e)`这样的形式为构造器模式，这样匹配的条件就是类为`Unop`第一个参数是`"-"`，第二个参数被作为`e`捕获。
 
 调用：
 
@@ -106,6 +106,7 @@ res1: Expr = Number(1.0)
   res4: Expr = Var(x)
 }}}
 
+=== match与switch的比较 ===
 
 * `match`是一种表达式，所以有返回结果。
 * 一个case不会走到下一个case。
@@ -119,7 +120,7 @@ res1: Expr = Number(1.0)
   }
 }}}
 
-这个表达式在两种情况下都会返回Unit值'()'。
+这个表达式在两种情况下都会返回`Unit`值`()`，所以这个表达式的类型就是`Unit`。
 
 
 == 模式的种类 ==
@@ -136,7 +137,7 @@ res1: Expr = Number(1.0)
   }
 }}}
 
-通配符还可以省略省略不用关注的内容，比如函数的参数名：
+通配符还可以省略省略不用关注的内容。比如只要是`BinOp`类型就行，里面的参数是什么值不关心：
 
 {{{class="brush: scala"
   expr match {
@@ -147,7 +148,7 @@ res1: Expr = Number(1.0)
 
 === 常量模式 ===
 
-任何字面量都可以用作常量，如`nil`，`5`，`true`和`"hello"`：
+任何字面量都可以用作常量，还有`val`与单例对象也可以。如`nil`，`5`，`true`和`"hello"`：
 
 {{{class="brush: scala"
   def describe(x: Any) = x match {
@@ -246,6 +247,8 @@ res1: Expr = Number(1.0)
 Thread.`yield`()
 }}}
 
+这样这里的`yield`就被当作标识符而不是关键字了。
+
 === 构造器模式 ===
 
 这个模式是真正牛X的模式，不仅检查对象是否是样本类的成员，还检查对象的构造器参数是否符合指定模式。
@@ -283,6 +286,8 @@ Scala的模式支持深度匹配（deep match）。不止检查对象是否一�
 
 === 元组模式 ===
 
+检查参数是不是三元组：
+
 {{{class="brush: scala"
   def tupleDemo(expr: Any) =
     expr match {
@@ -300,7 +305,7 @@ Scala的模式支持深度匹配（deep match）。不止检查对象是否一�
 
 === 类型模式 ===
 
-可以当成类型测试和类型转换的简易替代：
+这个模式可以被用来当成类型测试和类型转换的简易替代：
 
 {{{class="brush: scala"
   def generalSize(x: Any) = x match {
@@ -363,7 +368,7 @@ expr.asInstanceOf[String]
   isIntIntMap: (Any)Boolean
 }}}
 
-在启动编译器时加上检查开关可以看到更多详细信息：
+在启动编译器时加上检查开关`-unchecked`可以看到更多详细信息：
 
 {{{class="brush: scala"
   scala> :quit
@@ -417,7 +422,9 @@ scala> def isIntIntMap(x: Any) = x match {
 
 === 变量绑定 ===
 
-除了独立的变量模式外，还可以对任何其他模式添加变量。 作用时在匹配成功后，变量就是匹配成功的对象了。 方式为写上变量名、一个`@`符号和模式。
+在变量模式里可以用变量操作匹配的部分，那么其他的模式里有没有办法也这样做呢？
+
+其实除了变量模式外，也可以对任何其他模式添加变量。 作用时在匹配成功后，变量就是匹配成功的对象了。 方式为写上变量名、一个`@`符号和模式。
 
 比如要匹配`abs`出现了两次的地方（做了两次绝对值计算等于没有算）：
 
@@ -428,9 +435,9 @@ scala> def isIntIntMap(x: Any) = x match {
   }
 }}}
 
-== 守卫模式 ==
+这里的`e`代表的就是`UnOp("abs",_)`部分。
 
-Scala要求模式是线性的，即模式变量只能在模式中出现一次。
+== 守卫模式 ==
 
 如，想要把`e+e`这个重复加法替换成乘法`e*2`：
 
@@ -444,7 +451,7 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
   BinOp("*", Var("x"), Number(2))
 }}}
 
-用下面的方式`x`重复出现了，所以有问题：
+Scala要求模式是线性的，即模式变量只能在模式中出现一次。下面的表达式中`x`重复出现了，所以有问题：
 
 {{{class="brush: scala"
   scala> def simplifyAdd(e: Expr) = e match {
@@ -456,7 +463,9 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
                               ^
 }}}
 
-守卫模式（pattern guard）很像`for`循环中的`if`过滤条件。接在匹配模式后面的、用`if`开始的、使用模式中变量的表达式：
+守卫模式（pattern guard）很像`for`循环中的`if`过滤条件。接在匹配模式后面的、用`if`开始的、使用模式中变量的表达式。
+
+如下面例子中的`if x == y`部分：
 
 {{{class="brush: scala"
   scala> def simplifyAdd(e: Expr) = e match {
@@ -513,7 +522,9 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
 
 前面说过Scala里如果所有的样本都没有匹配，那是会抛异常的。为了全都匹配，程序员会给匹配加上一个默认匹配项处理默认情况。
 
-实际上Scala编译器已经可以检测match表达式中遗漏的情况，但新的样本类可以定义在任何地方。比如我们的`Expr`有四个样本类，但可以在别的编译单元中再写其他的实现类。
+实际上Scala编译器已经可以检测match表达式中遗漏的情况，但新的样本类可以定义在任何地方。
+
+比如我们的`Expr`有四个样本类，对应的模式匹配准备了四种情况。很好，四对四一个也没有渥。但是，如果有人在其他的文件里又实现了第五个类……就变成漏掉一个匹配情况了。
 
 所以有一个方案：让样本类的超类被封闭（sealed），这样就不能在别的文件中添加新的子类。格式只要加一个`sealed`关键字：
 
@@ -553,6 +564,8 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
   }
 }}}
 
+像这样加上一个永远也不会执行到的语句虽然在语法上OK，但不是一个好的代码风格。
+
 还有一个方法是对变量`e`添加注释`@unchecked`：
 
 {{{class="brush: scala"
@@ -562,8 +575,7 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
   }
 }}}
 
-{{{class="brush: scala"
-}}}
+注解会在后面的“注解”一章中介绍，这里的`@unchecked`会阻止`match`表达式检查是不是有漏掉的可能性。
 
 == Option类型 ==
 
@@ -604,7 +616,7 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
 
 在Java里Map没有值时返回的是`null`，如果忘记检查会引起空指针异常。而在Scala里对于一个`Map[Int,Int]`是不可能返回`null`的。
 
-使用Option类型的优点在于：
+使用`Option`类型的优点在于：
 
 * `Option[String]`从字面上看就已经提醒了程序员内容可能为`None`；
 * 在Java中如果变量为空要到运行时才抛出空指针异常，而Scala中Option类型让编译器就已经提供了检查：编译器会在把`Option[String]`当作`String`使用时报错。
@@ -628,6 +640,8 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
   string: java.lang.String = abc
 }}}
 
+上面的代码中按元组成员的类型，通过模式匹配自动判断出了变量`number`和`string`的类型。
+
 这种方式用在指定精确类型的样本类时用得比较多：
 
 {{{class="brush: scala"
@@ -639,6 +653,8 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
   left: Expr = Number(5.0)
   right: Expr = Number(1.0)
 }}}
+
+上面的代码正好在赋值时把参数一一对应地传了过去。
 
 === 偏函数的样本序列 ===
 
@@ -705,7 +721,7 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
    at $anonfun$1.apply(<console>:17)
 }}}
 
-如果要检查一个偏函数是否有定义，一定要告诉编译器正在使用的函数是偏函数。类型`Lint[Int] => Int`包含了不管是否是偏函数的，从整数列表到整数的所有函数。仅包含整数列表到的偏函数的，应该写成`Partialfunction[List[Int],Int]。
+如果要检查一个偏函数是否有定义，一定要告诉编译器正在使用的函数是偏函数。类型`Lint[Int] => Int`包含了不管是否是偏函数的，从整数列表到整数的所有函数。仅包含整数列表到的偏函数的，应该写成`Partialfunction[List[Int],Int]`。
 
 下面是偏函数的定义例子：
 
@@ -727,7 +743,7 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
 
 Scala在编译器在把这样的表达式转为偏函数时会对模式进行两次翻译：一次是真实函数的实现；另一次是测试函数是否对参数有定义的实现。
 
-例如上面的函数宣布量`{case x :: y :: _ => y`会被翻译成：
+例如上面的函数宣布量`{case x :: y :: _ => y}`会被翻译成：
 
 {{{class="brush: scala"
   new PartialFunction[List[Int], Int] {
@@ -747,7 +763,7 @@ Scala在编译器在把这样的表达式转为偏函数时会对模式进行两
 
 === for表达式 ===
 
-典型例子，每个元素都是`(country,city)`：
+来看一个典型的例子：每个元素都是`(country,city)`：
 
 {{{class="brush: scala"
   scala> for ((country, city) <- capitals)
@@ -756,7 +772,7 @@ Scala在编译器在把这样的表达式转为偏函数时会对模式进行两
   The capital of Japan is Tokyo
 }}}
 
-当然也有元素不匹配模式的情况，下面例子中不匹配的会被丢弃：
+当然也有元素不匹配模式的情况，下面例子中不匹配的会被丢弃。所以不用担心不能匹配的元素：
 
 {{{class="brush: scala"
   scala> val results = List(Some("apple"), None,
@@ -774,9 +790,9 @@ Scala在编译器在把这样的表达式转为偏函数时会对模式进行两
 目标是生成公式`((a / (b * c) + 1 / n) / 3)`显示形式为：
 
 {{{class="brush: scala"
-  a 1
+  a     1
 ----- + -
-b * c n
+b * c   n
 ---------
     3
 }}}
@@ -816,7 +832,7 @@ b * c n
       )
 }}}
 
-再定义一个操作符与优先级映射的变量`precedence`，映射的内容是通过处理上面定义的层级生成的：
+再定义一个操作符与优先级映射的变量`precedence`，映射的内容是通过处理上面定义的层级生成的。
 
 {{{class="brush: scala"
     // A mapping from operators to their precedence
@@ -833,7 +849,114 @@ b * c n
     private val fractionPrecedence = -1
 }}}
 
-如：
+上面的代码里有一个例外，我们把除法单独拿了出来，并且把它的优先级定义成了`-1`。这是为了方便处理我们要实现的分子在上分母在下的分数显示方式。
+
+下一个问题是格式化方法的实现。定义一个`format`方法，它有两个参数：
+
+* 第一个参数：是表达式类型的`e: Expr`
+* 第二个参数：操作符的优先级`enclPrec: Int`（如果没有这个操作符，那优先级就应该是0）。
+
+注意`format`是私有方法，完成大部分工作。最后一个公开的同名方法`format`提供入口。内部还有一个`stripDot`方法来去掉如`2.0`的`.0`部分。
+
+{{{class="brush: scala"
+  private def format(e: Expr, enclPrec: Int): Element =
+
+    e match {
+
+      case Var(name) =>
+        elem(name)
+
+      case Number(num) =>
+        def stripDot(s: String) =
+          if (s endsWith ".0") s.substring(0, s.length - 2)
+          else s
+        elem(stripDot(num.toString))
+
+      case UnOp(op, arg) =>
+        elem(op) beside format(arg, unaryPrecedence)
+
+      case BinOp("/", left, right) =>
+        val top = format(left, fractionPrecedence)
+        val bot = format(right, fractionPrecedence)
+        val line = elem('-', top.width max bot.width, 1)
+        val frac = top above line above bot
+        if (enclPrec != fractionPrecedence) frac
+        else elem(" ") beside frac beside elem(" ")
+
+      case BinOp(op, left, right) =>
+        val opPrec = precedence(op)
+        val l = format(left, opPrec)
+        val r = format(right, opPrec + 1)
+        val oper = l beside elem(" "+ op +" ") beside r
+        if (enclPrec <= opPrec) oper
+        else elem("(") beside oper beside elem(")")
+    }
+
+    def format(e: Expr): Element = format(e, 0)
+  }
+}}}
+
+上面的代码通过模式匹配实现了四种不同情况的处理：
+
+第一种情况：如果是变量，结果就是变量名。
+
+{{{class="brush: scala"
+  case Var(name) =>
+    elem(name)
+}}}
+
+第二种情况：如果是数字，结果是格式化后的数字，如`2.0`格式化为`2`：
+
+{{{class="brush: scala"
+      case Number(num) =>
+        def stripDot(s: String) =
+          if (s endsWith ".0") s.substring(0, s.length - 2)
+          else s
+        elem(stripDot(num.toString))
+}}}
+
+第三种情况：如果是一元操作符，处理结果为操作`op`和最高环境优先级格式化参数`arg`的结果组成。这样如果`arg`是除了分数以外的二元操作就不会出现在括号中。
+
+{{{class="brush: scala"
+      case UnOp(op, arg) =>
+        elem(op) beside format(arg, unaryPrecedence)
+}}}
+
+第四种情况：除法，也可以说是分数，则按上下位置放置。但仅仅上下的位置还不够。因为这样分不清主次：
+
+{{{class="brush: scala"
+a
+-
+b
+-
+c
+}}}
+
+有必要强化层次：
+
+{{{class="brush: scala"
+ a
+ -
+ b
+---
+ c
+}}}
+
+实现的代码这个样子的：
+
+{{{class="brush: scala"
+      case BinOp("/", left, right) =>
+        val top = format(left, fractionPrecedence)
+        val bot = format(right, fractionPrecedence)
+        val line = elem('-', top.width max bot.width, 1)
+        val frac = top above line above bot
+        if (enclPrec != fractionPrecedence) frac
+        else elem(" ") beside frac beside elem(" ")
+}}}
+
+第五种情况（也是最后一种）：除法以外的其他二元操作符。在这里要注意一下优先级问题：
+
+二元运算符有两个操作数。其中左操作数的优先级是操作符`op`的`opPrec`，而右操作数的优先级要再加1。这样保证了括号也同样反映正确的优先级。如：
 
 {{{class="brush: scala"
 BinOp("-", Var("a"), BinOp("-", Var("b"), Var("c")))
@@ -853,13 +976,13 @@ BinOp("-", Var("a"), BinOp("-", Var("b"), Var("c")))
         else elem("(") beside oper beside elem(")")
 }}}
 
-最后再给一个公开的方法，不用优先级参数就可以格式化公式：
+五种可能的情况都处理完毕了。最后再给一个让外部代码公开调用的方法，这个方法不用优先级参数就可以格式化公式：
 
 {{{class="brush: scala"
     def format(e: Expr): Element = format(e, 0)
 }}}
 
-全部代码：
+到这里算法的讲解完毕。下面把所有的代码都一接在一起,全部代码：
 
 {{{class="brush: scala"
 //compile this along with ../compo-inherit/LayoutElement.scala
@@ -944,7 +1067,7 @@ BinOp("-", Var("a"), BinOp("-", Var("b"), Var("c")))
   }
 }}}
 
-具体调用的例子：
+具体调用的演示程序：
 
 {{{class="brush: scala"
   import org.stairwaybook.expr._
@@ -965,115 +1088,31 @@ BinOp("-", Var("a"), BinOp("-", Var("b"), Var("c")))
 }
 }}}
 
+上面的演示程序继承了`Application`方法，所以虽然没有`main`方法它还是可以运行的应用程序。可以这样运行：
+
 {{{class="brush: scala"
   scala Express
 }}}
 
-
-下一个问题是格式化方法的实现。定义一个`format`方法，参数为表达式类型的`e: Expr`和操作符的优先级`enclPrec: Int`（如果没有这个操作符，那优先级就应该是0）。
-
-注意`format`是私有方法，完成大部分工作。最后一个公开的同名方法`format`提供入口。内部还有一个`stripDot`方法来去掉如`2.0`的`.0`部分。
+输出的结果为：
 
 {{{class="brush: scala"
-  private def format(e: Expr, enclPrec: Int): Element =
+1
+- * (x + 1)
+2
 
-    e match {
+x   1.5
+- + ---
+2    x
 
-      case Var(name) =>
-        elem(name)
-
-      case Number(num) =>
-        def stripDot(s: String) =
-          if (s endsWith ".0") s.substring(0, s.length - 2)
-          else s
-        elem(stripDot(num.toString))
-
-      case UnOp(op, arg) =>
-        elem(op) beside format(arg, unaryPrecedence)
-
-      case BinOp("/", left, right) =>
-        val top = format(left, fractionPrecedence)
-        val bot = format(right, fractionPrecedence)
-        val line = elem('-', top.width max bot.width, 1)
-        val frac = top above line above bot
-        if (enclPrec != fractionPrecedence) frac
-        else elem(" ") beside frac beside elem(" ")
-
-      case BinOp(op, left, right) =>
-        val opPrec = precedence(op)
-        val l = format(left, opPrec)
-        val r = format(right, opPrec + 1)
-        val oper = l beside elem(" "+ op +" ") beside r
-        if (enclPrec <= opPrec) oper
-        else elem("(") beside oper beside elem(")")
-    }
-
-    def format(e: Expr): Element = format(e, 0)
-  }
+1
+- * (x + 1)
+2
+-----------
+  x   1.5
+  - + ---
+  2    x
 }}}
-
-分析具体的逻辑：
-
-如果是变量，结果就是变量名。
-
-{{{class="brush: scala"
-  case Var(name) =>
-    elem(name)
-}}}
-
-如果是数字，结果是格式化后的数字，如`2.0`格式化为`2`：
-
-{{{class="brush: scala"
-      case Number(num) =>
-        def stripDot(s: String) =
-          if (s endsWith ".0") s.substring(0, s.length - 2)
-          else s
-        elem(stripDot(num.toString))
-}}}
-
-对于一元操作符的处理结果为操作`op`和最高环境优先级格式化参数`arg`的结果组成。这样如果`arg`是除了分数以外的二元操作就不会出现在括号中。
-
-{{{class="brush: scala"
-      case UnOp(op, arg) =>
-        elem(op) beside format(arg, unaryPrecedence)
-}}}
-
-如果是分数，则按上下位置放置。但仅仅上下的位置还不够。因为这样公不清主次：
-
-{{{class="brush: scala"
-a
--
-b
--
-c
-}}}
-
-有必要强化层次：
-
-{{{class="brush: scala"
- a
- -
- b
----
- c
-}}}
-
-实现的代码这个样子的：
-
-{{{class="brush: scala"
-      case BinOp("/", left, right) =>
-        val top = format(left, fractionPrecedence)
-        val bot = format(right, fractionPrecedence)
-        val line = elem('-', top.width max bot.width, 1)
-        val frac = top above line above bot
-        if (enclPrec != fractionPrecedence) frac
-        else elem(" ") beside frac beside elem(" ")
-}}}
-
-然后了除法以外的其他二元操作符。在这里要注意一下优先级问题：
-
-左操作数的优先级是操作符`op`的`opPrec`，而右操作数的优先级要再加1。这样保证了括号也同样反映正确的优先级。
-
 
 = 使用列表 =
 

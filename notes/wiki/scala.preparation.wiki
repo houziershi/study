@@ -1,6 +1,4 @@
 
-
-
 %title 准备工作
 
 %toc 准备工作
@@ -14,12 +12,6 @@
 Mac OS X系统的默认字符编码早就改成了UTF-8但它bundle的Java默认字符编码却一直是MacRoman。在启动REPL时传入参数`-Dfile.encoding=UTF-8`。
 
 用vim、emacs或者你习惯的文本编辑器打开scala命令，比如：
-
-
-
-{{{class="brush: bash"
-12345678901234567890123456789012345678901234567890123456789012345678901234567890
-}}}
 
 {{{class="brush: bash"
 $ vim `which scala`
