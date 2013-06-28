@@ -19,34 +19,62 @@
 <title>Linux基本操作</title>
 </head>
 <body>
-
-
+	<div class="note-main"> 
 
 
 
 <h1>Linux基本操作</h1>
 <div class="toc">
 <ul>
-<li><a href="#toc_1">文件操作</a>
+<li><a href="#toc_1">软件安装</a>
 <ul>
-<li><a href="#toc_1.1">压缩</a>
+<li><a href="#toc_1.1">apt</a>
 <ul>
-<li><a href="#toc_1.1.1">bzip2</a>
+<li><a href="#toc_1.1.1">删除</a>
 </ul>
 </ul>
-<li><a href="#toc_2">文本文件</a>
+<li><a href="#toc_2">文件操作</a>
 <ul>
-<li><a href="#toc_2.1">查找</a>
-<li><a href="#toc_2.2">编码与格式</a>
+<li><a href="#toc_2.1">压缩</a>
+<ul>
+<li><a href="#toc_2.1.1">bzip2</a>
+</ul>
+</ul>
+<li><a href="#toc_3">文本文件</a>
+<ul>
+<li><a href="#toc_3.1">查找</a>
+<li><a href="#toc_3.2">编码与格式</a>
 </ul>
 </ul>
 </div>
 
-<h1 id="toc_1">文件操作</h1>
 
-<h2 id="toc_1.1">压缩</h2>
+<h1 id="toc_1">软件安装</h1>
 
-<h3 id="toc_1.1.1">bzip2</h3>
+<h2 id="toc_1.1">apt</h2>
+
+<h3 id="toc_1.1.1">删除</h3>
+
+<p>
+包括配置文件完全删除：
+</p>
+<pre class="brush: bash">
+apt-get purge xxx
+</pre>
+
+<p>
+相当于：
+</p>
+
+<pre class="brush: bash">
+apt-get remove --purge xxx
+</pre>
+
+<h1 id="toc_2">文件操作</h1>
+
+<h2 id="toc_2.1">压缩</h2>
+
+<h3 id="toc_2.1.1">bzip2</h3>
 
 <pre class="brush: bash">
 $ bzip2 -v log.txt 
@@ -58,15 +86,15 @@ log.txt
 $ 
 </pre>
 
-<h1 id="toc_2">文本文件</h1>
+<h1 id="toc_3">文本文件</h1>
 
-<h2 id="toc_2.1">查找</h2>
+<h2 id="toc_3.1">查找</h2>
 
 <pre class="brush: bash">
 find / -name "*.conf" | xargs grep "alias" 
 </pre>
 
-<h2 id="toc_2.2">编码与格式</h2>
+<h2 id="toc_3.2">编码与格式</h2>
 
 <p>
 Windows文本文件的<code>^M</code>，注意这个<code>^M</code>的输入方式为<code>CTRL v CTRL m</code>。
@@ -86,7 +114,6 @@ $ dos2unix myfile.txt
 <pre class="brush: bash">
 $ sed -e ‘s/^M/\n/g’ myfile.txt
 </pre>
-
-
+ </div>
 </body>
 </html>

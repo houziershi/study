@@ -4,6 +4,24 @@
 
 %toc Linux基本操作
 
+
+= 软件安装 =
+
+== apt ==
+
+=== 删除 ===
+
+包括配置文件完全删除：
+{{{class="brush: bash"
+apt-get purge xxx
+}}}
+
+相当于：
+
+{{{class="brush: bash"
+apt-get remove --purge xxx
+}}}
+
 = 文件操作 =
 
 == 压缩 ==
