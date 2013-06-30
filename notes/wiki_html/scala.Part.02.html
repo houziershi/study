@@ -7004,11 +7004,11 @@ Scala中有三个地方会用到隐式转换：转换为需要的类型、指定
 </pre>
 
 <p>
-注意参数类型已经被限制为<code>T &lt;: Ordered[T]</code>，必须是可排序元素的列表。但是缺点是<code>Int</code>列表不行，因为<code>Int</code>不是<code>Ordered[T]</code>的子类。
+注意参数类型已经被限制为<code>T &lt;: Ordered[T]</code>，就是说列表的元素<code>T</code>要实现<code>Ordered[T]</code>物质。所以列表是可排序元素的列表。但是缺点是<code>Int</code>列表不行，因为<code>Int</code>没有实现物质<code>Ordered</code>，所以不是<code>Ordered[T]</code>的子类。
 </p>
 
 <p>
-更加泛用的方法是不限制类型，但是再加一个参数把<code>T</code>转为<code>Ordered[T]</code>的函数。
+更加泛用的方法是不限制类型，但是再加一个参数，这个参数是把<code>T</code>转为<code>Ordered[T]</code>的函数。
 </p>
 
 <p>
