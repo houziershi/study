@@ -56,6 +56,7 @@
 <li><a href="#toc_5.1.1">通过行号来指定</a>
 <li><a href="#toc_5.1.2">通过当前行与后面的行数指定范围</a>
 <li><a href="#toc_5.1.3">用管道连接外部命令</a>
+<li><a href="#toc_5.1.4">执行当前正编辑的文件</a>
 </ul>
 </ul>
 </ul>
@@ -297,6 +298,33 @@ Martin lives in London.
 <pre class="brush: bash">
 :1,$!awk '{print $1}' | sort | tr [:lower:] [:upper:]
 </pre>
+
+<h3 id="toc_5.1.4">执行当前正编辑的文件</h3>
+
+<pre class="brush: bash">
+:!./%
+
+// : 进入command-mode
+// ! 在shell执行后面的命令
+// ./ 这个是shell里面执行当前目录下可执行文件的必要前缀
+// % 表示当前文件, 会自动扩展为当前文件名
+// 所以整个命令的作用就是运行当前文件
+</pre>
+
+<p>
+先保存再运行：
+</p>
+
+<pre class="brush: bash">
+:w|!./%
+w是保存文件
+| 是命令连接符, 和shell中的管道差不多
+就是先保存再运行
+</pre>
+
+<p>
+<code>%</code>只会扩展为文件名, 不带路径, 所以当前路径<code>:pwd</code>必须是这个文件的路径
+</p>
  </div>
 </body>
 </html>

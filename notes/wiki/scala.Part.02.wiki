@@ -1383,7 +1383,7 @@ xs.reverse.head equals xs.last
 xs.reverse.last equals xs.head
 }}}
 
-通过连接操作`:::`来实现反转，当然这样的效率低得很：
+通过连接在尾部添加操作`:::`来实现反转：
 
 {{{class="brush: scala"
   def rev[T](xs: List[T]): List[T] = xs match {
@@ -1391,6 +1391,8 @@ xs.reverse.last equals xs.head
     case x :: xs1 => rev(xs1) ::: List(x)
   }
 }}}
+
+当然这样的效率低得很，因为列表要一个一个遍历才能找到最后一个元素。
 
 === 前缀与后缀 ===
 
@@ -1779,11 +1781,11 @@ op(op(op(z,a), b), c)
 {{{class="brush: scala"
       op
      / \
-    op c
+    op  c
    / \
-  op b
+  op  b
  / \
-z a
+z   a
 }}}
 
 举例：
@@ -1906,7 +1908,7 @@ x :: List()
 
 注意前面还提到过一个`msort`方法，那个是定义在列表外的。`sort`是List类的方法。
 
-== List对象的方法 ==
+== List伴生对象的方法 ==
 
 下面介绍的方法是伴生对象`scala.List`的，创建列表的工厂方法和特定类型列表的操作。
 
@@ -2032,7 +2034,7 @@ Scala类型系统要求类方法能处理所有类型，而unzip只处理二元�
                ^
 }}}
 
-因为Scala的类型推导器是基于流的。对于｀func(args)｀这样的方法，先看`func`是否有已经的类型。如果有的话这个类型就被用来做参数预期类型的推断。
+因为Scala的类型推导器是基于流的。对于`func(args)`这样的方法，先看`func`是否有已经的类型。如果有的话这个类型就被用来做参数预期类型的推断。
 
 例如对于`List[Char]`类型的列表`abcd`，`abcd`的成员都是`Char`所以`abcd.sort(_ > _)`的两个参数也只会是`Char`。所以：
 
@@ -2044,7 +2046,7 @@ Scala类型系统要求类方法能处理所有类型，而unzip只处理二元�
 
 而对于`msort(_ > _)(abcde)`这个类型是柯里化的、多态的方法类型，参数类型是`(T, T) => Boolean`，返回类型是从`List[T]`到`List[T]`的函数。无法推断第一个参数的类型。所以类型推断器要参数的类型信息。
 
-想要用占位符的话，只能把参数类型传给`msort`：
+想要用占位符的话，只能把参数类型传给`msort`，改为`msort[Char]`：
 
 {{{class="brush: scala"
   scala> msort[Char](_ > _)(abcde)
@@ -2312,12 +2314,9 @@ Scala类型系统要求类方法能处理所有类型，而unzip只处理二元�
 
 不可变的栈略。
 
-{{{class="brush: scala"
-}}}
-
 === 字符串 ===
 
-因为`Predef`包含了从`String`到`RichString`的隐式转换，所以可以把任务字符串当作`Seq[Char]`。
+因为`Predef`包含了从`String`到`RichString`的隐式转换，所以可以把任何字符串当作`Seq[Char]`。
 
 {{{class="brush: scala"
   scala> def hasUpperCase(s: String) = s.exists(_.isUpperCase)
@@ -2389,21 +2388,21 @@ Set的关键在于用对象的`==`检查唯一性。
 
 常用方法：
 
-| val nums = Set(1, 2, 3) |（返回） |
-| nums + 5 |（返回） |
-| nums - 3 |（返回） |
-| nums ++ List(5, 6) |（返回） |
-| nums -- List(1, 2) |（返回） |
-| nums ** Set(1, 3, 5, 7) |交集（返回Set(3)）|
-| nums.size |（返回） |
-| nums.contains(3) |（返回） |
-| import scala.collection.mutable |（返回） |
-| val words = mutable.Set.empty[String] |创建空的可变集 |
-| words += "the" |（返回） |
-| words -= "the" |（返回） |
-| words ++= List("do", "re", "mi") |（返回） |
-| words --= List("do", "re") |（返回） |
-| words.clear |（返回） |
+| val nums = Set(1, 2, 3)               | 建立集合             |
+| nums + 5                              | 添加元素             |
+| nums - 3                              | 去除元素             |
+| nums ++ List(5, 6)                    | 添加多个元素         |
+| nums -- List(1, 2)                    | 去除多个元素         |
+| nums ** Set(1, 3, 5, 7)               | 交集（返回Set(1,3)） |
+| nums.size                             |                      |
+| nums.contains(3)                      |                      |
+| import scala.collection.mutable       | 引入可变的           |
+| val words = mutable.Set.empty[String] | 创建空的可变集       |
+| words += "the"                        |                      |
+| words -= "the"                        |                      |
+| words ++= List("do", "re", "mi")      |                      |
+| words --= List("do", "re")            |                      |
+| words.clear                           | 清空所有元素         |
 
 === Map ===
 
@@ -2432,15 +2431,15 @@ Set的关键在于用对象的`==`检查唯一性。
 
 {{{class="brush: scala"
   scala> def countWords(text: String) = {
-       | val counts = mutable.Map.empty[String, Int]
-       | for (rawWord <- text.split("[ ,!.]+")) {
-       | val word = rawWord.toLowerCase
-       | val oldCount =
-       | if (counts.contains(word)) counts(word)
-       | else 0
-       | counts += (word -> (oldCount + 1))
-       | }
-       | counts
+       |   val counts = mutable.Map.empty[String, Int]
+       |   for (rawWord <- text.split("[ ,!.]+")) {
+       |     val word = rawWord.toLowerCase
+       |     val oldCount =
+       |       if (counts.contains(word)) counts(word)
+       |       else 0
+       |     counts += (word -> (oldCount + 1))
+       |   }
+       |   counts
        | }
   countWords: (String)scala.collection.mutable.Map[String,Int]
   
@@ -2452,48 +2451,48 @@ Set的关键在于用对象的`==`检查唯一性。
 
 常用方法：
 
-|val nums = Map("i"->1, "ii"->2) |返回|
-|nums + ("vi"->6) |返回|
-|nums - "ii" |返回|
-|nums ++ List("iii"->3, "v"->5) |返回|
-|nums -- List("i", "ii") |返回|
-|nums.size |返回|
-|nums.contains("ii") |返回|
-|nums("ii") |返回|
-|nums.keys |返回迭代器|
-|nums.keySet |返回|
-|nums.values |返回|
-|nums.isEmpty |返回|
-|import scala.collection.mutable |返回|
-|val words = mutalbe.Map.empty[String, Int] |返回|
-|words += ("one"->1) |返回|
-|words -= "one" |返回|
-|words ++= List("one"->1, "two"->2, "three"->3))|返回|
-|words --= List("one", "two") |返回|
+| val nums = Map("i"->1, "ii"->2)                 | 创建不可变           |
+| nums + ("vi"->6)                                |                      |
+| nums - "ii"                                     |                      |
+| nums ++ List("iii"->3, "v"->5)                  |                      |
+| nums -- List("i", "ii")                         |                      |
+| nums.size                                       |                      |
+| nums.contains("ii")                             |                      |
+| nums("ii")                                      |                      |
+| nums.keys                                       | 返回key迭代器        |
+| nums.keySet                                     | 返回key的集合(Set)   |
+| nums.values                                     | 返回value迭代器      |
+| nums.isEmpty                                    | 返回value的集合(Set) |
+| import scala.collection.mutable                 | 引入可变的版本       |
+| val words = mutalbe.Map.empty[String, Int]      |                      |
+| words += ("one"->1)                             |                      |
+| words -= "one"                                  |                      |
+| words ++= List("one"->1, "two"->2, "three"->3)) |                      |
+| words --= List("one", "two")                    |                      |
 
 === 默认的Set和Map ===
 
-不可变的类会对数量优化一些工厂方法返回的默认的实现。
+不可变的Set与Map会根据元素的数量优化一些工厂方法，这样返回的类就不一定是指定的类型。
 
 不可变的`scala.collection.immutable.Set()`工厂方法返回：
 
-| 元素的数量 | 实现 |
-| 0 | scala.collection.immutable.EmptySet |
-| 1 | scala.collection.immutable.Set1 |
-| 2 | scala.collection.immutable.Set2 |
-| 3 | scala.collection.immutable.Set3 |
-| 4 | scala.collection.immutable.Set4 |
-| >=5 | scala.collection.immutable.HashSet |
+| 元素的数量 | 实现                                |
+| 0          | scala.collection.immutable.EmptySet |
+| 1          | scala.collection.immutable.Set1     |
+| 2          | scala.collection.immutable.Set2     |
+| 3          | scala.collection.immutable.Set3     |
+| 4          | scala.collection.immutable.Set4     |
+| >=5        | scala.collection.immutable.HashSet  |
 
 不可变的`scala.collection.immutable.Map()`工厂方法返回：
 
-| 元素的数量 | 实现 |
-| 0 | scala.collection.immutable.EmptyMap |
-| 1 | scala.collection.immutable.Map1 |
-| 2 | scala.collection.immutable.Map2 |
-| 3 | scala.collection.immutable.Map3 |
-| 4 | scala.collection.immutable.Map4 |
-| >=5 | scala.collection.immutable.HashMap |
+| 元素的数量 | 实现                                |
+| 0          | scala.collection.immutable.EmptyMap |
+| 1          | scala.collection.immutable.Map1     |
+| 2          | scala.collection.immutable.Map2     |
+| 3          | scala.collection.immutable.Map3     |
+| 4          | scala.collection.immutable.Map4     |
+| >=5        | scala.collection.immutable.HashMap  |
 
 === 有序的集体和映射 ===
 
@@ -2572,7 +2571,7 @@ Set的关键在于用对象的`==`检查唯一性。
   res3: String = Wellington
 }}}
 
-类似的同步的Set：
+类似地，也可以实现同步的Set：
 
 {{{class="brush: scala"
   val synchroSet =
@@ -2734,6 +2733,8 @@ Set的关键在于用对象的`==`检查唯一性。
   scala> treeSet.toArray
   res55: Array[String] = Array(blue, green, red, yellow)
 }}}
+
+由于实现机制是一个一个元素地复制，所以元素多的话速度会慢。
 
 === Set与Map的可变与不可变互转 ===
 
@@ -2999,15 +3000,9 @@ val a, b, c = new Wire
 这是内部DSL很好的例子：通过宿主语言将特定的语言定义为库面不是完全实现这种语言。
 
 
-
-
 == Simulation API ==
 
-在我们的例子中，把参数列表和返回都为空的过程`() => Unit`作为基本的动作。给这样类型的过程起个别名叫`Action`：
-
-{{{class="brush: scala"
-type Action = () => Unit
-}}}
+完成了对电路的模拟以后，再来分析对时间的模拟。模拟时间包括在指定时间执行指定的动作。
 
 私有变量保存时间，但提供对时间的公开访问：
 
@@ -3015,6 +3010,12 @@ type Action = () => Unit
   private var curtime: Int = 0
 
   def currentTime: Int = curtime
+}}}
+
+定义动作：在我们的例子中，把参数列表和返回都为空的过程`() => Unit`作为基本的动作。给这样类型的过程起个别名叫`Action`：
+
+{{{class="brush: scala"
+type Action = () => Unit
 }}}
 
 在特定时间执行的的操作定义为工作项目（work item）：
@@ -3025,13 +3026,13 @@ type Action = () => Unit
 
 注意这里用的是样本类，所以用工厂方法创建实例就可以自动获得访问构造器参数`time`和`action`的方法。
 
-还有一个类来保存末执行工作条目的排程表（agenda），它是按时间排序的：
+还有一个类来保存末执行工作条目的排程表（agenda），注意它是按时间排序的：
 
 {{{class="brush: scala"
   private var agenda: List[WorkItem] = List()
 }}}
 
-提供在一定 时延后加入新的工作条目的方法，加入操作也要排序：
+提供在一定 时延后加入新的工作条目的方法，注意加入操作也要排序：
 
 {{{class="brush: scala"
   def afterDelay(delay: Int)(block: => Unit) {
@@ -3854,7 +3855,7 @@ Scala中数组是不可协变的：
 
 在之前的“可选方案：私有类”这一节中展示的是没有办法协变的实现`Queue[T]`。因为类型`T`作为参数出现在`append`方法中，而这个位置是负的。
 
-所幸有一个办法：可能通过把`append`变为金矿以使其泛型化并使用它的类型参数的下界：
+所幸有一个办法：可能通过把`append`变为多态以使其泛型化并使用它的类型参数的下界：
 
 {{{class="brush: scala"
   class Queue[+T] (private val leading: List[T],
@@ -3866,7 +3867,7 @@ Scala中数组是不可协变的：
 
 `append`方法指定的类型参数`U`，并通过语法`U >: T`定义了`T`为`U`的下界，即：`U`必须是`T`的超类。这里可以把T的任意超类（U）的对象添加进来，返回类型也成了`Queue[U]`。
 
-对于`append`方法来说，它不知道自己处理的是某一个子类。只知道处理的是超类U。所以不会有类型错误。
+对于`append`方法来说，它不知道自己处理的是某一个子类。只知道处理的是超类`U`。所以不会有类型错误。
 
 要注意对于同一个类来说，即是超类也是子类。所以`T`是`U`下界，用`T`传入也是可以的。
 
@@ -3875,7 +3876,7 @@ Scala中数组是不可协变的：
 从技术角度来看，这里的情况发生了下界的翻转：类型参数`U`处于负位置（1次翻转），面下界`>: T`处于正的位置（两次翻转）。
 
 
-=== 逆变 ===
+== 逆变 ==
 
 前面所有的例子不是协变的就是非协变的。还有一些情况下会有逆变：
 
@@ -3891,7 +3892,7 @@ Scala中数组是不可协变的：
 
 所以把一个`OutputChannel[AnyRef]`赋给`OutputChannel[String]`是安全的，反过来把一个`OutputChannel[String]`赋给`OutputChannel[AnyRef]`却是不安全的。
 
-Scala函数物质中协变与逆变混在一起用的情况会比较多。对于`S => T`类型的函数会定义`Function[S, T]`，这时对参数`S`逆变而对结果`T`协变就是一种有用的策略：
+Scala函数特质中协变与逆变混在一起用的情况会比较多。对于`S => T`类型的函数会定义`Function[S, T]`，这时对参数`S`逆变而对结果`T`协变就是一种有用的策略：
 
 {{{class="brush: scala"
   trait Function1[-S, +T] {
@@ -4091,7 +4092,7 @@ Scala中不仅可以指定方法为抽象，还可以声明字段甚至抽象类
 
 == 抽象成员的快速浏览 ==
 
-在特质中分别对类型（T）、方法（transform）、val（initial）、var（current）的抽象声明：
+在特质中分别对类型（T）、方法（transform）、val（initial）、var（current）的抽象声明做出了一个例子：
 
 {{{class="brush: scala"
   trait Abstract {
@@ -4131,7 +4132,9 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
   val initial = "hi"
 }}}
 
-如果不知道类中定义的确切内容，但是确定对于每个实例来说值都是不可变的。在这样的情况下可以使用抽象的val声明，格式类似于无参数方法声明：
+如果不知道类中定义的确切内容，但是确定对于每个实例来说值都是不可变的。在这样的情况下可以使用抽象的val声明。
+
+可以注意到，抽象val的格式非常类似于下面的抽象无参数方法声明：
 
 {{{class="brush: scala"
   def initial: String
@@ -4139,7 +4142,7 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 
 客户代码将使用统一的`obj.initial`方法引用val及方法。如果`initial`是抽象val，那么客户就可以保证每次引用都将得到同样的值。如果`initial`是抽象方法那就无法保证，因为在不同的实现中`initial`可以被实现为每次调用都返回不同的值。
 
-换名话说抽象的val限制了合法实现的方式：任何实现都必须是`val`类型的定义不可以是`var`。另一方面，抽象方法声明可以被实现为具体的方法定义或具体的`val`定义。
+换句话说抽象的val限制了合法实现的方式：任何实现都必须是`val`类型的定义不可以是`var`。另一方面，抽象方法声明可以被实现为具体的方法定义或具体的`val`定义。
 
 所以在下面的代码中，`Apple`是合法的子类面`BadApple`不是：
 
@@ -4293,7 +4296,7 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
                                ^
 }}}
 
-`$iw`是合成对象，解释器把用户输出语句放在这个对象中。
+因为实例还没有构建完成，所以会报错。`$iw`是合成对象，解释器把用户输出语句放在这个对象中。
 
 {{{class="brush: scala"
   class RationalClass(n: Int, d: Int) extends {
@@ -4516,7 +4519,13 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
   }
 }}}
 
-与Java的`Outer.Inner`不同，Scala中表达为`Outer#Inner`。`.`语法留给对象使用：
+与Java的`Outer.Inner`不同，Scala中表达为`Outer#Inner`。
+
+`注意：`
+
+总之，要注意。路径依赖是在对象中的类，而不是Java那样类中的类。
+
+`.`语法留给对象使用：
 
 {{{class="brush: scala"
   val o1 = new Outer
@@ -4559,6 +4568,10 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
   }
 }}}
 
+`注意：`
+
+枚举是和路径依赖一样，是对象中的类，不是类中的类。
+
 还可以简化：
 
 {{{class="brush: scala"
@@ -4593,6 +4606,8 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
     val West = Value("West")
   }
 }}}
+
+`Direction`与`Color`的`Value`也是不同的类。
 
 遍历：
 
@@ -4630,7 +4645,7 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
   }
 }}}
 
-`amount`和`designation`分别代表金额的符号。其他方法还有加法和乘法操作。这个版本的问题是，在语法上两个不同的子类可以相加：
+`amount`和`designation`分别代表金额和表示金额的符号。其他方法还有加法和乘法操作。这个版本的问题是，在语法上两个不同的子类可以相加：
 
 {{{class="brush: scala"
   abstract class Dollar extends Currency {
@@ -4671,7 +4686,7 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
   }
 }}}
 
-但这通不过编译，因为Scala不能用抽象类型创建实例，也不能用抽象类型作为其他类型的父类：
+但这通不过编译，因为Scala不能用抽象类型`new`出实例来，即使是作为其他类型的父类：
 
 {{{class="brush: scala"
   error: class type required
@@ -4688,7 +4703,7 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
   }
 }}}
 
-但这样有别的问题，因为这样不得不把工厂方法放到`AbstractCurrency`类中，所有的实例都有了创建货币的能力：
+但这样有别的问题，因为这样不得不把工厂方法放到`AbstractCurrency`类中，所有的实例都可以调用`make`方法，也就都有了创建货币的能力：
 
 {{{class="brush: scala"
   myDollar.make(100)  // here are a hundred more!
@@ -5083,15 +5098,15 @@ Scala中有三个地方会用到隐式转换：转换为需要的类型、指定
 
 === 模拟新的语法 ===
 
-隐式转换还可以用来模拟新的语法。其实`Map`对象里的`->`都不是内建语法：
+隐式转换还可以用来模拟新的语法。以我们熟悉的`Map`构建为例：
 
 {{{class="brush: scala"
   Map(1 -> "one", 2 -> "two", 3 -> "three")
 }}}
 
-实际上是定义在`scala.Predef`中的类`ArrowAssoc`的方法。还定义了从`Any`到`ArrowAssoc`的隐式转换。
+其实`Map`对象里的`->`根本就不是内建语法。实际上是定义在`scala.Predef`中的类`ArrowAssoc`的方法。还定义了从`Any`到`ArrowAssoc`的隐式转换。
 
-对于`1 -> "one"`其实是从`1`到`ArrowAssoc`的转换。相差定义如下：
+拿上面的`1 -> "one"`来说。这其实是从`1`到`ArrowAssoc`的转换。相差定义如下：
 
 {{{class="brush: scala"
   package scala
@@ -5137,7 +5152,7 @@ Scala中有三个地方会用到隐式转换：转换为需要的类型、指定
   relax> 
 }}}
 
-为了隐式提供参数，要定义期望类型的变量：
+为了隐式提供参数，要定义`implicit`修饰期望类型的变量：
 
 {{{class="brush: scala"
   object JoesPrefs {
@@ -5274,7 +5289,7 @@ Scala中有三个地方会用到隐式转换：转换为需要的类型、指定
   res12: java.lang.String = two
 }}}
 
-隐式参数样式规则 :: 就是在要用到隐式转换的地方最好是从自定义的类型开始转面不是从`String`这样的很常见的类型开始转。如果`maxListImpParm`直接写成下面这样的方法签名：
+隐式参数样式规则 :: 就是在要用到隐式转换的地方最好是从自定义的类型开始转而不是从`String`这样的很常见的类型开始转。如果`maxListImpParm`直接写成下面这样的方法签名：
 
 {{{class="brush: scala"
   def maxListPoorStyle[T](elments: List[T])

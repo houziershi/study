@@ -88,7 +88,7 @@
 <li><a href="#toc_2.7.5">例子：使用折叠实现列表反转</a>
 <li><a href="#toc_2.7.6">排序</a>
 </ul>
-<li><a href="#toc_2.8">List对象的方法</a>
+<li><a href="#toc_2.8">List伴生对象的方法</a>
 <ul>
 <li><a href="#toc_2.8.1">通过元素创建列表</a>
 <li><a href="#toc_2.8.2">按数值范围创建列表</a>
@@ -161,11 +161,9 @@
 <li><a href="#toc_5.4.1">变化型注解的验证方式</a>
 </ul>
 <li><a href="#toc_5.5">下界</a>
-<ul>
-<li><a href="#toc_5.5.1">逆变</a>
-</ul>
-<li><a href="#toc_5.6">对象私有数据</a>
-<li><a href="#toc_5.7">上界</a>
+<li><a href="#toc_5.6">逆变</a>
+<li><a href="#toc_5.7">对象私有数据</a>
+<li><a href="#toc_5.8">上界</a>
 </ul>
 <li><a href="#toc_6">抽象成员</a>
 <ul>
@@ -1911,7 +1909,7 @@ xs.reverse.last equals xs.head
 </pre>
 
 <p>
-通过连接操作<code>:::</code>来实现反转，当然这样的效率低得很：
+通过连接在尾部添加操作<code>:::</code>来实现反转：
 </p>
 
 <pre class="brush: scala">
@@ -1920,6 +1918,10 @@ xs.reverse.last equals xs.head
     case x :: xs1 =&gt; rev(xs1) ::: List(x)
   }
 </pre>
+
+<p>
+当然这样的效率低得很，因为列表要一个一个遍历才能找到最后一个元素。
+</p>
 
 <h3 id="toc_2.6.6">前缀与后缀</h3>
 
@@ -2388,11 +2390,11 @@ op(op(op(z,a), b), c)
 <pre class="brush: scala">
       op
      / \
-    op c
+    op  c
    / \
-  op b
+  op  b
  / \
-z a
+z   a
 </pre>
 
 <p>
@@ -2543,7 +2545,7 @@ x :: List()
 注意前面还提到过一个<code>msort</code>方法，那个是定义在列表外的。<code>sort</code>是List类的方法。
 </p>
 
-<h2 id="toc_2.8">List对象的方法</h2>
+<h2 id="toc_2.8">List伴生对象的方法</h2>
 
 <p>
 下面介绍的方法是伴生对象<code>scala.List</code>的，创建列表的工厂方法和特定类型列表的操作。
@@ -2694,7 +2696,7 @@ Scala类型系统要求类方法能处理所有类型，而unzip只处理二元�
 </pre>
 
 <p>
-因为Scala的类型推导器是基于流的。对于｀func(args)｀这样的方法，先看<code>func</code>是否有已经的类型。如果有的话这个类型就被用来做参数预期类型的推断。
+因为Scala的类型推导器是基于流的。对于<code>func(args)</code>这样的方法，先看<code>func</code>是否有已经的类型。如果有的话这个类型就被用来做参数预期类型的推断。
 </p>
 
 <p>
@@ -2712,7 +2714,7 @@ Scala类型系统要求类方法能处理所有类型，而unzip只处理二元�
 </p>
 
 <p>
-想要用占位符的话，只能把参数类型传给<code>msort</code>：
+想要用占位符的话，只能把参数类型传给<code>msort</code>，改为<code>msort[Char]</code>：
 </p>
 
 <pre class="brush: scala">
@@ -3057,13 +3059,10 @@ Scala类型系统要求类方法能处理所有类型，而unzip只处理二元�
 不可变的栈略。
 </p>
 
-<pre class="brush: scala">
-</pre>
-
 <h3 id="toc_3.3.3">字符串</h3>
 
 <p>
-因为<code>Predef</code>包含了从<code>String</code>到<code>RichString</code>的隐式转换，所以可以把任务字符串当作<code>Seq[Char]</code>。
+因为<code>Predef</code>包含了从<code>String</code>到<code>RichString</code>的隐式转换，所以可以把任何字符串当作<code>Seq[Char]</code>。
 </p>
 
 <pre class="brush: scala">
@@ -3158,7 +3157,7 @@ Set的关键在于用对象的<code>==</code>检查唯一性。
 val nums = Set(1, 2, 3)
 </td>
 <td>
-（返回）
+建立集合
 </td>
 </tr>
 <tr>
@@ -3166,7 +3165,7 @@ val nums = Set(1, 2, 3)
 nums + 5
 </td>
 <td>
-（返回）
+添加元素
 </td>
 </tr>
 <tr>
@@ -3174,7 +3173,7 @@ nums + 5
 nums - 3
 </td>
 <td>
-（返回）
+去除元素
 </td>
 </tr>
 <tr>
@@ -3182,7 +3181,7 @@ nums - 3
 nums ++ List(5, 6)
 </td>
 <td>
-（返回）
+添加多个元素
 </td>
 </tr>
 <tr>
@@ -3190,7 +3189,7 @@ nums ++ List(5, 6)
 nums -- List(1, 2)
 </td>
 <td>
-（返回）
+去除多个元素
 </td>
 </tr>
 <tr>
@@ -3198,7 +3197,7 @@ nums -- List(1, 2)
 nums ** Set(1, 3, 5, 7)
 </td>
 <td>
-交集（返回Set(3)）
+交集（返回Set(1,3)）
 </td>
 </tr>
 <tr>
@@ -3206,7 +3205,7 @@ nums ** Set(1, 3, 5, 7)
 nums.size
 </td>
 <td>
-（返回）
+&nbsp;
 </td>
 </tr>
 <tr>
@@ -3214,7 +3213,7 @@ nums.size
 nums.contains(3)
 </td>
 <td>
-（返回）
+&nbsp;
 </td>
 </tr>
 <tr>
@@ -3222,7 +3221,7 @@ nums.contains(3)
 import scala.collection.mutable
 </td>
 <td>
-（返回）
+引入可变的
 </td>
 </tr>
 <tr>
@@ -3238,7 +3237,7 @@ val words = mutable.Set.empty[String]
 words += "the"
 </td>
 <td>
-（返回）
+&nbsp;
 </td>
 </tr>
 <tr>
@@ -3246,7 +3245,7 @@ words += "the"
 words -= "the"
 </td>
 <td>
-（返回）
+&nbsp;
 </td>
 </tr>
 <tr>
@@ -3254,7 +3253,7 @@ words -= "the"
 words ++= List("do", "re", "mi")
 </td>
 <td>
-（返回）
+&nbsp;
 </td>
 </tr>
 <tr>
@@ -3262,7 +3261,7 @@ words ++= List("do", "re", "mi")
 words --= List("do", "re")
 </td>
 <td>
-（返回）
+&nbsp;
 </td>
 </tr>
 <tr>
@@ -3270,7 +3269,7 @@ words --= List("do", "re")
 words.clear
 </td>
 <td>
-（返回）
+清空所有元素
 </td>
 </tr>
 </table>
@@ -3306,15 +3305,15 @@ words.clear
 
 <pre class="brush: scala">
   scala&gt; def countWords(text: String) = {
-       | val counts = mutable.Map.empty[String, Int]
-       | for (rawWord &lt;- text.split("[ ,!.]+")) {
-       | val word = rawWord.toLowerCase
-       | val oldCount =
-       | if (counts.contains(word)) counts(word)
-       | else 0
-       | counts += (word -&gt; (oldCount + 1))
-       | }
-       | counts
+       |   val counts = mutable.Map.empty[String, Int]
+       |   for (rawWord &lt;- text.split("[ ,!.]+")) {
+       |     val word = rawWord.toLowerCase
+       |     val oldCount =
+       |       if (counts.contains(word)) counts(word)
+       |       else 0
+       |     counts += (word -&gt; (oldCount + 1))
+       |   }
+       |   counts
        | }
   countWords: (String)scala.collection.mutable.Map[String,Int]
   
@@ -3334,7 +3333,7 @@ words.clear
 val nums = Map("i"-&gt;1, "ii"-&gt;2)
 </td>
 <td>
-返回
+创建不可变
 </td>
 </tr>
 <tr>
@@ -3342,7 +3341,7 @@ val nums = Map("i"-&gt;1, "ii"-&gt;2)
 nums + ("vi"-&gt;6)
 </td>
 <td>
-返回
+&nbsp;
 </td>
 </tr>
 <tr>
@@ -3350,7 +3349,7 @@ nums + ("vi"-&gt;6)
 nums - "ii"
 </td>
 <td>
-返回
+&nbsp;
 </td>
 </tr>
 <tr>
@@ -3358,7 +3357,7 @@ nums - "ii"
 nums ++ List("iii"-&gt;3, "v"-&gt;5)
 </td>
 <td>
-返回
+&nbsp;
 </td>
 </tr>
 <tr>
@@ -3366,7 +3365,7 @@ nums ++ List("iii"-&gt;3, "v"-&gt;5)
 nums -- List("i", "ii")
 </td>
 <td>
-返回
+&nbsp;
 </td>
 </tr>
 <tr>
@@ -3374,7 +3373,7 @@ nums -- List("i", "ii")
 nums.size
 </td>
 <td>
-返回
+&nbsp;
 </td>
 </tr>
 <tr>
@@ -3382,7 +3381,7 @@ nums.size
 nums.contains("ii")
 </td>
 <td>
-返回
+&nbsp;
 </td>
 </tr>
 <tr>
@@ -3390,7 +3389,7 @@ nums.contains("ii")
 nums("ii")
 </td>
 <td>
-返回
+&nbsp;
 </td>
 </tr>
 <tr>
@@ -3398,7 +3397,7 @@ nums("ii")
 nums.keys
 </td>
 <td>
-返回迭代器
+返回key迭代器
 </td>
 </tr>
 <tr>
@@ -3406,7 +3405,7 @@ nums.keys
 nums.keySet
 </td>
 <td>
-返回
+返回key的集合(Set)
 </td>
 </tr>
 <tr>
@@ -3414,7 +3413,7 @@ nums.keySet
 nums.values
 </td>
 <td>
-返回
+返回value迭代器
 </td>
 </tr>
 <tr>
@@ -3422,7 +3421,7 @@ nums.values
 nums.isEmpty
 </td>
 <td>
-返回
+返回value的集合(Set)
 </td>
 </tr>
 <tr>
@@ -3430,7 +3429,7 @@ nums.isEmpty
 import scala.collection.mutable
 </td>
 <td>
-返回
+引入可变的版本
 </td>
 </tr>
 <tr>
@@ -3438,7 +3437,7 @@ import scala.collection.mutable
 val words = mutalbe.Map.empty[String, Int]
 </td>
 <td>
-返回
+&nbsp;
 </td>
 </tr>
 <tr>
@@ -3446,7 +3445,7 @@ val words = mutalbe.Map.empty[String, Int]
 words += ("one"-&gt;1)
 </td>
 <td>
-返回
+&nbsp;
 </td>
 </tr>
 <tr>
@@ -3454,7 +3453,7 @@ words += ("one"-&gt;1)
 words -= "one"
 </td>
 <td>
-返回
+&nbsp;
 </td>
 </tr>
 <tr>
@@ -3462,7 +3461,7 @@ words -= "one"
 words ++= List("one"-&gt;1, "two"-&gt;2, "three"-&gt;3))
 </td>
 <td>
-返回
+&nbsp;
 </td>
 </tr>
 <tr>
@@ -3470,7 +3469,7 @@ words ++= List("one"-&gt;1, "two"-&gt;2, "three"-&gt;3))
 words --= List("one", "two")
 </td>
 <td>
-返回
+&nbsp;
 </td>
 </tr>
 </table>
@@ -3478,7 +3477,7 @@ words --= List("one", "two")
 <h3 id="toc_3.4.3">默认的Set和Map</h3>
 
 <p>
-不可变的类会对数量优化一些工厂方法返回的默认的实现。
+不可变的Set与Map会根据元素的数量优化一些工厂方法，这样返回的类就不一定是指定的类型。
 </p>
 
 <p>
@@ -3693,7 +3692,7 @@ scala.collection.immutable.HashMap
 </pre>
 
 <p>
-类似的同步的Set：
+类似地，也可以实现同步的Set：
 </p>
 
 <pre class="brush: scala">
@@ -3880,6 +3879,10 @@ scala.collection.immutable.HashMap
   scala&gt; treeSet.toArray
   res55: Array[String] = Array(blue, green, red, yellow)
 </pre>
+
+<p>
+由于实现机制是一个一个元素地复制，所以元素多的话速度会慢。
+</p>
 
 <h3 id="toc_3.6.2">Set与Map的可变与不可变互转</h3>
 
@@ -4215,17 +4218,11 @@ val a, b, c = new Wire
 </p>
 
 
-
-
 <h2 id="toc_4.3">Simulation API</h2>
 
 <p>
-在我们的例子中，把参数列表和返回都为空的过程<code>() =&gt; Unit</code>作为基本的动作。给这样类型的过程起个别名叫<code>Action</code>：
+完成了对电路的模拟以后，再来分析对时间的模拟。模拟时间包括在指定时间执行指定的动作。
 </p>
-
-<pre class="brush: scala">
-type Action = () =&gt; Unit
-</pre>
 
 <p>
 私有变量保存时间，但提供对时间的公开访问：
@@ -4235,6 +4232,14 @@ type Action = () =&gt; Unit
   private var curtime: Int = 0
 
   def currentTime: Int = curtime
+</pre>
+
+<p>
+定义动作：在我们的例子中，把参数列表和返回都为空的过程<code>() =&gt; Unit</code>作为基本的动作。给这样类型的过程起个别名叫<code>Action</code>：
+</p>
+
+<pre class="brush: scala">
+type Action = () =&gt; Unit
 </pre>
 
 <p>
@@ -4250,7 +4255,7 @@ type Action = () =&gt; Unit
 </p>
 
 <p>
-还有一个类来保存末执行工作条目的排程表（agenda），它是按时间排序的：
+还有一个类来保存末执行工作条目的排程表（agenda），注意它是按时间排序的：
 </p>
 
 <pre class="brush: scala">
@@ -4258,7 +4263,7 @@ type Action = () =&gt; Unit
 </pre>
 
 <p>
-提供在一定 时延后加入新的工作条目的方法，加入操作也要排序：
+提供在一定 时延后加入新的工作条目的方法，注意加入操作也要排序：
 </p>
 
 <pre class="brush: scala">
@@ -5257,7 +5262,7 @@ Scala中数组是不可协变的：
 </p>
 
 <p>
-所幸有一个办法：可能通过把<code>append</code>变为金矿以使其泛型化并使用它的类型参数的下界：
+所幸有一个办法：可能通过把<code>append</code>变为多态以使其泛型化并使用它的类型参数的下界：
 </p>
 
 <pre class="brush: scala">
@@ -5273,7 +5278,7 @@ Scala中数组是不可协变的：
 </p>
 
 <p>
-对于<code>append</code>方法来说，它不知道自己处理的是某一个子类。只知道处理的是超类U。所以不会有类型错误。
+对于<code>append</code>方法来说，它不知道自己处理的是某一个子类。只知道处理的是超类<code>U</code>。所以不会有类型错误。
 </p>
 
 <p>
@@ -5289,7 +5294,7 @@ Scala中数组是不可协变的：
 </p>
 
 
-<h3 id="toc_5.5.1">逆变</h3>
+<h2 id="toc_5.6">逆变</h2>
 
 <p>
 前面所有的例子不是协变的就是非协变的。还有一些情况下会有逆变：
@@ -5314,7 +5319,7 @@ Scala中数组是不可协变的：
 </p>
 
 <p>
-Scala函数物质中协变与逆变混在一起用的情况会比较多。对于<code>S =&gt; T</code>类型的函数会定义<code>Function[S, T]</code>，这时对参数<code>S</code>逆变而对结果<code>T</code>协变就是一种有用的策略：
+Scala函数特质中协变与逆变混在一起用的情况会比较多。对于<code>S =&gt; T</code>类型的函数会定义<code>Function[S, T]</code>，这时对参数<code>S</code>逆变而对结果<code>T</code>协变就是一种有用的策略：
 </p>
 
 <pre class="brush: scala">
@@ -5372,7 +5377,7 @@ object Customer extends Application {
 <code>printBookList</code>中的<code>println</code>方法会用到<code>toString</code>，这对所有<code>String</code>及<code>AnyRef</code>子类都有用，这里用到了函数结果类型的协变。
 </p>
 
-<h2 id="toc_5.6">对象私有数据</h2>
+<h2 id="toc_5.7">对象私有数据</h2>
 
 <p>
 之前的<code>Queue</code>类待改进内容：当<code>leading</code>列表为空时如果重复调用<code>head</code>，那么<code>mirror</code>操作会重复地把<code>trailing</code>复制到<code>leading</code>列表。
@@ -5444,7 +5449,7 @@ object Customer extends Application {
 上面分别报错的原因是：协变类型<code>T</code>出现在setter函数<code>leading_=</code>参数类型List[T]的逆变位置上；协变类型<code>T</code>出现在setter函数<code>trailing_=</code>参数类型List[T]的逆变位置上。
 </p>
 
-<h2 id="toc_5.7">上界</h2>
+<h2 id="toc_5.8">上界</h2>
 
 <p>
 之前在“使用列表”章的第一节“列表字面量”中实现一个归并排序的方法。它的第一个参数是比较函数，第二个柯里化的参数是要排序的列表。对这个函数的另一种组织方法大概 就是把列表类型混入到<code>ordered</code>特质中。
@@ -5558,7 +5563,7 @@ Scala中不仅可以指定方法为抽象，还可以声明字段甚至抽象类
 <h2 id="toc_6.1">抽象成员的快速浏览</h2>
 
 <p>
-在特质中分别对类型（T）、方法（transform）、val（initial）、var（current）的抽象声明：
+在特质中分别对类型（T）、方法（transform）、val（initial）、var（current）的抽象声明做出了一个例子：
 </p>
 
 <pre class="brush: scala">
@@ -5608,7 +5613,11 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </pre>
 
 <p>
-如果不知道类中定义的确切内容，但是确定对于每个实例来说值都是不可变的。在这样的情况下可以使用抽象的val声明，格式类似于无参数方法声明：
+如果不知道类中定义的确切内容，但是确定对于每个实例来说值都是不可变的。在这样的情况下可以使用抽象的val声明。
+</p>
+
+<p>
+可以注意到，抽象val的格式非常类似于下面的抽象无参数方法声明：
 </p>
 
 <pre class="brush: scala">
@@ -5620,7 +5629,7 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </p>
 
 <p>
-换名话说抽象的val限制了合法实现的方式：任何实现都必须是<code>val</code>类型的定义不可以是<code>var</code>。另一方面，抽象方法声明可以被实现为具体的方法定义或具体的<code>val</code>定义。
+换句话说抽象的val限制了合法实现的方式：任何实现都必须是<code>val</code>类型的定义不可以是<code>var</code>。另一方面，抽象方法声明可以被实现为具体的方法定义或具体的<code>val</code>定义。
 </p>
 
 <p>
@@ -5808,7 +5817,7 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </pre>
 
 <p>
-<code>$iw</code>是合成对象，解释器把用户输出语句放在这个对象中。
+因为实例还没有构建完成，所以会报错。<code>$iw</code>是合成对象，解释器把用户输出语句放在这个对象中。
 </p>
 
 <pre class="brush: scala">
@@ -6073,7 +6082,19 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </pre>
 
 <p>
-与Java的<code>Outer.Inner</code>不同，Scala中表达为<code>Outer#Inner</code>。<code>.</code>语法留给对象使用：
+与Java的<code>Outer.Inner</code>不同，Scala中表达为<code>Outer#Inner</code>。
+</p>
+
+<p>
+<code>注意：</code>
+</p>
+
+<p>
+总之，要注意。路径依赖是在对象中的类，而不是Java那样类中的类。
+</p>
+
+<p>
+<code>.</code>语法留给对象使用：
 </p>
 
 <pre class="brush: scala">
@@ -6130,6 +6151,14 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </pre>
 
 <p>
+<code>注意：</code>
+</p>
+
+<p>
+枚举是和路径依赖一样，是对象中的类，不是类中的类。
+</p>
+
+<p>
 还可以简化：
 </p>
 
@@ -6173,6 +6202,10 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
     val West = Value("West")
   }
 </pre>
+
+<p>
+<code>Direction</code>与<code>Color</code>的<code>Value</code>也是不同的类。
+</p>
 
 <p>
 遍历：
@@ -6219,7 +6252,7 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </pre>
 
 <p>
-<code>amount</code>和<code>designation</code>分别代表金额的符号。其他方法还有加法和乘法操作。这个版本的问题是，在语法上两个不同的子类可以相加：
+<code>amount</code>和<code>designation</code>分别代表金额和表示金额的符号。其他方法还有加法和乘法操作。这个版本的问题是，在语法上两个不同的子类可以相加：
 </p>
 
 <pre class="brush: scala">
@@ -6268,7 +6301,7 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </pre>
 
 <p>
-但这通不过编译，因为Scala不能用抽象类型创建实例，也不能用抽象类型作为其他类型的父类：
+但这通不过编译，因为Scala不能用抽象类型<code>new</code>出实例来，即使是作为其他类型的父类：
 </p>
 
 <pre class="brush: scala">
@@ -6289,7 +6322,7 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </pre>
 
 <p>
-但这样有别的问题，因为这样不得不把工厂方法放到<code>AbstractCurrency</code>类中，所有的实例都有了创建货币的能力：
+但这样有别的问题，因为这样不得不把工厂方法放到<code>AbstractCurrency</code>类中，所有的实例都可以调用<code>make</code>方法，也就都有了创建货币的能力：
 </p>
 
 <pre class="brush: scala">
@@ -6784,7 +6817,7 @@ Scala中有三个地方会用到隐式转换：转换为需要的类型、指定
 <h3 id="toc_7.4.2">模拟新的语法</h3>
 
 <p>
-隐式转换还可以用来模拟新的语法。其实<code>Map</code>对象里的<code>-&gt;</code>都不是内建语法：
+隐式转换还可以用来模拟新的语法。以我们熟悉的<code>Map</code>构建为例：
 </p>
 
 <pre class="brush: scala">
@@ -6792,11 +6825,11 @@ Scala中有三个地方会用到隐式转换：转换为需要的类型、指定
 </pre>
 
 <p>
-实际上是定义在<code>scala.Predef</code>中的类<code>ArrowAssoc</code>的方法。还定义了从<code>Any</code>到<code>ArrowAssoc</code>的隐式转换。
+其实<code>Map</code>对象里的<code>-&gt;</code>根本就不是内建语法。实际上是定义在<code>scala.Predef</code>中的类<code>ArrowAssoc</code>的方法。还定义了从<code>Any</code>到<code>ArrowAssoc</code>的隐式转换。
 </p>
 
 <p>
-对于<code>1 -&gt; "one"</code>其实是从<code>1</code>到<code>ArrowAssoc</code>的转换。相差定义如下：
+拿上面的<code>1 -&gt; "one"</code>来说。这其实是从<code>1</code>到<code>ArrowAssoc</code>的转换。相差定义如下：
 </p>
 
 <pre class="brush: scala">
@@ -6852,7 +6885,7 @@ Scala中有三个地方会用到隐式转换：转换为需要的类型、指定
 </pre>
 
 <p>
-为了隐式提供参数，要定义期望类型的变量：
+为了隐式提供参数，要定义<code>implicit</code>修饰期望类型的变量：
 </p>
 
 <pre class="brush: scala">
@@ -7018,7 +7051,7 @@ Scala中有三个地方会用到隐式转换：转换为需要的类型、指定
 
 <dl>
 <dt>隐式参数样式规则 </dt>
-<dd>就是在要用到隐式转换的地方最好是从自定义的类型开始转面不是从<code>String</code>这样的很常见的类型开始转。如果<code>maxListImpParm</code>直接写成下面这样的方法签名：</dd>
+<dd>就是在要用到隐式转换的地方最好是从自定义的类型开始转而不是从<code>String</code>这样的很常见的类型开始转。如果<code>maxListImpParm</code>直接写成下面这样的方法签名：</dd>
 </dl>
 
 <pre class="brush: scala">

@@ -1245,6 +1245,22 @@ object ObjNam{
 }
 }}}
 
+而且Scala中的对象也可以继承类：
+
+{{{class="brush: scala"
+class Currency {}
+
+object USD extends Currency{ }
+}}}
+
+== 与Java的区别 ==
+
+总结一下，Scala中的类如果对应到Java的类的话，Scala的对象和Java中的对象不是同一回事情，是另一个新的概念。
+
+为了表达统一，我们把对应Java里对象的概念叫作“类的实例”。
+
+这样“类”，“对象”,“类的实例”三个概念都有了明确的定义。
+
 = 伴生对象 =
 
 如果一个单例对象的名字和类一样，并且必须在同一个文件里。那它就是这个类的伴生对象（Companion Object），类是它的伴生类（Companion Class）。它们可以相互访问私有成员。

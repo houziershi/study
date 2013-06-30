@@ -94,6 +94,9 @@
 <li><a href="#toc_5.13">完整的Rational代码</a>
 </ul>
 <li><a href="#toc_6">单例对象</a>
+<ul>
+<li><a href="#toc_6.1">与Java的区别</a>
+</ul>
 <li><a href="#toc_7">伴生对象</a>
 <li><a href="#toc_8">内建控制结构</a>
 <ul>
@@ -1740,6 +1743,30 @@ object ObjNam{
 	// ...
 }
 </pre>
+
+<p>
+而且Scala中的对象也可以继承类：
+</p>
+
+<pre class="brush: scala">
+class Currency {}
+
+object USD extends Currency{ }
+</pre>
+
+<h2 id="toc_6.1">与Java的区别</h2>
+
+<p>
+总结一下，Scala中的类如果对应到Java的类的话，Scala的对象和Java中的对象不是同一回事情，是另一个新的概念。
+</p>
+
+<p>
+为了表达统一，我们把对应Java里对象的概念叫作“类的实例”。
+</p>
+
+<p>
+这样“类”，“对象”,“类的实例”三个概念都有了明确的定义。
+</p>
 
 <h1 id="toc_7">伴生对象</h1>
 

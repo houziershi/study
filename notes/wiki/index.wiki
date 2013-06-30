@@ -9,7 +9,7 @@
 
 === Scala ===
 
-[[scala]]
+Scala基础：[[scala]]
 
 === Java ===
 
