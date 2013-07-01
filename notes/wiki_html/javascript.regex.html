@@ -1,0 +1,1126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+
+
+<title>Javascript正则</title>
+</head>
+<body>
+	<div class="note-main"> 
+
+
+<h1>Javascript正则</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">RegExp 对象</a>
+<ul>
+<li><a href="#toc_1.1">直接量语法</a>
+<li><a href="#toc_1.2">创建<code>RegExp</code>对象的语法</a>
+<ul>
+<li><a href="#toc_1.2.1">参数</a>
+<li><a href="#toc_1.2.2">返回值</a>
+<li><a href="#toc_1.2.3">抛出</a>
+</ul>
+<li><a href="#toc_1.3">RegExp 对象属性</a>
+<li><a href="#toc_1.4">RegExp 对象方法</a>
+<ul>
+<li><a href="#toc_1.4.1">test检查指定的字符串是否存在</a>
+<li><a href="#toc_1.4.2">exec 返回查询值</a>
+</ul>
+<li><a href="#toc_1.5">支持正则表达式的String对象的方法</a>
+<ul>
+<li><a href="#toc_1.5.1">search 返回搜索位置</a>
+<li><a href="#toc_1.5.2">match 得到查询数组</a>
+<li><a href="#toc_1.5.3">replace 正则替换</a>
+<li><a href="#toc_1.5.4">split 利用正则分割数组</a>
+</ul>
+</ul>
+<li><a href="#toc_2">修饰符</a>
+<li><a href="#toc_3">方括号</a>
+<ul>
+<li><a href="#toc_3.1">例子</a>
+</ul>
+<li><a href="#toc_4">元字符</a>
+<li><a href="#toc_5">量词</a>
+<li><a href="#toc_6">简单分组</a>
+<li><a href="#toc_7">非捕获性分组</a>
+<li><a href="#toc_8">复杂分组</a>
+<li><a href="#toc_9">反向引用</a>
+<li><a href="#toc_10">候选</a>
+<li><a href="#toc_11">前瞻</a>
+<li><a href="#toc_12">边界</a>
+<li><a href="#toc_13">多行模式</a>
+</ul>
+</div>
+
+
+<h1 id="toc_1">RegExp 对象</h1>
+
+<p>
+<code>RegExp</code>对象表示正则表达式，它是对字符串执行模式匹配的强大工具。
+</p>
+
+<h2 id="toc_1.1">直接量语法</h2>
+
+<pre class="brush: javascript">
+/pattern/attributes
+</pre>
+
+<h2 id="toc_1.2">创建<code>RegExp</code>对象的语法</h2>
+
+<pre class="brush: javascript">
+new RegExp(pattern, attributes);
+</pre>
+
+<h3 id="toc_1.2.1">参数</h3>
+
+<p>
+参数<code>pattern</code>是一个字符串，指定了正则表达式的模式或其他正则表达式。
+</p>
+
+<p>
+参数<code>attributes</code>是一个可选的字符串，包含属性 <code>g</code>、<code>i</code>和<code>m</code>，分别用于指定“全局匹配”、“区分大小写”和“多行匹配”。ECMAScript 标准化之前，不支持<code>m</code>属性。如果<code>pattern</code>是正则表达式，而不是字符串，则必须省略该参数。
+</p>
+
+<h3 id="toc_1.2.2">返回值</h3>
+
+<p>
+一个新的<code>RegExp</code>对象，具有指定的模式和标志。如果参数<code>pattern</code>是正则表达式而不是字符串，那么<code>RegExp()</code>构造函数将用与指定的<code>RegExp</code>相同的模式和标志创建一个新的<code>RegExp</code>对象。
+</p>
+
+<p>
+如果不用<code>new</code>运算符，而将<code>RegExp()</code>作为函数调用，那么它的行为与用<code>new</code>运算符调用时一样，只是当<code>pattern</code>是正则表达式时，它只返回 <code>pattern</code>，而不再创建一个新的<code>RegExp</code>对象。
+</p>
+
+<h3 id="toc_1.2.3">抛出</h3>
+
+<dl>
+<dt>SyntaxError </dt>
+<dd>如果<code>pattern</code>不是合法的正则表达式，或<code>attributes</code>含有<code>g</code>、<code>i</code>和<code>m</code>之外的字符，抛出该异常。</dd>
+</dl>
+
+<dl>
+<dt>TypeError </dt>
+<dd>如果<code>pattern</code>是<code>RegExp</code>对象，但没有省略<code>attributes</code>参数，抛出该异常。</dd>
+</dl>
+
+<h2 id="toc_1.3">RegExp 对象属性</h2>
+
+<p>
+FF: Firefox, IE: Internet Explorer
+</p>
+
+<table>
+<tr>
+<td>
+属性
+</td>
+<td>
+描述
+</td>
+<td>
+FF
+</td>
+<td>
+IE
+</td>
+</tr>
+<tr>
+<td>
+global
+</td>
+<td>
+RegExp 对象是否具有标志 g。
+</td>
+<td>
+1
+</td>
+<td>
+4
+</td>
+</tr>
+<tr>
+<td>
+ignoreCase
+</td>
+<td>
+RegExp 对象是否具有标志 i。
+</td>
+<td>
+1
+</td>
+<td>
+4
+</td>
+</tr>
+<tr>
+<td>
+lastIndex
+</td>
+<td>
+一个整数，标示开始下一次匹配的字符位置
+</td>
+<td>
+1
+</td>
+<td>
+4
+</td>
+</tr>
+<tr>
+<td>
+multiline
+</td>
+<td>
+RegExp 对象是否具有标志 m。
+</td>
+<td>
+1
+</td>
+<td>
+4
+</td>
+</tr>
+<tr>
+<td>
+source
+</td>
+<td>
+正则表达式的源文本。
+</td>
+<td>
+1
+</td>
+<td>
+4
+</td>
+</tr>
+</table>
+
+<h2 id="toc_1.4">RegExp 对象方法</h2>
+
+<p>
+FF: Firefox, IE: Internet Explorer
+</p>
+
+<table>
+<tr>
+<td>
+方法
+</td>
+<td>
+描述
+</td>
+<td>
+FF
+</td>
+<td>
+IE
+</td>
+</tr>
+<tr>
+<td>
+compile
+</td>
+<td>
+编译正则表达式。
+</td>
+<td>
+1
+</td>
+<td>
+4
+</td>
+</tr>
+<tr>
+<td>
+exec
+</td>
+<td>
+检索字符串中指定的值。返回找到的值，并确定其位置。
+</td>
+<td>
+1
+</td>
+<td>
+4
+</td>
+</tr>
+<tr>
+<td>
+test
+</td>
+<td>
+检索字符串中指定的值。返回 true 或 false。
+</td>
+<td>
+1
+</td>
+<td>
+4
+</td>
+</tr>
+</table>
+
+<h3 id="toc_1.4.1">test检查指定的字符串是否存在</h3>
+
+<pre class="brush: javascript">
+   var data = "123123";
+   var reCat = /123/gi;
+   alert(reCat.test(data));  //true
+</pre>
+
+<h3 id="toc_1.4.2">exec 返回查询值</h3>
+
+<pre class="brush: javascript">
+   var data = "123123,213,12312,312,3,Cat,cat,dsfsdfs,";
+   var reCat = /cat/i;
+   alert(reCat.exec(data));  //Cat
+</pre>
+
+
+<h2 id="toc_1.5">支持正则表达式的String对象的方法</h2>
+
+<p>
+FF: Firefox, IE: Internet Explorer
+</p>
+
+<table>
+<tr>
+<td>
+方法
+</td>
+<td>
+描述
+</td>
+<td>
+FF
+</td>
+<td>
+IE
+</td>
+</tr>
+<tr>
+<td>
+search
+</td>
+<td>
+检索与正则表达式相匹配的值。
+</td>
+<td>
+1
+</td>
+<td>
+4
+</td>
+</tr>
+<tr>
+<td>
+match
+</td>
+<td>
+找到一个或多个正则表达式的匹配。
+</td>
+<td>
+1
+</td>
+<td>
+4
+</td>
+</tr>
+<tr>
+<td>
+replace
+</td>
+<td>
+替换与正则表达式匹配的子串。
+</td>
+<td>
+1
+</td>
+<td>
+4
+</td>
+</tr>
+<tr>
+<td>
+split
+</td>
+<td>
+把字符串分割为字符串数组。
+</td>
+<td>
+1
+</td>
+<td>
+4
+</td>
+</tr>
+</table>
+
+
+<h3 id="toc_1.5.1">search 返回搜索位置</h3>
+
+<pre class="brush: javascript">
+   var data = "123123,213,12312,312,3,Cat,cat,dsfsdfs,";
+   var reCat = /cat/gi;
+   alert(data.search(reCat));  //23
+</pre>
+
+
+<h3 id="toc_1.5.2">match 得到查询数组</h3>
+
+<pre class="brush: javascript">
+   var data = "123123,213,12312,312,3,Cat,cat,dsfsdfs,";
+   var reCat = /cat/gi;
+   var arrMactches = data.match(reCat)
+
+   for (var i=0;i &lt; arrMactches.length ; i++)
+   {
+        alert(arrMactches[i]);   //Cat  cat
+   }
+</pre>
+
+<h3 id="toc_1.5.3">replace 正则替换</h3>
+
+<pre class="brush: javascript">
+   var data = "123123,213,12312,312,3,Cat,cat,dsfsdfs,";
+   var reCat = /cat/gi;
+   alert(data.replace(reCat,"libinqq"));
+</pre>
+
+<h3 id="toc_1.5.4">split 利用正则分割数组</h3>
+
+<pre class="brush: javascript">
+   var data = "123123,213,12312,312,3,Cat,cat,dsfsdfs,";
+   var reCat = /\,/;
+   var arrdata = data.split(reCat);
+
+   for (var i = 0; i &lt; arrdata.length; i++)
+   {
+        alert(arrdata[i]);
+   }
+</pre>
+
+<h1 id="toc_2">修饰符</h1>
+
+<table>
+<tr>
+<td>
+修饰符
+</td>
+<td>
+描述
+</td>
+</tr>
+<tr>
+<td>
+i
+</td>
+<td>
+执行对大小写不敏感的匹配。
+</td>
+</tr>
+<tr>
+<td>
+g
+</td>
+<td>
+执行全局匹配（查找所有匹配而非在找到第一个匹配后停止）。
+</td>
+</tr>
+<tr>
+<td>
+m
+</td>
+<td>
+执行多行匹配。
+</td>
+</tr>
+</table>
+
+<h1 id="toc_3">方括号</h1>
+
+<p>
+方括号用于查找某个范围内的字符：
+</p>
+
+<table>
+<tr>
+<td>
+表达式
+</td>
+<td>
+描述
+</td>
+</tr>
+<tr>
+<td>
+[abc]
+</td>
+<td>
+查找方括号之间的任何字符。
+</td>
+</tr>
+<tr>
+<td>
+[^abc]
+</td>
+<td>
+查找任何不在方括号之间的字符。
+</td>
+</tr>
+<tr>
+<td>
+[0-9]
+</td>
+<td>
+查找任何从 0 至 9 的数字。
+</td>
+</tr>
+<tr>
+<td>
+[a-z]
+</td>
+<td>
+查找任何从小写 a 到小写 z 的字符。
+</td>
+</tr>
+<tr>
+<td>
+[A-Z]
+</td>
+<td>
+查找任何从大写 A 到大写 Z 的字符。
+</td>
+</tr>
+<tr>
+<td>
+[A-z]
+</td>
+<td>
+查找任何从大写 A 到小写 z 的字符。
+</td>
+</tr>
+<tr>
+<td>
+[adgk]
+</td>
+<td>
+查找给定集合内的任何字符。
+</td>
+</tr>
+<tr>
+<td>
+[^adgk]
+</td>
+<td>
+查找给定集合外的任何字符。
+</td>
+</tr>
+</table>
+
+<p>
+(red|blue|green) 查找任何指定的选项。
+</p>
+
+<h2 id="toc_3.1">例子</h2>
+
+<p>
+匹配多个：
+</p>
+
+<pre class="brush: javascript">
+var data = "a,b,c,w,1,2,3,5";  //\u0062cf
+var reCat = /[a-q1-4\n]/gi;
+var arrdata = data.match(reCat);
+
+for (var i = 0; i &lt; arrdata.length; i++) {
+  alert(arrdata[i]);  // a b c 1 2 3
+}
+</pre>
+
+<p>
+匹配指定组合：
+</p>
+
+<pre class="brush: javascript">
+var data = "1libinqq,2libinqq,3libinqq,4libinqq";
+var reCat = /[123]libinqq/gi;
+var arrdata = data.match(reCat);
+
+for (var i = 0; i &lt; arrdata.length; i++) {
+  alert(arrdata[i]);  // 1libinqq 2libinqq  3libinqq
+}
+
+
+var data = "libinqq1,libinqq2,libinqq3,libinqq4,libinqq5";  //\u0062cf
+var reCat = /libinqq[2-3]/gi;
+var arrdata = data.match(reCat);
+
+for (var i = 0; i &lt; arrdata.length; i++) {
+  alert(arrdata[i]);   // libinqq2  libinqq3
+}
+</pre>
+
+<p>
+排除指定组合：
+</p>
+
+<pre class="brush: javascript">
+var data = "alibinqq,1libinqq,2libinqq,3libinqq,4libinqq";  //\u0062cf
+var reCat = /[^a123]libinqq/gi;
+var arrdata = data.match(reCat);
+
+for (var i = 0; i &lt; arrdata.length; i++) {
+  alert(arrdata[i]);  //4libinqq
+}
+</pre>
+
+
+<pre class="brush: javascript">
+</pre>
+
+
+<h1 id="toc_4">元字符</h1>
+
+<p>
+元字符（Metacharacter）是拥有特殊含义的字符：
+</p>
+
+<p>
+元字符 	描述
+<table>
+<tr>
+<td>
+.
+</td>
+<td>
+查找单个字符，除了换行和行结束符。
+</td>
+</tr>
+<tr>
+<td>
+\w
+</td>
+<td>
+查找单词字符。
+</td>
+</tr>
+<tr>
+<td>
+\W
+</td>
+<td>
+查找非单词字符。
+</td>
+</tr>
+<tr>
+<td>
+\d
+</td>
+<td>
+查找数字。
+</td>
+</tr>
+<tr>
+<td>
+\D
+</td>
+<td>
+查找非数字字符。
+</td>
+</tr>
+<tr>
+<td>
+\s
+</td>
+<td>
+查找空白字符。
+</td>
+</tr>
+<tr>
+<td>
+\S
+</td>
+<td>
+查找非空白字符。
+</td>
+</tr>
+<tr>
+<td>
+\b
+</td>
+<td>
+匹配单词边界。
+</td>
+</tr>
+<tr>
+<td>
+\B
+</td>
+<td>
+匹配非单词边界。
+</td>
+</tr>
+<tr>
+<td>
+\0
+</td>
+<td>
+查找 NUL 字符。
+</td>
+</tr>
+<tr>
+<td>
+\n
+</td>
+<td>
+查找换行符。
+</td>
+</tr>
+<tr>
+<td>
+\f
+</td>
+<td>
+查找换页符。
+</td>
+</tr>
+<tr>
+<td>
+\r
+</td>
+<td>
+查找回车符。
+</td>
+</tr>
+<tr>
+<td>
+\t
+</td>
+<td>
+查找制表符。
+</td>
+</tr>
+<tr>
+<td>
+\v
+</td>
+<td>
+查找垂直制表符。
+</td>
+</tr>
+<tr>
+<td>
+\xxx
+</td>
+<td>
+查找以八进制数 xxx 规定的字符。
+</td>
+</tr>
+<tr>
+<td>
+\xdd
+</td>
+<td>
+查找以十六进制数 dd 规定的字符。
+</td>
+</tr>
+<tr>
+<td>
+\uxxxx
+</td>
+<td>
+查找以十六进制数 xxxx 规定的 Unicode 字符。
+</td>
+</tr>
+</table>
+</p>
+
+<h1 id="toc_5">量词</h1>
+
+<p>
+量词 	描述
+<table>
+<tr>
+<td>
+n+
+</td>
+<td>
+匹配任何包含至少一个 n 的字符串。
+</td>
+</tr>
+<tr>
+<td>
+n*
+</td>
+<td>
+匹配任何包含零个或多个 n 的字符串。
+</td>
+</tr>
+<tr>
+<td>
+n?
+</td>
+<td>
+匹配任何包含零个或一个 n 的字符串。
+</td>
+</tr>
+<tr>
+<td>
+n{X}
+</td>
+<td>
+匹配包含 X 个 n 的序列的字符串。
+</td>
+</tr>
+<tr>
+<td>
+n{X,Y}
+</td>
+<td>
+匹配包含 X 或 Y 个 n 的序列的字符串。
+</td>
+</tr>
+<tr>
+<td>
+n{X,}
+</td>
+<td>
+匹配包含至少 X 个 n 的序列的字符串。
+</td>
+</tr>
+<tr>
+<td>
+n$
+</td>
+<td>
+匹配任何结尾为 n 的字符串。
+</td>
+</tr>
+<tr>
+<td>
+^n
+</td>
+<td>
+匹配任何开头为 n 的字符串。
+</td>
+</tr>
+<tr>
+<td>
+?=n
+</td>
+<td>
+匹配任何其后紧接指定字符串 n 的字符串。
+</td>
+</tr>
+<tr>
+<td>
+?!n
+</td>
+<td>
+匹配任何其后没有紧接指定字符串 n 的字符串。
+</td>
+</tr>
+</table>
+</p>
+
+
+
+
+<h1 id="toc_6">简单分组</h1>
+
+<p>
+举例 我们要查找字符串<code>MouseMouse</code>：
+</p>
+
+<pre class="brush: javascript">
+  var reCat = /MouseMouse/gi;
+</pre>
+
+<p>
+尽管这是可以的，但是有点浪费。如果不知道<code>Mouse</code>在字符串中到底出现几次时该怎么办，如果重复多次呢？
+</p>
+
+<pre class="brush: javascript>
+  var reCat = /(mouse){2}/gi;
+</pre>
+
+<p>
+上面括号的意思列<code>Mouse</code>将在一行连续出现2次。
+</p>
+
+<pre class="brush: javascript>
+    var data = "Ah-mousemouse";  
+    var reCat = /(mouse){2}/gi;   
+    var arrdata = data.match(reCat);
+
+    for (var i = 0; i &lt; arrdata.length; i++)
+    {
+        alert(arrdata[i]);
+    }
+</pre>
+
+<h1 id="toc_7">非捕获性分组</h1>
+
+<p>
+如果要创建一个非捕获性分组，只要在左括号的后面加上一个问号和一个紧跟的冒号：
+</p>
+
+<pre class="brush: javascript">
+    var sToMatch = "#123456789";
+    var reNumbers = /#(?:\d+)/;
+    reNumbers.test(sToMatch);
+    alert(RegExp.$1);
+</pre>
+
+<p>
+这个例子的最后一行代码输出一个空字符串，因为该组是非捕获性的，
+</p>
+
+<pre class="brush: javascript">
+    var sToMatch = "#123456789";
+    var reNumbers = /#(?:\d+)/;
+    alert(sToMatch.replace(reNumbers,"abcd$1"));
+</pre>
+
+<p>
+正因如此，<code>replace()</code>方法就不能通过<code>RegExp.$x</code>变量来使用任何反向引用。
+</p>
+
+<p>
+这段代码输出的<code>abcd\(1</code>而不是<code>abcd123456789</code>, 因为<code>\)1</code>在这里并不被看成是一个反向引用。
+</p>
+
+
+<h1 id="toc_8">复杂分组</h1>
+
+<p>
+<code>?</code>零次 或 一次；<code>*</code>零次 或 多次；<code>+</code>最少一次 或 多次。
+</p>
+
+<pre class="brush: javascript">
+    var data = "bb ba da bad dad aa ";  
+    var reCat = /([bd]ad?)/gi;   // 匹配出 ba da bad  dad
+    var arrdata = data.match(reCat);
+
+    for (var i = 0; i &lt; arrdata.length; i++)
+    {
+        alert(arrdata[i]);
+    }
+</pre>
+
+<p>
+同时，也不介意将分组放在分组中间：
+</p>
+
+<pre class="brush: javascript">
+  var re = /(mom( and dad)?)/;    匹配出 mom  或  mon and daa
+</pre>
+
+
+<h1 id="toc_9">反向引用</h1>
+
+<pre class="brush: javascript">
+    var sToMatch = "#123456789";
+    var reNumbers = /#(\d+)/;
+    reNumbers.test(sToMatch);
+    alert(RegExp.$1);
+</pre>
+
+<p>
+这个例子尝试匹配后面跟着几个或多个数字的镑符合，并对数字进行分组以存储他们。
+</p>
+
+<p>
+在调用<code>test</code>方法后，所有的反向引用都保存到了<code>RegExp</code>构造函数中从<code>RegExp.$1</code>(它保存了第一个反向引用）开始，
+</p>
+
+<p>
+如果还有第二个反向引用，就是<code>RegExp.$2</code>，
+</p>
+
+<p>
+如果还有第三个反向引用存在，就是<code>RegExp.$3</code>.依此类推。
+</p>
+
+<p>
+因为该组匹配了 “123456780”，所以<code>RegExp.$1</code>中就存储了这个字符串。
+</p>
+
+<pre class="brush: javascript">
+    var sToChange = "1234 5678";
+    var reMatch = /(\d{4}) (\d{4})/;
+    var sNew = sToChange.replace(reMatch,"$2 $1");
+    alert(sNew);
+</pre>
+
+<p>
+在这个例子中，正则表达式有两个分组，每一个分组有四个数字。
+</p>
+
+<p>
+在<code>replace()</code>方法的第二个参数中，<code>\(2</code>等同于 “5678” ，而<code>\)1</code>等同于 “1234”，对应于它们在表达式中的出现顺序。
+</p>
+
+<h1 id="toc_10">候选</h1>
+
+<pre class="brush: javascript">
+    var sToMatch1 = "red";
+    var sToMatch2 = "black";
+    var reRed = /red/;
+    var reBlack = /black/;
+
+    alert(reRed.test(sToMatch1) || reBlack.test(sToMatch1));
+    alert(reRed.test(sToMatch2) || reBlack.test(sToMatch2));
+</pre>
+
+<p>
+这虽然能完成任务，但是十分沉长，还有另一种方式就是正则表达式的候选操作符。
+</p>
+
+<pre class="brush: javascript">
+    var sToMatch1 = "red";
+    var sToMatch2 = "black";
+    var reRedOrBlack = /(red|black)/;
+    alert(reRedOrBlack.test(sToMatch1));
+    alert(reRedOrBlack.test(sToMatch2));
+</pre>
+
+
+<h1 id="toc_11">前瞻</h1>
+
+<p>
+前瞻 就和它名字一样，它告诉正则表达式运算器向前看一些字符而不是移动位置：
+</p>
+
+<pre class="brush: javascript">
+      var sToMatch1 = "bedroom";
+      var sToMatch2 = "bedding";
+      var reBed = /bed(?=room)/; 
+      alert(reBed.test(sToMatch1));  //true
+      alert(reBed.test(sToMatch2));  //false
+</pre>
+
+<p>
+负向前瞻
+</p>
+
+<pre class="brush: javascript">
+      var sToMatch1 = "bedroom";
+      var sToMatch2 = "bedding";
+      var reBed = /bed(?!room)/; 
+      alert(reBed.test(sToMatch1)); //false
+      alert(reBed.test(sToMatch2)); //true
+</pre>
+
+
+<h1 id="toc_12">边界</h1>
+
+<pre class="brush: javascript">
+    /*
+        ^     行开头
+        $     行结尾
+        \b    单词的边界
+        \B    非单词的边界
+    */
+
+      var sToMatch = "Important word is the last one.";
+      var reLastWord = /(\w+)\.$/; 
+      reLastWord.test(sToMatch);
+      alert(RegExp.$1);  //one
+</pre>
+
+<p>
+假如想查找一个单词，但要它只出现在行尾，则可以使用美元符号来表示它：
+</p>
+
+<pre class="brush: javascript">
+      var sToMatch = "Important word is the last one.";
+      var reLastWord = /^(\w+)/; 
+      reLastWord.test(sToMatch);
+      alert(RegExp.$1);  //Important
+</pre>
+
+<p>
+在这个例子中，正则表达式查找行起始位置后的一个或多个单词字符。如果遇到非单词字符    匹配停止，返回<code>Important</code>。 这个例子也可以用单词边界实现：
+</p>
+
+<pre class="brush: javascript">
+      var sToMatch = "Important word is the last one.";
+      var reLastWord = /^(.+?)\b/; 
+      reLastWord.test(sToMatch);
+      alert(RegExp.$1);  //Important
+</pre>
+
+<p>
+这里，正则表达式用惰性量词来制定在单词边界之前可以出现任何字符，且可以出现一次或多次（如果使用贪婪性量词，表达式就匹配整个字符串）。
+</p>
+
+<pre class="brush: javascript">
+    var data = " First second thind fourth fifth sixth ";  
+    var reCat = /\b(\S+?)\b/g;   
+    var arrdata = data.match(reCat);
+
+    for (var i = 0; i &lt; arrdata.length; i++)
+    {
+        alert(arrdata[i]);
+    }   
+</pre>
+
+<p>
+使用单词边界可以方便地从字符串中抽取单词。
+</p>
+
+<h1 id="toc_13">多行模式</h1>
+
+<p>
+要制定多行模式，只要在正则表达式想要匹配的行末的一个单词
+</p>
+
+<pre class="brush: javascript">
+    var data = " First second\n thind fourth\n fifth sixth";  
+    var reCat = /(\w+)$/g;   
+    var arrdata = data.match(reCat);
+
+    for (var i = 0; i &lt; arrdata.length; i++)
+    {
+        alert(arrdata[i]);
+    }  
+</pre>
+
+<p>
+上面只返回一个单词<code>sixth</code>，因为换行符阻挡了匹配，只能匹配行末的一个单词， 当然也可以使用<code>split()</code>方法将字符串分割成数组，但就得对每一行进行单独匹配。
+</p>
+
+<p>
+以前不好好看书经常半吊子，看一半就仍了，导致用了好多<code>split</code>， 其实很简单如下面例子 只需要<code>m</code>参数进行多行匹配：
+</p>
+
+<pre class="brush: javascript">
+    var data = " First second\n thind fourth\n fifth sixth";  
+    var reCat = /(\w+)$/gm;   
+    var arrdata = data.match(reCat);
+
+    for (var i = 0; i &lt; arrdata.length; i++)
+    {
+        alert(arrdata[i]);
+    }  
+</pre>
+ </div>
+</body>
+</html>

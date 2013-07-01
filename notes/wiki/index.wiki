@@ -13,25 +13,27 @@ Scala基础：[[scala]]
 
 === Java ===
 
-虚拟机[[java.jvm]]
+虚拟机：[[java.jvm]]
 
-代码示例[[java.example]]
+代码示例：[[java.example]]
 
 === JavaScript ===
 
-[[Javascript]]
+JavaScript基础：[[Javascript]]
 
-[[ExtJS]]
+JavaScript正则：[[javascript.regex]]
+
+ExtJs：[[ExtJS]]
 
 = 常用工具 =
 
-[[git]]
+Git：[[git]]
 
-[[maven]]
+Maven：[[maven]]
 
-[[vim]]
+Vim：[[vim]]
 
-[[vimwiki]]
+VimWiki：[[vimwiki]]
 
 
 = 服务器 =
