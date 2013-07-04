@@ -413,9 +413,11 @@ Content-Type: [type]/[subtype]; parameter
 </dl>
 
 <p>
-<code>subtype</code>用于指定<code>type</code>的详细形式。<code>content-type/subtype</code>配对的集合和与此相关的参数，将随着时间而增长。为了确保这些值在一个有序而且公开的状态下开发，MIME使用Internet Assigned Numbers Authority (IANA)作为中心的注册机制来管理这些值。常用的<code>subtype</code>值如下所示：
+<code>subtype</code>用于指定<code>type</code>的详细形式。<code>content-type/subtype</code>配对的集合和与此相关的
+参数，将随着时间而增长。为了确保这些值在一个有序而且公开的状态下开发，MIME使用
+Internet Assigned Numbers Authority (IANA)作为中心的注册机制来管理这些值。常用的
+<code>subtype</code>值如下所示：
 </p>
-
 
 <ul>
 <li>
@@ -463,26 +465,37 @@ multipart/form-data（同上，但主要用于表单提交时伴随文件上传�
 </ul>
 
 <p>
-此外，尚未被接受为正式数据类型的subtype，可以使用x-开始的独立名称（例如<code>application/x-gzip</code>）。vnd-开始的固有名称也可以使用（例：<code>application/vnd.ms-excel</code>）。
+此外，尚未被接受为正式数据类型的subtype，可以使用x-开始的独立名称
+（例如：<code>application/x-gzip</code>）。
+vnd-开始的固有名称也可以使用
+（例：<code>application/vnd.ms-excel</code>）。
 </p>
 
 <p>
-<code>parameter</code>可以用来指定附加的信息，更多情况下是用于指定<code>text/plain</code>和<code>text/htm</code>等的文字编码方式的<code>charset</code>参数。 MIME根据<code>type</code>制定了默认的<code>subtype</code>，当客户端不能确定消息的<code>subtype</code>的情况下，消息被看作默认的<code>subtype</code>进行处理。<code>Text</code>默认是<code>text/plain</code>，<code>Application</code>默认是<code>application/octet-stream</code>，而<code>Multipart</code>默认情况下被看作<code>multipart/mixed</code>。
+<code>parameter</code>可以用来指定附加的信息，更多情况下是用于指定<code>text/plain</code>和<code>text/htm</code>
+等的文字编码方式的<code>charset</code>参数。 MIME根据<code>type</code>制定了默认的<code>subtype</code>，当客户端
+不能确定消息的<code>subtype</code>的情况下，消息被看作默认的<code>subtype</code>进行处理。<code>Text</code>默认是
+<code>text/plain</code>，<code>Application</code>默认是<code>application/octet-stream</code>，而<code>Multipart</code>默认
+情况下被看作<code>multipart/mixed</code>。
 </p>
 
 
 <h3 id="toc_2.1.2">Content-Disposition简介</h3>
 
 <p>
-<code>Content-Disposition</code>是HTTP Response Header的一个参数。但是这个不是标准参数，HTTP/1.1的规范文档中，对于这个参数的解释大意如下：
+<code>Content-Disposition</code>是HTTP Response Header的一个参数。但是这个不是标准参数，
+HTTP/1.1的规范文档中，对于这个参数的解释大意如下：
 </p>
 
 <p>
-<code>Content-Disposition</code>参数本来是为了在客户端另存文件时提供一个建议的文件名，但是考虑到安全的原因，就从规范中去掉了这个参数。但是由于很多浏览器已经能够支持这个参数，所以只是在规范文档中列出，但是要注意这个不是HTTP/1.1的标准参数。
+<code>Content-Disposition</code>参数本来是为了在客户端另存文件时提供一个建议的文件名，但是
+考虑到安全的原因，就从规范中去掉了这个参数。但是由于很多浏览器已经能够支持这个
+参数，所以只是在规范文档中列出，但是要注意这个不是HTTP/1.1的标准参数。
 </p>
 
 <p>
-其实IE是根据<code>Content-Disposition</code>中<code>filename</code>这个段中文件名的后缀来识别这个文件类型的。
+其实IE是根据<code>Content-Disposition</code>中<code>filename</code>这个段中文件名的后缀来识别
+这个文件类型的。
 </p>
 
 <pre class="brush: java">

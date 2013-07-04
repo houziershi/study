@@ -357,8 +357,10 @@ Image :: 用于传输静态图片数据；
 Audio :: 用于传输音频或者音声数据；
 Video :: 用于传输动态影像数据，可以是与音频编辑在一起的视频数据格式。
 
-`subtype`用于指定`type`的详细形式。`content-type/subtype`配对的集合和与此相关的参数，将随着时间而增长。为了确保这些值在一个有序而且公开的状态下开发，MIME使用Internet Assigned Numbers Authority (IANA)作为中心的注册机制来管理这些值。常用的`subtype`值如下所示：
-
+`subtype`用于指定`type`的详细形式。`content-type/subtype`配对的集合和与此相关的
+参数，将随着时间而增长。为了确保这些值在一个有序而且公开的状态下开发，MIME使用
+Internet Assigned Numbers Authority (IANA)作为中心的注册机制来管理这些值。常用的
+`subtype`值如下所示：
 
 * text/plain（纯文本 ）
 * text/html（HTML文档）
@@ -375,18 +377,29 @@ Video :: 用于传输动态影像数据，可以是与音频编辑在一起的�
 * application/x-www-form-urlencoded（使用HTTP的POST方法提交的表单）
 * multipart/form-data（同上，但主要用于表单提交时伴随文件上传的场合）
 
-此外，尚未被接受为正式数据类型的subtype，可以使用x-开始的独立名称（例如`application/x-gzip`）。vnd-开始的固有名称也可以使用（例：`application/vnd.ms-excel`）。
+此外，尚未被接受为正式数据类型的subtype，可以使用x-开始的独立名称
+（例如：`application/x-gzip`）。
+vnd-开始的固有名称也可以使用
+（例：`application/vnd.ms-excel`）。
 
-`parameter`可以用来指定附加的信息，更多情况下是用于指定`text/plain`和`text/htm`等的文字编码方式的`charset`参数。 MIME根据`type`制定了默认的`subtype`，当客户端不能确定消息的`subtype`的情况下，消息被看作默认的`subtype`进行处理。`Text`默认是`text/plain`，`Application`默认是`application/octet-stream`，而`Multipart`默认情况下被看作`multipart/mixed`。
+`parameter`可以用来指定附加的信息，更多情况下是用于指定`text/plain`和`text/htm`
+等的文字编码方式的`charset`参数。 MIME根据`type`制定了默认的`subtype`，当客户端
+不能确定消息的`subtype`的情况下，消息被看作默认的`subtype`进行处理。`Text`默认是
+`text/plain`，`Application`默认是`application/octet-stream`，而`Multipart`默认
+情况下被看作`multipart/mixed`。
 
 
 === Content-Disposition简介 ===
 
-`Content-Disposition`是HTTP Response Header的一个参数。但是这个不是标准参数，HTTP/1.1的规范文档中，对于这个参数的解释大意如下：
+`Content-Disposition`是HTTP Response Header的一个参数。但是这个不是标准参数，
+HTTP/1.1的规范文档中，对于这个参数的解释大意如下：
 
-`Content-Disposition`参数本来是为了在客户端另存文件时提供一个建议的文件名，但是考虑到安全的原因，就从规范中去掉了这个参数。但是由于很多浏览器已经能够支持这个参数，所以只是在规范文档中列出，但是要注意这个不是HTTP/1.1的标准参数。
+`Content-Disposition`参数本来是为了在客户端另存文件时提供一个建议的文件名，但是
+考虑到安全的原因，就从规范中去掉了这个参数。但是由于很多浏览器已经能够支持这个
+参数，所以只是在规范文档中列出，但是要注意这个不是HTTP/1.1的标准参数。
 
-其实IE是根据`Content-Disposition`中`filename`这个段中文件名的后缀来识别这个文件类型的。
+其实IE是根据`Content-Disposition`中`filename`这个段中文件名的后缀来识别
+这个文件类型的。
 
 {{{class="brush: java"
 response.addHeader("Content-Disposition", "attachment;filename=test.xls"); 
