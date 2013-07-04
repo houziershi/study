@@ -92,17 +92,23 @@ new RegExp(pattern, attributes);
 </p>
 
 <p>
-参数<code>attributes</code>是一个可选的字符串，包含属性 <code>g</code>、<code>i</code>和<code>m</code>，分别用于指定“全局匹配”、“区分大小写”和“多行匹配”。ECMAScript 标准化之前，不支持<code>m</code>属性。如果<code>pattern</code>是正则表达式，而不是字符串，则必须省略该参数。
+参数<code>attributes</code>是一个可选的字符串，包含属性 <code>g</code>、<code>i</code>和<code>m</code>，分别用于指定
+“全局匹配”、“区分大小写”和“多行匹配”。ECMAScript 标准化之前，不支持<code>m</code>属性。如果
+<code>pattern</code>是正则表达式，而不是字符串，则必须省略该参数。
 </p>
 
 <h3 id="toc_1.2.2">返回值</h3>
 
 <p>
-一个新的<code>RegExp</code>对象，具有指定的模式和标志。如果参数<code>pattern</code>是正则表达式而不是字符串，那么<code>RegExp()</code>构造函数将用与指定的<code>RegExp</code>相同的模式和标志创建一个新的<code>RegExp</code>对象。
+一个新的<code>RegExp</code>对象，具有指定的模式和标志。如果参数<code>pattern</code>是正则表达式而不是
+字符串，那么<code>RegExp()</code>构造函数将用与指定的<code>RegExp</code>相同的模式和标志创建一个新的
+<code>RegExp</code>对象。
 </p>
 
 <p>
-如果不用<code>new</code>运算符，而将<code>RegExp()</code>作为函数调用，那么它的行为与用<code>new</code>运算符调用时一样，只是当<code>pattern</code>是正则表达式时，它只返回 <code>pattern</code>，而不再创建一个新的<code>RegExp</code>对象。
+如果不用<code>new</code>运算符，而将<code>RegExp()</code>作为函数调用，那么它的行为与用<code>new</code>运算符调用
+时一样，只是当<code>pattern</code>是正则表达式时，它只返回 <code>pattern</code>，而不再创建一个新的
+<code>RegExp</code>对象。
 </p>
 
 <h3 id="toc_1.2.3">抛出</h3>
@@ -853,7 +859,8 @@ n$
 </pre>
 
 <p>
-尽管这是可以的，但是有点浪费。如果不知道<code>Mouse</code>在字符串中到底出现几次时该怎么办，如果重复多次呢？
+尽管这是可以的，但是有点浪费。如果不知道<code>Mouse</code>在字符串中到底出现几次时该怎么办
+，如果重复多次呢？
 </p>
 
 <pre class="brush: javascript>
@@ -903,7 +910,11 @@ n$
 </p>
 
 <p>
-这段代码输出的<code>abcd\(1</code>而不是<code>abcd123456789</code>, 因为<code>\)1</code>在这里并不被看成是一个反向引用。
+这段代码输出的<code>abcd$1</code>而不是<code>abcd123456789</code>, 
+</p>
+	
+<p>
+因为<code>$1</code>在这里并不被看成是一个反向引用。
 </p>
 
 
@@ -947,14 +958,12 @@ n$
 </p>
 
 <p>
-在调用<code>test</code>方法后，所有的反向引用都保存到了<code>RegExp</code>构造函数中从<code>RegExp.$1</code>(它保存了第一个反向引用）开始，
+在调用<code>test</code>方法后，所有的反向引用都保存到了<code>RegExp</code>构造函数中从<code>RegExp.$1</code>
+(它保存了第一个反向引用）开始，
 </p>
 
 <p>
 如果还有第二个反向引用，就是<code>RegExp.$2</code>，
-</p>
-
-<p>
 如果还有第三个反向引用存在，就是<code>RegExp.$3</code>.依此类推。
 </p>
 
@@ -974,7 +983,8 @@ n$
 </p>
 
 <p>
-在<code>replace()</code>方法的第二个参数中，<code>\(2</code>等同于 “5678” ，而<code>\)1</code>等同于 “1234”，对应于它们在表达式中的出现顺序。
+在<code>replace()</code>方法的第二个参数中，<code>$2</code>等同于 “5678” ，
+而<code>$1</code>等同于 “1234”，对应于它们在表达式中的出现顺序。
 </p>
 
 <h1 id="toc_10">候选</h1>
@@ -1057,7 +1067,8 @@ n$
 </pre>
 
 <p>
-在这个例子中，正则表达式查找行起始位置后的一个或多个单词字符。如果遇到非单词字符    匹配停止，返回<code>Important</code>。 这个例子也可以用单词边界实现：
+在这个例子中，正则表达式查找行起始位置后的一个或多个单词字符。如果遇到非单词字符
+匹配停止，返回<code>Important</code>。 这个例子也可以用单词边界实现：
 </p>
 
 <pre class="brush: javascript">
@@ -1068,7 +1079,8 @@ n$
 </pre>
 
 <p>
-这里，正则表达式用惰性量词来制定在单词边界之前可以出现任何字符，且可以出现一次或多次（如果使用贪婪性量词，表达式就匹配整个字符串）。
+这里，正则表达式用惰性量词来制定在单词边界之前可以出现任何字符，且可以出现一次或
+多次（如果使用贪婪性量词，表达式就匹配整个字符串）。
 </p>
 
 <pre class="brush: javascript">
@@ -1104,11 +1116,13 @@ n$
 </pre>
 
 <p>
-上面只返回一个单词<code>sixth</code>，因为换行符阻挡了匹配，只能匹配行末的一个单词， 当然也可以使用<code>split()</code>方法将字符串分割成数组，但就得对每一行进行单独匹配。
+上面只返回一个单词<code>sixth</code>，因为换行符阻挡了匹配，只能匹配行末的一个单词， 当然也
+可以使用<code>split()</code>方法将字符串分割成数组，但就得对每一行进行单独匹配。
 </p>
 
 <p>
-以前不好好看书经常半吊子，看一半就仍了，导致用了好多<code>split</code>， 其实很简单如下面例子 只需要<code>m</code>参数进行多行匹配：
+以前不好好看书经常半吊子，看一半就仍了，导致用了好多<code>split</code>， 其实很简单如下面例
+子只需要<code>m</code>参数进行多行匹配：
 </p>
 
 <pre class="brush: javascript">
