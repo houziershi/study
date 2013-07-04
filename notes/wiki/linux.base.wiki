@@ -29,6 +29,32 @@ apt-get remove --purge xxx
 dpkg -l |grep openssh-server
 }}}
 
+=== 配置默认程序优先级 ===
+
+`update-alternatives`管理程序的优先级。如`x-www-browser`对应了多个在图形界面下的web浏览器，默认会使用这些程序中优先级最高的：
+
+以web浏览器的组`x-www-browser`为例。查看现在有哪些程序被定义为web浏览器，以及它们被调用的优先级：
+
+{{{class="brush: bash"
+update-alternatives --display x-www-browser 
+}}}
+
+以web浏览器的组`x-www-browser`为例。我们新安装了firefox浏览器，现在把它也加到这一组里：
+
+{{{class="brush: bash"
+// 格式: update-alternatives --install <配置的链接> <配置的名字> <程序路径> <整数优先级>
+update-alternatives --install /usr/bin/x-www-browser x-www-browser /usr/bin/firefox 90 
+}}}
+
+以web浏览器的组`x-www-browser`为例。我们现在设置firefox为默认浏览器：
+
+{{{class="brush: bash"
+update-alternatives --config x-www-browser
+}}}
+
+上面的命令会列出所有相关的程序，输入序号选择一个默认的。
+
+
 
 = 文件操作 =
 

@@ -31,6 +31,7 @@
 <li><a href="#toc_1.1">apt</a>
 <ul>
 <li><a href="#toc_1.1.1">删除</a>
+<li><a href="#toc_1.1.2">配置默认程序优先级</a>
 </ul>
 </ul>
 <li><a href="#toc_2">文件操作</a>
@@ -78,6 +79,42 @@ apt-get remove --purge xxx
 <pre class="brush: bash">
 dpkg -l |grep openssh-server
 </pre>
+
+<h3 id="toc_1.1.2">配置默认程序优先级</h3>
+
+<p>
+<code>update-alternatives</code>管理程序的优先级。如<code>x-www-browser</code>对应了多个在图形界面下的web浏览器，默认会使用这些程序中优先级最高的：
+</p>
+
+<p>
+以web浏览器的组<code>x-www-browser</code>为例。查看现在有哪些程序被定义为web浏览器，以及它们被调用的优先级：
+</p>
+
+<pre class="brush: bash">
+update-alternatives --display x-www-browser 
+</pre>
+
+<p>
+以web浏览器的组<code>x-www-browser</code>为例。我们新安装了firefox浏览器，现在把它也加到这一组里：
+</p>
+
+<pre class="brush: bash">
+// 格式: update-alternatives --install &lt;配置的链接&gt; &lt;配置的名字&gt; &lt;程序路径&gt; &lt;整数优先级&gt;
+update-alternatives --install /usr/bin/x-www-browser x-www-browser /usr/bin/firefox 90 
+</pre>
+
+<p>
+以web浏览器的组<code>x-www-browser</code>为例。我们现在设置firefox为默认浏览器：
+</p>
+
+<pre class="brush: bash">
+update-alternatives --config x-www-browser
+</pre>
+
+<p>
+上面的命令会列出所有相关的程序，输入序号选择一个默认的。
+</p>
+
 
 
 <h1 id="toc_2">文件操作</h1>
