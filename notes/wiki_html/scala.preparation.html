@@ -53,7 +53,8 @@
 </p>
 
 <p>
-Mac OS X系统的默认字符编码早就改成了UTF-8但它bundle的Java默认字符编码却一直是MacRoman。在启动REPL时传入参数<code>-Dfile.encoding=UTF-8</code>。
+Mac OS X系统的默认字符编码早就改成了UTF-8但它bundle的Java默认字符编码却一直是
+MacRoman。在启动REPL时传入参数<code>-Dfile.encoding=UTF-8</code>。
 </p>
 
 <p>
@@ -72,13 +73,14 @@ $ vim `which scala`
 </pre>
 
 <p>
-把-D参数加到JAVA_OPTS里即可。
+把<code>-D</code>参数加到<code>JAVA_OPTS</code>里即可。
 </p>
 
 <h2 id="toc_1.2">Vim插件</h2>
 
 <p>
-到<a href="https://github.com/scala/scala-dist">https://github.com/scala/scala-dist</a>上下载，复制<code>tool-support/src/vim</code>到<code>.vim</code>目录下。
+到<a href="https://github.com/scala/scala-dist">https://github.com/scala/scala-dist</a>上下载，
+复制<code>tool-support/src/vim</code>到<code>.vim</code>目录下。
 </p>
 
 
@@ -113,7 +115,8 @@ scala&gt;
 </p>
 
 <p>
-在REPL环境中只能一行一行读取，所以如果要换行的话，不能让一行在语法上看起来已经结束：
+在REPL环境中只能一行一行读取，所以如果要换行的话，不能让一行在语法上看起来已经
+结束：
 </p>
 
 <pre class="brush: scala">
@@ -221,6 +224,7 @@ println("hello," + arg(0) + "!")
 <p>
 先看一个工具类，它根据字符串来计算出检验和：
 </p>
+
 <pre class="brush: scala" title="ChecksumAccumulator.scala">
 import scala.collection.mutable.Map
 
@@ -248,7 +252,8 @@ object ChecksumAccumulator {
 </pre>
 
 <p>
-然后是主程序。独立运行的程序一定要有<code>main</code>方法（仅有一个参数<code>Array[String]</code>而且结果类型为<code>Unit</code>）的单例对象。
+然后是主程序。独立运行的程序一定要有<code>main</code>方法（仅有一个参数<code>Array[String]</code>而且
+结果类型为<code>Unit</code>）的单例对象。
 </p>
 
 <pre class="brush: scala" title="Summer.scala">
@@ -267,14 +272,17 @@ object Summer {
 <p>
 编译Scala程序：
 </p>
+
 <pre class="brush: bash">
 --(morgan-laptop:pts/8)-(13-03-15 0:28:39)-(~/workspace/study/scala/tmp)
 \-(morgan:%) &gt;&gt;&gt; scalac ChecksumAccumulator.scala Summer.scala
 </pre>
 
 <p>
-有一个<code>fast Scala compiler</code>的后台进程可以在第一次被调用后一直跑在后台，节省一下每次编译的速度：
+有一个<code>fast Scala compiler</code>的后台进程可以在第一次被调用后一直跑在后台，
+节省一下每次编译的速度：
 </p>
+
 <pre class="brush: bash">
 --(morgan-laptop:pts/8)-(13-03-15 0:29:11)-(~/workspace/study/scala/tmp)
 \-(morgan:%) &gt;&gt;&gt; fsc ChecksumAccumulator.scala Summer.scala   
@@ -283,6 +291,7 @@ object Summer {
 <p>
 可以关掉这个后台进程：
 </p>
+
 <pre class="brush: bash">
 --(morgan-laptop:pts/8)-(13-03-15 0:29:11)-(~/workspace/study/scala/tmp)
 \-(morgan:%) &gt;&gt;&gt; fsc -shutdown
@@ -291,6 +300,7 @@ object Summer {
 <p>
 编译完后可以看到生成的<code>.class</code>文件：
 </p>
+
 <pre class="brush: bash">
 --(morgan-laptop:pts/8)-(13-03-15 0:44:31)-(~/workspace/study/scala/tmp)
 \-(morgan:%) &gt;&gt;&gt; ls *.class
@@ -301,6 +311,7 @@ ChecksumAccumulator.class                       Summer$$anonfun$main$1.class  Su
 <p>
 运行编译出来的类文件：
 </p>
+
 <pre class="brush: bash">
 --(morgan-laptop:pts/8)-(13-03-15 0:30:58)-(~/workspace/study/scala/tmp)
 \-(morgan:%) &gt;&gt;&gt; scala Summer of love
@@ -309,7 +320,8 @@ love -&gt; -182
 </pre>
 
 <p>
-还有一个加入的<code>Application</code>特质的方式实现应用程序，但是有局限：不能访问命令行参数、只能在单线程下用。所以不推荐用它。
+还有一个加入的<code>Application</code>特质的方式实现应用程序，但是有局限：
+不能访问命令行参数、只能在单线程下用。所以不推荐用它。
 </p>
 
 <p>

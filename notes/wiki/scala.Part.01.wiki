@@ -23,7 +23,8 @@ val msg = "Hello"
 
 == 语句定义 ==
 
-Scala语句以分号结束，而且分号可以省略。默认一行结束了就是一行语句结束了，除非以下三种情况，会认为语句还没有结束：
+Scala语句以分号结束，而且分号可以省略。默认一行结束了就是一行语句结束了，
+除非以下三种情况，会认为语句还没有结束：
 
 * 行尾是一个不能放在行尾的字符。
 * 下一行的开头是不能放在行头的字符。
@@ -71,7 +72,8 @@ def max(x: Int, y: Int): Int = {
 }
 }}}
 
-函数类型也能自动推导出来，可以省略。在递归函数的情况下，一定要明确地说明返回类型。如果函数体只有一行，那花括号也可以省略：
+函数类型也能自动推导出来，可以省略。在递归函数的情况下，
+一定要明确地说明返回类型。如果函数体只有一行，那花括号也可以省略：
 
 {{{class="brush: scala"
 scala> def max(x: Int, y: Int) =  if (x > y) x else y
@@ -87,7 +89,8 @@ greet: ()Unit
 }}}
 
 
-对于没有等号的方法来说返回类型一定是Unit。Scala可以把任何类型转为Unit，以下方法最后的String类结果会转为Unit并丢弃：
+对于没有等号的方法来说返回类型一定是Unit。Scala可以把任何类型转为`Unit`，
+以下方法最后的`String`类结果会转为`Unit`并丢弃：
 
 {{{class="brush: scala"
 scala> def f(): Unit = "This String is lost!"
@@ -121,12 +124,14 @@ res2: java.lang.String = This String get returned!
 args.foreach( (arg: String) => println(arg) )
 }}}
 
-这里的String类型可以自动推导出来：
+这里的`String`类型可以自动推导出来：
+
 {{{class="brush: scala"
 args.foreach( arg => println(arg) )
 }}}
 
 在这种字面量只有一行而且只有一个参数情况下，可以省掉参数列表：
+
 {{{class="brush: scala"
 args.foreach( println )
 }}}
@@ -150,7 +155,8 @@ scala> 0 to 5
 res9: scala.collection.immutable.Range.Inclusive = Range(0, 1, 2, 3, 4, 5)
 }}}
 
-其实这个`to`是一个方法的调用。Scala中对于方法调用时，如果方法只有一个参数的话可以省略括号，原本的样子是：
+其实这个`to`是一个方法的调用。Scala中对于方法调用时，如果方法只有一个参数的话
+可以省略括号，原本的样子是：
 
 {{{class="brush: scala"
 (0).to(5)

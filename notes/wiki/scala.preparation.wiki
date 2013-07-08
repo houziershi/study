@@ -9,7 +9,8 @@
 
 在默认字符编码为UTF-8的Linux下没问题。
 
-Mac OS X系统的默认字符编码早就改成了UTF-8但它bundle的Java默认字符编码却一直是MacRoman。在启动REPL时传入参数`-Dfile.encoding=UTF-8`。
+Mac OS X系统的默认字符编码早就改成了UTF-8但它bundle的Java默认字符编码却一直是
+MacRoman。在启动REPL时传入参数`-Dfile.encoding=UTF-8`。
 
 用vim、emacs或者你习惯的文本编辑器打开scala命令，比如：
 
@@ -22,11 +23,12 @@ $ vim `which scala`
 [ -n "$JAVA_OPTS" ] || JAVA_OPTS="-Xmx256M -Xms32M"
 }}}
 
-把-D参数加到JAVA_OPTS里即可。
+把`-D`参数加到`JAVA_OPTS`里即可。
 
 == Vim插件 ==
 
-到[[https://github.com/scala/scala-dist]]上下载，复制`tool-support/src/vim`到`.vim`目录下。
+到[[https://github.com/scala/scala-dist]]上下载，
+复制`tool-support/src/vim`到`.vim`目录下。
 
 
 = 使用 =
@@ -51,7 +53,8 @@ scala>
 
 退出`Scala Shell`：`:quit`或`:q`
 
-在REPL环境中只能一行一行读取，所以如果要换行的话，不能让一行在语法上看起来已经结束：
+在REPL环境中只能一行一行读取，所以如果要换行的话，不能让一行在语法上看起来已经
+结束：
 
 {{{class="brush: scala"
 scala> if(x > 0) { 1
@@ -138,6 +141,7 @@ println("hello," + arg(0) + "!")
 == Scala程序 ==
 
 先看一个工具类，它根据字符串来计算出检验和：
+
 {{{class="brush: scala" title="ChecksumAccumulator.scala"
 import scala.collection.mutable.Map
 
@@ -164,7 +168,8 @@ object ChecksumAccumulator {
 }
 }}}
 
-然后是主程序。独立运行的程序一定要有`main`方法（仅有一个参数`Array[String]`而且结果类型为`Unit`）的单例对象。
+然后是主程序。独立运行的程序一定要有`main`方法（仅有一个参数`Array[String]`而且
+结果类型为`Unit`）的单例对象。
 
 {{{class="brush: scala" title="Summer.scala"
 import ChecksumAccumulator.calculate
@@ -180,24 +185,29 @@ object Summer {
 }}}
 
 编译Scala程序：
+
 {{{class="brush: bash"
 --(morgan-laptop:pts/8)-(13-03-15 0:28:39)-(~/workspace/study/scala/tmp)
 \-(morgan:%) >>> scalac ChecksumAccumulator.scala Summer.scala
 }}}
 
-有一个`fast Scala compiler`的后台进程可以在第一次被调用后一直跑在后台，节省一下每次编译的速度：
+有一个`fast Scala compiler`的后台进程可以在第一次被调用后一直跑在后台，
+节省一下每次编译的速度：
+
 {{{class="brush: bash"
 --(morgan-laptop:pts/8)-(13-03-15 0:29:11)-(~/workspace/study/scala/tmp)
 \-(morgan:%) >>> fsc ChecksumAccumulator.scala Summer.scala   
 }}}
 
 可以关掉这个后台进程：
+
 {{{class="brush: bash"
 --(morgan-laptop:pts/8)-(13-03-15 0:29:11)-(~/workspace/study/scala/tmp)
 \-(morgan:%) >>> fsc -shutdown
 }}}
 
 编译完后可以看到生成的`.class`文件：
+
 {{{class="brush: bash"
 --(morgan-laptop:pts/8)-(13-03-15 0:44:31)-(~/workspace/study/scala/tmp)
 \-(morgan:%) >>> ls *.class
@@ -206,6 +216,7 @@ ChecksumAccumulator.class                       Summer$$anonfun$main$1.class  Su
 }}}
 
 运行编译出来的类文件：
+
 {{{class="brush: bash"
 --(morgan-laptop:pts/8)-(13-03-15 0:30:58)-(~/workspace/study/scala/tmp)
 \-(morgan:%) >>> scala Summer of love
@@ -213,7 +224,8 @@ of -> -213
 love -> -182
 }}}
 
-还有一个加入的`Application`特质的方式实现应用程序，但是有局限：不能访问命令行参数、只能在单线程下用。所以不推荐用它。
+还有一个加入的`Application`特质的方式实现应用程序，但是有局限：
+不能访问命令行参数、只能在单线程下用。所以不推荐用它。
 
 形式类似于：
 {{{class="brush: scala" title="myApp.scala"
