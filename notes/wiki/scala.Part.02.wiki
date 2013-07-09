@@ -3,5462 +3,2556 @@
 
 %toc Part II
 
-= 样本类和模式匹配 =
 
-样本类（case class）和模式匹配（pattern matching）。
+= 动态成员 =
 
-== 简单的例子 ==
+静态类型不光是变量类型是确定的，还有比如在使用`qual.sel`时，`sel` 这个属性或是方法(Scala的访问一致性，属性和方法有时候并没有那么大的区别)必须在`qual`的类型中声明了的。
 
-假设要建立一个操作数学表达式的库，就要先定义输入的数据。为了简单，现在只关注由变量、数字、一元及二元操作符组成的数学表达式上：
+Scala 思考再三还是加入了 Dynamic Types，这个特性在 Scala 2.9 中是试验性的，必须用`-Xexperimental`进行开启，到了 Scala 2.10.0 中，只有代码中 `import scala.language.dynamics`就可用了，或是编译时加`-language:dynamics`选项。
+
+虽然 Scala 2.10.0 加进了 Dynamic Types 特性，但 Scala 仍然是静态类型的语言，因为在编译器同样会检查多出来的类型。
+
+有了 Dynamic Types 之后，Scala 又可更 DSL 了，方法名的动态上可以让它随时包括深刻的业务含义。相比 Java 的 DSL 的能力就太逊了，我们几乎无法在 Java 面前提 DSL 这回事。
+
+通俗点讲动态类型的类必须继承自`Dynamic`。所有的变化就在下面这四个方法中：
+
+`selectDynamic`
+`updateDynamic`
+`applyDynamic`
+`applyDynamicNamed`
+
+* 当使用`qual.sel`，而`Qual`类未定义`sel` 属性或方法时，会调用`selectDynamic(method: String)`方法。
+* 当`qual.name = "Unmi"`时会调用类似`updateDynamic(method: String)(args: Any)`这样的方法。
+* 还有` applyDynamic`，`applyDynamicNamed`这两个方法的自动调用。
 
 
-=== 样本类 ===
+看个完整的例子，我不打算把上面四个方法的应用规则分开来演示：
 
-带`case`修饰符会被编译器识别为样本类。
+{{{class="brush: scala"	
+import scala.language.dynamics
+ 
+class Person extends Dynamic{
+	def selectDynamic(method: String){
+		println(s"selectDynamic->$method called\n")
+	}
 
-{{{class="brush: scala"
-  abstract class Expr
-  case class Var(name: String) extends Expr
-  case class Number(num: Double) extends Expr
-  case class UnOp(operator: String, arg: Expr) extends Expr
-  case class BinOp(operator: String,
-      left: Expr, right: Expr) extends Expr
+	def applyDynamic(method: String)(args: Any*){
+		println(s"applyDynamic->$method called, args: $args\n")
+	}
+
+	def updateDynamic(method: String)(args: Any){
+		println(s"updateDynamic->$method called, args: $args\n")
+	}
+
+	def applyDynamicNamed(method: String)(args: (String, Any)*) {
+		println(s"applyDynamicNamed->$method called, args: $args")
+		for((key, value) <- args){
+			println(s"key: $key, value: $value")
+		}
+	}
+}
+ 
+val p = new Person
+ 
+p.sayHello  //calll selectDynamic
+p.config("Hello","Unmi") //call applyDynamic
+p.products = ("iPhone","Nexus") //call updateDynamic
+p.showInfo(screenName="Unmi", email="fantasia@sina.com") //call applyDynamicNamed
 }}}
 
-上面为表达式定义了一个抽象的基类，四个子类分别代表四种具体的表达式。要注意的是每个子类都有一个`case`修饰符，会被编译器识别为样本类。
-
-样本类有自动产生的工厂方法，创建时就用不着`new`了：
+上面对`p`的每一个调用都说明了会委派给哪个动态方法，执行结果输出是：
 
 {{{class="brush: scala"
-val v = Var("x")
+selectDynamic->sayHello called
+ 
+applyDynamic->config called, args: WrappedArray(Hello, Unmi)
+ 
+updateDynamic->products called, args: (iPhone,Nexus)
+ 
+applyDynamicNamed->showInfo called, args: WrappedArray((screenName,Unmi), (email,fantasia@sina.com))
+key: screenName, value: Unmi
+key: email, value: fantasia@sina.com
 }}}
 
-这个特点让方法在有很多层嵌套时可以少写很多`new`，这样让代码看起来更加简洁：
+现在来看发生了什么，`Person`继承自`Dynamic`，并且有引入 `scala.language.dynamics`。对`p`调用的方法(属性)都不存在，但是都调用到了正常的动态方法。所以仍然要对这四个动态方法(确切的讲是四种类型的方法，因为比如你可以定义多个不同的`updateDynamic`方法，其余三个也同此) 分别加以说明。
+
+== selectDynamic ==
+
+在调用找不到了无参方法时，会去寻找它，调用效果如下：
+
+`p.sayHello`也可以写成`p.selectDynamic("sayHello")`
+
+也就是说编译器在看到`p.sayHello`调用会根据`selectDynamic(method: String)`。相当于创建了方法`def sayHello = .......`，也就是把动态方法`selectDynamic(method: String)`换成`sayHello`。所以说 Scala 的`Dynamic`类中的`xxxDynamic` 方法相当是模板方法。
+
+`applyDynamic`，`updateDynamic`和`applyDynamicNamed`这三个方法第二个括号中的参数类型，或个数需根据实际应用来定。这四个动态方法的第一个括号中的参数都是动态调用时的方法名。
+
+== applyDynamic ==
+
+在进行有参数的方法调用时，会去找寻它，调用效果如下：
+
+`p.config("Hello", "Unmi")`可以写成`p.applyDynamic("config")("Hello", "Unmi")`
+
+还是这么理解: 把这个动态方法定义的方法名和第一个括号与参数替换成调用的方法名就知道怎么回事，例如把：
+
+`def applyDynamic(method: String)(args: Any*)`中的`applyDynamic(method: String)`替换成被调用方法名`config`，就是：
 
 {{{class="brush: scala"
-val op = binOp("+", Number(1), v)
+def config(args: Any*)        //p.config("Hello", "Unmi") 要调用的就是这么个方法
 }}}
 
-样本类的另一个特点是参数列表中所有的参数隐式获得了`val`前缀，被作为字段维护：
+所以第二个括号中的参数由你自己来定，比如说想这么调用`p.config("Hello", 100, 30)`，那么你可的动态方法可以这么定义：
 
 {{{class="brush: scala"
-scala> v.name
-res0: String = x
-
-scala> op.left
-res1: Expr = Number(1.0)
+def applyDynamic(method: String)(greeting: String, high: Int, low: Int) { ...... }
 }}}
 
-编译器为样本类添加了可读性更强的`toString`方法；还有自动提供的`hashCode`和`equals`方法会树型嵌套作用于成员变量：
+这个规则同样适用于`updateDynamic`和`applyDynamicNamed`这两个方法。
+
+== updateDynamic ==
+
+等号赋值操作时会调用`updateDynamic`方法，调用效果如下：
+
+`p.products = ("iPhone", "Nexus")`可写成`p.updateDynamic("products")(("iPhone", "Nexus"))`，按照同样的理解方法，相当于`Person`中定义了`def products(args: Any)` 方法。
+
+== applyDynamicNamed ==
+
+同样是`apply`开头，所以这个方法是对`applyDynamic`方法的补充，即使没有` applyDynamicNamed`，单用`applyDynamic`也能达成我们的要求。`applyDynamicNamed` 只是让你用命名参数调用时方便，也就是像：
 
 {{{class="brush: scala"
-  scala> println(op)
-  BinOp(+,Number(1.0),Var(x))
-
-  scala> op.right == Var("x")
-  res3: Boolean = true
+p.showInfo(screenName="Unmi", email="fantasia@sina.com") 
 }}}
 
-=== 模式匹配 ===
+这样用命名参数的方式来调用动态方法时会调用`updateDynamicNamed` 方法。有了这个方法在命名传递参数就方便处理`key/value`值。
 
-先来看一下格式。在格式上相当于把Java的`switch`格式：
+这四个方法在一个动态类中只能分别定义一个版本，否则会产生二义性，这和普通方法的重载不一样的。柯里化后的函数第二个括号中的参数可根据实际调用来定义，定义成`(args: Any*)`可包打天下。
+
+
+= 控制抽象 =
+
+== 可复用的代码 ==
+
+所有的函数都被分割成通用部分（它们在每次函数调用中都相同）以及非通用部分（在不同的函数调用中可能会变化）。通用部分是函数体，而非通用部分必须由参数提供。
+
+当你把函数值用做参数时，算法的非通用部分就是它代表的某些其它算法。在这种函数的每一次调用中，你都可以把不同的函数值作为参数传入，于是被调用函数将在每次选用参数的时候调用传入的函数值。这种高阶函数（higher-order function）带其它函数做参数的函数提供了机会去组织和简化代码。
+
+例子。一个工具类，提供了很多查找文件的方法，有根据文件结尾的、文件名是否包含指定字串的、文件名是否匹配正则的：
 
 {{{class="brush: scala"
-  switch (selector) { alternatives }
+  object FileMatcher {
+
+    // private method, get file name list in current dir
+    private def filesHere = (new java.io.File(".")).listFiles
+
+    // by file name end with string
+    def filesEnding(query: String) =
+      for (file <- filesHere; if file.getName.endsWith(query))
+        yield file
+                     
+    // by file name end include string
+    def filesContaining(query: String) =
+      for (file <- filesHere; if file.getName.contains(query))
+        yield file
+                   
+    // by file name match regex
+    def filesRegex(query: String) =
+      for (file <- filesHere; if file.getName.matches(query))
+        yield file
+  } 
 }}}
 
-中括号里的选择器移到了`match`关键字的前面：
+如果在Java中对应这种情况，大家应该都知道如何提炼接口来重用代码，这里就不啰嗦了。
 
-{{{class="brush: scala"
-  selector match { alternatives }
+如果是在某些动态语言中，要提炼一个工具方法提炼出共用的部分，根据传入不同`method`作为参数也匹配也很方便，可以直接把代码“拼接”起来：
+
+{{{class="brush: scala" 
+  def filesMatching(query: String, method) =
+    for (file <- filesHere; if file.getName.method(query))
+      yield file
 }}}
 
-
-有一些数学运算的值是固定的，所以可以直接写死，算都不用算。比如以下的三个：
+不过Scala不是动态语言，不能这么拼接。虽然不能把方法名作为参数传递，但可以通过字面量在运行时产生对应的函数值：
 
 {{{class="brush: scala"
-  UnOp("-", UnOp("-", e)) => e // 负负得正
-  BinOp("+", e, Number(0)) => e // 加0
-  BinOp("*", e, Number(1)) => e // 乘1
+  def filesMatching(
+    query: String,
+    matcher: (String, String) => Boolean
+  ) = {
+    for (file <- filesHere; if matcher(file.getName, query))
+      yield file
+  } 
 }}}
 
-定义一个`simplifyTop`来简化运算：
+字面量只说明了函数的类型是`(String, String) => Boolean`，不用关内部逻辑的。现在已经有了一个`filesMatching`方法来处理共同的逻辑，三个具体的匹配方法只要调用它就行了：
 
 {{{class="brush: scala"
-  def simplifyTop(expr: Expr): Expr = expr match {
-    case UnOp("-", UnOp("-", e)) => e // Double negation
-    case BinOp("+", e, Number(0)) => e // Adding zero
-    case BinOp("*", e, Number(1)) => e // Multiplying by one
-    case _ => expr
+  def filesEnding(query: String) =
+    filesMatching(query, _.endsWith(_))
+
+  def filesContaining(query: String) =
+    filesMatching(query, _.contains(_))
+
+  def filesRegex(query: String) =
+    filesMatching(query, _.matches(_)) 
+}}}
+
+加上参数表和参数类型可以更加好理解一些
+
+{{{class="brush: scala"
+  // _.endsWith(_)
+  (fileName: String, query: String) => fileName.endsWith(query)
+  
+  // _.contains(_)
+  (fileName: String, query: String) => fileName.contains(query))
+  
+  // _.matches(_)
+  (fileName: String, query: String) => fileName.matches(query))
+}}}
+
+代码已经被简化了，但它实际还能更短。注意到`query`传递给了方法`filesMatching`，但`filesMatching`根本用不着这个参数，只是为了把它传回给传入的`matcher`函数。
+
+所以在这里可以直接把参数`query`绑定到函数字面量中，这样`fileMacthing`方法就不要`query`这个参数了。 
+
+{{{class="brush: scala"
+  object FileMatcher {
+    private def filesHere = (new java.io.File(".")).listFiles
+
+    private def filesMatching(matcher: String => Boolean) =
+      for (file <- filesHere; if matcher(file.getName))
+        yield file
+  
+    def filesEnding(query: String) =
+      filesMatching(_.endsWith(query))
+  
+    def filesContaining(query: String) =
+      filesMatching(_.contains(query))
+  
+    def filesRegex(query: String) =
+      filesMatching(_.matches(query))
+  } 
+}}}
+
+== 简化客户端代码 ==
+
+高阶函数可以提供更加强大的API，让客户的代码写起来更加简单。
+
+比如List中的高阶函数`exists`方法已经提供了遍历整个集合的抽象，用户只要把判断符合的函数传入就可以了。下面的两个例子非常简单地实现了检查是否存在负数和是否存在奇数两个方法：
+
+{{{class="brush: scala"
+scala> def containsNeg(nums: List[Int]) = nums.exists(_ < 0)
+containsNeg: (nums: List[Int])Boolean
+
+scala> def containsOdd(nums: List[Int]) = nums.exists(_ % 2 == 1)
+containsOdd: (nums: List[Int])Boolean
+ 
+scala> List(1, 2, 3, 4)
+res1: List[Int] = List(1, 2, 3, 4)
+
+scala> containsNeg(res1)
+res3: Boolean = false
+
+scala> containsOdd(res1)
+res4: Boolean = true
+}}}
+
+如果没有高阶函数`exists`，那就要自己写循环的逻辑，就会有很多重复的代码：
+
+{{{class="brush: scala"
+  def containsNeg(nums: List[Int]): Boolean = {
+    var exists = false
+    for (num <- nums)
+      if (num < 0)
+        exists = true
+    exists
   }
+  
+  def containsOdd(nums: List[Int]): Boolean = {
+    var exists = false
+    for (num <- nums)
+      if (num % 2 == 1)
+        exists = true
+    exists
+  } 
 }}}
 
-方法`simplifyTop`接收一个`Expr`类型的参数。这里参数`expr`作为选择器匹配各个备选项，`_`为通配模式能匹配所有的值，相当于Java中的default。箭头`=>`分开的模式与表达式。
 
-* 其中`"-"`、`"*"`、`"*"`等这样的是常量模式（constant pattern）作相等判断。
-* 其中的`e`这样的变量模式（variable pattern）匹配所有的值，在`=>`右边可以操作匹配的部分内容。
-* 其中`Unop("-",e)`这样的形式为构造器模式，这样匹配的条件就是类为`Unop`第一个参数是`"-"`，第二个参数被作为`e`捕获。
+== 柯里化（Currying） ==  
 
-调用：
+理解柯里化可以帮助理解如何建立自己的控制结构。柯里化就是一个函数有多个参数列表。
+
+普通的函数，实现了两个Int型参数，x和y的加法：
 
 {{{class="brush: scala"
-  scala> simplifyTop(UnOp("-", UnOp("-", Var("x"))))
-  res4: Expr = Var(x)
+  scala> def plainOldSum(x: Int, y: Int) = x + y
+  plainOldSum: (Int,Int)Int
+
+  scala> plainOldSum(1, 2)
+  res4: Int = 3 
 }}}
 
-=== match与switch的比较 ===
-
-* `match`是一种表达式，所以有返回结果。
-* 一个case不会走到下一个case。
-* 如果一项也没有匹配成功，会抛出`MatchError`异常。如果不想要异常要么把所有可能性都写上；要么加一个`_`的默认情况。
+curry化后的同一个函数，两个列表的各一个参数：
 
 {{{class="brush: scala"
-  expr match {
-    case BinOp(op, left, right) =>
-      println(expr +" is a binary operation")
-    case _ =>
-  }
+  scala> def curriedSum(x: Int)(y: Int) = x + y
+  curriedSum: (Int)(Int)Int
+
+  scala> curriedSum(1)(2)
+  res5: Int = 3 
 }}}
 
-这个表达式在两种情况下都会返回`Unit`值`()`，所以这个表达式的类型就是`Unit`。
-
-
-== 模式的种类 ==
-
-=== 通配模式 ===
-
-通配模式“`_`”匹配所有的结果：
+实际上背靠背地调用了两个传统函数。第一个函数调用带单个的名为`x`的`Int`参数，并返回第二个函数的函数值。第二个函数带`Int`参数`y`。下面的名为first的函数实质上执行了`curriedSum`的第一个传统函数调用会做的事情：
 
 {{{class="brush: scala"
-  expr match {
-    case BinOp(op, left, right) =>
-      println(expr +"is a binary operation")
-    case _ =>
-  }
+  scala> def first(x: Int) = (y: Int) => x + y
+  first: (Int)(Int) => Int 
 }}}
 
-通配符还可以省略省略不用关注的内容。比如只要是`BinOp`类型就行，里面的参数是什么值不关心：
+调用第一个函数并传入1——会产生第二个函数：
 
 {{{class="brush: scala"
-  expr match {
-    case BinOp(_, _, _) => println(expr +"is a binary operation")
-    case _ => println("It's something else")
-  }
+  scala> val second = first(1)
+  second: (Int) => Int = <function> 
 }}}
 
-=== 常量模式 ===
+从上面的结果可以看出我们得到的结果是一个函数，并把这个函数赋值给了变量`second`。
 
-任何字面量都可以用作常量，还有`val`与单例对象也可以。如`nil`，`5`，`true`和`"hello"`：
+通过`second`调用第二个函数传入参数2产生结果：
 
 {{{class="brush: scala"
-  def describe(x: Any) = x match {
-    case 5 => "five"
-    case true => "truth"
-    case "hello" => "hi!"
-    case Nil => "the empty list"
-    case _ => "something else"
-  }
+  scala> second(2)
+  res6: Int = 3 
 }}}
 
-效果：
+`first`和`second`函数只演示连接在`curriedSum`函数上的那两个函数，并不直接连接在`curriedSum`函数上的那两个函数。但我们仍然有一个方式获得实际指向`curriedSum`的“第二个”函数的引用。你可以用偏应用函数表达式方式，把占位符标注用在`curriedSum`里，如：
 
 {{{class="brush: scala"
-  scala> describe(5)
-  res5: java.lang.String = five
-
-  scala> describe(true)
-  res6: java.lang.String = truth
-
-  scala> describe("hello")
-  res7: java.lang.String = hi!
-
-  scala> describe(Nil)
-  res8: java.lang.String = the empty list
-
-  scala> describe(List(1,2,3))
-  res9: java.lang.String = something else
+  scala> val onePlus = curriedSum(1)_
+  onePlus: (Int) => Int = <function> 
 }}}
 
-=== 变量模式 ===
+之前说过，当占位符标注用在传统方法上时，如`println _`，你必须在名称和下划线之间留一个空格。不然编译器会误认为是要调用名为`println_`的函数。而在这个例子里不需要，因为`println_`是Scala里合法的标识符，`curriedSum(1)_`不是合法的标识符，所以会被解释为`curriedSum(1)`与占位符`_`。
 
-变量类似通配模式，只不过有个变量名所以可以在后面的表达式中操作这个变量：
+现在得到了指向一个函数的引用，这个函数在被调用的时候，传入Int参数加一并返回结果：
 
 {{{class="brush: scala"
-  expr match {
-    case 0 => "zero"
-    case somethingElse => "not zero: "+ somethingElse
-  }
+  scala> onePlus(2)
+  res7: Int = 3 
 }}}
 
-=== 变量模式与常量模式的区别 ===
-
-常量不止有字面形式，还有用符号名的（比如`Nil`）。这样看起来就很容易与变量模式搞混：
+由于第二个函数的参数已经有了（传入的是2），现在再用参数2调用第一个函数也能有结果出来：
 
 {{{class="brush: scala"
-  scala> import Math.{E, Pi}
-  import Math.{E, Pi}
+  scala> val twoPlus = curriedSum(2)_
+  twoPlus: (Int) => Int = <function>
 
-  scala> E match {
-       | case Pi => "strange math? Pi = "+ Pi
-       | case _ => "OK"
-       | }
-  res10: java.lang.String = OK
+  scala> twoPlus(2)
+  res8: Int = 4 
 }}}
 
-上面的`E`与`Pi`都是常量。对Scala编译器来说小写字母开头都作为变量，其他引用被认为是常量。下面的例子中想建立一个小写的`pi`就匹配到常量`Pi`了：
 
+
+== 编写新的控制结构 ==
+
+在拥有头等函数的编程语言中，可以在方法中以函数作为参数创造自己的控制结构。
+
+比如有个“重复操作”的方法，它可以把任何操作重复执行两次：
 
 {{{class="brush: scala"
-  scala> val pi = Math.Pi
-  pi: Double = 3.141592653589793
+  scala> def twice(op: Double => Double, x: Double) = op(op(x))
+  twice: ((Double) => Double,Double)Double
 
-  scala> E match {
-       | case pi => "strange math? Pi = "+ pi
-       | }
-  res11: java.lang.String = strange math? Pi = 2.7182818...
+  scala> twice(_ + 1, 5)
+  res9: Double = 7.0 
 }}}
 
-在这个变量模式情况下，不能使用通配模式。因为变量模式已经可以匹配所有情况了：
+如果在工作中曾经遇到重复操作两次`(Double) => Double`类型函数的操作的话，这样就把一个控制结构给抽象出来了。
+
+再考虑一个常用的工作流程：打开一个资源，对它进行操作，然后关闭资源。你可以使用如下的方法将其捕获并放入控制抽象：
 
 {{{class="brush: scala"
-  scala> E match {
-       | case pi => "strange math? Pi = "+ pi
-       | case _ => "OK"
-       | }
-  <console>:9: error: unreachable code
-           case _ => "OK"
-                     ^
-}}}
-
-其实也有强制使用小写常量名的方式：`this.pi`或`obj.pi`的形式表示是常量模式；如果这样还没有用，可以用反引号包起来，如：
-
-{{{class="brush: scala"
-  scala> E match {
-       | case `pi` => "strange math? Pi = "+ pi
-       | case _ => "OK"
-       | }
-  res13: java.lang.String = OK
-}}}
-
-反引号也可以用来处理其他的编码问题，如对于标识符来说，因为`yield`是Scala的保留字
-所以不能写`Thread.yield()`，但可以写成：
-
-{{{class="brush: scala"
-Thread.`yield`()
-}}}
-
-这样这里的`yield`就被当作标识符而不是关键字了。
-
-=== 构造器模式 ===
-
-这个模式是真正牛X的模式，不仅检查对象是否是样本类的成员，还检查对象的构造器参数是否符合指定模式。
-
-Scala的模式支持深度匹配（deep match）。不止检查对象是否一致而且还检查对象的内容是否匹配内层模式。由于额外的模式自身可以形成构造器模式，因此可以检查到对象内部的任意深度。
-
-如下面的代码不仅检查了顶层的对象是`BinOp`，而且第三个构造参数是`Number`，而且它的值为`0`：
-
-{{{class="brush: scala"
-  expr match {
-    case BinOp("+", e, Number(0)) => println("a deep match")
-    case _ =>
-  }
-}}}
-
-=== 序列模式 ===
-
-指定匹配序列中任意元素，如指定开始为0：
-
-{{{class="brush: scala"
-  expr match {
-    case List(0, _, _) => println("found it")
-    case _ =>
-  }
-}}}
-
-不固定长度用`_*`：
-
-{{{class="brush: scala"
-  expr match {
-    case List(0, _*) => println("found it")
-    case _ =>
-  }
-}}}
-
-=== 元组模式 ===
-
-检查参数是不是三元组：
-
-{{{class="brush: scala"
-  def tupleDemo(expr: Any) =
-    expr match {
-      case (a, b, c) => println("matched "+ a + b + c)
-      case _ =>
+  def withPrintWriter(file: File, op: PrintWriter => Unit) {
+    val writer = new PrintWriter(file)
+    try {
+      op(writer)
+    } finally {
+      writer.close()
     }
+  } 
 }}}
 
-调用：
+以后要使用的时候就只要传入要处理的文件和处理的方法就行了，打开一个资源和关闭资源都已经在高阶函数中被抽象出来了：
 
 {{{class="brush: scala"
-  scala> tupleDemo(("a ", 3, "-tuple"))
-  matched a 3-tuple
+  withPrintWriter(
+    new File("date.txt"),
+    writer => writer.println(new java.util.Date)
+  ) 
 }}}
 
-=== 类型模式 ===
+这个技巧被称为贷出模式（loan pattern），因为控制抽象函数，如`withPrintWriter`，打开了资源并“贷出”给函数。当函数完成的时候，它发出信号说明它不再需要“借”的资源。于是资源被关闭在`finally`块中，以确信其确实被关闭，而忽略函数是正常结束返回还是抛出了异常。
 
-这个模式可以被用来当成类型测试和类型转换的简易替代：
+让客户代码看上去更像内建控制结构的一种方式是使用大括号代替小括号包围参数列表。Scala的任何方法调用，如果你确实只传入一个参数，就能可选地使用大括号替代小括号包围参数：
 
 {{{class="brush: scala"
-  def generalSize(x: Any) = x match {
-    case s: String => s.length
-    case m: Map[_, _] => m.size
-    case _ => -1
-  }
+  scala> println("Hello, world!")
+  Hello, world!
+  
+  scala> println { "Hello, world!" }
+  Hello, world!  
 }}}
 
-调用的例子：
+这个大括号技巧仅在你传入一个参数时有效，多个参数只能用小括号：
 
 {{{class="brush: scala"
-  scala> generalSize("abc")
-  res14: Int = 3
+  scala> val g = "Hello, world!"
+  g: java.lang.String = Hello, world!
+  
+  scala> g.substring(7, 9)
+  res12: java.lang.String = wo 
 
-  scala> generalSize(Map(1 -> 'a', 2 -> 'b'))
-  res15: Int = 2
-
-  scala> generalSize(Math.Pi)
-  res16: Int = -1
+  scala> g.substring { 7, 9 }
+  <console>:1: error: ';' expected but ',' found.
+         g.substring { 7, 9 }
+                        ^ 
 }}}
 
-注意方法中`s`和`x`虽然都指向同一个对象，但一个类型是`String`一个类型是`Any`。所以可以写成`s.length`不可以写成`x.length`。
-
-另一个测试类型的方法：
+以前面例子里定义的withPrintWriter方法举例。在它最近的形式里，withPrintWriter带了两个参数，因此你不能使用大括号。虽然如此，因为传递给withPrintWriter的函数是列表的最后一个参数，你可以使用curry化把第一个参数，File拖入分离的参数列表。这将使函数仅剩下列表的第二个参数作为唯一的参数：
 
 {{{class="brush: scala"
-expr.isInstanceOf[String]
-}}}
-
-另一个转换类型的方法：
-
-{{{class="brush: scala"
-expr.asInstanceOf[String]
-}}}
-
-使用类型转换的例子：
-
-{{{class="brush: scala"
-  if (x.isInstanceOf[String]) {
-    val s = x.asInstanceOf[String]
-    s.length
-  } else ...
-}}}
-
-
-=== 类型擦除 ===
-
-和Java一样，对于除了数组以外其他集合都采用了泛型擦除（erasure）。就是在运行时不知道集合泛型类型。
-
-如对于`Map[Int,Int]`，到了运行时就不知道两个类型是什么类型了。所以对于泛型的模式匹配，编译器会有警告信息：
-
-{{{class="brush: scala"
-  scala> def isIntIntMap(x: Any) = x match {
-       | case m: Map[Int, Int] => true
-       | case _ => false
-       | }
-  warning: there were unchecked warnings; re-run with
-     -unchecked for details
-  isIntIntMap: (Any)Boolean
-}}}
-
-在启动编译器时加上检查开关`-unchecked`可以看到更多详细信息：
-
-{{{class="brush: scala"
-  scala> :quit
-  $ scala -unchecked
-  Welcome to Scala version 2.7.2
-  (Java HotSpot(TM) Client VM, Java 1.5.0_13).
-  Type in expressions to have them evaluated.
-  Type :help for more information.
-
-scala> def isIntIntMap(x: Any) = x match {
-     | case m: Map[Int, Int] => true
-     | case _ => false
-     | }
-  <console>:5: warning: non variable type-argument Int in
-  type pattern is unchecked since it is eliminated by erasure
-           case m: Map[Int, Int] => true
-                   ^
-}}}
-
-所以对于不同的类型，上面函数结果都是`true`：
-
-{{{class="brush: scala"
-  scala> isIntIntMap(Map(1 -> 1))
-  res17: Boolean = true
-
-  scala> isIntIntMap(Map("abc" -> "abc"))
-  res18: Boolean = true
-}}}
-
-数组和Java一样，是没有类型擦除的：
-
-{{{class="brush: scala"
-  scala> def isStringArray(x: Any) = x match {
-       | case a: Array[String] => "yes"
-       | case _ => "no"
-       | }
-  isStringArray: (Any)java.lang.String
-
-  scala> val as = Array("abc")
-  as: Array[java.lang.String] = Array(abc)
-
-  scala> isStringArray(as)
-  res19: java.lang.String = yes
-
-  scala> val ai = Array(1, 2, 3)
-  ai: Array[Int] = Array(1, 2, 3)
-
-  scala> isStringArray(ai)
-  res20: java.lang.String = no
-}}}
-
-=== 变量绑定 ===
-
-在变量模式里可以用变量操作匹配的部分，那么其他的模式里有没有办法也这样做呢？
-
-其实除了变量模式外，也可以对任何其他模式添加变量。 作用时在匹配成功后，变量就是匹配成功的对象了。 方式为写上变量名、一个`@`符号和模式。
-
-比如要匹配`abs`出现了两次的地方（做了两次绝对值计算等于没有算）：
-
-{{{class="brush: scala"
-  expr match {
-    case UnOp("abs", e @ UnOp("abs", _)) => e
-    case _ =>
-  }
-}}}
-
-这里的`e`代表的就是`UnOp("abs",_)`部分。
-
-== 守卫模式 ==
-
-如，想要把`e+e`这个重复加法替换成乘法`e*2`：
-
-{{{class="brush: scala"
-  BinOp("+", Var("x"), Var("x"))
-}}}
-
-等于：
-
-{{{class="brush: scala"
-  BinOp("*", Var("x"), Number(2))
-}}}
-
-Scala要求模式是线性的，即模式变量只能在模式中出现一次。下面的表达式中`x`重复出现了，所以有问题：
-
-{{{class="brush: scala"
-  scala> def simplifyAdd(e: Expr) = e match {
-       | case BinOp("+", x, x) => BinOp("*", x, Number(2))
-       | case _ => e
-       | }
-  <console>:10: error: x is already defined as value x
-           case BinOp("+", x, x) => BinOp("*", x, Number(2))
-                              ^
-}}}
-
-守卫模式（pattern guard）很像`for`循环中的`if`过滤条件。接在匹配模式后面的、用`if`开始的、使用模式中变量的表达式。
-
-如下面例子中的`if x == y`部分：
-
-{{{class="brush: scala"
-  scala> def simplifyAdd(e: Expr) = e match {
-       | case BinOp("+", x, y) if x == y =>
-       | BinOp("*", x, Number(2))
-       | case _ => e
-       | }
-  simplifyAdd: (Expr)Expr
-}}}
-
-其他的例子，如只匹配正整数和只匹配以`a`开始的字符串：
-
-{{{class="brush: scala"
-  // match only positive integers
-  case n: Int if 0 < n => ...
-
-  // match only strings starting with the letter `a'
-  case s: String if s(0) == 'a' => ...
-}}}
-
-== 模式重叠 ==
-
-{{{class="brush: scala"
-  def simplifyAll(expr: Expr): Expr = expr match {
-    case UnOp("-", UnOp("-", e)) =>
-      simplifyAll(e) // `-' is its own inverse
-    case BinOp("+", e, Number(0)) =>
-      simplifyAll(e) // `0' is a neutral element for `+'
-    case BinOp("*", e, Number(1)) =>
-      simplifyAll(e) // `1' is a neutral element for `*'
-    case UnOp(op, e) =>
-      UnOp(op, simplifyAll(e))
-    case BinOp(op, l, r) =>
-      BinOp(op, simplifyAll(l), simplifyAll(r))
-    case _ => expr
-  }
-}}}
-
-注意这个方法的第四个和第五个匹配样本的参数都是变量，而且对应的操作采用递归。因为四和五的匹配范围比前三个更加广，所以建立放在后面。如果放在前面的话会有警告。
-
-如下面的第一个样本能匹配任何第二个样本能匹配的情况：
-
-{{{class="brush: scala"
-  scala> def simplifyBad(expr: Expr): Expr = expr match {
-       | case UnOp(op, e) => UnOp(op, simplifyBad(e))
-       | case UnOp("-", UnOp("-", e)) => e
-       | }
-  <console>:17: error: unreachable code
-           case UnOp("-", UnOp("-", e)) => e
-                                           ^
-}}}
-
-== 封闭类 ==
-
-前面说过Scala里如果所有的样本都没有匹配，那是会抛异常的。为了全都匹配，程序员会给匹配加上一个默认匹配项处理默认情况。
-
-实际上Scala编译器已经可以检测match表达式中遗漏的情况，但新的样本类可以定义在任何地方。
-
-比如我们的`Expr`有四个样本类，对应的模式匹配准备了四种情况。很好，四对四一个也没有渥。但是，如果有人在其他的文件里又实现了第五个类……就变成漏掉一个匹配情况了。
-
-所以有一个方案：让样本类的超类被封闭（sealed），这样就不能在别的文件中添加新的子类。格式只要加一个`sealed`关键字：
-
-{{{class="brush: scala"
-  sealed abstract class Expr
-  case class Var(name: String) extends Expr
-  case class Number(num: Double) extends Expr
-  case class UnOp(operator: String, arg: Expr) extends Expr
-  case class BinOp(operator: String,
-      left: Expr, right: Expr) extends Expr
-}}}
-
-如果代码里漏掉可能的模式：
-
-{{{class="brush: scala"
-  def describe(e: Expr): String = e match {
-    case Number(_) => "a number"
-    case Var(_) => "a variable"
-  }
-}}}
-
-编译器会警告`UnOp`和`BinOp`没有处理：
-
-{{{class="brush: scala"
-  warning: match is not exhaustive!
-  missing combination UnOp
-  missing combination BinOp
-}}}
-
-如果程序员确实知道这两种情况不可能发生，就是要在这两种情况下抛异常。可以手动加上让编译器闭嘴：
-
-{{{class="brush: scala"
-  def describe(e: Expr): String = e match {
-    case Number(_) => "a number"
-    case Var(_) => "a variable"
-    case _ => throw new RuntimeException // Should not happen
-  }
-}}}
-
-像这样加上一个永远也不会执行到的语句虽然在语法上OK，但不是一个好的代码风格。
-
-还有一个方法是对变量`e`添加注释`@unchecked`：
-
-{{{class="brush: scala"
-  def describe(e: Expr): String = (e: @unchecked) match {
-    case Number(_) => "a number"
-    case Var(_) => "a variable"
-  }
-}}}
-
-注解会在后面的“注解”一章中介绍，这里的`@unchecked`会阻止`match`表达式检查是不是有漏掉的可能性。
-
-== Option类型 ==
-
-非必填类型：可以存值，也可以为`None`对象代表没有值。形式为`Some(x)`，`x`表示非必要。比如Scala的Map类型：
-
-{{{class="brush: scala"
-  scala> val capitals =
-       | Map("France" -> "Paris", "Japan" -> "Tokyo")
-  capitals:
-    scala.collection.immutable.Map[java.lang.String,
-    java.lang.String] = Map(France -> Paris, Japan -> Tokyo)
-
-  scala> capitals get "France"
-  res21: Option[java.lang.String] = Some(Paris)
-
-  scala> capitals get "North Pole"
-  res22: Option[java.lang.String] = None
-}}}
-
-应用模式匹配处理有值和没有值的情况：
-
-{{{class="brush: scala"
-  scala> def show(x: Option[String]) = x match {
-       | case Some(s) => s
-       | case None => "?"
-       | }
-  show: (Option[String])String
-
-  scala> show(capitals get "Japan")
-  res23: String = Tokyo
-
-  scala> show(capitals get "France")
-  res24: String = Paris
-
-  scala> show(capitals get "North Pole")
-  res25: String = ?
-}}}
-
-在Java里Map没有值时返回的是`null`，如果忘记检查会引起空指针异常。而在Scala里对于一个`Map[Int,Int]`是不可能返回`null`的。
-
-使用`Option`类型的优点在于：
-
-* `Option[String]`从字面上看就已经提醒了程序员内容可能为`None`；
-* 在Java中如果变量为空要到运行时才抛出空指针异常，而Scala中Option类型让编译器就已经提供了检查：编译器会在把`Option[String]`当作`String`使用时报错。
-
-== 模式无处不在 ==
-
-=== 变量定义 ===
-
-通过类型定义变量：
-
-{{{class="brush: scala"
-  scala> val myTuple = (123, "abc")
-  myTuple: (Int, java.lang.String) = (123,abc)
-}}}
-
-用模式匹配代替类型声明：
-
-{{{class="brush: scala"
-  scala> val (number, string) = myTuple
-  number: Int = 123
-  string: java.lang.String = abc
-}}}
-
-上面的代码中按元组成员的类型，通过模式匹配自动判断出了变量`number`和`string`的类型。
-
-这种方式用在指定精确类型的样本类时用得比较多：
-
-{{{class="brush: scala"
-  scala> val exp = new BinOp("*", Number(5), Number(1))
-  exp: BinOp = BinOp(*,Number(5.0),Number(1.0))
-
-  scala> val BinOp(op, left, right) = exp
-  op: String = *
-  left: Expr = Number(5.0)
-  right: Expr = Number(1.0)
-}}}
-
-上面的代码正好在赋值时把参数一一对应地传了过去。
-
-=== 偏函数的样本序列 ===
-
-花括号case对应的样本本来就是函数字面量，可以用在任何用函数字面量的地方。而且还是有相当多个可选的函数字面量。如：
-
-{{{class="brush: scala"
-  val withDefault: Option[Int] => Int = {
-    case Some(x) => x
-    case None => 0
-  }
-}}}
-
-调用：
-
-{{{class="brush: scala"
-  scala> withDefault(Some(10))
-  res25: Int = 10
-
-  scala> withDefault(None)
-  res26: Int = 0
-}}}
-
-这样的方式很适合Actor应用：
-
-{{{class="brush: scala"
-  react {
-    case (name: String, actor: Actor) => {
-      actor ! getip(name)
-      act()
+  def withPrintWriter(file: File)(op: PrintWriter => Unit) {
+    val writer = new PrintWriter(file)
+    try {
+      op(writer)
+    } finally {
+      writer.close()
     }
-    case msg => {
-      println("Unhandled message: "+ msg)
-      act()
+  } 
+}}}
+
+可以用更赏心悦目的语法格式调用这个方法：
+
+{{{class="brush: scala"
+  val file = new File("date.txt")
+
+  withPrintWriter(file) {
+    writer => writer.println(new java.util.Date)
+  } 
+}}}
+
+第一个参数列表，包含了一个File参数，被写成包围在小括号中。第二个参数列表，包含了一个函数参数，被包围在大括号中。
+
+
+== 传名参数 ==
+
+上节展示的`withPrintWriter`方法不同于语言的内建控制结构，如`if`和`while`，在于大括号之间的代码带了参数。`withPrintWriter`方法需要一个类型为`PrintWriter`的参数。这个参数以`writer =>`方式显示出来：
+
+{{{class="brush: scala"
+  withPrintWriter(file) {
+    writer => writer.println(new java.util.Date)
+  } 
+}}}
+
+然而如果你想要实现某些更像if或while的东西，根本没有值要传入大括号之间的代码，那该怎么做呢？为了解决这种情况，Scala提供了叫名参数。
+
+为了举一个有现实意义的例子：虽然Scala提供了它自己的`assert`，但是用户想自己实现一个称为`myAssert`的断言架构。
+
+`myAssert`函数将带一个函数值做输入并参考一个标志位来决定该做什么。如果标志位被设置了，`myAssert`将调用传入的函数并证实其返回`true`。如果标志位被关闭了，`myAssert`将安静地什么都不做。 如果没有叫名参数，你可以这样写`myAssert`：
+
+{{{class="brush: scala"
+  var assertionsEnabled = true
+
+  def myAssert(predicate: () => Boolean) =
+    if (assertionsEnabled && !predicate())
+      throw new AssertionError 
+}}}
+
+用函数字面量的简写方式可以让代码短很多。但函数字面量的简写方式只能用在有参数的情况下，用占位符`_`来代替参数。没有参数也就不能用函数了面量的简写形式。
+
+所以说现在不爽的地方是虽然用不到参数，但调用时却不能省略`() =>`：
+
+{{{class="brush: scala"
+  myAssert(() => 5 > 3) 
+
+  myAssert(5 > 3) // Won't work, because missing () =>  
+}}}
+
+
+传名函数恰好为了实现你的愿望而出现。要实现一个叫传函数，要定义参数的类型开始于`=>`而不是`() =>`。如，改`() => Boolean`为`=> Boolean`：
+
+{{{class="brush: scala"
+  def byNameAssert(predicate: => Boolean) =
+    if (assertionsEnabled && !predicate)
+      throw new AssertionError 
+}}}
+
+现在可以省略了，看起来像语言内建的控制结构一样：
+
+{{{class="brush: scala"
+  byNameAssert(5 > 3) 
+}}}
+
+传名类型中，空的参数列表`()`被省略，它仅在参数中被允许。没有什么叫名变量或叫名字段这样的东西。 
+
+对于`myAssert`，我们费了这么大的力气，只是为了让函数字面量看起来像表达式，那为什么不直接用`Boolean`变量作为参数呢？
+
+{{{class="brush: scala"
+  def boolAssert(predicate: Boolean) =
+    if (assertionsEnabled && !predicate)
+      throw new AssertionError 
+}}}
+
+当然这种格式同样合法，并且使用这个版本`boolAssert`的代码看上去仍然与前面的一样：
+
+{{{class="brush: scala"
+  boolAssert(5 > 3) 
+}}}
+
+虽然如此，这两种方式之间存在一个非常重要的差别须指出：表达式会在传入参数前先被执行。
+
+所以在上面的例子中，如果断言被禁用，你会看到`boolAssert`括号里的表达式的某些副作用，而`byNameAssert`却没有。例如，如果断言被禁用，`boolAssert`的例子里尝试对`x / 0 == 0`的断言将产生一个异常：
+                    
+{{{class="brush: scala"
+  scala> var assertionsEnabled = false
+  assertionsEnabled: Boolean = false
+
+  scala> boolAssert(x / 0 == 0)
+  java.lang.ArithmeticException: / by zero
+  	   at .<init>(<console>:8)
+          at .<clinit>(<console>)
+          at RequestResult$.<init>(<console>:3)
+          at RequestResult$.<clinit>(<console>)...
+}}}
+
+但在`byNameAssert`的例子里尝试同样代码的断言将不产生异常：
+
+{{{class="brush: scala"
+  scala> byNameAssert(x / 0 == 0) 
+}}}
+
+
+
+= 组合与继承 =
+
+
+== 定制一个二维布局库 ==
+
+作为本章运行的例子，我们将创造一个制造和渲染二维布局元素的库。每个元素将代表一个填充字符的长方形。方便起见，库将提供名为`elem`的工厂方法来通过传入的数据构造新的元素。例如，你将能通过工厂方法采用下面的写法创建带有字串的元素：
+
+
+{{{class="brush: scala"
+  elem(s: String): Element 
+}}}
+
+元素将以名为`Element`的类型为模型。你将能在元素上调用`above`或`beside`，把另一个元素放在当前元素的右边或是上边：
+
+{{{class="brush: scala" 
+  val column1 = elem("hello") above elem("***")
+  val column2 = elem("***") above elem("world")
+  column1 beside column2
+}}}
+
+打印这个表达式的结果将是：
+
+{{{class="brush: scala" 
+  hello ***  
+   *** world
+}}}
+
+== 抽象类 ==
+
+布局元素名为`Element`，存放的文本内容类型为`Array[String]`。提供方法`contents`取得存放的文本内容，但没有定义实现方式，所以这个类是抽象类，要加上`abstract`关键字：
+
+{{{class="brush: scala"
+  abstract class Element {
+    def contents: Array[String]
+  } 
+}}}
+
+请注意类`Element`的`contents`方法并没带有`abstract`修饰符。不像Java，方法的声明中不需要（也不允许）抽象修饰符。如果方法没有实现，它就是抽象的。
+
+另一个术语用法需要分辨声明（declaration）和定义（definition）。类`Element`声明了抽象方法`contents`，但当前没有定义具体方法。
+
+
+== 定义无参数方法 ==
+
+添加显示宽度和高度的方法：
+
+height方法返回contents里的行数。
+
+width方法返回第一行的长度，或如果元素没有行记录，返回零。（也就是说你不能定义一个高度为零但宽度不为零的元素。）
+
+{{{class="brush: scala"
+  abstract class Element {
+    def contents: Array[String]
+    def height: Int = contents.length
+    def width: Int = if (height == 0) 0 else contents(0).length
+  } 
+}}}
+
+三个方法没一个有参数列表，甚至连个空列表都没有。如：
+
+{{{class="brush: scala"
+  def width(): Int
+  // 省略括号
+  def width: Int 
+}}}
+
+推荐的惯例是在没有参数并且方法仅通过读含有对象的方式访问可变状态（专指其不改变可变状态）时使用无参数方法。这样感觉上就和只读字段一样，其实也可以选择把`width`和`height`作为字段而不是方法来实现，只要简单地在每个实现里把`def`修改成`val`即可：
+
+{{{class="brush: scala" 
+  abstract class Element {
+    def contents: Array[String]
+    val height = contents.length
+    val width = 
+      if (height == 0) 0 else contents(0).length
+  }
+}}}
+
+两组定义从客户的观点来看是完全相同的。唯一的差别是与的访问或许稍微比方法调用要快，因为字段值在类被初始化的时候被预计算，而方法调用在每次调用的时候都要计算。换句话说，字段在每个Element对象上需要更多的内存空间。因此类的使用概况，属性表达成字段还是方法更好，决定了其实现，并且这个概况还可以随时改变。
+
+重点是`Element`类的客户不应在其内部实现改变的时候受影响。
+
+特别是如果类的字段变成了访问函数，且访问函数是纯的，就是说它没有副作用并且不依赖于可变状态，那么类`Element`的客户不需要被重写。客户都不应该需要关心这些。
+
+目前为止一切良好。但仍然有些琐碎的复杂的东西要去做以协同Java处理事情的方式。问题在于Java没有实现统一访问原则。因此Java里是`string.length()`，不是`string.length`（尽管是`array.length`，不是`array.length()`）。不用说，这让人很困惑。
+
+为了在这道缺口上架一座桥梁，Scala在遇到混合了无参数和空括号方法的情况时很大度。特别是，你可以用空括号方法重载无参数方法，并且反之亦可。你还可以在调用任何不带参数的方法时省略空的括号。例如，下面两行在Scala里都是合法的：
+
+{{{class="brush: scala" 
+  Array(1, 2, 3).toString
+  "abc".length
+}}}
+
+原则上Scala的函数调用中可以省略所有的空括号。然而，在调用的方法表达的超过其接收调用者对象的属性时，推荐仍然写一对空的括号。例如，如果方法执行了I/O，或写入可重新赋值的变量（var），或读出不是接受调用者的字段的var，无论是直接的还是非直接的通过使用可变对象，那么空括号是合适的。这种方式是让参数列表扮演一个可见的线索说明某些有趣的计算正通过调用被触发。例如：
+
+{{{class="brush: scala" 
+  "hello".length  // no () because no side-effect
+  println()       // better to not drop the ()
+}}}
+
+总结起来，Scala里定义不带参数也没有副作用的方法为无参数方法，也就是说，省略空的括号，是鼓励的风格。另一方面，永远不要定义没有括号的带副作用的方法，因为那样的话方法调用看上去会像选择一个字段。这样你的客户看到了副作用会很奇怪。相同地，当你调用带副作用的函数，请确信写这个调用的时候包括了空的括号。另一种考虑这个问题的方式是，如果你调用的函数执行了操作，使用括号，但如果仅提供了对某个属性的访问，省略括号。
+
+
+== 扩展类 ==
+
+实例化一个元素，我们需要创建扩展了`Element`并实现抽象的`contents`方法的子类。
+
+{{{class="brush: scala" 
+  class ArrayElement(conts: Array[String]) extends Element {
+    def contents: Array[String] = conts
+  }
+}}}
+
+这种`extends`子句有两个效果：使类`ArrayElement`从类`Element`继承所有非私有的成员，并且使`ArrayElement`成为`Element`的子类型。由于`ArrayElement`扩展了`Element`，类`ArrayElement`被称为类`Element`的子类。反过来，`Element`是`ArrayElement`的超类。
+
+如果你省略`extends`子句，Scala编译器隐式地假设你的类扩展自`scala.AnyRef`，在Java平台上与`java.lang.Object`一致。因此，类`Element`隐式地扩展了类`AnyRef`。
+
+`ArrayElement`的`contents`方法重载（或者可说成：实现）了类`Element`的抽象方法`contents`：
+
+{{{class="brush: scala" 
+  scala> val ae = new ArrayElement(Array("hello", "world"))
+  ae: ArrayElement = ArrayElement@d94e60
+
+  scala> ae.width
+  res1: Int = 5
+}}}
+
+子类型化（subtyping）是指子类的值可以被用在需要其超类的值的任何地方。例如：
+
+{{{class="brush: scala" 
+  val e: Element = new ArrayElement(Array("hello"))
+}}}
+
+如果子类中的字段与超类同名，或是子类的中的方法名称和参数与超类类完全一样，就会覆盖（override）超类中的版本。
+
+== 重写方法和字段 ==
+
+字段和方法属于相同的命名空间。这使得字段重写无参数方法成为可能。比如说，你可以改变类`ArrayElement`中`contents`的实现，从一个方法变为一个字段，而无需修改类`Element`中`contents`的抽象方法定义：
+
+{{{class="brush: scala" 
+  class ArrayElement(conts: Array[String]) extends Element {
+    val contents: Array[String] = conts
+  }
+}}}
+
+这个`ArrayElement`的版本里，字段`contents`（用`val`定义）完美地实现了类`Element`里的无参数方法`contents`（用`def`定义）。 
+
+另一方面，Scala里禁止在同一个类里用同样的名称定义字段和方法，而在Java里这样做被允许。例如，下面的Java类能够很好地编译：
+
+{{{class="brush: scala" 
+  // This is Java
+  class CompilesFine {
+    private int f = 0;
+    public int f() {
+      return 1;
     }
   }
 }}}
 
-顺带提一下应用在偏（partial）函数上的应用。如果是不支持的值上会产生一个运行时异常。
+但是相应的Scala类将不能编译：
 
-如，下面的偏函数能返回整数列表的第二个元素：
+{{{class="brush: scala" 
+
+  class WontCompile {
+    private var f = 0 // Won't compile, because a field 
+    def f = 1         // and method have the same name
+  }
+
+}}}
+
+Java为定义准备了四个命名空间：字段，方法，类型和包。
+
+而Scala仅有两个,与Java的四个命名空间相对：
+
+* 值（字段，方法，包还有单例对象）
+* 类型（类和特质名）
+
+Scala把字段和方法放进同一个命名空间的理由很清楚，因为这样你就可以使用val重载无参数的方法，这种你在Java里做不到的事情。
+
+
+== 定义参数化字段 ==
+
+ArrayElement类的定义。它有一个参数conts，其唯一目的是被复制到contents字段。选择conts这个参数的名称只是为了让它看上去更像字段名contents而不会与它发生实际冲突。这是一种“代码异味”，一个表明或许某些不必须的累赘和重复。
+
+可以通过在单一的参数化字段（parametric field）定义中组合参数和字段避免：
+
+{{{class="brush: scala" 
+  class ArrayElement(val contents: Array[String]) extends Element
+}}}
+
+注意用的是`val`，所以现在拥有一个可以从类外部访问的，（不能重新赋值的）字段contents。字段使用参数值初始化。等同于：
 
 {{{class="brush: scala"
-  val second: List[Int] => Int = {
-    case x :: y :: _ => y
+  class ArrayElement(x123: Array[String]) extends Element { 
+    val contents: Array[String] = x123
+  } 
+}}}
+
+同样也可以使用`var`前缀类参数，这种情况下相应的字段将能重新被赋值。还有可能添加如private，protected，或override这类的修饰符到这些参数化字段上，就好象你可以在其他类成员上做的事情：
+
+{{{class="brush: scala" 
+  class Cat {
+    val dangerous = false
+  }
+  class Tiger(
+    override val dangerous: Boolean,
+    private var age: Int
+  ) extends Cat
+}}}
+
+Tiger的定义是以下包括重载成员dangerous和private成员age的类定义替代写法的简写：
+
+{{{class="brush: scala" 
+  class Tiger(param1: Boolean, param2: Int) extends Cat {
+    override val dangerous = param1
+    private var age = param2
   }
 }}}
 
-编译器会提示匹配不全：
 
-{{{class="brush: scala"
-  <console>:17: warning: match is not exhaustive!
-  missing combination Nil
-}}}
 
-如果传递给它一个三元素列表，它的执行没有问题。但是一个空列表就不行了：
+== 调用超类构造器 ==
 
-{{{class="brush: scala"
-  scala> second(List(5,6,7))
-  res24: Int = 6
+如果再要新的子类：
 
-  scala> second(List())
-  scala.MatchError: List()
-   at $anonfun$1.apply(<console>:17)
-   at $anonfun$1.apply(<console>:17)
-}}}
-
-如果要检查一个偏函数是否有定义，一定要告诉编译器正在使用的函数是偏函数。类型`Lint[Int] => Int`包含了不管是否是偏函数的，从整数列表到整数的所有函数。仅包含整数列表到的偏函数的，应该写成`Partialfunction[List[Int],Int]`。
-
-下面是偏函数的定义例子：
-
-{{{class="brush: scala"
-  val second: PartialFunction[List[Int],Int] = {
-    case x :: y :: _ => y
+{{{class="brush: scala" 
+  class LineElement(s: String) extends ArrayElement(Array(s)) {
+    override def width = s.length
+    override def height = 1
   }
 }}}
 
-偏函数有一个`idDefineAt`方法来测试函数对某个值是否有定义。以这个例子来说，对于至少两个元素的列表是有定义的：
+由于LineElement扩展了ArrayElement，并且ArrayElement的构造器带一个参数（Array[String]），LineElement需要传递一个参数到它的超类的主构造器。要调用超类构造器，只要把你要传递的参数或参数列表放在“超类名之后的括号里）即可。
 
-{{{class="brush: scala"
-  scala> second.isDefinedAt(List(5,6,7))
-  res27: Boolean = true
 
-  scala> second.isDefinedAt(List())
-  res28: Boolean = false
+== 使用override修饰符 ==
+
+考虑一下这样的场景：
+
+基类和子类是不同的人维护的。原来基类里没有`add`方法，所以子类里加上了。后来基类里也加上了`add`方法，但维护子类的人不知道。这样的规定是为了防止“脆基类”问题。
+
+所以Scala里override有强制的规定：
+
+* 如果实现了抽象成员，加不加随便。
+* 如果重载了具体实现，就一定要加。
+* 没有重载就绝不能加。
+
+这样起码保证了维护子类的人知道自己会覆盖超类的方法。
+
+
+== 多态和动态绑定 ==
+
+
+创建一个新的子类，它可以按给出的长度宽度，用指定的字符填充：
+
+{{{class="brush: scala" 
+  class UniformElement(
+    ch: Char, 
+    override val width: Int,
+    override val height: Int 
+  ) extends Element {
+    private val line = ch.toString * width
+    def contents = Array.make(height, line)
+  }
 }}}
 
-Scala在编译器在把这样的表达式转为偏函数时会对模式进行两次翻译：一次是真实函数的实现；另一次是测试函数是否对参数有定义的实现。
+父类的变量可以存放子类的实例，就是多态的一种体现。这么多子类都可以用父类的变量来存放：
 
-例如上面的函数宣布量`{case x :: y :: _ => y}`会被翻译成：
 
-{{{class="brush: scala"
-  new PartialFunction[List[Int], Int] {
-    def apply(xs: List[Int]) = xs match {
-      case x :: y :: _ => y
+{{{class="brush: scala" 
+  val e1: Element = new ArrayElement(Array("hello", "world"))
+  val ae: ArrayElement = new LineElement("hello")
+  val e2: Element = ae
+  val e3: Element = new UniformElement('x', 2, 3)
+}}}
+
+变量和表达式上的方法调用是动态绑定（dynamically bound）的。这意味着被调用的实际方法实现取决于运行期对象其实的类，而不是变量或表达式的类型。
+
+为了演示这种行为，我们会从我们的`Element`类中临时移除所有存在的成员并添加一个名为`demo`的方法。我们会在`ArrayElement`和`LineElement`中重载`demo`，但`UniformElement`除外：
+
+{{{class="brush: scala" 
+  abstract class Element {
+    def demo() {
+      println("Element's implementation invoked")
     }
-    def isDefinedAt(xs: List[Int]) = xs match {
-      case x :: y :: _ => true
-      case _ => false
+  }
+
+  class ArrayElement extends Element {
+    override def demo() {
+      println("ArrayElement's implementation invoked")
+    }
+  }
+
+  class LineElement extends ArrayElement {
+    override def demo() {
+      println("LineElement's implementation invoked")
+    }
+  }
+
+  // UniformElement inherits Element's demo
+  class UniformElement extends Element 
+}}}
+
+如果你把这些代码输入到了解释器中，那么你就能定义这个带了一个`Element`并调用`demo`的方法：
+
+{{{class="brush: scala" 
+  def invokeDemo(e: Element) {
+    e.demo()
+  }
+}}}
+
+如果你传给`invokeDemo`一个`ArrayElement`，你会看到一条消息指明`ArrayElement`的`demo`实现被调用，尽管被调用`demo`的变量`e`的类型是`Element`： 
+{{{class="brush: scala" 
+  scala> invokeDemo(new ArrayElement)
+  ArrayElement's implementation invoked
+}}}
+
+相同的，如果你传递`LineElement`给`invokeDemo`，你会看到一条指明`LineElement`的`demo`实现被调用的消息：
+
+{{{class="brush: scala" 
+  scala> invokeDemo(new LineElement)
+  LineElement's implementation invoked
+}}}
+
+传递`UniformElement`时的行为一眼看上去会有些可以，但是正确：
+
+{{{class="brush: scala" 
+  scala> invokeDemo(new UniformElement)
+  Element's implementation invoked
+}}}
+
+因为`UniformElement`没有重载`demo`，它从它的超类`Element`继承了`demo`的实现。因此，当对象的类是`UniformElement`时，`Element`的实现就是要调用的`demo`的正确实现。
+
+
+
+== 定义final成员 ==
+
+要确保成员不被子类重载。Scala里和Java里一样，通过添加`final`修饰符给成员来做到。
+
+{{{class="brush: scala" 
+  class ArrayElement extends Element {
+    final override def demo() {
+      println("ArrayElement's implementation invoked")
     }
   }
 }}}
 
-这只有在声明类型为`PartialFunction`时才会发生。如果只是`Function1`或没有声明，函数字面量会编译为完整的函数。
+在类的声明上添加`final`修饰符把整个类声明为final：
 
-偏函数可能会引起运行时的异常，所以在调用前用`isDefineAt`检查一下。
-
-=== for表达式 ===
-
-来看一个典型的例子：每个元素都是`(country,city)`：
-
-{{{class="brush: scala"
-  scala> for ((country, city) <- capitals)
-       | println("The capital of "+ country +" is "+ city)
-  The capital of France is Paris
-  The capital of Japan is Tokyo
+{{{class="brush: scala" 
+  final class ArrayElement extends Element {
+    override def demo() {
+      println("ArrayElement's implementation invoked")
+    }
+  }
 }}}
 
-当然也有元素不匹配模式的情况，下面例子中不匹配的会被丢弃。所以不用担心不能匹配的元素：
+== 使用组合与继承 ==
 
-{{{class="brush: scala"
-  scala> val results = List(Some("apple"), None,
-       | Some("orange"))
-  results: List[Option[java.lang.String]] = List(Some(apple),
-      None, Some(orange))
+组合与继承是利用其它现存类定义新类的两个方法。
 
-  scala> for (Some(fruit) <- results) println(fruit)
-  apple
-  orange
+如果你接下来的工作主要是代码重用，通常你应采用组合而不是继承。只有继承受脆基类问题之苦，这种情况你可能会无意中通过改变超类而破坏了子类。
+
+关于继承关系你可以问自己一个问题，是否它建模了一个is-a关系。你能问的另一个问题是，是否客户想要把子类类型当作超类类型来用。
+
+== 实现示例中的功能 ==
+
+把一个元素放在另一个上面是指串连这两个元素的`contents`值。
+
+{{{class="brush: scala" 
+  def above(that: Element): Element =
+    new ArrayElement(this.contents ++ that.contents)
 }}}
 
-== 大型的例子 ==
+把两个元素靠在一起，我们将创造一个新的元素，其中的每一行都来自于两个元素的相应行的串连。
 
-目标是生成公式`((a / (b * c) + 1 / n) / 3)`显示形式为：
+{{{class="brush: scala" 
+  def beside(that: Element): Element = {
+    val contents = new Array[String](this.contents.length)
+    for (i <- 0 until this.contents.length) 
+      contents(i) = this.contents(i) + that.contents(i)
+    new ArrayElement(contents)
+  }
 
-{{{class="brush: scala"
-  a     1
------ + -
-b * c   n
----------
-    3
 }}}
 
-先来看：
+索引数组的循环是指令式风格。这个方法可以替代缩减成一个表达式：
 
-{{{class="brush: scala"
-  BinOp("+",
-        BinOp("*",
-              BinOp("+", Var("x"), Var("y")),
-              Var("z")),
-        Number(1))
-}}}
-
-应该输出`(x+y)*z+1`，`(x+y)`是有括号的，但是最外层不要括号。所以要先解决优先级问题：
-
-{{{class="brush: scala"
-  Map(
-    "|" -> 0, "||" -> 0,
-    "&" -> 1, "&&" -> 1, ...
+{{{class="brush: scala" 
+  new ArrayElement(
+    for (
+      (line1, line2) <- this.contents zip that.contents
+    ) yield line1 + line2
   )
 }}}
 
-当然还有改进的空间，更好的方法是只定义递减的优先级操作符。然后根据它来计算：
+`zip`操作符转换为一个对子的数组（可以称为`Tupele2`）。`zip`方法从它的两个参数中拣出相应的元素并组织成对子数组。
 
-{{{class="brush: scala"
-    // Contains operators in groups of increasing precedence
-    private val opGroups =
-      Array(
-        Set("|", "||"),
-        Set("&", "&&"),
-        Set("^"),
-        Set("==", "!="),
-        Set("<", "<=", ">", ">="),
-        Set("+", "-"),
-        Set("*", "%")
+例如，表达式：
+
+{{{class="brush: scala" 
+  Array(1, 2, 3) zip Array("a", "b")
+}}}
+
+将生成：
+
+{{{class="brush: scala" 
+  Array((1, "a"), (2, "b"))
+}}}
+
+如果两个操作数组的其中一个比另一个长，zip将舍弃余下的元素。
+
+定义toString方法返回元素格式化成的字串：
+
+{{{class="brush: scala" 
+  override def toString = contents mkString "\n"
+}}}
+
+最后是这个样子：
+
+{{{class="brush: scala" 
+  abstract class Element {
+
+    def contents: Array[String]
+
+    def width: Int =
+      if (height == 0) 0 else contents(0).length
+
+    def height: Int = contents.length
+
+    def above(that: Element): Element =
+      new ArrayElement(this.contents ++ that.contents)
+
+    def beside(that: Element): Element =
+      new ArrayElement(
+        for (
+          (line1, line2) <- this.contents zip that.contents
+        ) yield line1 + line2
       )
-}}}
 
-再定义一个操作符与优先级映射的变量`precedence`，映射的内容是通过处理上面定义的层级生成的。
-
-{{{class="brush: scala"
-    // A mapping from operators to their precedence
-    private val precedence = {
-      val assocs =
-        for {
-          i <- 0 until opGroups.length
-          op <- opGroups(i)
-        } yield op -> i
-      Map() ++ assocs
-    }
-
-    private val unaryPrecedence = opGroups.length
-    private val fractionPrecedence = -1
-}}}
-
-上面的代码里有一个例外，我们把除法单独拿了出来，并且把它的优先级定义成了`-1`。这是为了方便处理我们要实现的分子在上分母在下的分数显示方式。
-
-下一个问题是格式化方法的实现。定义一个`format`方法，它有两个参数：
-
-* 第一个参数：是表达式类型的`e: Expr`
-* 第二个参数：操作符的优先级`enclPrec: Int`（如果没有这个操作符，那优先级就应该是0）。
-
-注意`format`是私有方法，完成大部分工作。最后一个公开的同名方法`format`提供入口。内部还有一个`stripDot`方法来去掉如`2.0`的`.0`部分。
-
-{{{class="brush: scala"
-  private def format(e: Expr, enclPrec: Int): Element =
-
-    e match {
-
-      case Var(name) =>
-        elem(name)
-
-      case Number(num) =>
-        def stripDot(s: String) =
-          if (s endsWith ".0") s.substring(0, s.length - 2)
-          else s
-        elem(stripDot(num.toString))
-
-      case UnOp(op, arg) =>
-        elem(op) beside format(arg, unaryPrecedence)
-
-      case BinOp("/", left, right) =>
-        val top = format(left, fractionPrecedence)
-        val bot = format(right, fractionPrecedence)
-        val line = elem('-', top.width max bot.width, 1)
-        val frac = top above line above bot
-        if (enclPrec != fractionPrecedence) frac
-        else elem(" ") beside frac beside elem(" ")
-
-      case BinOp(op, left, right) =>
-        val opPrec = precedence(op)
-        val l = format(left, opPrec)
-        val r = format(right, opPrec + 1)
-        val oper = l beside elem(" "+ op +" ") beside r
-        if (enclPrec <= opPrec) oper
-        else elem("(") beside oper beside elem(")")
-    }
-
-    def format(e: Expr): Element = format(e, 0)
+    override def toString = contents mkString "\n"
   }
 }}}
 
-上面的代码通过模式匹配实现了四种不同情况的处理：
 
-第一种情况：如果是变量，结果就是变量名。
 
-{{{class="brush: scala"
-  case Var(name) =>
-    elem(name)
+== 定义工厂对象 ==
+
+最直接的方案是创建类`Element`的伴生对象并把它做成布局元素的工厂方法。这种方式唯一要暴露给客户的就是`Element`的类/对象组合，隐藏它的三个实现类`ArrayElement`，`LineElement`和`UniformElement`。
+
+{{{class="brush: scala" 
+  object Element {
+
+    def elem(contents: Array[String]): Element = 
+      new ArrayElement(contents)
+
+    def elem(chr: Char, width: Int, height: Int): Element = 
+      new UniformElement(chr, width, height)
+
+    def elem(line: String): Element = 
+      new LineElement(line)
+  }
+
 }}}
 
-第二种情况：如果是数字，结果是格式化后的数字，如`2.0`格式化为`2`：
+这些工厂方法使得改变类`Element`的实现通过使用`elem`工厂方法实现而不用显式地创建新的`ArrayElement`实例成为可能。
 
-{{{class="brush: scala"
-      case Number(num) =>
-        def stripDot(s: String) =
-          if (s endsWith ".0") s.substring(0, s.length - 2)
-          else s
-        elem(stripDot(num.toString))
-}}}
+为了不使用单例对象的名称，`Element`，认证而调用工厂方法，我们将在源文件顶上引用`Element.elem`。
 
-第三种情况：如果是一元操作符，处理结果为操作`op`和最高环境优先级格式化参数`arg`的结果组成。这样如果`arg`是除了分数以外的二元操作就不会出现在括号中。
+换句话说，代之以在`Element`类内部使用`Element.elem`调用工厂方法，我们将引用`Element.elem`，这样我们只要使用它们的简化名，`elem`，就可以调用工厂方法。
 
-{{{class="brush: scala"
-      case UnOp(op, arg) =>
-        elem(op) beside format(arg, unaryPrecedence)
-}}}
+{{{class="brush: scala" 
+  import Element.elem
 
-第四种情况：除法，也可以说是分数，则按上下位置放置。但仅仅上下的位置还不够。因为这样分不清主次：
+  abstract class Element {
 
-{{{class="brush: scala"
-a
--
-b
--
-c
-}}}
+    def contents: Array[String]
 
-有必要强化层次：
+    def width: Int =
+      if (height == 0) 0 else contents(0).length
 
-{{{class="brush: scala"
- a
- -
- b
----
- c
-}}}
+    def height: Int = contents.length
 
-实现的代码这个样子的：
+    def above(that: Element): Element =
+      elem(this.contents ++ that.contents)
 
-{{{class="brush: scala"
-      case BinOp("/", left, right) =>
-        val top = format(left, fractionPrecedence)
-        val bot = format(right, fractionPrecedence)
-        val line = elem('-', top.width max bot.width, 1)
-        val frac = top above line above bot
-        if (enclPrec != fractionPrecedence) frac
-        else elem(" ") beside frac beside elem(" ")
-}}}
-
-第五种情况（也是最后一种）：除法以外的其他二元操作符。在这里要注意一下优先级问题：
-
-二元运算符有两个操作数。其中左操作数的优先级是操作符`op`的`opPrec`，而右操作数的优先级要再加1。这样保证了括号也同样反映正确的优先级。如：
-
-{{{class="brush: scala"
-BinOp("-", Var("a"), BinOp("-", Var("b"), Var("c")))
-}}}
-
-将被处理为`a - (b - c)`。如果当前操作符优先级小于外部操作符的优先级，那`oper`就要被放在括号里，不然按原样返回。
-
-具体实现：
-
-{{{class="brush: scala"
-      case BinOp(op, left, right) =>
-        val opPrec = precedence(op)
-        val l = format(left, opPrec)
-        val r = format(right, opPrec + 1)
-        val oper = l beside elem(" "+ op +" ") beside r
-        if (enclPrec <= opPrec) oper
-        else elem("(") beside oper beside elem(")")
-}}}
-
-五种可能的情况都处理完毕了。最后再给一个让外部代码公开调用的方法，这个方法不用优先级参数就可以格式化公式：
-
-{{{class="brush: scala"
-    def format(e: Expr): Element = format(e, 0)
-}}}
-
-到这里算法的讲解完毕。下面把所有的代码都一接在一起,全部代码：
-
-{{{class="brush: scala"
-//compile this along with ../compo-inherit/LayoutElement.scala
-
-  package org.stairwaybook.expr
-  import layout.Element.elem
-  
-  sealed abstract class Expr
-  case class Var(name: String) extends Expr
-  case class Number(num: Double) extends Expr
-  case class UnOp(operator: String, arg: Expr) extends Expr
-  case class BinOp(operator: String,
-      left: Expr, right: Expr) extends Expr
-  
-  class ExprFormatter {
-  
-    // Contains operators in groups of increasing precedence
-    private val opGroups =
-      Array(
-        Set("|", "||"),
-        Set("&", "&&"),
-        Set("^"),
-        Set("==", "!="),
-        Set("<", "<=", ">", ">="),
-        Set("+", "-"),
-        Set("*", "%")
+    def beside(that: Element): Element =
+      elem(
+        for (
+          (line1, line2) <- this.contents zip that.contents
+        ) yield line1 + line2
       )
-  
-    // A mapping from operators to their precedence
-    private val precedence = {
-      val assocs =
-        for {
-          i <- 0 until opGroups.length
-          op <- opGroups(i)
-        } yield op -> i
-      Map() ++ assocs
+
+    override def toString = contents mkString "\n"
+  }
+
+}}}
+
+有了工厂方法之后，子类`ArrayElement`，`LineElement`和`UniformElement`不再需要直接被客户访问，所以可以改成是私有的。
+
+Scala里，你可以在类和单例对象中定义其它的类和单例对象。因此一种让`Element`的子类私有化的方式就是把它们放在`Element`单例对象中并在那里声明它们为私有。需要的时候，这些类将仍然能被三个`elem`工厂方法访问。
+
+{{{class="brush: scala"   object Element {
+    private class ArrayElement(
+      val contents: Array[String]
+    ) extends Element
+
+    private class LineElement(s: String) extends Element {
+      val contents = Array(s)
+      override def width = s.length
+      override def height = 1
     }
-  
-    private val unaryPrecedence = opGroups.length
-    private val fractionPrecedence = -1
-  
-    // continued in Listing 15.21...
 
-  import org.stairwaybook.layout.Element
-
-  // ...continued from Listing 15.20
-  
-  private def format(e: Expr, enclPrec: Int): Element =
-  
-    e match {
-  
-      case Var(name) =>
-        elem(name)
-  
-      case Number(num) =>
-        def stripDot(s: String) =
-          if (s endsWith ".0") s.substring(0, s.length - 2)
-          else s
-        elem(stripDot(num.toString))
-  
-      case UnOp(op, arg) =>
-        elem(op) beside format(arg, unaryPrecedence)
-  
-      case BinOp("/", left, right) =>
-        val top = format(left, fractionPrecedence)
-        val bot = format(right, fractionPrecedence)
-        val line = elem('-', top.width max bot.width, 1)
-        val frac = top above line above bot
-        if (enclPrec != fractionPrecedence) frac
-        else elem(" ") beside frac beside elem(" ")
-  
-      case BinOp(op, left, right) =>
-        val opPrec = precedence(op)
-        val l = format(left, opPrec)
-        val r = format(right, opPrec + 1)
-        val oper = l beside elem(" "+ op +" ") beside r
-        if (enclPrec <= opPrec) oper
-        else elem("(") beside oper beside elem(")")
+    private class UniformElement(
+      ch: Char,
+      override val width: Int,
+      override val height: Int
+    ) extends Element {
+      private val line = ch.toString * width
+      def contents = Array.make(height, line)
     }
-  
-    def format(e: Expr): Element = format(e, 0)
+
+    def elem(contents:  Array[String]): Element =
+      new ArrayElement(contents)
+
+    def elem(chr: Char, width: Int, height: Int): Element =
+      new UniformElement(chr, width, height)
+
+    def elem(line: String): Element =
+      new LineElement(line)
   }
 }}}
 
-具体调用的演示程序：
 
-{{{class="brush: scala"
-  import org.stairwaybook.expr._
 
-  object Express extends Application {
 
-    val f = new ExprFormatter
+== 变高变宽 ==
 
-    val e1 = BinOp("*", BinOp("/", Number(1), Number(2)),
-                        BinOp("+", Var("x"), Number(1)))
-    val e2 = BinOp("+", BinOp("/", Var("x"), Number(2)),
-                        BinOp("/", Number(1.5), Var("x")))
-    val e3 = BinOp("/", e1, e2)
+Element的版本并不完全，因为他不允许客户把不同宽度的元素堆叠在一起，或者不同高度的元素靠在一起。比方说，下面的表达式将不能正常工作，因为组合元素的第二行比第一行要长：
 
-    def show(e: Expr) = println(f.format(e)+ "\n\n")
-
-    for (val e <- Array(e1, e2, e3)) show(e)
-}
+{{{class="brush: scala" 
+  new ArrayElement(Array("hello")) above 
+  new ArrayElement(Array("world!"))
 }}}
 
-上面的演示程序继承了`Application`方法，所以虽然没有`main`方法它还是可以运行的应用程序。可以这样运行：
+与之相似的，下面的表达式也不能正常工作：
 
-{{{class="brush: scala"
-  scala Express
+{{{class="brush: scala" 
+
+  new ArrayElement(Array("one", "two")) beside 
+  new ArrayElement(Array("one"))
 }}}
 
-输出的结果为：
+添加私有帮助方法`widen`通过带个宽度做参数并返回那个宽度的`Element`。`heighten`，能在竖直方向执行同样的功能。
 
-{{{class="brush: scala"
-1
-- * (x + 1)
-2
+{{{class="brush: scala" 
+  import Element.elem
 
-x   1.5
-- + ---
-2    x
+  abstract class Element {
+    def contents:  Array[String]
 
-1
-- * (x + 1)
-2
------------
-  x   1.5
-  - + ---
-  2    x
-}}}
+    def width: Int = contents(0).length
+    def height: Int = contents.length
 
-= 使用列表 =
-
-== 列表字面量 ==
-
-再简单回顾一下：
-
-{{{class="brush: scala"
-  val fruit = List("apples", "oranges", "pears")
-  val nums = List(1, 2, 3, 4)
-  val diag3 =
-    List(
-      List(1, 0, 0),
-      List(0, 1, 0),
-      List(0, 0, 1)
-    )
-  val empty = List()"brush: scala"
-}}}
-
-注意列表是不可变的。
-
-== 列表类型 ==
-
-列表是同质化的（homogeneous），所有的成员都有相同的类型，中括号描述成员类型`List[T]`。
-
-{{{class="brush: scala"
-val fruit: List[String] = List("apples", "oranges", "pears")
-  val nums: List[Int] = List(1, 2, 3, 4)
-  val diag3: List[List[Int]] =
-    List(
-      List(1, 0, 0),
-      List(0, 1, 0),
-      List(0, 0, 1)
-    )
-  val empty: List[Nothing] = List()
-}}}
-
-Scala里的列表类是协变的（covariant）。如果`S`是`T`的子类，那`List[S]`也是`List[T]`的子类。
-
-由于`Nothing`是所有类的子类，所以`List[Nothing]`是所有`List[T]`类型的子类：
-
-{{{class="brush: scala"
-  // List() is also of type List[String]!
-  val xs: List[String] = List()
-}}}
-
-== 构造列表 ==
-
-`Nil`代表空列表；`::`（发音为“cons”），`elm::list`把单个元素`elm`接在列表`list`的前面。
-
-{{{class="brush: scala"
-  val fruit = "apples" :: ("oranges" :: ("pears" :: Nil))
-  val nums = 1 :: (2 :: (3 :: (4 :: Nil)))
-  val diag3 = (1 :: (0 :: (0 :: Nil))) ::
-              (0 :: (1 :: (0 :: Nil))) ::
-              (0 :: (0 :: (1 :: Nil))) :: Nil
-  val empty = Nil
-}}}
-
-由于操作符`::`是右结合性，所以：
-
-{{{class="brush: scala"
-A :: (B :: C)
-}}}
-
-相当于：
-
-{{{class="brush: scala"
-A :: B :: C
-}}}
-
-所以前一个例子中很多括号都可以省略：
-
-{{{class="brush: scala"
-  val nums = 1 :: 2 :: 3 :: 4 :: Nil
-}}}
-
-== 列表的基本操作 ==
-
-三个基本操作：`head`、`tail`、`isEmpty`。
-
-{{{class="brush: scala"
-  val fruit = "apples" :: "oranges" :: "pears" :: Nil
-  val nums = 1 :: 2 :: 3 :: 4 :: Nil
-  val diag3 = (1 :: (0 :: (0 :: Nil))) ::
-              (0 :: (1 :: (0 :: Nil))) ::
-              (0 :: (0 :: (1 :: Nil))) :: Nil
-  val empty = Nil
-  
-empty.isEmpty // true
-fruit.isEmpty // flase
-fruit.head // "apples"
-fruit.tail.head // "organges"
-diag3.head // List(1, 0, 0)
-}}}
-
-`head`与`tail`只能用在非空列表上，不然抛异常：
-
-{{{class="brush: scala"
-  scala> Nil.head
-  java.util.NoSuchElementException: head of empty list
-}}}
-
-一个排序的例子，使用插入排序：对于非空列表`x::xs`可以先排序`xs`。然后再把`x`插入正确的地方：
-
-{{{class="brush: scala"
-  def isort(xs: List[Int]): List[Int] =
-    if (xs.isEmpty) Nil
-    else insert(xs.head, isort(xs.tail))
-
-  def insert(x: Int, xs: List[Int]): List[Int] =
-    if (xs.isEmpty || x <= xs.head) x :: xs
-    else xs.head :: insert(x, xs.tail)
-}}}
-
-
-== 列表模式 ==
-
-简单的模式匹配，在确定长度的情况下取出列表里的元素：
-
-{{{class="brush: scala"
-  scala> val List(a, b, c) = fruit
-  a: String = apples
-  b: String = oranges
-  c: String = pears
-}}}
-
-不确定具体长度但知道至少有几个，或是只要取前几个：
-
-{{{class="brush: scala"
-  scala> val a :: b :: rest = fruit
-  a: String = apples
-  b: String = oranges
-  rest: List[String] = List(pears)
-}}}
-
-要注意这里的`List(...)`和`::`并不是之前定义的模式匹配。
-
-实际上`List(...)`是将来会在抽取器章节介绍的抽取器模式。
-
-“cos”模式`x::xs`是中缀操作符模式的特例，一般中缀表达式`p op q`视为`p.op(q)`。但是如果作为模式，其实是被当作构造器模式的`op(p,q)`形式。
-
-对应这个构造器模式的类是`scala.::`，它可以创建非空列表的类。还有一个`List`类的方法`::`用来实例化`scala.::`的对象。在将来的“实现列表”章节中会有进一步的描述。
-
-再次用模式匹配的方式来实现前面已经实现过的插入排序法：
-
-{{{class="brush: scala"
-  def isort(xs: List[Int]): List[Int] = xs match {
-    case List() => List()
-    case x :: xs1 => insert(x, isort(xs1))
-  }
-
-  def insert(x: Int, xs: List[Int]): List[Int] = xs match {
-    case List() => List(x)
-    case y :: ys => if (x <= y) x :: xs
-                    else y :: insert(x, ys)
-  }
-}}}
-
-== List类的一阶方法 ==
-
-这里介绍的方法是List类的方法，所以是在独立的对象上被调用。
-
-=== 连接列表 ===
-
-连接两个列表的操作符是`:::`，例如：
-
-{{{class="brush: scala"
-  scala> List(1, 2) ::: List(3, 4, 5)
-  res0: List[Int] = List(1, 2, 3, 4, 5)
-
-  scala> List() ::: List(1, 2, 3)
-  res1: List[Int] = List(1, 2, 3)
-
-  scala> List(1, 2, 3) ::: List(4)
-  res2: List[Int] = List(1, 2, 3, 4)
-}}}
-
-它也是右结合的：
-
-{{{class="brush: scala"
-xs ::: ys ::: zs
-}}}
-
-相当于：
-
-{{{class="brush: scala"
-xs ::: (ys ::: zs)
-}}}
-
-
-=== 分治原则 ===
-
-手动实现一个连接列表的`append`方法。先用模式匹配把输入的列表拆分为更加简单的样本：
-
-{{{class="brush: scala"
-  def append[T](xs: List[T], ys: List[T]): List[T] =
-    xs match {
-      case List() => ys
-      case x :: xs1 => x :: append(xs1, ys)
+    def above(that: Element): Element = {
+      val this1 = this widen that.width
+      val that1 = that widen this.width
+      elem(this1.contents ++ that1.contents)
     }
-}}}
 
-以上代码的让`ys`操持完整而`xs`被一步步拆分并放到`ys`前面，所以把注意集中到`xs`的模式匹配上。
-
-再通过递归调用层层套用剩下的元素，通过添加单个元素的方法`::`连接列表。
-
-=== 列表长度 ===
-
-{{{class="brush: scala"
-  scala> List(1, 2, 3).length
-  res3: Int = 3
-}}}
-
-`length`方法要遍历整个列表来取得长度，所以判断是否为空一般用`isEmpty`而不用`length`。
-
-=== 取头和尾 ===
-
-`head`取头，`tail`取的是除了第一个元素外剩下列表。这两个方法的运行时间是常量。
-
-`last`取尾，`init`取最后一个以外的列表。这两个方法会遍历整个列表。
-
-{{{class="brush: scala"
-  scala> val abcde = List('a', 'b', 'c', 'd', 'e')
-  abcde: List[Char] = List(a, b, c, d, e)
-
-  scala> abcde.last
-  res4: Char = e
-
-  scala> abcde.init
-  res5: List[Char] = List(a, b, c, d)
-}}}
-
-对于空列表会抛异常
-
-{{{class="brush: scala"
-  scala> List().init
-  java.lang.UnsupportedOperationException: Nil.init
-   at scala.List.init(List.scala:544)
-   at ...
-
-  scala> List().last
-  java.util.NoSuchElementException: Nil.last
-   at scala.List.last(List.scala:563)
-   at ...
-}}}
-
-=== 反转列表 ===
-
-`reverse`是创建了一个新列表：
-
-{{{class="brush: scala"
-  scala> abcde.reverse
-  res6: List[Char] = List(e, d, c, b, a)
-
-  scala> abcde
-  res7: List[Char] = List(a, b, c, d, e)
-}}}
-
-一些简单的规律：
-
-{{{class="brush: scala"
-xs.reverse.reverse equals xs
-
-xs.reverse.init equals xs.tail.reverse
-xs.reverse.tail equals xs.init.reverse
-xs.reverse.head equals xs.last
-xs.reverse.last equals xs.head
-}}}
-
-通过连接在尾部添加操作`:::`来实现反转：
-
-{{{class="brush: scala"
-  def rev[T](xs: List[T]): List[T] = xs match {
-    case List() => xs
-    case x :: xs1 => rev(xs1) ::: List(x)
-  }
-}}}
-
-当然这样的效率低得很，因为列表要一个一个遍历才能找到最后一个元素。
-
-=== 前缀与后缀 ===
-
-`take`和`drop`取得或舍去列表指定长度个元素，长度超过时不会抛异常而是返回整个列表或空列表。
-
-{{{class="brush: scala"
-  scala> abcde take 2
-  res8: List[Char] = List(a, b)
-
-  scala> abcde drop 2
-  res9: List[Char] = List(c, d, e)
-}}}
-
-`splitAt`在指定位置拆分列表。
-
-{{{class="brush: scala"
-xs splitAt n
-
-// equals
-
-(xs take n, xs drop n)
-}}}
-
-例：
-
-{{{class="brush: scala"
-  scala> abcde splitAt 2
-  res10: (List[Char], List[Char]) = (List(a, b),List(c, d, e))
-}}}
-
-=== 取得指定元素 ===
-
-通过索引取得指定元素：
-
-{{{class="brush: scala"
-  scala> abcde apply 2 // rare in Scala
-  res11: Char = c
-
-  scala> abcde(2) // rare in Scala
-  res12: Char = c
-}}}
-
-`includes`方法取得所有的索引列表：
-
-{{{class="brush: scala"
-  scala> abcde.indices
-  res13: List[Int] = List(0, 1, 2, 3, 4)
-}}}
-
-=== zip ===
-
-把两个列表组成对偶（二元组），如果长度不一样会丢弃长出来的：
-
-{{{class="brush: scala"
-  scala> abcde.indices zip abcde
-  res14: List[(Int, Char)] = List((0,a), (1,b), (2,c), (3,d),
-  (4,e))
-
-  scala> val zipped = abcde zip List(1, 2, 3)
-  zipped: List[(Char, Int)] = List((a,1), (b,2), (c,3))
-}}}
-
-如果是为了把元素和索引zip在一起，用`zipWithIndex`方法更有效：
-
-{{{class="brush: scala"
-  scala> abcde.zipWithIndex
-  res15: List[(Char, Int)] = List((a,0), (b,1), (c,2), (d,3), (e,4))
-}}}
-
-=== toString 和 mkString ===
-
-`toString`简单字符串化列表
-
-{{{class="brush: scala"
-  scala> abcde.toString
-  res16: String = List(a, b, c, d, e)
-}}}
-
-`mkString`通过三个参数来指定前后包列表的字符和分隔列表元素的字符：
-
-{{{class="brush: scala"
-xs mkString (pre, sep, post)
-}}}
-
-还有两个变体：
-
-{{{class="brush: scala"
-xs mkString sep
-// equals
-xs mkString ("", sep, "")
-
-sx mkString
-// equals
-xs mkString ""
-}}}
-
-例子：
-
-{{{class="brush: scala"
-  scala> abcde mkString ("[", ",", "]")
-  res17: String = [a,b,c,d,e]
-
-  scala> abcde mkString ""
-  res18: String = abcde
-
-  scala> abcde.mkString
-  res19: String = abcde
-
-  scala> abcde mkString ("List(", ", ", ")")
-  res20: String = List(a, b, c, d, e)
-}}}
-
-还有一个`addSting`变体让结果添加到`StringBuilder`中，而不是作为结果返回：
-
-{{{class="brush: scala"
-  scala> val buf = new StringBuilder
-  buf: StringBuilder =
-
-  scala> abcde addString (buf, "(", ";", ")")
-  res21: StringBuilder = (a;b;c;d;e)
-}}}
-
-
-=== 列表的转换 ===
-
-`List`类的`toArray`和`Array`类的`toList`，列表和数组转来转去。
-
-{{{class="brush: scala"
-  scala> val arr = abcde.toArray
-  arr: Array[Char] = Array(a, b, c, d, e)
-
-  scala> arr.toString
-  res22: String = Array(a, b, c, d, e)
-
-  scala> arr.toList
-  res23: List[Char] = List(a, b, c, d, e)
-}}}
-
-`copyToArray`把列表复制到数组中一会连续的空间内：
-
-{{{class="brush: scala"
-  xs copyToArray (arr, start)
-}}}
-
-`start`为开始的位置。当然还要保证数组中有足够的空间。例子：
-
-{{{class="brush: scala"
-  scala> val arr2 = new Array[Int](10)
-  arr2: Array[Int] = Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-
-  scala> List(1, 2, 3) copyToArray (arr2, 3)
-
-  scala> arr2.toString
-  res25: String = Array(0, 0, 0, 1, 2, 3, 0, 0, 0, 0)
-}}}
-
-`elements`提供了通过枚举器访问列表元素的方法：
-
-{{{class="brush: scala"
-  scala> val it = abcde.elements
-  it: Iterator[Char] = non-empty iterator
-
-  scala> it.next
-  res26: Char = a
-
-  scala> it.next
-  res27: Char = b
-}}}
-
-=== 例：归并排序 ===
-
-归并排序：如果列表长度为0或是1，就算是已经排序好的，直接返回。长度大于1的列表可以拆成两个长度接近的，每个再递归调用完成排序，再把返回的两个排序好的列表合并。
-
-函数的实现用到了柯里化，接收元素之间的比较大小的函数和要排序的列表：
-
-{{{class="brush: scala"
-  def msort[T](less: (T, T) => Boolean)
-      (xs: List[T]): List[T] = {
-
-    def merge(xs: List[T], ys: List[T]): List[T] =
-      (xs, ys) match {
-        case (Nil, _) => ys
-        case (_, Nil) => xs
-        case (x :: xs1, y :: ys1) =>
-          if (less(x, y)) x :: merge(xs1, ys)
-          else y :: merge(xs, ys1)
+    def beside(that: Element): Element = {
+      val this1 = this heighten that.height
+      val that1 = that heighten this.height
+      elem(
+        for ((line1, line2) <- this1.contents zip that1.contents) 
+        yield line1 + line2)
+    }
+
+    def widen(w: Int): Element = 
+      if (w <= width) this
+      else {
+        val left = elem(' ', (w - width) / 2, height) 
+        var right = elem(' ', w - width - left.width, height)
+        left beside this beside right
       }
 
-    val n = xs.length / 2
-    if (n == 0) xs
-    else {
-      val (ys, zs) = xs splitAt n
-      merge(msort(less)(ys), msort(less)(zs))
-    }
-  }
-}}}
-
-使用的方法：
-
-{{{class="brush: scala"
-  scala> msort((x: Int, y: Int) => x < y)(List(5, 7, 1, 3))
-  res28: List[Int] = List(1, 3, 5, 7)
-}}}
-
-作为一个柯里化的例子，可以用下划线代表末指定的参数列表：
-
-{{{class="brush: scala"
-  scala> val intSort = msort((x: Int, y: Int) => x < y) _
-  intSort: (List[Int]) => List[Int] = <function>
-}}}
-
-如果要改成倒序排序的话，只要换个比较函数：
-
-{{{class="brush: scala"
-  scala> val reverseIntSort = msort((x: Int, y: Int) => x > y) _
-  reverseIntSort: (List[Int]) => List[Int] = <function>
-}}}
-
-上面的`intSort`和`reverseIntSort`都已经绑定了排序的方法，只要传入待排序的列表：
-
-{{{class="brush: scala"
-  scala> val mixedInts = List(4, 1, 9, 0, 5, 8, 3, 6, 2, 7)
-  mixedInts: List[Int] = List(4, 1, 9, 0, 5, 8, 3, 6, 2, 7)
-
-  scala> intSort(mixedInts)
-  res0: List[Int] = List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
-
-  scala> reverseIntSort(mixedInts)
-  res1: List[Int] = List(9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
-}}}
-
-== List类的高阶函数 ==
-
-这里介绍的方法是List类的方法，所以是在独立的对象上被调用。
-
-Scala中以操作符形式出现的高阶函数更加简洁地处理Java中用循环来处理的问题。
-
-=== 列表间映射 ===
-
-`xs map fun`把列表中每个元素用方法处理过后生成新列表。`xs`代表`List[T]`；`fun`代表`T => U`的函数。
-
-{{{class="brush: scala"
-  scala> List(1, 2, 3) map (_ + 1)
-  res29: List[Int] = List(2, 3, 4)
-
-  scala> val words = List("the", "quick", "brown", "fox")
-  words: List[java.lang.String] = List(the, quick, brown, fox)
- 
-  scala> words map (_.length)
-  res30: List[Int] = List(3, 5, 5, 3)
-
-  scala> words map (_.toList.reverse.mkString)
-  res31: List[String] = List(eht, kciuq, nworb, xof)
-}}}
-
-`flatMap`和`map`类似，但它把所有元素连成一个列表：
-
-{{{class="brush: scala"
-  scala> words map (_.toList)
-  res32: List[List[Char]] = List(List(t, h, e), List(q, u, i,
-      c, k), List(b, r, o, w, n), List(f, o, x))
-
-  scala> words flatMap (_.toList)
-  res33: List[Char] = List(t, h, e, q, u, i, c, k, b, r, o, w,
-      n, f, o, x)
-}}}
-
-`flatMap`和`map`合作建立出所有`1 <= j < i < 5`的`(i, j)`对偶：
-
-{{{class="brush: scala"
-  scala> List.range(1, 5) flatMap (
-       | i => List.range(1, i) map (j => (i, j))
-       | )
-  res34: List[(Int, Int)] = List((2,1), (3,1), (3,2), (4,1),
-      (4,2), (4,3))
-}}}
-
-上面的代码`List.range(1, 5)`产生从1到5的整数列表。对于其中的每项`i`再产生1到`i`的列表。`map`产生`(i, j)`元组列表，这里的`j<i`。`flatMpa`对每个1到5之间的`i`产列表，并连接所有列表得到结果。
-
-等同于以下循环结构：
-
-{{{class="brush: scala"
-  for (i <- List.range(1, 5); j <- List.range(1, i)) yield (i, j)
-}}}
-
-`foreach`没有返回结果（或返回`Unit`）。如下对`sum`变量累加，但是没有返回值：
-
-{{{class="brush: scala"
-  scala> var sum = 0
-  sum: Int = 0
-
-  scala> List(1, 2, 3, 4, 5) foreach (sum += _)
-
-  scala> sum
-  res36: Int = 15
-}}}
-
-=== 过滤 ===
-
-`xs filter p`，`xs`代表`List[T]`，`p`代表`T => Boolean`形式的函数。返回符合的结果列表：
-
-{{{class="brush: scala"
-  scala> List(1, 2, 3, 4, 5) filter (_ % 2 == 0)
-  res37: List[Int] = List(2, 4)
-
-  scala> words filter (_.length == 3)
-  res38: List[java.lang.String] = List(the, fox)
-}}}
-
-`partition`方法返回的是所有符合的元素和所有不符合的元素两个列表对。
-
-{{{class="brush: scala"
-xs partition p
-// equals
-( xs filter p , xs filter (!p(_)) )
-
-}}}
-
-例：
-
-{{{class="brush: scala"
-  scala> List(1, 2, 3, 4, 5) partition (_ % 2 == 0)
-  res39: (List[Int], List[Int]) = (List(2, 4),List(1, 3, 5))
-}}}
-
-`find`方法只返回第一个符合的元素，一个都不符合返回`None`：
-
-{{{class="brush: scala"
-  scala> List(1, 2, 3, 4, 5) find (_ % 2 == 0)
-  res40: Option[Int] = Some(2)
-
-  scala> List(1, 2, 3, 4, 5) find (_ <= 0)
-  res41: Option[Int] = None
-}}}
-
-`takeWhile`不断累积符合的结果直到遇到不符合的；`dropWhile`不断丢弃不符的元素直到遇到符合的。
-
-{{{class="brush: scala"
-  scala> List(1, 2, 3, -4, 5) takeWhile (_ > 0)
-  res42: List[Int] = List(1, 2, 3)
-
-  scala> words dropWhile (_ startsWith "t")
-  res43: List[java.lang.String] = List(quick, brown, fox)
-}}}
-
-`span`方法组合了`takeWhile`和`dropWhile`返回一对列表，就像是`splitAt`组合了`take`和`drop`一样。
-
-{{{class="brush: scala"
-xs span p
-// equals
-(xs takeWhile p , xs dropWhile p)
-}}}
-
-和`split`一样，`span`避免对列表的二次访问：
-
-{{{class="brush: scala"
-  scala> List(1, 2, 3, -4, 5) span (_ > 0)
-  res44: (List[Int], List[Int]) = (List(1, 2, 3),List(-4, 5))
-}}}
-
-=== 列表论断 ===
-
-`xs forall p`全部符合，`xs exits p`存在符合的元素。
-
-{{{class="brush: scala"
-  scala> def hasZeroRow(m: List[List[Int]]) =
-       | m exists (row => row forall (_ == 0))
-  hasZeroRow: (List[List[Int]])Boolean
-
-  scala> hasZeroRow(diag3)
-  res45: Boolean = false
-}}}
-
-=== 折叠列表 ===
-
-左折叠操作符`/:`，格式为：`(z /: xs) (op)`。其中`z`为开始值，`xs`为列表，`op`为二元操作。
-
-{{{class="brush: scala"
-(z /: List(a, b, c)) (op)
-// equals
-op(op(op(z,a), b), c)
-}}}
-
-用树表示：
-
-{{{class="brush: scala"
-      op
-     / \
-    op  c
-   / \
-  op  b
- / \
-z   a
-}}}
-
-举例：
-
-{{{class="brush: scala"
-  scala> def sum(xs: List[Int]): Int = (0 /: xs) (_ + _)
-  sum: (List[Int])Int
-  
-  scala> sum(List(1, 2, 3)) // equals 0 + 1 + 2 + 3
-  res1: Int = 6
-
-  scala> def product(xs: List[Int]): Int = (1 /: xs) (_ * _)
-  product: (List[Int])Int
-  
-  scala> product(List(1, 2, 3)) // equals 1 * 1 * 2 * 3
-  res2: Int = 6
-}}}
-
-用空格连接所有单词：
-
-{{{class="brush: scala"
-  scala> ("" /: words) (_ +" "+ _)
-  res46: java.lang.String = the quick brown fox
-}}}
-
-头上多了一个空格，这样去掉它：
-
-{{{class="brush: scala"
-  scala> (words.head /: words.tail) (_ +" "+ _)
-  res47: java.lang.String = the quick brown fox
-}}}
-
-相对的还有右倾斜操作树`:\`：
-
-{{{class="brush: scala"
-(List(a, b, c) :\ z) (op)
-// equals
-op(a, op(b, op(c, z)))
-}}}
-
-对于组合操作来说，左右折叠是等价的，但效率上有差异。下面两个把元素连接在一起的方法：
-
-{{{class="brush: scala"
-  def flattenLeft[T](xss: List[List[T]]) =
-      (List[T]() /: xss) (_ ::: _)
-
-  def flattenRight[T](xss: List[List[T]]) =
-      (xss :\ List[T]()) (_ ::: _)
-
-}}}
-
-采用右折叠的`flattenLeft`需要复制第一个元素列表`xss.head`一共`xss.length-1`次，所以效率差一些。
-
-注意这里两个版本的实现都要对作为折叠开始值的空列表做类型标注。这是由Scala类型推断的局限性无法推断出正确的类型。不标注的话会有以下错误：
-
-{{{class="brush: scala"
-  scala> def flattenRight[T](xss: List[List[T]]) =
-       | (xss :\ List()) (_ ::: _)
-  <console>:15: error: type mismatch;
-   found : List[T]
-   required: List[Nothing]
-             (xss :\ List()) (_ ::: _)
-                                ^
-}}}
-
-在以后的“实现列表”章节中讨论类型推断失败的原因。
-
-如果觉得`/:`和`:\`看起来不清楚，可以用List提供的`foldLeft`和`foldRight`方法代替。
-
-=== 例子：使用折叠实现列表反转 ===
-
-{{{class="brush: scala"
-def reverseLeft[T](xs: List[T]) = (startvalue /: xs) (operation)
-}}}
-
-为了写出正确的`startvalue`和`operation`，从可以出现的最小的列表`List()`开始推导：
-
-{{{class="brush: scala"
-List()
-// equals
-reverseLeft(List())
-// equals
-(startvalue /: List()) (operation)
-// equals
-startvalue
-}}}
-
-所以`startvalue`一定是`List()`。再代入推导`operation`：
-
-{{{class="brush: scala"
-List(x)
-// equals
-reverseLeft(List(x))
-// equals
-(startvalue /: List(x)) (operation)
-// equals
-operation(List(), x)
-// equals
-x :: List()
-}}}
-
-所以具体实现为：
-
-{{{class="brush: scala"
-  def reverseLeft[T](xs: List[T]) =
-    (List[T]() /: xs) {(ys, y) => y :: ys}
-}}}
-
-=== 排序 ===
-
-`xs sort before`，`xs`是列表，`before`是比较元素`x`是否在`y`前面的方法。
-
-{{{class="brush: scala"
-  scala> List(1, -3, 4, 2, 6) sort (_ < _)
-  res48: List[Int] = List(-3, 1, 2, 4, 6)
-
-  scala> words sort (_.length > _.length)
-  res49: List[java.lang.String] = List(quick, brown, fox, the)
-}}}
-
-注意前面还提到过一个`msort`方法，那个是定义在列表外的。`sort`是List类的方法。
-
-== List伴生对象的方法 ==
-
-下面介绍的方法是伴生对象`scala.List`的，创建列表的工厂方法和特定类型列表的操作。
-
-=== 通过元素创建列表 ===
-
-`apply`方法：
-
-{{{class="brush: scala"
-List(1, 2, 3)
-// is actually
-List.apply(1, 2, 3)
-}}}
-
-=== 按数值范围创建列表 ===
-
-`range`参数可以是：开始、结束、步长：
-
-{{{class="brush: scala"
-  scala> List.range(1, 5)
-  res51: List[Int] = List(1, 2, 3, 4)
-
-  scala> List.range(1, 9, 2)
-  res52: List[Int] = List(1, 3, 5, 7)
-
-  scala> List.range(9, 1, -3)
-  res53: List[Int] = List(9, 6, 3)
-}}}
-
-=== 创建重复元素的列表 ===
-
-`make`方法：
-
-{{{class="brush: scala"
-  scala> List.make(5, 'a')
-  res54: List[Char] = List(a, a, a, a, a)
-
-  scala> List.make(3, "hello")
-  res55: List[java.lang.String] = List(hello, hello, hello)
-}}}
-
-=== 解除Zip列表 ===
-
-`unzip`把二元组列表分成两个列表：
-
-{{{class="brush: scala"
-  scala> val zipped = "abcde".toList zip List(1, 2, 3)
-  zipped: List[(Char, Int)] = List((a,1), (b,2), (c,3))
-
-  scala> List.unzip(zipped)
-  res56: (List[Char], List[Int]) = (List(a, b, c),
-      List(1, 2, 3))
-}}}
-
-Scala类型系统要求类方法能处理所有类型，而unzip只处理二元组列表。所以unzip不能像zip方法一样放在类里而只能放在伴生对象里。
-
-=== 连接列表 ===
-
-`flatten`方法只能处理包含子列表的列表，所以不能放在List类里。只能放在伴生对象中。
-
-{{{class="brush: scala"
-  scala> val xss =
-       | List(List('a', 'b'), List('c'), List('d', 'e'))
-  xss: List[List[Char]] = List(List(a, b), List(c), List(d, e))
-
-  scala> List.flatten(xss)
-  res57: List[Char] = List(a, b, c, d, e)
-}}}
-
-`concat`方法把多个列表作为可变长参数形式接收：
-
-{{{class="brush: scala"
-  scala> List.concat(List('a', 'b'), List('c'))
-  res58: List[Char] = List(a, b, c)
-
-  scala> List.concat(List(), List('b'), List('c'))
-  res59: List[Char] = List(b, c)
-  
-  scala> List.concat()
-  res60: List[Nothing] = List()
-}}}
-
-
-=== 映射与测试配对 ===
-
-`map2`方法接收两个列表，分别作为方法的两个参数：
-
-{{{class="brush: scala"
-  scala> List.map2(List(10, 20), List(3, 4, 5)) (_ * _)
-  res61: List[Int] = List(30, 80)
-}}}
-
-`exist2`也是接收两个列表，分别作为方法的两个参数：
-
-{{{class="brush: scala"
-  scala> List.forall2(List("abc", "de"),
-       | List(3, 2)) (_.length == _)
-  res62: Boolean = true
-
-  scala> List.exists2(List("abc", "de"),
-       | List(3, 2)) (_.length != _)
-  res63: Boolean = false
-}}}
-
-== 了解Scala的类型推断方法 ==
-
-下面是用占位符`_`推导出的参数类型：
-
-{{{class="brush: scala"
-  scala> abcde sort (_ > _)
-  res65: List[Char] = List(e, d, c, b, a)
-}}}
-
-但是`msort`方法却不能用占位符：
-
-{{{class="brush: scala"
-  scala> msort((x: Char, y: Char) => x > y)(abcde)
-  res64: List[Char] = List(e, d, c, b, a)
-  
-  scala> msort(_ > _)(abcde)
-  <console>:12: error: missing parameter type for expanded
-  function ((x$1, x$2) => x$1.$greater(x$2))
-         msort(_ > _)(abcde)
-               ^
-}}}
-
-因为Scala的类型推导器是基于流的。对于`func(args)`这样的方法，先看`func`是否有已经的类型。如果有的话这个类型就被用来做参数预期类型的推断。
-
-例如对于`List[Char]`类型的列表`abcd`，`abcd`的成员都是`Char`所以`abcd.sort(_ > _)`的两个参数也只会是`Char`。所以：
-
-{{{class="brush: scala"
-(_ > _)
-// trans to
-((x: Char, y: Char) => x > y)
-}}}
-
-而对于`msort(_ > _)(abcde)`这个类型是柯里化的、多态的方法类型，参数类型是`(T, T) => Boolean`，返回类型是从`List[T]`到`List[T]`的函数。无法推断第一个参数的类型。所以类型推断器要参数的类型信息。
-
-想要用占位符的话，只能把参数类型传给`msort`，改为`msort[Char]`：
-
-{{{class="brush: scala"
-  scala> msort[Char](_ > _)(abcde)
-  res66: List[Char] = List(e, d, c, b, a)
-}}}
-
-还有一个方法是交换参数顺序，这样可以用第一个列表的类型来推断比较方法的类型了：
-
-{{{class="brush: scala"
-  // same implementation as msort,
-  // but with arguments swapped
-  def msortSwapped[T](xs: List[T])(less:
-      (T, T) => Boolean): List[T] = {
-  }
-  
-  scala> msortSwapped(abcde)(_ > _)
-  res67: List[Char] = List(e, d, c, b, a)
-}}}
-
-需要推断多态方法类型时只会参考第一个参数列表，所以在柯里化方法有两个参数列表时第二个参数不会用来决定方法类型参数。
-
-所以这种方案隐含以下的库方法设计原则：
-
-如果参数包括若干个非函数参数与一个函数参数的组合时，要把函数参数独自放在柯里化参数列表的最后面。这样方法的正确实例类型就可以通过非函数参数推断出来，推断出来的类型还可以转面用来完成函数参数的类型检查。调用函数的时候也可以写出更加简洁的字面量。
-
-再来看更加复杂的折叠操作：
-
-{{{class="brush: scala"
-  (xss :\ List[T]()) (_ ::: _)
-
-}}}
-
-上面的表达式提供了明确的类型参数的原因是这个右折叠操作的类型取决于两个变量：
-
-{{{class="brush: scala"
-  (xs :\ z) (op)
-}}}
-
-这里把列表`xs`的类型记为`A`，如：`xs: List[A]`；而开始值`z`有可能是类型`B`。对应的操作`op`必须以`A`和`B`的值为参数并返回类型`B`的结果，即：`op: (A, B) => B`。
-
-从上面的描述可以看出：这里的`op`方法要知道`A`与`B`两个类型。`A`一定与`List`有关但是`B`不一定与`List`有关，所以推不出来。所以下面的表达式是编译不过的：
-
-{{{class="brush: scala"
-  (xss :\ List()) (_ ::: _) // this won't compile
-
-}}}
-
-上面表达式中`z`的类型为`List[Nothing]`，据此推断器把`B`的类型定为`Nothing`：
-
-{{{class="brush: scala"
-  (List[T], List[Nothing]) => List[Nothing]
-}}}
-
-这就意味着输出与输出都是空列表。
-
-就是因为这个问题，所以在柯里化的方法中，方法类型只取决于第一段参数。但是如果不这样做的话，推断器还是没有办法取得`op`的类型。所以只能程序员明确指定类型。
-
-所以Scala采用的局部的、基于流的类型推断方法还是比较有局限性的；不如ML或是Haskell采用的更加全局化的Hindley-Milner类型推断方式。但是对于面向对象的分支类型处理比Hindley-Mlner更加优雅。由于这些局限性在比较极端的情况下才遇到，所以就在极端情况下明确标类型吧。
-
-另外在遇到多态类型错误时，添加上你认为应该是正确的类型标注也是一种排错方式。
-
-= 集体类型 =
-
-== 概览 ==
-
-`scala`包中主要特质`Iterable`，三个子特质：
-
-* `Seq`：有序集合。
-* `Set`：对于`==`方法不可重复的元素集合。
-* `Map`：键值映射。
-
-特技`Iterable`有个抽象方法`elements`：
-
-{{{class="brush: scala"
-  def elements: Iterator[A]
-}}}
-
-注意返回类型是一个迭代器`iterator`，不是`iterate`别看错了！
-
-迭代器用来从头到尾遍历一遍集合。如果要再遍历一遍的话，只能用`elements`方法再生成一个新的迭代器。。
-
-迭代器`Iterator`继承自`AnyRef`。`Iterator`提供的具体方法都实现了`next`和`hasNext`抽象方法实现：
-
-{{{class="brush: scala"
-  def hasNext: Boolean
-  def next: A
-}}}
-
-== 序列 ==
-
-=== 列表 ===
-
-列表不能通过索引直接访问元素，只能遍历；但可以支持在头上快速添加和删除。这点像是链式表。
-
-在头上快速添加和删除元素很好地适合模式匹配。
-
-但是因为只能对列表头快速访问，而尾部不行。所以如果要操作尾部的话可以先建一个反序的列表，再`reverse`把顺序反过来。
-
-=== 列表缓存 ===
-
-还有一人方式是使用`scala.collection.mutable.ListBuffer`。
-
-`+=`在尾部添加元素；`+:`加在头上；完成之后用`toList`生成`List`：
-
-{{{class="brush: scala"
-  scala> import scala.collection.mutable.ListBuffer
-  import scala.collection.mutable.ListBuffer
-
-  scala> val buf = new ListBuffer[Int]
-  buf: scala.collection.mutable.ListBuffer[Int] = ListBuffer()
-
-  scala> buf += 1
-
-  scala> buf += 2
-
-  scala> buf
-  res11: scala.collection.mutable.ListBuffer[Int]
-    = ListBuffer(1, 2)
-
-  scala> 3 +: buf
-  res12: scala.collection.mutable.Buffer[Int]
-    = ListBuffer(3, 1, 2)
-
-  scala> buf.toList
-  res13: List[Int] = List(3, 1, 2)
-}}}
-
-`List`结合前置添加元素和递归算法增长列表时，如果用的递归算法不是尾递归，就有栈溢出的风险；而`ListBuffer`可以结合循环替代递归。
-
-=== 数组 ===
-
-数组适合按索引快速访问元素。
-
-按长度产数组：
-
-{{{class="brush: scala"
-  scala> val fiveInts = new Array[Int](5)
-  fiveInts: Array[Int] = Array(0, 0, 0, 0, 0)
-}}}
-
-按元素产数组：
-
-{{{class="brush: scala"
-  scala> val fiveToOne = Array(5, 4, 3, 2, 1)
-  fiveToOne: Array[Int] = Array(5, 4, 3, 2, 1)
-}}}
-
-通过`()`指定索引：
-
-{{{class="brush: scala"
-  scala> fiveInts(0) = fiveToOne(4)
-
-  scala> fiveInts
-  res1: Array[Int] = Array(1, 0, 0, 0, 0)
-}}}
-
-== 数组缓存 ==
-
-`ArrayBuffer`可以在头尾添加元素：
-
-{{{class="brush: scala"
-  scala> import scala.collection.mutable.ArrayBuffer
-  import scala.collection.mutable.ArrayBuffer
-
-  scala> val buf = new ArrayBuffer[Int]()
-  buf: scala.collection.mutable.ArrayBuffer[Int] =
-    ArrayBuffer()
-
-  scala> buf += 12
-  scala> buf += 15
-
-  scala> buf
-  res16: scala.collection.mutable.ArrayBuffer[Int] =
-    ArrayBuffer(12, 15)
-
-  scala> buf.length
-  res17: Int = 2
-
-  scala> buf(0)
-  res18: Int = 12
-}}}
-
-=== 队列 ===
-
-不可变的队列：
-
-{{{class="brush: scala"
-  scala> import scala.collection.immutable.Queue
-  import scala.collection.immutable.Queue
-
-  scala> val empty = new Queue[Int]
-  empty: scala.collection.immutable.Queue[Int] = Queue()
-
-// add one element
-  scala> val has1 = empty.enqueue(1)
-  has1: scala.collection.immutable.Queue[Int] = Queue(1)
-
-// use collection to add many elements
-  scala> val has123 = has1.enqueue(List(2, 3))
-  has123: scala.collection.immutable.Queue[Int] = Queue(1,2,3)
-
-  scala> val (element, has23) = has123.dequeue
-  element: Int = 1
-  has23: scala.collection.immutable.Queue[Int] = Queue(2,3)
-}}}
-
-注意上面取后一个出队操作`dequeue`返回的是一个二元组，包括出来的元素和剩下的队列。
-
-可变的队列也差不多，就是用`+=`和`++=`添加元素，`dequeue`方法只返回一个出除的元素。
-
-{{{class="brush: scala"
-  scala> import scala.collection.mutable.Queue
-  import scala.collection.mutable.Queue
-
-  scala> val queue = new Queue[String]
-  queue: scala.collection.mutable.Queue[String] = Queue()
-
-  scala> queue += "a"
-
-  scala> queue ++= List("b", "c")
-
-  scala> queue
-  res21: scala.collection.mutable.Queue[String] = Queue(a, b, c)
-
-  scala> queue.dequeue
-  res22: String = a
-
-  scala> queue
-  res23: scala.collection.mutable.Queue[String] = Queue(b, c)
-}}}
-
-=== 栈 ===
-
-可变的栈：
-
-{{{class="brush: scala"
-  scala> import scala.collection.mutable.Stack
-  import scala.collection.mutable.Stack
-
-  scala> val stack = new Stack[Int]
-  stack: scala.collection.mutable.Stack[Int] = Stack()
-
-  scala> stack.push(1)
-
-  scala> stack
-  res1: scala.collection.mutable.Stack[Int] = Stack(1)
-
-  scala> stack.push(2)
-
-  scala> stack
-  res3: scala.collection.mutable.Stack[Int] = Stack(1, 2)
-
-  scala> stack.top
-  res8: Int = 2
-
-  scala> stack
-  res9: scala.collection.mutable.Stack[Int] = Stack(1, 2)
-
-  scala> stack.pop
-  res10: Int = 2
-
-  scala> stack
-  res11: scala.collection.mutable.Stack[Int] = Stack(1)
-}}}
-
-不可变的栈略。
-
-=== 字符串 ===
-
-因为`Predef`包含了从`String`到`RichString`的隐式转换，所以可以把任何字符串当作`Seq[Char]`。
-
-{{{class="brush: scala"
-  scala> def hasUpperCase(s: String) = s.exists(_.isUpperCase)
-  hasUpperCase: (String)Boolean
-
-  scala> hasUpperCase("Robert Frost")
-  res14: Boolean = true
-
-  scala> hasUpperCase("e e cummings")
-  res15: Boolean = false
-}}}
-
-`exists`方法不在`String`里，所以隐匿转换为包含`exists`方法的`RichString`类。
-
-== Set与Map ==
-
-因为`Predef`对象通过`type`关键字指定默认引用了Set与Map的不可变版本：
-
-{{{class="brush: scala"
-  object Predef {
-    type Set[T] = scala.collection.immutable.Set[T]
-    type Map[K, V] = scala.collection.immutable.Map[K, V]
-    val Set = scala.collection.immutable.Set
-    val Map = scala.collection.immutable.Map
-    // ...
-  }
-}}}
-
-所以可变版的要手动声明：
-
-{{{class="brush: scala"
-  scala> import scala.collection.mutable
-  import scala.collection.mutable
-
-  scala> val mutaSet = mutable.Set(1, 2, 3)
-  mutaSet: scala.collection.mutable.Set[Int] = Set(3, 1, 2)
-}}}
-
-=== 使用Set ===
-
-Set的关键在于用对象的`==`检查唯一性。
-
-例子：统计出现的单词
-
-用正则 `[ !,.]+` 分隔成单词:
-
-{{{class="brush: scala"
-  scala> val text = "See Spot run. Run, Spot. Run!"
-  text: java.lang.String = See Spot run. Run, Spot. Run!
-
-  scala> val wordsArray = text.split("[ !,.]+")
-  wordsArray: Array[java.lang.String] =
-     Array(See, Spot, run, Run, Spot, Run)
-}}}
-
-建立Set并存入：
-
-{{{class="brush: scala"
-  scala> val words = mutable.Set.empty[String]
-  words: scala.collection.mutable.Set[String] = Set()
-
-  scala> for (word <- wordsArray)
-       | words += word.toLowerCase
-
-  scala> words
-  res25: scala.collection.mutable.Set[String] =
-    Set(spot, run, see)
-}}}
-
-常用方法：
-
-| val nums = Set(1, 2, 3)               | 建立集合             |
-| nums + 5                              | 添加元素             |
-| nums - 3                              | 去除元素             |
-| nums ++ List(5, 6)                    | 添加多个元素         |
-| nums -- List(1, 2)                    | 去除多个元素         |
-| nums ** Set(1, 3, 5, 7)               | 交集（返回Set(1,3)） |
-| nums.size                             |                      |
-| nums.contains(3)                      |                      |
-| import scala.collection.mutable       | 引入可变的           |
-| val words = mutable.Set.empty[String] | 创建空的可变集       |
-| words += "the"                        |                      |
-| words -= "the"                        |                      |
-| words ++= List("do", "re", "mi")      |                      |
-| words --= List("do", "re")            |                      |
-| words.clear                           | 清空所有元素         |
-
-=== Map ===
-
-使用可变的Map：
-
-{{{class="brush: scala"
-  scala> val map = mutable.Map.empty[String, Int]
-  map: scala.collection.mutable.Map[String,Int] = Map()
-
-  scala> val map = mutable.Map.empty[String, Int]
-  map: scala.collection.mutable.Map[String,Int] = Map()
-
-  scala> map("hello") = 1
-
-  scala> map("there") = 2
-
-  scala> map
-  res28: scala.collection.mutable.Map[String,Int] =
-    Map(hello -> 1, there -> 2)
-
-  scala> map("hello")
-  res29: Int = 1
-}}}
-
-统计单词出现次数的例子：
-
-{{{class="brush: scala"
-  scala> def countWords(text: String) = {
-       |   val counts = mutable.Map.empty[String, Int]
-       |   for (rawWord <- text.split("[ ,!.]+")) {
-       |     val word = rawWord.toLowerCase
-       |     val oldCount =
-       |       if (counts.contains(word)) counts(word)
-       |       else 0
-       |     counts += (word -> (oldCount + 1))
-       |   }
-       |   counts
-       | }
-  countWords: (String)scala.collection.mutable.Map[String,Int]
-  
-
-  scala> countWords("See Spot run! Run, Spot. Run!")
-  res30: scala.collection.mutable.Map[String,Int] =
-    Map(see -> 1, run -> 3, spot -> 2)
-}}}
-
-常用方法：
-
-| val nums = Map("i"->1, "ii"->2)                 | 创建不可变           |
-| nums + ("vi"->6)                                |                      |
-| nums - "ii"                                     |                      |
-| nums ++ List("iii"->3, "v"->5)                  |                      |
-| nums -- List("i", "ii")                         |                      |
-| nums.size                                       |                      |
-| nums.contains("ii")                             |                      |
-| nums("ii")                                      |                      |
-| nums.keys                                       | 返回key迭代器        |
-| nums.keySet                                     | 返回key的集合(Set)   |
-| nums.values                                     | 返回value迭代器      |
-| nums.isEmpty                                    | 返回value的集合(Set) |
-| import scala.collection.mutable                 | 引入可变的版本       |
-| val words = mutalbe.Map.empty[String, Int]      |                      |
-| words += ("one"->1)                             |                      |
-| words -= "one"                                  |                      |
-| words ++= List("one"->1, "two"->2, "three"->3)) |                      |
-| words --= List("one", "two")                    |                      |
-
-=== 默认的Set和Map ===
-
-不可变的Set与Map会根据元素的数量优化一些工厂方法，这样返回的类就不一定是指定的类型。
-
-不可变的`scala.collection.immutable.Set()`工厂方法返回：
-
-| 元素的数量 | 实现                                |
-| 0          | scala.collection.immutable.EmptySet |
-| 1          | scala.collection.immutable.Set1     |
-| 2          | scala.collection.immutable.Set2     |
-| 3          | scala.collection.immutable.Set3     |
-| 4          | scala.collection.immutable.Set4     |
-| >=5        | scala.collection.immutable.HashSet  |
-
-不可变的`scala.collection.immutable.Map()`工厂方法返回：
-
-| 元素的数量 | 实现                                |
-| 0          | scala.collection.immutable.EmptyMap |
-| 1          | scala.collection.immutable.Map1     |
-| 2          | scala.collection.immutable.Map2     |
-| 3          | scala.collection.immutable.Map3     |
-| 4          | scala.collection.immutable.Map4     |
-| >=5        | scala.collection.immutable.HashMap  |
-
-=== 有序的集体和映射 ===
-
-`TreeSet`和`TreeMap`分别实现了`SortedSet`和`SortedMap`特质。都用红黑树保存元素，顺序由`Ordered`特质决定。这些类只有不可变的版本：
-
-{{{class="brush: scala"
-  scala> import scala.collection.immutable.TreeSet
-  import scala.collection.immutable.TreeSet
-
-  scala> val ts = TreeSet(9, 3, 1, 8, 0, 2, 7, 4, 6, 5)
-  ts: scala.collection.immutable.SortedSet[Int] =
-    Set(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
-
-  scala> val cs = TreeSet('f', 'u', 'n')
-  cs: scala.collection.immutable.SortedSet[Char] = Set(f, n, u)
-
-
-  scala> import scala.collection.immutable.TreeMap
-  import scala.collection.immutable.TreeMap
-
-  scala> var tm = TreeMap(3 -> 'x', 1 -> 'x', 4 -> 'x')
-  tm: scala.collection.immutable.SortedMap[Int,Char] =
-    Map(1 -> x, 3 -> x, 4 -> x)
-
-  scala> tm += (2 -> 'x')
-
-  scala> tm
-  res38: scala.collection.immutable.SortedMap[Int,Char] =
-    Map(1 -> x, 2 -> x, 3 -> x, 4 -> x)
-}}}
-
-=== 同步的Set和Map ===
-
-把`SynchronizedMap`特质混入到实现中。下面单例对象中的`makeMap`方法：
-
-{{{class="brush: scala"
-  import scala.collection.mutable.{Map,
-      SynchronizedMap, HashMap}
-
-  object MapMaker {
-
-    def makeMap: Map[String, String] = {
-
-        new HashMap[String, String] with
-            SynchronizedMap[String, String] {
-
-          override def default(key: String) =
-            "Why do you want to know?"
-        }
-    }
-  }
-}}}
-
-上面的方法会返回一个`HashMap`并且重写了`default`方法在没有对应的key时有默认的返回。
-
-单线程访问的情况如下：
-
-{{{class="brush: scala"
-  scala> val capital = MapMaker.makeMap
-  capital: scala.collection.mutable.Map[String,String] = Map()
-
-  scala> capital ++ List("US" -> "Washington",
-       | "Paris" -> "France", "Japan" -> "Tokyo")
-  res0: scala.collection.mutable.Map[String,String] =
-    Map(Paris -> France, US -> Washington, Japan -> Tokyo)
-
-  scala> capital("Japan")
-  res1: String = Tokyo
-
-  scala> capital("New Zealand")
-  res2: String = Why do you want to know?
-
-  scala> capital += ("New Zealand" -> "Wellington")
-
-  scala> capital("New Zealand")
-  res3: String = Wellington
-}}}
-
-类似地，也可以实现同步的Set：
-
-{{{class="brush: scala"
-  val synchroSet =
-    new mutable.HashSet[Int] with
-        mutable.SynchronizedSet[Int]
-}}}
-
-== 可变与不可变类型的比较 ==
-
-为了方便在可变与不可变类型之间地转换，Scala提供了一些语法糖。
-
-如，不可变类型不支持`+=`操作：
-
-{{{class="brush: scala"
-  scala> val people = Set("Nancy", "Jane")
-  people: scala.collection.immutable.Set[java.lang.String] =
-    Set(Nancy, Jane)
-
-  scala> people += "Bob"
-  <console>:6: error: reassignment to val
-         people += "Bob"
-                ^
-}}}
-
-但是如果把变量从`val`改成`var`，Scala还是可以返回一个添加后的新对象来模拟：
-
-{{{class="brush: scala"
-  scala> var people = Set("Nancy", "Jane")
-  people: scala.collection.immutable.Set[java.lang.String] =
-    Set(Nancy, Jane)
- 
-  scala> people += "Bob"
-
-  scala> people
-  res42: scala.collection.immutable.Set[java.lang.String] =
-    Set(Nancy, Jane, Bob)
-}}}
-
-类似的还有其他的操作：
-
-{{{class="brush: scala"
-  scala> people -= "Jane"
-
-  scala> people ++= List("Tom", "Harry")
-
-  scala> people
-  res45: scala.collection.immutable.Set[java.lang.String] =
-    Set(Nancy, Bob, Tom, Harry)
-}}}
-
-这样的语法糖方便在可变与不可变类型之间转换：
-
-{{{class="brush: scala"
-  var capital = Map("US" -> "Washington", "France" -> "Paris")
-  capital += ("Japan" -> "Tokyo")
-  println(capital("France"))
-
-  import scala.collection.mutable.Map // only change needed!
-  var capital = Map("US" -> "Washington", "France" -> "Paris")
-  capital += ("Japan" -> "Tokyo")
-  println(capital("France"))
-}}}
-
-这样的语法糖还可以用在其他类型上。如浮点：
-
-{{{class="brush: scala"
-  scala> var roughlyPi = 3.0
-  roughlyPi: Double = 3.0
-
-  scala> roughlyPi += 0.1
-
-  scala> roughlyPi += 0.04
-
-  scala> roughlyPi
-  res48: Double = 3.14
-}}}
-
-基本上`+=`、`-=`、`*=`这类以`=`结尾的操作符都可以。
-
-== 初始化集合 ==
-
-最典型的是用伴生对象的工厂方法：
-
-{{{class="brush: scala"
-  scala> List(1, 2, 3)
-  res0: List[Int] = List(1, 2, 3)
-
-  scala> Set('a', 'b', 'c')
-  res1: scala.collection.immutable.Set[Char] = Set(a, b, c)
-
-  scala> import scala.collection.mutable
-  import scala.collection.mutable
-
-  scala> mutable.Map("hi" -> 2, "there" -> 5)
-  res2: scala.collection.mutable.Map[java.lang.String,Int] =
-    Map(hi -> 2, there -> 5)
-
-  scala> Array(1.0, 2.0, 3.0)
-  res3: Array[Double] = Array(1.0, 2.0, 3.0)
-}}}
-
-会根据工厂方法推断类型：
-
-{{{class="brush: scala"
-  scala> import scala.collection.mutable
-  import scala.collection.mutable
-
-  scala> val stuff = mutable.Set(42)
-  stuff: scala.collection.mutable.Set[Int] = Set(42)
-
-  scala> stuff += "abracadabra"
-  <console>:7: error: type mismatch;
-   found : java.lang.String("abracadabra")
-   required: Int
-         stuff += "abracadabra"
-                  ^
-}}}
-
-但是可以手动声明类型：
-
-{{{class="brush: scala"
-  scala> val stuff = mutable.Set[Any](42)
-  stuff: scala.collection.mutable.Set[Any] = Set(42)
-}}}
-
-还有一种情况，不能直接把`List`传递给`Set`的工厂方法：
-
-{{{class="brush: scala"
-  scala> val colors = List("blue", "yellow", "red", "green")
-  colors: List[java.lang.String] =
-    List(blue, yellow, red, green)
-
-
-  scala> import scala.collection.immutable.TreeSet
-  import scala.collection.immutable.TreeSet
-
-  scala> val treeSet = TreeSet(colors)
-  <console>:6: error: no implicit argument matching
-    parameter type (List[java.lang.String]) =>
-      Ordered[List[java.lang.String]] was found.
-         val treeSet = TreeSet(colors)
-                       ^
-}}}
-
-可行的方案是建立空的`TreeSet[String]`对象并用`TreeSet`的`++`操作把元素加进去：
-
-{{{class="brush: scala"
-  scala> val treeSet = TreeSet[String]() ++ colors
-  treeSet: scala.collection.immutable.SortedSet[String] =
-     Set(blue, green, red, yellow)
-}}}
-
-=== 数组与列表之间转换 ===
-
-{{{class="brush: scala"
-  scala> treeSet.toList
-  res54: List[String] = List(blue, green, red, yellow)
-
-  scala> treeSet.toArray
-  res55: Array[String] = Array(blue, green, red, yellow)
-}}}
-
-由于实现机制是一个一个元素地复制，所以元素多的话速度会慢。
-
-=== Set与Map的可变与不可变互转 ===
-
-在转为不可变类型时，一般是建一个空的不可变集，再一个一个加上去：
-
-{{{class="brush: scala"
-  scala> import scala.collection.mutable
-  import scala.collection.mutable
-
-  scala> treeSet
-  res5: scala.collection.immutable.SortedSet[String] =
-    Set(blue, green, red, yellow)
-
-  scala> val mutaSet = mutable.Set.empty ++ treeSet
-  mutaSet: scala.collection.mutable.Set[String] =
-    Set(yellow, blue, red, green)
-
-  scala> val immutaSet = Set.empty ++ mutaSet
-  immutaSet: scala.collection.immutable.Set[String] =
-    Set(yellow, blue, red, green)
-
-  scala> val muta = mutable.Map("i" -> 1, "ii" -> 2)
-  muta: scala.collection.mutable.Map[java.lang.String,Int] =
-     Map(ii -> 2, i -> 1)
-
-  scala> val immu = Map.empty ++ muta
-  immu: scala.collection.immutable.Map[java.lang.String,Int] =
-     Map(ii -> 2, i -> 1)
-}}}
-
-== 元组 ==
-
-元组可以存放不同的类型：
-
-{{{class="brush: scala"
-  (1, "hello", Console)
-}}}
-
-元组经常被用来返回多个函数结果，如下面的函数要同时返回单词和索引：
-
-{{{class="brush: scala"
-  def longestWord(words: Array[String]) = {
-    var word = words(0)
-    var idx = 0
-    for (i <- 1 until words.length)
-      if (words(i).length > word.length) {
-        word = words(i)
-        idx = i
+    def heighten(h: Int): Element = 
+      if (h <= height) this
+      else {
+        val top = elem(' ', width, (h - height) / 2)
+        var bot = elem(' ', width, h - height - top.height)
+        top above this above bot
       }
-    (word, idx)
-  }
-  
-  scala> val longest =
-       | longestWord("The quick brown fox".split(" "))
-  longest: (String, Int) = (quick,1)
-}}}
 
-然后可以访问各个元素：
-
-{{{class="brush: scala"
-  scala> longest._1
-  res56: String = quick
-
-  scala> longest._2
-  res57: Int = 1
-}}}
-
-还可以赋值给自己的变量（其实就是模式匹配）：
-
-{{{class="brush: scala"
-  scala> val (word, idx) = longest
-  word: String = quick
-  idx: Int = 1
-
-  scala> word
-  res58: String = quick
-}}}
-
-注意括号不能去掉，不然就是给两个变量赋值了两份：
-
-{{{class="brush: scala"
-  scala> val word, idx = longest
-  word: (String, Int) = (quick,1)
-  idx: (String, Int) = (quick,1)
-}}}
-
-= 有状态的对象 =
-
-类似于JavaBean的getter和setter方法，Scala对象的非私有`var x`有自动生成的访问方法`x`和设值方法`x_=`。
-
-对于类中的字段：
-
-{{{class="brush: scala"
-var hour = 12
-}}}
-
-会有额外的getter方法`hour`和setter方法`hour_=`。方法的访问性与字段一致。
-
-拿这个例子来说：
-
-{{{class="brush: scala"
-  class Time {
-    var hour = 12
-    var minute = 0
+    override def toString = contents mkString "\n"
   }
 }}}
 
-和下面的代码是一样的：
-
-{{{class="brush: scala"
-  class Time {
-
-    private[this] var h = 12
-    private[this] var m = 0
-
-    def hour: Int = h
-    def hour_=(x: Int) { h = x }
-
-    def minute: Int = m
-    def minute_=(x: Int) { m = x }
-  }
-}}}
-
-所以可以直接定义getter和setter。
-
-下面的代码在setter前进行检查：
-
-{{{class="brush: scala"
-  class Time {
-
-    private[this] var h = 12
-    private[this] var m = 12
-
-    def hour: Int = h
-    def hour_= (x: Int) {
-      require(0 <= x && x < 24)
-      h = x
-    }
-
-    def minute = m
-    def minute_= (x: Int) {
-      require(0 <= x && x < 60)
-      m = x
-    }
-  }
-}}}
-
-再看一个温度的例子：
-
-{{{class="brush: scala"
-  class Thermometer {
-
-    var celsius: Float = _
-
-    def fahrenheit = celsius * 9 / 5 + 32
-    def fahrenheit_= (f: Float) {
-      celsius = (f - 32) * 5 / 9
-    }
-    override def toString = fahrenheit +"F/"+ celsius +"C"
-  }
-}}}
-
-注意变量`celsius`的值为`_`，表示初始化值。对于数值代表`0`，对于布尔类型代表`false`，引用类型则代表`null`。
-
-Scala中的初始化器`=_`，如果写成：
-
-{{{class="brush: scala"
-var celsius
-}}}
-
-这样就成了抽象变量（以后到了“抽象成员”这一章介绍），而不是一个没有初始化的变量。这个和Java的习惯很不一样。
-
-使用的例子：
-
-{{{class="brush: scala"
-  scala> val t = new Thermometer
-  t: Thermometer = 32.0F/0.0C
-
-  scala> t.celsius = 100
-
-  scala> t
-  res3: Thermometer = 212.0F/100.0C
-
-  scala> t.fahrenheit = -40
-
-  scala> t
-  res4: Thermometer = -40.0F/-40.0C
-}}}
-
-== 案例：离散事件模拟 ==
-
-来个SICP（Structure and Interpretation of Computer Programs，计算机程序的构造与解释）里的例子。
-
-== 为数字电路定制语言 ==
-
-<img src="images/scala/18.01.png" />
-
-为了实现这三种基本的门，我们建立一个`Wire`类代表线路。可以这样构造线路：
-
-{{{class="brush: scala"
-val a = new Wire
-val b = new Wire
-val c = new Wire
-}}}
-
-或简洁地写成：
-
-{{{class="brush: scala"
-val a, b, c = new Wire
-}}}
-
-三个基本的门电路由以下三个过程模拟：
-
-{{{class="brush: scala"
-  def inverter(input: Wire, output: Wire)
-  def andGate(a1: Wire, a2: Wire, output: Wire)
-  def orGate(o1: Wire, o2: Wire, output: Wire)
-}}}
-
-注意这里的过程都没有返回值。按照函数式的思想，应该是返回构造好的门对象。但是在这里我们选择了没有返回值，而是通过副作用来模拟门电路。
-
-在这副作用让一步步渐进地构造复杂的电路更加容易，如`inverter(a,b)`在`a`与`b`之间放置反转电路。
-
-还有这里的方法名没有用动词而是用了名词，这是为了方便说明制造的是哪个门电路。这反映了DSL说明的本质：应该描述电路，而不是如何制造它。
-
-下面是一个半加法器（half-adder）。它根据两个输入`a`和`b`产生累加和`s`。
-
-累加的定义为：`s= (a+b)%2`及进位`c`，其中的`c = (a+b)/2`。
-
-半加法器电路图：
-
-<img src="images/scala/18.02.png" />
-
-用我们的代码描述：
-
-{{{class="brush: scala"
-  def halfAdder(a: Wire, b: Wire, s: Wire, c: Wire) {
-    val d, e = new Wire
-    orGate(a, b, d)
-    andGate(a, b, c)
-    inverter(c, e)
-    andGate(d, e, s)
-  }
-}}}
-
-接下来是一个全加法器，定义为根据参数`a`和`b`还有进位`cin`得到两个输出。一个是和`sum = (a+b+cin)%2`，另一个是进位输出`count = (a+b+cin)/2`：
-
-<img src="images/scala/18.03.png" />
-
-代码为：
-
-{{{class="brush: scala"
-  def fullAdder(a: Wire, b: Wire, cin: Wire,
-      sum: Wire, cout: Wire) {
-
-    val s, c1, c2 = new Wire
-    halfAdder(a, cin, s, c1)
-    halfAdder(b, s, sum, c2)
-    orGate(c1, c2, cout)
-  }
-}}}
-
-这是内部DSL很好的例子：通过宿主语言将特定的语言定义为库面不是完全实现这种语言。
-
-
-== Simulation API ==
-
-完成了对电路的模拟以后，再来分析对时间的模拟。模拟时间包括在指定时间执行指定的动作。
-
-私有变量保存时间，但提供对时间的公开访问：
-
-{{{class="brush: scala"
-  private var curtime: Int = 0
-
-  def currentTime: Int = curtime
-}}}
-
-定义动作：在我们的例子中，把参数列表和返回都为空的过程`() => Unit`作为基本的动作。给这样类型的过程起个别名叫`Action`：
-
-{{{class="brush: scala"
-type Action = () => Unit
-}}}
-
-在特定时间执行的的操作定义为工作项目（work item）：
-
-{{{class="brush: scala"
-  case class WorkItem(time: Int, action: Action)
-}}}
-
-注意这里用的是样本类，所以用工厂方法创建实例就可以自动获得访问构造器参数`time`和`action`的方法。
-
-还有一个类来保存末执行工作条目的排程表（agenda），注意它是按时间排序的：
-
-{{{class="brush: scala"
-  private var agenda: List[WorkItem] = List()
-}}}
-
-提供在一定 时延后加入新的工作条目的方法，注意加入操作也要排序：
-
-{{{class="brush: scala"
-  def afterDelay(delay: Int)(block: => Unit) {
-    val item = WorkItem(currentTime + delay, () => block)
-    agenda = insert(agenda, item)
-  }
-
-  private def insert(ag: List[WorkItem],
-      item: WorkItem): List[WorkItem] = {
-
-    if (ag.isEmpty || item.time < ag.head.time) item :: ag
-    else ag.head :: insert(ag.tail, item)
-  }
-}}}
-
-核心是`run`方法：
-
-{{{class="brush: scala"
-  def run() {
-    afterDelay(0) {
-      println("*** simulation started, time = "+
-          currentTime +" ***")
-    }
-    while (!agenda.isEmpty) next()
-  }
-  
-  private def next() {
-    (agenda: @unchecked) match {
-      case item :: rest =>
-        agenda = rest
-        curtime = item.time
-        item.action()
-    }
-  }
-}}}
-
-注意这里为了方便去掉了空列表的情况。为了防止编译器警告我们在模式匹配里故意漏掉了列表为空的情况，在这里使用了`(agenda: @unchecked) match`而不是`agenda match`。
-
-完整的代码在包`org.stairwaybook.simulation`里：
-
-{{{class="brush: scala"
-  abstract class Simulation {
-
-    type Action = () => Unit
-
-    case class WorkItem(time: Int, action: Action)
-
-    private var curtime = 0
-    def currentTime: Int = curtime
-
-    private var agenda: List[WorkItem] = List()
-
-    private def insert(ag: List[WorkItem],
-        item: WorkItem): List[WorkItem] = {
-
-      if (ag.isEmpty || item.time < ag.head.time) item :: ag
-      else ag.head :: insert(ag.tail, item)
-    }
-
-    def afterDelay(delay: Int)(block: => Unit) {
-      val item = WorkItem(currentTime + delay, () => block)
-      agenda = insert(agenda, item)
-    }
-
-    private def next() {
-      (agenda: @unchecked) match {
-        case item :: rest =>
-          agenda = rest
-          curtime = item.time
-          item.action()
+== 完整的示例代码 ==
+
+写一个画给定数量边界的螺旋的程序。
+
+{{{class="brush: scala" 
+// In file compo-inherit/Spiral.scala
+
+  import Element.elem
+
+  object Spiral {
+
+    val space = elem(" ")
+    val corner = elem("+")
+
+    def spiral(nEdges: Int, direction: Int): Element = {
+      if (nEdges == 1)
+        elem("+")
+      else {
+        val sp = spiral(nEdges - 1, (direction + 3) % 4)
+        def verticalBar = elem('|', 1, sp.height)
+        def horizontalBar = elem('-', sp.width, 1)
+        if (direction == 0)
+          (corner beside horizontalBar) above (sp beside space)
+        else if (direction == 1)
+          (sp above space) beside (corner above verticalBar)
+        else if (direction == 2)
+          (space beside sp) above (horizontalBar beside corner)
+        else
+          (verticalBar above corner) beside (space above sp)
       }
     }
 
-    def run() {
-      afterDelay(0) {
-        println("*** simulation started, time = "+
-            currentTime +" ***")
-      }
-      while (!agenda.isEmpty) next()
+    def main(args: Array[String]) {
+      val nSides = args(0).toInt
+      println(spiral(nSides, 0))
     }
   }
 }}}
 
 
 
-== 电路模拟 ==
-
-这里创建了`BasicCircuitSiomulation`来模拟电路。
-
-为了模拟电路和延迟声明了三个方法：`InverterDelay`、`AndGateDelay`、`OrGateDelay`。由于不同模拟电路的技术参数不同，所以这三个方法是抽象方法。
-
-=== Wire类 ===
-
-需要支持的三种基本动作：
-
-`getSignal: Boolean`：返回当前线路上的信号。
-
-`setSignal(sig: Boolean)`：设置线路信号。
-
-`addAction(p: Action)`：添加动作到线路上。基本思想是所有附加在某线路上的动作过程在每次信号改变时被执行。通过连接组件可以为线路添加该组件的功能。加上的动作会在被加到线路时以及每次线路信号改变时被执行。
-
-实现代码`sigVal`代表当前信号，`actions`是附加的动作过程。需要注意的是`setSignal`方法，当信号改变时，新的信号首先被保存在变量`sigVal`中，然后执行所有线路附加动作：
-
-{{{class="brush: scala"
-  class Wire {
-    private var sigVal = false
-    private var actions: List[Action] = List()
-
-    def getSignal = sigVal
-
-    def setSignal(s: Boolean) =
-      if (s != sigVal) {
-        sigVal = s
-        actions foreach (_ ())
-      }
-
-    def addAction(a: Action) = {
-      actions = a :: actions
-      a()
-    }
-  }
+{{{class="brush: scala" 
+$ scala Spiral 6    $ scala Spiral 11    $ scala Spiral 17
++-----              +----------          +----------------
+|                   |                    |                
+| +-+               | +------+           | +------------+ 
+| + |               | |      |           | |            | 
+|   |               | | +--+ |           | | +--------+ | 
++---+               | | |  | |           | | |        | | 
+                    | | ++ | |           | | | +----+ | | 
+                    | |    | |           | | | |    | | | 
+                    | +----+ |           | | | | ++ | | | 
+                    |        |           | | | |  | | | | 
+                    +--------+           | | | +--+ | | | 
+                                         | | |      | | | 
+                                         | | +------+ | | 
+                                         | |          | | 
+                                         | +----------+ | 
+                                         |              | 
+                                         +--------------+ 
 }}}
 
-注意上面的缩写格式：`actions forearch(_())`代表对每个元素执行`_()`。在“函数和装饰”这一章的“占位符”部分说明过，函数`_()`是`f => f()`的缩写，代表空参数函数。
 
-=== 反转操作 ===
+= Scala类的层级 =
 
-`inverter`方法会在安装之后以及每次线路信号变化时被调用。它通过`setSignal`把输出设为输入的反值。
+Scala里，每个类都继承自通用的名为`Any`的超类。因为所有的类都是`Any`的子类，那么定义在`Any`中的方法就是“普遍”方法：它们可以被任何对象调用。
 
-另外，由于还要模拟电路的响应时间，所以输入值改变以后，还要等`InverterDelay`单位的模拟时间后，才发生改变：
+Scala还在层级的底端定义了`Null`和`Nothing`，主要都扮演通用的子类。例如，就像说`Any`是所有其它类的超类，`Nothing`是所有其它类的子类。
 
-{{{class="brush: scala"
-  def inverter(input: Wire, output: Wire) = {
-    def invertAction() {
-      val inputSig = input.getSignal
-      afterDelay(InverterDelay) {
-        output setSignal !inputSig
-      }
-    }
-    input addAction invertAction
-  }
+<img src="images/scala/scala.hirtc.png" alt="scala.hirtc" />
+
+
+
+== Scala类的概览 ==
+
+层级的顶端是类`Any`，定义了包含下列的方法：
+
+{{{class="brush: scala" 
+  final def ==(that: Any): Boolean
+  final def !=(that: Any): Boolean
+  def equals(that: Any): Boolean
+  def hashCode: Int
+  def toString: String
 }}}
 
-注意这里的`afterDelay`方法是把这个操作加到队列的最后面。
+类Any里的`=`和`!=`，被声明为`final`，因此它们不能在子类里面重载。实际上，`==`总是与`equals`相同，`!=`总是与`equals`相反。因此独立的类可以通过重载`equals`方法修改`==`或`!=`的意义。
 
-=== 与门和或门操作 ===
+根类`Any`有两个子类：`AnyVal`和`AnyRef`。
 
-大致思想和上面类似：
+=== 值类型（AnyVal） ===
 
-{{{class="brush: scala"
-  def andGate(a1: Wire, a2: Wire, output: Wire) = {
-    def andAction() = {
-      val a1Sig = a1.getSignal
-      val a2Sig = a2.getSignal
-      afterDelay(AndGateDelay) {
-        output setSignal (a1Sig & a2Sig)
-      }
-    }
-    a1 addAction andAction
-    a2 addAction andAction
-  }
+`AnyVal`是Scala里每个内建值类型的父类。有九个这样的值类型：`Byte`，`Short`，`Char`，`Int`，`Long`，`Float`，`Double`，`Boolean`和`Unit`。其中的前八个对应到Java的原始类型，它们的值在运行时表示成Java的原始值。
 
-  def orGate(o1: Wire, o2: Wire, output: Wire) {
-    def orAction() {
-      val o1Sig = o1.getSignal
-      val o2Sig = o2.getSignal
-      afterDelay(OrGateDelay) {
-        output setSignal (o1Sig | o2Sig)
-      }
-    }
-    o1 addAction orAction
-    o2 addAction orAction
-  }
-}}}
+Scala里这些类的实例都写成字面量，不能使用`new`创造这些类的实例。值类都被定义为即是抽象的又是`final`的，强制贯彻。因此如果你写了`new`就会出错：
 
-=== 模拟输出 ===
-
-通过探针（probe）观察线路上信号的改变。
-
-还是在信号改变时被调用，显示输出线路的名称、模拟时间、信号值：
-
-{{{class="brush: scala"
-  def probe(name: String, wire: Wire) {
-    def probeAction() {
-      println(name +" "+ currentTime +
-          " new-value = "+ wire.getSignal)
-    }
-    wire addAction probeAction
-  }
-}}}
-
-=== 运行模拟器 ===
-
-`BasicCircuitSimulation`继承了`CircuitSimulation`
-
-{{{class="brush: scala"
-  package org.stairwaybook.simulation
-
-  abstract class CircuitSimulation
-    extends BasicCircuitSimulation {
-
-    def halfAdder(a: Wire, b: Wire, s: Wire, c: Wire) {
-      val d, e = new Wire
-      orGate(a, b, d)
-      andGate(a, b, c)
-      inverter(c, e)
-      andGate(d, e, s)
-    }
-
-    def fullAdder(a: Wire, b: Wire, cin: Wire,
-        sum: Wire, cout: Wire) {
-
-      val s, c1, c2 = new Wire
-      halfAdder(a, cin, s, c1)
-      halfAdder(b, s, sum, c2)
-      orGate(c1, c2, cout)
-    }
-  }
-}}}
-
-剩下的电路延迟时间和定义被模拟的电路都留在Scala交互Shell中实现：
-
-{{{class="brush: scala"
-  scala> import org.stairwaybook.simulation._
-  import org.stairwaybook.simulation._
-}}}
-
-定义延迟时间：
-
-{{{class="brush: scala"
-  scala> object MySimulation extends CircuitSimulation {
-       | def InverterDelay = 1
-       | def AndGateDelay = 3
-       | def OrGateDelay = 5
-       | }
-  defined module MySimulation
-}}}
-
-定义一下简化以后对`MySimulation`的引用：
-
-{{{class="brush: scala"
-  scala> import MySimulation._
-  import MySimulation._
-}}}
-
-定义线路的部分。先定义四根线路，再把探针放在其中的两根上。探针会立即输出结果：
-
-{{{class="brush: scala"
-  scala> val input1, input2, sum, carry = new Wire
-  input1: MySimulation.Wire =
-      simulator.BasicCircuitSimulation$Wire@111089b
-  input2: MySimulation.Wire =
-      simulator.BasicCircuitSimulation$Wire@14c352e
-  sum: MySimulation.Wire =
-      simulator.BasicCircuitSimulation$Wire@37a04c
-  carry: MySimulation.Wire =
-      simulator.BasicCircuitSimulation$Wire@1fd10fa
-
-  scala> probe("sum", sum)
-  sum 0 new-value = false
-
-  scala> probe("carry", carry)
-  carry 0 new-value = false
-}}}
-
-加上半加法器：
-
-{{{class="brush: scala"
-  scala> halfAdder(input1, input2, sum, carry)
-}}}
-
-逐次把两根输入线信号设为`true`，并执行模拟过程：
-
-{{{class="brush: scala"
-  scala> input1 setSignal true
-
-  scala> run()
-  *** simulation started, time = 0 ***
-  sum 8 new-value = true
-
-  scala> input2 setSignal true
-
-  scala> run()
-  *** simulation started, time = 8 ***
-  carry 11 new-value = true
-  sum 15 new-value = false
-}}}
-
-全部代码如下：
-
-{{{class="brush: scala"
-package org.stairwaybook.simulation
-
-abstract class BasicCircuitSimulation extends Simulation {
-
-  def InverterDelay: Int
-  def AndGateDelay: Int
-  def OrGateDelay: Int
-
-  class Wire {
-
-    private var sigVal = false
-    private var actions: List[Action] = List()
-
-    def getSignal = sigVal
-
-    def setSignal(s: Boolean) =
-      if (s != sigVal) {
-        sigVal = s
-        actions foreach (_ ())
-      }
-
-    def addAction(a: Action) = {
-      actions = a :: actions
-      a()
-    }
-  }
-
-  def inverter(input: Wire, output: Wire) = {
-    def invertAction() {
-      val inputSig = input.getSignal
-      afterDelay(InverterDelay) {
-        output setSignal !inputSig
-      }
-    }
-    input addAction invertAction
-  }
-
-  // continued in Listing 18.10...
-  // ...continued from Listing 18.9
-  def andGate(a1: Wire, a2: Wire, output: Wire) = {
-    def andAction() = {
-      val a1Sig = a1.getSignal
-      val a2Sig = a2.getSignal
-      afterDelay(AndGateDelay) {
-        output setSignal (a1Sig & a2Sig)
-      }
-    }
-    a1 addAction andAction
-    a2 addAction andAction
-  }
-
-  def orGate(o1: Wire, o2: Wire, output: Wire) {
-    def orAction() {
-      val o1Sig = o1.getSignal
-      val o2Sig = o2.getSignal
-      afterDelay(OrGateDelay) {
-        output setSignal (o1Sig | o2Sig)
-      }
-    }
-    o1 addAction orAction
-    o2 addAction orAction
-  }
-
-  def probe(name: String, wire: Wire) {
-    def probeAction() {
-      println(name +" "+ currentTime +
-          " new-value = "+ wire.getSignal)
-    }
-    wire addAction probeAction
-  }
-}
-
-abstract class Simulation {
-
-  type Action = () => Unit
-
-  case class WorkItem(time: Int, action: Action)
-
-  private var curtime = 0
-  def currentTime: Int = curtime
-
-  private var agenda: List[WorkItem] = List()
-
-  private def insert(ag: List[WorkItem],
-      item: WorkItem): List[WorkItem] = {
-
-    if (ag.isEmpty || item.time < ag.head.time) item :: ag
-    else ag.head :: insert(ag.tail, item)
-  }
-
-  def afterDelay(delay: Int)(block: => Unit) {
-    val item = WorkItem(currentTime + delay, () => block)
-    agenda = insert(agenda, item)
-  }
-
-  private def next() {
-    (agenda: @unchecked) match {
-      case item :: rest =>
-        agenda = rest
-        curtime = item.time
-        item.action()
-    }
-  }
-
-  def run() {
-    afterDelay(0) {
-      println("*** simulation started, time = "+
-          currentTime +" ***")
-    }
-    while (!agenda.isEmpty) next()
-  }
-}
-
-
-abstract class CircuitSimulation
-  extends BasicCircuitSimulation {
-
-  def halfAdder(a: Wire, b: Wire, s: Wire, c: Wire) {
-    val d, e = new Wire
-    orGate(a, b, d)
-    andGate(a, b, c)
-    inverter(c, e)
-    andGate(d, e, s)
-  }
-
-  def fullAdder(a: Wire, b: Wire, cin: Wire,
-      sum: Wire, cout: Wire) {
-
-    val s, c1, c2 = new Wire
-    halfAdder(a, cin, s, c1)
-    halfAdder(b, s, sum, c2)
-    orGate(c1, c2, cout)
-  }
-}
-
- object MySimulation extends CircuitSimulation {
-           def InverterDelay = 1
-           def AndGateDelay = 3
-           def OrGateDelay = 5
-
-  def main(args: Array[String]) {
-    val input1, input2, sum, carry = new Wire
-
-    probe("sum", sum)
-    probe("carry", carry)
-    halfAdder(input1, input2, sum, carry)
-
-    input1 setSignal true
-    run()
-
-    input2 setSignal true
-    run()
-  }
-}
-}}}
-
-= 参数类型化 =
-
-类型化参数能实现编写泛型类和特质。Scala中的泛型实例都应该写明具体类型（如：Set[Int]，Set[Int]），而不像Java中可以不带泛型类型。
-
-== 开发纯函数式队列 ==
-
-函数式的队列是不可变的，添加元素操作会返回一个新的队列。三个基本方法：
-
-* `head`返回队列的第一个元素。
-* `tail`返回第一个元素以外的队列。
-* `append`返回在尾部添加指定元素的列队。
-
-理想情况下，希望三种基本操作都可以在常量时间中完成。
-
-一个实现方案是以`List`作为功能表达类型，可以用现成的`head`和`tail`方法。`append`方法调用连接操作：
-
-{{{class="brush: scala"
-  class SlowAppendQueue[T](elems: List[T]) { // Not efficient
-    def head = elems.head
-    def tail = new SlowAppendQueue(elems.tail)
-    def append(x: T) = new SlowAppendQueue(elems ::: List(x))
-  }
-}}}
-
-但这样`append`操作的时间会按元素的数量而增加，那换一种思路，把列表倒过来排序，这样会让原来最后加进来的元素出现在列表的最前面：
-
-{{{class="brush: scala"
-  class SlowHeadQueue[T](smele: List[T]) { // Not efficient
-    // smele is elems reversed
-    def head = smele.last
-    def tail = new SlowHeadQueue(smele.init)
-    def append(x: T) = new SlowHeadQueue(x :: smele)
-  }
-}}}
-
-现在表现也倒过来了：`append`操作时间为常量，但`head`和`tail`耗时与元素数量成正比了。
-
-试一下结合两种列表的方案：
-
-
-用两个列表`leading`放前面一半；`trailing`放后一半反向排的元素。这样全部内容就是：
-
-{{{class="brush: scala"
-leading ::: trailing.reverse
-}}}
-
-添加新元素：
-
-{{{class="brush: scala"
-i :: trailing
-}}}
-
-这样常量时间就可以完成。但这样前一半的`leading`就不放进内容了，所以在对空的`leading`进行第一次`head`或`tail`操作前都要把`trailing`反转并复制给`leading`。这个操作被定义为`mirror`。
-
-虽然`mirror`操作与队列长度成正比，但是这只发生在`leading`为空时才会被调用。因为如果`leading`不为空它将直接返回。`head`与`tail`操作会调用到`mirror`，所以这两个方法的复杂度与队列长度呈线性关系。然而队列越长，`mirror`被调用的次数就越以级数方式递减。
-
-{{{class="brush: scala"
-  class Queue[T](
-    private val leading: List[T],
-    private val trailing: List[T]
-  ) {
-    private def mirror =
-      if (leading.isEmpty)
-        new Queue(trailing.reverse, Nil)
-      else
-        this
-
-    def head = mirror.leading.head
-
-    def tail = {
-      val q = mirror
-      new Queue(q.leading.tail, q.trailing)
-    }
-
-    def append(x: T) =
-      new Queue(leading, x :: trailing)
-  }
-}}}
-
-== 信息隐藏 ==
-
-前面的`Queue`实现暴露了太多实现细节，比如构造器的两个参数还有一个是反转的。
-
-=== 私有构造器及工厂方法 ===
-
-{{{class="brush: scala"
-  class Queue[T] private (
-    private val leading: List[T],
-    private val trailing: List[T]
-  )
-}}}
-
-这样防止外部调用主构造器：
-
-{{{class="brush: scala"
-  scala> new Queue(List(1, 2), List(3))
-  <console>:6: error: constructor Queue cannot be accessed in
-    object $iw
-         new Queue(List(1, 2), List(3))
+{{{class="brush: scala"   
+  scala> new Int
+  <console>:5: error: class Int is abstract; cannot be 
+  instantiated
+         new Int
          ^
 }}}
 
-客户代码只能调用辅助构造器：
+另一个值类型`Unit`大约对应于Java的`void`类型；被用作不返回任何有趣结果的方法的结果类型。`Unit`只有一个实例值，被写作`()`。
 
-{{{class="brush: scala"
-  def this() = this(Nil, Nil)
+值类型支持作为方法的通用的数学和布尔操作符。例如，`Int`有名为`+`和`*`的方法，`Boolean`有名为`||`和`&&`的方法。值类型也从类`Any`继承所有的方法：
+
+{{{class="brush: scala" 
+  scala> 42 max 43
+  res4: Int = 43
+
+  scala> 42 min 43
+  res5: Int = 42
+
+  scala> 1 until 5
+  res6: Range = Range(1, 2, 3, 4)
+
+  scala> 1 to 5
+  res7: Range.Inclusive = Range(1, 2, 3, 4, 5)
+
+  scala> 3.abs
+  res8: Int = 3
+
+  scala> (-3).abs
+  res9: Int = 3
 }}}
 
-改良一下，让它可以带上初始队列元素列表：
+值类型的空间是扁平的；所有的值类型都是`scala.AnyVal`的子类型，但是它们不是互相的子类。代之以它们不同的值类型之间可以隐式地互相转换。例如，需要的时候，类`scala.Int`的实例可以自动放宽（通过隐式转换）到类`scala.Long`的实例。
 
-{{{class="brush: scala"
-  def this(elems: T*) = this(elems.toList, Nil)
+
+隐式转换还用来为值类型添加更多的功能。例如，类型`Int`支持以下所有的操作：
+
+{{{class="brush: scala" 
+  scala> 42 max 43
+  res4: Int = 43
+
+  scala> 42 min 43
+  res5: Int = 42
+
+  scala> 1 until 5
+  res6: Range = Range(1, 2, 3, 4)
+
+  scala> 1 to 5
+  res7: Range.Inclusive = Range(1, 2, 3, 4, 5)
+
+  scala> 3.abs
+  res8: Int = 3
+
+  scala> (-3).abs
+  res9: Int = 3
 }}}
 
-其中的`T*`是重复参数标记，在前面“函数与闭包”一章中已经介绍。
+工作原理：方法`min`，`max`，`until`，`to`和`abs`都定义在类`scala.runtime.RichInt`里，并且有一个从类`Int`到`RichInt`的隐式转换。当你在Int上调用没有定义在`Int`上但定义在`RichInt`上的方法时，这个转换就被应用了：
 
-还有一种让客户代码构造的方法是在类定义同一个文件内建立伴生类的工厂方法：
+=== 引用类型（AnyRef） ===
 
-{{{class="brush: scala"
-  object Queue {
-    // constructs a queue with initial elements `xs'
-    def apply[T](xs: T*) = new Queue[T](xs.toList, Nil)
+类`Any`的另一个子类是类`AnyRef`。这个是`Scala`里所有引用类的基类。正如前面提到的，在Java平台上`AnyRef`实际就是类`java.lang.Object`的别名。因此Java里写的类和`Scala`里写的都继承自`AnyRef`。
+
+存在`AnyRef`别名代替使用`java.lang.Object`名称的理由是，Scala被设计成可以同时工作在Java和.Net平台。在.NET平台上，`AnyRef`是`System.Object`的别名。 
+
+可以认为`java.lang.Object`是Java平台上实现`AnyRef`的方式。因此，尽管你可以在Java平台上的Scala程序里交换使用`Object`和`AnyRef`，推荐的风格是在任何地方都只使用`AnyRef`。
+
+Scala类与Java类不同在于它们还继承自一个名为`ScalaObject`的特别的记号特质。理念是`ScalaObject`包含了Scala编译器定义和实现的方法，目的是让Scala程序的执行更有效。到现在为止，Scala对象包含了单个方法，名为`$tag`，用于内部以提速模式匹配。
+
+
+
+== 原始类型是如何实现的 ==
+
+Scala以与Java同样的方式存储整数：把它当作32位的字。这对在JVM上的效率以及与Java库的互操作性方面来说都很重要。标准的操作如加法或乘法都被实现为原始操作。然而，当整数需要被当作（Java）对象看待的时候，Scala使用了“备份”类`java.lang.Integer`。如在整数上调用`toString`方法或者把整数赋值给Any类型的变量时，就会这么做。
+
+所有这些听上去都近似Java5里的自动装箱并且它们的确很像。不过有一个关键差异，Scala里的装箱比Java里的更少看见。尝试下面的Java代码：
+
+{{{class="brush: scala" 
+  // This is Java
+  boolean isEqual(int x, int y) {
+    return x == y;
   }
+  System.out.println(isEqual(421, 421));
 }}}
 
-=== 可选方案：私有类 ===
+当然会得到`true`。现在，把`isEqual`的参数类型变为`java.lang.Integer`（或`Object`，结果都一样）：
 
-除了私有构造器和私有成员，还可以直接隐藏掉类本身，只提供暴露类公共接口的特质：
-
-{{{class="brush: scala"
-  trait Queue[T] {
-    def head: T
-    def tail: Queue[T]
-    def append(x: T): Queue[T]
+{{{class="brush: scala" 
+  // This is Java
+  boolean isEqual(Integer x, Integer y) {
+    return x == y;
   }
-
-  object Queue {
-
-    def apply[T](xs: T*): Queue[T] =
-      new QueueImpl[T](xs.toList, Nil)
-
-    private class QueueImpl[T](
-      private val leading: List[T],
-      private val trailing: List[T]
-    ) extends Queue[T] {
-
-      def mirror =
-        if (leading.isEmpty)
-          new QueueImpl(trailing.reverse, Nil)
-        else
-          this
-
-      def head: T = mirror.leading.head
-
-      def tail: QueueImpl[T] = {
-        val q = mirror
-        new QueueImpl(q.leading.tail, q.trailing)
-      }
-
-      def append(x: T) =
-        new QueueImpl(leading, x :: trailing)
-    }
-  }
-}}}
-
-
-== 变化型注解 ==
-
-上面的`Queue`特质创建实例时一定要加类型参数：
-
-{{{class="brush: scala"
-  scala> def doesNotCompile(q: Queue) {}
-  <console>:5: error: trait Queue takes type parameters
-         def doesNotCompile(q: Queue) {}
-}}}
-
-当然`AnyRef`也是一种类型：
-
-{{{class="brush: scala"
-  scala> def doesCompile(q: Queue[AnyRef]) {}
-  doesCompile: (Queue[AnyRef])Unit
-}}}
-
-Scala的泛型在默认情况下是非协变的（nonvariant），即`Queue[String]`不是`Queue[AnyRef]`的子类。但还是可以设置为协变（covariant）的。
-
-用`+`表明子类型化协变，即`Queue[String]`是`Queue[AnyRef]`的子类：
-
-{{{class="brush: scala"
-  trait Queue[+T] { ... }
-}}}
-
-用`-`表示逆变（contravariant）子类型化，如果`T`类型是`S`的子类型，将隐含`Queue[S]`是`Queue[T]`的子类型：
-
-{{{class="brush: scala"
-  trait Queue[-T] { ... }
-}}}
-
-协变、逆变与非协变都被称为参数变化类型。
-
-在纯函数式中，许多类型都是自然协变的。然而一旦引入了可变数据，情况就改变了。假设一个简单的只能读写一个元素的单元格（Cell）类型：
-
-{{{class="brush: scala"
-  class Cell[T](init: T) {
-    private[this] var current = init
-    def get = current
-    def set(x: T) { current = x }
-  }
-}}}
-
-上面的`Cell`是非协变的。我们现成假设它是协变的，声明为`Cell[+T]`并发送给Scala编译器。于是我们可以构建如下存在问题的语句序列：
-
-{{{class="brush: scala"
-  val c1 = new Cell[String]("abc")
-}}}
-
-建立`String`放在`c1`中，OK。
-
-{{{class="brush: scala"
-  val c2: Cell[Any] = c1
-}}}
-
-`c2`类型是`Cell[Any]`，把`Cell[String]`的`c1`赋值给它也OK。
-
-{{{class="brush: scala"
-  c2.set(1)
-}}}
-
-`c2`是`Cell[Any]`，所以存数字也OK。
-
-{{{class="brush: scala"
-  val s: String = c1.get
-}}}
-
-`c1`里的字符串，赋给字符串也OK。
-
-上面四行都OK，但是看看这四行放在一起，就出问题了：
-
-{{{class="brush: scala"
-  val c1 = new Cell[String]("abc")
-  val c2: Cell[Any] = c1
-  c2.set(1)
-  val s: String = c1.get
-
-  Cell.scala:7: error: covariant type T occurs in
-  contravariant position in type T of value x
-     def set(x: T) = current = x
-                ^
-}}}
-
-这四行代码是要把整数`1`赋值给字符串`s`，这样破坏了类型声明。问题出在第二行，`Cell[Any]`和`Cell[String]`的类型的协变引起了错误。
-
-=== 变化型和数组 ===
-
-以前面的`Cell`类为例与Java中的数组比较，Java中的数组是协变的：
-
-{{{class="brush: scala"
-  // this is Java
-  String[] a1 = { "abc" };
-  Object[] a2 = a1;
-  a2[0] = new Integer(17);
-  String s = a1[0];
-}}}
-
-虽然可以通过编译，但是运行时第四行会报错。Java运行时保存了数组元素类型，在更新时对新元素进行合法性校验。类型错误时抛出`ArrayStore`：
-
-{{{class="brush: scala"
-  Exception in thread "main" java.lang.ArrayStoreException:
-  java.lang.Integer
-          at JavaArrays.main(JavaArrays.java:8)
-}}}
-
-这样看起来好像即没有用又浪费性能。按James Gosling的说法是希望有一个通用处理数组的简单方法，如需要排序所有元素时：
-
-{{{class="brush: scala"
-  void sort(Object[] a, Comparator cmp) { ... }
-}}}
-
-这样确保任意参数类型的数组都可以传入排序方法。当然后来Java有了泛型以后数组的协变不再有用了，为了向以前老版本兼容才留着。
-
-Scala中数组是不可协变的：
-
-{{{class="brush: scala"
-  scala> val a1 = Array("abc")
-  a1: Array[java.lang.String] = Array(abc)
-
-  scala> val a2: Array[Any] = a1
-  <console>:5: error: type mismatch;
-   found : Array[java.lang.String]
-   required: Array[Any]
-         val a2: Array[Any] = a1
-                              ^
-}}}
-
-但有时还是要数组能泛型手段与Java遗留方法进行交互。所以Scala允许把`T`类型的数组造型为任意`T`的超类的数组：
-
-{{{class="brush: scala"
-  scala> val a2: Array[Object] =
-       | a1.asInstanceOf[Array[Object]]
-  a2: Array[java.lang.Object] = Array(abc)
-}}}
-
-== 检查变化型注解 ==
-
-再看几个不合适的协变例子：
-
-把前面的队列改成协变的，然后创建指定元素类型为`Int`的队列。并重载`append`方法使其在添加前先输出它参数的平方根：
-
-{{{class="brush: scala"
-  class StrangeIntQueue extends Queue[Int] {
-    override def append(x: Int) = {
-      println(Math.sqrt(x))
-      super.append(x)
-    }
-  }
-}}}
-
-假设上面的代码是协变的，对应以下的调用：
-
-{{{class="brush: scala"
-  val x: Queue[Any] = new StrangeIntQueue
-  x.append("abc")
-}}}
-
-上面的因为协变所以第一行是有效的，但第二行就有问题了……对字符串求平方根……
-
-在更加广泛的情况下，只要把泛型类型作为方法参数类型，包含它的类或特质就有可能不能与这个类型参数一直协变，对于队列来说，`append`方法违反了以下情况：
-
-{{{class="brush: scala"
-  class Queue[+T] {
-    def append(x: T) = 
-     ...
-  }
-}}}
-
-所以编译器会报错：
-
-{{{class="brush: scala"
-  Queues.scala:11: error: covariant type T occurs in
-  contravariant position in type T of value x
-    def append(x: T) = 
-               ^
-}}}
-
-不要对可重新赋值的字段使用`+`的协变参数类型。如`var x:T`在Scala里被看作自带`getter`方法`def x:T`、`def x_= (y:T)`，所以将不是协变的。
-
-=== 变化型注解的验证方式 ===
-
-深入讲述一些概念前，首选，我们把类和特质都简单称为“类”。然后对于这些类可能会用到类型参数的地方被分为正、负、中立。编译器检查类的类型参数的每一个用法。
-
-`+`的类型参数只能被用在正的位置上，`-`的类型参数只能用在负的位置上。没有变化型注解的类型可以用于任何位置，所以它是唯一能被用在类结构体的中性位置上的类型参数。
-
-编译器对位置分类是从类型声明开始进入更深的内嵌层。处于声明类最顶层被划为正的位置。默认情况下内层位置的分类会和外层一致。
-
-但总有例外：方法值参数位置是方法外部的位置的翻转类别，这里正位置传为负，负转为正，而中性位置仍然保持中性。
-
-除了方法值参数位置外，方法的类型参数的当前类别也会被翻转。而类型参数的位置，如`C[Arg]`中的`Arg`也有可以被翻转，这取决于对应类型参数的变化型：
-
-如果`C`的类型参数标了`+`号，那么类别不变；如果标了`-`号，则当前类别被翻转；如果`C`的类型参数没有变化型注解，那么当前类型将改为中性。
-
-下面的例子比较生编硬造，下面类型定义中的若干位置变化弄被标了正`+`或`-`负：
-
-类型参数`W`与两个值参数`volume`和`listener`的位置都是负的。
-
-<img src='images/scala/19.01.png' />
-
-注意`meow`的结果类型，第一个`Cat[U, T]`参数的位置是负的。因为`Cat`的第一个类型参数`[T]`被标了`-`。这个参数中的类型`U`重新转为正的位置（两次翻转），而参数中的类型`T`仍然是负位置。
-
-总的来说：人脑想跟上变化型位置的变化是很困难的，所以Scala编译器自动来完成这项工作。计算机变化型过程中，编译器检查每个类型参数是否仅用于分类正确的位置上。
-
-就上面的例子来说，`T`仅用在负位置上，而`U`仅用于正的位置上。所以这个`Cat`类是正确的。
-
-== 下界 ==
-
-在之前的“可选方案：私有类”这一节中展示的是没有办法协变的实现`Queue[T]`。因为类型`T`作为参数出现在`append`方法中，而这个位置是负的。
-
-所幸有一个办法：可能通过把`append`变为多态以使其泛型化并使用它的类型参数的下界：
-
-{{{class="brush: scala"
-  class Queue[+T] (private val leading: List[T],
-      private val trailing: List[T] ) {
-    def append[U >: T](x: U) = 
-      new Queue[U](leading, x :: trailing) // ...
-  }
-}}}
-
-`append`方法指定的类型参数`U`，并通过语法`U >: T`定义了`T`为`U`的下界，即：`U`必须是`T`的超类。这里可以把T的任意超类（U）的对象添加进来，返回类型也成了`Queue[U]`。
-
-对于`append`方法来说，它不知道自己处理的是某一个子类。只知道处理的是超类`U`。所以不会有类型错误。
-
-要注意对于同一个类来说，即是超类也是子类。所以`T`是`U`下界，用`T`传入也是可以的。
-
-例子：对于`Fruit`和两个子类`Orange`和`Apple`，可以把`Orange`对象传入`Queue[Apple]`而返回`Queue[Fruit]`。
-
-从技术角度来看，这里的情况发生了下界的翻转：类型参数`U`处于负位置（1次翻转），面下界`>: T`处于正的位置（两次翻转）。
-
-
-== 逆变 ==
-
-前面所有的例子不是协变的就是非协变的。还有一些情况下会有逆变：
-
-对于两个类`U`和`T`。如果可以用`T`可以提供`U`要用到的功能，并且用起来限制更少，就可以假设`T`是`U`的子类（里氏原则：Liskov Substitution Principle，LSP）。
-
-{{{class="brush: scala"
-  trait OutputChannel[-T] {
-    def write(x: T)
-  }
-}}}
-
-这种情况下`OutputChannel[AnyRef]`作为`OutputChannel[String]`的子类型。因为它们都支持`write`操作。而且`OutputChannel[AnyRef]`参数仅要`AnyRef`就可以，但`OutputChannel[String]`的参数一定要是`String`才行。
-
-所以把一个`OutputChannel[AnyRef]`赋给`OutputChannel[String]`是安全的，反过来把一个`OutputChannel[String]`赋给`OutputChannel[AnyRef]`却是不安全的。
-
-Scala函数特质中协变与逆变混在一起用的情况会比较多。对于`S => T`类型的函数会定义`Function[S, T]`，这时对参数`S`逆变而对结果`T`协变就是一种有用的策略：
-
-{{{class="brush: scala"
-  trait Function1[-S, +T] {
-    def apply(x: S): T
-  }
-}}}
-
-应用的例子：
-
-父类出版物的构造函数有一个标题参数，子类书的构造函数会调用父类的构造函数。
-
-{{{class="brush: scala"
-class Publication(val title: String)
-class Book(title: String) extends Publication(title)
-}}}
-
-单例对象`Library`定义了书的集，以及打印书单的方法`printBookList`的唯一参数是以`Book => AnyRef`类型的方法为参数。
-
-{{{class="brush: scala"
-object Library {
- val books: Set[Book] =
-   Set(
-     new Book("Programming in Scala"),
-     new Book("Walden")
-   )
- def printBookList(info: Book => AnyRef) {
-   for (book <- books) println(info(book))
- }
-}
-}}}
-
-单例对象`Customer`定义了方法`getTitle`根据出版物取得标题。最后一行调用`Library`的打印书单方法：
-
-{{{class="brush: scala"
-object Customer extends Application {
- def getTitle(p: Publication): String = p.title
- Library.printBookList(getTitle)
-}
-}}}
-
-关键是`printBookList`的形参是`Book => AnyRef`，但实参是`Publication => String`。参数是父类（`Book`的父类`Publication`）而结果是子类（`AnyRef`的子类`String`）。
-
-`printBookList`中的`println`方法会用到`toString`，这对所有`String`及`AnyRef`子类都有用，这里用到了函数结果类型的协变。
-
-== 对象私有数据 ==
-
-之前的`Queue`类待改进内容：当`leading`列表为空时如果重复调用`head`，那么`mirror`操作会重复地把`trailing`复制到`leading`列表。
-
-改动：
-
-`leading`和`trailing`都是可变变量，`mirror`操作在当前列表上产生副作用而不是返回新的队列。由于它们都是对外不可见的私有变量，所以`Queue`还是算纯函数对象。
-
-{{{class="brush: scala"
- class Queue[+T] private (
-   private[this] var leading: List[T], 
-   private[this] var trailing: List[T]
- ) {
-
-   private def mirror() = 
-     if (leading.isEmpty) {
-       while (!trailing.isEmpty) {
-         leading = trailing.head :: leading
-         trailing = trailing.tail
-       }
-     }
-
-   def head: T = { 
-     mirror()
-     leading.head 
-   }
-
-   def tail: Queue[T] = { 
-     mirror()
-     new Queue(leading.tail, trailing) 
-   }
-
-   def append[U >: T](x: U) = 
-     new Queue[U](leading, x :: trailing)
- }
-}}}
-
-在两个可变私有成员变量的情况下`Queue`还可以使用协变。因为对于对象的私有值访问来说不可能有比定义的对象类型更弱的静态类型对象引用。
-
-所以Scala的类型变化检查对于对象私有成员，在遇到带有`+`或`-`的类型参数只出现在具有相同变化型分类的位置上时，会被忽略。
-
-所以如果去掉`private`修饰符的`[this]`限定会编译不过：
-
-{{{class="brush: scala"
-  Queues.scala:1: error: covariant type T occurs in 
-  contravariant position in type List[T] of parameter of
-  setter leading_=
-  class Queue[+T] private (private var leading: List[T],
-                                       ^
-  Queues.scala:1: error: covariant type T occurs in 
-  contravariant position in type List[T] of parameter of
-  setter trailing_=
-                           private var trailing: List[T]) {
-                                       ^
-}}}
-
-上面分别报错的原因是：协变类型`T`出现在setter函数`leading_=`参数类型List[T]的逆变位置上；协变类型`T`出现在setter函数`trailing_=`参数类型List[T]的逆变位置上。
-
-== 上界 ==
-
-之前在“使用列表”章的第一节“列表字面量”中实现一个归并排序的方法。它的第一个参数是比较函数，第二个柯里化的参数是要排序的列表。对这个函数的另一种组织方法大概 就是把列表类型混入到`ordered`特质中。
-
-通过把`Ordered`特质混入到类中并实现抽象的比较方法`Compare`，就可以对实例进行比较：
-
-{{{class="brush: scala"
-  class Person(val firstName: String, val lastName: String)
-      extends Ordered[Person] {
-
-    def compare(that: Person) = {
-      val lastNameComparison =
-        lastName.compareToIgnoreCase(that.lastName)
-      if (lastNameComparison != 0)
-        lastNameComparison
-      else
-        firstName.compareToIgnoreCase(that.firstName)
-    }
-
-    override def toString = firstName +" "+ lastName
-  }
-}}}
-
-{{{class="brush: scala"
-  scala> val robert = new Person("Robert", "Jones")
-  robert: Person = Robert Jones
-
-  scala> val sally = new Person("Sally", "Smith")
-  sally: Person = Sally Smith
-
-  scala> robert < sally
-  res0: Boolean = true
-}}}
-
-为了让列表类型混入到`Ordered`中，需要使用上界，符号`<:`。
-
-`T <:  Ordered[T]`表明类型必须是`Ordered`的子类型。比如`Person`，因为`Person`混入了`Ordered`特质：
-
-{{{class="brush: scala"
-  def orderedMergeSort[T <: Ordered[T]](xs: List[T]): List[T] = {
-    def merge(xs: List[T], ys: List[T]): List[T] =
-      (xs, ys) match {
-        case (Nil, _) => ys
-        case (_, Nil) => xs
-        case (x :: xs1, y :: ys1) =>
-          if (x < y) x :: merge(xs1, ys)
-          else y :: merge(xs, ys1)
-      }
-    val n = xs.length / 2
-    if (n == 0) xs
-    else {
-      val (ys, zs) = xs splitAt n
-      merge(orderedMergeSort(ys), orderedMergeSort(zs))
-    }
-  }
-}}}
-
-使用：
-
-{{{class="brush: scala"
-  scala> val people = List(
-       |   new Person("Larry", "Wall"),
-       |   new Person("Anders", "Hejlsberg"),
-       |   new Person("Guido", "van Rossum"),
-       |   new Person("Alan", "Kay"),
-       |   new Person("Yukihiro", "Matsumoto")
-       | )
-  people: List[Person] = List(Larry Wall, Anders Hejlsberg,
-    Guido van Rossum, Alan Kay, Yukihiro Matsumoto)
-
-
-  scala> val sortedPeople = orderedMergeSort(people)
-  sortedPeople: List[Person] = List(Anders Hejlsberg, Alan Kay,
-    Yukihiro Matsumoto, Guido van Rossum, Larry Wall)
-}}}
-
-以上的解决方案还是有限制，比如不能适应整数列表。因为`Int`不是`Ordered[Int]`的子类：
-
-{{{class="brush: scala"
-  scala> val wontCompile = orderedMergeSort(List(3, 2, 1))
-  <console>:5: error: inferred type arguments [Int] do
-     not conform to method orderedMergeSort's type
-       parameter bounds [T <: Ordered[T]]
-         val wontCompile = orderedMergeSort(List(3, 2, 1))
-                           ^
-}}}
-
-在以后的“隐式类型转换和参数”的“视界”一节中介绍通过采用隐式参数与检查约束来实现更加通用的方案。
-
-
-
-= 抽象成员 =
-
-Scala中不仅可以指定方法为抽象，还可以声明字段甚至抽象类型为类和特质的成员。
-
-== 抽象成员的快速浏览 ==
-
-在特质中分别对类型（T）、方法（transform）、val（initial）、var（current）的抽象声明做出了一个例子：
-
-{{{class="brush: scala"
-  trait Abstract {
-    type T
-    def transform(x: T): T
-    val initial: T
-    var current: T
-  }
-}}}
-
-实现：
-
-{{{class="brush: scala"
-  class Concrete extends Abstract {
-    type T = String
-    def transform(x: String) = x + x
-    val initial = "hi"
-    var current = initial
-  }
-}}}
-
-== 类型成员 ==
-
-（略）
-
-== 抽象val ==
-
-val是不可变的，抽象的val指定了类型与变量名，不指定值：
-
-{{{class="brush: scala"
-  val initial: String
-}}}
-
-实现时指定值：
-
-{{{class="brush: scala"
-  val initial = "hi"
-}}}
-
-如果不知道类中定义的确切内容，但是确定对于每个实例来说值都是不可变的。在这样的情况下可以使用抽象的val声明。
-
-可以注意到，抽象val的格式非常类似于下面的抽象无参数方法声明：
-
-{{{class="brush: scala"
-  def initial: String
-}}}
-
-客户代码将使用统一的`obj.initial`方法引用val及方法。如果`initial`是抽象val，那么客户就可以保证每次引用都将得到同样的值。如果`initial`是抽象方法那就无法保证，因为在不同的实现中`initial`可以被实现为每次调用都返回不同的值。
-
-换句话说抽象的val限制了合法实现的方式：任何实现都必须是`val`类型的定义不可以是`var`。另一方面，抽象方法声明可以被实现为具体的方法定义或具体的`val`定义。
-
-所以在下面的代码中，`Apple`是合法的子类面`BadApple`不是：
-
-{{{class="brush: scala"
-  abstract class Fruit {
-    val v: String // `v' for value
-    def m: String // `m' for method
-  }
-
-  abstract class Apple extends Fruit {
-    val v: String
-    val m: String // OK to override a `def' with a `val'
-  }
-
-  abstract class BadApple extends Fruit {
-    def v: String // ERROR: cannot override a `val' with a `def'
-    def m: String
-  }
-}}}
-
-== 抽象var ==
-
-在特质里使用，只声明类型与名称，没有初始值：
-
-{{{class="brush: scala"
-  trait AbstractTime {
-    var hour: Int
-    var minute: Int
-  }
-}}}
-
-也会有自动扩展的`getter`与`setter`方法，上面的代码相当于：
-
-{{{class="brush: scala"
-  trait AbstractTime {
-    def hour: Int          // getter for `hour'
-    def hour_=(x: Int)     // setter for `hour'
-    def minute: Int        // getter for `minute'
-    def minute_=(x: Int)   // setter for `minute'
-  }
-}}}
-
-== 初始化抽象val ==
-
-结合特质来使用，抽象val可以让子类扩展提供父类没有的参数与细节。因为特质缺省能用来传递参数的构造器。
-
-拿前面的实数类来作例子，以下特质：
-
-{{{class="brush: scala"
-  trait RationalTrait { 
-    val numerArg: Int 
-    val denomArg: Int 
-  } 
-}}}
-
-为了实例化这个特质，先要实现val。在这里我们要用到新的`new`语法结构：
-
-{{{class="brush: scala"
-  new RationalTrait {
-    val numerArg = 1
-    val denomArg = 2
-  }
-}}}
-
-上面的代码会产混入了物质的匿名类实例，类似于`new Rational(1, 2)`。当然区别还是有的：
-
-{{{class="brush: scala"
-  new Rational(expr1, expr2)
-}}}
-
-上面的两个表达式会在类初始化前计算，而相反的：
-
-{{{class="brush: scala"
-  new RationalTrait {
-    val numerArg = expr1
-    val denomArg = expr2
-  }
-}}}
-
-上面的两个表达式会作为匿名类初始化的一部分计算。而匿名类初始化在`RationalTrait`之后执行，所以`numerArg`和`denomArg`的值在`RationalTrait`初始化期间还没有准备好，都是`Int`类型的默认值`0`。
-
-所以对下面的代码来说，这会成为一个问题，因为其中定义了经过约分后的分子与分母：
-
-{{{class="brush: scala"
-  trait RationalTrait { 
-    val numerArg: Int 
-    val denomArg: Int 
-    require(denomArg != 0)
-    private val g = gcd(numerArg, denomArg)
-    val numer = numerArg / g
-    val denom = denomArg / g
-    private def gcd(a: Int, b: Int): Int = 
-      if (b == 0) a else gcd(b, a % b)
-    override def toString = numer +"/"+ denom
-  }
-}}}
-
-如果尝试使用某种分子和分母的表达式面不是简单的字面量实例化这个特质，会引起以下错误：
-
-{{{class="brush: scala"
-  scala> val x = 2
-  x: Int = 2
-
-  scala> new RationalTrait {
-       |   val numerArg = 1 * x
-       |   val denomArg = 2 * x
-       | }
-  java.lang.IllegalArgumentException: requirement failed
-          at scala.Predef$.require(Predef.scala:107)
-          at RationalTrait$class.$init$(<console>:7)
-          at $anon$1.<init>(<console>:7)
-          ....
-}}}
-
-解决方案有两个，分别是预初始化字段和懒加载val。
-
-
-=== fields预初始化字段 ===
-
-给字段定义加上花括号，放在超类的构造器之前：
-
-{{{class="brush: scala"
-  scala> new { 
-       |   val numerArg = 1 * x
-       |   val denomArg = 2 * x 
-       | } with RationalTrait
-  res15: java.lang.Object with RationalTrait = 1/2
-}}}
-
-不仅匿名类可以用预加载，有名称的类和对象也可以。
-
-注意要放在关键字`extends`后面：
-
-{{{class="brush: scala"
-  object twoThirds extends {
-    val numerArg = 2
-    val denomArg = 3
-  } with RationalTrait
-}}}
-
-由于预初始化的字段的超类构造器调用前被初始化，所以不能引用正在被构造的对象。所以对于`this`实际指向的是正被构造的类或对象的对象，而来是被构造的对象本身：
-
-{{{class="brush: scala"
-  scala> new {
-     |   val numerArg = 1
-     |   val denomArg = this.numerArg * 2
-     | } with RationalTrait
-  <console>:8: error: value numerArg is not a
-       member of object $iw
-           val denomArg = this.numerArg * 2
-                               ^
-}}}
-
-因为实例还没有构建完成，所以会报错。`$iw`是合成对象，解释器把用户输出语句放在这个对象中。
-
-{{{class="brush: scala"
-  class RationalClass(n: Int, d: Int) extends {
-    val numerArg = n
-    val denomArg = d
-  } with RationalTrait {
-    def + (that: RationalClass) = new RationalClass(
-      numer * that.denom + that.numer * denom,
-      denom * that.denom
-    )
-  }
-}}}
-
-
-
-=== 懒加载val ===
-
-懒加载让表达式在`val`第一次被使用的时候才计算机。格式为把`lazy`修饰加在`val`上。
-
-普通情况下初始化与类初始化一起的：
-
-{{{class="brush: scala"
-  scala> object Demo {
-       |   val x = { println("initializing x"); "done" }
-       | }
-  defined module Demo
-
-
-  scala> Demo
-  initializing x
-  res19: Demo.type = Demo$@97d1ff
-
-  scala> Demo.x
-  res20: java.lang.String = done
-}}}
-
-使用了懒加载以后，`val`的初始化延迟到第一次使用时：
-
-{{{class="brush: scala"
-  scala> object Demo {
-       |   lazy val x = { println("initializing x"); "done" }
-       | }
-  defined module Demo
-
-  scala> Demo
-  res21: Demo.type = Demo$@d81341
-
-  scala> Demo.x
-  initializing x
-  res22: java.lang.String = done
-}}}
-
-上面的情况有点像是用`def`把`x`定义为一个无参的方法，不同于`def`的是计算只进行一次。
-
-通过上面两个例子可以看出，单例对象的初始化也很像懒加载。它们在第一次被使用时进行初始化。
-
-通过懒加载重新实现`RationalTrait`，与前一版本的主要变化是`require`子句从特质的方法体移动到了计算`numerArg`和`denomArg`最大公约数的私有字段`g`的初始化器中。所以这个版本中`LazyRationalTrait`初始化器已经用不干啥事儿了：
-
-{{{class="brush: scala"
-  trait LazyRationalTrait { 
-    val numerArg: Int 
-    val denomArg: Int 
-    lazy val numer = numerArg / g
-    lazy val denom = denomArg / g
-    override def toString = numer +"/"+ denom
-    private lazy val g = {
-      require(denomArg != 0)
-      gcd(numerArg, denomArg)
-    }
-    private def gcd(a: Int, b: Int): Int = 
-      if (b == 0) a else gcd(b, a % b)
-  }
-
-
-  scala> val x = 2
-  x: Int = 2
-
-  scala> new LazyRationalTrait {
-       |   val numerArg = 1 * x
-       |   val denomArg = 2 * x
-       | }
-  res1: java.lang.Object with LazyRationalTrait = 1/2
-}}}
-
-在特质中的两个懒加载对象`number`和`denom`是在`toString`方法调用时才初始化。计算它们的表达式要用到同样是懒加载的`g`。
-
-应用懒加载还是要注意副作用，在有副作用的情况下跟踪加载顺序是很重要的事情。无副作用的纯函数式应用配合懒加载是相当合适的。
-
-
-
-== 抽象类型 ==
-
-抽象类型声明`type T`应用在尚不可知的类型上，不同的子类可以提供不同的`T`实现。
-
-以一个动物食性的例子来解释应用环境，动物吃食物：
-
-{{{class="brush: scala"
-  class Food
-  abstract class Animal {
-    def eat(food: Food)
-  }
-}}}
-
-会在想让它们的子类牛吃草时遇到麻烦。`eat`方法不能重写，因为参数不能从`Food`转为子类`Grass`：
-
-{{{class="brush: scala"
-  class Grass extends Food
-  class Cow extends Animal {
-    override def eat(food: Grass) {} // This won't compile
-  }
-
-  BuggyAnimals.scala:7: error: class Cow needs to be
-  abstract, since method eat in class Animal of type
-      (Food)Unit is not defined
-  class Cow extends Animal {
-        ^
-  BuggyAnimals.scala:8: error: method eat overrides nothing
-    override def eat(food: Grass) {}
-                 ^
-}}}
-
-这样看来类型检查太严格了，应该允许子类？但是如果这样做的话又会失去类型检验保障。
-
-比如说喂牛吃鱼：
-
-{{{class="brush: scala"
-  class Food
-  abstract class Animal {
-    def eat(food: Food)
-  }
-  class Grass extends Food
-  class Cow extends Animal {
-    override def eat(food: Grass) {} // This won't compile,
-  }                                  // but if it did,...
-  class Fish extends Food
-  val bessy: Animal = new Cow
-  bessy eat (new Fish)     // ...you could feed fish to cows.
-}}}
-
-更加精确的方式是能按不同的动物决定食物的种类，父类中指定动物只能吃食物：
-
-{{{class="brush: scala"
-  class Food
-  abstract class Animal {
-    type SuitableFood <: Food
-    def eat(food: SuitableFood)
-  }
-}}}
-
-`SuitableFood`被定义为抽象类，而且有上界`Food`。以后动物类中指定具体的食物子类：
-
-{{{class="brush: scala"
-  class Grass extends Food
-  class Cow extends Animal {
-    type SuitableFood = Grass
-    override def eat(food: Grass) {}
-  }
-}}}
-
-现在得到了比较合适的类型检查：
-
-{{{class="brush: scala"
-  scala> class Fish extends Food
-  defined class Fish
-
-  scala> val bessy: Animal = new Cow
-  bessy: Animal = Cow@674bf6
-
-  scala> bessy eat (new Fish)
-  <console>:10: error: type mismatch;
-   found   : Fish
-   required: bessy.SuitableFood
-         bessy eat (new Fish)
-                    ^
-}}}
-
-
-
-== 路径依赖类型 ==
-
-看一下前面例子的最后一条错误信息。它说明需要的类型是`bessy.SuitableFood`，这里的`SuitableFood`是`bessy`引用的对象的成员。
-
-这样的类型被称为路径依赖类型，路径指的是对象的引用。不同路径将产不同的类型：
-
-{{{class="brush: scala"
-  class DogFood extends Food
-  class Dog extends Animal {
-    type SuitableFood = DogFood
-    override def eat(food: DogFood) {}
-  }
-
-  scala> val bessy = new Cow
-  bessy: Cow = Cow@10cd6d
-
-  scala> val lassie = new Dog
-  bootsie: Dog = Dog@d11fa6
-
-  scala> lassie eat (new bessy.SuitableFood)
-  <console>:13: error: type mismatch;
-   found   : Grass
-   required: DogFood
-         lassie eat (new bessy.SuitableFood)
-                     ^
-}}}
-
-`bessy.SuitableFood`不能匹配`lassie.SuitableFood`，但如果同样是`Dog`的话，情况又不同。因为`Dog`的`SuitableFood`被定义为`DogFood`类的别名，所以实际上是一样的：
-
-{{{class="brush: scala"
-  scala> val bootsie = new Dog
-  bootsie: Dog = Dog@54ca71
-
-  scala> lassie eat (new bootsie.SuitableFood)
-}}}
-
-路径依赖有点像Java里的内部类，但区别是：路径依赖表达了外在的对象，而内部类表达了外在的类。Java的内部类在Scala表达为两个类：
-
-{{{class="brush: scala"
-  class Outer {
-    class Inner
-  }
-}}}
-
-与Java的`Outer.Inner`不同，Scala中表达为`Outer#Inner`。
-
-`注意：`
-
-总之，要注意。路径依赖是在对象中的类，而不是Java那样类中的类。
-
-`.`语法留给对象使用：
-
-{{{class="brush: scala"
-  val o1 = new Outer
-  val o2 = new Outer
-}}}
-
-虽然`o1.Inner`和`o2.Inner`是不同的两个路径依赖类型，但两个都能匹配更加通用的`Outer#Inner`。
-
-和Java中一样，Scala的内部类实例也有对外部类实例的引用。所以不能只有内部类实例面没有外部类实例。有两个方式实例化内部类：
-
-1）直接在外部类方法体中实例化，这样可以用`this`引用外部类对象。
-
-2）使用路径依赖类型。如`o1.Inner`。返回的内部类有对`01`的引用。例子如下：
-
-{{{class="brush: scala"
-  scala> new o1.Inner
-  res1: o1.Inner = Outer$Inner@13727f
-}}}
-
-相对的，类型`Outer#Inner`是没有指向对象的引用的，所以不能创建它的实例：
-
-{{{class="brush: scala"
-  scala> new Outer#Inner
-  <console>:6: error: Outer is not a legal prefix for
-    a constructor
-         new Outer#Inner
-                   ^
-}}}
-
-
-== 枚举 ==
-
-标准库中的类`scala.Enumeration`用来扩展枚举类：
-
-{{{class="brush: scala"
-  object Color extends Enumeration {
-    val Red = Value
-    val Green = Value
-    val Blue = Value
-  }
-}}}
-
-`注意：`
-
-枚举是和路径依赖一样，是对象中的类，不是类中的类。
-
-还可以简化：
-
-{{{class="brush: scala"
-  object Color extends Enumeration {
-    val Red, Green, Blue = Value
-  }
-}}}
-
-可以`Color`的全部成员，然后直接写颜色名：
-
-{{{class="brush: scala"
-  import Color._
-}}}
-
-前面定义的`Red`、`Green`和`Blue`这些值的类型为`Enumeration`定义的内部类，名为`Value`。同名无参数方法`Value`返回该类的新对象，即`Color.Red`类的值类型是`Color.Value`。而且是依赖路径的。如：
-
-{{{class="brush: scala"
-  object Direction extends Enumeration {
-    val North, East, South, West = Value
-  }
-}}}
-
-上面就定义了一个完全不同的类型，因为路径不同。
-
-还可以重载`Value`方法把名称与值对应起来：
-
-{{{class="brush: scala"
-  object Direction extends Enumeration {
-    val North = Value("North")
-    val East = Value("East")
-    val South = Value("South")
-    val West = Value("West")
-  }
-}}}
-
-`Direction`与`Color`的`Value`也是不同的类。
-
-遍历：
-
-{{{class="brush: scala"
-  scala> for (d <- Direction) print(d +" ")
-  North East South West 
-}}}
-
-枚举的值从`0`开始增加，用成员方法`id`可以取出值：
-
-{{{class="brush: scala"
-  scala> Direction.East.id
-  res5: Int = 1
-}}}
-
-反过来也可以通过非零整数取得`id`：
-
-{{{class="brush: scala"
-  scala> Direction(1)
-  res6: Direction.Value = East
-}}}
-
-== 案例研究：货币 ==
-
-设计一个货币类能处理不同的货币。定义抽象类可以扩展为具体不同的货币。当然第一个版本肯定是不完善的：
-
-{{{class="brush: scala"
-  // A first (faulty) design of the Currency class
-  abstract class Currency {
-    val amount: Long
-    def designation: String 
-    override def toString = amount +" "+ designation
-    def + (that: Currency): Currency = ...
-    def * (x: Double): Currency = ...
-  }
-}}}
-
-`amount`和`designation`分别代表金额和表示金额的符号。其他方法还有加法和乘法操作。这个版本的问题是，在语法上两个不同的子类可以相加：
-
-{{{class="brush: scala"
-  abstract class Dollar extends Currency {
-    def designation = "USD"
-  }
-  abstract class Euro extends Currency {
-    def designation = "Euro"
-  }
-}}}
-
-这样不同货币的相加是有问题的。所以下一个改进版本用抽象类型来标明末知的类型：
-
-{{{class="brush: scala"
-  abstract class AbstractCurrency {
-    type Currency <: AbstractCurrency
-    val amount: Long
-    def designation: String 
-    override def toString = amount +" "+ designation
-    def + (that: Currency): Currency = ...
-    def * (x: Double): Currency = ...
-  }
-}}}
-
-每个子类都要把`Currency`指定为这个类自身，扩展实现是类似于这样：
-
-{{{class="brush: scala"
-  abstract class Dollar extends AbstractCurrency {
-    type Currency = Dollar
-    def designation = "USD"
-  }
-}}}
-
-这个版本的问题在于加法与乘法的定义。首先想到的把金额转为正确类型的货币的方法可能是这样的：
-
-{{{class="brush: scala"
-  def + (that: Currency): Currency = new Currency {
-    val amount = this.amount + that.amount
-  }
-}}}
-
-但这通不过编译，因为Scala不能用抽象类型`new`出实例来，即使是作为其他类型的父类：
-
-{{{class="brush: scala"
-  error: class type required
-    def + (that: Currency): Currency = new Currency {
-}}}
-
-使用工厂方法是个解决方案：用声明抽象方法代替直接创建抽象类的实例：
-
-{{{class="brush: scala"
-  abstract class AbstractCurrency {
-    type Currency <: AbstractCurrency // abstract type
-    def make(amount: Long): Currency  // factory method
-    ...                               // rest of class
-  }
-}}}
-
-但这样有别的问题，因为这样不得不把工厂方法放到`AbstractCurrency`类中，所有的实例都可以调用`make`方法，也就都有了创建货币的能力：
-
-{{{class="brush: scala"
-  myDollar.make(100)  // here are a hundred more!
-}}}
-
-所以把工厂方法移到一个新的类中，新的类叫`CurrencyZone`。把`AbstractCurrency`和`Currency`也作为它的内部类：
-
-{{{class="brush: scala"
-  abstract class CurrencyZone {
-    type Currency <: AbstractCurrency
-    def make(x: Long): Currency
-    abstract class AbstractCurrency {
-      val amount: Long
-      def designation: String 
-      override def toString = amount +" "+ designation
-      def + (that: Currency): Currency = 
-        make(this.amount + that.amount)
-      def * (x: Double): Currency = 
-        make((this.amount * x).toLong)
-    }
-  }
-}}}
-
-这样按不同货币来扩展：
-
-{{{class="brush: scala"
-  object US extends CurrencyZone {
-    abstract class Dollar extends AbstractCurrency {
-      def designation = "USD"
-    }
-    type Currency = Dollar
-    def make(x: Long) = new Dollar { val amount = x }
-  }
-}}}
-
-`US`中定义了类`Dollar`。它的类型是`US.Dollar`。
-
-继续改进设计：关于单位，单位不仅是美元，还有美分。所以让`amount`以美分为单位更加合适。所以用多一个字段`CurrencyUnit`记录单位：
-
-{{{class="brush: scala"
-  class CurrencyZone { 
-    ... 
-    val CurrencyUnit: Currency 
-  } 
-}}}
-
-子类里再加上两个方法直接把1美元代表100美分的逻辑描述出来：
-
-{{{class="brush: scala"
-  object US extends CurrencyZone {
-    abstract class Dollar extends AbstractCurrency {
-      def designation = "USD"
-    }
-    type Currency = Dollar
-    def make(cents: Long) = new Dollar {
-      val amount = cents
-    }
-    val Cent = make(1)
-    val Dollar = make(100)
-    val CurrencyUnit = Dollar
-  }
+  System.out.println(isEqual(421, 421));
 }}}
 
-还有显示问题，用多数内部类型上都带的`format`方法格式化美元与美分的小数显示，如“`10.23 USD`”：
+却得到了`false`！原因是数`421`被装箱了两次，因此参数`x`和`y`是两个不同的对象。
 
-{{{class="brush: scala"
-    ((amount.toDouble / CurrencyUnit.amount.toDouble)
-     formatted ("%."+ decimals(CurrencyUnit.amount) +"f")
-     +" "+ designation)
-}}}
-
-输出字符的长度是通过`decimals`方法得出的。`decimals`方法返回十进制数字所要占用的字符长度。如对于`decimals(10)`代表0到9，会占用一个字符，而`decimals`(100)是0到99会占用两个字符。`decimals`方法通过简单递归实现：
-
-{{{class="brush: scala"
-  private def decimals(n: Long): Int = 
-    if (n == 1) 0 else 1 + decimals(n / 10)
-}}}
-
-相对的看一下欧元的实现：
-
-{{{class="brush: scala"
-  object Europe extends CurrencyZone {
-    abstract class Euro extends AbstractCurrency {
-      def designation = "EUR"
-    }
-    type Currency = Euro
-    def make(cents: Long) = new Euro {
-      val amount = cents
-    }
-    val Cent = make(1)
-    val Euro = make(100)
-    val CurrencyUnit = Euro
-  }
-
-  object Japan extends CurrencyZone {
-    abstract class Yen extends AbstractCurrency {
-      def designation = "JPY"
-    }
-    type Currency = Yen
-    def make(yen: Long) = new Yen {
-      val amount = yen
-    }
-    val Yen = make(1)
-    val CurrencyUnit = Yen
-  }
-}}}
-
-再改进一下，增加汇率的功能。先用一个新的对象来记录汇率：
-
-{{{class="brush: scala"
-  object Converter {
-    var exchangeRate = Map(
-      "USD" -> Map("USD" -> 1.0   , "EUR" -> 0.7596, 
-                   "JPY" -> 1.211 , "CHF" -> 1.223),
-      "EUR" -> Map("USD" -> 1.316 , "EUR" -> 1.0   , 
-                   "JPY" -> 1.594 , "CHF" -> 1.623),
-      "JPY" -> Map("USD" -> 0.8257, "EUR" -> 0.6272, 
-                   "JPY" -> 1.0   , "CHF" -> 1.018),
-      "CHF" -> Map("USD" -> 0.8108, "EUR" -> 0.6160, 
-                   "JPY" -> 0.982 , "CHF" -> 1.0  )
-    )
-  }
-}}}
-
-在货币中增加根据汇率来转换的功能。接收一个外币类型，把自己的金额转成这个外币的金额：
-
-{{{class="brush: scala"
-  def from(other: CurrencyZone#AbstractCurrency): Currency = 
-    make(Math.round(
-      other.amount.toDouble * Converter.exchangeRate
-        (other.designation)(this.designation)))
-}}}
-
-参数是末知的`CurrencyZone#AbstractCurrency`，所以能处理任意外币类型。
-
-全部的货币代码，假设都放在`org.stairwaybook.currencies`包中：
-
-{{{class="brush: scala"
-  abstract class CurrencyZone {
-
-    type Currency <: AbstractCurrency
-    def make(x: Long): Currency
-
-    abstract class AbstractCurrency {
-
-      val amount: Long
-      def designation: String 
-
-      def + (that: Currency): Currency = 
-        make(this.amount + that.amount)
-      def * (x: Double): Currency = 
-        make((this.amount * x).toLong)
-      def - (that: Currency): Currency = 
-        make(this.amount - that.amount)
-      def / (that: Double) = 
-        make((this.amount / that).toLong)
-      def / (that: Currency) = 
-        this.amount.toDouble / that.amount
-
-      def from(other: CurrencyZone#AbstractCurrency): Currency = 
-        make(Math.round(
-          other.amount.toDouble * Converter.exchangeRate
-            (other.designation)(this.designation)))
-
-      private def decimals(n: Long): Int = 
-        if (n == 1) 0 else 1 + decimals(n / 10)
-
-      override def toString = 
-        ((amount.toDouble / CurrencyUnit.amount.toDouble)
-         formatted ("%."+ decimals(CurrencyUnit.amount) +"f")
-         +" "+ designation)
-    }
-
-    val CurrencyUnit: Currency
-  }
-}}}
-
-调用的例子：
-
-{{{class="brush: scala"
-  scala> import org.stairwaybook.currencies._
+因为在引用类型上`==`表示引用相等，而`Integer`是引用类型，所以结果是`false`。这是展示了Java不是纯面向对象语言的一个方面。我们能清楚观察到原始类型和引用类型之间的差别。
 
-  scala> Japan.Yen from US.Dollar * 100
-  res16: Japan.Currency = 12110 JPY
+现在在Scala里尝试同样的实验：
 
-  scala> Europe.Euro from res16
-  res17: Europe.Currency = 75.95 EUR
+{{{class="brush: scala" 
+  scala> def isEqual(x: Int, y: Int) = x == y
+  isEqual: (Int,Int)Boolean
 
-  scala> US.Dollar from res17
-  res18: US.Currency = 99.95 USD
-}}}
-
-相同类型的货币可以相加，不同类型的不可以相加：
-
-{{{class="brush: scala"
-  scala> US.Dollar * 100 + res18
-  res19: currencies.US.Currency = 199.95
-
-
-  scala> US.Dollar + Europe.Euro
-  <console>:7: error: type mismatch;
-   found   : currencies.Europe.Euro
-   required: currencies.US.Currency
-         US.Dollar + Europe.Euro
-                            ^
-}}}
-
-类型抽象实现了不同货币不能相加的功能。像是1999年9月23日，混用英制单位和公制单位引起的火星航天器坠毁事件不会再重演了。
-
-
-
-= 隐式转换和参数 =
-
-== 隐式转换 ==
-
-Scala里有一个很有用的特质`RandomAccessSeq[T]`提供了可以随机访问的序列。它有很多功能，所以它的子类都自动继承这些功能。
-
-现在有个问题，我们要用到`String`没有混入`RandomAccessSeq`特质，所以用不到那些方便的功能。
-
-隐式转换可以让`String`表现得像`RandomAccessSeq`的子类。为了达到这一目的，需要定义从`String`到`RandomAccessSeq`的隐匿转换。
+  scala> isEqual(421, 421)
+  res10: Boolean = true
 
-{{{class="brush: scala"
-  implicit def stringWrapper(s: String) = 
-    new RandomAccessSeq[Char] {
-      def length = s.length
-      def apply(i: Int) = s.charAt(i)
-    }
-}}}
-
-然后就可以转换它了：
-
-{{{class="brush: scala"
-  scala> stringWrapper("abc123") exists (_.isDigit)
-  res0: Boolean = true
-}}}
-
-也可以省略转换直接当作`RandomAccessSeq`来用：
+  scala> def isEqual(x: Any, y: Any) = x == y
+  isEqual: (Any,Any)Boolean
 
-{{{class="brush: scala"
-  scala> "abc123" exists (_.isDigit)
-  res1: Boolean = true
+  scala> isEqual(421, 421)
+  res11: Boolean = true
 }}}
-
-隐式转换的优点是可以在某个点转成需要的类型。
-
-顺便提一下：`Predef`对象已经用类似的方式定义了`stringWrapper`转换，所以其实不用定义也可以隐匿转换了。
 
+实际上Scala里的相等操作`==`被设计为透明的参考类型代表的东西。对值类型来说，就是自然的（数学或布尔）相等。对于引用类型，`==`被视为继承自`Object`的`equals`方法的别名。这个方法被初始地定义为引用相等，但被许多子类重载实现它们种族的相等概念。这也意味着Scala里你永远也不会落入Java知名的关于字串比较的陷阱。Scala里，字串比较以其应有的方式工作：
 
-== 隐式操作规则 ==
+{{{class="brush: scala" 
+  scala> val x = "abcd".substring(2)
+  x: java.lang.String = cd
 
-标记规则 :: 只有标记为`implicit`的定义才是可用的。可以用来标记任何变量、函数或对象定义。
+  scala> val y = "abcd".substring(2)
+  y: java.lang.String = cd
 
-作用域规则 :: 必须以单一标识符的形式处于作用域中，或与转换的源或目标类型关联在一起。
-
-就是不能用`aaa.convert(x)`，这不是单一的。要先`import aaa`，然后`convert(x)`，这样才是单一的。
-
-“单一标识符”规则有个例外。转换的“目标”与“源”的类型的“伴生对象”中的隐式转换定义会被编译器找到。如从`Dollar`转为`Euro`，可以把隐匿转换放在这两者之一的的伴生对象中：
-
-{{{class="brush: scala"
-  object Dollar {
-    implicit def dollarToEuro(x: Dollar): Euro = ...
-  }
-  class Dollar { ... }
+  scala> x == y
+  res12: Boolean = true
 }}}
 
-这样就不用手动引入了。
+Java里，`x`与`y`的比较结果将是`false`。程序员在这种情况应该用`equals`，不过它容易被忘记。
 
-无歧义规则 :: 不能有其他转换，如果有两个可用的从类A到类B的转换，会报错。可以移除一个转换函数，或是显式指明一个方法，如：`convertFunc2(x) + y`
+然而，有些情况你需要使用引用相等代替用户定义的相等。
 
-单一调用原则 :: 不会嵌套地转换，如：`convert1(convert2(x)) + y`。
+例如，某些时候效率是首要因素，你想要把某些类哈希合并（hash cons）然后通过引用相等比较它们的实例（类实例的哈希合并是指把创建的所有实例缓存在弱集合中。然后，一旦需要类的新实例，首先检查缓存。如果缓存中已经有一个元素等于你打算创建的，你可以重用存在的实例。这样安排的结果是，任何以`equals()`判断相等的两个实例同样在引用相等上判断一致。）。
 
-显式操作先行规则 :: 如果不用转换类型就可以用，编译器不会再画蛇添足地转换。
+为这种情况，类AnyRef定义了附加的`eq`方法，它不能被重载并且实现为引用相等（也就是说，它表现得就像Java里对于引用类型的`==`那样）。同样也有一个`eq`的反义词，被称为`ne`。例如：
 
-这是一个供程序员把握的度：如果代码太冗长，用隐式转换来精简代码；如果代码看起来太简单不明确，用显式的转换来减少歧义和二义性。
+{{{class="brush: scala" 
+  scala> val x = new String("abc")
+  x: java.lang.String = abc
 
-命名隐式转换 :: 转换方法的命名可以随意，但要考虑到两个情况：是不是需要在方法应用中明确写明，以及决定在哪个隐式转换在程序的任何地方都有效。
+  scala> val y = new String("abc")
+  y: java.lang.String = abc
 
-拿第二点来说，设一个对象带两个隐式转换：
+  scala> x == y
+  res13: Boolean = true
 
-{{{class="brush: scala"
-  object MyConversions {
-    implicit def stringWrapper(s: String):
-        RandomAccessSeq[Char] = ...
-    implicit def intToString(x: Int): String = ...
-  }
-}}}
-
-现在只需要`stringWrapper`，不想要`intToString`。可以只引入一个：
+  scala> x eq y
+  res14: Boolean = false
 
-{{{class="brush: scala"
-  import MyConversions.stringWrapper
-  ... // code making use of stringWrapper
+  scala> x ne y
+  res15: Boolean = true
 }}}
-
-这样的情况下会用到转换方法的名字。
-
-Scala中有三个地方会用到隐式转换：转换为需要的类型、指定（方法）调用者的转换、隐式参数。接下来的三节分别讨论这三种情况。
 
+== 底层类型 ==
 
-== 隐式转换为期望的类型 ==
+层级的底部你看到了两个类`scala.Null`和`Scala.Nothing`。它们是用统一的方式处理某些Scala的面向对象类型系统的“边界情况”的特殊类型。
 
-有一个双精度数，但是表达式要用到整数，所以就要隐式转换：
+类`Null`是`null`类型的引用；它是每个引用类（就是说，每个继承自`AnyRef`的类）的子类。`Null`不兼容值类型。比方说，不可把`null`值赋给整数变量：
 
-{{{class="brush: scala"
-  scala> val i: Int = 3.5
-  <console>:5: error: type mismatch;
-   found   : Double(3.5)
+{{{class="brush: scala" 
+  scala> val i: Int = null
+  <console>:4: error: type mismatch;
+   found   : Null(null)
    required: Int
-         val i: Int = 3.5
-                      ^
 }}}
 
-定义隐式转换就可以用了：
+类型`Nothing`在`Scala`的类层级的最底端；它是任何其它类型的子类型。然而，根本没有这个类型的任何值。要一个没有值的类型有什么意思呢？在控制结构的try-catch中讨论过，`Nothing`的一个用处是它标明了不正常的终止。例如Scala的标准库中的`Predef`对象有一个`error`方法，如下定义：
+
+{{{class="brush: scala" 
+  def error(message: String): Nothing =
+    throw new RuntimeException(message)
+}}}
+
+`error`的返回类型是`Nothing`，告诉用户方法不是正常返回的（代之以抛出了异常）。因为`Nothing`是任何其它类型的子类，你可以非常灵活的使用像`error`这样的方法。例如：
+
+{{{class="brush: scala" 
+
+  def divide(x: Int, y: Int): Int = 
+    if (y != 0) x / y 
+    else error("can't divide by zero")
+}}}
+
+`if`状态分支，`x / y`，类型为Int，而`else`分支，调用了`error`，类型为`Nothing`。因为`Nothing`是`Int`的子类型，整个状态语句的类型是`Int`，正如需要的那样。
+
+
+
+= 特质（Traits） =
+
+trait是Scala里代码复用的基础单元。特质封装了方法和字段的定义，并可以通过混入到类中重用它们。
+
+== 概念 ==
+
+定义，关键字`trait`：
 
 {{{class="brush: scala"
-  scala> implicit def doubleToInt(x: Double) = x.toInt
-  doubleToInt: (Double)Int
-
-  scala> val i: Int = 3.5
-  i: Int = 3
+  trait Philosophical {
+    def philosophize() {
+      println("I consume memory, therefore I am!")
+    }
+  }
 }}}
 
-相当于：
+没有声明超类，因此和类一样，有个缺省的超类`AnyRef`。一旦特质被定义了，就可以使用`extends`或`with`关键字，把它混入到类中：
 
 {{{class="brush: scala"
-  val i: Int = doubleToInt(3.5)
+  class Frog extends Philosophical {
+    override def toString = "green"
+  }
 }}}
 
-因为从`Double`到`Int`会丢失精度，所以`Predef`中没有默认定义；但是反过来在`Predef`中已经有定义了：
+类`Frog`是`AnyRef`（`Philosophical`的超类）的子类并混入了`Philosophical`。从特质继承的方法可以像从超类继承的方法那样使用：
 
 {{{class="brush: scala"
-  implicit def int2double(x: Int): Double = x.toDouble
+  scala> val frog = new Frog
+  frog: Frog = green
+
+  scala> frog.philosophize()
+  I consume memory, therefore I am!
+}}}
+
+特质同样也是类型。以下是把`Philosophical`用作类型的例子：
+
+{{{class="brush: scala"
+  scala> val phil: Philosophical = frog
+  phil: Philosophical = green
+
+  scala> phil.philosophize()
+  I consume memory, therefore I am!
+}}}
+
+`phil`的类型是`Philosophical`，一个特质。因此，变量`phil`可以被初始化为任何混入了`Philosophical`特质的类的对象。
+
+如果想把特质混入到显式扩展超类的类里，可以用`extends`指明待扩展的超类，用`with`混入特质：
+
+{{{class="brush: scala"
+  class Animal
+
+  class Frog extends Animal with Philosophical {
+    override def toString = "green"
+  }
+}}}
+
+如果想混入多个特质，都加在`with`子句里就可以了：
+
+{{{class="brush: scala"
+  class Animal
+  trait HasLegs
+
+  class Frog extends Animal with Philosophical with HasLegs {
+    override def toString = "green"
+  }
+}}}
+
+目前为止你看到的例子中，类`Frog`都继承了`Philosophical`的`philosophize`实现。或者，`Frog`也可以重载`philosophize`方法。语法与重载超类中定义的方法一样。举例如下：
+
+{{{class="brush: scala"
+  class Animal
+
+  class Frog extends Animal with Philosophical {
+    override def toString = "green"
+    override def philosophize() {
+      println("It ain't easy being "+ toString +"!")
+    }
+  }
+}}}
+
+因为`Frog`的这个新定义仍然混入了特质`Philosophize`，你仍然可以把它当作这种类型的变量使用。但是由于`Frog`重载了`Philosophical`的`philosophize`实现，当你调用它的时候，你会得到新的回应：
+
+{{{class="brush: scala"
+  scala> val phrog: Philosophical = new Frog
+  phrog: Philosophical = green
+
+  scala> phrog.philosophize()
+  It ain't easy being green!
+}}}
+
+这时你或许推导出以下哲理：特质就像是带有具体方法的Java接口，不过其实它能做的更多：比方说，特质可以声明字段和维持状态值。
+
+实际上，你可以用特质定义做任何用类定义做的事，并且语法也是一样的，除了两点：
+
+第一点，特质不能有任何“类”参数，也就是说，传递给类的主构造器的参数。换句话说，尽管你可以定义如下的类：
+
+{{{class="brush: scala"
+  class Point(x: Int, y: Int)
+}}}
+
+但是下面定义特质的尝试将遭到失败：
+
+{{{class="brush: scala"
+  trait NoPoint(x: Int, y: Int) // Does not compile
+}}}
+
+类和特质的另一个差别在于不论在类的哪个角落，`super`调用都是静态绑定的，在特质中，它们是动态绑定的。如果你在类中写下`super.toString`，你很明确哪个方法实现将被调用。然而如果你在特质中写了同样的东西，在你定义特质的时候`super`调用的方法实现尚未被定义。调用的实现将在每一次特质被混入到具体类的时候才被决定。这种处理`super`的有趣的行为是使得特质能以可堆叠的改变（stackable modifications）方式工作的关键。
+
+== 比较瘦接口与胖接口 ==
+
+瘦接口与胖接口的对阵体现了面向对象设计中常会面临的在实现者与接口用户之间的权衡。胖接口有更多的方法，对于调用者来说更便捷。客户可以捡一个完全符合他们功能需要的方法。另一方面瘦接口有较少的方法，对于实现者来说更简单。然而调用瘦接口的客户因此要写更多的代码。由于没有更多可选的方法调用，他们或许不得不选一个不太完美匹配他们所需的方法并为了使用它写一些额外的代码。
+
+Java的接口常常是过瘦而非过胖。例如，从Java 1.4开始引入的`CharSequence`接口，是对于字串类型的类来说通用的瘦接口，它持有一个字符序列。下面是把它看作Scala特质的定义：
+
+{{{class="brush: scala"
+  trait CharSequence {
+    def charAt(index: Int): Char
+    def length: Int
+    def subSequence(start: Int, end: Int): CharSequence
+    def toString(): String
+  }
+}}}
+
+尽管类`String`里现有的成打的方法中的大多数都可以用在任何`CharSequence`上，Java的`CharSequence`接口定义仅提供了4个方法。如果`CharSequence`代以包含全部`String`接口，那它将为`CharSequence`的实现者压上沉重的负担。任何实现Java里的`CharSequence`接口的程序员将不得不定义一大堆方法。因为Scala特质可以包含具体方法，这使得创建胖接口大为便捷。
+
+在特质中添加具体方法使得胖瘦对阵的权衡大大倾向于胖接口。不像在Java里那样，在Scala中添加具体方法是一次性的劳动。你只要在特质中实现方法一次，而不再需要在每个混入特质的方法中重新实现它。因此，与没有特质的语言相比，Scala里的胖接口没什么工作要做。
+
+要使用特质丰满接口，只要简单地定义一个具有少量抽象方法的特质——特质接口的瘦部分——和潜在的大量具体方法，所有的都实现在抽象方法之上。然后你就可以把丰满了的特质混入到类中，实现接口的瘦部分，并最终获得具有全部胖接口内容的类。
+
+== 样例：长方形对象 ==
+
+为了使这些长方形对象便于使用，如果库能够提供诸如`width`，`height`，`left`，`right`，`topLeft`，等等方法。
+
+没有特质的代码的话，首先会有一些基本的集合类如`Point`和`Rectangle`：
+
+{{{class="brush: scala"
+  class Point(val x: Int, val y: Int)
+
+  class Rectangle(val topLeft: Point, val bottomRight: Point) {
+    def left = topLeft.x
+    def right = bottomRight.x
+    def width = right - left
+    // and many more geometric methods...
+  }
+}}}
+
+这个`Rectangle`类在它的主构造器中带两个点，分别是左上角和右下角的坐标。然后它通过对这两个点执行简单的计算实现了许多便捷方法诸如`left`，`right`，和`width`。 图库应该有的另一个类是2-D图像工具：
+
+{{{class="brush: scala"
+  abstract class Component {
+    def topLeft: Point
+    def bottomRight: Point
+
+    def left = topLeft.x
+    def right = bottomRight.x
+    def width = right - left
+    // and many more geometric methods...
+  }
+}}}
+
+注意`left`，`right`，和`width`在两个类中的定义是一模一样。除了少许的变动外，他们将在任何其他的长方形对象的类中保持一致。
+
+这种重复可以使用特质消除。这个特质应该具有两个抽象方法：一个返回对象的左上角坐标，另一个返回右下角的坐标。然后他就可以应用到所有其他的几何查询的具体实现中
+
+{{{class="brush: scala"
+  trait Rectangular {
+    def topLeft: Point
+    def bottomRight: Point
+
+    def left = topLeft.x
+    def right = bottomRight.x
+    def width = right - left
+    // and many more geometric methods...
+  }
+}}}
+
+类`Component`可以混入这个特质并获得`Rectangular`提供的所有的几何方法：
+
+{{{class="brush: scala"
+  abstract class Component extends Rectangular {
+    // other methods...
+  }
+}}}
+
+可以创建`Rectangle`对象并对它调用如`width`或`left`的几何方法：
+
+{{{class="brush: scala"
+  scala> val rect = new Rectangle(new Point(1, 1),
+       | new Point(10, 10))
+  rect: Rectangle = Rectangle@3536fd
+
+  scala> rect.left
+  res2: Int = 1
+
+  scala> rect.right
+  res3: Int = 10
+
+  scala> rect.width
+  res4: Int = 9
 }}}
 
 
-== 转换方法调用的接收者 ==
+== 实现Ordered特质来排序 ==
 
-如果`obj`没有`doIt`方法，但程序里有这一行，就试着转成有`doIt`的类型。
-
-=== 与新类型的交互操作 ===
-
-给新类型加上它没有实现的功能。以实数类为例：
+以前面我们实现的实数类型来说，原来已经有了四个比较大小的方法：
 
 {{{class="brush: scala"
   class Rational(n: Int, d: Int) {
-    ...
-    def + (that: Rational): Rational = ...
-    def + (that: Int): Rational = ...
+    // ...
+    def < (that: Rational) =
+      this.numer * that.denom > that.numer * this.denom
+    def > (that: Rational) = that < this
+    def <= (that: Rational) = (this < that) || (this == that)
+    def >= (that: Rational) = (this > that) || (this == that)
   }
 }}}
 
-加法可以处理`Rational`和`Int`：
+Scala专门提供了`Ordered`特质来简化比较工作。只要实现`Ordered`特质中的`compare`方法，就可以自动实现其他的`<`、`>`、`<=`、`>=`功能：
 
 {{{class="brush: scala"
-  scala> val oneHalf = new Rational(1, 2)
-  oneHalf: Rational = 1/2
-
-  scala> oneHalf + oneHalf
-  res4: Rational = 1/1
-
-  scala> oneHalf + 1
-  res5: Rational = 3/2
-}}}
-
-但是一个`Int`没有办法加上`Rational`：
-
-{{{class="brush: scala"
-  scala> 1 + oneHalf
-  <console>:6: error: overloaded method value + with
-  alternatives (Double)Double <and> ... cannot be applied
-  to (Rational)
-       1 + oneHalf
-         ^
-}}}
-
-办法是让`Int`转为`Rational`：
-
-{{{class="brush: scala"
-  scala> implicit def intToRational(x: Int) = 
-       |   new Rational(x, 1)
-  intToRational: (Int)Rational
-  
-  scala> 1 + oneHalf
-  res6: Rational = 3/2
-}}}
-
-相当于：
-
-{{{class="brush: scala"
-  intToRational(1) + oneHalf
-}}}
-
-=== 模拟新的语法 ===
-
-隐式转换还可以用来模拟新的语法。以我们熟悉的`Map`构建为例：
-
-{{{class="brush: scala"
-  Map(1 -> "one", 2 -> "two", 3 -> "three")
-}}}
-
-其实`Map`对象里的`->`根本就不是内建语法。实际上是定义在`scala.Predef`中的类`ArrowAssoc`的方法。还定义了从`Any`到`ArrowAssoc`的隐式转换。
-
-拿上面的`1 -> "one"`来说。这其实是从`1`到`ArrowAssoc`的转换。相差定义如下：
-
-{{{class="brush: scala"
-  package scala
-  object Predef {
-    class ArrowAssoc[A](x: A) {
-      def -> [B](y: B): Tuple2[A, B] = Tuple2(x, y)
-    }
-    implicit def any2ArrowAssoc[A](x: A): ArrowAssoc[A] = 
-      new ArrowAssoc(x)
-    ...
+  class Rational(n: Int, d: Int) extends Ordered[Rational] {
+    // ...
+    def compare(that: Rational) =
+      (this.numer * that.denom) - (that.numer * this.denom)
   }
 }}}
 
-== 隐式参数 ==
-
-省略柯里化后的参数列表。编译器会用`someCall(a)(b,c,d)`代替`someCall(a)`。能这样做的前题是不仅`b``c``d`三个要定义`implicit`，连`someCall`或`someCall`定义的最后一个参数列表都必须被标记为`implicit`。
-
-举例有一个类实现了命令行提示符：
+上面定义`compare`方法来比较两个对象，类`Rational`现在具有了所有4种比较方法：
 
 {{{class="brush: scala"
-  class PreferredPrompt(val preference: String)
+  scala> val half = new Rational(1, 2)
+  half: Rational = 1/2
+
+  scala> val third = new Rational(1, 3)
+  third: Rational = 1/3
+
+  scala> half < third
+  res5: Boolean = false
+
+  scala> half > third
+  res6: Boolean = true
 }}}
 
-还有一个`Greeter`类的方法`greet`有两个参数列表。分别是用户名和前面的命令行提示符类：
+考虑下面的抽象简化了四个比较操作符的实现：
 
 {{{class="brush: scala"
-  object Greeter {
-    def greet(name: String)(implicit prompt: PreferredPrompt) {
-      println("Welcome, "+ name +". The system is ready.")
-      println(prompt.preference)
-    }
+  trait Ordered[T] {
+    def compare(that: T): Int
+
+    def <(that: T): Boolean = (this compare that) < 0
+    def >(that: T): Boolean = (this compare that) > 0
+    def <=(that: T): Boolean = (this compare that) <= 0
+    def >=(that: T): Boolean = (this compare that) >= 0
   }
 }}}
 
-后一个参数列表被声明为`implicit`，表示可以隐式提供。当然要显式提供也可以：
+== 特质的叠加次序 ==
+
+可以把多个特质加在一个类上，按声明的顺序，它们操作的顺序就像栈一样。
+
+`IntQueue`有一个`put`方法把整数添加到队列中，和一个`get`方法移除并返回它们：
 
 {{{class="brush: scala"
-  scala> val bobsPrompt = new PreferredPrompt("relax> ")
-  bobsPrompt: PreferredPrompt = PreferredPrompt@ece6e1
-
-  scala> Greeter.greet("Bob")(bobsPrompt)                    
-  Welcome, Bob. The system is ready.
-  relax> 
-}}}
-
-为了隐式提供参数，要定义`implicit`修饰期望类型的变量：
-
-{{{class="brush: scala"
-  object JoesPrefs {
-    implicit val prompt = new PreferredPrompt("Yes, master> ")
+  abstract class IntQueue {
+    def get(): Int
+    def put(x: Int)
   }
 }}}
 
-注意它本身也要被定义为`implicit`，不然是不会被用来作为隐式变量的。而且如果不是在同一作用域的话，也不能用：
+`BasicIntQueue`类根据上面的特质实现了一个队列：
 
 {{{class="brush: scala"
-  scala> Greeter.greet("Joe")
-  <console>:7: error: no implicit argument matching parameter
-    type PreferredPrompt was found.
-         Greeter.greet("Joe")
-                 ^
-}}}
+  import scala.collection.mutable.ArrayBuffer
 
-不过引入后就可以用了：
-
-{{{class="brush: scala"
-  scala> import JoesPrefs._         
-  import JoesPrefs._
-
-  scala> Greeter.greet("Joe")
-  Welcome, Joe. The system is ready.
-  Yes, master> 
-}}}
-
-注意`implicit`关键字要用于全体参数列表而不是单独参数。下面的例子中`Greeter`的`greet`方法最后的参数列表再次被标记为`implicit`，它有两个参数：`prompt: PrefferredPrompt`和`drink: PrefferedDrink`。
-
-{{{class="brush: scala"
-  class PreferredPrompt(val preference: String)
-  class PreferredDrink(val preference: String)
-
-  object Greeter {
-    def greet(name: String)(implicit prompt: PreferredPrompt,
-        drink: PreferredDrink) {
-
-      println("Welcome, "+ name +". The system is ready.")
-      print("But while you work, ")
-      println("why not enjoy a cup of "+ drink.preference +"?")
-      println(prompt.preference)
-    }
-  }
-
-  object JoesPrefs {
-    implicit val prompt = new PreferredPrompt("Yes, master> ")
-    implicit val drink = new PreferredDrink("tea")
+  class BasicIntQueue extends IntQueue {
+    private val buf = new ArrayBuffer[Int]
+    def get() = buf.remove(0)
+    def put(x: Int) { buf += x }
   }
 }}}
 
-伴生对象中定义了两个隐式的变量，只要它们不作为单一标识符处于作用域内，不然就不能用来填充缺少的参数列表：
+运行一个队列的效果：
 
 {{{class="brush: scala"
-  scala> Greeter.greet("Joe") 
-  <console>:8: error: no implicit argument matching parameter
-    type PreferredPrompt was found.
-         Greeter.greet("Joe")
-                 ^
+  scala> val queue = new BasicIntQueue
+  queue: BasicIntQueue = BasicIntQueue@24655f
+
+  scala> queue.put(10)
+
+  scala> queue.put(20)
+
+  scala> queue.get()
+  res9: Int = 10
+
+  scala> queue.get()
+  res10: Int = 20
 }}}
 
-用`import`导入：
+
+`Doubling`特质把整数放入队列的时候对它加倍。
 
 {{{class="brush: scala"
-  scala> import JoesPrefs._
-  import JoesPrefs._
-}}}
-
-可以自动填充了：
-
-{{{class="brush: scala"
-  scala> Greeter.greet("Joe")(prompt, drink)
-  Welcome, Joe. The system is ready.
-  But while you work, why not enjoy a cup of tea?
-  Yes, master> 
-
-
-  scala> Greeter.greet("Joe")
-  Welcome, Joe. The system is ready.
-  But while you work, why not enjoy a cup of tea?
-  Yes, master> 
-}}}
-
-注意这里的没有用`String`这样的常用类型来作为`prompt`或`drink`的类型。就是为了防止被过多地匹配到隐式转换。
-
-隐式类型转换常见用法是为了提供显式标明的参数列表信息。考虑下面的代码，它返回传入的列表参数中的最大元素：
-
-{{{class="brush: scala"
-  def maxListUpBound[T <: Ordered[T]](elements: List[T]): T = 
-    elements match {
-      case List() =>
-        throw new IllegalArgumentException("empty list!")
-      case List(x) => x
-      case x :: rest =>
-        val maxRest = maxListUpBound(rest)
-        if (x > maxRest) x
-        else maxRest
-    }
-}}}
-
-注意参数类型已经被限制为`T <: Ordered[T]`，就是说列表的元素`T`要实现`Ordered[T]`物质。所以列表是可排序元素的列表。但是缺点是`Int`列表不行，因为`Int`没有实现物质`Ordered`，所以不是`Ordered[T]`的子类。
-
-更加泛用的方法是不限制类型，但是再加一个参数，这个参数是把`T`转为`Ordered[T]`的函数。
-
-下面的例子中第二个参数被标记为`implicit`。
-
-{{{class="brush: scala"
-  def maxListImpParm[T](elements: List[T])
-        (implicit orderer: T => Ordered[T]): T =
-
-    elements match {
-      case List() => 
-        throw new IllegalArgumentException("empty list!")
-      case List(x) => x
-      case x :: rest =>
-        val maxRest = maxListImpParm(rest)(orderer)
-        if (orderer(x) > maxRest) x
-        else maxRest
-    }
-}}}
-
-要排序的列表是必须显式提供的，所以元素的类型`T`是在编译时就确定的。确定了类型`T`之后就可以判断`T => Ordered[T]`类型的隐式定义是否存在于作用域中。如果存在就隐式传入排序函数`order`。
-
-这种方式在很多Scala的通用库中也用到，它们提供了隐式的排序方法。所以我们上面写的方法可以用在很多类型上：
-
-{{{class="brush: scala"
-  scala> maxListImpParm(List(1,5,10,3))
-  res10: Int = 10
-
-  scala> maxListImpParm(List(1.5, 5.2, 10.7, 3.14159))
-  res11: Double = 10.7
-
-  scala> maxListImpParm(List("one", "two", "three"))
-  res12: java.lang.String = two
-}}}
-
-隐式参数样式规则 :: 就是在要用到隐式转换的地方最好是从自定义的类型开始转而不是从`String`这样的很常见的类型开始转。如果`maxListImpParm`直接写成下面这样的方法签名：
-
-{{{class="brush: scala"
-  def maxListPoorStyle[T](elments: List[T])
-        (implicit orderer: (T, T) => Boolean): T
-}}}
-
-这样`(T,T) => Boolean`的类型太常见了，很容易被匹配到到不希望匹配到的方法上去。
-
-所以简单地说：至少用一个确定的名称为隐式参数类型命名。
-
-
-== 视界 ==
-
-前面的例子还可以再用陷式操作强化。如果把`implicit`用在参数上，编译器不仅会尝试用隐式值补足这个参数，还会把这个参数当作可用的隐式操作而使用于方法体中。因此方法体中`orderer`的两处应用都可以被省略。
-
-{{{class="brush: scala"
-  def maxList[T](elements: List[T])
-        (implicit orderer: T => Ordered[T]): T =
-
-    elements match {
-      case List() => 
-        throw new IllegalArgumentException("empty list!")
-      case List(x) => x
-      case x :: rest =>
-        val maxRest = maxList(rest)  // (orderer) is implicit
-        if (x > maxRest) x           // orderer(x) is implicit
-        else maxRest
-    }
-}}}
-
-编译器会发现上面代码的类型不能匹配。比如如`T`类型的`x`不存在`>`方法，所以`x > maxRest`不起作用。
-
-但编译器在这个时候并不会马上停止，而是先查找能修复这个问题的隐式转换。在这个例子中换成了`orderer(x) > maxRest`，并且同样把`maxList(rest)`换成了`maxList(rest)(ordered)`。
-
-回过来看`maxList`方法中没有提到有`ordered`参数的地方，所有对`ordered`的使用都是隐式的。这是一个很常用的代码模式：隐式参数只是用来转换，所以它本身也可以被隐式地使用。
-
-在现在的版本，　因为参数名没有被显式调用，所以名称也可以随便定。如，只要不改变`maxList`的方法体，对于只改变参数名称来说，方法的行为没有任何改变：
-
-{{{class="brush: scala"
-  def maxList[T](elements: List[T])
-        (implicit converter: T => Ordered[T]): T =
-    // same body...
-}}}
-
-改成这样也没有问题：
-
-{{{class="brush: scala"
-  def maxList[T](elements: List[T])
-        (implicit iceCream: T => Ordered[T]): T =
-    // same body...
-}}}
-
-因为这样的方法非常常用，所以Scala可以让代码省略这个参数的名称并使用视界缩短方法头。`maxList`方法签名可以是这样：
-
-{{{class="brush: scala"
-  def maxList[T <% Ordered[T]](elements: List[T]): T =
-    elements match {
-      case List() => 
-        throw new IllegalArgumentException("empty list!")
-      case List(x) => x
-      case x :: rest =>
-        val maxRest = maxList(rest)  // (orderer) is implicit
-        if (x > maxRest) x           // orderer(x) is implicit
-        else maxRest
-    }
-}}}
-
-可以把`T <% Ordered[T]`理解为：“T是能被当作`Ordered[T]`的任何类型”。编译器将调用声明在`Predef`中的隐式鉴别函数：
-
-{{{class="brush: scala"
-implicit def identity[A](x: A): A = x
-}}}
-
-如果传入的类型正好就是`Ordered[T]`，那上面的转换什么也不做，只是简单地把传入的参数再返回出来。
-
-=== 视界与上界 ===
-
-注意这不同于上界表达的意思，上界`T <: Ordered[T]`的意思是：“`T`是`Ordered[T]`”。
-
-相比之前用到的上界版本的`maxListUpBound`方法，唯一的区别就是上界符号与视界符号的不同，但是我们的视界版本可以支持更多类型。
-
-
-== 隐式操作的调试 ==
-
-隐式操作很强大，但也很难调试。这一节包含了一些技巧。
-
-=== 没有对应的转换规则 ===
-
-在程序员认为应该隐式转换但编译器没有转换时，手动把转换调用写出来。这样如果有报错就知道没有隐式转换的原因了。如下面的代码错把`stringWrapper`当成`String`转到`List`而不是`RandomAccessSeq`：
-
-{{{class="brush: scala"
-scala> val chars: List[Char] = "xyz"
-<console>:7: error: type mismatch;
- found   : java.lang.String("xyz")
- required: List[Char]
-       val chars: List[Char] = "xyz"
-                               ^
-}}}
-
-=== 被其他转换规则干扰 ===
-
-如果手动指定转换以后错误消失，那就很有可以是其他的转换规则覆盖了你想要的替换规则。
-
-{{{class="brush: scala"
-  scala> val chars: List[Char] = stringWrapper("xyz")
-  <console>:12: error: type mismatch;
-   found   : java.lang.Object with RandomAccessSeq[Char]
-   required: List[Char]
-         val chars: List[Char] = stringWrapper("xyz")
-                                 ^
-}}}
-
-编译器的`-Xprint:typer`显示隐式转换的信息。如下面的代码中：
-
-{{{class="brush: scala"
-  object Mocha extends Application {
-
-    class PreferredDrink(val preference: String)
-
-    implicit val pref = new PreferredDrink("mocha")
-
-    def enjoy(name: String)(implicit drink: PreferredDrink) {
-      print("Welcome, "+ name)
-      print(". Enjoy a ")
-      print(drink.preference)
-      println("!")
-    }
-
-    enjoy("reader")
+  trait Doubling extends IntQueue {
+    abstract override def put(x: Int) { super.put(2 * x) }
   }
 }}}
 
-最后一行的：
+他定义了超类`IntQueue`这个定义意味着特质只能混入到扩展了`IntQueue`的类中。声明为抽象的方法中有一个`super`调用。这种调用对于普通的类来说是非法的，因为继承的超类是个抽象类，所以在执行时将必然失败。然而对于特质来说，这样的调用实际能够成功。因为特质里的`super`调用是动态绑定的，特质`Doubling`的`super`调用将直到被混入在另一个特质或类之后，有了具体的方法定义时才工作。
+
+所以要加上`abstract override`，说明要继承父特质（只有特质，类里是不能这样写的）才能实际产生作用。
+
+现在一行代码都不用写，下面只有一个`extends`和一个`with`就把类定义好了：
 
 {{{class="brush: scala"
-  enjoy("reader")
+  scala> class MyQueue extends BasicIntQueue with Doubling
+  defined class MyQueue
+
+  scala> val queue = new MyQueue
+  queue: MyQueue = MyQueue@91f017
+
+  scala> queue.put(10)
+
+  scala> queue.get()
+  res12: Int = 20
 }}}
 
-已经被扩展为了：
+这个队列即能入队出队，而且数字还是加倍的。
+
+还可以更加简化到类名都不用写，直接`new BasicIntQueue with Doubling`这个父类名加上特质就可以把对象拿到了：
 
 {{{class="brush: scala"
-  Mocha.this.enjoy("reader")(Mocha.this.pref)
+  scala> val queue = new BasicIntQueue with Doubling
+  queue: BasicIntQueue with Doubling = $anon$1@5fa12d
+
+  scala> queue.put(10)
+
+  scala> queue.get()
+  res14: Int = 20
 }}}
 
-`scala - Xprint:typer`：
+
+== 特质的叠加 ==
+
+有两个特质，一个在入队时把值加1；另一个过滤掉负数：
 
 {{{class="brush: scala"
-  $ scalac -Xprint:typer mocha.scala
-  [[syntax trees at end of typer]]// Scala source: mocha.scala
-  package <empty> {
-    final object Mocha extends java.lang.Object with Application
-        with ScalaObject {
+  trait Incrementing extends IntQueue {
+    abstract override def put(x: Int) { super.put(x + 1) }
+  }
 
-      // ...
-
-      private[this] val pref: Mocha.PreferredDrink =
-        new Mocha.this.PreferredDrink("mocha");
-      implicit <stable> <accessor>
-        def pref: Mocha.PreferredDrink = Mocha.this.pref;
-      def enjoy(name: String)
-          (implicit drink: Mocha.PreferredDrink): Unit = {
-        scala.this.Predef.print("Welcome, ".+(name));
-        scala.this.Predef.print(". Enjoy a ");
-        scala.this.Predef.print(drink.preference);
-        scala.this.Predef.println("!")
-      };
-      Mocha.this.enjoy("reader")(Mocha.this.pref)
+  trait Filtering extends IntQueue {
+    abstract override def put(x: Int) {
+      if (x >= 0) super.put(x)
     }
   }
 }}}
 
+队列能够即过滤负数又对每个进队列的数字增量：
+
+{{{class="brush: scala"
+  scala> val queue = (new BasicIntQueue
+       | with Incrementing with Filtering)
+  queue: BasicIntQueue with Incrementing with Filtering...
+
+  scala> queue.put(-1); queue.put(0); queue.put(1)
+
+  scala> queue.get()
+  res15: Int = 1
+
+  scala> queue.get()
+  res16: Int = 2
+}}}
+
+粗略地说，越靠近右侧的特质越先起作用。如果那个方法调用了`super`，它调用其左侧特质的方法，以此类推。
+
+前面的例子里，`Filtering`的`put`首先被调用，因此它移除了开始的负整数。`Incrementing`的`put`第二个被调用，因此它对剩下的整数增量。
+
+如果你逆转特质的次序，那么整数首先会加1，然后如果仍然是负的才会被抛弃：
+
+{{{class="brush: scala"
+  scala> val queue = (new BasicIntQueue
+       | with Filtering with Incrementing)
+  queue: BasicIntQueue with Filtering with Incrementing...
+
+  scala> queue.put(-1); queue.put(0); queue.put(1)
+
+  scala> queue.get()
+  res17: Int = 0
+
+  scala> queue.get()
+  res18: Int = 1
+
+  scala> queue.get()
+  res19: Int = 2
+}}}
+
+
+== 为什么不是多重继承 ==
+
+特质是一种继承多个类似于类的结构的方式，但是它与许多语言中的多重继承有很重要的差别。其中的一个尤为重要：`super`的解释。对于多重继承来说，`super`调用导致的方法调用可以在调用发生的地方明确决定。而对于特质来说，方法调用是由类和被混入到类的特质的线性化（linearization）所决定的。这种差别让前一节所描述的改动的堆叠成为可能。
+
+在关注线性化之前，请花一点儿时间考虑一下在传统的多重继承语言中如何堆叠改动。假想有下列的代码，但是这次解释为多重继承而不是特质混入：
+
+{{{class="brush: scala"
+  val q = new BasicIntQueue with Incrementing with Doubling
+  q.put(42) // which put would be called?
+}}}
+
+第一个问题是，哪个`put`方法会在这个调用中被引用？或许规则会决定最后一个超类胜出，本例中的`Doubling`将被调用。`Doubling`将加倍它的参数并调用`super.put`，大概就是这样。增量操作将不会发生！同样，如果规则决定第一个超类胜出，那么结果队列将增量整数但不会加倍它们。因此怎么排序都不会有效。
+
+或许你会满足于允许程序员显式地指定在他们说`super`的时候他们想要的到底是哪个超类方法。比方说，假设下列Scala类似代码，`super`似乎被显式地指定为`Incrementing`和`Doubling`调用：
+
+{{{class="brush: scala"
+  trait MyQueue extends BasicIntQueue
+      with Incrementing with Doubling {
+
+    def put(x: Int) {
+      Incrementing.super.put(x) // (Not real Scala)
+      Doubling.super.put(x)
+    }
+  }
+}}}
+
+这种方式将带给我们新的问题。这种尝试的繁冗几乎不算是问题。实际会发生的是基类的`put`方法将被调用两次——一次带了增量的值另一次带了加倍的值，但是没有一次是带了增量加倍的值。
+
+显然使用多重继承对这个问题来说没有好的方案。你不得不返回到你的设计并分别提炼出代码。相反，Scala里的特质方案很直接。你只要简单地混入`Incrementing`和`Doubling`，`Scala`对`super`的特别照顾让它迎刃而解。这与传统的多重继承相比必然有不同的地方，但这是什么呢？
+
+就像在前面暗示的，答案就是线性化。当你使用`new`实例化一个类的时候，Scala把这个类和所有它继承的类还有它的特质以线性（linear）的次序放在一起。然后，当你在其中的一个类中调用`super`，被调用的方法就是链子的下一节。除了最后一个调用`super`之外的方法，其净结果就是可堆叠的行为。
+
+线性化的精确次序由语言的式样书描述。虽然有一点儿复杂，但你需要知道的主旨就是，在任何的线性化中，某个类总是被线性化在所有其超类和混入特质之前。因此，当你写了一个调用`super`的方法时，这个方法必将改变超类和混入特质的行为，没有其它路可走。
+
+Scala的线性化的主要属性可以用下面的例子演示：假设你有一个类`Cat`，继承自超类`Animal`以及两个特质`Furry`和`FourLegged`。`FourLegged`又扩展了另一个特质`HasLegs`：
+
+{{{class="brush: scala"
+  class Animal
+  trait Furry extends Animal
+  trait HasLegs extends Animal
+  trait FourLegged extends HasLegs
+  class Cat extends Animal with Furry with FourLegged
+}}}
+
+<img src="images/scala/Selection_017.png" alt="继承关系" />
+
+类型的线性化看起来是这样的：
+
+{{{class="brush: scala"
+    Animal : Any < AnyRef < Animal
+     Furry : Any < AnyRef < Animal < Furry
+   HasLegs : Any < AnyRef < Animal < HasLegs
+FourLegged : Any < AnyRef < Animal < HasLegs < FourLegged
+       Cat : Any < AnyRef < Animal < Furry < HasLegs < FourLegged < Cat
+}}}
+
+因为`Animal`没有显式扩展超类或混入任何超特质，因此它缺省地扩展了`AnyRef`，并随之扩展了`Any`。
+
+{{{class="brush: scala"
+    Animal : Any < AnyRef < Animal
+}}}
+
+第二部分是第一个混入，特质`Furry`的线性化，但是所有已经在`Animal`的线性化之中的类现在被排除在外，因此`Cat`的线性化中每个类仅出现1次。结果是：
+
+{{{class="brush: scala"
+     Furry : Any < AnyRef < Animal < Furry
+}}}
+
+它之前是`FourLegged`的线性化，任何已被复制到线性化中的超类及第一个混入再次被排除在外：
+
+{{{class="brush: scala"
+FourLegged : Any < AnyRef < Animal < HasLegs < FourLegged
+}}}
+
+最后，`Cat`线性化的第一个类是`Cat`自己：
+
+当这些类和特质中的任何一个通过`super`调用了方法，那么被调用的实现将是它线性化的右侧的第一个实现。
+
+{{{class="brush: scala"
+       Cat : Any < AnyRef < Animal < Furry < HasLegs < FourLegged < Cat
+}}}
+
+== 什么情况下要用特质 ==
+
+没有固定的规律，但是包含了几条可供考虑的导则。
+
+如果行为不会被重用，那么就把它做成具体类。具体类没有可重用的行为。
+
+如果要在多个不相关的类中重用，就做成特质。只有特质可以混入到不同的类层级中。
+
+如果你希望从Java代码中继承它，就使用抽象类。因为特质和它的代码没有近似的Java模拟，在Java类里继承特质是很笨拙的。而继承Scala的类和继承Java的类完全一样。除了一个例外，只含有抽象成员的Scala特质将直接翻译成Java接口，因此即使你想用Java代码继承，也可以随心地定义这样的特质。要了解让Java和Scala一起工作的更多信息请看后面其他的章节。
+
+如果你计划以编译后的方式发布它，并且你希望外部组织能够写一些继承自它的类，你应更倾向于使用抽象类。原因是当特质获得或失去成员，所有继承自它的类就算没有改变也都要被重新编译。如果外边客户仅需要调用行为，而不是继承自它，那么使用特质没有问题。
+
+如果效率非常重要，倾向于类。大多数Java运行时都能让类成员的虚方法调用快于接口方法调用。特质被编译成接口，因此会付出微小的性能代价。然而，仅当你知道那个存疑的特质构成了性能瓶颈，并且有证据说明使用类代替能确实解决问题，才做这样的选择。
+
+
+
+
+= 包和引用 =
+
+通过把`package`子句放在文件顶端的方式把整个文件内容放进包里：
+
+{{{class="brush: scala"
+  package bobsrockets.navigation
+  class Navigator 
+}}}
+
+另一种方式很像C#的命名空间。在`package`子句之后用大括号包起来一段要放到包里去的定义。除此之外，这种语法还能把同一个文件内的不同部分放在不同的包里。
+
+{{{class="brush: scala"
+  package bobsrockets {
+    package navigation {
+
+      // In package bobsrockets.navigation
+      class Navigator
+
+      package tests {
+
+        // In package bobsrockets.navigation.tests
+        class NavigatorSuite
+      }
+    }
+  } 
+}}}
+
+类似于Java的语法实际上只是括号嵌入风格的语法糖。原理是：如果除了签入另一个包之外对包不作任何事，你可以下面的方式省去一个缩进：
+
+{{{class="brush: scala"
+  package bobsrockets.navigation {
+
+    // In package bobsrockets.navigation
+    class Navigator
+
+    package tests {
+
+      // In package bobsrockets.navigation.tests
+      class NavigatorSuite
+    }
+  } 
+}}}
+
+Java包尽管是分级的，却不是嵌套的。在Java里，在你命名一个包的时候，你必须从包层级的根开始。
+
+Scala为了简化，采用包风格类似于是相对路径：
+
+{{{class="brush: scala"
+  package bobsrockets {
+    package navigation {
+      class Navigator
+    }
+    package launch {
+      class Booster {
+        // No need to say bobsrockets.navigation.Navigator
+        val nav = new navigation.Navigator
+      }
+    }
+  } 
+}}}
+
+而且内部区域的包可以隐匿被定义在外部区域的同名包。还提供了`_root_`表示顶层包：
+
+{{{class="brush: scala"
+  // In file launch.scala
+  package launch {
+    class Booster3
+  }
+
+  // In file bobsrockets.scala
+  package bobsrockets {
+    package navigation {
+      package launch {
+        class Booster1
+      }
+      class MissionControl {
+        val booster1 = new launch.Booster1
+        val booster2 = new bobsrockets.launch.Booster2
+        val booster3 = new _root_.launch.Booster3
+      }
+    }
+    package launch {
+      class Booster2
+    }
+  } 
+}}}
+
+上面的代码中，为了访问`Booster3`，Scala提供了所有用户可创建的包之外的名为`_root_`的包。换句话就是，任何你写的顶层包都被当作是`_root_`包的成员。
+
+因此，`_root_.launch`让你能访问顶层的`launch`包，`_root_.launch.Booster3`指向的就是最外面的`booster`类。
+
+
+== 引用包 ==
+
+Scala里用`import`子句来引用包和其成员：
+
+{{{class="brush: scala"
+  package bobsdelights
+
+  abstract class Fruit(
+    val name: String,
+    val color: String
+  )
+
+  object Fruits {
+    object Apple extends Fruit("apple", "red")
+    object Orange extends Fruit("orange", "orange")
+    object Pear extends Fruit("pear", "yellowish")
+    val menu = List(Apple, Orange, Pear)
+  } 
+}}}
+
+不止是包，其他成员也可以用`import`来引用：
+
+{{{class="brush: scala"
+  // easy access to Fruit
+  import bobsdelights.Fruit
+
+  // easy access to all members of bobsdelights
+  import bobsdelights._
+
+  // easy access to all members of Fruits
+  import bobsdelights.Fruits._ 
+//
+}}}
+
+差别是Scala的按需引用写作尾下划线`_`而不是星号`*`（毕竟`*`是合法的Scala标识符！）。上面的第三个引用子句与Java的静态类字段引用一致。
+
+`cala`引用可以出现在任何地方，而不是仅仅在编译单元的开始处。同样，它们可以指向任意值。
+
+{{{class="brush: scala"
+  def showFruit(fruit: Fruit) {
+    import fruit._
+    println(name +"s are "+ color)
+  } 
+}}}
+
+方法`showFruit`引用了它的参数，`Fruit`类型的`fruit`，的所有成员。之后的`println`语句就可以直接使用`name`和`color`了。这两个索引等价于`fruit.name`和`fruit.color`。
+
+Scala的引用很灵活的另一个方面是它们可以引用包自身，而不只是非包成员。这只有你把内嵌包想象成包含在外围包之内才是自然的。
+
+例如，下面的代码里包`java.util.regex`被引用。这使得`regex`可以用作简单名。要访问`java.util.regex`包的`Pattern`单例对象，你可以只是写成`regex.Pattern`：
+
+{{{class="brush: scala"
+  import java.util.regex
+
+  class AStarB {
+    // Accesses java.util.regex.Pattern
+    val pat = regex.Pattern.compile("a*b")
+  } 
+}}}
+
+Scala的引用同样可以重命名或隐藏成员。可以用跟在引用的成员对象之后的包含在括号里的引用选择子句（import selector clause）做到：
+
+* 重命名子句的格式是`<原始名> => <新名>``。
+
+* `<原始名> => _`格式的子句从被引用的名字中排除了<原始名>。
+
+{{{class="brush: scala"
+// 只引用了对象Fruits的Apple和Orange成员。 
+import Fruits.{Apple, Orange} 
+
+// Apple对象重命名为McIntosh。
+import Fruits.{Apple => McIntosh, Orange}
+
+// 以SDate的名字引用了SQL的日期类，因此你可以在同时引用普通的Java日期类Date。
+import java.sql.{Date => SDate}
+
+// 以名称S引用了java.sql包，这样你就可以写成S.Date。
+import java.{sql => S}
+
+// 引用了对象Fruits的所有成员。这与import Fruits._同义。
+import Fruits.{_}
+
+// 从Fruits对象引用所有成员，不过重命名Apple为McIntosh。
+import Fuites.{Apple => McIntosh, _}
+
+// 引用了除Pear之外的所有Fruits成员。
+import Fuits.{Pear => _, _}
+//
+}}}
+
+把某样东西重命名为`_`就是表示把它隐藏掉。这对避免出现混淆的局面有所帮助。比方说你有两个包，`Fruits`和`Notebooks`，它们都定义了类`Apple`。如果你想只是得到名为`Apple`的笔记本而不是水果，就需要引用所有的`Notebooks`和除了`Apple`之外所有的水果：
+
+{{{class="brush: scala"
+  import Notebooks._
+  import Fruits.{Apple => _, _} 
+//
+}}}
+
+总而言之，引用选择可以包括下列模式：
+
+* 简单名`x`。把`x`包含进引用名集。
+
+* 重命名子句`x => y`。让名为`x`的成员以名称`y`出现。
+ 
+* 隐藏子句`x => _`。把`x`排除在引用名集之外。
+ 
+* 全包括`_`。引用除了前面子句提到的之外的全体成员。如果存在全包括，那么必须是引用选择的最后一个。
+ 
+本节最初展示的比较简单的引用子句可以被视为带有选择子句的简写。例如，`import p._`等价于`import p.{_}`：并且`import p.n`等价于`import p.{n}`。
+
+
+== 隐式引用 ==
+
+Scala隐式地添加了一些引用到每个程序中。本质上，就好象下列的三个引用子句已经被加载了：
+
+{{{class="brush: scala"
+  import java.lang._ // everything in the java.lang package
+  import scala._     // everything in the scala package
+  import Predef._    // everything in the Predef object 
+}}}
+
+`java.lang`包囊括了标准Java类。它永远被隐式包含在Scala的JVM实现中。.NET实现将代以引用system包，它是`java.lang`的.NET模拟。
+
+scala包含有标准的Scala库，包括许多通用的类和对象。因为scala被隐式引用，你可以直接用List而不是`scala.List`。
+
+Predef对象包含了许多Scala程序中常用到的类型，方法和隐式转换的定义。比如，因为Predef是隐式引用，你可以直接写`assert`而不是`Predef.assert`。
+
+上面的这三个引用子句与其它的稍有不同，靠后的引用将遮盖靠前的。
+
+例如，`StringBuilder`类被定义在`scala`包里以及Java版本1.5以后的`java.lang`包中都 有。因为`scala`引用遮盖了`java.lang`引用，所以`StringBuilder`简单名将被看作是`scala.StringBuilder`，而不是`java.lang.StringBuilder`。
+
+
+
+== 访问修饰符 ==
+
+Scala与Java对访问修饰符的对待方式有一些重要的差异。
+
+=== private ===
+
+标记为private的成员仅在包含了成员定义的类或对象内部可见。但不同于Java，Scala里这个规则同样应用到了内部类上。这种方式更一致。
+
+{{{class="brush: scala"
+  class Outer {
+    class Inner {
+      private def f() { println("f") }
+      class InnerMost {
+        f() // OK
+      }
+    }
+    (new Inner).f() // error: f is not accessible
+  } 
+}}}
+
+Scala里，`(new Inner).f()`访问非法，因为`f`在`Inner`中被声明为`private`所以类`Inner`外面不能被访问。相反，类`InnerMost`里访问f没有问题，因为这个访问包含在`Inner`类之内。
+
+这点与Java不同，Java会允许这两种访问因为它允许外部类访问其内部类的私有成员。
+
+=== protected ===
+
+Java中`protected`可以被同一个包里的类访问。Scala里，只在定义了成员的类的子类中可以被访问，同一包中的其他类不能访问。
+
+{{{class="brush: scala"
+  package p {
+    class Super {
+      protected def f() { println("f") }
+    }
+    class Sub extends Super {
+      f()
+    }
+    class Other {
+      (new Super).f()  // error: f is not accessible
+    }
+  } 
+}}}
+
+=== public ===
+
+没有任何标记就是公开的，可以在任何地方被访问。
+
+
+=== 保护的范围 ===
+
+Scala里的访问修饰符可以通过使用修饰词增加。格式为`private[X]`或`protected[X]`的修饰符表示针对`X`的私有或保护，这里`X`指代某些外围的包、类或单例对象。
+
+这样允许定义一些在你项目的若干子包中可见但对于项目外部的客户却始终不可见的东西。同样的技巧在Java里是不可能的：
+
+{{{class="brush: scala"
+ package bobsrockets {
+   package navigation {
+     private[bobsrockets] class Navigator { 
+       protected[navigation] def useStarChart() {}
+       class LegOfJourney {
+         private[Navigator] val distance = 100
+       }
+       private[this] var speed = 200
+     }
+   }
+   package launch {
+     import navigation._
+     object Vehicle { 
+       private[launch] val guide = new Navigator
+     }
+   }
+ } 
+}}}
+
+类`Navigator`被标记为`private[bobsrockets]`。这就是说这个类对包含在`bobsrockets`包的所有的类和对象可见。特别是对象`Vehicle`里对`Navigator`的访问被允许，因为`Vehicle`包含在包`launch`中，而`launch`包在`bobsrockets`中。另一方面，包`bobsrockets`包之外的所有代码都不能访问类Navigator。
+
+`private`修饰词同样可以直接是外围包。对象`Vehicle`类的`guide`对象的访问修饰符是这样的例子。这种访问修饰符等价于Java的包私有访问。
+
+| 没有修饰符            | 公开访问                     |
+| Private[bobsrockets]  | 在外部包中访问               |
+| Private[navigation]   | 与Java的包可见度相同         |
+| Private[Navigator]    | 与Java的private相同          |
+| Private[LegOfJourney] | 与Scala的private相同         |
+| Private[this]         | 仅在类的同一个实例中可以访问 |
+
+
+所有的修饰词也可以用在`protected`上，与`private`意思相同。也就是说，类`C`的`protected[X]`修饰符允许`C`的所有子类和外围的包、类、或对象`X`访问被标记的定义。例如，`useStarChart`方法在`Navigator`所有子类以及包含在`navigation`包里的所有代码能够被访问。这与Java的protected意思完全一致。
+
+`Private`的修饰词还能指向外围类或对象。例如`LegOfJourney`里的`distance`变量被标记为`private[Navigator]`，因此它在类`Navigator`的任何地方都可见。这与Java里的内部类的私有成员具有同样的访问能力。`private[C]`里的`C`如果是最外层类，那么`private`的意思和Java一致。
+
+Scala还具有一种比`private`更严格的访问修饰符。被`private[this]`标记的定义仅能在包含了定义的同一个对象中被访问。这种定义被称为对象私有（object-private）。例如，代码13.11中，类`Navigator`的的`speed`定义就是对象私有的。这就是说所有的访问必须不仅是在`Navigator`类里，而且还要是同一个`Navigator`实例发生的。
+
+因此在`Navigator`内访问`speed`和`this.speed`是合法的。然而以下的访问，将不被允许，即使它发生在`Navigator`类之中：
+
+{{{class="brush: scala"
+  val other = new Navigator
+  other.speed // this line would not compile 
+}}}
+
+把成员标记为`private[this]`是一个让它不能被同一个类中其它对象访问的保障。这在做文档时比较有用。有时它也能让写出更通用的变体注释（参见以后会讲到的参数类型化章节的变体注释）。
+
+=== 伴生对象的可见度性 ===
+
+Java里，静态成员和实例成员属于同一个类，因此访问修饰符可以统一地应用在他们之上。在Scala里没有静态成员，代之以可以拥有包含成员的仅存在一个的伴生对象。
+
+{{{class="brush: scala"
+  class Rocket {
+    import Rocket.fuel
+    private def canGoHomeAgain = fuel > 20
+  }
+
+  object Rocket {
+    private def fuel = 10
+    def chooseStrategy(rocket: Rocket) {
+      if (rocket.canGoHomeAgain)
+        goHome()
+      else
+        pickAStar()
+    }
+    def goHome() {}
+    def pickAStar() {}
+  }
+ 
+}}}
+
+Scala的访问规则给予了伴生对象和类一些特权。类把它所有的访问权限共享给半生对象，反过来也是如此。特别的是，对象可以访问所有它的伴生类的私有成员，就好象类也可以访问所有伴生对象的私有成员一样。
+
+举个例子，上面的`Rocket`类可以访问方法`fuel`，它在`Rocket`对象中被声明为私有。类似地，`Rocket`对象也可以访问`Rocket`类里面的私有方法`canGetHome`。
+
+有一个例外，说到`protected static`成员时，Scala和Java的相似性被打破了。Java类`C`的保护静态成员可以被`C`的所有子类访问。相反，伴生对象的`protected`成员没有意义，因为单例对象没有任何子类。
+
+
+
+= 断言和测试 =
+
+== 断言 ==
+
+`assert`是预定义的方法，`assert(condition)`会在条件不成立时抛出`AssertionError`。
+
+另一个版本`assert(condition, explanation)`，指定了抛出含有指定`explantion`作为说明的`assertionError`。`explation`的类型为`Any`，所以任何对象都可以作为参数。`assert`方法会对传入的参数调用`toString`的结果作为放在`AssertionError`中的文字描述。
+
+在前面的“组合与继承”这一章中的`above`方法加上道检查，只有宽度一样的元素才可以上下连接在一起：
+
+{{{class="brush: scala" 
+  def above(that: Element): Element = {
+    val this1 = this widen that.width
+    val that1 = that widen this.width
+    elem(this1.contents ++ that1.contents)
+  }
+}}}
+
+`assert`方法所在的`Predef`包里还有一个`ensuring`方法可以直接对表达式的返回结果进行测试而不用先把表达式的结果先存放到变量中：
+
+{{{class="brush: scala" 
+  def widen(w: Int): Element =
+    if (w <= width) this
+    else {
+      val left = elem(' ', (w - width) / 2, height)
+      var right = elem(' ', w - width - left.width, height)
+      left beside this beside right
+    } ensuring (w <= _.width)
+}}}
+
+`ensuring`接收一个返回类型为Boolean的函数作为参数。注意这里`ensuring`是作用在`if-else`表达式的`Element`类结果上的，而不是方法`widen`的返回值上。相当于是：
+
+{{{class="brush: scala" 
+  def widen(w: Int): Element = {
+    if (w <= width) this
+    else {
+      val left = elem(' ', (w - width) / 2, height)
+      var right = elem(' ', w - width - left.width, height)
+      left beside this beside right
+    } ensuring (w <= _.width)
+  }
+}}}
+
+还有一点要明白的是，这里的语法看起来像是对`Element`类对象调用`ensuring`方法（把`xxx.ensuring(...)`中的点换成了空格）。但是实际上`Emement`对象是没有这个成员方法的，而是被隐式转换成了`Ensuring`对象。由于存在隐式转换，所以`ensuring`可以作用在任何类型上。
+
+== 测试 ==
+
+受益于和Java之间无缝操作。Java的测试库，像JUnit、TestNG，可以直接用于scala的单元测试。ScalaTest是专为scala设计的一个测试框架。ScalaTest提供了一些比较方便的功能。
+
+注意ScalaTest除了自己的版本号外，对应不同的Scala版本还有不同的对应版本。拿错了是用不了的。
+
+=== ScalaTest ===
+
+ScalaTest提供了函数式的`FunSuite`（Function Suite）。`test`方法为测试方法，说明字符串的内容会显示在输出信息中：
+
+{{{class="brush: scala" 
+import org.scalatest.FunSuite
+import scala.collection.mutable.Stack
+ 
+class ExampleSuite extends FunSuite {
+ 
+  test("pop is invoked on a non-empty stack") {
+    val stack = new Stack[Int]
+    stack.push(1)
+    stack.push(2)
+    val oldSize = stack.size
+    val result = stack.pop()
+    assert(result === 2)
+    assert(stack.size === oldSize - 1)
+  }
+ 
+  test("pop is invoked on an empty stack") {
+    val emptyStack = new Stack[Int]
+    intercept[NoSuchElementException] {
+      emptyStack.pop()
+    }
+    assert(emptyStack.isEmpty)
+  }
+}
+}}}
+
+{{{class="brush: bash" 
+\-(morgan:%) >>> scalac -cp scalatest_2.9.0-1.9.1.jar ExampleSuite.scala                      
+\-(morgan:%) >>> scala -cp .:scalatest_2.9.0-1.9.1.jar org.scalatest.run ExampleSuite 
+Run starting. Expected test count is: 2
+ExampleSuite:
+- pop is invoked on a non-empty stack
+- pop is invoked on an empty stack
+Run completed in 158 milliseconds.
+Total number of tests run: 2
+Suites: completed 1, aborted 0
+Tests: succeeded 2, failed 0, ignored 0, pending 0
+All tests passed.
+}}}
+
+=== Junit 4 ===
+
+如果喜欢JUnit4的风格，那么可以写下面这样的单元测试。
+
+{{{class="brush: scala" 
+import org.scalatest.junit.AssertionsForJUnit
+import scala.collection.mutable.ListBuffer
+import org.junit.Assert._
+import org.junit.Test
+import org.junit.Before
+
+class ExampleSuite extends AssertionsForJUnit {
+
+  var sb: StringBuilder = _
+  var lb: ListBuffer[String] = _
+
+  @Before 
+	def initialize() {
+    sb = new StringBuilder("ScalaTest is ")
+    lb = new ListBuffer[String]
+  }
+
+  @Test 
+	def verifyEasy() { // Uses JUnit-style assertions
+    sb.append("easy!")
+    assertEquals("ScalaTest is easy!", sb.toString)
+    assertTrue(lb.isEmpty)
+    lb += "sweet"
+    try {
+      "verbose".charAt(-1)
+      fail()
+    }
+    catch {
+      case e: StringIndexOutOfBoundsException => // Expected
+    }
+  }
+
+  @Test 
+	def verifyFun() { // Uses ScalaTest assertions
+    sb.append("fun!")
+    assert(sb.toString === "ScalaTest is fun!")
+    assert(lb.isEmpty)
+    lb += "sweeter"
+    intercept[StringIndexOutOfBoundsException] {
+      "concise".charAt(-1)
+    }
+  }
+}
+}}}
+
+编译运行：
+
+{{{class="brush: bash" 
+\-(morgan:%) >>> scalac -cp scalatest_2.9.0-1.9.1.jar:junit-4.8.2.jar ExampleSuite.scala                      
+\-(morgan:%) >>> scala -cp .:scalatest_2.9.0-1.9.1.jar:junit-4.8.2.jar org.junit.runner.JUnitCore ExampleSuite
+JUnit version 4.8.2
+..
+Time: 0.026
+
+OK (2 tests)
+}}}
+
+=== 混合ScalaTest与JUnit ===
+
+`org.scalatest.junit.JUnitSuite`已经混入了特质`AssertionsForJUnit`，可以同时被用于JUnit与ScalaTest方法： 
+
+{{{class="brush: scala" 
+import org.scalatest.junit.JUnitSuite
+import scala.collection.mutable.ListBuffer
+import org.junit.Assert._
+import org.junit.Test
+import org.junit.Before
+
+class ExampleSuite extends JUnitSuite {
+
+  var sb: StringBuilder = _
+  var lb: ListBuffer[String] = _
+
+  @Before
+	def initialize() {
+    sb = new StringBuilder("ScalaTest is ")
+    lb = new ListBuffer[String]
+  }
+
+  @Test
+	def verifyEasy() { // Uses JUnit-style assertions
+    sb.append("easy!")
+    assertEquals("ScalaTest is easy!", sb.toString)
+    assertTrue(lb.isEmpty)
+    lb += "sweet"
+    try {
+      "verbose".charAt(-1)
+      fail()
+    }
+    catch {
+      case e: StringIndexOutOfBoundsException => // Expected
+    }
+  }
+
+  @Test
+	def verifyFun() { // Uses ScalaTest assertions
+    sb.append("fun!")
+    assert(sb.toString === "ScalaTest is fun!")
+    assert(lb.isEmpty)
+    lb += "sweeter"
+    intercept[StringIndexOutOfBoundsException] {
+      "concise".charAt(-1)
+    }
+  }
+}
+}}}
+
+JUnit调用：
+
+{{{class="brush: bash" 
+\-(morgan:%) >>> scala -cp .:scalatest_2.9.0-1.9.1.jar:junit-4.8.2.jar org.junit.runner.JUnitCore ExampleSuite
+JUnit version 4.8.2
+..
+Time: 0.026
+
+OK (2 tests)
+}}}
+
+ScalaTest调用：
+
+{{{class="brush: bash" 
+\-(morgan:%) >>> scala -cp .:scalatest_2.9.0-1.9.1.jar:junit-4.8.2.jar org.scalatest.run ExampleSuite
+Run starting. Expected test count is: 2
+ExampleSuite:
+- verifyEasy
+- verifyFun
+Run completed in 226 milliseconds.
+Total number of tests run: 2
+Suites: completed 1, aborted 0
+Tests: succeeded 2, failed 0, ignored 0, pending 0
+All tests passed.
+}}}
+
+ScalaTest还提供了函数式的单元测试。
+
+{{{class="brush: scala" 
+// 用函数式的方式来写单元测试
+// IDE目前对ScalaTest的支持不是特别好
+// 加上RunWith就可以用JUnit的方式来运行了
+@RunWith(classOf[JUnitRunner])
+class ElementSuite3 extends FunSuite {
+    test("elem result should have passed width") {
+        val ele = elem('x', 2, 3)
+        assert(ele.width == 2)
+    }
+}
+}}}
+
+单元测试对提高软件质量很有好处。唯一的不足就是只针对程序员。其它人员要看懂还是比较有困难。ScalaTest提供了BDD（Behavior Driven Development行为驱动开发）测试方式。下面的这段测试代码在运行时就会打印出可读的解释。
+	
+{{{class="brush: scala" 
+class ElementSpec extends FlatSpec with ShouldMatchers {
+    "A UniformElement" should
+        "have a width equal to the passed value" in {
+        val ele = elem('x', 2, 3)
+        ele.width should be(2)
+    }
+    it should
+        "have a height equal to the passed value" in {
+        val ele = elem('x', 2, 3)
+        ele.height should be(3)
+    }
+    it should
+        "throw an IAE if passed a negative width" in {
+        evaluating {
+            elem('x', -2, 3)
+        } should produce[IllegalArgumentException]
+    }
+}
+}}}
+
+上面的代码会打印出下面这样的提示。
+
+{{{class="brush: scala" 
+A UniformElement 
+- should have a width equal to the passed value
+- should have a height equal to the passed value
+- should throw an IAE if passed a negative width
+}}}
+
+我们写单元测试时会测试一些边界值。然后再选一些典型的值。如果这些选值有库来做，不但可以减少单元测试的工作量，而且可以将边界值选取更合理。下面是如何将ScalaChecker和ScalaTest联合起来使用的一个例子。
+
+{{{class="brush: scala" 
+class ElementSpecChecker extends FlatSpec with ShouldMatchers with Checkers{
+    "A UniformElement" should
+        "have a width equal to the passed value" in {
+        // 这可以用数学化的方式来读
+        // 对每个整数w
+        // 当w>0时
+        // 都有后面的等式成立
+        check((w: Int) => w > 0 ==> (elem('x', w, 3).width == w))
+    }
+}
+}}}
 

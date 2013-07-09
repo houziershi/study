@@ -13,3 +13,7 @@
 
 [[scala.Part.04]]
 
+[[scala.Part.05]]
+
+[[scala.Part.06]]
+
