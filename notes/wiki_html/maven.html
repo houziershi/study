@@ -18,7 +18,7 @@
 
 <title>Maven入门</title>
 </head>
-<body>
+<body  onresize='changeTocSize()'>
 	<div class="note-main"> 
 
 
@@ -86,11 +86,32 @@ mvn help:system
 
 <h1 id="toc_2">建立工程</h1>
 
-<h2 id="toc_2.1">建立普通Java项目结构</h2>
+<p>
+列出各种工程的模块，然后选一个：
+</p>
 
 <pre class="brush: bash">
 mvn archetype:generate
 </pre>
+
+<h2 id="toc_2.1">建立普通Java项目结构</h2>
+
+<pre class="brush: bash">
+mvn archetype:create -DarchetypeGroupId=org.apache.maven.archetypes -DgroupId=com.alibaba.base -DartifactId=ftpserver
+</pre>
+
+<p>
+第一个参数-DarchetypeGroupId 是制定archetype插件的所属的groupId
+</p>
+
+<p>
+第二个参数-DgroupId是制定你将要创建的项目的groupId, 根据自己项目情况做相应的修改
+</p>
+
+<p>
+第三个参数-DartifactId是制定你要创建的构件ID, 这个例子是 ftpserver
+</p>
+
 
 <h2 id="toc_2.2">建立普通Java EE项目结构</h2>
 

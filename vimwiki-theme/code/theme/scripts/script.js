@@ -40,7 +40,13 @@ function loadCodeHightlight(){
 		'xml xhtml xslt html    @shBrushXml.js'
 	));
 	SyntaxHighlighter.all();
-}
+};
+
+var padding = 5;
+function changeTocSize() {
+	var height = document.documentElement.clientHeight - 100;
+	$(".toc").height(height);
+};
 
 $(document).ready(function() {
     if (window.innerWidth >= 480) {
@@ -56,6 +62,9 @@ $(document).ready(function() {
         }, function() {
             $(this).stop().fadeTo(300, '0.25');
         });
+				$(".tocWrap").css('padding',padding+'px');
+
+				changeTocSize();
 
         $('html').keypress(function(e) {
             if (e.shiftKey && (e.charCode || e.keyCode) == '90') {

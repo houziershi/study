@@ -53,8 +53,9 @@ img { border: none; }
 /* 主内容区 */
 .note-main {width: 700px}
 
-/* 导航条 */
+/* 导航条 
 div.toc { height:450px; }
+ * */
 .toc {
     display: none;
     overflow: auto;
@@ -64,7 +65,6 @@ div.toc { height:450px; }
     color: #999;
     background: #0C1F2C;
     background: rgba(10,30,40,0.85);
-    padding: 12px;
     box-shadow: 0 1px 8px #000;
     -webkit-box-shadow: 0 1px 8px #000;
     -moz-box-shadow: 0 1px 8px #000;
