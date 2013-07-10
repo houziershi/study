@@ -30,11 +30,24 @@ mvn help:system
 
 = 建立工程 =
 
-== 建立普通Java项目结构 ==
+列出各种工程的模块，然后选一个：
 
 {{{class="brush: bash"
 mvn archetype:generate
 }}}
+
+== 建立普通Java项目结构 ==
+
+{{{class="brush: bash"
+mvn archetype:create -DarchetypeGroupId=org.apache.maven.archetypes -DgroupId=com.alibaba.base -DartifactId=ftpserver
+}}}
+
+第一个参数-DarchetypeGroupId 是制定archetype插件的所属的groupId
+
+第二个参数-DgroupId是制定你将要创建的项目的groupId, 根据自己项目情况做相应的修改
+
+第三个参数-DartifactId是制定你要创建的构件ID, 这个例子是 ftpserver
+
 
 == 建立普通Java EE项目结构 ==
 
