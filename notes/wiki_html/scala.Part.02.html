@@ -109,19 +109,25 @@
 <h1 id="toc_1">动态成员</h1>
 
 <p>
-静态类型不光是变量类型是确定的，还有比如在使用<code>qual.sel</code>时，<code>sel</code> 这个属性或是方法(Scala的访问一致性，属性和方法有时候并没有那么大的区别)必须在<code>qual</code>的类型中声明了的。
+静态类型不光是变量类型是确定的，还有比如在使用<code>qual.sel</code>时，<code>sel</code> 这个属性或是
+方法（Scala的访问一致性，属性和方法有时候并没有那么大的区别）必须在<code>qual</code>的
+类型中声明了的。
 </p>
 
 <p>
-Scala 思考再三还是加入了 Dynamic Types，这个特性在 Scala 2.9 中是试验性的，必须用<code>-Xexperimental</code>进行开启，到了 Scala 2.10.0 中，只有代码中 <code>import scala.language.dynamics</code>就可用了，或是编译时加<code>-language:dynamics</code>选项。
+Scala 思考再三还是加入了 Dynamic Types，这个特性在 Scala 2.9 中是试验性的，
+必须用<code>-Xexperimental</code>进行开启，到了 Scala 2.10.0 中，只要代码中有
+<code>import scala.language.dynamics</code>就可用了，或是编译时加<code>-language:dynamics</code>选项。
 </p>
 
 <p>
-虽然 Scala 2.10.0 加进了 Dynamic Types 特性，但 Scala 仍然是静态类型的语言，因为在编译器同样会检查多出来的类型。
+虽然Scala 2.10.0加进了Dynamic Types特性，但Scala仍然是静态类型的语言，因为在
+编译器同样会检查多出来的类型。
 </p>
 
 <p>
-有了 Dynamic Types 之后，Scala 又可更 DSL 了，方法名的动态上可以让它随时包括深刻的业务含义。相比 Java 的 DSL 的能力就太逊了，我们几乎无法在 Java 面前提 DSL 这回事。
+有了Dynamic Types之后，Scala又可更DSL了，方法名的动态上可以让它随时包括深刻的
+业务含义。相比Java的DSL的能力就太逊了，我们几乎无法在Java面前提DSL这回事。
 </p>
 
 <p>
@@ -137,7 +143,7 @@ Scala 思考再三还是加入了 Dynamic Types，这个特性在 Scala 2.9 中�
 
 <ul>
 <li>
-当使用<code>qual.sel</code>，而<code>Qual</code>类未定义<code>sel</code> 属性或方法时，会调用<code>selectDynamic(method: String)</code>方法。
+当使用<code>qual.sel</code>，而<code>Qual</code>类未定义<code>sel</code>属性或方法时，会调用<code>selectDynamic(method: String)</code>方法。
 
 <li>
 当<code>qual.name = "Unmi"</code>时会调用类似<code>updateDynamic(method: String)(args: Any)</code>这样的方法。
@@ -146,7 +152,6 @@ Scala 思考再三还是加入了 Dynamic Types，这个特性在 Scala 2.9 中�
 还有<code> applyDynamic</code>，<code>applyDynamicNamed</code>这两个方法的自动调用。
 
 </ul>
-
 
 <p>
 看个完整的例子，我不打算把上面四个方法的应用规则分开来演示：
@@ -178,10 +183,14 @@ class Person extends Dynamic{
  
 val p = new Person
  
-p.sayHello  //calll selectDynamic
-p.config("Hello","Unmi") //call applyDynamic
-p.products = ("iPhone","Nexus") //call updateDynamic
-p.showInfo(screenName="Unmi", email="fantasia@sina.com") //call applyDynamicNamed
+//calll selectDynamic
+p.sayHello
+//call applyDynamic
+p.config("Hello","Unmi")
+//call updateDynamic
+p.products = ("iPhone","Nexus")
+//call applyDynamicNamed
+p.showInfo(screenName="Unmi", email="fantasia@sina.com") 
 </pre>
 
 <p>
@@ -195,13 +204,17 @@ applyDynamic-&gt;config called, args: WrappedArray(Hello, Unmi)
  
 updateDynamic-&gt;products called, args: (iPhone,Nexus)
  
-applyDynamicNamed-&gt;showInfo called, args: WrappedArray((screenName,Unmi), (email,fantasia@sina.com))
+applyDynamicNamed-&gt;showInfo called, args:
+									WrappedArray((screenName,Unmi), (email,fantasia@sina.com))
 key: screenName, value: Unmi
 key: email, value: fantasia@sina.com
 </pre>
 
 <p>
-现在来看发生了什么，<code>Person</code>继承自<code>Dynamic</code>，并且有引入 <code>scala.language.dynamics</code>。对<code>p</code>调用的方法(属性)都不存在，但是都调用到了正常的动态方法。所以仍然要对这四个动态方法(确切的讲是四种类型的方法，因为比如你可以定义多个不同的<code>updateDynamic</code>方法，其余三个也同此) 分别加以说明。
+现在来看发生了什么，<code>Person</code>继承自<code>Dynamic</code>，并且有引入
+<code>scala.language.dynamics</code>。对<code>p</code>调用的方法(属性)都不存在，但是都调用到了正常的
+动态方法。所以仍然要对这四个动态方法(确切的讲是四种类型的方法，因为比如你可以
+		定义多个不同的<code>updateDynamic</code>方法，其余三个也同此) 分别加以说明。
 </p>
 
 <h2 id="toc_1.1">selectDynamic</h2>
@@ -211,15 +224,16 @@ key: email, value: fantasia@sina.com
 </p>
 
 <p>
-<code>p.sayHello</code>也可以写成<code>p.selectDynamic("sayHello")</code>
+<code>p.sayHello</code>也可以写成<code>p.selectDynamic("sayHello")</code>。也就是说编译器在看到
+<code>p.sayHello</code>调用会根据<code>selectDynamic(method: String)</code>。相当于创建了方法
+<code>def sayHello = .......</code>，也就是把动态方法<code>selectDynamic(method: String)</code>换成
+<code>sayHello</code>。所以说Scala的<code>Dynamic</code>类中的<code>xxxDynamic</code>方法相当是模板方法。
 </p>
 
 <p>
-也就是说编译器在看到<code>p.sayHello</code>调用会根据<code>selectDynamic(method: String)</code>。相当于创建了方法<code>def sayHello = .......</code>，也就是把动态方法<code>selectDynamic(method: String)</code>换成<code>sayHello</code>。所以说 Scala 的<code>Dynamic</code>类中的<code>xxxDynamic</code> 方法相当是模板方法。
-</p>
-
-<p>
-<code>applyDynamic</code>，<code>updateDynamic</code>和<code>applyDynamicNamed</code>这三个方法第二个括号中的参数类型，或个数需根据实际应用来定。这四个动态方法的第一个括号中的参数都是动态调用时的方法名。
+<code>applyDynamic</code>，<code>updateDynamic</code>和<code>applyDynamicNamed</code>这三个方法第二个括号中的
+参数类型，或个数需根据实际应用来定。这四个动态方法的第一个括号中的参数都是
+动态调用时的方法名。
 </p>
 
 <h2 id="toc_1.2">applyDynamic</h2>
@@ -233,23 +247,28 @@ key: email, value: fantasia@sina.com
 </p>
 
 <p>
-还是这么理解: 把这个动态方法定义的方法名和第一个括号与参数替换成调用的方法名就知道怎么回事，例如把：
+还是这么理解: 把这个动态方法定义的方法名和第一个括号与参数替换成调用的方法名
+就知道怎么回事，例如把：
 </p>
 
 <p>
-<code>def applyDynamic(method: String)(args: Any*)</code>中的<code>applyDynamic(method: String)</code>替换成被调用方法名<code>config</code>，就是：
+<code>def applyDynamic(method: String)(args: Any*)</code>中的<code>applyDynamic(method: String)</code>
+替换成被调用方法名<code>config</code>，就是：
 </p>
 
 <pre class="brush: scala">
-def config(args: Any*)        //p.config("Hello", "Unmi") 要调用的就是这么个方法
+def config(args: Any*)    //p.config("Hello", "Unmi") 要调用的就是这么个方法
 </pre>
 
 <p>
-所以第二个括号中的参数由你自己来定，比如说想这么调用<code>p.config("Hello", 100, 30)</code>，那么你可的动态方法可以这么定义：
+所以第二个括号中的参数由你自己来定，比如说想这么调用<code>p.config("Hello", 100, 30)</code>
+，那么你可的动态方法可以这么定义：
 </p>
 
 <pre class="brush: scala">
-def applyDynamic(method: String)(greeting: String, high: Int, low: Int) { ...... }
+def applyDynamic(method: String) (greeting: String, high: Int, low: Int) {
+	// ...... 
+}
 </pre>
 
 <p>
@@ -262,14 +281,31 @@ def applyDynamic(method: String)(greeting: String, high: Int, low: Int) { ......
 等号赋值操作时会调用<code>updateDynamic</code>方法，调用效果如下：
 </p>
 
+<pre class="brush: scala">
+p.products = ("iPhone", "Nexus")
+</pre>
+
 <p>
-<code>p.products = ("iPhone", "Nexus")</code>可写成<code>p.updateDynamic("products")(("iPhone", "Nexus"))</code>，按照同样的理解方法，相当于<code>Person</code>中定义了<code>def products(args: Any)</code> 方法。
+可写成：
+</p>
+
+<pre class="brush: scala">
+p.updateDynamic("products")(("iPhone", "Nexus"))
+</pre>
+
+<p>
+按照同样的理解方法，相当于<code>Person</code>中定义了<code>def products(args: Any)</code>方法。
 </p>
 
 <h2 id="toc_1.4">applyDynamicNamed</h2>
 
 <p>
-同样是<code>apply</code>开头，所以这个方法是对<code>applyDynamic</code>方法的补充，即使没有<code> applyDynamicNamed</code>，单用<code>applyDynamic</code>也能达成我们的要求。<code>applyDynamicNamed</code> 只是让你用命名参数调用时方便，也就是像：
+同样是<code>apply</code>开头，所以这个方法是对<code>applyDynamic</code>方法的补充，即使没有
+<code>applyDynamicNamed</code>，单用<code>applyDynamic</code>也能达成我们的要求。
+</p>
+
+<p>
+<code>applyDynamicNamed</code> 只是让你用命名参数调用时方便，也就是像：
 </p>
 
 <pre class="brush: scala">
@@ -277,11 +313,14 @@ p.showInfo(screenName="Unmi", email="fantasia@sina.com")
 </pre>
 
 <p>
-这样用命名参数的方式来调用动态方法时会调用<code>updateDynamicNamed</code> 方法。有了这个方法在命名传递参数就方便处理<code>key/value</code>值。
+这样用命名参数的方式来调用动态方法时会调用<code>updateDynamicNamed</code>方法。有了这个方法
+在命名传递参数就方便处理<code>key/value</code>值。
 </p>
 
 <p>
-这四个方法在一个动态类中只能分别定义一个版本，否则会产生二义性，这和普通方法的重载不一样的。柯里化后的函数第二个括号中的参数可根据实际调用来定义，定义成<code>(args: Any*)</code>可包打天下。
+这四个方法在一个动态类中只能分别定义一个版本，否则会产生二义性，这和普通方法的
+重载不一样的。柯里化后的函数第二个括号中的参数可根据实际调用来定义，定义成
+<code>(args: Any*)</code>可包打天下。
 </p>
 
 
@@ -290,15 +329,20 @@ p.showInfo(screenName="Unmi", email="fantasia@sina.com")
 <h2 id="toc_2.1">可复用的代码</h2>
 
 <p>
-所有的函数都被分割成通用部分（它们在每次函数调用中都相同）以及非通用部分（在不同的函数调用中可能会变化）。通用部分是函数体，而非通用部分必须由参数提供。
+所有的函数都被分割成通用部分（它们在每次函数调用中都相同）以及非通用部分（在不同
+的函数调用中可能会变化）。通用部分是函数体，而非通用部分必须由参数提供。
 </p>
 
 <p>
-当你把函数值用做参数时，算法的非通用部分就是它代表的某些其它算法。在这种函数的每一次调用中，你都可以把不同的函数值作为参数传入，于是被调用函数将在每次选用参数的时候调用传入的函数值。这种高阶函数（higher-order function）带其它函数做参数的函数提供了机会去组织和简化代码。
+当你把函数值用做参数时，算法的非通用部分就是它代表的某些其它算法。在这种函数的
+每一次调用中，你都可以把不同的函数值作为参数传入，于是被调用函数将在每次选用
+参数的时候调用传入的函数值。这种高阶函数（higher-order function）带其它函数做
+参数的函数提供了机会去组织和简化代码。
 </p>
 
 <p>
-例子。一个工具类，提供了很多查找文件的方法，有根据文件结尾的、文件名是否包含指定字串的、文件名是否匹配正则的：
+例子。一个工具类，提供了很多查找文件的方法，有根据文件结尾的、文件名是否包含
+指定字串的、文件名是否匹配正则的：
 </p>
 
 <pre class="brush: scala">
@@ -329,7 +373,8 @@ p.showInfo(screenName="Unmi", email="fantasia@sina.com")
 </p>
 
 <p>
-如果是在某些动态语言中，要提炼一个工具方法提炼出共用的部分，根据传入不同<code>method</code>作为参数也匹配也很方便，可以直接把代码“拼接”起来：
+如果是在某些动态语言中，要提炼一个工具方法提炼出共用的部分，根据传入不同<code>method</code>
+作为参数也匹配也很方便，可以直接把代码“拼接”起来：
 </p>
 
 <pre class="brush: scala">
@@ -339,7 +384,8 @@ p.showInfo(screenName="Unmi", email="fantasia@sina.com")
 </pre>
 
 <p>
-不过Scala不是动态语言，不能这么拼接。虽然不能把方法名作为参数传递，但可以通过字面量在运行时产生对应的函数值：
+不过Scala不是动态语言，不能这么拼接。虽然不能把方法名作为参数传递，但可以通过
+字面量在运行时产生对应的函数值：
 </p>
 
 <pre class="brush: scala">
@@ -353,7 +399,9 @@ p.showInfo(screenName="Unmi", email="fantasia@sina.com")
 </pre>
 
 <p>
-字面量只说明了函数的类型是<code>(String, String) =&gt; Boolean</code>，不用关内部逻辑的。现在已经有了一个<code>filesMatching</code>方法来处理共同的逻辑，三个具体的匹配方法只要调用它就行了：
+字面量只说明了函数的类型是<code>(String, String) =&gt; Boolean</code>，不用关内部逻辑的。现在
+已经有了一个<code>filesMatching</code>方法来处理共同的逻辑，三个具体的匹配方法只要调用它
+就行了：
 </p>
 
 <pre class="brush: scala">
@@ -368,7 +416,7 @@ p.showInfo(screenName="Unmi", email="fantasia@sina.com")
 </pre>
 
 <p>
-加上参数表和参数类型可以更加好理解一些
+上面的代码可能太乘法了，加上参数表和参数类型可以更加好理解一些：
 </p>
 
 <pre class="brush: scala">
@@ -383,11 +431,13 @@ p.showInfo(screenName="Unmi", email="fantasia@sina.com")
 </pre>
 
 <p>
-代码已经被简化了，但它实际还能更短。注意到<code>query</code>传递给了方法<code>filesMatching</code>，但<code>filesMatching</code>根本用不着这个参数，只是为了把它传回给传入的<code>matcher</code>函数。
+代码已经被简化了，但它实际还能更短。注意到<code>query</code>传递给了方法<code>filesMatching</code>，
+但<code>filesMatching</code>根本用不着这个参数，只是为了把它传回给传入的<code>matcher</code>函数。
 </p>
 
 <p>
-所以在这里可以直接把参数<code>query</code>绑定到函数字面量中，这样<code>fileMacthing</code>方法就不要<code>query</code>这个参数了。 
+所以在这里可以直接把参数<code>query</code>绑定到函数字面量中，这样<code>fileMacthing</code>方法就不要
+<code>query</code>这个参数了。 
 </p>
 
 <pre class="brush: scala">
@@ -416,7 +466,9 @@ p.showInfo(screenName="Unmi", email="fantasia@sina.com")
 </p>
 
 <p>
-比如List中的高阶函数<code>exists</code>方法已经提供了遍历整个集合的抽象，用户只要把判断符合的函数传入就可以了。下面的两个例子非常简单地实现了检查是否存在负数和是否存在奇数两个方法：
+比如List中的高阶函数<code>exists</code>方法已经提供了遍历整个集合的抽象，用户只要把判断符合
+的函数传入就可以了。下面的两个例子非常简单地实现了检查是否存在负数和是否存在奇数
+两个方法：
 </p>
 
 <pre class="brush: scala">
@@ -490,7 +542,9 @@ curry化后的同一个函数，两个列表的各一个参数：
 </pre>
 
 <p>
-实际上背靠背地调用了两个传统函数。第一个函数调用带单个的名为<code>x</code>的<code>Int</code>参数，并返回第二个函数的函数值。第二个函数带<code>Int</code>参数<code>y</code>。下面的名为first的函数实质上执行了<code>curriedSum</code>的第一个传统函数调用会做的事情：
+实际上背靠背地调用了两个传统函数。第一个函数调用带单个的名为<code>x</code>的<code>Int</code>参数，并
+返回第二个函数的函数值。第二个函数带<code>Int</code>参数<code>y</code>。下面的名为<code>first</code>的函数实质上
+执行了<code>curriedSum</code>的第一个传统函数调用会做的事情：
 </p>
 
 <pre class="brush: scala">
@@ -521,7 +575,10 @@ curry化后的同一个函数，两个列表的各一个参数：
 </pre>
 
 <p>
-<code>first</code>和<code>second</code>函数只演示连接在<code>curriedSum</code>函数上的那两个函数，并不直接连接在<code>curriedSum</code>函数上的那两个函数。但我们仍然有一个方式获得实际指向<code>curriedSum</code>的“第二个”函数的引用。你可以用偏应用函数表达式方式，把占位符标注用在<code>curriedSum</code>里，如：
+<code>first</code>和<code>second</code>函数只演示连接在<code>curriedSum</code>函数上的那两个函数，并不直接连接在
+<code>curriedSum</code>函数上的那两个函数。但我们仍然有一个方式获得实际指向<code>curriedSum</code>的
+“第二个”函数的引用。你可以用偏应用函数表达式方式，把占位符标注用在<code>curriedSum</code>里
+，如：
 </p>
 
 <pre class="brush: scala">
@@ -530,11 +587,15 @@ curry化后的同一个函数，两个列表的各一个参数：
 </pre>
 
 <p>
-之前说过，当占位符标注用在传统方法上时，如<code>println _</code>，你必须在名称和下划线之间留一个空格。不然编译器会误认为是要调用名为<code>println_</code>的函数。而在这个例子里不需要，因为<code>println_</code>是Scala里合法的标识符，<code>curriedSum(1)_</code>不是合法的标识符，所以会被解释为<code>curriedSum(1)</code>与占位符<code>_</code>。
+之前说过，当占位符标注用在传统方法上时，如<code>println _</code>，你必须在名称和下划线之间
+留一个空格。不然编译器会误认为是要调用名为<code>println_</code>的函数。而在这个例子里不需要
+，因为<code>println_</code>是Scala里合法的标识符，<code>curriedSum(1)_</code>不是合法的标识符，所以会
+被解释为<code>curriedSum(1)</code>与占位符<code>_</code>。
 </p>
 
 <p>
-现在得到了指向一个函数的引用，这个函数在被调用的时候，传入Int参数加一并返回结果：
+现在得到了指向一个函数的引用，这个函数在被调用的时候，传入<code>Int</code>参数加一并返回
+结果：
 </p>
 
 <pre class="brush: scala">
@@ -543,7 +604,8 @@ curry化后的同一个函数，两个列表的各一个参数：
 </pre>
 
 <p>
-由于第二个函数的参数已经有了（传入的是2），现在再用参数2调用第一个函数也能有结果出来：
+由于第二个函数的参数已经有了（传入的是2），现在再用参数2调用第一个函数也能有结果
+出来：
 </p>
 
 <pre class="brush: scala">
@@ -575,11 +637,13 @@ curry化后的同一个函数，两个列表的各一个参数：
 </pre>
 
 <p>
-如果在工作中曾经遇到重复操作两次<code>(Double) =&gt; Double</code>类型函数的操作的话，这样就把一个控制结构给抽象出来了。
+如果在工作中曾经遇到重复操作两次<code>(Double) =&gt; Double</code>类型函数的操作的话，这样就把
+一个控制结构给抽象出来了。
 </p>
 
 <p>
-再考虑一个常用的工作流程：打开一个资源，对它进行操作，然后关闭资源。你可以使用如下的方法将其捕获并放入控制抽象：
+再考虑一个常用的工作流程：打开一个资源，对它进行操作，然后关闭资源。你可以使用
+如下的方法将其捕获并放入控制抽象：
 </p>
 
 <pre class="brush: scala">
@@ -594,7 +658,8 @@ curry化后的同一个函数，两个列表的各一个参数：
 </pre>
 
 <p>
-以后要使用的时候就只要传入要处理的文件和处理的方法就行了，打开一个资源和关闭资源都已经在高阶函数中被抽象出来了：
+以后要使用的时候就只要传入要处理的文件和处理的方法就行了，打开一个资源和关闭资源
+都已经在高阶函数中被抽象出来了：
 </p>
 
 <pre class="brush: scala">
@@ -605,11 +670,16 @@ curry化后的同一个函数，两个列表的各一个参数：
 </pre>
 
 <p>
-这个技巧被称为贷出模式（loan pattern），因为控制抽象函数，如<code>withPrintWriter</code>，打开了资源并“贷出”给函数。当函数完成的时候，它发出信号说明它不再需要“借”的资源。于是资源被关闭在<code>finally</code>块中，以确信其确实被关闭，而忽略函数是正常结束返回还是抛出了异常。
+这个技巧被称为贷出模式（loan pattern），因为控制抽象函数，如<code>withPrintWriter</code>，
+打开了资源并“贷出”给函数。当函数完成的时候，它发出信号说明它不再需要“借”的资源。
+于是资源被关闭在<code>finally</code>块中，以确信其确实被关闭，而忽略函数是正常结束返回还是
+抛出了异常。
 </p>
 
 <p>
-让客户代码看上去更像内建控制结构的一种方式是使用大括号代替小括号包围参数列表。Scala的任何方法调用，如果你确实只传入一个参数，就能可选地使用大括号替代小括号包围参数：
+让客户代码看上去更像内建控制结构的一种方式是使用大括号代替小括号包围参数列表。
+Scala的任何方法调用，如果你确实只传入一个参数，就能可选地使用大括号替代小括号
+包围参数：
 </p>
 
 <pre class="brush: scala">
@@ -638,7 +708,10 @@ curry化后的同一个函数，两个列表的各一个参数：
 </pre>
 
 <p>
-以前面例子里定义的withPrintWriter方法举例。在它最近的形式里，withPrintWriter带了两个参数，因此你不能使用大括号。虽然如此，因为传递给withPrintWriter的函数是列表的最后一个参数，你可以使用curry化把第一个参数，File拖入分离的参数列表。这将使函数仅剩下列表的第二个参数作为唯一的参数：
+以前面例子里定义的<code>withPrintWriter</code>方法举例。在它最近的形式里，<code>withPrintWriter</code>
+带了两个参数，因此你不能使用大括号。虽然如此，因为传递给<code>withPrintWriter</code>的函数
+是列表的最后一个参数，你可以使用curry化把第一个参数，<code>File</code>拖入分离的参数列表。
+这将使函数仅剩下列表的第二个参数作为唯一的参数：
 </p>
 
 <pre class="brush: scala">
@@ -665,14 +738,17 @@ curry化后的同一个函数，两个列表的各一个参数：
 </pre>
 
 <p>
-第一个参数列表，包含了一个File参数，被写成包围在小括号中。第二个参数列表，包含了一个函数参数，被包围在大括号中。
+第一个参数列表，包含了一个File参数，被写成包围在小括号中。第二个参数列表，包含了
+一个函数参数，被包围在大括号中。
 </p>
 
 
 <h2 id="toc_2.5">传名参数</h2>
 
 <p>
-上节展示的<code>withPrintWriter</code>方法不同于语言的内建控制结构，如<code>if</code>和<code>while</code>，在于大括号之间的代码带了参数。<code>withPrintWriter</code>方法需要一个类型为<code>PrintWriter</code>的参数。这个参数以<code>writer =&gt;</code>方式显示出来：
+上节展示的<code>withPrintWriter</code>方法不同于语言的内建控制结构，如<code>if</code>和<code>while</code>，在于
+大括号之间的代码带了参数。<code>withPrintWriter</code>方法需要一个类型为<code>PrintWriter</code>的参数
+。这个参数以<code>writer =&gt;</code>方式显示出来：
 </p>
 
 <pre class="brush: scala">
@@ -682,15 +758,19 @@ curry化后的同一个函数，两个列表的各一个参数：
 </pre>
 
 <p>
-然而如果你想要实现某些更像if或while的东西，根本没有值要传入大括号之间的代码，那该怎么做呢？为了解决这种情况，Scala提供了叫名参数。
+然而如果你想要实现某些更像if或while的东西，根本没有值要传入大括号之间的代码，
+那该怎么做呢？为了解决这种情况，Scala提供了传名参数。
 </p>
 
 <p>
-为了举一个有现实意义的例子：虽然Scala提供了它自己的<code>assert</code>，但是用户想自己实现一个称为<code>myAssert</code>的断言架构。
+为了举一个有现实意义的例子：虽然Scala提供了它自己的<code>assert</code>，但是用户想自己实现
+一个称为<code>myAssert</code>的断言架构。
 </p>
 
 <p>
-<code>myAssert</code>函数将带一个函数值做输入并参考一个标志位来决定该做什么。如果标志位被设置了，<code>myAssert</code>将调用传入的函数并证实其返回<code>true</code>。如果标志位被关闭了，<code>myAssert</code>将安静地什么都不做。 如果没有叫名参数，你可以这样写<code>myAssert</code>：
+<code>myAssert</code>函数将带一个函数值做输入并参考一个标志位来决定该做什么。如果标志位被
+设置了，<code>myAssert</code>将调用传入的函数并证实其返回<code>true</code>。如果标志位被关闭了，
+<code>myAssert</code>将安静地什么都不做。 如果没有传名参数，你可以这样写<code>myAssert</code>：
 </p>
 
 <pre class="brush: scala">
@@ -702,7 +782,8 @@ curry化后的同一个函数，两个列表的各一个参数：
 </pre>
 
 <p>
-用函数字面量的简写方式可以让代码短很多。但函数字面量的简写方式只能用在有参数的情况下，用占位符<code>_</code>来代替参数。没有参数也就不能用函数了面量的简写形式。
+用函数字面量的简写方式可以让代码短很多。但函数字面量的简写方式只能用在有参数的
+情况下，用占位符<code>_</code>来代替参数。没有参数也就不能用函数了面量的简写形式。
 </p>
 
 <p>
@@ -715,9 +796,9 @@ curry化后的同一个函数，两个列表的各一个参数：
   myAssert(5 &gt; 3) // Won't work, because missing () =&gt;  
 </pre>
 
-
 <p>
-传名函数恰好为了实现你的愿望而出现。要实现一个叫传函数，要定义参数的类型开始于<code>=&gt;</code>而不是<code>() =&gt;</code>。如，改<code>() =&gt; Boolean</code>为<code>=&gt; Boolean</code>：
+传名函数恰好为了实现你的愿望而出现。要实现一个传名函数，要定义参数的类型开始于
+<code>=&gt;</code>而不是<code>() =&gt;</code>。如，改<code>() =&gt; Boolean</code>为<code>=&gt; Boolean</code>：
 </p>
 
 <pre class="brush: scala">
@@ -735,11 +816,13 @@ curry化后的同一个函数，两个列表的各一个参数：
 </pre>
 
 <p>
-传名类型中，空的参数列表<code>()</code>被省略，它仅在参数中被允许。没有什么叫名变量或叫名字段这样的东西。 
+传名类型中，空的参数列表<code>()</code>被省略，它仅在参数中被允许。没有什么传名变量或
+传名字段这样的东西。 
 </p>
 
 <p>
-对于<code>myAssert</code>，我们费了这么大的力气，只是为了让函数字面量看起来像表达式，那为什么不直接用<code>Boolean</code>变量作为参数呢？
+对于<code>myAssert</code>，我们费了这么大的力气，只是为了让函数字面量看起来像表达式，那
+为什么不直接用<code>Boolean</code>变量作为参数呢？
 </p>
 
 <pre class="brush: scala">
@@ -757,11 +840,14 @@ curry化后的同一个函数，两个列表的各一个参数：
 </pre>
 
 <p>
-虽然如此，这两种方式之间存在一个非常重要的差别须指出：表达式会在传入参数前先被执行。
+虽然如此，这两种方式之间存在一个非常重要的差别须指出：表达式会在传入参数前先被
+执行。
 </p>
 
 <p>
-所以在上面的例子中，如果断言被禁用，你会看到<code>boolAssert</code>括号里的表达式的某些副作用，而<code>byNameAssert</code>却没有。例如，如果断言被禁用，<code>boolAssert</code>的例子里尝试对<code>x / 0 == 0</code>的断言将产生一个异常：
+所以在上面的例子中，如果断言被禁用，你会看到<code>boolAssert</code>括号里的表达式的某些
+副作用，而<code>byNameAssert</code>却没有。例如，如果断言被禁用，<code>boolAssert</code>的例子里尝试
+对<code>x / 0 == 0</code>的断言将产生一个异常：
 </p>
                     
 <pre class="brush: scala">
@@ -792,16 +878,18 @@ curry化后的同一个函数，两个列表的各一个参数：
 <h2 id="toc_3.1">定制一个二维布局库</h2>
 
 <p>
-作为本章运行的例子，我们将创造一个制造和渲染二维布局元素的库。每个元素将代表一个填充字符的长方形。方便起见，库将提供名为<code>elem</code>的工厂方法来通过传入的数据构造新的元素。例如，你将能通过工厂方法采用下面的写法创建带有字串的元素：
+作为本章运行的例子，我们将创造一个制造和渲染二维布局元素的库。每个元素将代表一个
+填充字符的长方形。方便起见，库将提供名为<code>elem</code>的工厂方法来通过传入的数据构造新的
+元素。例如，你将能通过工厂方法采用下面的写法创建带有字串的元素：
 </p>
-
 
 <pre class="brush: scala">
   elem(s: String): Element 
 </pre>
 
 <p>
-元素将以名为<code>Element</code>的类型为模型。你将能在元素上调用<code>above</code>或<code>beside</code>，把另一个元素放在当前元素的右边或是上边：
+元素将以名为<code>Element</code>的类型为模型。你将能在元素上调用<code>above</code>或<code>beside</code>，把另一个
+元素放在当前元素的右边或是上边：
 </p>
 
 <pre class="brush: scala">
@@ -822,7 +910,9 @@ curry化后的同一个函数，两个列表的各一个参数：
 <h2 id="toc_3.2">抽象类</h2>
 
 <p>
-布局元素名为<code>Element</code>，存放的文本内容类型为<code>Array[String]</code>。提供方法<code>contents</code>取得存放的文本内容，但没有定义实现方式，所以这个类是抽象类，要加上<code>abstract</code>关键字：
+布局元素名为<code>Element</code>，存放的文本内容类型为<code>Array[String]</code>。提供方法<code>contents</code>
+取得存放的文本内容，但没有定义实现方式，所以这个类是抽象类，要加上<code>abstract</code>
+关键字：
 </p>
 
 <pre class="brush: scala">
@@ -832,26 +922,22 @@ curry化后的同一个函数，两个列表的各一个参数：
 </pre>
 
 <p>
-请注意类<code>Element</code>的<code>contents</code>方法并没带有<code>abstract</code>修饰符。不像Java，方法的声明中不需要（也不允许）抽象修饰符。如果方法没有实现，它就是抽象的。
+注意：类<code>Element</code>的<code>contents</code>方法并没带有<code>abstract</code>修饰符。不像Java，方法的
+声明中不需要（也不允许）抽象修饰符。如果方法没有实现，它就是抽象的。
 </p>
 
 <p>
-另一个术语用法需要分辨声明（declaration）和定义（definition）。类<code>Element</code>声明了抽象方法<code>contents</code>，但当前没有定义具体方法。
+另一个术语用法需要分辨声明（declaration）和定义（definition）。类<code>Element</code>声明了
+抽象方法<code>contents</code>，但当前没有定义具体方法。
 </p>
 
 
 <h2 id="toc_3.3">定义无参数方法</h2>
 
 <p>
-添加显示宽度和高度的方法：
-</p>
-
-<p>
-height方法返回contents里的行数。
-</p>
-
-<p>
-width方法返回第一行的长度，或如果元素没有行记录，返回零。（也就是说你不能定义一个高度为零但宽度不为零的元素。）
+添加显示宽度和高度的方法：<code>height</code>方法返回<code>contents</code>里的行数。<code>width</code>方法返回
+第一行的长度，或如果元素没有行记录，返回零。（也就是说你不能定义一个高度为零但
+宽度不为零的元素。）
 </p>
 
 <pre class="brush: scala">
@@ -873,7 +959,10 @@ width方法返回第一行的长度，或如果元素没有行记录，返回零
 </pre>
 
 <p>
-推荐的惯例是在没有参数并且方法仅通过读含有对象的方式访问可变状态（专指其不改变可变状态）时使用无参数方法。这样感觉上就和只读字段一样，其实也可以选择把<code>width</code>和<code>height</code>作为字段而不是方法来实现，只要简单地在每个实现里把<code>def</code>修改成<code>val</code>即可：
+推荐的惯例是在没有参数并且方法仅通过读含有对象的方式访问可变状态（专指其不改变
+可变状态）时使用无参数方法。这样感觉上就和只读字段一样，其实也可以选择把<code>width</code>
+和<code>height</code>作为字段而不是方法来实现，只要简单地在每个实现里把<code>def</code>修改成<code>val</code>
+即可：
 </p>
 
 <pre class="brush: scala">
@@ -886,7 +975,13 @@ width方法返回第一行的长度，或如果元素没有行记录，返回零
 </pre>
 
 <p>
-两组定义从客户的观点来看是完全相同的。唯一的差别是与的访问或许稍微比方法调用要快，因为字段值在类被初始化的时候被预计算，而方法调用在每次调用的时候都要计算。换句话说，字段在每个Element对象上需要更多的内存空间。因此类的使用概况，属性表达成字段还是方法更好，决定了其实现，并且这个概况还可以随时改变。
+两组定义从客户的观点来看是完全相同的。唯一的差别是与的访问或许稍微比方法调用要快
+，因为字段值在类被初始化的时候被预计算，而方法调用在每次调用的时候都要计算。
+</p>
+
+<p>
+换句话说，字段在每个<code>Element</code>对象上需要更多的内存空间。因此类的使用概况，属性
+表达成字段还是方法更好，决定了其实现，并且这个概况还可以随时改变。
 </p>
 
 <p>
@@ -894,15 +989,20 @@ width方法返回第一行的长度，或如果元素没有行记录，返回零
 </p>
 
 <p>
-特别是如果类的字段变成了访问函数，且访问函数是纯的，就是说它没有副作用并且不依赖于可变状态，那么类<code>Element</code>的客户不需要被重写。客户都不应该需要关心这些。
+特别是如果类的字段变成了访问函数，且访问函数是纯的，就是说它没有副作用并且
+不依赖于可变状态，那么类<code>Element</code>的客户不需要被重写。客户都不应该需要关心这些。
 </p>
 
 <p>
-目前为止一切良好。但仍然有些琐碎的复杂的东西要去做以协同Java处理事情的方式。问题在于Java没有实现统一访问原则。因此Java里是<code>string.length()</code>，不是<code>string.length</code>（尽管是<code>array.length</code>，不是<code>array.length()</code>）。不用说，这让人很困惑。
+目前为止一切良好。但仍然有些琐碎的复杂的东西要去做以协同Java处理事情的方式。问题
+在于Java没有实现统一访问原则。因此Java里是<code>string.length()</code>，不是<code>string.length</code>
+（尽管是<code>array.length</code>，不是<code>array.length()</code>）。不用说，这让人很困惑。
 </p>
 
 <p>
-为了在这道缺口上架一座桥梁，Scala在遇到混合了无参数和空括号方法的情况时很大度。特别是，你可以用空括号方法重载无参数方法，并且反之亦可。你还可以在调用任何不带参数的方法时省略空的括号。例如，下面两行在Scala里都是合法的：
+为了在这道缺口上架一座桥梁，Scala在遇到混合了无参数和空括号方法的情况时很大度。
+特别是，你可以用空括号方法重载无参数方法，并且反之亦可。你还可以在调用任何不带
+参数的方法时省略空的括号。例如，下面两行在Scala里都是合法的：
 </p>
 
 <pre class="brush: scala">
@@ -911,7 +1011,11 @@ width方法返回第一行的长度，或如果元素没有行记录，返回零
 </pre>
 
 <p>
-原则上Scala的函数调用中可以省略所有的空括号。然而，在调用的方法表达的超过其接收调用者对象的属性时，推荐仍然写一对空的括号。例如，如果方法执行了I/O，或写入可重新赋值的变量（var），或读出不是接受调用者的字段的var，无论是直接的还是非直接的通过使用可变对象，那么空括号是合适的。这种方式是让参数列表扮演一个可见的线索说明某些有趣的计算正通过调用被触发。例如：
+原则上Scala的函数调用中可以省略所有的空括号。然而，在调用的方法表达的超过其接收
+调用者对象的属性时，推荐仍然写一对空的括号。例如，如果方法执行了I/O，或写入
+可重新赋值的变量（var），或读出不是接受调用者的字段的var，无论是直接的还是非直接
+的通过使用可变对象，那么空括号是合适的。这种方式是让参数列表扮演一个可见的线索
+说明某些有趣的计算正通过调用被触发。例如：
 </p>
 
 <pre class="brush: scala">
@@ -937,15 +1041,19 @@ width方法返回第一行的长度，或如果元素没有行记录，返回零
 </pre>
 
 <p>
-这种<code>extends</code>子句有两个效果：使类<code>ArrayElement</code>从类<code>Element</code>继承所有非私有的成员，并且使<code>ArrayElement</code>成为<code>Element</code>的子类型。由于<code>ArrayElement</code>扩展了<code>Element</code>，类<code>ArrayElement</code>被称为类<code>Element</code>的子类。反过来，<code>Element</code>是<code>ArrayElement</code>的超类。
+这种<code>extends</code>子句有两个效果：使类<code>ArrayElement</code>从类<code>Element</code>继承所有非私有的成员
+，并且使<code>ArrayElement</code>成为<code>Element</code>的子类型。由于<code>ArrayElement</code>扩展了<code>Element</code>，
+类<code>ArrayElement</code>被称为类<code>Element</code>的子类。反过来，<code>Element</code>是<code>ArrayElement</code>的超类
+。
 </p>
 
 <p>
-如果你省略<code>extends</code>子句，Scala编译器隐式地假设你的类扩展自<code>scala.AnyRef</code>，在Java平台上与<code>java.lang.Object</code>一致。因此，类<code>Element</code>隐式地扩展了类<code>AnyRef</code>。
+如果你省略<code>extends</code>子句，Scala编译器隐式地假设你的类扩展自<code>scala.AnyRef</code>，在Java
+平台上与<code>java.lang.Object</code>一致。因此，类<code>Element</code>隐式地扩展了类<code>AnyRef</code>。
 </p>
 
 <p>
-<code>ArrayElement</code>的<code>contents</code>方法重载（或者可说成：实现）了类<code>Element</code>的抽象方法<code>contents</code>：
+<code>ArrayElement</code>的<code>contents</code>方法实现了类<code>Element</code>的抽象方法<code>contents</code>：
 </p>
 
 <pre class="brush: scala">
@@ -965,13 +1073,16 @@ width方法返回第一行的长度，或如果元素没有行记录，返回零
 </pre>
 
 <p>
-如果子类中的字段与超类同名，或是子类的中的方法名称和参数与超类类完全一样，就会覆盖（override）超类中的版本。
+如果子类中的字段与超类同名，或是子类的中的方法名称和参数与超类类完全一样，就会
+覆盖（override）超类中的版本。
 </p>
 
 <h2 id="toc_3.5">重写方法和字段</h2>
 
 <p>
-字段和方法属于相同的命名空间。这使得字段重写无参数方法成为可能。比如说，你可以改变类<code>ArrayElement</code>中<code>contents</code>的实现，从一个方法变为一个字段，而无需修改类<code>Element</code>中<code>contents</code>的抽象方法定义：
+字段和方法属于相同的命名空间。这使得字段重写无参数方法成为可能。比如说，你可以
+改变类<code>ArrayElement</code>中<code>contents</code>的实现，从一个方法变为一个字段，而无需修改类
+<code>Element</code>中<code>contents</code>的抽象方法定义：
 </p>
 
 <pre class="brush: scala">
@@ -981,11 +1092,13 @@ width方法返回第一行的长度，或如果元素没有行记录，返回零
 </pre>
 
 <p>
-这个<code>ArrayElement</code>的版本里，字段<code>contents</code>（用<code>val</code>定义）完美地实现了类<code>Element</code>里的无参数方法<code>contents</code>（用<code>def</code>定义）。 
+这个<code>ArrayElement</code>的版本里，字段<code>contents</code>（用<code>val</code>定义）完美地实现了类<code>Element</code>
+里的无参数方法<code>contents</code>（用<code>def</code>定义）。 
 </p>
 
 <p>
-另一方面，Scala里禁止在同一个类里用同样的名称定义字段和方法，而在Java里这样做被允许。例如，下面的Java类能够很好地编译：
+另一方面，Scala里禁止在同一个类里用同样的名称定义字段和方法，而在Java里这样做
+被允许。例如，下面的Java类能够很好地编译：
 </p>
 
 <pre class="brush: scala">
@@ -1029,14 +1142,17 @@ Java为定义准备了四个命名空间：字段，方法，类型和包。
 </ul>
 
 <p>
-Scala把字段和方法放进同一个命名空间的理由很清楚，因为这样你就可以使用val重载无参数的方法，这种你在Java里做不到的事情。
+Scala把字段和方法放进同一个命名空间的理由很清楚，因为这样你就可以使用<code>val</code>重重写
+无参数的方法，这种你在Java里做不到的事情。
 </p>
 
 
 <h2 id="toc_3.6">定义参数化字段</h2>
 
 <p>
-ArrayElement类的定义。它有一个参数conts，其唯一目的是被复制到contents字段。选择conts这个参数的名称只是为了让它看上去更像字段名contents而不会与它发生实际冲突。这是一种“代码异味”，一个表明或许某些不必须的累赘和重复。
+<code>ArrayElement</code>类的定义。它有一个参数<code>conts</code>，其唯一目的是被复制到<code>contents</code>字段
+。选择<code>conts</code>这个参数的名称只是为了让它看上去更像字段名<code>contents</code>而又不会因为
+名字一样而发生实际冲突。这是一种“代码异味”，一个表明或许某些不必须的累赘和重复。
 </p>
 
 <p>
@@ -1048,7 +1164,8 @@ ArrayElement类的定义。它有一个参数conts，其唯一目的是被复制
 </pre>
 
 <p>
-注意用的是<code>val</code>，所以现在拥有一个可以从类外部访问的，（不能重新赋值的）字段contents。字段使用参数值初始化。等同于：
+注意用的是<code>val</code>，所以现在拥有一个可以从类外部访问的，（不能重新赋值的）字段
+<code>contents</code>。字段使用参数值初始化。等同于：
 </p>
 
 <pre class="brush: scala">
@@ -1058,7 +1175,9 @@ ArrayElement类的定义。它有一个参数conts，其唯一目的是被复制
 </pre>
 
 <p>
-同样也可以使用<code>var</code>前缀类参数，这种情况下相应的字段将能重新被赋值。还有可能添加如private，protected，或override这类的修饰符到这些参数化字段上，就好象你可以在其他类成员上做的事情：
+同样也可以使用<code>var</code>前缀类参数，这种情况下相应的字段将能重新被赋值。还有可能添加
+如<code>private</code>、<code>protected</code>或<code>override</code>这类的修饰符到这些参数化字段上，就好象
+你可以在其他类成员上做的事情：
 </p>
 
 <pre class="brush: scala">
@@ -1072,7 +1191,8 @@ ArrayElement类的定义。它有一个参数conts，其唯一目的是被复制
 </pre>
 
 <p>
-Tiger的定义是以下包括重载成员dangerous和private成员age的类定义替代写法的简写：
+Tiger的定义是以下包括重写成员<code>dangerous</code>和<code>private</code>成员<code>age</code>的类定义替代写法的
+简写：
 </p>
 
 <pre class="brush: scala">
@@ -1109,11 +1229,13 @@ Tiger的定义是以下包括重载成员dangerous和private成员age的类定�
 </p>
 
 <p>
-基类和子类是不同的人维护的。原来基类里没有<code>add</code>方法，所以子类里加上了。后来基类里也加上了<code>add</code>方法，但维护子类的人不知道。这样的规定是为了防止“脆基类”问题。
+基类和子类是不同的人维护的。原来基类里没有<code>add</code>方法，所以子类里加上了。后来
+基类里也加上了<code>add</code>方法，但维护子类的人不知道。这样的规定是为了防止“脆基类”问题
+。
 </p>
 
 <p>
-所以Scala里override有强制的规定：
+所以Scala里<code>override</code>有强制的规定：
 </p>
 
 <ul>
@@ -1135,7 +1257,6 @@ Tiger的定义是以下包括重载成员dangerous和private成员age的类定�
 
 <h2 id="toc_3.9">多态和动态绑定</h2>
 
-
 <p>
 创建一个新的子类，它可以按给出的长度宽度，用指定的字符填充：
 </p>
@@ -1152,9 +1273,9 @@ Tiger的定义是以下包括重载成员dangerous和private成员age的类定�
 </pre>
 
 <p>
-父类的变量可以存放子类的实例，就是多态的一种体现。这么多子类都可以用父类的变量来存放：
+父类的变量可以存放子类的实例，就是多态的一种体现。这么多子类都可以用父类的变量来
+存放：
 </p>
-
 
 <pre class="brush: scala">
   val e1: Element = new ArrayElement(Array("hello", "world"))
@@ -1164,11 +1285,14 @@ Tiger的定义是以下包括重载成员dangerous和private成员age的类定�
 </pre>
 
 <p>
-变量和表达式上的方法调用是动态绑定（dynamically bound）的。这意味着被调用的实际方法实现取决于运行期对象其实的类，而不是变量或表达式的类型。
+变量和表达式上的方法调用是动态绑定（dynamically bound）的。这意味着被调用的
+实际方法实现取决于运行期对象其实的类，而不是变量或表达式的类型。
 </p>
 
 <p>
-为了演示这种行为，我们会从我们的<code>Element</code>类中临时移除所有存在的成员并添加一个名为<code>demo</code>的方法。我们会在<code>ArrayElement</code>和<code>LineElement</code>中重载<code>demo</code>，但<code>UniformElement</code>除外：
+为了演示这种行为，我们会从我们的<code>Element</code>类中临时移除所有存在的成员并添加一个名
+为<code>demo</code>的方法。我们会在<code>ArrayElement</code>和<code>LineElement</code>中重写<code>demo</code>，但
+<code>UniformElement</code>除外：
 </p>
 
 <pre class="brush: scala">
@@ -1195,7 +1319,8 @@ Tiger的定义是以下包括重载成员dangerous和private成员age的类定�
 </pre>
 
 <p>
-如果你把这些代码输入到了解释器中，那么你就能定义这个带了一个<code>Element</code>并调用<code>demo</code>的方法：
+如果你把这些代码输入到了解释器中，那么你就能定义这个带了一个<code>Element</code>并调用
+<code>demo</code>的方法：
 </p>
 
 <pre class="brush: scala">
@@ -1205,15 +1330,18 @@ Tiger的定义是以下包括重载成员dangerous和private成员age的类定�
 </pre>
 
 <p>
-如果你传给<code>invokeDemo</code>一个<code>ArrayElement</code>，你会看到一条消息指明<code>ArrayElement</code>的<code>demo</code>实现被调用，尽管被调用<code>demo</code>的变量<code>e</code>的类型是<code>Element</code>： 
+如果你传给<code>invokeDemo</code>一个<code>ArrayElement</code>，你会看到一条消息指明<code>ArrayElement</code>的
+<code>demo</code>实现被调用，尽管被调用<code>demo</code>的变量<code>e</code>的类型是<code>Element</code>： 
 </p>
+
 <pre class="brush: scala">
   scala&gt; invokeDemo(new ArrayElement)
   ArrayElement's implementation invoked
 </pre>
 
 <p>
-相同的，如果你传递<code>LineElement</code>给<code>invokeDemo</code>，你会看到一条指明<code>LineElement</code>的<code>demo</code>实现被调用的消息：
+相同的，如果你传递<code>LineElement</code>给<code>invokeDemo</code>，你会看到一条指明<code>LineElement</code>的
+<code>demo</code>实现被调用的消息：
 </p>
 
 <pre class="brush: scala">
@@ -1231,7 +1359,9 @@ Tiger的定义是以下包括重载成员dangerous和private成员age的类定�
 </pre>
 
 <p>
-因为<code>UniformElement</code>没有重载<code>demo</code>，它从它的超类<code>Element</code>继承了<code>demo</code>的实现。因此，当对象的类是<code>UniformElement</code>时，<code>Element</code>的实现就是要调用的<code>demo</code>的正确实现。
+因为<code>UniformElement</code>没有重写<code>demo</code>，它从它的超类<code>Element</code>继承了<code>demo</code>的实现。
+因此，当对象的类是<code>UniformElement</code>时，<code>Element</code>的实现就是要调用的<code>demo</code>的正确
+实现。
 </p>
 
 
@@ -1239,7 +1369,7 @@ Tiger的定义是以下包括重载成员dangerous和private成员age的类定�
 <h2 id="toc_3.10">定义final成员</h2>
 
 <p>
-要确保成员不被子类重载。Scala里和Java里一样，通过添加<code>final</code>修饰符给成员来做到。
+要确保成员不被子类重写。Scala里和Java里一样，通过添加<code>final</code>修饰符给成员来做到。
 </p>
 
 <pre class="brush: scala">
@@ -1269,12 +1399,16 @@ Tiger的定义是以下包括重载成员dangerous和private成员age的类定�
 </p>
 
 <p>
-如果你接下来的工作主要是代码重用，通常你应采用组合而不是继承。只有继承受脆基类问题之苦，这种情况你可能会无意中通过改变超类而破坏了子类。
+如果你接下来的工作主要是代码重用，通常你应采用组合而不是继承。只有继承受脆基类
+问题困扰，这种情况你可能会无意中通过改变超类而破坏了子类。
 </p>
 
 <p>
-关于继承关系你可以问自己一个问题，是否它建模了一个is-a关系。你能问的另一个问题是，是否客户想要把子类类型当作超类类型来用。
+关于继承关系你可以问自己一个问题，是否它建模了一个is-a关系。你能问的另一个问题是
+，是否客户想要把子类类型当作超类类型来用。
 </p>
+
+
 
 <h2 id="toc_3.12">实现示例中的功能</h2>
 
@@ -1288,7 +1422,8 @@ Tiger的定义是以下包括重载成员dangerous和private成员age的类定�
 </pre>
 
 <p>
-把两个元素靠在一起，我们将创造一个新的元素，其中的每一行都来自于两个元素的相应行的串连。
+操作符<code>++</code>把两个元素靠在一起，我们将创造一个新的元素，其中的每一行都来自于两个
+元素的相应行的串连。
 </p>
 
 <pre class="brush: scala">
@@ -1314,7 +1449,8 @@ Tiger的定义是以下包括重载成员dangerous和private成员age的类定�
 </pre>
 
 <p>
-<code>zip</code>操作符转换为一个对子的数组（可以称为<code>Tupele2</code>）。<code>zip</code>方法从它的两个参数中拣出相应的元素并组织成对子数组。
+<code>zip</code>操作符转换为一个对子的数组（可以称为<code>Tupele2</code>）。<code>zip</code>方法从它的两个参数中
+拣出相应的元素并组织成对子数组。
 </p>
 
 <p>
@@ -1338,7 +1474,7 @@ Tiger的定义是以下包括重载成员dangerous和private成员age的类定�
 </p>
 
 <p>
-定义toString方法返回元素格式化成的字串：
+定义<code>toString</code>方法返回元素格式化成的字串：
 </p>
 
 <pre class="brush: scala">
@@ -1378,7 +1514,9 @@ Tiger的定义是以下包括重载成员dangerous和private成员age的类定�
 <h2 id="toc_3.13">定义工厂对象</h2>
 
 <p>
-最直接的方案是创建类<code>Element</code>的伴生对象并把它做成布局元素的工厂方法。这种方式唯一要暴露给客户的就是<code>Element</code>的类/对象组合，隐藏它的三个实现类<code>ArrayElement</code>，<code>LineElement</code>和<code>UniformElement</code>。
+最直接的方案是创建类<code>Element</code>的伴生对象并把它做成布局元素的工厂方法。这种方式
+唯一要暴露给客户的就是<code>Element</code>的类/对象组合，隐藏它的三个实现类<code>ArrayElement</code>，
+<code>LineElement</code>和<code>UniformElement</code>。
 </p>
 
 <pre class="brush: scala">
@@ -1397,15 +1535,18 @@ Tiger的定义是以下包括重载成员dangerous和private成员age的类定�
 </pre>
 
 <p>
-这些工厂方法使得改变类<code>Element</code>的实现通过使用<code>elem</code>工厂方法实现而不用显式地创建新的<code>ArrayElement</code>实例成为可能。
+这些工厂方法使得改变类<code>Element</code>的实现通过使用<code>elem</code>工厂方法实现而不用<code>new</code>操作
+产新的<code>ArrayElement</code>实例成为可能。
 </p>
 
 <p>
-为了不使用单例对象的名称，<code>Element</code>，认证而调用工厂方法，我们将在源文件顶上引用<code>Element.elem</code>。
+为了不使用单例对象的名称<code>Element</code>从而化调用工厂方法，我们将在源文件引入
+<code>Element.elem</code>。
 </p>
 
 <p>
-换句话说，代之以在<code>Element</code>类内部使用<code>Element.elem</code>调用工厂方法，我们将引用<code>Element.elem</code>，这样我们只要使用它们的简化名，<code>elem</code>，就可以调用工厂方法。
+换句话说，代之以在<code>Element</code>类内部使用<code>Element.elem</code>调用工厂方法，我们将引用
+<code>Element.elem</code>，这样我们只要使用它们的简化名，<code>elem</code>，就可以调用工厂方法。
 </p>
 
 <pre class="brush: scala">
@@ -1436,11 +1577,14 @@ Tiger的定义是以下包括重载成员dangerous和private成员age的类定�
 </pre>
 
 <p>
-有了工厂方法之后，子类<code>ArrayElement</code>，<code>LineElement</code>和<code>UniformElement</code>不再需要直接被客户访问，所以可以改成是私有的。
+有了工厂方法之后，子类<code>ArrayElement</code>，<code>LineElement</code>和<code>UniformElement</code>不再需要
+直接被客户访问，所以可以改成是私有的。
 </p>
 
 <p>
-Scala里，你可以在类和单例对象中定义其它的类和单例对象。因此一种让<code>Element</code>的子类私有化的方式就是把它们放在<code>Element</code>单例对象中并在那里声明它们为私有。需要的时候，这些类将仍然能被三个<code>elem</code>工厂方法访问。
+Scala里，你可以在类和单例对象中定义其它的类和单例对象。因此一种让<code>Element</code>的子类
+私有化的方式就是把它们放在<code>Element</code>单例对象中并在那里声明它们为私有。需要的时候
+，这些类将仍然能被三个<code>elem</code>工厂方法访问。
 </p>
 
 <pre class="brush: scala"   object Element {>
@@ -1480,7 +1624,9 @@ Scala里，你可以在类和单例对象中定义其它的类和单例对象。
 <h2 id="toc_3.14">变高变宽</h2>
 
 <p>
-Element的版本并不完全，因为他不允许客户把不同宽度的元素堆叠在一起，或者不同高度的元素靠在一起。比方说，下面的表达式将不能正常工作，因为组合元素的第二行比第一行要长：
+Element的版本并不完全，因为他不允许客户把不同宽度的元素堆叠在一起，或者不同高度
+的元素靠在一起。比方说，下面的表达式将不能正常工作，因为组合元素的第二行比第一行
+要长：
 </p>
 
 <pre class="brush: scala">
@@ -1499,7 +1645,8 @@ Element的版本并不完全，因为他不允许客户把不同宽度的元素�
 </pre>
 
 <p>
-添加私有帮助方法<code>widen</code>通过带个宽度做参数并返回那个宽度的<code>Element</code>。<code>heighten</code>，能在竖直方向执行同样的功能。
+添加私有帮助方法<code>widen</code>通过带个宽度做参数并返回那个宽度的<code>Element</code>。<code>heighten</code>，
+能在竖直方向执行同样的功能。
 </p>
 
 <pre class="brush: scala">
