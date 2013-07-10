@@ -2642,8 +2642,8 @@ tail-call位置，编译器会产生出与while循环类似的代码。
 首先，调用<code>printMultiTable</code>有副作用：在标准输出上打印乘法表。在函数式风格中，
 我们重构了函数，让它把乘法表作为字串返回。由于函数不再执行打印，我们把它重命名为
 <code>multiTable</code>。正如前面提到过的，没有副作用的函数的一个优点是它们很容易进行
-单元测试。要测试printMultiTable，你需要重定义print和println从而能够检查输出的
-正确性。测试<code>multiTable</code>就简单多了，只要检查结果即可。
+单元测试。要测试<code>printMultiTable</code>，你需要重定义<code>print</code>和<code>println</code>从而能够检查
+输出的正确性。测试<code>multiTable</code>就简单多了，只要检查结果即可。
 </p>
 
 <pre class="brush: scala">
@@ -2756,23 +2756,20 @@ mkString的调用完成这个工作，并且由于我们传递进去"\n"，因�
 <h2 id="toc_8.2">本地函数</h2>
 
 <p>
-Java里通过定义private方法来限制访问。在Scala里还可以把方法定义在另一个函数里来限制只有所在的代码块能访问：
+Java里通过定义private方法来限制访问。在Scala里还可以把方法定义在另一个函数里
+来限制只有所在的代码块能访问：
 </p>
 
 <pre class="brush: scala">
   def processFile(filename: String, width: Int) {
 
-    def processLine(filename: String,
-        width: Int, line: String) {
-
-      if (line.length &gt; width)
-        print(filename +": "+ line)
-    }    
+    def processLine(filename: String, width: Int, line: String) {
+      if (line.length &gt; width) print(filename +": "+ line)
+    }
 
     val source = Source.fromFile(filename)
-    for (line &lt;- source.getLines) {
-      processLine(filename, width, line)
-    }
+    for (line &lt;- source.getLines) processLine(filename, width, line)
+
   }
 </pre>
 
@@ -2784,33 +2781,35 @@ Java里通过定义private方法来限制访问。在Scala里还可以把方法�
   import scala.io.Source
 
   object LongLines {
-
+  
     def processFile(filename: String, width: Int) {
-
       def processLine(line: String) {
-        if (line.length &gt; width)
-          print(filename +": "+ line)
+        if (line.length &gt; width) print(filename +": "+ line)
       }    
 
       val source = Source.fromFile(filename)
-      for (line &lt;- source.getLines)
-        processLine(line)
+      for (line &lt;- source.getLines) processLine(line)
     }
+
   }
 </pre>
 
 <h2 id="toc_8.3">头等函数与函数字面量（literal）</h2>
 
 <p>
-Scala拥有头等函数（first-class function），除了定义函数与调用函数外，还可以写成没有名字的函数字面量（literal）。
+Scala拥有头等函数（first-class function），除了定义函数与调用函数外，
+还可以写成没有名字的函数字面量（literal）。
 </p>
 
 <p>
-函数字面量直接作为一段文本被编译进一个类中，等到运行时被实例化为函数值（function value）。
+函数字面量直接作为一段文本被编译进一个类中，等到运行时被实例化为函数值
+（function value）。
 </p>
 
 <p>
-任何函数值都是某个扩展了若干scala包的FunctionN特质之一的类的实例，如Function0是没有参数的函数，Function1是有一个参数的函数等等。每个FunctionN特质有一个apply方法用来调用函数。
+任何函数值都是某个扩展了<code>scala</code>包的<code>FunctionN</code>特质之一的类的实例，如<code>Function0</code>
+是没有参数的函数，<code>Function1</code>是有一个参数的函数等等。每个<code>FunctionN</code>特质有一个
+<code>apply</code>方法用来调用函数。
 </p>
 
 <p>
@@ -2822,11 +2821,13 @@ Scala拥有头等函数（first-class function），除了定义函数与调用�
 </pre>
 
 <p>
-<code>=&gt;</code>指明这个函数把左边的东西（任何整数x）转变成右边的东西（x + 1）。所以，这是一个把任何整数x映射为x + 1的函数。
+<code>=&gt;</code>指明这个函数把左边的东西转变成右边的东西。所以，这是一个把任何整数<code>x</code>映射为
+<code>x + 1</code>的函数。
 </p>
 
 <p>
-函数值是对象，所以如果你愿意可以把它们存入变量。它们也是函数，所以你可以使用通常的括号函数调用写法调用它们。以下是这两种动作的例子：
+函数值是对象，所以如果你愿意可以把它们存入变量。它们也是函数，所以可以用括号调用
+它们。以下是这两种动作的例子：
 </p>
 
 <pre class="brush: scala">
@@ -2838,7 +2839,7 @@ Scala拥有头等函数（first-class function），除了定义函数与调用�
 </pre>
 
 <p>
-本例中，因为increase是var，你可以在之后重新赋给它不同的函数值。
+本例中，因为<code>increase</code>是<code>var</code>，你可以在之后重新赋给它不同的函数值。
 </p>
 
 <pre class="brush: scala">
@@ -2850,7 +2851,9 @@ Scala拥有头等函数（first-class function），除了定义函数与调用�
 </pre>
 
 <p>
-如果你想在函数文本中包括超过一个语句，用大括号包住函数体，一行放一个语句，就组成了一个代码块。与方法一样，当函数值被调用时，所有的语句将被执行，而函数的返回值就是最后一行产生的那个表达式。
+如果你想在函数文本中包括超过一个语句，用大括号包住函数体，一行放一个语句，
+就组成了一个代码块。与方法一样，当函数值被调用时，所有的语句将被执行，
+而函数的返回值就是最后一行产生的那个表达式。
 </p>
 
 <pre class="brush: scala">
@@ -2870,7 +2873,8 @@ Scala拥有头等函数（first-class function），除了定义函数与调用�
 </pre>
 
 <p>
-许多Scala库都提供了结合函数字面量的机制。例如，所有的集合类都能用到foreach方法和filter方法：
+许多Scala库都提供了结合函数字面量的机制。例如，所有的集合类都能用到<code>foreach</code>
+方法和<code>filter</code>方法：
 </p>
 
 <pre class="brush: scala">
@@ -2885,6 +2889,8 @@ Scala拥有头等函数（first-class function），除了定义函数与调用�
   5
   10
 </pre>
+
+
 
 <h2 id="toc_8.4">函数字面量的短格式</h2>
 
@@ -2902,11 +2908,15 @@ Scala提供了许多方法去除冗余信息并把函数文本写得更简短。
 </pre>
 
 <p>
-根据<code>someNumbers</code>编译器知道x一定是整数，因为它看到你立刻使用了这个函数过滤整数列表（暗示）。这被称为目标类型化（target typing），。目标类型化的精确细节并不重要。你可以简单地从编写一个不带参数类型的函数文本开始，并且，如果编译器不能识别，再加上类型。几次之后你就对什么情况编译器能或不能解开谜题有感觉了。
+根据<code>someNumbers</code>编译器知道x一定是整数，因为它看到你立刻使用了这个函数过滤
+整数列表（暗示）。这被称为目标类型化（target typing）。目标类型化的精确细节
+并不重要。你可以简单地从编写一个不带参数类型的函数文本开始。并且，如果编译器
+不能识别，再加上类型。几次之后你就对什么情况编译器能或不能解开谜题有感觉了。
 </p>
 
 <p>
-第二种去除无用字符的方式是省略类型是被推断的参数之外的括号。前面例子里，x两边的括号不是必须的：
+第二种去除无用字符的方式是省略类型是被推断的参数之外的括号。前面例子里，<code>x</code>
+两边的括号不是必须的：
 </p>
 
 <pre class="brush: scala">
