@@ -1024,7 +1024,12 @@ Scala的任何方法调用，如果你确实只传入一个参数，就能可选
 </pre>
 
 <p>
-总结起来，Scala里定义不带参数也没有副作用的方法为无参数方法，也就是说，省略空的括号，是鼓励的风格。另一方面，永远不要定义没有括号的带副作用的方法，因为那样的话方法调用看上去会像选择一个字段。这样你的客户看到了副作用会很奇怪。相同地，当你调用带副作用的函数，请确信写这个调用的时候包括了空的括号。另一种考虑这个问题的方式是，如果你调用的函数执行了操作，使用括号，但如果仅提供了对某个属性的访问，省略括号。
+总结起来，Scala里定义不带参数也没有副作用的方法为无参数方法，也就是说，省略空的
+括号，是鼓励的风格。另一方面，永远不要定义没有括号的带副作用的方法，因为那样的话
+方法调用看上去会像选择一个字段。这样你的客户看到了副作用会很奇怪。相同地，当你
+调用带副作用的函数，请确信写这个调用的时候包括了空的括号。另一种考虑这个问题的
+方式是，如果你调用的函数执行了操作，使用括号，但如果仅提供了对某个属性的访问，
+省略括号。
 </p>
 
 
@@ -1218,7 +1223,9 @@ Tiger的定义是以下包括重写成员<code>dangerous</code>和<code>private<
 </pre>
 
 <p>
-由于LineElement扩展了ArrayElement，并且ArrayElement的构造器带一个参数（Array[String]），LineElement需要传递一个参数到它的超类的主构造器。要调用超类构造器，只要把你要传递的参数或参数列表放在“超类名之后的括号里）即可。
+由于<code>LineElement</code>扩展了<code>ArrayElement</code>，并且<code>ArrayElement</code>的构造器带一个参数
+（Array[String]），LineElement需要传递一个参数到它的超类的主构造器。要调用超类
+构造器，只要把你要传递的参数或参数列表放在超类名之后的括号里）即可。
 </p>
 
 
@@ -1760,11 +1767,13 @@ $ scala Spiral 6    $ scala Spiral 11    $ scala Spiral 17
 <h1 id="toc_4">Scala类的层级</h1>
 
 <p>
-Scala里，每个类都继承自通用的名为<code>Any</code>的超类。因为所有的类都是<code>Any</code>的子类，那么定义在<code>Any</code>中的方法就是“普遍”方法：它们可以被任何对象调用。
+Scala里，每个类都继承自通用的名为<code>Any</code>的超类。因为所有的类都是<code>Any</code>的子类，那么
+定义在<code>Any</code>中的方法就是“普遍”方法：它们可以被任何对象调用。
 </p>
 
 <p>
-Scala还在层级的底端定义了<code>Null</code>和<code>Nothing</code>，主要都扮演通用的子类。例如，就像说<code>Any</code>是所有其它类的超类，<code>Nothing</code>是所有其它类的子类。
+Scala还在层级的底端定义了<code>Null</code>和<code>Nothing</code>，主要都扮演通用的子类。例如，就像说
+<code>Any</code>是所有其它类的超类，<code>Nothing</code>是所有其它类的子类。
 </p>
 
 <p>
@@ -1788,7 +1797,9 @@ Scala还在层级的底端定义了<code>Null</code>和<code>Nothing</code>，�
 </pre>
 
 <p>
-类Any里的<code>=</code>和<code>!=</code>，被声明为<code>final</code>，因此它们不能在子类里面重载。实际上，<code>==</code>总是与<code>equals</code>相同，<code>!=</code>总是与<code>equals</code>相反。因此独立的类可以通过重载<code>equals</code>方法修改<code>==</code>或<code>!=</code>的意义。
+类Any里的<code>=</code>和<code>!=</code>，被声明为<code>final</code>，因此它们不能在子类里面重载。实际上，<code>==</code>
+总是与<code>equals</code>相同，<code>!=</code>总是与<code>equals</code>相反。因此独立的类可以通过重载<code>equals</code>方法
+修改<code>==</code>或<code>!=</code>的意义。
 </p>
 
 <p>
@@ -1798,11 +1809,14 @@ Scala还在层级的底端定义了<code>Null</code>和<code>Nothing</code>，�
 <h3 id="toc_4.1.1">值类型（AnyVal）</h3>
 
 <p>
-<code>AnyVal</code>是Scala里每个内建值类型的父类。有九个这样的值类型：<code>Byte</code>，<code>Short</code>，<code>Char</code>，<code>Int</code>，<code>Long</code>，<code>Float</code>，<code>Double</code>，<code>Boolean</code>和<code>Unit</code>。其中的前八个对应到Java的原始类型，它们的值在运行时表示成Java的原始值。
+<code>AnyVal</code>是Scala里每个内建值类型的父类。有九个这样的值类型：<code>Byte</code>，<code>Short</code>，
+<code>Char</code>，<code>Int</code>，<code>Long</code>，<code>Float</code>，<code>Double</code>，<code>Boolean</code>和<code>Unit</code>。其中的前八个对应到
+Java的原始类型，它们的值在运行时表示成Java的原始值。
 </p>
 
 <p>
-Scala里这些类的实例都写成字面量，不能使用<code>new</code>创造这些类的实例。值类都被定义为即是抽象的又是<code>final</code>的，强制贯彻。因此如果你写了<code>new</code>就会出错：
+Scala里这些类的实例都写成字面量，不能使用<code>new</code>创造这些类的实例。值类都被定义为
+即是抽象的又是<code>final</code>的，强制贯彻。因此如果你写了<code>new</code>就会出错：
 </p>
 
 <pre class="brush: scala">
@@ -1814,11 +1828,13 @@ Scala里这些类的实例都写成字面量，不能使用<code>new</code>创�
 </pre>
 
 <p>
-另一个值类型<code>Unit</code>大约对应于Java的<code>void</code>类型；被用作不返回任何有趣结果的方法的结果类型。<code>Unit</code>只有一个实例值，被写作<code>()</code>。
+另一个值类型<code>Unit</code>大约对应于Java的<code>void</code>类型；被用作不返回任何有趣结果的方法的
+结果类型。<code>Unit</code>只有一个实例值，被写作<code>()</code>。
 </p>
 
 <p>
-值类型支持作为方法的通用的数学和布尔操作符。例如，<code>Int</code>有名为<code>+</code>和<code>*</code>的方法，<code>Boolean</code>有名为<code>||</code>和<code>&amp;&amp;</code>的方法。值类型也从类<code>Any</code>继承所有的方法：
+值类型支持作为方法的通用的数学和布尔操作符。例如，<code>Int</code>有名为<code>+</code>和<code>*</code>的方法，
+<code>Boolean</code>有名为<code>||</code>和<code>&amp;&amp;</code>的方法。值类型也从类<code>Any</code>继承所有的方法：
 </p>
 
 <pre class="brush: scala">
@@ -1842,7 +1858,9 @@ Scala里这些类的实例都写成字面量，不能使用<code>new</code>创�
 </pre>
 
 <p>
-值类型的空间是扁平的；所有的值类型都是<code>scala.AnyVal</code>的子类型，但是它们不是互相的子类。代之以它们不同的值类型之间可以隐式地互相转换。例如，需要的时候，类<code>scala.Int</code>的实例可以自动放宽（通过隐式转换）到类<code>scala.Long</code>的实例。
+值类型的空间是扁平的；所有的值类型都是<code>scala.AnyVal</code>的子类型，但是它们不是互相的
+子类。代之以它们不同的值类型之间可以隐式地互相转换。例如，需要的时候，类
+<code>scala.Int</code>的实例可以自动放宽（通过隐式转换）到类<code>scala.Long</code>的实例。
 </p>
 
 
@@ -1871,25 +1889,39 @@ Scala里这些类的实例都写成字面量，不能使用<code>new</code>创�
 </pre>
 
 <p>
-工作原理：方法<code>min</code>，<code>max</code>，<code>until</code>，<code>to</code>和<code>abs</code>都定义在类<code>scala.runtime.RichInt</code>里，并且有一个从类<code>Int</code>到<code>RichInt</code>的隐式转换。当你在Int上调用没有定义在<code>Int</code>上但定义在<code>RichInt</code>上的方法时，这个转换就被应用了：
+工作原理：
 </p>
+
+<p>
+方法<code>min</code>，<code>max</code>，<code>until</code>，<code>to</code>和<code>abs</code>都定义在类<code>scala.runtime.RichInt</code>里，并且
+有一个从类<code>Int</code>到<code>RichInt</code>的隐式转换。当你在Int上调用没有定义在<code>Int</code>上但定义在
+<code>RichInt</code>上的方法时，这个转换就被应用了：
+</p>
+
 
 <h3 id="toc_4.1.2">引用类型（AnyRef）</h3>
 
 <p>
-类<code>Any</code>的另一个子类是类<code>AnyRef</code>。这个是<code>Scala</code>里所有引用类的基类。正如前面提到的，在Java平台上<code>AnyRef</code>实际就是类<code>java.lang.Object</code>的别名。因此Java里写的类和<code>Scala</code>里写的都继承自<code>AnyRef</code>。
+类<code>Any</code>的另一个子类是类<code>AnyRef</code>。这个是<code>Scala</code>里所有引用类的基类。正如前面提到的
+，在Java平台上<code>AnyRef</code>实际就是类<code>java.lang.Object</code>的别名。因此Java里写的类和
+<code>Scala</code>里写的都继承自<code>AnyRef</code>。
 </p>
 
 <p>
-存在<code>AnyRef</code>别名代替使用<code>java.lang.Object</code>名称的理由是，Scala被设计成可以同时工作在Java和.Net平台。在.NET平台上，<code>AnyRef</code>是<code>System.Object</code>的别名。 
+存在<code>AnyRef</code>别名代替使用<code>java.lang.Object</code>名称的理由是，Scala被设计成可以同时
+工作在Java和.Net平台。在.NET平台上，<code>AnyRef</code>是<code>System.Object</code>的别名。 
 </p>
 
 <p>
-可以认为<code>java.lang.Object</code>是Java平台上实现<code>AnyRef</code>的方式。因此，尽管你可以在Java平台上的Scala程序里交换使用<code>Object</code>和<code>AnyRef</code>，推荐的风格是在任何地方都只使用<code>AnyRef</code>。
+可以认为<code>java.lang.Object</code>是Java平台上实现<code>AnyRef</code>的方式。因此，尽管你可以在Java
+平台上的Scala程序里交换使用<code>Object</code>和<code>AnyRef</code>，推荐的风格是在任何地方都只使用
+<code>AnyRef</code>。
 </p>
 
 <p>
-Scala类与Java类不同在于它们还继承自一个名为<code>ScalaObject</code>的特别的记号特质。理念是<code>ScalaObject</code>包含了Scala编译器定义和实现的方法，目的是让Scala程序的执行更有效。到现在为止，Scala对象包含了单个方法，名为<code>$tag</code>，用于内部以提速模式匹配。
+Scala类与Java类不同在于它们还继承自一个名为<code>ScalaObject</code>的特别的记号特质。理念是
+<code>ScalaObject</code>包含了Scala编译器定义和实现的方法，目的是让Scala程序的执行更有效。
+到现在为止，Scala对象包含了单个方法，名为<code>$tag</code>，用于内部以提速模式匹配。
 </p>
 
 
