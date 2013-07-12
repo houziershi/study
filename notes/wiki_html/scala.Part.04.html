@@ -1368,6 +1368,10 @@ Scala中数组是不可协变的：
 </p>
 
 <p>
+<img src='images/scala/19.02.png' />
+</p>
+
+<p>
 编译器对位置分类是从类型声明开始进入更深的内嵌层。处于声明类最顶层被划为正的位置
 。默认情况下内层位置的分类会和外层一致。
 </p>
@@ -1386,6 +1390,7 @@ Scala中数组是不可协变的：
 如果<code>C</code>的类型参数标了<code>+</code>号，那么类别不变；如果标了<code>-</code>号，则当前类别被翻转；
 如果<code>C</code>的类型参数没有变化型注解，那么当前类型将改为中性。
 </p>
+
 
 <p>
 下面的例子比较生编硬造，下面类型定义中的若干位置变化弄被标了正<code>+</code>或<code>-</code>负：
@@ -1436,8 +1441,9 @@ Scala中数组是不可协变的：
 </pre>
 
 <p>
-<code>append</code>方法指定的类型参数<code>U</code>，并通过语法<code>U &gt;: T</code>定义了<code>T</code>为<code>U</code>的下界，即：<code>U</code>必须是<code>T</code>的
-超类。这里可以把T的任意超类（U）的对象添加进来，返回类型也成了<code>Queue[U]</code>。
+<code>append</code>方法指定的类型参数<code>U</code>，并通过语法<code>U &gt;: T</code>定义了<code>T</code>为<code>U</code>的下界，即：<code>U</code>
+必须是<code>T</code>的超类。这里可以把T的任意超类<code>U</code>的对象添加进来，返回类型也成了
+<code>Queue[U]</code>。
 </p>
 
 <p>
@@ -1450,8 +1456,8 @@ Scala中数组是不可协变的：
 </p>
 
 <p>
-例子：对于<code>Fruit</code>和两个子类<code>Orange</code>和<code>Apple</code>，可以把<code>Orange</code>对象传入<code>Queue[Apple]</code>而返回
-<code>Queue[Fruit]</code>。
+例子：对于<code>Fruit</code>和两个子类<code>Orange</code>和<code>Apple</code>，可以把<code>Orange</code>对象传入
+<code>Queue[Apple]</code>而返回<code>Queue[Fruit]</code>。
 </p>
 
 <p>
@@ -1468,7 +1474,7 @@ Scala中数组是不可协变的：
 
 <p>
 对于两个类<code>U</code>和<code>T</code>。如果可以用<code>T</code>可以提供<code>U</code>要用到的功能，并且用起来限制更少，
-就可以假设<code>T</code>是<code>U</code>的子类（里氏原则：Liskov Substitution Principle，LSP）。
+就可以假设<code>T</code>是<code>U</code>的子类（里氏原则：Liskov Substitution Principle，LSP）。例如：
 </p>
 
 <pre class="brush: scala">
@@ -1629,6 +1635,7 @@ object Customer extends Application {
 逆变位置上；协变类型<code>T</code>出现在setter函数<code>trailing_=</code>参数类型List[T]的逆变位置上。
 </p>
 
+
 <h2 id="toc_2.8">上界</h2>
 
 <p>
@@ -1638,7 +1645,7 @@ object Customer extends Application {
 </p>
 
 <p>
-通过把<code>Ordered</code>特质混入到类中并实现抽象的比较方法<code>Compare</code>，就可以对实例进行比较：
+通过把<code>Ordered</code>特质混入到类中并实现抽象比较方法<code>Compare</code>就可以对实例进行比较：
 </p>
 
 <pre class="brush: scala">
