@@ -104,7 +104,8 @@
 <h1 id="toc_1">有状态的对象</h1>
 
 <p>
-类似于JavaBean的getter和setter方法，Scala对象的非私有<code>var x</code>有自动生成的访问方法<code>x</code>和设值方法<code>x_=</code>。
+类似于JavaBean的getter和setter方法，Scala对象的非私有<code>var x</code>有自动生成的访问方法
+<code>x</code>和设值方法<code>x_=</code>。
 </p>
 
 <p>
@@ -194,7 +195,8 @@ var hour = 12
 </pre>
 
 <p>
-注意变量<code>celsius</code>的值为<code>_</code>，表示初始化值。对于数值代表<code>0</code>，对于布尔类型代表<code>false</code>，引用类型则代表<code>null</code>。
+注意：变量<code>celsius</code>的值为<code>_</code>，表示初始化值。对于数值代表<code>0</code>，对于布尔类型代表
+<code>false</code>，引用类型则代表<code>null</code>。
 </p>
 
 <p>
@@ -206,7 +208,8 @@ var celsius
 </pre>
 
 <p>
-这样就成了抽象变量（以后到了“抽象成员”这一章介绍），而不是一个没有初始化的变量。这个和Java的习惯很不一样。
+这样就成了抽象变量（以后到了“抽象成员”这一章介绍），而不是一个没有初始化的变量。
+这个和Java的习惯很不一样。
 </p>
 
 <p>
@@ -231,7 +234,8 @@ var celsius
 <h2 id="toc_1.1">案例：离散事件模拟</h2>
 
 <p>
-来个SICP（Structure and Interpretation of Computer Programs，计算机程序的构造与解释）里的例子。
+来个SICP（Structure and Interpretation of Computer Programs，计算机程序的构造与
+解释）里的例子。
 </p>
 
 <h2 id="toc_1.2">为数字电路定制语言</h2>
@@ -269,15 +273,14 @@ val a, b, c = new Wire
 </pre>
 
 <p>
-注意这里的过程都没有返回值。按照函数式的思想，应该是返回构造好的门对象。但是在这里我们选择了没有返回值，而是通过副作用来模拟门电路。
+注意这里的过程都没有返回值。按照函数式的思想，应该是返回构造好的门对象。但是在
+这里我们选择了没有返回值，而是通过副作用来模拟门电路。副作用让一步步渐进地构造
+复杂的电路更加容易，如<code>inverter(a,b)</code>在<code>a</code>与<code>b</code>之间放置反转电路。
 </p>
 
 <p>
-在这副作用让一步步渐进地构造复杂的电路更加容易，如<code>inverter(a,b)</code>在<code>a</code>与<code>b</code>之间放置反转电路。
-</p>
-
-<p>
-还有这里的方法名没有用动词而是用了名词，这是为了方便说明制造的是哪个门电路。这反映了DSL说明的本质：应该描述电路，而不是如何制造它。
+还有这里的方法名没有用动词而是用了名词，这是为了方便说明制造的是哪个门电路。这
+反映了DSL说明的本质：应该描述电路，而不是如何制造它。
 </p>
 
 <p>
@@ -311,7 +314,8 @@ val a, b, c = new Wire
 </pre>
 
 <p>
-接下来是一个全加法器，定义为根据参数<code>a</code>和<code>b</code>还有进位<code>cin</code>得到两个输出。一个是和<code>sum = (a+b+cin)%2</code>，另一个是进位输出<code>count = (a+b+cin)/2</code>：
+接下来是一个全加法器，定义为根据参数<code>a</code>和<code>b</code>还有进位<code>cin</code>得到两个输出。一个是和
+<code>sum = (a+b+cin)%2</code>，另一个是进位输出<code>count = (a+b+cin)/2</code>：
 </p>
 
 <p>
@@ -341,7 +345,8 @@ val a, b, c = new Wire
 <h2 id="toc_1.3">Simulation API</h2>
 
 <p>
-完成了对电路的模拟以后，再来分析对时间的模拟。模拟时间包括在指定时间执行指定的动作。
+完成了对电路的模拟以后，再来分析对时间的模拟。模拟时间包括在指定时间执行指定的
+动作。
 </p>
 
 <p>
@@ -355,7 +360,8 @@ val a, b, c = new Wire
 </pre>
 
 <p>
-定义动作：在我们的例子中，把参数列表和返回都为空的过程<code>() =&gt; Unit</code>作为基本的动作。给这样类型的过程起个别名叫<code>Action</code>：
+定义动作：在我们的例子中，把参数列表和返回都为空的过程<code>() =&gt; Unit</code>作为基本的动作
+。给这样类型的过程起个别名叫<code>Action</code>：
 </p>
 
 <pre class="brush: scala">
@@ -371,7 +377,8 @@ type Action = () =&gt; Unit
 </pre>
 
 <p>
-注意这里用的是样本类，所以用工厂方法创建实例就可以自动获得访问构造器参数<code>time</code>和<code>action</code>的方法。
+注意这里用的是样本类，所以用工厂方法创建实例就可以自动获得访问构造器参数<code>time</code>和
+<code>action</code>的方法。
 </p>
 
 <p>
@@ -394,7 +401,6 @@ type Action = () =&gt; Unit
 
   private def insert(ag: List[WorkItem],
       item: WorkItem): List[WorkItem] = {
-
     if (ag.isEmpty || item.time &lt; ag.head.time) item :: ag
     else ag.head :: insert(ag.tail, item)
   }
@@ -424,7 +430,8 @@ type Action = () =&gt; Unit
 </pre>
 
 <p>
-注意这里为了方便去掉了空列表的情况。为了防止编译器警告我们在模式匹配里故意漏掉了列表为空的情况，在这里使用了<code>(agenda: @unchecked) match</code>而不是<code>agenda match</code>。
+注意这里为了方便去掉了空列表的情况。为了防止编译器警告我们在模式匹配里故意漏掉了列表为空的情况，在
+这里使用了<code>(agenda: @unchecked) match</code>而不是<code>agenda match</code>。
 </p>
 
 <p>
@@ -483,7 +490,8 @@ type Action = () =&gt; Unit
 </p>
 
 <p>
-为了模拟电路和延迟声明了三个方法：<code>InverterDelay</code>、<code>AndGateDelay</code>、<code>OrGateDelay</code>。由于不同模拟电路的技术参数不同，所以这三个方法是抽象方法。
+为了模拟电路和延迟声明了三个方法：<code>InverterDelay</code>、<code>AndGateDelay</code>、<code>OrGateDelay</code>。由于
+不同模拟电路的技术参数不同，所以这三个方法是抽象方法。
 </p>
 
 <h3 id="toc_1.4.1">Wire类</h3>
@@ -501,11 +509,14 @@ type Action = () =&gt; Unit
 </p>
 
 <p>
-<code>addAction(p: Action)</code>：添加动作到线路上。基本思想是所有附加在某线路上的动作过程在每次信号改变时被执行。通过连接组件可以为线路添加该组件的功能。加上的动作会在被加到线路时以及每次线路信号改变时被执行。
+<code>addAction(p: Action)</code>：添加动作到线路上。基本思想是所有附加在某线路上的动作过程在每次信号改变
+时被执行。通过连接组件可以为线路添加该组件的功能。加上的动作会在被加到线路时以及每次线路信号改变时
+被执行。
 </p>
 
 <p>
-实现代码<code>sigVal</code>代表当前信号，<code>actions</code>是附加的动作过程。需要注意的是<code>setSignal</code>方法，当信号改变时，新的信号首先被保存在变量<code>sigVal</code>中，然后执行所有线路附加动作：
+实现代码<code>sigVal</code>代表当前信号，<code>actions</code>是附加的动作过程。需要注意的是<code>setSignal</code>方法，当信号
+改变时，新的信号首先被保存在变量<code>sigVal</code>中，然后执行所有线路附加动作：
 </p>
 
 <pre class="brush: scala">
@@ -529,7 +540,8 @@ type Action = () =&gt; Unit
 </pre>
 
 <p>
-注意上面的缩写格式：<code>actions forearch(_())</code>代表对每个元素执行<code>_()</code>。在“函数和装饰”这一章的“占位符”部分说明过，函数<code>_()</code>是<code>f =&gt; f()</code>的缩写，代表空参数函数。
+注意上面的缩写格式：<code>actions forearch(_())</code>代表对每个元素执行<code>_()</code>。在“函数和装饰”这一章的
+“占位符”部分说明过，函数<code>_()</code>是<code>f =&gt; f()</code>的缩写，代表空参数函数。
 </p>
 
 <h3 id="toc_1.4.2">反转操作</h3>
@@ -539,7 +551,8 @@ type Action = () =&gt; Unit
 </p>
 
 <p>
-另外，由于还要模拟电路的响应时间，所以输入值改变以后，还要等<code>InverterDelay</code>单位的模拟时间后，才发生改变：
+另外，由于还要模拟电路的响应时间，所以输入值改变以后，还要等<code>InverterDelay</code>单位的模拟时间后，
+才发生改变：
 </p>
 
 <pre class="brush: scala">
@@ -885,7 +898,8 @@ abstract class CircuitSimulation
 <h1 id="toc_2">参数类型化</h1>
 
 <p>
-类型化参数能实现编写泛型类和特质。Scala中的泛型实例都应该写明具体类型（如：Set[Int]，Set[Int]），而不像Java中可以不带泛型类型。
+类型化参数能实现编写泛型类和特质。Scala中的泛型实例都应该写明具体类型（如：Set[Int]，Set[Int]
+），而不像Java中可以不带泛型类型。
 </p>
 
 <h2 id="toc_2.1">开发纯函数式队列</h2>
@@ -911,7 +925,8 @@ abstract class CircuitSimulation
 </p>
 
 <p>
-一个实现方案是以<code>List</code>作为功能表达类型，可以用现成的<code>head</code>和<code>tail</code>方法。<code>append</code>方法调用连接操作：
+一个实现方案是以<code>List</code>作为功能表达类型，可以用现成的<code>head</code>和<code>tail</code>方法。<code>append</code>方法调用连接
+操作：
 </p>
 
 <pre class="brush: scala">
@@ -923,7 +938,8 @@ abstract class CircuitSimulation
 </pre>
 
 <p>
-但这样<code>append</code>操作的时间会按元素的数量而增加，那换一种思路，把列表倒过来排序，这样会让原来最后加进来的元素出现在列表的最前面：
+但这样<code>append</code>操作的时间会按元素的数量而增加，那换一种思路，把列表倒过来排序，这样会让原来最后
+加进来的元素出现在列表的最前面：
 </p>
 
 <pre class="brush: scala">
@@ -1114,7 +1130,8 @@ i :: trailing
 </pre>
 
 <p>
-Scala的泛型在默认情况下是非协变的（nonvariant），即<code>Queue[String]</code>不是<code>Queue[AnyRef]</code>的子类。但还是可以设置为协变（covariant）的。
+Scala的泛型在默认情况下是非协变的（nonvariant），即<code>Queue[String]</code>不是
+<code>Queue[AnyRef]</code>的子类。但还是可以设置为协变（covariant）的。
 </p>
 
 <p>
@@ -1126,7 +1143,8 @@ Scala的泛型在默认情况下是非协变的（nonvariant），即<code>Queue
 </pre>
 
 <p>
-用<code>-</code>表示逆变（contravariant）子类型化，如果<code>T</code>类型是<code>S</code>的子类型，将隐含<code>Queue[S]</code>是<code>Queue[T]</code>的子类型：
+用<code>-</code>表示逆变（contravariant）子类型化，如果<code>T</code>类型是<code>S</code>的子类型，将隐含
+<code>Queue[S]</code>是<code>Queue[T]</code>的子类型：
 </p>
 
 <pre class="brush: scala">
@@ -1138,7 +1156,8 @@ Scala的泛型在默认情况下是非协变的（nonvariant），即<code>Queue
 </p>
 
 <p>
-在纯函数式中，许多类型都是自然协变的。然而一旦引入了可变数据，情况就改变了。假设一个简单的只能读写一个元素的单元格（Cell）类型：
+在纯函数式中，许多类型都是自然协变的。然而一旦引入了可变数据，情况就改变了。假设
+一个简单的只能读写一个元素的单元格（Cell）类型：
 </p>
 
 <pre class="brush: scala">
@@ -1150,7 +1169,8 @@ Scala的泛型在默认情况下是非协变的（nonvariant），即<code>Queue
 </pre>
 
 <p>
-上面的<code>Cell</code>是非协变的。我们现成假设它是协变的，声明为<code>Cell[+T]</code>并发送给Scala编译器。于是我们可以构建如下存在问题的语句序列：
+上面的<code>Cell</code>是非协变的。我们现成假设它是协变的，声明为<code>Cell[+T]</code>并发送给Scala
+编译器。于是我们可以构建如下存在问题的语句序列：
 </p>
 
 <pre class="brush: scala">
@@ -1202,7 +1222,8 @@ Scala的泛型在默认情况下是非协变的（nonvariant），即<code>Queue
 </pre>
 
 <p>
-这四行代码是要把整数<code>1</code>赋值给字符串<code>s</code>，这样破坏了类型声明。问题出在第二行，<code>Cell[Any]</code>和<code>Cell[String]</code>的类型的协变引起了错误。
+这四行代码是要把整数<code>1</code>赋值给字符串<code>s</code>，这样破坏了类型声明。问题出在第二行，
+<code>Cell[Any]</code>和<code>Cell[String]</code>的类型的协变引起了错误。
 </p>
 
 <h3 id="toc_2.3.1">变化型和数组</h3>
@@ -1220,7 +1241,8 @@ Scala的泛型在默认情况下是非协变的（nonvariant），即<code>Queue
 </pre>
 
 <p>
-虽然可以通过编译，但是运行时第四行会报错。Java运行时保存了数组元素类型，在更新时对新元素进行合法性校验。类型错误时抛出<code>ArrayStore</code>：
+虽然可以通过编译，但是运行时第四行会报错。Java运行时保存了数组元素类型，在更新时
+对新元素进行合法性校验。类型错误时抛出<code>ArrayStore</code>：
 </p>
 
 <pre class="brush: scala">
@@ -1230,7 +1252,8 @@ Scala的泛型在默认情况下是非协变的（nonvariant），即<code>Queue
 </pre>
 
 <p>
-这样看起来好像即没有用又浪费性能。按James Gosling的说法是希望有一个通用处理数组的简单方法，如需要排序所有元素时：
+这样看起来好像即没有用又浪费性能。按James Gosling的说法是希望有一个通用处理数组
+的简单方法，如需要排序所有元素时：
 </p>
 
 <pre class="brush: scala">
@@ -1238,7 +1261,8 @@ Scala的泛型在默认情况下是非协变的（nonvariant），即<code>Queue
 </pre>
 
 <p>
-这样确保任意参数类型的数组都可以传入排序方法。当然后来Java有了泛型以后数组的协变不再有用了，为了向以前老版本兼容才留着。
+这样确保任意参数类型的数组都可以传入排序方法。当然后来Java有了泛型以后数组的协变
+不再有用了，为了向以前老版本兼容才留着。
 </p>
 
 <p>
@@ -1258,7 +1282,8 @@ Scala中数组是不可协变的：
 </pre>
 
 <p>
-但有时还是要数组能泛型手段与Java遗留方法进行交互。所以Scala允许把<code>T</code>类型的数组造型为任意<code>T</code>的超类的数组：
+但有时还是要数组能泛型手段与Java遗留方法进行交互。所以Scala允许把<code>T</code>类型的数组
+造型为任意<code>T</code>的超类的数组：
 </p>
 
 <pre class="brush: scala">
@@ -1274,7 +1299,8 @@ Scala中数组是不可协变的：
 </p>
 
 <p>
-把前面的队列改成协变的，然后创建指定元素类型为<code>Int</code>的队列。并重载<code>append</code>方法使其在添加前先输出它参数的平方根：
+把前面的队列改成协变的，然后创建指定元素类型为<code>Int</code>的队列。并重载<code>append</code>方法
+使其在添加前先输出它参数的平方根：
 </p>
 
 <pre class="brush: scala">
@@ -1300,7 +1326,8 @@ Scala中数组是不可协变的：
 </p>
 
 <p>
-在更加广泛的情况下，只要把泛型类型作为方法参数类型，包含它的类或特质就有可能不能与这个类型参数一直协变，对于队列来说，<code>append</code>方法违反了以下情况：
+在更加广泛的情况下，只要把泛型类型作为方法参数类型，包含它的类或特质就有可能不能
+与这个类型参数一直协变，对于队列来说，<code>append</code>方法违反了以下情况：
 </p>
 
 <pre class="brush: scala">
@@ -1322,33 +1349,42 @@ Scala中数组是不可协变的：
 </pre>
 
 <p>
-不要对可重新赋值的字段使用<code>+</code>的协变参数类型。如<code>var x:T</code>在Scala里被看作自带<code>getter</code>方法<code>def x:T</code>、<code>def x_= (y:T)</code>，所以将不是协变的。
+不要对可重新赋值的字段使用<code>+</code>的协变参数类型。如<code>var x:T</code>在Scala里被看作自带
+<code>getter</code>方法<code>def x:T</code>、<code>def x_= (y:T)</code>，所以将不是协变的。
 </p>
+
 
 <h3 id="toc_2.4.1">变化型注解的验证方式</h3>
 
 <p>
-深入讲述一些概念前，首选，我们把类和特质都简单称为“类”。然后对于这些类可能会用到类型参数的地方被分为正、负、中立。编译器检查类的类型参数的每一个用法。
+深入讲述一些概念前，首选，我们把类和特质都简单称为“类”。然后对于这些类可能会用
+到类型参数的地方被分为正、负、中立。编译器检查类的类型参数的每一个用法。
 </p>
 
 <p>
-<code>+</code>的类型参数只能被用在正的位置上，<code>-</code>的类型参数只能用在负的位置上。没有变化型注解的类型可以用于任何位置，所以它是唯一能被用在类结构体的中性位置上的类型参数。
+<code>+</code>的类型参数只能被用在正的位置上，<code>-</code>的类型参数只能用在负的位置上。没有
+变化型注解的类型可以用于任何位置，所以它是唯一能被用在类结构体的中性位置上的
+类型参数。
 </p>
 
 <p>
-编译器对位置分类是从类型声明开始进入更深的内嵌层。处于声明类最顶层被划为正的位置。默认情况下内层位置的分类会和外层一致。
+编译器对位置分类是从类型声明开始进入更深的内嵌层。处于声明类最顶层被划为正的位置
+。默认情况下内层位置的分类会和外层一致。
 </p>
 
 <p>
-但总有例外：方法值参数位置是方法外部的位置的翻转类别，这里正位置传为负，负转为正，而中性位置仍然保持中性。
+但总有例外：方法值参数位置是方法外部的位置的翻转类别，这里正位置传为负，负转为正
+，而中性位置仍然保持中性。
 </p>
 
 <p>
-除了方法值参数位置外，方法的类型参数的当前类别也会被翻转。而类型参数的位置，如<code>C[Arg]</code>中的<code>Arg</code>也有可以被翻转，这取决于对应类型参数的变化型：
+除了方法值参数位置外，方法的类型参数的当前类别也会被翻转。而类型参数的位置，如
+<code>C[Arg]</code>中的<code>Arg</code>也有可以被翻转，这取决于对应类型参数的变化型：
 </p>
 
 <p>
-如果<code>C</code>的类型参数标了<code>+</code>号，那么类别不变；如果标了<code>-</code>号，则当前类别被翻转；如果<code>C</code>的类型参数没有变化型注解，那么当前类型将改为中性。
+如果<code>C</code>的类型参数标了<code>+</code>号，那么类别不变；如果标了<code>-</code>号，则当前类别被翻转；
+如果<code>C</code>的类型参数没有变化型注解，那么当前类型将改为中性。
 </p>
 
 <p>
@@ -1364,21 +1400,27 @@ Scala中数组是不可协变的：
 </p>
 
 <p>
-注意<code>meow</code>的结果类型，第一个<code>Cat[U, T]</code>参数的位置是负的。因为<code>Cat</code>的第一个类型参数<code>[T]</code>被标了<code>-</code>。这个参数中的类型<code>U</code>重新转为正的位置（两次翻转），而参数中的类型<code>T</code>仍然是负位置。
+注意<code>meow</code>的结果类型，第一个<code>Cat[U, T]</code>参数的位置是负的。因为<code>Cat</code>的第一个
+类型参数<code>[T]</code>被标了<code>-</code>。这个参数中的类型<code>U</code>重新转为正的位置（两次翻转），而
+参数中的类型<code>T</code>仍然是负位置。
 </p>
 
 <p>
-总的来说：人脑想跟上变化型位置的变化是很困难的，所以Scala编译器自动来完成这项工作。计算机变化型过程中，编译器检查每个类型参数是否仅用于分类正确的位置上。
+总的来说：人脑想跟上变化型位置的变化是很困难的，所以Scala编译器自动来完成这项
+工作。计算机变化型过程中，编译器检查每个类型参数是否仅用于分类正确的位置上。
 </p>
 
 <p>
-就上面的例子来说，<code>T</code>仅用在负位置上，而<code>U</code>仅用于正的位置上。所以这个<code>Cat</code>类是正确的。
+就上面的例子来说，<code>T</code>仅用在负位置上，而<code>U</code>仅用于正的位置上。所以这个<code>Cat</code>类
+是正确的。
 </p>
+
 
 <h2 id="toc_2.5">下界</h2>
 
 <p>
-在之前的“可选方案：私有类”这一节中展示的是没有办法协变的实现<code>Queue[T]</code>。因为类型<code>T</code>作为参数出现在<code>append</code>方法中，而这个位置是负的。
+在之前的“可选方案：私有类”这一节中展示的是没有办法协变的实现<code>Queue[T]</code>。因为类型
+<code>T</code>作为参数出现在<code>append</code>方法中，而这个位置是负的。
 </p>
 
 <p>
@@ -1394,11 +1436,13 @@ Scala中数组是不可协变的：
 </pre>
 
 <p>
-<code>append</code>方法指定的类型参数<code>U</code>，并通过语法<code>U &gt;: T</code>定义了<code>T</code>为<code>U</code>的下界，即：<code>U</code>必须是<code>T</code>的超类。这里可以把T的任意超类（U）的对象添加进来，返回类型也成了<code>Queue[U]</code>。
+<code>append</code>方法指定的类型参数<code>U</code>，并通过语法<code>U &gt;: T</code>定义了<code>T</code>为<code>U</code>的下界，即：<code>U</code>必须是<code>T</code>的
+超类。这里可以把T的任意超类（U）的对象添加进来，返回类型也成了<code>Queue[U]</code>。
 </p>
 
 <p>
-对于<code>append</code>方法来说，它不知道自己处理的是某一个子类。只知道处理的是超类<code>U</code>。所以不会有类型错误。
+对于<code>append</code>方法来说，它不知道自己处理的是某一个子类。只知道处理的是超类<code>U</code>。
+所以不会有类型错误。
 </p>
 
 <p>
@@ -1406,11 +1450,13 @@ Scala中数组是不可协变的：
 </p>
 
 <p>
-例子：对于<code>Fruit</code>和两个子类<code>Orange</code>和<code>Apple</code>，可以把<code>Orange</code>对象传入<code>Queue[Apple]</code>而返回<code>Queue[Fruit]</code>。
+例子：对于<code>Fruit</code>和两个子类<code>Orange</code>和<code>Apple</code>，可以把<code>Orange</code>对象传入<code>Queue[Apple]</code>而返回
+<code>Queue[Fruit]</code>。
 </p>
 
 <p>
-从技术角度来看，这里的情况发生了下界的翻转：类型参数<code>U</code>处于负位置（1次翻转），面下界<code>&gt;: T</code>处于正的位置（两次翻转）。
+从技术角度来看，这里的情况发生了下界的翻转：类型参数<code>U</code>处于负位置（1次翻转），而
+下界<code>&gt;: T</code>处于正的位置（两次翻转）。
 </p>
 
 
@@ -1421,7 +1467,8 @@ Scala中数组是不可协变的：
 </p>
 
 <p>
-对于两个类<code>U</code>和<code>T</code>。如果可以用<code>T</code>可以提供<code>U</code>要用到的功能，并且用起来限制更少，就可以假设<code>T</code>是<code>U</code>的子类（里氏原则：Liskov Substitution Principle，LSP）。
+对于两个类<code>U</code>和<code>T</code>。如果可以用<code>T</code>可以提供<code>U</code>要用到的功能，并且用起来限制更少，
+就可以假设<code>T</code>是<code>U</code>的子类（里氏原则：Liskov Substitution Principle，LSP）。
 </p>
 
 <pre class="brush: scala">
@@ -1431,15 +1478,19 @@ Scala中数组是不可协变的：
 </pre>
 
 <p>
-这种情况下<code>OutputChannel[AnyRef]</code>作为<code>OutputChannel[String]</code>的子类型。因为它们都支持<code>write</code>操作。而且<code>OutputChannel[AnyRef]</code>参数仅要<code>AnyRef</code>就可以，但<code>OutputChannel[String]</code>的参数一定要是<code>String</code>才行。
+这种情况下<code>OutputChannel[AnyRef]</code>作为<code>OutputChannel[String]</code>的子类型。因为它们都
+支持<code>write</code>操作。而且<code>OutputChannel[AnyRef]</code>参数仅要<code>AnyRef</code>就可以，但
+<code>OutputChannel[String]</code>的参数一定要是<code>String</code>才行。
 </p>
 
 <p>
-所以把一个<code>OutputChannel[AnyRef]</code>赋给<code>OutputChannel[String]</code>是安全的，反过来把一个<code>OutputChannel[String]</code>赋给<code>OutputChannel[AnyRef]</code>却是不安全的。
+所以把一个<code>OutputChannel[AnyRef]</code>赋给<code>OutputChannel[String]</code>是安全的，反过来把一个
+<code>OutputChannel[String]</code>赋给<code>OutputChannel[AnyRef]</code>却是不安全的。
 </p>
 
 <p>
-Scala函数特质中协变与逆变混在一起用的情况会比较多。对于<code>S =&gt; T</code>类型的函数会定义<code>Function[S, T]</code>，这时对参数<code>S</code>逆变而对结果<code>T</code>协变就是一种有用的策略：
+Scala函数特质中协变与逆变混在一起用的情况会比较多。对于<code>S =&gt; T</code>类型的函数会定义
+<code>Function[S, T]</code>，这时对参数<code>S</code>逆变而对结果<code>T</code>协变就是一种有用的策略：
 </p>
 
 <pre class="brush: scala">
@@ -1462,7 +1513,8 @@ class Book(title: String) extends Publication(title)
 </pre>
 
 <p>
-单例对象<code>Library</code>定义了书的集，以及打印书单的方法<code>printBookList</code>的唯一参数是以<code>Book =&gt; AnyRef</code>类型的方法为参数。
+单例对象<code>Library</code>定义了书的集，以及打印书单的方法<code>printBookList</code>的唯一参数是以
+<code>Book =&gt; AnyRef</code>类型的方法为参数。
 </p>
 
 <pre class="brush: scala">
@@ -1479,7 +1531,8 @@ object Library {
 </pre>
 
 <p>
-单例对象<code>Customer</code>定义了方法<code>getTitle</code>根据出版物取得标题。最后一行调用<code>Library</code>的打印书单方法：
+单例对象<code>Customer</code>定义了方法<code>getTitle</code>根据出版物取得标题。最后一行调用<code>Library</code>
+的打印书单方法：
 </p>
 
 <pre class="brush: scala">
@@ -1490,17 +1543,20 @@ object Customer extends Application {
 </pre>
 
 <p>
-关键是<code>printBookList</code>的形参是<code>Book =&gt; AnyRef</code>，但实参是<code>Publication =&gt; String</code>。参数是父类（<code>Book</code>的父类<code>Publication</code>）而结果是子类（<code>AnyRef</code>的子类<code>String</code>）。
+关键是<code>printBookList</code>的形参是<code>Book =&gt; AnyRef</code>，但实参是<code>Publication =&gt; String</code>。参数
+是父类（<code>Book</code>的父类<code>Publication</code>）而结果是子类（<code>AnyRef</code>的子类<code>String</code>）。
 </p>
 
 <p>
-<code>printBookList</code>中的<code>println</code>方法会用到<code>toString</code>，这对所有<code>String</code>及<code>AnyRef</code>子类都有用，这里用到了函数结果类型的协变。
+<code>printBookList</code>中的<code>println</code>方法会用到<code>toString</code>，这对所有<code>String</code>及<code>AnyRef</code>子类都有用
+，这里用到了函数结果类型的协变。
 </p>
 
 <h2 id="toc_2.7">对象私有数据</h2>
 
 <p>
-之前的<code>Queue</code>类待改进内容：当<code>leading</code>列表为空时如果重复调用<code>head</code>，那么<code>mirror</code>操作会重复地把<code>trailing</code>复制到<code>leading</code>列表。
+之前的<code>Queue</code>类待改进内容：当<code>leading</code>列表为空时如果重复调用<code>head</code>，那么<code>mirror</code>
+操作会重复地把<code>trailing</code>复制到<code>leading</code>列表。
 </p>
 
 <p>
@@ -1508,7 +1564,8 @@ object Customer extends Application {
 </p>
 
 <p>
-<code>leading</code>和<code>trailing</code>都是可变变量，<code>mirror</code>操作在当前列表上产生副作用而不是返回新的队列。由于它们都是对外不可见的私有变量，所以<code>Queue</code>还是算纯函数对象。
+<code>leading</code>和<code>trailing</code>都是可变变量，<code>mirror</code>操作在当前列表上产生副作用而不是返回
+新的队列。由于它们都是对外不可见的私有变量，所以<code>Queue</code>还是算纯函数对象。
 </p>
 
 <pre class="brush: scala">
@@ -1541,11 +1598,13 @@ object Customer extends Application {
 </pre>
 
 <p>
-在两个可变私有成员变量的情况下<code>Queue</code>还可以使用协变。因为对于对象的私有值访问来说不可能有比定义的对象类型更弱的静态类型对象引用。
+在两个可变私有成员变量的情况下<code>Queue</code>还可以使用协变。因为对于对象的私有值访问
+来说不可能有比定义的对象类型更弱的静态类型对象引用。
 </p>
 
 <p>
-所以Scala的类型变化检查对于对象私有成员，在遇到带有<code>+</code>或<code>-</code>的类型参数只出现在具有相同变化型分类的位置上时，会被忽略。
+所以Scala的类型变化检查对于对象私有成员，在遇到带有<code>+</code>或<code>-</code>的类型参数只出现在
+具有相同变化型分类的位置上时，会被忽略。
 </p>
 
 <p>
@@ -1566,13 +1625,16 @@ object Customer extends Application {
 </pre>
 
 <p>
-上面分别报错的原因是：协变类型<code>T</code>出现在setter函数<code>leading_=</code>参数类型List[T]的逆变位置上；协变类型<code>T</code>出现在setter函数<code>trailing_=</code>参数类型List[T]的逆变位置上。
+上面分别报错的原因是：协变类型<code>T</code>出现在setter函数<code>leading_=</code>参数类型List[T]的
+逆变位置上；协变类型<code>T</code>出现在setter函数<code>trailing_=</code>参数类型List[T]的逆变位置上。
 </p>
 
 <h2 id="toc_2.8">上界</h2>
 
 <p>
-之前在“使用列表”章的第一节“列表字面量”中实现一个归并排序的方法。它的第一个参数是比较函数，第二个柯里化的参数是要排序的列表。对这个函数的另一种组织方法大概 就是把列表类型混入到<code>ordered</code>特质中。
+之前在“使用列表”章的第一节“列表字面量”中实现一个归并排序的方法。它的第一个参数
+是比较函数，第二个柯里化的参数是要排序的列表。对这个函数的另一种组织方法大概就是
+把列表类型混入到<code>ordered</code>特质中。
 </p>
 
 <p>
@@ -1612,7 +1674,8 @@ object Customer extends Application {
 </p>
 
 <p>
-<code>T &lt;:  Ordered[T]</code>表明类型必须是<code>Ordered</code>的子类型。比如<code>Person</code>，因为<code>Person</code>混入了<code>Ordered</code>特质：
+<code>T &lt;:  Ordered[T]</code>表明类型必须是<code>Ordered</code>的子类型。比如<code>Person</code>，因为<code>Person</code>
+混入了<code>Ordered</code>特质：
 </p>
 
 <pre class="brush: scala">
@@ -1656,7 +1719,8 @@ object Customer extends Application {
 </pre>
 
 <p>
-以上的解决方案还是有限制，比如不能适应整数列表。因为<code>Int</code>不是<code>Ordered[Int]</code>的子类：
+以上的解决方案还是有限制，比如不能适应整数列表。因为<code>Int</code>不是<code>Ordered[Int]</code>的
+子类：
 </p>
 
 <pre class="brush: scala">
@@ -1669,7 +1733,8 @@ object Customer extends Application {
 </pre>
 
 <p>
-在以后的“隐式类型转换和参数”的“视界”一节中介绍通过采用隐式参数与检查约束来实现更加通用的方案。
+在以后的“隐式类型转换和参数”的“视界”一节中介绍通过采用隐式参数与检查约束来实现
+更加通用的方案。
 </p>
 
 
@@ -1683,7 +1748,8 @@ Scala中不仅可以指定方法为抽象，还可以声明字段甚至抽象类
 <h2 id="toc_3.1">抽象成员的快速浏览</h2>
 
 <p>
-在特质中分别对类型（T）、方法（transform）、val（initial）、var（current）的抽象声明做出了一个例子：
+在特质中分别对类型（T）、方法（transform）、val（initial）、var（current）的
+抽象声明做出了一个例子：
 </p>
 
 <pre class="brush: scala">
@@ -1733,7 +1799,8 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </pre>
 
 <p>
-如果不知道类中定义的确切内容，但是确定对于每个实例来说值都是不可变的。在这样的情况下可以使用抽象的val声明。
+如果不知道类中定义的确切内容，但是确定对于每个实例来说值都是不可变的。在这样的
+情况下可以使用抽象的val声明。
 </p>
 
 <p>
@@ -1745,11 +1812,14 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </pre>
 
 <p>
-客户代码将使用统一的<code>obj.initial</code>方法引用val及方法。如果<code>initial</code>是抽象val，那么客户就可以保证每次引用都将得到同样的值。如果<code>initial</code>是抽象方法那就无法保证，因为在不同的实现中<code>initial</code>可以被实现为每次调用都返回不同的值。
+客户代码将使用统一的<code>obj.initial</code>方法引用val及方法。如果<code>initial</code>是抽象val，那么
+客户就可以保证每次引用都将得到同样的值。如果<code>initial</code>是抽象方法那就无法保证，
+因为在不同的实现中<code>initial</code>可以被实现为每次调用都返回不同的值。
 </p>
 
 <p>
-换句话说抽象的val限制了合法实现的方式：任何实现都必须是<code>val</code>类型的定义不可以是<code>var</code>。另一方面，抽象方法声明可以被实现为具体的方法定义或具体的<code>val</code>定义。
+换句话说抽象的val限制了合法实现的方式：任何实现都必须是<code>val</code>类型的定义不可以是
+<code>var</code>。另一方面，抽象方法声明可以被实现为具体的方法定义或具体的<code>val</code>定义。
 </p>
 
 <p>
@@ -1802,7 +1872,8 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 <h2 id="toc_3.5">初始化抽象val</h2>
 
 <p>
-结合特质来使用，抽象val可以让子类扩展提供父类没有的参数与细节。因为特质缺省能用来传递参数的构造器。
+结合特质来使用，抽象val可以让子类扩展提供父类没有的参数与细节。因为特质缺省能
+用来传递参数的构造器。
 </p>
 
 <p>
@@ -1828,7 +1899,8 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </pre>
 
 <p>
-上面的代码会产混入了物质的匿名类实例，类似于<code>new Rational(1, 2)</code>。当然区别还是有的：
+上面的代码会产混入了物质的匿名类实例，类似于<code>new Rational(1, 2)</code>。当然区别还是
+有的：
 </p>
 
 <pre class="brush: scala">
@@ -1847,7 +1919,9 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </pre>
 
 <p>
-上面的两个表达式会作为匿名类初始化的一部分计算。而匿名类初始化在<code>RationalTrait</code>之后执行，所以<code>numerArg</code>和<code>denomArg</code>的值在<code>RationalTrait</code>初始化期间还没有准备好，都是<code>Int</code>类型的默认值<code>0</code>。
+上面的两个表达式会作为匿名类初始化的一部分计算。而匿名类初始化在<code>RationalTrait</code>
+之后执行，所以<code>numerArg</code>和<code>denomArg</code>的值在<code>RationalTrait</code>初始化期间还没有准备好
+，都是<code>Int</code>类型的默认值<code>0</code>。
 </p>
 
 <p>
@@ -1869,7 +1943,8 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </pre>
 
 <p>
-如果尝试使用某种分子和分母的表达式面不是简单的字面量实例化这个特质，会引起以下错误：
+如果尝试使用某种分子和分母的表达式面不是简单的字面量实例化这个特质，会引起以下
+错误：
 </p>
 
 <pre class="brush: scala">
@@ -1922,7 +1997,8 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </pre>
 
 <p>
-由于预初始化的字段的超类构造器调用前被初始化，所以不能引用正在被构造的对象。所以对于<code>this</code>实际指向的是正被构造的类或对象的对象，而来是被构造的对象本身：
+由于预初始化的字段的超类构造器调用前被初始化，所以不能引用正在被构造的对象。所以
+对于<code>this</code>实际指向的是正被构造的类或对象的对象，而来是被构造的对象本身：
 </p>
 
 <pre class="brush: scala">
@@ -1937,7 +2013,8 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </pre>
 
 <p>
-因为实例还没有构建完成，所以会报错。<code>$iw</code>是合成对象，解释器把用户输出语句放在这个对象中。
+因为实例还没有构建完成，所以会报错。<code>$iw</code>是合成对象，解释器把用户输出语句放在
+这个对象中。
 </p>
 
 <pre class="brush: scala">
@@ -2002,11 +2079,14 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </p>
 
 <p>
-通过上面两个例子可以看出，单例对象的初始化也很像懒加载。它们在第一次被使用时进行初始化。
+通过上面两个例子可以看出，单例对象的初始化也很像懒加载。它们在第一次被使用时进行
+初始化。
 </p>
 
 <p>
-通过懒加载重新实现<code>RationalTrait</code>，与前一版本的主要变化是<code>require</code>子句从特质的方法体移动到了计算<code>numerArg</code>和<code>denomArg</code>最大公约数的私有字段<code>g</code>的初始化器中。所以这个版本中<code>LazyRationalTrait</code>初始化器已经用不干啥事儿了：
+通过懒加载重新实现<code>RationalTrait</code>，与前一版本的主要变化是<code>require</code>子句从特质的
+方法体移动到了计算<code>numerArg</code>和<code>denomArg</code>最大公约数的私有字段<code>g</code>的初始化器中。
+所以这个版本中<code>LazyRationalTrait</code>初始化器已经用不干啥事儿了：
 </p>
 
 <pre class="brush: scala">
@@ -2036,11 +2116,13 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </pre>
 
 <p>
-在特质中的两个懒加载对象<code>number</code>和<code>denom</code>是在<code>toString</code>方法调用时才初始化。计算它们的表达式要用到同样是懒加载的<code>g</code>。
+在特质中的两个懒加载对象<code>number</code>和<code>denom</code>是在<code>toString</code>方法调用时才初始化。计算
+它们的表达式要用到同样是懒加载的<code>g</code>。
 </p>
 
 <p>
-应用懒加载还是要注意副作用，在有副作用的情况下跟踪加载顺序是很重要的事情。无副作用的纯函数式应用配合懒加载是相当合适的。
+应用懒加载还是要注意副作用，在有副作用的情况下跟踪加载顺序是很重要的事情。
+无副作用的纯函数式应用配合懒加载是相当合适的。
 </p>
 
 
@@ -2063,7 +2145,8 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </pre>
 
 <p>
-会在想让它们的子类牛吃草时遇到麻烦。<code>eat</code>方法不能重写，因为参数不能从<code>Food</code>转为子类<code>Grass</code>：
+会在想让它们的子类牛吃草时遇到麻烦。<code>eat</code>方法不能重写，因为参数不能从<code>Food</code>转为
+子类<code>Grass</code>：
 </p>
 
 <pre class="brush: scala">
@@ -2152,7 +2235,8 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 <h2 id="toc_3.7">路径依赖类型</h2>
 
 <p>
-看一下前面例子的最后一条错误信息。它说明需要的类型是<code>bessy.SuitableFood</code>，这里的<code>SuitableFood</code>是<code>bessy</code>引用的对象的成员。
+看一下前面例子的最后一条错误信息。它说明需要的类型是<code>bessy.SuitableFood</code>，这里的
+<code>SuitableFood</code>是<code>bessy</code>引用的对象的成员。
 </p>
 
 <p>
@@ -2181,7 +2265,8 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </pre>
 
 <p>
-<code>bessy.SuitableFood</code>不能匹配<code>lassie.SuitableFood</code>，但如果同样是<code>Dog</code>的话，情况又不同。因为<code>Dog</code>的<code>SuitableFood</code>被定义为<code>DogFood</code>类的别名，所以实际上是一样的：
+<code>bessy.SuitableFood</code>不能匹配<code>lassie.SuitableFood</code>，但如果同样是<code>Dog</code>的话，情况又
+不同。因为<code>Dog</code>的<code>SuitableFood</code>被定义为<code>DogFood</code>类的别名，所以实际上是一样的：
 </p>
 
 <pre class="brush: scala">
@@ -2192,7 +2277,8 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </pre>
 
 <p>
-路径依赖有点像Java里的内部类，但区别是：路径依赖表达了外在的对象，而内部类表达了外在的类。Java的内部类在Scala表达为两个类：
+路径依赖有点像Java里的内部类，但区别是：路径依赖表达了外在的对象，而内部类表达了
+外在的类。Java的内部类在Scala表达为两个类：
 </p>
 
 <pre class="brush: scala">

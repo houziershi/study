@@ -49,7 +49,7 @@
 <li><a href="#toc_1.3">守卫模式</a>
 <li><a href="#toc_1.4">模式重叠</a>
 <li><a href="#toc_1.5">封闭类</a>
-<li><a href="#toc_1.6">Option类型</a>
+<li><a href="#toc_1.6">可选（Option）类型</a>
 <li><a href="#toc_1.7">模式无处不在</a>
 <ul>
 <li><a href="#toc_1.7.1">变量定义</a>
@@ -99,7 +99,7 @@
 </ul>
 <li><a href="#toc_2.9">了解Scala的类型推断方法</a>
 </ul>
-<li><a href="#toc_3">集体类型</a>
+<li><a href="#toc_3">集合类型</a>
 <ul>
 <li><a href="#toc_3.1">概览</a>
 <li><a href="#toc_3.2">序列</a>
@@ -143,7 +143,8 @@
 <h2 id="toc_1.1">简单的例子</h2>
 
 <p>
-假设要建立一个操作数学表达式的库，就要先定义输入的数据。为了简单，现在只关注由变量、数字、一元及二元操作符组成的数学表达式上：
+假设要建立一个操作数学表达式的库，就要先定义输入的数据。为了简单，现在只关注由
+变量、数字、一元及二元操作符组成的数学表达式上：
 </p>
 
 
@@ -163,7 +164,8 @@
 </pre>
 
 <p>
-上面为表达式定义了一个抽象的基类，四个子类分别代表四种具体的表达式。要注意的是每个子类都有一个<code>case</code>修饰符，会被编译器识别为样本类。
+上面为表达式定义了一个抽象的基类，四个子类分别代表四种具体的表达式。要注意的是
+每个子类都有一个<code>case</code>修饰符，会被编译器识别为样本类。
 </p>
 
 <p>
@@ -195,7 +197,8 @@ res1: Expr = Number(1.0)
 </pre>
 
 <p>
-编译器为样本类添加了可读性更强的<code>toString</code>方法；还有自动提供的<code>hashCode</code>和<code>equals</code>方法会树型嵌套作用于成员变量：
+编译器为样本类添加了可读性更强的<code>toString</code>方法；还有自动提供的<code>hashCode</code>和
+<code>equals</code>方法会树型嵌套作用于成员变量：
 </p>
 
 <pre class="brush: scala">
@@ -249,7 +252,9 @@ res1: Expr = Number(1.0)
 </pre>
 
 <p>
-方法<code>simplifyTop</code>接收一个<code>Expr</code>类型的参数。这里参数<code>expr</code>作为选择器匹配各个备选项，<code>_</code>为通配模式能匹配所有的值，相当于Java中的default。箭头<code>=&gt;</code>分开的模式与表达式。
+方法<code>simplifyTop</code>接收一个<code>Expr</code>类型的参数。这里参数<code>expr</code>作为选择器匹配各个
+备选项，<code>_</code>为通配模式能匹配所有的值，相当于Java中的default。箭头<code>=&gt;</code>分开的模式
+与表达式。
 </p>
 
 <ul>
@@ -317,7 +322,8 @@ res1: Expr = Number(1.0)
 </pre>
 
 <p>
-通配符还可以省略省略不用关注的内容。比如只要是<code>BinOp</code>类型就行，里面的参数是什么值不关心：
+通配符还可以省略省略不用关注的内容。比如只要是<code>BinOp</code>类型就行，里面的参数是什么
+值不关心：
 </p>
 
 <pre class="brush: scala">
@@ -380,7 +386,8 @@ res1: Expr = Number(1.0)
 <h3 id="toc_1.2.4">变量模式与常量模式的区别</h3>
 
 <p>
-常量不止有字面形式，还有用符号名的（比如<code>Nil</code>）。这样看起来就很容易与变量模式搞混：
+常量不止有字面形式，还有用符号名的（比如<code>Nil</code>）。这样看起来就很容易与变量模式
+搞混：
 </p>
 
 <pre class="brush: scala">
@@ -395,7 +402,8 @@ res1: Expr = Number(1.0)
 </pre>
 
 <p>
-上面的<code>E</code>与<code>Pi</code>都是常量。对Scala编译器来说小写字母开头都作为变量，其他引用被认为是常量。下面的例子中想建立一个小写的<code>pi</code>就匹配到常量<code>Pi</code>了：
+上面的<code>E</code>与<code>Pi</code>都是常量。对Scala编译器来说小写字母开头都作为变量，其他引用被认为
+是常量。下面的例子中想建立一个小写的<code>pi</code>就匹配到常量<code>Pi</code>了：
 </p>
 
 
@@ -424,7 +432,8 @@ res1: Expr = Number(1.0)
 </pre>
 
 <p>
-其实也有强制使用小写常量名的方式：<code>this.pi</code>或<code>obj.pi</code>的形式表示是常量模式；如果这样还没有用，可以用反引号包起来，如：
+其实也有强制使用小写常量名的方式：<code>this.pi</code>或<code>obj.pi</code>的形式表示是常量模式；如果
+这样还没有用，可以用反引号包起来，如：
 </p>
 
 <pre class="brush: scala">
@@ -451,15 +460,19 @@ Thread.`yield`()
 <h3 id="toc_1.2.5">构造器模式</h3>
 
 <p>
-这个模式是真正牛X的模式，不仅检查对象是否是样本类的成员，还检查对象的构造器参数是否符合指定模式。
+这个模式是真正牛X的模式，不仅检查对象是否是样本类的成员，还检查对象的构造器参数
+是否符合指定模式。
 </p>
 
 <p>
-Scala的模式支持深度匹配（deep match）。不止检查对象是否一致而且还检查对象的内容是否匹配内层模式。由于额外的模式自身可以形成构造器模式，因此可以检查到对象内部的任意深度。
+Scala的模式支持深度匹配（deep match）。不止检查对象是否一致而且还检查对象的内容
+是否匹配内层模式。由于额外的模式自身可以形成构造器模式，因此可以检查到对象内部的
+任意深度。
 </p>
 
 <p>
-如下面的代码不仅检查了顶层的对象是<code>BinOp</code>，而且第三个构造参数是<code>Number</code>，而且它的值为<code>0</code>：
+如下面的代码不仅检查了顶层的对象是<code>BinOp</code>，而且第三个构造参数是<code>Number</code>，而且它
+的值为<code>0</code>：
 </p>
 
 <pre class="brush: scala">
@@ -531,6 +544,12 @@ Scala的模式支持深度匹配（deep match）。不止检查对象是否一�
 </pre>
 
 <p>
+注意方法中<code>s</code>和<code>x</code>虽然都指向同一个对象，但一个类型是<code>String</code>一个类型是<code>Any</code>。
+所以可以写成<code>s.length</code>不可以写成<code>x.length</code>。
+</p>
+
+
+<p>
 调用的例子：
 </p>
 
@@ -544,10 +563,6 @@ Scala的模式支持深度匹配（deep match）。不止检查对象是否一�
   scala&gt; generalSize(Math.Pi)
   res16: Int = -1
 </pre>
-
-<p>
-注意方法中<code>s</code>和<code>x</code>虽然都指向同一个对象，但一个类型是<code>String</code>一个类型是<code>Any</code>。所以可以写成<code>s.length</code>不可以写成<code>x.length</code>。
-</p>
 
 <p>
 另一个测试类型的方法：
@@ -580,11 +595,13 @@ expr.asInstanceOf[String]
 <h3 id="toc_1.2.9">类型擦除</h3>
 
 <p>
-和Java一样，对于除了数组以外其他集合都采用了泛型擦除（erasure）。就是在运行时不知道集合泛型类型。
+和Java一样，对于除了数组以外其他集合都采用了泛型擦除（erasure）。就是在运行时
+不知道集合泛型类型。
 </p>
 
 <p>
-如对于<code>Map[Int,Int]</code>，到了运行时就不知道两个类型是什么类型了。所以对于泛型的模式匹配，编译器会有警告信息：
+如对于<code>Map[Int,Int]</code>，到了运行时就不知道两个类型是什么类型了。所以对于泛型的模式
+匹配，编译器会有警告信息：
 </p>
 
 <pre class="brush: scala">
@@ -632,7 +649,7 @@ scala&gt; def isIntIntMap(x: Any) = x match {
 </pre>
 
 <p>
-数组和Java一样，是没有类型擦除的：
+相反，Scals中的数组和Java一样，是没有类型擦除的：
 </p>
 
 <pre class="brush: scala">
@@ -662,7 +679,8 @@ scala&gt; def isIntIntMap(x: Any) = x match {
 </p>
 
 <p>
-其实除了变量模式外，也可以对任何其他模式添加变量。 作用时在匹配成功后，变量就是匹配成功的对象了。 方式为写上变量名、一个<code>@</code>符号和模式。
+其实除了变量模式外，也可以对任何其他模式添加变量。 作用时在匹配成功后，变量就是
+匹配成功的对象了。格式为写上变量名、一个<code>@</code>符号和模式。
 </p>
 
 <p>
@@ -699,7 +717,8 @@ scala&gt; def isIntIntMap(x: Any) = x match {
 </pre>
 
 <p>
-Scala要求模式是线性的，即模式变量只能在模式中出现一次。下面的表达式中<code>x</code>重复出现了，所以有问题：
+Scala要求模式是线性的，即模式变量只能在模式中出现一次。下面的表达式中<code>x</code>重复
+出现了，所以有问题：
 </p>
 
 <pre class="brush: scala">
@@ -713,7 +732,8 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
 </pre>
 
 <p>
-守卫模式（pattern guard）很像<code>for</code>循环中的<code>if</code>过滤条件。接在匹配模式后面的、用<code>if</code>开始的、使用模式中变量的表达式。
+守卫模式（pattern guard）很像<code>for</code>循环中的<code>if</code>过滤条件。接在匹配模式后面的、用
+<code>if</code>开始的、使用模式中变量的表达式。
 </p>
 
 <p>
@@ -760,7 +780,8 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
 </pre>
 
 <p>
-注意这个方法的第四个和第五个匹配样本的参数都是变量，而且对应的操作采用递归。因为四和五的匹配范围比前三个更加广，所以建立放在后面。如果放在前面的话会有警告。
+注意这个方法的第四个和第五个匹配样本的参数都是变量，而且对应的操作采用递归。因为
+四和五的匹配范围比前三个更加广，所以建立放在后面。如果放在前面的话会有警告。
 </p>
 
 <p>
@@ -780,19 +801,23 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
 <h2 id="toc_1.5">封闭类</h2>
 
 <p>
-前面说过Scala里如果所有的样本都没有匹配，那是会抛异常的。为了全都匹配，程序员会给匹配加上一个默认匹配项处理默认情况。
+前面说过Scala里如果所有的样本都没有匹配，那是会抛异常的。为了全都匹配，程序员会
+给匹配加上一个默认匹配项处理默认情况。
 </p>
 
 <p>
-实际上Scala编译器已经可以检测match表达式中遗漏的情况，但新的样本类可以定义在任何地方。
+实际上Scala编译器已经可以检测match表达式中遗漏的情况，但新的样本类可以定义在任何
+地方。
 </p>
 
 <p>
-比如我们的<code>Expr</code>有四个样本类，对应的模式匹配准备了四种情况。很好，四对四一个也没有渥。但是，如果有人在其他的文件里又实现了第五个类……就变成漏掉一个匹配情况了。
+比如我们的<code>Expr</code>有四个样本类，对应的模式匹配准备了四种情况。很好，四对四一个也
+没有漏。但是，如果有人在其他的文件里又实现了第五个类……就变成漏掉一个匹配情况了。
 </p>
 
 <p>
-所以有一个方案：让样本类的超类被封闭（sealed），这样就不能在别的文件中添加新的子类。格式只要加一个<code>sealed</code>关键字：
+所以有一个方案：让样本类的超类被封闭（sealed），这样就不能在别的文件中添加新的
+子类。格式只要加一个<code>sealed</code>关键字：
 </p>
 
 <pre class="brush: scala">
@@ -826,7 +851,8 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
 </pre>
 
 <p>
-如果程序员确实知道这两种情况不可能发生，就是要在这两种情况下抛异常。可以手动加上让编译器闭嘴：
+如果程序员确实知道这两种情况不可能发生，就是要在这两种情况下抛异常。可以手动加上
+让编译器闭嘴：
 </p>
 
 <pre class="brush: scala">
@@ -838,11 +864,8 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
 </pre>
 
 <p>
-像这样加上一个永远也不会执行到的语句虽然在语法上OK，但不是一个好的代码风格。
-</p>
-
-<p>
-还有一个方法是对变量<code>e</code>添加注释<code>@unchecked</code>：
+像这样加上一个永远也不会执行到的语句虽然在语法上OK，但不是一个好的代码风格。另
+一个方法是对变量<code>e</code>添加注释<code>@unchecked</code>：
 </p>
 
 <pre class="brush: scala">
@@ -853,13 +876,28 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
 </pre>
 
 <p>
-注解会在后面的“注解”一章中介绍，这里的<code>@unchecked</code>会阻止<code>match</code>表达式检查是不是有漏掉的可能性。
+注解会在后面的“注解”一章中介绍，这里的<code>@unchecked</code>会阻止<code>match</code>表达式检查是不是
+有漏掉的可能性。
 </p>
 
-<h2 id="toc_1.6">Option类型</h2>
+<h2 id="toc_1.6">可选（Option）类型</h2>
 
 <p>
-非必填类型：可以存值，也可以为<code>None</code>对象代表没有值。形式为<code>Some(x)</code>，<code>x</code>表示非必要。比如Scala的Map类型：
+可选类型的格式为<code>Option[类型]</code>，它的值有两种形式：
+</p>
+
+<ul>
+<li>
+在有值的情况下，返回的值形式为<code>Some(value)</code>，<code>value</code>就是值。
+
+<li>
+在无值的情况下，返回的是一个<code>None</code>对象。
+
+</ul>
+
+<p>
+比如Scala的<code>Map</code>类型的<code>get</code>方法就是<code>Option</code>类型。在<code>key</code>有值的情况下返回
+<code>Some（value）</code>；没有这个键的情况下返回<code>None</code>对象：
 </p>
 
 <pre class="brush: scala">
@@ -898,7 +936,8 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
 </pre>
 
 <p>
-在Java里Map没有值时返回的是<code>null</code>，如果忘记检查会引起空指针异常。而在Scala里对于一个<code>Map[Int,Int]</code>是不可能返回<code>null</code>的。
+在Java里Map没有值时返回的是<code>null</code>，如果忘记检查会引起空指针异常。而在Scala里对于
+一个<code>Map[Int,Int]</code>是不可能返回<code>null</code>的。
 </p>
 
 <p>
@@ -910,9 +949,11 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
 <code>Option[String]</code>从字面上看就已经提醒了程序员内容可能为<code>None</code>；
 
 <li>
-在Java中如果变量为空要到运行时才抛出空指针异常，而Scala中Option类型让编译器就已经提供了检查：编译器会在把<code>Option[String]</code>当作<code>String</code>使用时报错。
+在Java中如果变量为空要到运行时才抛出空指针异常，而Scala中Option类型让编译器就已经提供了检查：编译器会在把<code>Option[String]</code>当作<code>String</code>使用时报错，相当于加上了空指针的检查。
 
 </ul>
+
+
 
 <h2 id="toc_1.7">模式无处不在</h2>
 
@@ -962,7 +1003,8 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
 <h3 id="toc_1.7.2">偏函数的样本序列</h3>
 
 <p>
-花括号case对应的样本本来就是函数字面量，可以用在任何用函数字面量的地方。而且还是有相当多个可选的函数字面量。如：
+花括号case选项本来就是函数字面量，可以用在任何用函数字面量的地方。而且还是有相当
+多个可选的函数字面量。如：
 </p>
 
 <pre class="brush: scala">
@@ -1002,7 +1044,7 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
 </pre>
 
 <p>
-顺带提一下应用在偏（partial）函数上的应用。如果是不支持的值上会产生一个运行时异常。
+顺带提一下在偏（partial）函数上的应用。如果是不支持的值上会产生一个运行时异常。
 </p>
 
 <p>
@@ -1025,7 +1067,8 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
 </pre>
 
 <p>
-如果传递给它一个三元素列表，它的执行没有问题。但是一个空列表就不行了：
+产生上面这个错误的原因是：如果传递给它有三个的列表它的执行没有问题。但是少于2个
+元素列表就匹配不上了：
 </p>
 
 <pre class="brush: scala">
@@ -1036,10 +1079,13 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
   scala.MatchError: List()
    at $anonfun$1.apply(&lt;console&gt;:17)
    at $anonfun$1.apply(&lt;console&gt;:17)
+   ....
 </pre>
 
 <p>
-如果要检查一个偏函数是否有定义，一定要告诉编译器正在使用的函数是偏函数。类型<code>Lint[Int] =&gt; Int</code>包含了不管是否是偏函数的，从整数列表到整数的所有函数。仅包含整数列表到的偏函数的，应该写成<code>Partialfunction[List[Int],Int]</code>。
+如果要检查一个偏函数是否有定义，一定要告诉编译器正在使用的函数是偏函数。类型
+<code>Lint[Int] =&gt; Int</code>包含了不管是否是偏函数的，从整数列表到整数的所有函数。仅包含
+整数列表到的偏函数的，应该写成<code>Partialfunction[List[Int],Int]</code>。
 </p>
 
 <p>
@@ -1053,7 +1099,8 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
 </pre>
 
 <p>
-偏函数有一个<code>idDefineAt</code>方法来测试函数对某个值是否有定义。以这个例子来说，对于至少两个元素的列表是有定义的：
+偏函数有一个<code>idDefineAt</code>方法来测试函数对某个值是否有定义。以这个例子来说，对于
+至少两个元素的列表是有定义的：
 </p>
 
 <pre class="brush: scala">
@@ -1065,13 +1112,13 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
 </pre>
 
 <p>
-Scala在编译器在把这样的表达式转为偏函数时会对模式进行两次翻译：一次是真实函数的实现；另一次是测试函数是否对参数有定义的实现。
-</p>
-
+Scala在编译器在把这样的表达式转为偏函数时会对模式进行两次翻译：一次是真实函数的
+实现；另一次是测试函数是否对参数有定义的实现。例如上面的函数
 <dl>
-<dt>例如上面的函数宣布量`{case x :: y </dt>
+<dt>`{case x :: y </dt>
 <dd>_ =&gt; y}`会被翻译成：</dd>
 </dl>
+</p>
 
 <pre class="brush: scala">
   new PartialFunction[List[Int], Int] {
@@ -1086,7 +1133,8 @@ Scala在编译器在把这样的表达式转为偏函数时会对模式进行两
 </pre>
 
 <p>
-这只有在声明类型为<code>PartialFunction</code>时才会发生。如果只是<code>Function1</code>或没有声明，函数字面量会编译为完整的函数。
+这只有在声明类型为<code>PartialFunction</code>时才会发生。如果只是<code>Function1</code>或没有声明，
+函数字面量会编译为完整的函数。
 </p>
 
 <p>
@@ -1107,7 +1155,8 @@ Scala在编译器在把这样的表达式转为偏函数时会对模式进行两
 </pre>
 
 <p>
-当然也有元素不匹配模式的情况，下面例子中不匹配的会被丢弃。所以不用担心不能匹配的元素：
+当然也有元素不匹配模式的情况，下面例子中不匹配的会被丢弃。所以不用担心不能匹配的
+元素：
 </p>
 
 <pre class="brush: scala">
@@ -1177,7 +1226,8 @@ b * c   n
 </pre>
 
 <p>
-再定义一个操作符与优先级映射的变量<code>precedence</code>，映射的内容是通过处理上面定义的层级生成的。
+再定义一个操作符与优先级映射的变量<code>precedence</code>，映射的内容是通过处理上面定义的
+优先级。
 </p>
 
 <pre class="brush: scala">
@@ -1196,7 +1246,8 @@ b * c   n
 </pre>
 
 <p>
-上面的代码里有一个例外，我们把除法单独拿了出来，并且把它的优先级定义成了<code>-1</code>。这是为了方便处理我们要实现的分子在上分母在下的分数显示方式。
+上面的代码里有一个例外，我们把除法单独拿了出来，并且把它的优先级定义成了<code>-1</code>。
+这是为了方便处理我们要实现的分子在上分母在下的分数显示方式。
 </p>
 
 <p>
@@ -1213,7 +1264,8 @@ b * c   n
 </ul>
 
 <p>
-注意<code>format</code>是私有方法，完成大部分工作。最后一个公开的同名方法<code>format</code>提供入口。内部还有一个<code>stripDot</code>方法来去掉如<code>2.0</code>的<code>.0</code>部分。
+注意<code>format</code>是私有方法，完成大部分工作。最后一个公开的同名方法<code>format</code>提供入口。
+内部还有一个<code>stripDot</code>方法来去掉如<code>2.0</code>的<code>.0</code>部分。
 </p>
 
 <pre class="brush: scala">
@@ -1280,7 +1332,8 @@ b * c   n
 </pre>
 
 <p>
-第三种情况：如果是一元操作符，处理结果为操作<code>op</code>和最高环境优先级格式化参数<code>arg</code>的结果组成。这样如果<code>arg</code>是除了分数以外的二元操作就不会出现在括号中。
+第三种情况：如果是一元操作符，处理结果为操作<code>op</code>和最高环境优先级格式化参数<code>arg</code>
+的结果组成。这样如果<code>arg</code>是除了分数以外的二元操作就不会出现在括号中。
 </p>
 
 <pre class="brush: scala">
@@ -1289,7 +1342,8 @@ b * c   n
 </pre>
 
 <p>
-第四种情况：除法，也可以说是分数，则按上下位置放置。但仅仅上下的位置还不够。因为这样分不清主次：
+第四种情况：除法，也可以说是分数，则按上下位置放置。但仅仅上下的位置还不够。因为
+这样分不清主次：
 </p>
 
 <pre class="brush: scala">
@@ -1327,11 +1381,13 @@ c
 </pre>
 
 <p>
-第五种情况（也是最后一种）：除法以外的其他二元操作符。在这里要注意一下优先级问题：
+第五种情况（也是最后一种）：除法以外的其他二元操作符。在这里要注意一下优先级
+问题：
 </p>
 
 <p>
-二元运算符有两个操作数。其中左操作数的优先级是操作符<code>op</code>的<code>opPrec</code>，而右操作数的优先级要再加1。这样保证了括号也同样反映正确的优先级。如：
+二元运算符有两个操作数。其中左操作数的优先级是操作符<code>op</code>的<code>opPrec</code>，而右操作数的
+优先级要再加1。这样保证了括号也同样反映正确的优先级。如：
 </p>
 
 <pre class="brush: scala">
@@ -1339,7 +1395,8 @@ BinOp("-", Var("a"), BinOp("-", Var("b"), Var("c")))
 </pre>
 
 <p>
-将被处理为<code>a - (b - c)</code>。如果当前操作符优先级小于外部操作符的优先级，那<code>oper</code>就要被放在括号里，不然按原样返回。
+将被处理为<code>a - (b - c)</code>。如果当前操作符优先级小于外部操作符的优先级，那<code>oper</code>
+就要被放在括号里，不然按原样返回。
 </p>
 
 <p>
@@ -1357,7 +1414,8 @@ BinOp("-", Var("a"), BinOp("-", Var("b"), Var("c")))
 </pre>
 
 <p>
-五种可能的情况都处理完毕了。最后再给一个让外部代码公开调用的方法，这个方法不用优先级参数就可以格式化公式：
+五种可能的情况都处理完毕了。最后再给一个让外部代码公开调用的方法，这个方法不用
+优先级参数就可以格式化公式：
 </p>
 
 <pre class="brush: scala">
@@ -1365,7 +1423,7 @@ BinOp("-", Var("a"), BinOp("-", Var("b"), Var("c")))
 </pre>
 
 <p>
-到这里算法的讲解完毕。下面把所有的代码都一接在一起,全部代码：
+到这里算法的讲解完毕。全部代码如下：
 </p>
 
 <pre class="brush: scala">
@@ -1475,7 +1533,8 @@ BinOp("-", Var("a"), BinOp("-", Var("b"), Var("c")))
 </pre>
 
 <p>
-上面的演示程序继承了<code>Application</code>方法，所以虽然没有<code>main</code>方法它还是可以运行的应用程序。可以这样运行：
+上面的演示程序继承了<code>Application</code>方法，所以虽然没有<code>main</code>方法它还是可以运行的
+应用程序。可以这样运行：
 </p>
 
 <pre class="brush: scala">
@@ -1504,6 +1563,9 @@ x   1.5
   2    x
 </pre>
 
+
+
+
 <h1 id="toc_2">使用列表</h1>
 
 <h2 id="toc_2.1">列表字面量</h2>
@@ -1531,7 +1593,8 @@ x   1.5
 <h2 id="toc_2.2">列表类型</h2>
 
 <p>
-列表是同质化的（homogeneous），所有的成员都有相同的类型，中括号描述成员类型<code>List[T]</code>。
+列表是同质化的（homogeneous），所有的成员都有相同的类型，中括号描述成员类型
+<code>List[T]</code>。
 </p>
 
 <pre class="brush: scala">
@@ -1547,7 +1610,8 @@ val fruit: List[String] = List("apples", "oranges", "pears")
 </pre>
 
 <p>
-Scala里的列表类是协变的（covariant）。如果<code>S</code>是<code>T</code>的子类，那<code>List[S]</code>也是<code>List[T]</code>的子类。
+Scala里的列表类是协变的（covariant）。如果<code>S</code>是<code>T</code>的子类，那<code>List[S]</code>也是
+<code>List[T]</code>的子类。
 </p>
 
 <p>
@@ -1629,7 +1693,8 @@ diag3.head // List(1, 0, 0)
 </pre>
 
 <p>
-一个排序的例子，使用插入排序：对于非空列表<code>x::xs</code>可以先排序<code>xs</code>。然后再把<code>x</code>插入正确的地方：
+一个排序的例子，使用插入排序：对于非空列表<code>x::xs</code>可以先排序<code>xs</code>。然后再把<code>x</code>插入
+正确的地方：
 </p>
 
 <pre class="brush: scala">
@@ -1676,11 +1741,13 @@ diag3.head // List(1, 0, 0)
 </p>
 
 <p>
-“cos”模式<code>x::xs</code>是中缀操作符模式的特例，一般中缀表达式<code>p op q</code>视为<code>p.op(q)</code>。但是如果作为模式，其实是被当作构造器模式的<code>op(p,q)</code>形式。
+“cos”模式<code>x::xs</code>是中缀操作符模式的特例，一般中缀表达式<code>p op q</code>视为<code>p.op(q)</code>。
+但是如果作为模式，其实是被当作构造器模式的<code>op(p,q)</code>形式。
 </p>
 
 <p>
-对应这个构造器模式的类是<code>scala.::</code>，它可以创建非空列表的类。还有一个<code>List</code>类的方法<code>::</code>用来实例化<code>scala.::</code>的对象。在将来的“实现列表”章节中会有进一步的描述。
+对应这个构造器模式的类是<code>scala.::</code>，它可以创建非空列表的类。还有一个<code>List</code>类的
+方法<code>::</code>用来实例化<code>scala.::</code>的对象。在将来的“实现列表”章节中会有进一步的描述。
 </p>
 
 <p>
@@ -1755,7 +1822,8 @@ xs ::: (ys ::: zs)
 </pre>
 
 <p>
-以上代码的让<code>ys</code>操持完整而<code>xs</code>被一步步拆分并放到<code>ys</code>前面，所以把注意集中到<code>xs</code>的模式匹配上。
+以上代码的让<code>ys</code>操持完整而<code>xs</code>被一步步拆分并放到<code>ys</code>前面，所以把注意集中到<code>xs</code>的
+模式匹配上。
 </p>
 
 <p>
@@ -1855,7 +1923,8 @@ xs.reverse.last equals xs.head
 <h3 id="toc_2.6.6">前缀与后缀</h3>
 
 <p>
-<code>take</code>和<code>drop</code>取得或舍去列表指定长度个元素，长度超过时不会抛异常而是返回整个列表或空列表。
+<code>take</code>和<code>drop</code>取得或舍去列表指定长度个元素，长度超过时不会抛异常而是返回整个列表
+或空列表。
 </p>
 
 <pre class="brush: scala">
@@ -2055,7 +2124,8 @@ xs mkString ""
 <h3 id="toc_2.6.11">例：归并排序</h3>
 
 <p>
-归并排序：如果列表长度为0或是1，就算是已经排序好的，直接返回。长度大于1的列表可以拆成两个长度接近的，每个再递归调用完成排序，再把返回的两个排序好的列表合并。
+归并排序：如果列表长度为0或是1，就算是已经排序好的，直接返回。长度大于1的列表
+可以拆成两个长度接近的，每个再递归调用完成排序，再把返回的两个排序好的列表合并。
 </p>
 
 <p>
@@ -2139,7 +2209,8 @@ Scala中以操作符形式出现的高阶函数更加简洁地处理Java中用�
 <h3 id="toc_2.7.1">列表间映射</h3>
 
 <p>
-<code>xs map fun</code>把列表中每个元素用方法处理过后生成新列表。<code>xs</code>代表<code>List[T]</code>；<code>fun</code>代表<code>T =&gt; U</code>的函数。
+<code>xs map fun</code>把列表中每个元素用方法处理过后生成新列表。<code>xs</code>代表<code>List[T]</code>；<code>fun</code>
+代表<code>T =&gt; U</code>的函数。
 </p>
 
 <pre class="brush: scala">
@@ -2183,7 +2254,9 @@ Scala中以操作符形式出现的高阶函数更加简洁地处理Java中用�
 </pre>
 
 <p>
-上面的代码<code>List.range(1, 5)</code>产生从1到5的整数列表。对于其中的每项<code>i</code>再产生1到<code>i</code>的列表。<code>map</code>产生<code>(i, j)</code>元组列表，这里的<code>j&lt;i</code>。<code>flatMpa</code>对每个1到5之间的<code>i</code>产列表，并连接所有列表得到结果。
+上面的代码<code>List.range(1, 5)</code>产生从1到5的整数列表。对于其中的每项<code>i</code>再产生1到<code>i</code>
+的列表。<code>map</code>产生<code>(i, j)</code>元组列表，这里的<code>j&lt;i</code>。<code>flatMpa</code>对每个1到5之间的<code>i</code>产生
+列表，并连接所有列表得到结果。
 </p>
 
 <p>
@@ -2255,7 +2328,8 @@ xs partition p
 </pre>
 
 <p>
-<code>takeWhile</code>不断累积符合的结果直到遇到不符合的；<code>dropWhile</code>不断丢弃不符的元素直到遇到符合的。
+<code>takeWhile</code>不断累积符合的结果直到遇到不符合的；<code>dropWhile</code>不断丢弃不符的元素直到
+遇到符合的。
 </p>
 
 <pre class="brush: scala">
@@ -2267,7 +2341,8 @@ xs partition p
 </pre>
 
 <p>
-<code>span</code>方法组合了<code>takeWhile</code>和<code>dropWhile</code>返回一对列表，就像是<code>splitAt</code>组合了<code>take</code>和<code>drop</code>一样。
+<code>span</code>方法组合了<code>takeWhile</code>和<code>dropWhile</code>返回一对列表，就像是<code>splitAt</code>组合了
+<code>take</code>和<code>drop</code>一样。
 </p>
 
 <pre class="brush: scala">
@@ -2373,7 +2448,8 @@ op(a, op(b, op(c, z)))
 </pre>
 
 <p>
-对于组合操作来说，左右折叠是等价的，但效率上有差异。下面两个把元素连接在一起的方法：
+对于组合操作来说，左右折叠是等价的，但效率上有差异。下面两个把元素连接在一起的
+方法：
 </p>
 
 <pre class="brush: scala">
@@ -2386,11 +2462,13 @@ op(a, op(b, op(c, z)))
 </pre>
 
 <p>
-采用右折叠的<code>flattenLeft</code>需要复制第一个元素列表<code>xss.head</code>一共<code>xss.length-1</code>次，所以效率差一些。
+采用右折叠的<code>flattenLeft</code>需要复制第一个元素列表<code>xss.head</code>一共<code>xss.length-1</code>次，
+所以效率差一些。
 </p>
 
 <p>
-注意这里两个版本的实现都要对作为折叠开始值的空列表做类型标注。这是由Scala类型推断的局限性无法推断出正确的类型。不标注的话会有以下错误：
+注意这里两个版本的实现都要对作为折叠开始值的空列表做类型标注。这是由Scala类型
+推断的局限性无法推断出正确的类型。不标注的话会有以下错误：
 </p>
 
 <pre class="brush: scala">
@@ -2539,13 +2617,14 @@ List.apply(1, 2, 3)
 </pre>
 
 <p>
-Scala类型系统要求类方法能处理所有类型，而unzip只处理二元组列表。所以unzip不能像zip方法一样放在类里而只能放在伴生对象里。
+Scala类型系统要求类方法能处理所有类型，而unzip只处理二元组列表。所以unzip不能像
+zip方法一样放在类里而只能放在伴生对象里。
 </p>
 
 <h3 id="toc_2.8.5">连接列表</h3>
 
 <p>
-<code>flatten</code>方法只能处理包含子列表的列表，所以不能放在List类里。只能放在伴生对象中。
+<code>flatten</code>方法只能处理包含子列表的列表所以不能放在List类里。只能放在伴生对象中。
 </p>
 
 <pre class="brush: scala">
@@ -2601,6 +2680,10 @@ Scala类型系统要求类方法能处理所有类型，而unzip只处理二元�
 <h2 id="toc_2.9">了解Scala的类型推断方法</h2>
 
 <p>
+Scala的类型推导器是基于流的。
+</p>
+
+<p>
 下面是用占位符<code>_</code>推导出的参数类型：
 </p>
 
@@ -2610,26 +2693,8 @@ Scala类型系统要求类方法能处理所有类型，而unzip只处理二元�
 </pre>
 
 <p>
-但是<code>msort</code>方法却不能用占位符：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; msort((x: Char, y: Char) =&gt; x &gt; y)(abcde)
-  res64: List[Char] = List(e, d, c, b, a)
-  
-  scala&gt; msort(_ &gt; _)(abcde)
-  &lt;console&gt;:12: error: missing parameter type for expanded
-  function ((x$1, x$2) =&gt; x$1.$greater(x$2))
-         msort(_ &gt; _)(abcde)
-               ^
-</pre>
-
-<p>
-因为Scala的类型推导器是基于流的。对于<code>func(args)</code>这样的方法，先看<code>func</code>是否有已经的类型。如果有的话这个类型就被用来做参数预期类型的推断。
-</p>
-
-<p>
-例如对于<code>List[Char]</code>类型的列表<code>abcd</code>，<code>abcd</code>的成员都是<code>Char</code>所以<code>abcd.sort(_ &gt; _)</code>的两个参数也只会是<code>Char</code>。所以：
+例如对于<code>List[Char]</code>类型的列表<code>abcd</code>，<code>abcd</code>的成员都是<code>Char</code>。所以
+<code>abcd.sort(_ &gt; _)</code>的两个参数也只会是<code>Char</code>。所以类型被推导为：
 </p>
 
 <pre class="brush: scala">
@@ -2639,7 +2704,31 @@ Scala类型系统要求类方法能处理所有类型，而unzip只处理二元�
 </pre>
 
 <p>
-而对于<code>msort(_ &gt; _)(abcde)</code>这个类型是柯里化的、多态的方法类型，参数类型是<code>(T, T) =&gt; Boolean</code>，返回类型是从<code>List[T]</code>到<code>List[T]</code>的函数。无法推断第一个参数的类型。所以类型推断器要参数的类型信息。
+再来看<code>msort</code>方法：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; msort((x: Char, y: Char) =&gt; x &gt; y)(abcde)
+  res64: List[Char] = List(e, d, c, b, a)
+</pre>
+
+<p>
+<code>msort</code>方法却不能用占位符：
+</p>
+  
+<pre class="brush: scala">
+  scala&gt; msort(_ &gt; _)(abcde)
+  &lt;console&gt;:12: error: missing parameter type for expanded
+  function ((x$1, x$2) =&gt; x$1.$greater(x$2))
+         msort(_ &gt; _)(abcde)
+               ^
+</pre>
+
+<p>
+原因是对于<code>func(args)</code>这样的方法，先看<code>func</code>是否有已经的类型。如果有的话这个类型
+就被用来做参数预期类型的推断。而<code>msort(_ &gt; _)(abcde)</code>这个类型是柯里化的、多态的
+方法类型，参数类型是<code>(T, T) =&gt; Boolean</code>，返回类型是从<code>List[T]</code>到<code>List[T]</code>的函数
+。无法推断第一个参数的类型。所以类型推断器要参数的类型信息。
 </p>
 
 <p>
@@ -2667,15 +2756,15 @@ Scala类型系统要求类方法能处理所有类型，而unzip只处理二元�
 </pre>
 
 <p>
-需要推断多态方法类型时只会参考第一个参数列表，所以在柯里化方法有两个参数列表时第二个参数不会用来决定方法类型参数。
+需要推断多态方法类型时只会参考第一个参数列表，所以在柯里化方法有两个参数列表时
+第二个参数不会用来决定方法类型参数。所以这种方案隐含以下的库方法设计原则：
 </p>
 
 <p>
-所以这种方案隐含以下的库方法设计原则：
-</p>
-
-<p>
-如果参数包括若干个非函数参数与一个函数参数的组合时，要把函数参数独自放在柯里化参数列表的最后面。这样方法的正确实例类型就可以通过非函数参数推断出来，推断出来的类型还可以转面用来完成函数参数的类型检查。调用函数的时候也可以写出更加简洁的字面量。
+如果参数包括若干个非函数参数与一个函数参数的组合时，要把函数参数独自放在柯里化
+参数列表的最后面。这样方法的正确实例类型就可以通过非函数参数推断出来，推断出来的
+类型还可以转面用来完成函数参数的类型检查。调用函数的时候也可以写出更加简洁的
+字面量。
 </p>
 
 <p>
@@ -2696,11 +2785,13 @@ Scala类型系统要求类方法能处理所有类型，而unzip只处理二元�
 </pre>
 
 <p>
-这里把列表<code>xs</code>的类型记为<code>A</code>，如：<code>xs: List[A]</code>；而开始值<code>z</code>有可能是类型<code>B</code>。对应的操作<code>op</code>必须以<code>A</code>和<code>B</code>的值为参数并返回类型<code>B</code>的结果，即：<code>op: (A, B) =&gt; B</code>。
+这里把列表<code>xs</code>的类型记为<code>A</code>，如：<code>xs: List[A]</code>；而开始值<code>z</code>有可能是类型<code>B</code>。对应
+的操作<code>op</code>必须以<code>A</code>和<code>B</code>的值为参数并返回类型<code>B</code>的结果，即：<code>op: (A, B) =&gt; B</code>。
 </p>
 
 <p>
-从上面的描述可以看出：这里的<code>op</code>方法要知道<code>A</code>与<code>B</code>两个类型。<code>A</code>一定与<code>List</code>有关但是<code>B</code>不一定与<code>List</code>有关，所以推不出来。所以下面的表达式是编译不过的：
+从上面的描述可以看出：这里的<code>op</code>方法要知道<code>A</code>与<code>B</code>两个类型。<code>A</code>一定与<code>List</code>有关
+，但是<code>B</code>不一定与<code>List</code>有关，所以推不出来。所以下面的表达式是编译不过的：
 </p>
 
 <pre class="brush: scala">
@@ -2721,18 +2812,25 @@ Scala类型系统要求类方法能处理所有类型，而unzip只处理二元�
 </p>
 
 <p>
-就是因为这个问题，所以在柯里化的方法中，方法类型只取决于第一段参数。但是如果不这样做的话，推断器还是没有办法取得<code>op</code>的类型。所以只能程序员明确指定类型。
+就是因为这个问题，所以在柯里化的方法中，方法类型只取决于第一段参数。但是如果不
+这么做的话，推断器还是没有办法取得<code>op</code>的类型。所以只能程序员明确指定类型。
 </p>
 
 <p>
-所以Scala采用的局部的、基于流的类型推断方法还是比较有局限性的；不如ML或是Haskell采用的更加全局化的Hindley-Milner类型推断方式。但是对于面向对象的分支类型处理比Hindley-Mlner更加优雅。由于这些局限性在比较极端的情况下才遇到，所以就在极端情况下明确标类型吧。
+所以Scala采用的局部的、基于流的类型推断方法还是比较有局限性的；不如ML或是Haskell
+采用的更加全局化的Hindley-Milner类型推断方式。但是对于面向对象的分支类型处理比
+Hindley-Mlner更加优雅。由于这些局限性在比较极端的情况下才遇到，所以在极端情况下
+还是明确标类型吧。
 </p>
 
 <p>
 另外在遇到多态类型错误时，添加上你认为应该是正确的类型标注也是一种排错方式。
 </p>
 
-<h1 id="toc_3">集体类型</h1>
+
+
+
+<h1 id="toc_3">集合类型</h1>
 
 <h2 id="toc_3.1">概览</h2>
 
@@ -2765,11 +2863,13 @@ Scala类型系统要求类方法能处理所有类型，而unzip只处理二元�
 </p>
 
 <p>
-迭代器用来从头到尾遍历一遍集合。如果要再遍历一遍的话，只能用<code>elements</code>方法再生成一个新的迭代器。。
+迭代器用来从头到尾遍历一遍集合。如果要再遍历一遍的话，只能用<code>elements</code>方法再生成
+一个新的迭代器。。
 </p>
 
 <p>
-迭代器<code>Iterator</code>继承自<code>AnyRef</code>。<code>Iterator</code>提供的具体方法都实现了<code>next</code>和<code>hasNext</code>抽象方法实现：
+迭代器<code>Iterator</code>继承自<code>AnyRef</code>。<code>Iterator</code>提供的具体方法都实现了<code>next</code>和
+<code>hasNext</code>抽象方法实现：
 </p>
 
 <pre class="brush: scala">
@@ -2782,15 +2882,13 @@ Scala类型系统要求类方法能处理所有类型，而unzip只处理二元�
 <h3 id="toc_3.2.1">列表</h3>
 
 <p>
-列表不能通过索引直接访问元素，只能遍历；但可以支持在头上快速添加和删除。这点像是链式表。
+列表不能通过索引直接访问元素，只能遍历；但可以支持在头上快速添加和删除。这点像是
+链式表。使用模式匹配的方式可以很好地在头上快速添加和删除元素。
 </p>
 
 <p>
-在头上快速添加和删除元素很好地适合模式匹配。
-</p>
-
-<p>
-但是因为只能对列表头快速访问，而尾部不行。所以如果要操作尾部的话可以先建一个反序的列表，再<code>reverse</code>把顺序反过来。
+但是因为只能对列表头快速访问，而尾部不行。所以如果要操作尾部的话可以先建一个反序
+的列表，再<code>reverse</code>把顺序反过来。
 </p>
 
 <h3 id="toc_3.2.2">列表缓存</h3>
@@ -2827,7 +2925,8 @@ Scala类型系统要求类方法能处理所有类型，而unzip只处理二元�
 </pre>
 
 <p>
-<code>List</code>结合前置添加元素和递归算法增长列表时，如果用的递归算法不是尾递归，就有栈溢出的风险；而<code>ListBuffer</code>可以结合循环替代递归。
+<code>List</code>结合前置添加元素和递归算法增长列表时，如果用的递归算法不是尾递归，就有栈
+溢出的风险；而<code>ListBuffer</code>可以结合循环替代递归。
 </p>
 
 <h3 id="toc_3.2.3">数组</h3>
@@ -2991,7 +3090,8 @@ Scala类型系统要求类方法能处理所有类型，而unzip只处理二元�
 <h3 id="toc_3.3.3">字符串</h3>
 
 <p>
-因为<code>Predef</code>包含了从<code>String</code>到<code>RichString</code>的隐式转换，所以可以把任何字符串当作<code>Seq[Char]</code>。
+因为<code>Predef</code>包含了从<code>String</code>到<code>RichString</code>的隐式转换，所以可以把任何字符串当作
+<code>Seq[Char]</code>。
 </p>
 
 <pre class="brush: scala">
@@ -3048,7 +3148,7 @@ Set的关键在于用对象的<code>==</code>检查唯一性。
 </p>
 
 <p>
-用正则 <code>[ !,.]+</code> 分隔成单词:
+用正则<code>[ !,.]+</code>分隔成单词:
 </p>
 
 <pre class="brush: scala">
@@ -3406,7 +3506,8 @@ words --= List("one", "two")
 <h3 id="toc_3.4.3">默认的Set和Map</h3>
 
 <p>
-不可变的Set与Map会根据元素的数量优化一些工厂方法，这样返回的类就不一定是指定的类型。
+不可变的Set与Map会根据元素的数量优化一些工厂方法，这样返回的类就不一定是指定的
+类型。
 </p>
 
 <p>
@@ -3538,7 +3639,8 @@ scala.collection.immutable.HashMap
 <h3 id="toc_3.4.4">有序的集体和映射</h3>
 
 <p>
-<code>TreeSet</code>和<code>TreeMap</code>分别实现了<code>SortedSet</code>和<code>SortedMap</code>特质。都用红黑树保存元素，顺序由<code>Ordered</code>特质决定。这些类只有不可变的版本：
+<code>TreeSet</code>和<code>TreeMap</code>分别实现了<code>SortedSet</code>和<code>SortedMap</code>特质。都用红黑树保存元素，
+顺序由<code>Ordered</code>特质决定。这些类只有不可变的版本：
 </p>
 
 <pre class="brush: scala">
