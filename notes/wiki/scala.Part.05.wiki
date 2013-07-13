@@ -6,7 +6,10 @@
 
 = 实现列表 =
 
-列表不是Scala语言的内建结构，而是定义在`Scala`包中的`List`抽象类。它有一个子类`::`和一个子对象`Nil`。
+列表不是Scala语言的内建结构，而是定义在`Scala`包中的`List`抽象类。它有一个子类
+`::`和一个子对象`Nil`。
+
+
 
 == List类实现原理 ==
 
@@ -17,9 +20,9 @@
   abstract class List[+T] { ... }
 }}}
 
-作为一个抽象类`List`不能用像`new List`这样的空构造器构建。
+作为一个抽象类`List`不能用像`new List`这样的空构造器构建，由类型参数`[+T]`表明
+列表是协变的。
 
-再来看类型参数`[+T]`表明列表是协变的：
 
 {{{class="brush: scala"
   scala> val xs = List(1, 2, 3)
@@ -41,7 +44,8 @@
 
 === Nil对象 ===
 
-`Nil`对象继承自`List[Nothing]`，它定义了空列表。因为协变的作为它可以兼容任何类型的`List`实例：
+`Nil`对象继承自`List[Nothing]`，它定义了空列表。因为协变的作为它可以兼容任何类型
+的`List`实例：
 
 {{{class="brush: scala"
   case object Nil extends List[Nothing] {
@@ -53,11 +57,16 @@
   }
 }}}
 
-成员方法`head`的实现方法是抛出异常，因为对于成员类型`Nothing`来说，返回结果必须是`Nothing`，而`Nothing`是个根本不存在的类型，所以它无法正常返回结果，只能抛出异常。
+成员方法`head`的实现方法是抛出异常，因为对于成员类型`Nothing`来说，返回结果必须
+是`Nothing`，而`Nothing`是个根本不存在的类型，所以它无法正常返回结果，只能抛出
+异常。
 
-=== ::类 ===
+=== Cons类 ===
 
-`::`类读作“cons”，意思是“构造”，它实现了非空列表。冒号对应中缀模式，会被当作构造器使用：`x :: xs`是对类`::`的构造器调用`::(x, xs)`。
+`::`类读作“cons”，意思是“构造”，它实现了非空列表。“使用列表”这一章中“列表模式”里
+说过模式中的每个中缀调用被作为构造器调用。
+
+就是说：`x :: xs`是对类`::`的构造器调用`::(x, xs)`。
 
 {{{class="brush: scala"
   final case class ::[T](hd: T, tl: List[T]) extends List[T] {
@@ -67,7 +76,8 @@
   }
 }}}
 
-上面的代码可以简化，直接由参数实现超类`List`的`head`和`tail`方法：
+`hd`是头一个元素，`tl`是其他的所有元素。上面的代码可以简化，直接由参数实现超类
+`List`的`head`和`tail`方法：
 
 {{{class="brush: scala"
   final case class ::[T](head: T, tail: List[T])
@@ -96,9 +106,12 @@
 
 === 列表构建 ===
 
-对于冒号结束的操作符`::`和`:::`都是绑定在右操作数上的。即，`x :: xs`被看作是`xs.::(x)`。因为`x`是列表元素可以是任意类型，所以不能假设它正好是具有`::`方法的类型。也由于这个原因`::`方法应该生成一个新的列表。
+对于冒号结束的操作符`::`和`:::`都是绑定在右操作数上的。即，`x :: xs`被看作是
+`xs.::(x)`。因为`x`是列表元素可以是任意类型，所以不能假设它正好是具有`::`方法的
+类型。也由于这个原因`::`方法应该生成一个新的列表。
 
-还有值得讨论的地方是新加入元素的类型。思维惯性上会认为和列表元素是同一类型，但实际上可用的范围更大。以下面的层级关系为例：
+还有值得讨论的地方是新加入元素的类型。思维惯性上会认为和列表元素是同一类型，但
+实际上可用的范围更大。以下面的层级关系为例：
 
 {{{class="brush: scala"
   abstract class Fruit 
@@ -119,32 +132,25 @@
   def ::[U >: T](x: U): List[U] = new scala.::(x, this)
 }}}
 
-注意方法本身是多态的，类型参数是`U`，添加的元素类型必须是`U`，返回结果类型是`List[U]`。而：
+注意方法本身是多态的，类型参数是`U`，添加的元素类型必须是`U`，返回结果类型是
+`List[U]`。而`[U >: T]`限定列表元素T的超类。
 
-{{{class="brush: scala"
- [U >: T]  
-}}}
-
-限定列表元素T的超类。
-
-结合前面的例子，`U`被实例化为`Fruit`。因为`List[Apple]`中的`Apple`是`Fruit`的子类，于是`U`的下界被满足。
+结合前面的例子，`U`被实例化为`Fruit`。因为`List[Apple]`中的`Apple`是`Fruit`的
+子类，于是`U`的下界被满足。
 
 <img src="images/scala/22.02.png" />
 
-实际上对带有下界的`T`定义不只是为了方便，更加是为类型正确。因为`List`是协变的，如果用下面的形式：
+实际上对带有下界的`T`定义不只是为了方便，更加是为类型正确。因为`List`是协变的，
+如果用下面的形式：
 
 {{{class="brush: scala"
   // Error
   def ::(x: T): List[T] = new scala.::(x, this)
 }}}
 
-因为方法参数被认为是逆变位置，所以上面的列表元素类型`T`处于逆变位置。这样`List`就不能被声明为`T`保持协变了。所以使用下界：
-
-{{{class="brush: scala"
-[U >: T]
-}}}
-
-即加强了类型检查，又让使用更加有弹性。
+因为方法参数被认为是逆变位置，所以上面的列表元素类型`T`处于逆变位置。这样`List`
+就不能被声明为`T`保持协变了。所以使用下界`[U >: T]`，即加强了类型检查，又让使用
+更加有弹性。
 
 
 === 连接列表方法 ===
@@ -169,7 +175,7 @@
 
 == ListBuffer类 ==
 
-列表的典型访问模式是递归，比如有一个让列表所有元素自加１的方法：
+列表的典型访问模式是递归，比如有一个让列表所有元素自加1的方法：
 
 {{{class="brush: scala"
   def incAll(xs: List[Int]): List[Int] = xs match {
@@ -178,15 +184,15 @@
   }
 }}}
 
-这个方法有个问题：`incAll`是在`::`运算里面的，不是尾递归，堆栈的爆掉的危险。
-
-换个方案，用循环：
+这个方法有个问题：`incAll`是在`::`运算里面的，不是尾递归，堆栈的爆掉的危险。所以
+要换个用循环的方案：
 
 {{{class="brush: scala"
   for (x <- xs) // ??
 }}}
 
-那循环体内怎么写？前面的`incAll`递归方案可以通过加前缀操作；循环只能通过加后缀，但`:::`操作时间与第一个列表长度成正比，效率很差：
+那循环体内怎么写？前面的`incAll`递归方案可以通过加前缀操作；循环只能通过加后缀，
+但`:::`操作时间与第一个列表长度成正比，效率很差：
 
 {{{class="brush: scala"
   var result = List[Int]()    // a very inefficient approach
@@ -194,9 +200,11 @@
   result
 }}}
 
-较好的办法是使用列表缓冲（list buffer）收集元素，最后用`toList`方法一次转换为列表。
+较好的办法是使用列表缓冲（list buffer）收集元素，最后用`toList`方法一次转换为
+列表。
 
-类`ListBuffer`位于`scala.collection.mutable`包中。
+类`ListBuffer`位于`scala.collection.mutable`包中，而且它经过优化的增减操作与
+`toList`操作都只要很短的常量时间就可以完成：
 
 {{{class="brush: scala"
   import scala.collection.mutable.ListBuffer
@@ -209,9 +217,8 @@
 
 == 实际的List类实现 ==
 
-虽然我们自己实现的`List`类很简洁，但实际上在遍历列表时为了避免递归一般都使用列表缓冲与循环结合的方式。
-
-比如真正的`List`类是这样实现`map`方法的：
+虽然我们自己实现的`List`类很简洁，但实际上在遍历列表时为了避免递归一般都使用列表
+缓冲与循环结合的方式。比如真正的`List`类是这样实现`map`方法的：
 
 {{{class="brush: scala"
   final override def map[U](f: T => U): List[U] = {
@@ -225,7 +232,8 @@
   }
 }}}
 
-看了以上的代码后，大家可能会对最后`b.toList`的效率感兴趣。实际上它的效率与列表的长度无关。关于原因可以看一下`::`类的实现：
+看了以上的代码后，大家可能会对最后`b.toList`的效率感兴趣。实际上它的效率与列表的
+长度无关。关于原因可以看一下`::`类的实现：
 
 {{{class="brush: scala"
   final case class ::[U](hd: U, 
@@ -237,9 +245,12 @@
   }
 }}}
 
-可以看到参数`tl`的类型是`var`，所以列表除了头一个元素以下的部分还是可以改变的。而且修饰符`private[scala]`限定只有`scala`包中可以访问它。而修改它的是`scala.collection.mutable`中的`ListBuffer`。
+可以看到参数`tl`的类型是`var`，所以列表除了头一个元素以下的部分还是可以改变的。
+而且修饰符`private[scala]`限定只有`scala`包中可以访问它。而修改它的是
+`scala.collection.mutable`中的`ListBuffer`。
 
-ListBuffer的元素被表示为列表，而添加新元素操作只对列表中最后一个`::`单元的 t1 字段修改：
+ListBuffer的元素被表示为列表，而添加新元素操作只对列表中最后一个`::`单元的`t1`
+字段修改：
 
 {{{class="brush: scala"
   package scala.collection.immutable
@@ -249,7 +260,8 @@ ListBuffer的元素被表示为列表，而添加新元素操作只对列表中�
     private var exported: Boolean = false  // 是否执行过toList操作
 }}}
 
-`toList`方法的实现也很简单。它返回由`start`指向的列表，如果列表非空，就设置`exported`为`true`：
+`toList`方法的实现也很简单。它返回由`start`指向的列表，如果列表非空，就设置
+`exported`为`true`：
 
 {{{class="brush: scala"
   override def toList: List[T] = {
@@ -258,7 +270,8 @@ ListBuffer的元素被表示为列表，而添加新元素操作只对列表中�
   }
 }}}
 
-`toList`返回的列表应该是不可变的实例。那如果在这以后又被添加了元素的话，就不得不改变`start`指向的列表。所以为了维护正确性，由`+=`方法转向对一个新列表进行操作：
+`toList`返回的列表应该是不可变的实例。那如果在这以后又被添加了元素的话，就不得不
+改变`start`指向的列表。所以为了维护正确性，由`+=`方法转向对一个新列表进行操作：
 
 {{{class="brush: scala"
   override def += (x: T) {
@@ -274,14 +287,17 @@ ListBuffer的元素被表示为列表，而添加新元素操作只对列表中�
   }
 }}}
 
-上面的逻辑中可以看出，如果没有被`toList`过，还可以在原来的列表上修改。如果已经生成过列表了，那复制操作就不可避免。
+上面的逻辑中可以看出，如果没有被`toList`过，还可以在原来的列表上修改。如果已经
+生成过列表了，那复制操作就不可避免。
 
 
 == 外在的函数式风格 ==
 
-回顾本章的内容可以感受到：指使式方案可以避免重复复制以提高效率；函数式风格以不可改点与不共享数据让程序变得更加可靠。
+回顾本章的内容可以感受到：指使式方案可以避免重复复制以提高效率；函数式风格以不可
+改变与不共享数据让程序变得更加可靠。
 
-Scala官方的实现方式让程序在外部看来是函数式，而内部实现在不得已的情况下使用指令式实现。这样的实现可以被称作“外在函数式风格”。
+Scala官方的实现方式让程序在外部看来是函数式，而内部实现在不得已的情况下使用
+指令式实现。这样的实现可以被称作“外在函数式风格”。
 
 
 
@@ -303,7 +319,8 @@ Scala官方的实现方式让程序在外部看来是函数式，而内部实现
   val persons = List(lara, bob, julie)
 }}}
 
-如果要找出所有母亲与孩子的结对，方案一是使用`map`、`flatMap`和`filter`这样的高阶函数组成这样的查询操作：
+如果要找出所有母亲与孩子的结对，方案一是使用`map`、`flatMap`和`filter`这样的高阶
+函数组成这样的查询操作：
 
 {{{class="brush: scala"
   scala> persons filter (p => !p.isMale) flatMap (p =>
@@ -321,7 +338,8 @@ Scala官方的实现方式让程序在外部看来是函数式，而内部实现
       (Julie,Bob))
 }}}
 
-for循环比高阶函数可读性更加好一些。但实际上Scala编译器把循环版本转为高阶函数版本：
+for循环比高阶函数可读性更加好一些。但实际上Scala编译器把循环版本转为高阶函数版本
+：
 
 * 所有有`yield`结果的for表达式会被转为`map`、`flatMap`与`filter`组合的调用。
 * 所有无`yield`结果的for表达式被转为`filter`与`foreach`的调用。
@@ -363,19 +381,26 @@ for表达式的一般形式：
 
 == 8皇后问题 ==
 
-8皇后问题：标准棋盘上放8个皇后，相互之间不能处理叫吃的位置上（同行、同列、同对角线）。
+8皇后问题：标准棋盘上放8个皇后，相互之间不能处理叫吃的位置上（同行、同列、
+同对角线）。
 
-对于这个问题，把它扩展为任意尺寸的棋盘：在N*N的棋盘上放N个皇后，反而更加简单。现在左上角的坐标是(1,1)，右下角是(N,N)。
+对于这个问题，把它扩展为任意尺寸的棋盘：在N*N的棋盘上放N个皇后，反而更加简单。设
+左上角的坐标是(1,1)，右下角是(N,N)。
 
 定义好了问题以后再看解决方案：
 
-同一行的会被叫吃，所以每行只能放一个。那就一行一行地放皇后并检查会不会被叫吃。在处理过程中还会遇到第K行的皇后把从1到k-1行的皇后全都叫吃的局面，这时就要放弃这部分操作继续另外一种从1到k-1行皇后的配置方案。
+同一行的会被叫吃，所以每行只能放一个。那就一行一行地放皇后并检查会不会被叫吃。在
+处理过程中还会遇到第K行的皇后把从`1`到`k-1`行的皇后全都叫吃的局面，这时就要放弃
+这部分操作继续另外一种从1到k-1行皇后的配置方案。
 
 另外一个方案更加具有函数式风格：
 
-穷举出所有在N*N棋盘上放k个皇后的方案（0<k<N）。那么每个方案都可以用长度的k的列表表示，为了处理方便顺序要按堆栈的方式把第k行在最顶层，k-1到k行依次向下。所有的堆栈在一起组成了所有解决方案的列表。
+穷举出所有在`N*N`棋盘上放`k`个皇后的方案`0<k<N`。那么每个方案都可以用长度的`k`的
+列表表示，为了处理方便顺序要按堆栈的方式把第k行在最顶层，`k-1`到`k`行依次向下。
+所有的堆栈在一起组成了所有解决方案的列表。
 
-现在我们把在第k+1行放皇后的操作变为对前一个方案多加一个皇后的所有可能的扩展。这会产一个长度为k+1的列表。
+现在我们把在第`k+1`行放皇后的操作变为对前一个方案多加一个皇后的所有可能的扩展。
+这会产一个长度为`k+1`的列表。
 
 下面的`placeQueens`函数实现了这一算法：
 
@@ -396,9 +421,12 @@ for表达式的一般形式：
   }
 }}}
 
-两个生成器：`queens <- placeQueens(k - 1)`遍历所有行（递归调用），`column <- 1 to n`遍历所有列。
+两个生成器：
 
-过滤器来检查有没有叫吃情况发生。
+* `queens <- placeQueens(k - 1)`遍历所有行（递归调用）。
+* `column <- 1 to n`遍历所有列。
+
+过滤器来检查有没有叫吃情况发生：
 
 {{{class="brush: scala"
   def isSafe(queen: (Int, Int), queens: List[(Int, Int)]) = 
@@ -497,1002 +525,648 @@ for表达式的一般形式：
 
 == for表达式的转译 ==
 
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-
-
-{{{class="brush: scala"
-}}}
-
-
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
+每个for表达式都可以换成`map`、`flatMap`、`filter`这三个高阶的形式表达。
 
+=== 简单变量生成器 ===
 
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
+`x <- exp1`这种生成器生成到简单变量的情况下，大概有三种情况。
 
+==== 一个生成器 ====
 
 {{{class="brush: scala"
+for (x <- exp1) yield exp2
 }}}
 
+相当于：
 
 {{{class="brush: scala"
+exp1 .map(x => exp2)
 }}}
 
+==== 以一个生成器和过滤器载开头 ====
 
 {{{class="brush: scala"
+for (x <- exp1 if exp2) yield exp3
 }}}
 
+相当于：
 
 {{{class="brush: scala"
+for (x <- exp1 filter(x => exp2)) yield exp3
 }}}
-
-
 
+相当于：
 
 {{{class="brush: scala"
+exp1 filter (x => exp2) map (x => exp3)
 }}}
 
+如果过滤器后有更多的元素同理。设`seq`为任意序列生成器、定义或过滤器，则：
 
 {{{class="brush: scala"
+for (x <- exp1 if exp2 ; seq) yield exp3
 }}}
 
+相当于：
 
-
 {{{class="brush: scala"
+for (x <- exp1 filter exp2 ; seq) yield exp3
 }}}
 
+==== 以两个生成器开始 ====
 
 {{{class="brush: scala"
+for (x <- exp1 ; y <- exp2 ; seq) yield exp3
 }}}
 
+设`seq`为任意序列生成器、定义或过滤器。则相当于`flatMap`的应用：
 
 {{{class="brush: scala"
+exp1 .flatMap(x => for (y <- exp2 ; seq) yield exp3)
 }}}
-
 
-{{{class="brush: scala"
-}}}
+==== 组合应用生成变量的例子 ====
 
+组合上面三种情况来处理“找出所有出版过至少两本书的作者”：
 
 {{{class="brush: scala"
+for (b1 <- books; b2 <- books if b1 != b2;
+     a1 <- b1.authors; a2 <- b2.authors if a1 == a2)
+yield a1
 }}}
 
+相当于：
 
 {{{class="brush: scala"
+books flatMap (b1 =>
+  books filter (b2 => b1 != b2) flatMap (b2 =>
+    b1.authors flatMap (a1 =>
+      b2.authors filter (a2 => a1 == a2) map (a2 =>
+        a1))))
 }}}
 
+=== 生成器转译中的模式 ===
 
-{{{class="brush: scala"
-}}}
+如果生成器不是`x <- expq`这样生成到简单变量`x`的情况。转译起来就麻烦了。
 
-
-{{{class="brush: scala"
-}}}
+==== 变量元组 ====
 
+这种情况还简单，看起来像变量差不多。
 
 {{{class="brush: scala"
+for ((x1, ..., xn) <- exp1) yield exp2
 }}}
 
+相当于：
 
 {{{class="brush: scala"
+exp1 .map { case(x1, ..., xn) => exp2 }
 }}}
-
 
-{{{class="brush: scala"
-}}}
+==== 单个模式匹配的情况 ====
 
+单个模式匹配的情况下：
 
 {{{class="brush: scala"
+for (pat <- exp1) yield exp2
 }}}
 
+相当于：
 
 {{{class="brush: scala"
+exp1 filter {
+	case pat => true
+	case _   => false
+} map {
+	case pat => exp2
+}
 }}}
 
+基本思路是只有匹配于`pat`的情况才会被映射，所以也保证了模式匹配不会抛出
+`MatchError`。
 
-{{{class="brush: scala"
-}}}
+注意这只在单个模式匹配的情况下讨论。其他的情况参考Scala语言规格书“Ode08”。
 
-
-{{{class="brush: scala"
-}}}
 
+=== 多层内嵌定义 ===
 
 {{{class="brush: scala"
+for (x <- exp1; y = exp2; seq) yield exp3
 }}}
 
+设`seq`为任意序列生成器、定义或过滤器。上面相当于：
 
 {{{class="brush: scala"
+for((x,y) <- for (x <- exp1) yield (x, exp2); seq) yield exp3
 }}}
-
 
-{{{class="brush: scala"
-}}}
+因为`exp2`用到了`x`所以每次产`x`的时候`exp2`要重新计算。这样浪费了性能，所以：
 
 
 {{{class="brush: scala"
+  for (x <- 1 to 1000; y = expensiveComputationNotInvolvingX)
+  yield x * y
 }}}
 
+更好的写法是：
 
 {{{class="brush: scala"
+  val y = expensiveComputationNotInvolvingX
+  for (x <- 1 to 1000) yield x * y
 }}}
 
+=== 没有返回值的情况 ===
 
-{{{class="brush: scala"
-}}}
+前面描述了通过`yield`生成值的情况。在不产值的情况下一般更简单，只要`foreach`：
 
-
 {{{class="brush: scala"
+for (x <- exp1) body
 }}}
-
 
+相当于：
 
-
 {{{class="brush: scala"
+exp1 foreach (x => body)
 }}}
 
+更加复杂的情况：
 
 {{{class="brush: scala"
+for (x <- exp1 ; if exp2 ; y <- exp3) body
 }}}
-
 
+相当于：
 
 {{{class="brush: scala"
+exp1 filter (x => exp2) foreach (
+	x => exp3 foreach (y => body)
+)
 }}}
 
+例子，把列表形式的矩阵所有元素累加在一起：
 
 {{{class="brush: scala"
+  var sum = 0
+  for (xs <- xss; x <- xs) sum += x
 }}}
 
+相当于：
 
 {{{class="brush: scala"
+  var sum = 0
+  xss foreach (xs => 
+    xs foreach (x =>
+      sum += x))
 }}}
 
-
-{{{class="brush: scala"
-}}}
+== 把高阶函数转为for循环 ==
 
+下面的三个函数是用for循环分别实现`map`、`flatMap`、`filter`的演示：
 
 {{{class="brush: scala"
-}}}
+  object Demo {
+    def map[A, B](xs: List[A], f: A => B): List[B] =
+      for (x <- xs) yield f(x)
 
+    def flatMap[A, B](xs: List[A], f: A => List[B]): List[B] =
+      for (x <- xs; y <- f(x)) yield y
 
-{{{class="brush: scala"
+    def filter[A](xs: List[A], p: A => Boolean): List[A] =
+      for (x <- xs if p(x)) yield x
+  }
 }}}
 
+== for的应用 ==
 
-{{{class="brush: scala"
-}}}
+for表达式的实现是基于`map`、`flatMap`、`filter`这些高阶函数。所以可以把for用在
+大批量数据上。for可以应用在数组和列表上也是因为这些这两个数组结构实现了这三个
+高阶函数，其实可用的还有范围（Range）、迭代器（Iterator）、流（Stream）还有集
+（Set）。
 
+如果没有实现那三个方法的话要实现以后才能使用for，具体规则为：
 
-{{{class="brush: scala"
-}}}
+* 有`map`可以用单一生成器。
+* 有`flatMap`和`map`可以有多个生成器。
+* 有`foreach`可以有单一或多个生成器。
+* 有`filter`可以有过滤器。
 
+设一个集合类`C`，典型的方法签名：
 
 {{{class="brush: scala"
+  abstract class C[A] {
+    def map[B](f: A => B): C[B]
+    def flatMap[B](f: A => C[B]): C[B]
+    def filter(p: A => Boolean): C[A]
+    def foreach(b: A => Unit): Unit
+  }
 }}}
 
+注意：对于参数类型`A`，方法返回的结果类型为有可能是`A`、`B`或`Unit`。
 
-{{{class="brush: scala"
-}}}
+函数式编程里个概念叫单体（monad）有很广泛地应用，包括从集合、IO操作、状态操作、
+回溯计算及交易等。`map`、`flatMap`、`filter`这三个方法可以用来定制单体功能。
 
 
-{{{class="brush: scala"
-}}}
 
+= 抽取器（Extractors） =
 
-{{{class="brush: scala"
-}}}
+== 例子：抽取email地址 ==
 
+对于一个email类的话，如果是合法的email地址取出用户名与域名。
 
 {{{class="brush: scala"
+  EMail(user, domain)
 }}}
 
+模式匹配表达式可以写为：
 
 {{{class="brush: scala"
+  s match {
+    case EMail(user, domain) => println(user +" AT "+ domain)
+    case _ => println("not an email address")
+  }
 }}}
 
+找到两个连续的同一用户的email地址的模式：
 
 {{{class="brush: scala"
+  ss match {
+    case EMail(u1, d1) :: EMail(u2, d2) :: _ if (u1 == u2) => ...
+    ...
+  }
 }}}
 
+现在要匹配的email不是一个类，而是字符串。我们先把方法定义出来：
 
 {{{class="brush: scala"
+  def isEMail(s: String): Boolean
+  def domain(s: String): String
+  def user(s: String): String
 }}}
 
+调用的时候就是这样的：
 
 {{{class="brush: scala"
+  if (isEMail(s)) println(user(s) +" AT "+ domain(s)
+  else println("not an email address")
 }}}
 
 
-{{{class="brush: scala"
-}}}
+== 抽取器 ==
 
+在scala对象中与`apply`方法相对的方法是`unapply`方法，而有`unapply`成员方法的对象
+就是抽取器。`unapply`是为了匹配并分解值。
 
+下面的例子中`apply`方法注入对象，而`unapply`方法从对象中抽取内容：
+  
 {{{class="brush: scala"
-}}}
+  object EMail {
 
+    // The injection method (optional)
+    def apply(user: String, domain: String) = user +"@"+ domain
 
-{{{class="brush: scala"
+    // The extraction method (mandatory)
+    def unapply(str: String): Option[(String, String)] = {
+      val parts = str split "@"
+      if (parts.length == 2) Some(parts(0), parts(1)) else None
+    }
+  }
 }}}
 
 
 {{{class="brush: scala"
+  object EMail extends (String, String) => String { ... }
 }}}
 
 
 {{{class="brush: scala"
+  unapply("John@epfl.ch")  equals  Some("John", "epfl.ch")
+  unapply("John Doe")  equals  None
 }}}
-
 
 
-
 {{{class="brush: scala"
+  selectorString match { case EMail(user, domain) => ... }
 }}}
 
 
 {{{class="brush: scala"
+  EMail.unapply(selectorString)
 }}}
-
 
 
 {{{class="brush: scala"
+  val x: Any = ...
+  x match { case EMail(user, domain) => ... }
 }}}
 
 
-{{{class="brush: scala"
-}}}
+// In file extractors/Misc.scala
 
-
 {{{class="brush: scala"
+  EMail.unapply(EMail.apply(user, domain))
 }}}
 
 
 {{{class="brush: scala"
+  Some(user, domain)
 }}}
 
 
 {{{class="brush: scala"
+  EMail.unapply(obj) match { 
+    case Some(u, d) => EMail.apply(u, d) 
+  }
 }}}
 
 
-{{{class="brush: scala"
-}}}
+  
 
+24.3 Patterns with zero or one variables
 
-{{{class="brush: scala"
-}}}
 
+// In file extractors/Twice.scala
 
 {{{class="brush: scala"
+  object Twice {
+    def apply(s: String): String = s + s
+    def unapply(s: String): Option[String] = {
+      val length = s.length / 2
+      val half = s.substring(0, length)
+      if (half == s.substring(length)) Some(half) else None
+    }
+  }
 }}}
-
 
-{{{class="brush: scala"
-}}}
 
+// In file extractors/UpperCase.scala
 
 {{{class="brush: scala"
+  object UpperCase {
+    def unapply(s: String): Boolean = s.toUpperCase == s
+  }
 }}}
 
-
-{{{class="brush: scala"
-}}}
 
+// In file extractors/Test2.scala
 
 {{{class="brush: scala"
+  def userTwiceUpper(s: String) = s match {
+    case EMail(Twice(x @ UpperCase()), domain) =>
+      "match: "+ x +" in domain "+ domain
+    case _ => 
+      "no match"
+  }
 }}}
 
 
 {{{class="brush: scala"
-}}}
+  scala> userTwiceUpper("DIDI@hotmail.com")
+  res0: java.lang.String = match: DI in domain hotmail.com
 
+  scala> userTwiceUpper("DIDO@hotmail.com")
+  res1: java.lang.String = no match
 
-{{{class="brush: scala"
+  scala> userTwiceUpper("didi@hotmail.com")
+  res2: java.lang.String = no match
 }}}
 
 
-{{{class="brush: scala"
-}}}
+  
 
+24.4 Variable argument extractors
 
-{{{class="brush: scala"
-}}}
 
+// In file extractors/DomainTest.scala
 
 {{{class="brush: scala"
+  dom match {
+    case Domain("org", "acm") => println("acm.org")
+    case Domain("com", "sun", "java") => println("java.sun.com")
+    case Domain("net", _*) => println("a .net domain")
+  }
 }}}
-
 
-{{{class="brush: scala"
-}}}
 
+// In file extractors/Domain.scala
 
 {{{class="brush: scala"
-}}}
+  object Domain {
 
+    // The injection method (optional)
+    def apply(parts: String*): String = 
+      parts.reverse.mkString(".")
 
-{{{class="brush: scala"
+    // The extraction method (mandatory)
+    def unapplySeq(whole: String): Option[Seq[String]] = 
+      Some(whole.split("\\.").reverse)
+  }
 }}}
 
 
-{{{class="brush: scala"
-}}}
+// In file extractors/DomainTest.scala
 
-
 {{{class="brush: scala"
+  def isTomInDotCom(s: String): Boolean = s match {
+    case EMail("tom", Domain("com", _*)) => true
+    case _ => false
+  }
 }}}
-
 
 
-
 {{{class="brush: scala"
-}}}
+  scala> isTomInDotCom("tom@sun.com")
+  res3: Boolean = true
 
+  scala> isTomInDotCom("peter@sun.com")
+  res4: Boolean = false
 
-{{{class="brush: scala"
+  scala> isTomInDotCom("tom@acm.org")
+  res5: Boolean = false
 }}}
 
 
+// In file extractors/ExpandedEMail.scala
 
 {{{class="brush: scala"
+  object ExpandedEMail {
+    def unapplySeq(email: String)
+        : Option[(String, Seq[String])] = {
+      val parts = email split "@"
+      if (parts.length == 2) 
+        Some(parts(0), parts(1).split("\\.").reverse)
+      else 
+        None
+    }
+  }
 }}}
 
 
 {{{class="brush: scala"
-}}}
+  scala> val s = "tom@support.epfl.ch"
+  s: java.lang.String = tom@support.epfl.ch
 
-
-{{{class="brush: scala"
+  scala> val ExpandedEMail(name, topdom, subdoms @ _*) = s
+  name: String = tom
+  topdom: String = ch
+  subdoms: Seq[String] = List(epfl, support)
 }}}
 
-
-{{{class="brush: scala"
-}}}
 
+  
 
-{{{class="brush: scala"
-}}}
+24.5 Extractors and sequence patterns
 
 
 {{{class="brush: scala"
+  List()
+  List(x, y, _*)
+  Array(x, 0, 0, _)
 }}}
 
 
 {{{class="brush: scala"
+  package scala
+  object List {
+    def apply[T](elems: T*) = elems.toList
+    def unapplySeq[T](x: List[T]): Option[Seq[T]] = Some(x)
+    ... 
+  }
 }}}
 
 
 {{{class="brush: scala"
+  List()
+  List(1, 2, 3)
 }}}
-
 
-{{{class="brush: scala"
-}}}
 
+  
 
-{{{class="brush: scala"
-}}}
+24.6 Extractors versus case classes
 
 
 {{{class="brush: scala"
+  case C(...)
 }}}
 
 
-{{{class="brush: scala"
-}}}
+  
 
-
-{{{class="brush: scala"
-}}}
+24.7 Regular expressions
 
 
 {{{class="brush: scala"
+  scala> import scala.util.matching.Regex
 }}}
 
 
 {{{class="brush: scala"
-}}}
+  scala> val Decimal = new Regex("(-)?(\\d+)(\\.\\d*)?")
+  Decimal: scala.util.matching.Regex = (-)?(\d+)(\.\d*)?
 
 
-{{{class="brush: scala"
-}}}
+  scala> val Decimal = new Regex("""(-)?(\d+)(\.\d*)?""")
+  Decimal: scala.util.matching.Regex = (-)?(\d+)(\.\d*)?
 
 
-{{{class="brush: scala"
+  scala> val Decimal = """(-)?(\d+)(\.\d*)?""".r
+  Decimal: scala.util.matching.Regex = (-)?(\d+)(\.\d*)?
 }}}
 
 
 {{{class="brush: scala"
-}}}
+  package scala.runtime
+  import scala.util.matching.Regex
 
-
-{{{class="brush: scala"
+  class RichString(self: String) ... {
+    ...
+    def r = new Regex(self)
+  }
 }}}
 
 
 {{{class="brush: scala"
-}}}
+  scala> val Decimal = """(-)?(\d+)(\.\d*)?""".r
+  Decimal: scala.util.matching.Regex = (-)?(\d+)(\.\d*)?
 
+  scala> val input = "for -1.0 to 99 by 3"      
+  input: java.lang.String = for -1.0 to 99 by 3
 
-{{{class="brush: scala"
-}}}
+  scala> for (s <- Decimal findAllIn input)
+       | println(s)
+  -1.0
+  99
+  3
 
+  scala> Decimal findFirstIn input
+  res1: Option[String] = Some(-1.0)
 
-{{{class="brush: scala"
-}}}
+  scala> Decimal findPrefixOf input
+  res2: Option[String] = None
 
 
+  scala> val Decimal(sign, integerpart, decimalpart) = "-1.23"  
+  sign: String = -
+  integerpart: String = 1
+  decimalpart: String = .23
 
 
-{{{class="brush: scala"
-}}}
+  scala> val Decimal(sign, integerpart, decimalpart) = "1.0"
+  sign: String = null
+  integerpart: String = 1
+  decimalpart: String = .0
 
 
-{{{class="brush: scala"
+  scala> for (Decimal(s, i, d) <- Decimal findAllIn input)
+       |   println("sign: "+ s +", integer: "+
+       |       i +", decimal: "+ d)
+  sign: -, integer: 1, decimal: .0
+  sign: null, integer: 99, decimal: null
+  sign: null, integer: 3, decimal: null
 }}}
 
 
 
 {{{class="brush: scala"
 }}}
-
-
 {{{class="brush: scala"
 }}}
-
-
 {{{class="brush: scala"
 }}}
-
-
 {{{class="brush: scala"
 }}}
-
-
 {{{class="brush: scala"
 }}}
-
-
 {{{class="brush: scala"
 }}}
-
-
 {{{class="brush: scala"
 }}}
-
-
 {{{class="brush: scala"
 }}}
-
-
 {{{class="brush: scala"
 }}}
-
-
 {{{class="brush: scala"
 }}}
-
-
 {{{class="brush: scala"
 }}}
-
-
 {{{class="brush: scala"
 }}}
-
-
 {{{class="brush: scala"
 }}}
-
-
 {{{class="brush: scala"
 }}}
-
-
 {{{class="brush: scala"
 }}}
-
-
 {{{class="brush: scala"
 }}}
-
-
 {{{class="brush: scala"
 }}}
-
-
 {{{class="brush: scala"
 }}}
-
-
 {{{class="brush: scala"
 }}}
-
-
 {{{class="brush: scala"
 }}}
-
-
 {{{class="brush: scala"
 }}}
-

@@ -73,6 +73,9 @@
 </ul>
 <li><a href="#toc_3.6">抽象类型</a>
 <li><a href="#toc_3.7">路径依赖类型</a>
+<ul>
+<li><a href="#toc_3.7.1">与Java内部类的区别</a>
+</ul>
 <li><a href="#toc_3.8">枚举</a>
 <li><a href="#toc_3.9">案例研究：货币</a>
 </ul>
@@ -80,6 +83,14 @@
 <ul>
 <li><a href="#toc_4.1">隐式转换</a>
 <li><a href="#toc_4.2">隐式操作规则</a>
+<ul>
+<li><a href="#toc_4.2.1">标记规则</a>
+<li><a href="#toc_4.2.2">作用域规则</a>
+<li><a href="#toc_4.2.3">无歧义规则</a>
+<li><a href="#toc_4.2.4">单一调用原则</a>
+<li><a href="#toc_4.2.5">显式操作先行规则</a>
+<li><a href="#toc_4.2.6">命名隐式转换</a>
+</ul>
 <li><a href="#toc_4.3">隐式转换为期望的类型</a>
 <li><a href="#toc_4.4">转换方法调用的接收者</a>
 <ul>
@@ -87,6 +98,9 @@
 <li><a href="#toc_4.4.2">模拟新的语法</a>
 </ul>
 <li><a href="#toc_4.5">隐式参数</a>
+<ul>
+<li><a href="#toc_4.5.1">隐式参数样式规则</a>
+</ul>
 <li><a href="#toc_4.6">视界</a>
 <ul>
 <li><a href="#toc_4.6.1">视界与上界</a>
@@ -1631,8 +1645,9 @@ object Customer extends Application {
 </pre>
 
 <p>
-上面分别报错的原因是：协变类型<code>T</code>出现在setter函数<code>leading_=</code>参数类型List[T]的
-逆变位置上；协变类型<code>T</code>出现在setter函数<code>trailing_=</code>参数类型List[T]的逆变位置上。
+上面分别报错的原因是：协变类型<code>T</code>出现在setter函数<code>leading_=</code>参数类型<code>List[T]</code>的
+逆变位置上；协变类型<code>T</code>出现在setter函数<code>trailing_=</code>参数类型<code>List[T]</code>的逆变位置
+上。
 </p>
 
 
@@ -1830,7 +1845,7 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </p>
 
 <p>
-所以在下面的代码中，<code>Apple</code>是合法的子类面<code>BadApple</code>不是：
+所以在下面的代码中，<code>Apple</code>是合法的子类而<code>BadApple</code>不是：
 </p>
 
 <pre class="brush: scala">
@@ -1906,7 +1921,7 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </pre>
 
 <p>
-上面的代码会产混入了物质的匿名类实例，类似于<code>new Rational(1, 2)</code>。当然区别还是
+上面的代码会产混入了特质的匿名类实例，类似于<code>new Rational(1, 2)</code>。当然区别还是
 有的：
 </p>
 
@@ -1950,7 +1965,7 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </pre>
 
 <p>
-如果尝试使用某种分子和分母的表达式面不是简单的字面量实例化这个特质，会引起以下
+如果尝试使用某种分子和分母的表达式而不是简单的字面量实例化这个特质，会引起以下
 错误：
 </p>
 
@@ -2173,11 +2188,8 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </pre>
 
 <p>
-这样看来类型检查太严格了，应该允许子类？但是如果这样做的话又会失去类型检验保障。
-</p>
-
-<p>
-比如说喂牛吃鱼：
+这样看来类型检查太严格了，应但是如果许子类的话又会失去类型检验保障。比如说喂牛
+吃鱼：
 </p>
 
 <pre class="brush: scala">
@@ -2283,6 +2295,8 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
   scala&gt; lassie eat (new bootsie.SuitableFood)
 </pre>
 
+<h3 id="toc_3.7.1">与Java内部类的区别</h3>
+
 <p>
 路径依赖有点像Java里的内部类，但区别是：路径依赖表达了外在的对象，而内部类表达了
 外在的类。Java的内部类在Scala表达为两个类：
@@ -2299,10 +2313,6 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </p>
 
 <p>
-<code>注意：</code>
-</p>
-
-<p>
 总之，要注意。路径依赖是在对象中的类，而不是Java那样类中的类。
 </p>
 
@@ -2316,20 +2326,23 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </pre>
 
 <p>
-虽然<code>o1.Inner</code>和<code>o2.Inner</code>是不同的两个路径依赖类型，但两个都能匹配更加通用的<code>Outer#Inner</code>。
+虽然<code>o1.Inner</code>和<code>o2.Inner</code>是不同的两个路径依赖类型，但两个都能匹配更加通用的
+<code>Outer#Inner</code>。
 </p>
 
 <p>
-和Java中一样，Scala的内部类实例也有对外部类实例的引用。所以不能只有内部类实例面没有外部类实例。有两个方式实例化内部类：
+和Java中一样，Scala的内部类实例也有对外部类实例的引用。所以不能只有内部类实例而
+没有外部类实例。有两个方式实例化内部类：
 </p>
 
-<p>
-1）直接在外部类方法体中实例化，这样可以用<code>this</code>引用外部类对象。
-</p>
+<ul>
+<li>
+直接在外部类方法体中实例化，这样可以用<code>this</code>引用外部类对象。
 
-<p>
-2）使用路径依赖类型。如<code>o1.Inner</code>。返回的内部类有对<code>01</code>的引用。例子如下：
-</p>
+<li>
+使用路径依赖类型。如<code>o1.Inner</code>。返回的内部类有对<code>01</code>的引用。例子如下：
+
+</ul>
 
 <pre class="brush: scala">
   scala&gt; new o1.Inner
@@ -2364,11 +2377,7 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </pre>
 
 <p>
-<code>注意：</code>
-</p>
-
-<p>
-枚举是和路径依赖一样，是对象中的类，不是类中的类。
+注意：枚举是和路径依赖一样，是对象中的类，不是类中的类。
 </p>
 
 <p>
@@ -2390,7 +2399,9 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </pre>
 
 <p>
-前面定义的<code>Red</code>、<code>Green</code>和<code>Blue</code>这些值的类型为<code>Enumeration</code>定义的内部类，名为<code>Value</code>。同名无参数方法<code>Value</code>返回该类的新对象，即<code>Color.Red</code>类的值类型是<code>Color.Value</code>。而且是依赖路径的。如：
+前面定义的<code>Red</code>、<code>Green</code>和<code>Blue</code>这些值的类型为<code>Enumeration</code>定义的内部类，名为
+<code>Value</code>。同名无参数方法<code>Value</code>返回该类的新对象，即<code>Color.Red</code>类的值类型是
+<code>Color.Value</code>。而且是依赖路径的。如：
 </p>
 
 <pre class="brush: scala">
@@ -2450,7 +2461,8 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 <h2 id="toc_3.9">案例研究：货币</h2>
 
 <p>
-设计一个货币类能处理不同的货币。定义抽象类可以扩展为具体不同的货币。当然第一个版本肯定是不完善的：
+设计一个货币类能处理不同的货币。定义抽象类可以扩展为具体不同的货币。当然第一个
+版本肯定是不完善的：
 </p>
 
 <pre class="brush: scala">
@@ -2465,7 +2477,8 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </pre>
 
 <p>
-<code>amount</code>和<code>designation</code>分别代表金额和表示金额的符号。其他方法还有加法和乘法操作。这个版本的问题是，在语法上两个不同的子类可以相加：
+<code>amount</code>和<code>designation</code>分别代表金额和表示金额的符号。其他方法还有加法和乘法操作
+。这个版本的问题是，在语法上两个不同的子类可以相加：
 </p>
 
 <pre class="brush: scala">
@@ -2504,7 +2517,8 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </pre>
 
 <p>
-这个版本的问题在于加法与乘法的定义。首先想到的把金额转为正确类型的货币的方法可能是这样的：
+这个版本的问题在于加法与乘法的定义。首先想到的把金额转为正确类型的货币的方法可能
+是这样的：
 </p>
 
 <pre class="brush: scala">
@@ -2535,7 +2549,8 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </pre>
 
 <p>
-但这样有别的问题，因为这样不得不把工厂方法放到<code>AbstractCurrency</code>类中，所有的实例都可以调用<code>make</code>方法，也就都有了创建货币的能力：
+但这样有别的问题，因为这样不得不把工厂方法放到<code>AbstractCurrency</code>类中，所有的实例
+都可以调用<code>make</code>方法，也就都有了创建货币的能力：
 </p>
 
 <pre class="brush: scala">
@@ -2543,7 +2558,8 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </pre>
 
 <p>
-所以把工厂方法移到一个新的类中，新的类叫<code>CurrencyZone</code>。把<code>AbstractCurrency</code>和<code>Currency</code>也作为它的内部类：
+所以把工厂方法移到一个新的类中，新的类叫<code>CurrencyZone</code>。把<code>AbstractCurrency</code>和
+<code>Currency</code>也作为它的内部类：
 </p>
 
 <pre class="brush: scala">
@@ -2581,7 +2597,8 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </p>
 
 <p>
-继续改进设计：关于单位，单位不仅是美元，还有美分。所以让<code>amount</code>以美分为单位更加合适。所以用多一个字段<code>CurrencyUnit</code>记录单位：
+继续改进设计：关于单位，单位不仅是美元，还有美分。所以让<code>amount</code>以美分为单位比较
+合适。所以用多一个字段<code>CurrencyUnit</code>记录单位：
 </p>
 
 <pre class="brush: scala">
@@ -2611,7 +2628,8 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </pre>
 
 <p>
-还有显示问题，用多数内部类型上都带的<code>format</code>方法格式化美元与美分的小数显示，如“<code>10.23 USD</code>”：
+还有显示问题，用多数内部类型上都带的<code>format</code>方法格式化美元与美分的小数显示，如
+<code>10.23 USD</code>：
 </p>
 
 <pre class="brush: scala">
@@ -2621,7 +2639,9 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </pre>
 
 <p>
-输出字符的长度是通过<code>decimals</code>方法得出的。<code>decimals</code>方法返回十进制数字所要占用的字符长度。如对于<code>decimals(10)</code>代表0到9，会占用一个字符，而<code>decimals</code>(100)是0到99会占用两个字符。<code>decimals</code>方法通过简单递归实现：
+输出字符的长度是通过<code>decimals</code>方法得出的。<code>decimals</code>方法返回十进制数字所要占用的
+字符长度。如对于<code>decimals(10)</code>代表0到9，会占用一个字符，而<code>decimals(100)</code>是0到99
+会占用两个字符。<code>decimals</code>方法通过简单递归实现：
 </p>
 
 <pre class="brush: scala">
@@ -2680,7 +2700,8 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </pre>
 
 <p>
-在货币中增加根据汇率来转换的功能。接收一个外币类型，把自己的金额转成这个外币的金额：
+在货币中增加根据汇率来转换的功能。接收一个外币类型，把自己的金额转成这个外币的
+金额：
 </p>
 
 <pre class="brush: scala">
@@ -2773,7 +2794,8 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </pre>
 
 <p>
-类型抽象实现了不同货币不能相加的功能。像是1999年9月23日，混用英制单位和公制单位引起的火星航天器坠毁事件不会再重演了。
+类型抽象实现了不同货币不能相加的功能。像是1999年9月23日，混用英制单位和公制单位
+引起的火星航天器坠毁事件不会再重演了。
 </p>
 
 
@@ -2783,15 +2805,14 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 <h2 id="toc_4.1">隐式转换</h2>
 
 <p>
-Scala里有一个很有用的特质<code>RandomAccessSeq[T]</code>提供了可以随机访问的序列。它有很多功能，所以它的子类都自动继承这些功能。
+Scala里有一个很有用的特质<code>RandomAccessSeq[T]</code>提供了可以随机访问的序列。它有很多
+功能，所以它的子类都自动继承这些功能。现在有个问题，我们要用到<code>String</code>没有混入
+<code>RandomAccessSeq</code>特质，所以用不到那些方便的功能。
 </p>
 
 <p>
-现在有个问题，我们要用到<code>String</code>没有混入<code>RandomAccessSeq</code>特质，所以用不到那些方便的功能。
-</p>
-
-<p>
-隐式转换可以让<code>String</code>表现得像<code>RandomAccessSeq</code>的子类。为了达到这一目的，需要定义从<code>String</code>到<code>RandomAccessSeq</code>的隐匿转换。
+隐式转换可以让<code>String</code>表现得像<code>RandomAccessSeq</code>的子类。为了达到这一目的，需要
+定义从<code>String</code>到<code>RandomAccessSeq</code>的隐匿转换。
 </p>
 
 <pre class="brush: scala">
@@ -2825,28 +2846,34 @@ Scala里有一个很有用的特质<code>RandomAccessSeq[T]</code>提供了可�
 </p>
 
 <p>
-顺便提一下：<code>Predef</code>对象已经用类似的方式定义了<code>stringWrapper</code>转换，所以其实不用定义也可以隐匿转换了。
+顺便提一下：<code>Predef</code>对象已经用类似的方式定义了<code>stringWrapper</code>转换，所以其实不用
+定义也可以隐匿转换了。
 </p>
 
 
 <h2 id="toc_4.2">隐式操作规则</h2>
 
-<dl>
-<dt>标记规则 </dt>
-<dd>只有标记为<code>implicit</code>的定义才是可用的。可以用来标记任何变量、函数或对象定义。</dd>
-</dl>
-
-<dl>
-<dt>作用域规则 </dt>
-<dd>必须以单一标识符的形式处于作用域中，或与转换的源或目标类型关联在一起。</dd>
-</dl>
+<h3 id="toc_4.2.1">标记规则</h3>
 
 <p>
-就是不能用<code>aaa.convert(x)</code>，这不是单一的。要先<code>import aaa</code>，然后<code>convert(x)</code>，这样才是单一的。
+只有标记为<code>implicit</code>的定义才是可用的。可以用来标记任何变量、函数或对象定义。
+</p>
+
+<h3 id="toc_4.2.2">作用域规则</h3>
+
+<p>
+必须以单一标识符的形式处于作用域中，或与转换的源或目标类型关联在一起。
 </p>
 
 <p>
-“单一标识符”规则有个例外。转换的“目标”与“源”的类型的“伴生对象”中的隐式转换定义会被编译器找到。如从<code>Dollar</code>转为<code>Euro</code>，可以把隐匿转换放在这两者之一的的伴生对象中：
+所以不能用<code>aaa.convert(x)</code>，这不是单一的。要先<code>import aaa</code>，然后<code>convert(x)</code>，
+这样才是单一的。
+</p>
+
+<p>
+“单一标识符”规则有个例外。转换的“目标”与“源”的类型的“伴生对象”中的隐式转换定义
+会被编译器找到。如从<code>Dollar</code>转为<code>Euro</code>，可以把隐匿转换放在这两者之一的的伴生对象
+中：
 </p>
 
 <pre class="brush: scala">
@@ -2860,29 +2887,36 @@ Scala里有一个很有用的特质<code>RandomAccessSeq[T]</code>提供了可�
 这样就不用手动引入了。
 </p>
 
-<dl>
-<dt>无歧义规则 </dt>
-<dd>不能有其他转换，如果有两个可用的从类A到类B的转换，会报错。可以移除一个转换函数，或是显式指明一个方法，如：<code>convertFunc2(x) + y</code></dd>
-</dl>
-
-<dl>
-<dt>单一调用原则 </dt>
-<dd>不会嵌套地转换，如：<code>convert1(convert2(x)) + y</code>。</dd>
-</dl>
-
-<dl>
-<dt>显式操作先行规则 </dt>
-<dd>如果不用转换类型就可以用，编译器不会再画蛇添足地转换。</dd>
-</dl>
+<h3 id="toc_4.2.3">无歧义规则</h3>
 
 <p>
-这是一个供程序员把握的度：如果代码太冗长，用隐式转换来精简代码；如果代码看起来太简单不明确，用显式的转换来减少歧义和二义性。
+不能有其他转换，如果有两个可用的从类A到类B的转换，会报错。可以移除一个转换函数，
+或是显式指明一个方法，如：<code>convertFunc2(x) + y</code>
 </p>
 
-<dl>
-<dt>命名隐式转换 </dt>
-<dd>转换方法的命名可以随意，但要考虑到两个情况：是不是需要在方法应用中明确写明，以及决定在哪个隐式转换在程序的任何地方都有效。</dd>
-</dl>
+<h3 id="toc_4.2.4">单一调用原则</h3>
+
+<p>
+不会嵌套地转换，如：<code>convert1(convert2(x)) + y</code>。
+</p>
+
+<h3 id="toc_4.2.5">显式操作先行规则</h3>
+
+<p>
+如果不用转换类型就可以用，编译器不会再画蛇添足地转换。
+</p>
+
+<p>
+这是一个供程序员把握的度：如果代码太冗长，用隐式转换来精简代码；如果代码看起来
+太简单不明确，用显式的转换来减少歧义和二义性。
+</p>
+
+<h3 id="toc_4.2.6">命名隐式转换</h3>
+
+<p>
+转换方法的命名可以随意，但要考虑到两个情况：是不是需要在方法应用中明确写明，以及
+决定在哪个隐式转换在程序的任何地方都有效。
+</p>
 
 <p>
 拿第二点来说，设一个对象带两个隐式转换：
@@ -2910,7 +2944,8 @@ Scala里有一个很有用的特质<code>RandomAccessSeq[T]</code>提供了可�
 </p>
 
 <p>
-Scala中有三个地方会用到隐式转换：转换为需要的类型、指定（方法）调用者的转换、隐式参数。接下来的三节分别讨论这三种情况。
+Scala中有三个地方会用到隐式转换：转换为需要的类型、指定（方法）调用者的转换、
+隐式参数。接下来的三节分别讨论这三种情况。
 </p>
 
 
@@ -2950,7 +2985,8 @@ Scala中有三个地方会用到隐式转换：转换为需要的类型、指定
 </pre>
 
 <p>
-因为从<code>Double</code>到<code>Int</code>会丢失精度，所以<code>Predef</code>中没有默认定义；但是反过来在<code>Predef</code>中已经有定义了：
+因为从<code>Double</code>到<code>Int</code>会丢失精度，所以<code>Predef</code>中没有默认定义；但是反过来在
+<code>Predef</code>中已经有定义了：
 </p>
 
 <pre class="brush: scala">
@@ -3038,7 +3074,8 @@ Scala中有三个地方会用到隐式转换：转换为需要的类型、指定
 </pre>
 
 <p>
-其实<code>Map</code>对象里的<code>-&gt;</code>根本就不是内建语法。实际上是定义在<code>scala.Predef</code>中的类<code>ArrowAssoc</code>的方法。还定义了从<code>Any</code>到<code>ArrowAssoc</code>的隐式转换。
+其实<code>Map</code>对象里的<code>-&gt;</code>根本就不是内建语法。实际上是定义在<code>scala.Predef</code>中的类
+<code>ArrowAssoc</code>的方法。还有定义了从<code>Any</code>到<code>ArrowAssoc</code>的隐式转换。
 </p>
 
 <p>
@@ -3060,7 +3097,9 @@ Scala中有三个地方会用到隐式转换：转换为需要的类型、指定
 <h2 id="toc_4.5">隐式参数</h2>
 
 <p>
-省略柯里化后的参数列表。编译器会用<code>someCall(a)(b,c,d)</code>代替<code>someCall(a)</code>。能这样做的前题是不仅<code>b</code><code>c</code><code>d</code>三个要定义<code>implicit</code>，连<code>someCall</code>或<code>someCall</code>定义的最后一个参数列表都必须被标记为<code>implicit</code>。
+省略柯里化后的参数列表。编译器会用<code>someCall(a)(b,c,d)</code>代替<code>someCall(a)</code>。能这样
+做的前题是不仅<code>b</code><code>c</code><code>d</code>三个要定义<code>implicit</code>，连<code>someCall</code>或<code>someCall</code>定义的最后
+一个参数列表都必须被标记为<code>implicit</code>。
 </p>
 
 <p>
@@ -3072,7 +3111,8 @@ Scala中有三个地方会用到隐式转换：转换为需要的类型、指定
 </pre>
 
 <p>
-还有一个<code>Greeter</code>类的方法<code>greet</code>有两个参数列表。分别是用户名和前面的命令行提示符类：
+还有一个<code>Greeter</code>类的方法<code>greet</code>有两个参数列表。分别是用户名和前面的命令行
+提示符类：
 </p>
 
 <pre class="brush: scala">
@@ -3108,7 +3148,8 @@ Scala中有三个地方会用到隐式转换：转换为需要的类型、指定
 </pre>
 
 <p>
-注意它本身也要被定义为<code>implicit</code>，不然是不会被用来作为隐式变量的。而且如果不是在同一作用域的话，也不能用：
+注意它本身也要被定义为<code>implicit</code>，不然是不会被用来作为隐式变量的。而且如果不是在
+同一作用域的话，也不能用：
 </p>
 
 <pre class="brush: scala">
@@ -3133,7 +3174,9 @@ Scala中有三个地方会用到隐式转换：转换为需要的类型、指定
 </pre>
 
 <p>
-注意<code>implicit</code>关键字要用于全体参数列表而不是单独参数。下面的例子中<code>Greeter</code>的<code>greet</code>方法最后的参数列表再次被标记为<code>implicit</code>，它有两个参数：<code>prompt: PrefferredPrompt</code>和<code>drink: PrefferedDrink</code>。
+注意<code>implicit</code>关键字作用于全体参数列表而不是单独参数。下面的例子中<code>Greeter</code>的
+<code>greet</code>方法最后的参数列表再次被标记为<code>implicit</code>，它有两个参数：
+<code>prompt: PrefferredPrompt</code>和<code>drink: PrefferedDrink</code>。
 </p>
 
 <pre class="brush: scala">
@@ -3158,7 +3201,8 @@ Scala中有三个地方会用到隐式转换：转换为需要的类型、指定
 </pre>
 
 <p>
-伴生对象中定义了两个隐式的变量，只要它们不作为单一标识符处于作用域内，不然就不能用来填充缺少的参数列表：
+伴生对象中定义了两个隐式的变量，只要它们不作为单一标识符处于作用域内，不然就不能
+用来填充缺少的参数列表：
 </p>
 
 <pre class="brush: scala">
@@ -3196,11 +3240,13 @@ Scala中有三个地方会用到隐式转换：转换为需要的类型、指定
 </pre>
 
 <p>
-注意这里的没有用<code>String</code>这样的常用类型来作为<code>prompt</code>或<code>drink</code>的类型。就是为了防止被过多地匹配到隐式转换。
+注意这里的没有用<code>String</code>这样的常用类型来作为<code>prompt</code>或<code>drink</code>的类型。就是为了
+防止被过多地匹配到隐式转换。
 </p>
 
 <p>
-隐式类型转换常见用法是为了提供显式标明的参数列表信息。考虑下面的代码，它返回传入的列表参数中的最大元素：
+隐式类型转换常见用法是为了提供显式标明的参数列表信息。考虑下面的代码，它返回传入
+的列表参数中的最大元素：
 </p>
 
 <pre class="brush: scala">
@@ -3217,11 +3263,14 @@ Scala中有三个地方会用到隐式转换：转换为需要的类型、指定
 </pre>
 
 <p>
-注意参数类型已经被限制为<code>T &lt;: Ordered[T]</code>，就是说列表的元素<code>T</code>要实现<code>Ordered[T]</code>物质。所以列表是可排序元素的列表。但是缺点是<code>Int</code>列表不行，因为<code>Int</code>没有实现物质<code>Ordered</code>，所以不是<code>Ordered[T]</code>的子类。
+注意参数类型已经被限制为<code>T &lt;: Ordered[T]</code>，就是说列表的元素<code>T</code>要实现<code>Ordered[T]</code>
+特质。所以列表是可排序元素的列表。但是缺点是<code>Int</code>列表不行，因为<code>Int</code>没有实现特质
+<code>Ordered</code>，所以不是<code>Ordered[T]</code>的子类。
 </p>
 
 <p>
-更加泛用的方法是不限制类型，但是再加一个参数，这个参数是把<code>T</code>转为<code>Ordered[T]</code>的函数。
+更加泛用的方法是不限制类型，但是再加一个参数，这个参数是把<code>T</code>转为<code>Ordered[T]</code>的
+函数。
 </p>
 
 <p>
@@ -3244,11 +3293,14 @@ Scala中有三个地方会用到隐式转换：转换为需要的类型、指定
 </pre>
 
 <p>
-要排序的列表是必须显式提供的，所以元素的类型<code>T</code>是在编译时就确定的。确定了类型<code>T</code>之后就可以判断<code>T =&gt; Ordered[T]</code>类型的隐式定义是否存在于作用域中。如果存在就隐式传入排序函数<code>order</code>。
+要排序的列表是必须显式提供的，所以元素的类型<code>T</code>是在编译时就确定的。确定了类型<code>T</code>
+之后就可以判断<code>T =&gt; Ordered[T]</code>类型的隐式定义是否存在于作用域中。如果存在就隐式
+传入排序函数<code>order</code>。
 </p>
 
 <p>
-这种方式在很多Scala的通用库中也用到，它们提供了隐式的排序方法。所以我们上面写的方法可以用在很多类型上：
+这种方式在很多Scala的通用库中也用到，它们提供了隐式的排序方法。所以我们上面写的
+方法可以用在很多类型上：
 </p>
 
 <pre class="brush: scala">
@@ -3262,10 +3314,12 @@ Scala中有三个地方会用到隐式转换：转换为需要的类型、指定
   res12: java.lang.String = two
 </pre>
 
-<dl>
-<dt>隐式参数样式规则 </dt>
-<dd>就是在要用到隐式转换的地方最好是从自定义的类型开始转而不是从<code>String</code>这样的很常见的类型开始转。如果<code>maxListImpParm</code>直接写成下面这样的方法签名：</dd>
-</dl>
+<h3 id="toc_4.5.1">隐式参数样式规则</h3>
+
+<p>
+就是在要用到隐式转换的地方最好是从自定义的类型开始转而不是从<code>String</code>这样的很常见
+的类型开始转。如果<code>maxListImpParm</code>直接写成下面这样的方法签名：
+</p>
 
 <pre class="brush: scala">
   def maxListPoorStyle[T](elments: List[T])
@@ -3284,7 +3338,9 @@ Scala中有三个地方会用到隐式转换：转换为需要的类型、指定
 <h2 id="toc_4.6">视界</h2>
 
 <p>
-前面的例子还可以再用陷式操作强化。如果把<code>implicit</code>用在参数上，编译器不仅会尝试用隐式值补足这个参数，还会把这个参数当作可用的隐式操作而使用于方法体中。因此方法体中<code>orderer</code>的两处应用都可以被省略。
+前面的例子还可以再用隐式操作强化。如果把<code>implicit</code>用在参数上，编译器不仅会尝试用
+隐式值补足这个参数，还会把这个参数当作可用的隐式操作而使用于方法体中。因此方法体
+中<code>orderer</code>的两处应用都可以被省略。
 </p>
 
 <pre class="brush: scala">
@@ -3303,19 +3359,28 @@ Scala中有三个地方会用到隐式转换：转换为需要的类型、指定
 </pre>
 
 <p>
-编译器会发现上面代码的类型不能匹配。比如如<code>T</code>类型的<code>x</code>不存在<code>&gt;</code>方法，所以<code>x &gt; maxRest</code>不起作用。
+编译器会发现上面代码的类型不能匹配。比如如<code>T</code>类型的<code>x</code>不存在<code>&gt;</code>方法，所以
+<code>x &gt; maxRest</code>不起作用。
 </p>
 
 <p>
-但编译器在这个时候并不会马上停止，而是先查找能修复这个问题的隐式转换。在这个例子中换成了<code>orderer(x) &gt; maxRest</code>，并且同样把<code>maxList(rest)</code>换成了<code>maxList(rest)(ordered)</code>。
+但编译器在这个时候并不会马上停止，而是先查找能修复这个问题的隐式转换。
 </p>
 
 <p>
-回过来看<code>maxList</code>方法中没有提到有<code>ordered</code>参数的地方，所有对<code>ordered</code>的使用都是隐式的。这是一个很常用的代码模式：隐式参数只是用来转换，所以它本身也可以被隐式地使用。
+在这个例子中换成了<code>orderer(x) &gt; maxRest</code>，并且同样把<code>maxList(rest)</code>换成了
+<code>maxList(rest)(ordered)</code>。
 </p>
 
 <p>
-在现在的版本，　因为参数名没有被显式调用，所以名称也可以随便定。如，只要不改变<code>maxList</code>的方法体，对于只改变参数名称来说，方法的行为没有任何改变：
+回过来看<code>maxList</code>方法中没有提到有<code>ordered</code>参数的地方，所有对<code>ordered</code>的使用都是
+隐式的。这是一个很常用的代码模式：隐式参数只是用来转换，所以它本身也可以被隐式地
+使用。
+</p>
+
+<p>
+在现在的版本，因为参数名没有被显式调用，所以名称也可以随便定。如，只要不改变
+<code>maxList</code>的方法体，对于只改变参数名称来说，方法的行为没有任何改变：
 </p>
 
 <pre class="brush: scala">
@@ -3335,7 +3400,8 @@ Scala中有三个地方会用到隐式转换：转换为需要的类型、指定
 </pre>
 
 <p>
-因为这样的方法非常常用，所以Scala可以让代码省略这个参数的名称并使用视界缩短方法头。<code>maxList</code>方法签名可以是这样：
+因为这样的方法非常常用，所以Scala可以让代码省略这个参数的名称并使用视界缩短
+方法头。<code>maxList</code>方法签名可以是这样：
 </p>
 
 <pre class="brush: scala">
@@ -3352,7 +3418,8 @@ Scala中有三个地方会用到隐式转换：转换为需要的类型、指定
 </pre>
 
 <p>
-可以把<code>T &lt;% Ordered[T]</code>理解为：“T是能被当作<code>Ordered[T]</code>的任何类型”。编译器将调用声明在<code>Predef</code>中的隐式鉴别函数：
+可以把<code>T &lt;% Ordered[T]</code>理解为：“T是能被当作<code>Ordered[T]</code>的任何类型”。编译器将调用
+声明在<code>Predef</code>中的隐式鉴别函数：
 </p>
 
 <pre class="brush: scala">
@@ -3360,7 +3427,8 @@ implicit def identity[A](x: A): A = x
 </pre>
 
 <p>
-如果传入的类型正好就是<code>Ordered[T]</code>，那上面的转换什么也不做，只是简单地把传入的参数再返回出来。
+如果传入的类型正好就是<code>Ordered[T]</code>，那上面的转换什么也不做，只是简单地把传入的
+参数再返回出来。
 </p>
 
 <h3 id="toc_4.6.1">视界与上界</h3>
@@ -3370,7 +3438,8 @@ implicit def identity[A](x: A): A = x
 </p>
 
 <p>
-相比之前用到的上界版本的<code>maxListUpBound</code>方法，唯一的区别就是上界符号与视界符号的不同，但是我们的视界版本可以支持更多类型。
+相比之前用到的上界版本的<code>maxListUpBound</code>方法，唯一的区别就是上界符号与视界符号的
+不同，但是我们的视界版本可以支持更多类型。
 </p>
 
 
@@ -3383,7 +3452,9 @@ implicit def identity[A](x: A): A = x
 <h3 id="toc_4.7.1">没有对应的转换规则</h3>
 
 <p>
-在程序员认为应该隐式转换但编译器没有转换时，手动把转换调用写出来。这样如果有报错就知道没有隐式转换的原因了。如下面的代码错把<code>stringWrapper</code>当成<code>String</code>转到<code>List</code>而不是<code>RandomAccessSeq</code>：
+在程序员认为应该隐式转换但编译器没有转换时，手动把转换调用写出来。这样如果有报错
+就知道没有隐式转换的原因了。如下面的代码错把<code>stringWrapper</code>当成<code>String</code>转到
+<code>List</code>而不是<code>RandomAccessSeq</code>：
 </p>
 
 <pre class="brush: scala">
@@ -3398,7 +3469,8 @@ scala&gt; val chars: List[Char] = "xyz"
 <h3 id="toc_4.7.2">被其他转换规则干扰</h3>
 
 <p>
-如果手动指定转换以后错误消失，那就很有可以是其他的转换规则覆盖了你想要的替换规则。
+如果手动指定转换以后错误消失，那就很有可以是其他的转换规则覆盖了你想要的替换规则
+。
 </p>
 
 <pre class="brush: scala">
