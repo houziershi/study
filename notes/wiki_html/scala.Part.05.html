@@ -68,6 +68,16 @@
 <ul>
 <li><a href="#toc_3.1">例子：抽取email地址</a>
 <li><a href="#toc_3.2">抽取器</a>
+<li><a href="#toc_3.3">只有1个或没有变量的模式</a>
+<li><a href="#toc_3.4">可变参数的抽取器</a>
+<li><a href="#toc_3.5">抽取器和序列模式</a>
+<li><a href="#toc_3.6">抽取器 VS. 样本类</a>
+<li><a href="#toc_3.7">正则表达式</a>
+<ul>
+<li><a href="#toc_3.7.1">形成正则表达式</a>
+<li><a href="#toc_3.7.2">用正则表达式查找替换</a>
+<li><a href="#toc_3.7.3">正则表达式抽取值</a>
+</ul>
 </ul>
 </ul>
 </div>
@@ -1124,11 +1134,24 @@ for表达式的实现是基于<code>map</code>、<code>flatMap</code>、<code>fi
   }
 </pre>
 
+<p>
+还可以让这个对象继承自Scala的函数类型：
+</p>
 
 <pre class="brush: scala">
   object EMail extends (String, String) =&gt; String { ... }
 </pre>
 
+<p>
+对象声明里的<code>(String, String) =&gt; String</code>的意思相当于<code>Function2[String, String]</code>
+，是对Email类实现的抽象<code>apply</code>方法的声明。这样可以把Email传递给需要
+<code>Function2[String,String]</code>的方法。
+</p>
+
+
+<p>
+注意<code>unapply</code>方法返回类型是<code>Option</code>。因为输入参数可能不是正确的email格式。
+</p>
 
 <pre class="brush: scala">
   unapply("John@epfl.ch")  equals  Some("John", "epfl.ch")
@@ -1136,35 +1159,56 @@ for表达式的实现是基于<code>map</code>、<code>flatMap</code>、<code>fi
 </pre>
 
 
+<p>
+现在，当模式匹配到抽取器对象指定的模式就会在选择器表达式中调用抽取器的<code>unapply</code>
+方法。如下面的代码：
+</p>
+
 <pre class="brush: scala">
   selectorString match { case EMail(user, domain) =&gt; ... }
 </pre>
 
+<p>
+<code>String</code>类型的<code>selectorString</code>其实先被抽取器处理：
+</p>
 
 <pre class="brush: scala">
   EMail.unapply(selectorString)
 </pre>
 
+<p>
+产的结构再进行模式匹配判断。
+</p>
+
+<p>
+<code>selectorString</code>的类型虽然和<code>unapply</code>一样都是<code>String</code>，但这并不是必须的。像下面
+这样检查任意类型的实例是不是email：
+</p>
 
 <pre class="brush: scala">
   val x: Any = ...
   x match { case EMail(user, domain) =&gt; ... }
 </pre>
 
-
 <p>
-// In file extractors/Misc.scala
+一般来说如果包含了注入方法，那应该与抽取方法成对偶关系。如调用：
 </p>
 
 <pre class="brush: scala">
   EMail.unapply(EMail.apply(user, domain))
 </pre>
 
+<p>
+应该返回：
+</p>
 
 <pre class="brush: scala">
   Some(user, domain)
 </pre>
 
+<p>
+也就是说被<code>Some</code>包装的同一序列的参数。反过来就是先执行<code>unapply</code>再执行<code>apply</code>：
+</p>
 
 <pre class="brush: scala">
   EMail.unapply(obj) match { 
@@ -1172,16 +1216,20 @@ for表达式的实现是基于<code>map</code>、<code>flatMap</code>、<code>fi
   }
 </pre>
 
-
+<p>
+虽然这样的对偶性不是强制要求的，但强烈建议实现。
+</p>
   
 
+<h2 id="toc_3.3">只有1个或没有变量的模式</h2>
+
 <p>
-24.3 Patterns with zero or one variables
+之前<code>unapply</code>方法返回的是元组，这在有多个值要返回的时候很有用。但是在只有一个值
+或没有值要返回的时候有麻烦，因为元组最小是二元组，没有有一元元组。
 </p>
 
-
 <p>
-// In file extractors/Twice.scala
+所以模式只绑定一个变量的情况要特别对待，把结果直接放在<code>Some</code>中：
 </p>
 
 <pre class="brush: scala">
@@ -1195,9 +1243,8 @@ for表达式的实现是基于<code>map</code>、<code>flatMap</code>、<code>fi
   }
 </pre>
 
-
 <p>
-// In file extractors/UpperCase.scala
+还有一种情况下抽取器模式不绑定任何变量。这样情况下返回布尔值表示匹配成功或失败：
 </p>
 
 <pre class="brush: scala">
@@ -1206,9 +1253,12 @@ for表达式的实现是基于<code>map</code>、<code>flatMap</code>、<code>fi
   }
 </pre>
 
+<p>
+注意上面的代码没有<code>apply</code>，因为本来就没有什么好构造的。
+</p>
 
 <p>
-// In file extractors/Test2.scala
+下面的<code>userTwiceUpper</code>函数的模式匹配代码集中了前面定义的所有抽取器：
 </p>
 
 <pre class="brush: scala">
@@ -1220,6 +1270,18 @@ for表达式的实现是基于<code>map</code>、<code>flatMap</code>、<code>fi
   }
 </pre>
 
+<p>
+函数的第一部分匹配email地址，并且用户名部分需要由大家字母形式的相同字符串出现
+两次组成。
+</p>
+
+<p>
+注意第二行里的<code>UpperCase</code>的空参数列表<code>()</code>是不能省略的，不然会被解释为与
+<code>UpperCase</code>对象进行匹配。还要注意虽然<code>UpperCase()</code>本身没有绑定任何变量，但还可以
+把变量与匹配它的整个模式联系起来。用模式中的变量绑定方案；以<code>x @ UpperCase()</code>的
+模式把<code>x</code>与<code>UpperCase()</code>匹配的模式联系起来。例如在第一个<code>userTwiceUpper</code>调用中，
+<code>x</code>被绑定为<code>DI</code>，因为匹配于<code>UpperCase()</code>模式的值。
+</p>
 
 <pre class="brush: scala">
   scala&gt; userTwiceUpper("DIDI@hotmail.com")
@@ -1233,15 +1295,10 @@ for表达式的实现是基于<code>map</code>、<code>flatMap</code>、<code>fi
 </pre>
 
 
-  
+<h2 id="toc_3.4">可变参数的抽取器</h2>
 
 <p>
-24.4 Variable argument extractors
-</p>
-
-
-<p>
-// In file extractors/DomainTest.scala
+希望的元素个数是可变的，如对域名的处理：
 </p>
 
 <pre class="brush: scala">
@@ -1252,9 +1309,10 @@ for表达式的实现是基于<code>map</code>、<code>flatMap</code>、<code>fi
   }
 </pre>
 
-
 <p>
-// In file extractors/Domain.scala
+可以看到上面的域名是反向展开的，最后一个情况下下<code>_*</code>剩下的所有元素。<code>unapply</code>值
+的返回个数定下了就不能改了，所以Scala允许为变参数定义不同的抽取方法<code>unapplySeq</code>
+：
 </p>
 
 <pre class="brush: scala">
@@ -1270,9 +1328,14 @@ for表达式的实现是基于<code>map</code>、<code>flatMap</code>、<code>fi
   }
 </pre>
 
+<p>
+<code>unapplySeq</code>以句点拆分字符串包装在<code>Some</code>中返回。<code>unapplySeq</code>抽取器返回结果类型
+必须是<code>Option[seq[T]]</code>，这里的元素类型<code>T</code>不能限制。<code>Seq</code>是各种序列类（List、
+Array、RichString等）的共同超类。
+</p>
 
 <p>
-// In file extractors/DomainTest.scala
+这样寻找某个<code>.com</code>域名中的email的函数就是这样：
 </p>
 
 <pre class="brush: scala">
@@ -1282,6 +1345,9 @@ for表达式的实现是基于<code>map</code>、<code>flatMap</code>、<code>fi
   }
 </pre>
 
+<p>
+返回期望的结果：
+</p>
 
 <pre class="brush: scala">
   scala&gt; isTomInDotCom("tom@sun.com")
@@ -1294,9 +1360,9 @@ for表达式的实现是基于<code>map</code>、<code>flatMap</code>、<code>fi
   res5: Boolean = false
 </pre>
 
-
 <p>
-// In file extractors/ExpandedEMail.scala
+同样也可以从<code>unapplySeq</code>及变化部分返回固定的元素。表达为包含所有元素的元组，变化
+部分还是在最后，下面是新的抽取器，其中域名部分已经扩展为序列了：
 </p>
 
 <pre class="brush: scala">
@@ -1312,6 +1378,10 @@ for表达式的实现是基于<code>map</code>、<code>flatMap</code>、<code>fi
   }
 </pre>
 
+<p>
+这里<code>unapplySeq</code>方法返回对偶的可选类型。对偶的第一个元素是用户部分，第二个部分是
+表示域名的序列。然后就可以这样匹配它：
+</p>
 
 <pre class="brush: scala">
   scala&gt; val s = "tom@support.epfl.ch"
@@ -1324,12 +1394,11 @@ for表达式的实现是基于<code>map</code>、<code>flatMap</code>、<code>fi
 </pre>
 
 
-  
+<h2 id="toc_3.5">抽取器和序列模式</h2>
 
 <p>
-24.5 Extractors and sequence patterns
+模式匹配中我们已经知道可以使用序列模式访问列表或数组的元素：
 </p>
-
 
 <pre class="brush: scala">
   List()
@@ -1337,6 +1406,10 @@ for表达式的实现是基于<code>map</code>、<code>flatMap</code>、<code>fi
   Array(x, 0, 0, _)
 </pre>
 
+<p>
+这里的<code>List(...)</code>形式的模式其实是由<code>scala.List</code>的伴生对象定义了<code>unapplySeq</code>方法
+的抽取器，相差定义如下：
+</p>
 
 <pre class="brush: scala">
   package scala
@@ -1347,50 +1420,99 @@ for表达式的实现是基于<code>map</code>、<code>flatMap</code>、<code>fi
   }
 </pre>
 
+<p>
+List对象包含了带可变数量参数的<code>apply</code>方法，从而允许编写如下的表达式：
+</p>
 
 <pre class="brush: scala">
   List()
   List(1, 2, 3)
 </pre>
 
-
+<p>
+它还包含了以序列形式返回列表所有元素的<code>unapplySeq</code>方法，从而对<code>List(...)</code>模式
+提供了支持。<code>scala.Array</code>对象定义也非常类似，所以数组也支持注入和抽取方法。
+</p>
   
 
-<p>
-24.6 Extractors versus case classes
-</p>
+<h2 id="toc_3.6">抽取器 VS. 样本类</h2>
 
+<p>
+样本类会暴露了数据的具体表达方式，让外部看到了类名与构造器等信息，如：
+</p>
 
 <pre class="brush: scala">
   case C(...)
 </pre>
 
-
-  
-
 <p>
-24.7 Regular expressions
+对于已经存在的样本类后来写的代码一定要拿来用它们。如果修改了样本类就一定要把用到
+的地方都一起改了。抽取器是独立的，没有这个问题。
 </p>
 
+<p>
+样本类的优点是容易实现、性能更加高效。而且样本类如果继承自<code>sealed</code>，编译器可以
+穷举所有可能性检查程序里会漏掉的逻辑。
+</p>
+
+<p>
+一般来说，如果是封闭的应用，样本类更加合适；如果是开放的，类层级之类的会有重构，
+就更加适合抽取器。
+</p>
+
+<p>
+在面临选择的时候可以先从样本类开始做，以后发觉有问题再换抽取器。因为抽取器与
+样本类模式在Scala上看上去样子完全一样，所以在客户代码中的模式匹配还是可以继续
+工作的。但是像本章的email例子中模式架构与数据表现类不相符的情况下，只能用抽取器
+。
+</p>
+
+<h2 id="toc_3.7">正则表达式</h2>
+
+<p>
+正则表达式规则看<code>java.util.regex.Pattern</code>包的JavaDoc。RTFM！
+</p>
+
+<h3 id="toc_3.7.1">形成正则表达式</h3>
+
+<p>
+Scala相差类放在<code>scala.util.matching</code>包里：
+</p>
 
 <pre class="brush: scala">
   scala&gt; import scala.util.matching.Regex
 </pre>
 
+<p>
+通过<code>Regex</code>类构造器传递正则表达式：
+</p>
 
 <pre class="brush: scala">
   scala&gt; val Decimal = new Regex("(-)?(\\d+)(\\.\\d*)?")
   Decimal: scala.util.matching.Regex = (-)?(\d+)(\.\d*)?
+</pre>
 
+<p>
+Scala的照排字符串可以免了java复杂的转义：
+</p>
 
+<pre class="brush: scala">
   scala&gt; val Decimal = new Regex("""(-)?(\d+)(\.\d*)?""")
   Decimal: scala.util.matching.Regex = (-)?(\d+)(\.\d*)?
+</pre>
 
+<p>
+还可以更加简化：
+</p>
 
+<pre class="brush: scala">
   scala&gt; val Decimal = """(-)?(\d+)(\.\d*)?""".r
   Decimal: scala.util.matching.Regex = (-)?(\d+)(\.\d*)?
 </pre>
 
+<p>
+<code>RichString</code>类里实现了<code>r</code>方法把字符串转为正则表达式：
+</p>
 
 <pre class="brush: scala">
   package scala.runtime
@@ -1402,6 +1524,35 @@ for表达式的实现是基于<code>map</code>、<code>flatMap</code>、<code>fi
   }
 </pre>
 
+<h3 id="toc_3.7.2">用正则表达式查找替换</h3>
+
+<p>
+查找首次出现作为<code>Option</code>类型结果返回：
+</p>
+
+<pre class="brush: scala">
+regex findFirstIn str
+</pre>
+
+<p>
+所有的出现的匹配以<code>Iterator</code>类型结果返回：
+</p>
+
+<pre class="brush: scala">
+regex findAllIn str
+</pre>
+
+<p>
+查找开始位置匹配出现，返回<code>Option</code>类型：
+</p>
+
+<pre class="brush: scala">
+regex findPrefixOf str
+</pre>
+
+<p>
+例子：
+</p>
 
 <pre class="brush: scala">
   scala&gt; val Decimal = """(-)?(\d+)(\.\d*)?""".r
@@ -1421,20 +1572,42 @@ for表达式的实现是基于<code>map</code>、<code>flatMap</code>、<code>fi
 
   scala&gt; Decimal findPrefixOf input
   res2: Option[String] = None
+</pre>
 
 
+<h3 id="toc_3.7.3">正则表达式抽取值</h3>
+
+<p>
+Scala所有的正则表达式都定义了抽取器，可以用来鉴别匹配于正则表达式分组的子字符串
+。例如，下面这样解构数值字符串：
+</p>
+
+<pre class="brush: scala">
   scala&gt; val Decimal(sign, integerpart, decimalpart) = "-1.23"  
   sign: String = -
   integerpart: String = 1
   decimalpart: String = .23
+</pre>
 
+<p>
+注意这里用<code>Decimal(...)</code>来定义了一个<code>val</code>。<code>Decimal</code>正则表达式值定义了
+<code>unapplySeq</code> 方法把字符串与正则匹配到三个模式变量<code>sign</code>、<code>intergerpart</code>、
+<code>decimalpart</code>，如果有一个部分缺少就是<code>null</code>：
+</p>
 
+<pre class="brush: scala">
   scala&gt; val Decimal(sign, integerpart, decimalpart) = "1.0"
   sign: String = null
   integerpart: String = 1
   decimalpart: String = .0
+</pre>
 
+<p>
+还可以在for表达式中混用抽取器与正则表达式做搜索，如，下面的代码从字符串中找到
+所有的数值：
+</p>
 
+<pre class="brush: scala">
   scala&gt; for (Decimal(s, i, d) &lt;- Decimal findAllIn input)
        |   println("sign: "+ s +", integer: "+
        |       i +", decimal: "+ d)
