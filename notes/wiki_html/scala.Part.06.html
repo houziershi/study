@@ -1,0 +1,1559 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+
+
+<title>Part VI</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+
+<h1>Part VI</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">使用对象的模块化编程</a>
+<ul>
+<li><a href="#toc_1.1">问题</a>
+<li><a href="#toc_1.2">实践项目：食谱应用</a>
+<li><a href="#toc_1.3">抽象概念</a>
+<li><a href="#toc_1.4">把模块拆分为特质</a>
+<li><a href="#toc_1.5">运行期链接</a>
+<li><a href="#toc_1.6">跟踪模块实例</a>
+</ul>
+<li><a href="#toc_2">对象相等性</a>
+<ul>
+<li><a href="#toc_2.1">Scala中的相等性</a>
+<li><a href="#toc_2.2">缩写相等性方法</a>
+<ul>
+<li><a href="#toc_2.2.1">陷阱1：方法签名错误</a>
+<li><a href="#toc_2.2.2">陷阱2：只改equals没有改hashCode</a>
+<li><a href="#toc_2.2.3">陷阱3：用可变字段定义equals</a>
+<li><a href="#toc_2.2.4">陷阱4：不对等的equals方法</a>
+</ul>
+<li><a href="#toc_2.3">定义带参数类型的相等性</a>
+<li><a href="#toc_2.4">实践equals和hashCode</a>
+<ul>
+<li><a href="#toc_2.4.1">equals方法基本要点</a>
+<ul>
+<li><a href="#toc_2.4.1.1">要点1</a>
+<li><a href="#toc_2.4.1.2">要点2</a>
+<li><a href="#toc_2.4.1.3">要点3</a>
+<li><a href="#toc_2.4.1.4">要点4</a>
+<li><a href="#toc_2.4.1.5">要点5</a>
+<li><a href="#toc_2.4.1.6">要点6</a>
+<li><a href="#toc_2.4.1.7">要点7</a>
+</ul>
+<li><a href="#toc_2.4.2">hashCode方法</a>
+</ul>
+</ul>
+<li><a href="#toc_3">结合Scala与Java</a>
+</ul>
+</div>
+
+<h1 id="toc_1">使用对象的模块化编程</h1>
+
+<h2 id="toc_1.1">问题</h2>
+
+<p>
+以高内聚低耦合为目标构建大型应用。
+</p>
+
+<h2 id="toc_1.2">实践项目：食谱应用</h2>
+
+<p>
+构建一个web项目，不仅要把项目分层，而且变了方便测试，还要对要测试的相关层进行
+模仿。
+</p>
+
+<p>
+先进行建模工作。
+</p>
+
+<p>
+食品类只有一个名字：
+</p>
+
+<pre class="brush: scala">
+  package org.stairwaybook.recipe
+
+  abstract class Food(val name: String) {
+    override def toString = name
+  }
+</pre>
+
+<p>
+食谱只有名称、材料列表、做法：
+</p>
+
+<pre class="brush: scala">
+  package org.stairwaybook.recipe
+
+  class Recipe(
+    val name: String,
+    val ingredients: List[Food],
+    val instructions: String
+  ) {
+    override def toString = name
+  }
+</pre>
+
+<p>
+食品和食谱都是要被持久化到数据库里的。下面再建立了这两个类的一些单例对象用来
+测试：
+</p>
+
+<pre class="brush: scala">
+  package org.stairwaybook.recipe
+
+  object Apple extends Food("Apple")
+  object Orange extends Food("Orange")
+  object Cream extends Food("Cream")
+  object Sugar extends Food("Sugar")
+
+  object FruitSalad extends Recipe(
+    "fruit salad",
+    List(Apple, Orange, Cream, Sugar),
+    "Stir it all together."
+  )
+</pre>
+
+<p>
+现在来模拟数据库和浏览功能。因为只是模拟，没有真的数据库，用列表来代替：
+</p>
+
+<pre class="brush: scala">
+  package org.stairwaybook.recipe
+
+  object SimpleDatabase {
+    def allFoods = List(Apple, Orange, Cream, Sugar)
+
+    def foodNamed(name: String): Option[Food] =
+      allFoods.find(_.name == name)
+
+    def allRecipes: List[Recipe] = List(FruitSalad)
+  }
+
+  object SimpleBrowser {
+    def recipesUsing(food: Food) =
+      SimpleDatabase.allRecipes.filter(recipe =&gt;
+        recipe.ingredients.contains(food))
+  }
+</pre>
+
+<p>
+测试调用：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val apple = SimpleDatabase.foodNamed("Apple").get
+  apple: Food = Apple
+
+  scala&gt; SimpleBrowser.recipesUsing(apple)
+  res0: List[Recipe] = List(fruit salad)
+</pre>
+
+<p>
+添加数据库对食品分类的功能。通过<code>FoodCategory</code>类表示食物类型，再用一个列表保存
+所有的食物分类。注意关键字<code>private</code>不仅增加了访问限制，又可以保证对它的重构
+不会影响其他的外部模块，因为外部模块本来就不能直接访问它。
+</p>
+
+<p>
+单例对象可以方便地把程序分成多个模块，改进后的代码如下：
+</p>
+
+<pre class="brush: scala">
+  package org.stairwaybook.recipe
+
+  object SimpleDatabase {
+    def allFoods = List(Apple, Orange, Cream, Sugar)
+
+    def foodNamed(name: String): Option[Food] =
+      allFoods.find(_.name == name)
+
+    def allRecipes: List[Recipe] = List(FruitSalad)
+
+    case class FoodCategory(name: String, foods: List[Food])
+
+    private var categories = List(
+      FoodCategory("fruits", List(Apple, Orange)),
+      FoodCategory("misc", List(Cream, Sugar)))
+
+    def allCategories = categories
+  }
+
+  object SimpleBrowser {
+    def recipesUsing(food: Food) =
+      SimpleDatabase.allRecipes.filter(recipe =&gt;
+        recipe.ingredients.contains(food))
+
+    def displayCategory(category: SimpleDatabase.FoodCategory) {
+      println(category)
+    }
+  }
+</pre>
+
+
+<h2 id="toc_1.3">抽象概念</h2>
+
+<p>
+现在的代码虽然已经分成了数据库模拟与浏览器模块，但这并不是真正模块化的。问题在于
+浏览器模拟是“硬链接”到数据库模块上的：
+</p>
+
+<pre class="brush: scala">
+  SimpleDatabase.allRecipes.filter(recipe =&gt; ...
+</pre>
+
+<p>
+这样数据库模块的改动会影响到浏览模块。解决方案是：如果模块是对象，那模块的模板
+就是类。把浏览器定义为类，所用的数据库指定为类的抽象成员。数据库类应具备的方法有
+<code>allFoods</code>、<code>allRecipes</code>、<code>allCategories</code>。
+</p>
+
+
+<pre class="brush: scala">
+  abstract class Browser {
+    val database: Database
+
+    def recipesUsing(food: Food) =
+      database.allRecipes.filter(recipe =&gt;
+        recipe.ingredients.contains(food))
+
+    def displayCategory(category: database.FoodCategory) { 
+      println(category)
+    }
+  }
+
+  abstract class Database {
+    def allFoods: List[Food]
+    def allRecipes: List[Recipe]
+ 
+    def foodNamed(name: String) =
+      allFoods.find(f =&gt; f.name == name)
+
+    case class FoodCategory(name: String, foods: List[Food])
+    def allCategories: List[FoodCategory]
+  }
+</pre>
+
+<p>
+单例对象由对应的类继承而来：
+</p>
+
+<pre class="brush: scala">
+  object SimpleDatabase extends Database {
+    def allFoods = List(Apple, Orange, Cream, Sugar)
+
+    def allRecipes: List[Recipe] = List(FruitSalad)
+
+    private var categories = List(
+      FoodCategory("fruits", List(Apple, Orange)),
+      FoodCategory("misc", List(Cream, Sugar)))
+
+    def allCategories = categories
+  }
+
+
+  object SimpleBrowser extends Browser {
+    val database = SimpleDatabase
+  }
+</pre>
+
+<p>
+现在模块的具体实现是可以替换的：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val apple = SimpleDatabase.foodNamed("Apple").get
+  apple: Food = Apple
+
+  scala&gt; SimpleBrowser.recipesUsing(apple)
+  res1: List[Recipe] = List(fruit salad)
+</pre>
+
+<p>
+在需要的时候可以换一个模块的新实现：
+</p>
+
+<pre class="brush: scala">
+  object StudentDatabase extends Database {
+    object FrozenFood extends Food("FrozenFood")
+
+    object HeatItUp extends Recipe(
+      "heat it up",
+      List(FrozenFood),
+      "Microwave the 'food' for 10 minutes.")
+
+    def allFoods = List(FrozenFood)
+    def allRecipes = List(HeatItUp)
+    def allCategories = List(
+      FoodCategory("edible", List(FrozenFood)))
+  }
+
+  object StudentBrowser extends Browser {
+    val database = StudentDatabase
+  }
+</pre>
+
+
+<h2 id="toc_1.4">把模块拆分为特质</h2>
+
+<p>
+如果单个模块放在一个文件里太大的话，用特技拆成多个文件：
+</p>
+
+<pre class="brush: scala">
+  trait FoodCategories {
+    case class FoodCategory(name: String, foods: List[Food])
+    def allCategories: List[FoodCategory]
+  }
+</pre>
+
+<p>
+现在<code>Database</code>类可以混入<code>FodCategories</code>特质而无须定义<code>FoodCategory</code>和
+<code>allCategories</code>：
+</p>
+
+<pre class="brush: scala">
+  abstract class Database extends FoodCategories {
+    def allFoods: List[Food]
+    def allRecipes: List[Recipe]
+    def foodNamed(name: String) =
+      allFoods.find(f =&gt; f.name == name)
+  }
+</pre>
+
+<p>
+再把<code>SimpleDatabase</code>分成食物和食谱两个特质：
+</p>
+
+<pre class="brush: scala">
+  object SimpleDatabase extends Database
+      with SimpleFoods with SimpleRecipes
+</pre>
+
+<p>
+食物特质：
+</p>
+
+<pre class="brush: scala">
+  trait SimpleFoods {
+    object Pear extends Food("Pear")
+    def allFoods = List(Apple, Pear)
+    def allCategories = Nil
+  }
+</pre>
+
+<p>
+但食谱物质遇到了问题：
+</p>
+
+<pre class="brush: scala">
+  trait SimpleRecipes { // Does not compile
+    object FruitSalad extends Recipe(
+      "fruit salad",
+      List(Apple, Pear),  // Uh oh
+      "Mix it all together."
+    )
+    def allRecipes = List(FruitSalad)
+  }
+</pre>
+
+<p>
+不能编译的原因是<code>Pear</code>没有处于使用它的特质中。编译器不知道<code>SimpleRecipes</code>只会与
+<code>SimpleFoods</code>混搭在一起。针对这种情况Scala提供了自身类型（self type）。表明在
+类中提到到<code>this</code>时，对于<code>this</code>的类型假设。混入了多个特质时指定这些特质为假设性
+特质。
+</p>
+
+<p>
+在这个例子中只要指定<code>SimpleFoods</code>一个特质为假设性特质就够了，现在<code>Pear</code>在作用域
+里了：
+</p>
+
+<pre class="brush: scala">
+  trait SimpleRecipes {
+    this: SimpleFoods =&gt;
+
+    object FruitSalad extends Recipe(
+      "fruit salad",
+      List(Apple, Pear),   // Now Pear is in scope
+      "Mix it all together."
+    )
+    def allRecipes = List(FruitSalad)
+  }
+</pre>
+
+<p>
+<code>Pear</code>的引用被认为是<code>this.Pear</code>。因为任何混入了<code>SimpleRecipes</code>的具体类都必须同时
+是<code>SimpleFoods</code>的子类，所以说<code>Pear</code>会是它的成员，所以没有安全问题。而抽象子类
+不用遵守这个限制，因为抽象子类不能<code>new</code>实例化，所以不存在<code>this.Pear</code>引用失败的
+风险。
+</p>
+
+<h2 id="toc_1.5">运行期链接</h2>
+
+<p>
+Scala又一个牛B的特性是可以在运行进链接，并根据运行时决定哪个模块将链接到哪个模块
+。如，下面的代码可以在运行时选择数据库并打印输出所胡苹果食谱：
+</p>
+
+<pre class="brush: scala">
+  object GotApples {
+    def main(args: Array[String]) {
+      val db: Database =
+        if(args(0) == "student")
+          StudentDatabase
+        else
+          SimpleDatabase
+
+      object browser extends Browser {
+        val database = db
+      }
+
+      val apple = SimpleDatabase.foodNamed("Apple").get
+
+      for(recipe &lt;- browser.recipesUsing(apple))
+        println(recipe)
+    } 
+  }
+</pre>
+
+<p>
+如果先简单数据库，会看到水果色拉食谱；如果选小学生数据库，会找不到苹果食谱：
+</p>
+
+
+<pre class="brush: scala">
+  $ scala GotApples simple
+  fruit salad
+  $ scala GotApples student
+  $
+</pre>
+
+<p>
+虽然这里和本章形状的硬链接版本一样写死了<code>StudentDatabase</code>和<code>SimpleDatabase</code>类名
+，但区别是它们处于可替换的文件中。
+</p>
+
+<p>
+这有点像Java中用Spring的XML配置注入。Scala里通过程序来配置还可以增加语法检查。
+</p>
+
+
+<h2 id="toc_1.6">跟踪模块实例</h2>
+
+<p>
+虽然代码一样但上一节中创建不同浏览器和数据库模块依然是分离的模块，所以每个模块
+都有自己的内容，包括内嵌类。比如说<code>SimpleDatabase</code>里的<code>FoodCategory</code>就与
+<code>StudentBatabase</code>里的<code>FoodCategory</code>不是同一个类：
+</p>
+
+
+<pre class="brush: scala">
+  scala&gt; val category = StudentDatabase.allCategories.head
+  category: StudentDatabase.FoodCategory = 
+  FoodCategory(edible,List(FrozenFood))
+
+  scala&gt; SimpleBrowser.displayCategory(category)
+  &lt;console&gt;:12: error: type mismatch;
+   found   : StudentDatabase.FoodCategory
+   required: SimpleBrowser.database.FoodCategory
+         SimpleBrowser.displayCategory(category)
+                                       ^
+</pre>
+
+<p>
+把<code>FoodCategory</code>定义移到类或特质之外可以让所有的<code>FoodCategory</code>都相同。开发人员
+可以选择是不是要这样做。就上面的例子来说两个<code>FoodCategory</code>类确实是不同的，
+所以编译器会报错很正常。
+</p>
+
+<p>
+但有时可能会遇到虽然两个类型相同但是编译器却不能识别的情况。这时可以用单例类型来
+解决这个问题。例如在<code>GotApples</code>程序里，类型检查器不知道<code>db</code>和<code>browser.database</code>
+是相同的。所以如果尝试在两个对象之间传递分类信息会引起类型错误：
+</p>
+
+<pre class="brush: scala">
+  object GotApples {
+    // same definitions...
+  
+    for (category &lt;- db.allCategories)
+      browser.displayCategory(category)
+  
+    // ...
+  }
+  
+  GotApples2.scala:14: error: type mismatch;
+   found   : db.FoodCategory
+   required: browser.database.FoodCategory
+          browser.displayCategory(category)
+                                  ^
+  one error found
+</pre>
+
+<p>
+要避免这个错误，需要通知类型检查器它们是同一个对象。可以通过改变
+<code>browser.database</code>的定义实现：
+</p>
+
+<pre class="brush: scala">
+  object browser extends Browser {
+    val database: db.type = db
+  }
+</pre>
+
+<p>
+这个定义基本上和前面一样，就是<code>database</code>的类型很怪<code>db.type</code>。结尾<code>.type</code>表示它是
+单例类型。这是一个特殊的类型，内容只保存一个对象，在这里就是<code>db</code>指向的那个对象。
+因为这个东西一般没有什么用处所以编译器不默认引入它。但是在这里的单例类型可以让
+编译器知道<code>db</code>和<code>browser.database</code>是同样的对象，这些信息可以消除类型错误。
+</p>
+
+
+
+
+<h1 id="toc_2">对象相等性</h1>
+
+<h2 id="toc_2.1">Scala中的相等性</h2>
+
+<p>
+Scala和Java不同，<code>eq</code>表示同一实体；<code>==</code>表示实体含义相同。
+</p>
+
+<p>
+Scala中的<code>==</code>不能重写，因为在<code>Any</code>类中被定义为<code>final</code>的：
+</p>
+
+<pre class="brush: scala">
+  final def == (that: Any): Boolean = 
+    if (null eq this) {null eq that} else {this equals that}
+</pre>
+
+<p>
+不过可以看到这里调用了<code>equals</code>方法，可以覆盖它来定义相等性方法。
+</p>
+  
+
+<h2 id="toc_2.2">缩写相等性方法</h2>
+
+<p>
+要正确实现相等性方法比想象中的困难。而且因为相等性是很多其他操作的基础，如果出错
+的话，像是把<code>C</code>类型的实例放到不可重复集这样的操作也会出错：
+</p>
+
+<pre class="brush: scala">
+  var hashSet: Set[C] = new collection.immutable.HashSet
+  hashSet += elem1
+  hashSet contains elem2    // returns false!
+</pre>
+
+<p>
+重写<code>equals</code>方法是常常会出现的四种错误，在本节以后的部分会分别讨论：
+</p>
+
+<ul>
+<li>
+定义时方法签名写错了。
+
+<li>
+只改了<code>equals</code>忘记改了<code>hashCode</code>。
+
+<li>
+通过可变字段来定义<code>equals</code>方法。
+
+<li>
+没有通过对等的关系来定义<code>equals</code>方法。
+
+</ul>
+
+<h3 id="toc_2.2.1">陷阱1：方法签名错误</h3>
+
+<p>
+对于以下的点类，考虑怎么实现<code>equals</code>方法：
+</p>
+
+<pre class="brush: scala">
+  class Point(val x: Int, val y: Int) { ... }
+</pre>
+
+<p>
+下面的实现看起来不错，其实是错的：
+</p>
+
+<pre class="brush: scala">
+  // An utterly wrong definition of equals
+  def equals(other: Point): Boolean =
+    this.x == other.x &amp;&amp; this.y == other.y
+</pre>
+
+<p>
+粗看好像没有问题：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val p1, p2 = new Point(1, 2)
+  p1: Point = Point@62d74e
+  p2: Point = Point@254de0
+
+  scala&gt; val q = new Point(2, 3)
+  q: Point = Point@349f8a
+
+  scala&gt; p1 equals p2
+  res0: Boolean = true
+
+  scala&gt; p1 equals q
+  res1: Boolean = false
+</pre>
+
+<p>
+但是一但放到集体里，那就出问题了：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; import scala.collection.mutable._
+  import scala.collection.mutable._
+
+  scala&gt; val coll = HashSet(p1)
+  coll: scala.collection.mutable.Set[Point] = 
+  Set(Point@62d74e)
+
+  scala&gt; coll contains p2
+  res2: Boolean = false
+</pre>
+
+<p>
+<code>p1</code>等于<code>p2</code>，而且<code>p1</code>已经在<code>coll</code>里了，但是为什么程序判断<code>coll</code>里不包含<code>p2</code>呢？
+为了调查我们遮住一个参与比较的点的精确类开，然后再做以下操作：
+</p>
+
+<p>
+把<code>p2a</code>作为<code>p2</code>的别名，只不是类型是<code>Any</code>而不是<code>Point</code>，再用<code>p2a</code>而不是<code>p2</code>来比较
+：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val p2a: Any = p2
+  p2a: Any = Point@254de0
+
+  scala&gt; p1 equals p2a
+  res3: Boolean = false
+</pre>
+
+<p>
+问题在于<code>equals</code>方法没有重写标准<code>equals</code>方法，因为它的类型不同。根类<code>Any</code>中定义
+的类型是：
+</p>
+
+<pre class="brush: scala">
+  def equals(other: Any): Boolean
+</pre>
+
+<p>
+所以说有<code>Point</code>没有覆盖<code>Any</code>里的相等方法，只是重载了。现在有了两个<code>equals</code>方法。
+参数如果是<code>Any</code>的话调用的是参数是<code>Any</code>版本的方法。而<code>HashSet</code>的<code>contains</code>方法是
+泛型集合，所以它只调用<code>Object</code>类的<code>equals</code>方法而不是<code>Point</code>是重载的版本。更好的
+版本如下：
+</p>
+
+<pre class="brush: scala">
+  // A better definition, but still not perfect
+  override def equals(other: Any) = other match {
+    case that: Point =&gt; this.x == that.x &amp;&amp; this.y == that.y
+    case _ =&gt; false
+  }
+</pre>
+
+<p>
+还有一个陷阱是方法名错误。通常如果用正确的签名（即参数是<code>Any</code>类型）来重新定义
+<code>==</code>方法编译器会报错，因为<code>Any</code>是<code>final</code>方法，就像是这样：
+</p>
+
+<pre class="brush: scala">
+  def ==(other: Point): Boolean = // Don't do this!
+</pre>
+
+<p>
+虽然上面这里把参数类型改了，通过了编译。但这里还只是重载而不是覆盖。
+</p>
+
+
+<h3 id="toc_2.2.2">陷阱2：只改equals没有改hashCode</h3>
+
+<p>
+asdfa
+</p>
+
+<p>
+有些集合判断时还要看<code>hashCode</code>方法。对于下面的例子来说，有一定机率下还是会得到
+<code>false</code>。说“一定机率是因为”哈希码还是有一定机率会碰撞的：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val p1, p2 = new Point(1, 2)
+  p1: Point = Point@670f2b
+  p2: Point = Point@14f7c0
+
+  scala&gt; HashSet(p1) contains p2
+  res4: Boolean = false
+</pre>
+
+<p>
+要记住按规范来说如果两个实例是相等的话，那么二者的哈希码也一定要一样。这里合适的
+<code>hashCode</code>定义如下：
+</p>
+
+<pre class="brush: scala">
+  class Point(val x: Int, val y: Int) {
+    override def hashCode = 41 * (41 + x) + y
+    override def equals(other: Any) = other match { 
+      case that: Point =&gt; this.x == that.x &amp;&amp; this.y == that.y 
+      case _ =&gt; false 
+    }
+  }
+</pre>
+
+<p>
+注意这里使用了常量41是一个质数。
+</p>
+
+
+<h3 id="toc_2.2.3">陷阱3：用可变字段定义equals</h3>
+
+<p>
+如果坐标的<code>x</code>与<code>y</code>是可变的<code>var</code>：
+</p>
+
+<pre class="brush: scala">
+  class Point(var x: Int, var y: Int) { // Problematic
+    override def hashCode = 41 * (41 + x) + y
+    override def equals(other: Any) = other match { 
+      case that: Point =&gt; this.x == that.x &amp;&amp; this.y == that.y 
+      case _ =&gt; false 
+    }
+  }
+</pre>
+
+<p>
+放到了集合里又改变的话会引起麻烦：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val p = new Point(1, 2)
+  p: Point = Point@2b
+
+  scala&gt; val coll = HashSet(p)
+  coll: scala.collection.mutable.Set[Point] = Set(Point@2b)
+
+  scala&gt; coll contains p
+  res5: Boolean = true
+</pre>
+
+<p>
+改变以后：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; p.x += 1
+
+  scala&gt; coll contains p
+  res7: Boolean = false
+</pre>
+
+<p>
+如果是用集合成员<code>elements.contains(..)</code>看到的结果会更加奇怪：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; coll.elements contains p
+  res8: Boolean = true
+</pre>
+
+<p>
+推荐的做法是不要把关于可变字段的相等判断不要叫<code>equals</code>。起个别的名字叫
+<code>equalsContent</code>之类的，用它来判断。
+</p>
+
+
+<h3 id="toc_2.2.4">陷阱4：不对等的equals方法</h3>
+
+<p>
+必须符合的原则：
+</p>
+
+<ul>
+<li>
+自反：对于任何非空实例<code>x</code>，<code>x.equals(x)</code>一定为真。
+
+<li>
+对称：对于非空<code>x</code>与<code>y</code>，<code>x.equals(y)</code>当且仅当<code>y.equals(x)</code>为真时为真。
+
+<li>
+传递：对于非空<code>x</code>，<code>y</code>，<code>z</code>，传递。
+
+<li>
+一致：对于<code>x.equals(y)</code>只要内容没有改过无论重复调用多少次结果都一样。
+
+<li>
+空值：对于非空<code>x</code>，<code>x.equals(null)</code>结果应为假。
+
+</ul>
+
+<p>
+以上的要求我们目前的代码都符合，但当引入了子类以后情况就复杂了。现在给点类加上
+子类彩色类<code>ColoredPoint</code>，子类里增加了一个字段<code>Color</code>类的<code>color</code>保存颜色信息：
+</p>
+
+<pre class="brush: scala">
+  object Color extends Enumeration {
+    val Red, Orange, Yellow, Green, Blue, Indigo, Violet = Value
+  }
+</pre>
+
+<p>
+新的相等方法把颜色的相等也考虑进来，如果超类的坐标判断相等且现在的颜色与相等的话
+就是相等的：
+</p>
+
+<pre class="brush: scala">
+  class ColoredPoint(x: Int, y: Int, val color: Color.Value) 
+      extends Point(x, y) { // Problem: equals not symmetric
+
+    override def equals(other: Any) = other match {
+      case that: ColoredPoint =&gt; 
+        this.color == that.color &amp;&amp; super.equals(that)
+      case _ =&gt; false
+    }
+  }
+</pre>
+
+<p>
+但是把超类和子类混在一起的时候，就不符合前面定义的必须符合的原则了：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val p = new Point(1, 2)
+  p: Point = Point@2b
+
+  scala&gt; val cp = new ColoredPoint(1, 2, Color.Red)
+  cp: ColoredPoint = ColoredPoint@2b
+</pre>
+
+<p>
+没有考虑颜色，结果为真：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; p equals cp
+  res8: Boolean = true
+</pre>
+
+<p>
+考虑了颜色，为假：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; cp equals p
+  res9: Boolean = false
+</pre>
+
+<p>
+这样违背了对称原则。会引起不可知的后果：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; HashSet[Point](p) contains cp
+  res10: Boolean = true
+
+  scala&gt; HashSet[Point](cp) contains p
+  res11: Boolean = false
+</pre>
+
+<p>
+为了解决这情况开发人员面临两个选择：要么把检查设定得更加严格（有一个方向为假两边
+都为假）；或是更加宽容。
+</p>
+
+<p>
+以更加宽容为例，我们决定无论<code>x equals y</code>还是<code>y equals x</code>只要有一个为真那么就表示
+两个都为真：
+</p>
+
+<pre class="brush: scala">
+  class ColoredPoint(x: Int, y: Int, val color: Color.Value) 
+      extends Point(x, y) { // Problem: equals not transitive
+
+    override def equals(other: Any) = other match {
+      case that: ColoredPoint =&gt;
+        (this.color == that.color) &amp;&amp; super.equals(that)
+      case that: Point =&gt;
+        that equals this
+      case _ =&gt;
+        false
+    }
+  }
+</pre>
+
+<p>
+现在解决了对称问题以后又有了一个新的问题：现在违背了传递性原则。下面定义了两个
+不同颜色的点。和之前没有颜色的超类比较，这三个关系不是传递的：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val redp = new ColoredPoint(1, 2, Color.Red)
+  redp: ColoredPoint = ColoredPoint@2b
+
+  scala&gt; val bluep = new ColoredPoint(1, 2, Color.Blue)
+  bluep: ColoredPoint = ColoredPoint@2b
+
+
+  scala&gt; redp == p
+  res12: Boolean = true
+
+  scala&gt; p == bluep
+  res13: Boolean = true
+
+	// not transitive
+  scala&gt; redp == bluep
+  res14: Boolean = false
+</pre>
+
+<p>
+问题出在前面让两边对称关系有一个为真一个为假时设结果真为真上。那再试试这种情况下
+检查更加严格让两边都为假试试。
+</p>
+
+<p>
+父类检查是不是真的是父类：
+</p>
+
+<pre class="brush: scala">
+  // A technically valid, but unsatisfying, equals method
+  class Point(val x: Int, val y: Int) {
+    override def hashCode = 41 * (41 + x) + y
+    override def equals(other: Any) = other match {
+      case that: Point =&gt; 
+        this.x == that.x &amp;&amp; this.y == that.y &amp;&amp; 
+        this.getClass == that.getClass
+      case _ =&gt; false
+    }
+  }
+</pre>
+
+<p>
+子类里检查颜色对不对：
+</p>
+
+<pre class="brush: scala">
+  class ColoredPoint(x: Int, y: Int, val color: Color.Value) 
+      extends Point(x, y) {
+
+    override def equals(other: Any) = other match {
+      case that: ColoredPoint =&gt;
+        (this.color == that.color) &amp;&amp; super.equals(that)
+      case _ =&gt; false
+    }
+  }
+</pre>
+
+<p>
+但这样好像太严格了，考虑下面这样以变通的方式定义了一个坐标为<code>(1, 2)</code>的匿名类的
+点：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val pAnon = new Point(1, 1) { override val y = 2 }
+  pAnon: Point = $anon$1@2b
+</pre>
+
+<p>
+但这样虽然字段和超类一样但是因为不是父类一样的类型所以相等判断为假。
+</p>
+
+<p>
+到目前好像我们被卡住了，没有办法完全符合四条原则。其实办法是有的，要在<code>equals</code>和
+<code>hashCode</code>这两个方法以外再定义一个新的方法说明该类的对象不与任何定义了不同相等性
+方法的超类对象相等。
+</p>
+
+<p>
+现在多了一个<code>canEqual</code>方法：
+</p>
+
+<pre class="brush: scala">
+  def canEqual(other: Any): Boolean
+</pre>
+
+<p>
+如果子类覆盖了<code>canEqual</code>方法，那么返回真，不然返回假。<code>equals</code>方法调用<code>canEqual</code>
+进行双向比对：
+</p>
+
+<pre class="brush: scala">
+  class Point(val x: Int, val y: Int) {
+    override def hashCode = 41 * (41 + x) + y
+    override def equals(other: Any) = other match {
+      case that: Point =&gt;
+        (that canEqual this) &amp;&amp;
+        (this.x == that.x) &amp;&amp; (this.y == that.y)
+      case _ =&gt;
+        false
+    }
+    def canEqual(other: Any) = other.isInstanceOf[Point]
+  }
+</pre>
+
+<p>
+根据上面的<code>Point</code>类的<code>canEqual</code>实现，它所有的实例都可以相等。
+</p>
+
+<p>
+而子类<code>ColorPoint</code>的定义：
+</p>
+
+<pre class="brush: scala">
+  class ColoredPoint(x: Int, y: Int, val color: Color.Value) 
+      extends Point(x, y) {
+
+    override def hashCode = 41 * super.hashCode + color.hashCode
+    override def equals(other: Any) = other match {
+      case that: ColoredPoint =&gt;
+        (that canEqual this) &amp;&amp;
+        super.equals(that) &amp;&amp; this.color == that.color
+      case _ =&gt;
+        false
+    }
+    override def canEqual(other: Any) =
+      other.isInstanceOf[ColoredPoint]
+  }
+</pre>
+
+<p>
+现在即是相等的又是传递的。从父类到子类的方向，因为在父类的<code>equals</code>方法执行过程中
+子类的<code>canEquals</code>会返回假；从子类到父类的方向，在子类的<code>equals</code>方法会发现传入的
+参数的类型不是自己的这个类而返回假。
+</p>
+
+<p>
+另一方面，只要不重写相等性方法，不同的子类实体可以相等：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val p = new Point(1, 2)
+  p: Point = Point@6bc
+
+  scala&gt; val cp = new ColoredPoint(1, 2, Color.Indigo)
+  cp: ColoredPoint = ColoredPoint@11421
+
+  scala&gt; val pAnon = new Point(1, 1) { override val y = 2 }
+  pAnon: Point = $anon$1@6bc
+
+  scala&gt; val coll = List(p)
+  coll: List[Point] = List(Point@6bc)
+
+  scala&gt; coll contains p 
+  res0: Boolean = true
+
+  scala&gt; coll contains cp
+  res1: Boolean = false
+
+  scala&gt; coll contains pAnon
+  res2: Boolean = true
+</pre>
+
+<p>
+上面的代码中<code>ColoredPoint</code>重写了<code>canEqual</code>方法，所以不能和父类相等，而匿名类没有
+重写所以可以相等。
+</p>
+
+<p>
+注意上面的实现对于把实例放入不可重复集的场景来说，<code>coll contains pAnon</code>会返回假
+，但其实我们期望的是<code>coll contains cp</code>会返回假。这样一来在向不可重复集里放这两个
+不同子类实例后，检查<code>contains</code>时会取得不同的结果。
+</p>
+
+
+<h2 id="toc_2.3">定义带参数类型的相等性</h2>
+
+<p>
+前面的<code>equals</code>方法都用到了模式匹配来判断类型。这个办法在参数类型的场景下就需要
+调整了。
+</p>
+
+<p>
+以二叉树为例子来说明。类型参数为<code>T</code>.它有由两个实现类：空树和非空分支。非空树由
+包含的元素<code>elem</code>和左右两个子树组成：
+</p>
+
+<pre class="brush: scala">
+  trait Tree[+T] {
+    def elem: T
+    def left: Tree[T]
+    def right: Tree[T]
+  }
+
+  object EmptyTree extends Tree[Nothing] {
+    def elem =
+      throw new NoSuchElementException("EmptyTree.elem")
+    def left =
+      throw new NoSuchElementException("EmptyTree.left")
+    def right =
+      throw new NoSuchElementException("EmptyTree.right")
+  }
+
+  class Branch[+T](
+    val elem: T,
+    val left: Tree[T],
+    val right: Tree[T]
+  ) extends Tree[T]
+</pre>
+
+<p>
+对于相等性方法来说，特质<code>Tree</code>不用实现，单例对象空树就用从<code>AnyRef</code>继承下来的默认
+实现：因为它只能和自己相等，所以内容相等就是引用相等。
+</p>
+
+<p>
+给<code>Branch</code>加上<code>hashCode</code>和<code>equals</code>方法就麻烦了。相等的逻辑应该是存放元素相等并且
+左右子树都相等才相等。所以按照之前的思路加上相等性方法：
+</p>
+
+<pre class="brush: scala">
+  class Branch[T](
+    val elem: T,
+    val left: Tree[T],
+    val right: Tree[T]
+  ) extends Tree[T] {
+
+    override def equals(other: Any) = other match {
+      case that: Branch[T] =&gt; this.elem == that.elem &amp;&amp; 
+                              this.left == that.left &amp;&amp;
+                              this.right == that.right
+      case _ =&gt; false
+    }
+  }
+</pre>
+
+<p>
+上面的代码会有<code>unchecked</code>警告。加上<code>-unchecked</code>选项编译会揭示出有如下问题：
+</p>
+
+<pre class="brush: scala">
+   $ fsc -unchecked Tree.scala
+  Tree.scala:14: warning: non variable type-argument T in type 
+  pattern is unchecked since it is eliminated by erasure
+      case that: Branch[T] =&gt; this.elem == that.elem &amp;&amp; 
+                 ^
+</pre>
+
+<p>
+这是说针对模式匹配<code>Branch[t]</code>系统只能检查当<code>other</code>引用的是某种<code>Brantch</code>，不能
+检查参数类型<code>T</code>。原因在“参数类型化”这一章已经说过：集合类型的参数类型化会在编译
+时被抹去，无法被检查。
+</p>
+
+<p>
+其实内容的类型并不重要，只要这两个类的字段一样的话也OK，不一定要是同一个类。比如
+说是<code>Nil</code>元素和两个空子树<code>Branch</code>，考虑这两个<code>Branch</code>为相等是说过通的，不论它们
+的静态类型是什么：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val b1 = new Branch[List[String]](Nil,
+      |      EmptyTree, EmptyTree)
+  b1: Branch[List[String]] = Branch@2f1eb9
+
+  scala&gt; val b2 = new Branch[List[Int]](Nil,
+      |      EmptyTree, EmptyTree)
+  b2: Branch[List[Int]] = Branch@be55d1
+
+  scala&gt; b1 == b2
+  res0: Boolean = true
+</pre>
+
+<p>
+可能有些人期望相等性要求类型也相等，但由于考虑到Scala会抹去集合元素类型，所以
+这样不考虑类型只比较字段的方式也说得过去。
+</p>
+
+<p>
+为了去掉<code>unchecked</code>警告只要把元素类型<code>T</code>改成小写的<code>t</code>：
+</p>
+
+<pre class="brush: scala">
+  case that: Branch[t] =&gt; this.elem == that.elem &amp;&amp; 
+                          this.left == that.left &amp;&amp;
+                          this.right == that.right
+</pre>
+
+<p>
+因为在“模式匹配”里说过小写字母开始的类型参数表示末知的类型<code>t</code>表示未知的类型：
+</p>
+
+<pre class="brush: scala">
+  case that: Branch[t] =&gt; 
+</pre>
+
+<p>
+所以上面这行对所有类型都可以匹配成功，等于是用<code>_</code>代替：
+</p>
+
+<pre class="brush: scala">
+  case that: Branch[_] =&gt;
+</pre>
+
+<p>
+最后要为<code>Branch</code>类定义<code>hashCode</code>和<code>canEqual</code>，它们在随着<code>equals</code>方法一起修改。
+初步的方案是拿到所有字段的<code>hashCode</code>值，然后用质数来加乘：
+</p>
+
+<pre class="brush: scala">
+  override def hashCode: Int =
+    41 * (
+      41 * (
+        41 + elem.hashCode
+      ) + left.hashCode
+    ) + right.hashCode
+</pre>
+
+<p>
+当然这只是可选的方案之一。
+</p>
+
+<p>
+<code>canEqual</code>实现方案：
+</p>
+
+<pre class="brush: scala">
+  def canEqual(other: Any) = other match {
+    case that: Branch[_] =&gt; true
+    case _ =&gt; false
+  }
+</pre>
+
+<p>
+上面用到了类型的模式匹配，当然用<code>isInstanceOf</code>来实现也可以：
+</p>
+
+<pre class="brush: scala">
+    def canEqual(other: Any) = other.isInstanceOf[Branch[_]]
+</pre>
+
+<p>
+注意上面的下划线代表的意义。<code>Branch[_]</code>技术上说是方法类型参数而不是类型模式，
+所以不应该有<code>_</code>这样的未定义的部分。<code>Branch[_]</code>是会在下一章中介绍的“存在类型
+简写”，现在可以把它当作是一个有着未知部分的类型。虽然在技术上说下划线在模式匹配
+和方法调用的类型参数中代表两种不同的东西，但本质上含意是相同的，就是把某些东西
+标记为未知。最终版本的代码如下：
+</p>
+
+<pre class="brush: scala">
+  class Branch[T](
+    val elem: T,
+    val left: Tree[T],
+    val right: Tree[T]
+  ) extends Tree[T] {
+
+    override def equals(other: Any) = other match {
+      case that: Branch[_] =&gt; (that canEqual this) &amp;&amp; 
+                              this.elem == that.elem &amp;&amp; 
+                              this.left == that.left &amp;&amp;
+                              this.right == that.right
+      case _ =&gt; false
+    }
+
+    def canEqual(other: Any) = other.isInstanceOf[Branch[_]]
+
+    override def hashCode: Int =
+      41 * (
+        41 * (
+          41 + elem.hashCode
+        ) + left.hashCode
+      ) + right.hashCode
+  }
+</pre>
+
+<h2 id="toc_2.4">实践equals和hashCode</h2>
+
+<p>
+以前面所做的实数类<code>Rational</code>来实践相等操作。为了清楚去掉了数学运算方法，强化了
+<code>toString</code>与约分操作，让分母为正数（如<code>1/-2</code>转为<code>-1/2</code>）。
+</p>
+
+<p>
+对<code>equals</code>方法的重写：
+</p>
+
+<pre class="brush: scala">
+  class Rational(n: Int, d: Int) {
+  
+    require(d != 0)
+  
+    private val g = gcd(n.abs, d.abs)
+    val numer = (if (d &lt; 0) -n else n) / g
+    val denom = d.abs / g
+  
+    private def gcd(a: Int, b: Int): Int =
+      if (b == 0) a else gcd(b, a % b)
+  
+    override def equals(other: Any): Boolean =
+      other match {
+  
+        case that: Rational =&gt;
+          (that canEqual this) &amp;&amp;
+          numer == that.numer &amp;&amp;
+          denom == that.denom
+
+        case _ =&gt; false
+      }
+
+    def canEqual(other: Any): Boolean =
+      other.isInstanceOf[Rational]
+
+    override def hashCode: Int =
+      41 * (
+        41 + numer
+      ) + denom
+  
+    override def toString =
+      if (denom == 1) numer.toString else numer +"/"+ denom
+  }
+</pre>
+
+<h3 id="toc_2.4.1">equals方法基本要点</h3>
+
+<h4 id="toc_2.4.1.1">要点1</h4>
+
+<p>
+如果是在非<code>final</code>类中重写<code>equals</code>方法则应该创建<code>canEqual</code>方法。如果<code>equals</code>继承
+自<code>AnyRef</code>（就是没有被重新定义过），则<code>canEqual</code>定义会是新的，不过它会覆盖之前
+的实现。需求中唯一例外的是关于重定义了继承自<code>AnyRef</code>的<code>equals</code>方法的<code>final</code>类。
+对于它们来说，前几节所描述的子类问题并不会出现，所以不用定义<code>canEqual</code>。
+<code>canEqual</code>的对象类型应该是<code>Any</code>：
+</p>
+
+<pre class="brush: scala">
+    def canEqual(other: Any): Boolean =
+</pre>
+
+<h4 id="toc_2.4.1.2">要点2</h4>
+
+<p>
+如果参数对象是当前类的实例则<code>canEqual</code>方法应该返回真，不然应该返回假：
+</p>
+
+<pre class="brush: scala">
+      other.isInstanceOf[Rational]
+</pre>
+
+<h4 id="toc_2.4.1.3">要点3</h4>
+
+<p>
+<code>equals</code>方法中参数类型为<code>Any</code>：
+</p>
+
+<pre class="brush: scala">
+    override def equals(other: Any): Boolean =
+</pre>
+
+<h4 id="toc_2.4.1.4">要点4</h4>
+
+<p>
+<code>equals</code>方法体要写为单个<code>match</code>表达式，而<code>match</code>的选择器应该是传递给<code>equals</code>的
+对象：
+</p>
+
+<pre class="brush: scala">
+  other match {
+    // ...
+  }
+</pre>
+
+<h4 id="toc_2.4.1.5">要点5</h4>
+
+<p>
+<code>match</code>应该有两个<code>case</code>，第一个是声明为所定义的<code>equals</code>方法类的类型模式：
+</p>
+
+<pre class="brush: scala">
+        case that: Rational =&gt;
+</pre>
+
+<h4 id="toc_2.4.1.6">要点6</h4>
+
+<p>
+在这个<code>case</code>语句货栈中，编写一个表达式，把两个对象相等必须为真的独立表达式以逻辑
+的方式结合起来。如果重写的<code>equals</code>方法并非是<code>AnyRef</code>的那一个，就很有可能要包含
+对超类<code>equals</code>方法调用：
+</p>
+
+<pre class="brush: scala">
+          super.equals(that) &amp;&amp;
+</pre>
+
+<p>
+如果首个引入<code>canEqual</code>的类定义<code>equals</code>方法，应该调用其参数的<code>canEqual</code>方法，将
+<code>this</code>作为参数传递进去：
+</p>
+
+<pre class="brush: scala">
+          (that canEqual this) &amp;&amp;
+</pre>
+
+<p>
+重写的<code>equals</code>方法也应该包含<code>canEqual</code>的调用，除非它们包含了对<code>super.equals</code>的
+调用。因为在这个“除非”情况中，<code>canEqual</code>测试已经在超类中完成。最后，对每个与
+相等性相关的字段分别验证本对象的字段与传入对象的对应字段是否相等：
+</p>
+
+<pre class="brush: scala">
+          numer == that.numer &amp;&amp;
+          denom == that.denom
+</pre>
+
+<h4 id="toc_2.4.1.7">要点7</h4>
+
+<p>
+对于第二个<code>case</code>用通配模式返回假：
+</p>
+
+<pre class="brush: scala">
+  case _ =&gt; false
+</pre>
+
+<p>
+按照上面的要点来做就能基本保证相等性关系的正确。
+</p>
+
+
+<h3 id="toc_2.4.2">hashCode方法</h3>
+
+<p>
+基本上思路就是所有字段一个一个加、乘质数：
+</p>
+
+<pre class="brush: scala">
+  override def hashCode: Int =
+    41 * (
+      41 * (
+        41 * (
+          41 * (
+            41 + a.hashCode
+          ) + b.hashCode
+        ) + c.hashCode
+      ) + d.hashCode
+    ) + e.hashCode
+</pre>
+
+<p>
+也可以不对类型为<code>Int</code>、<code>Short</code>、<code>Byte</code>、<code>Char</code>类型字段调用<code>hashCode</code>，这些可以
+用它们对应的<code>Int</code>值作为哈希。由于我们的实数类成员都是<code>Int</code>的，所以可以简单地写
+成这样：
+</p>
+
+<pre class="brush: scala">
+  override [[def]] hashCode: Int =
+    41 * (
+      41 + numer
+    ) + denom
+</pre>
+
+<p>
+加上的数字是质数，在最里面的<code>number</code>加上41是为了防止第一个乘法等到0的可能性，
+其实最里面的那个41可以换成任何非0整数，这里就和外层一样都用41了看起来整齐一些。
+</p>
+
+<p>
+如果<code>equals</code>方法把<code>super.equals(that)</code>调用作为其逻辑的开头，那么也同样应该调用
+<code>super.hashCode</code>开始<code>hashCode</code>逻辑。如：
+</p>
+
+<pre class="brush: scala">
+  override def hashCode: Int =
+    41 * (
+      41 * (
+        super.hashCode
+      ) + numer
+    ) + denom
+</pre>
+
+<p>
+因为超类的<code>hashCode</code>可能已经有些其他的操作了。比如已经对内部数组成员与集合成员
+进行过其他的哈希逻辑。
+</p>
+
+<p>
+如果发现哈希太耗性能，在对象是不可变的情况下可以把结果存起来。这样用<code>val</code>而不是
+<code>def</code>直接重写<code>hashCode</code>：
+</p>
+
+<pre class="brush: scala">
+  override val hashCode: Int =
+    41 * (
+      41 + numer
+    ) + denom
+</pre>
+
+
+<h1 id="toc_3">结合Scala与Java</h1>
+
+<pre class="brush: scala">
+</pre>
+<pre class="brush: scala">
+</pre>
+<pre class="brush: scala">
+</pre>
+<pre class="brush: scala">
+</pre>
+<pre class="brush: scala">
+</pre>
+<pre class="brush: scala">
+</pre>
+<pre class="brush: scala">
+</pre>
+<pre class="brush: scala">
+</pre>
+<pre class="brush: scala">
+</pre>
+<pre class="brush: scala">
+</pre>
+<pre class="brush: scala">
+</pre>
+<pre class="brush: scala">
+</pre>
+<pre class="brush: scala">
+</pre>
+<pre class="brush: scala">
+</pre>
+<pre class="brush: scala">
+</pre>
+<pre class="brush: scala">
+</pre>
+<pre class="brush: scala">
+</pre>
+<pre class="brush: scala">
+</pre>
+<pre class="brush: scala">
+</pre>
+<pre class="brush: scala">
+</pre>
+ </div>
+</body>
+</html>
