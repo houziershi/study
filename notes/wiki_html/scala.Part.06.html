@@ -46,7 +46,22 @@
 <li><a href="#toc_2.2.4">陷阱4：不对等的equals方法</a>
 </ul>
 <li><a href="#toc_2.3">定义带参数类型的相等性</a>
+<li><a href="#toc_2.4">实践equals和hashCode</a>
+<ul>
+<li><a href="#toc_2.4.1">equals方法基本要点</a>
+<ul>
+<li><a href="#toc_2.4.1.1">要点1</a>
+<li><a href="#toc_2.4.1.2">要点2</a>
+<li><a href="#toc_2.4.1.3">要点3</a>
+<li><a href="#toc_2.4.1.4">要点4</a>
+<li><a href="#toc_2.4.1.5">要点5</a>
+<li><a href="#toc_2.4.1.6">要点6</a>
+<li><a href="#toc_2.4.1.7">要点7</a>
 </ul>
+<li><a href="#toc_2.4.2">hashCode方法</a>
+</ul>
+</ul>
+<li><a href="#toc_3">结合Scala与Java</a>
 </ul>
 </div>
 
@@ -1077,7 +1092,15 @@ asdfa
 
 <h2 id="toc_2.3">定义带参数类型的相等性</h2>
 
+<p>
+前面的<code>equals</code>方法都用到了模式匹配来判断类型。这个办法在参数类型的场景下就需要
+调整了。
+</p>
 
+<p>
+以二叉树为例子来说明。类型参数为<code>T</code>.它有由两个实现类：空树和非空分支。非空树由
+包含的元素<code>elem</code>和左右两个子树组成：
+</p>
 
 <pre class="brush: scala">
   trait Tree[+T] {
@@ -1101,11 +1124,18 @@ asdfa
     val right: Tree[T]
   ) extends Tree[T]
 </pre>
+
+<p>
+对于相等性方法来说，特质<code>Tree</code>不用实现，单例对象空树就用从<code>AnyRef</code>继承下来的默认
+实现：因为它只能和自己相等，所以内容相等就是引用相等。
+</p>
+
+<p>
+给<code>Branch</code>加上<code>hashCode</code>和<code>equals</code>方法就麻烦了。相等的逻辑应该是存放元素相等并且
+左右子树都相等才相等。所以按照之前的思路加上相等性方法：
+</p>
+
 <pre class="brush: scala">
-
-
-// In file equality/Tree3.scala
-
   class Branch[T](
     val elem: T,
     val left: Tree[T],
@@ -1120,18 +1150,32 @@ asdfa
     }
   }
 </pre>
+
+<p>
+上面的代码会有<code>unchecked</code>警告。加上<code>-unchecked</code>选项编译会揭示出有如下问题：
+</p>
+
 <pre class="brush: scala">
-
-
    $ fsc -unchecked Tree.scala
   Tree.scala:14: warning: non variable type-argument T in type 
   pattern is unchecked since it is eliminated by erasure
       case that: Branch[T] =&gt; this.elem == that.elem &amp;&amp; 
                  ^
 </pre>
+
+<p>
+这是说针对模式匹配<code>Branch[t]</code>系统只能检查当<code>other</code>引用的是某种<code>Brantch</code>，不能
+检查参数类型<code>T</code>。原因在“参数类型化”这一章已经说过：集合类型的参数类型化会在编译
+时被抹去，无法被检查。
+</p>
+
+<p>
+其实内容的类型并不重要，只要这两个类的字段一样的话也OK，不一定要是同一个类。比如
+说是<code>Nil</code>元素和两个空子树<code>Branch</code>，考虑这两个<code>Branch</code>为相等是说过通的，不论它们
+的静态类型是什么：
+</p>
+
 <pre class="brush: scala">
-
-
   scala&gt; val b1 = new Branch[List[String]](Nil,
       |      EmptyTree, EmptyTree)
   b1: Branch[List[String]] = Branch@2f1eb9
@@ -1143,30 +1187,44 @@ asdfa
   scala&gt; b1 == b2
   res0: Boolean = true
 </pre>
+
+<p>
+可能有些人期望相等性要求类型也相等，但由于考虑到Scala会抹去集合元素类型，所以
+这样不考虑类型只比较字段的方式也说得过去。
+</p>
+
+<p>
+为了去掉<code>unchecked</code>警告只要把元素类型<code>T</code>改成小写的<code>t</code>：
+</p>
+
 <pre class="brush: scala">
-
-
-// In file equality/Tree3.scala
-
   case that: Branch[t] =&gt; this.elem == that.elem &amp;&amp; 
                           this.left == that.left &amp;&amp;
                           this.right == that.right
 </pre>
+
+<p>
+因为在“模式匹配”里说过小写字母开始的类型参数表示末知的类型<code>t</code>表示未知的类型：
+</p>
+
 <pre class="brush: scala">
-
-
   case that: Branch[t] =&gt; 
 </pre>
+
+<p>
+所以上面这行对所有类型都可以匹配成功，等于是用<code>_</code>代替：
+</p>
+
 <pre class="brush: scala">
-
-
   case that: Branch[_] =&gt;
 </pre>
+
+<p>
+最后要为<code>Branch</code>类定义<code>hashCode</code>和<code>canEqual</code>，它们在随着<code>equals</code>方法一起修改。
+初步的方案是拿到所有字段的<code>hashCode</code>值，然后用质数来加乘：
+</p>
+
 <pre class="brush: scala">
-
-
-// In file equality/Tree3.scala
-
   override def hashCode: Int =
     41 * (
       41 * (
@@ -1174,28 +1232,39 @@ asdfa
       ) + left.hashCode
     ) + right.hashCode
 </pre>
+
+<p>
+当然这只是可选的方案之一。
+</p>
+
+<p>
+<code>canEqual</code>实现方案：
+</p>
+
 <pre class="brush: scala">
-
-
-// In file equality/Tree3.scala
-
   def canEqual(other: Any) = other match {
     case that: Branch[_] =&gt; true
     case _ =&gt; false
   }
 </pre>
+
+<p>
+上面用到了类型的模式匹配，当然用<code>isInstanceOf</code>来实现也可以：
+</p>
+
 <pre class="brush: scala">
-
-
-// In file equality/Tree3.scala
-
     def canEqual(other: Any) = other.isInstanceOf[Branch[_]]
 </pre>
+
+<p>
+注意上面的下划线代表的意义。<code>Branch[_]</code>技术上说是方法类型参数而不是类型模式，
+所以不应该有<code>_</code>这样的未定义的部分。<code>Branch[_]</code>是会在下一章中介绍的“存在类型
+简写”，现在可以把它当作是一个有着未知部分的类型。虽然在技术上说下划线在模式匹配
+和方法调用的类型参数中代表两种不同的东西，但本质上含意是相同的，就是把某些东西
+标记为未知。最终版本的代码如下：
+</p>
+
 <pre class="brush: scala">
-
-
-// In file equality/Tree4.scala
-
   class Branch[T](
     val elem: T,
     val left: Tree[T],
@@ -1220,16 +1289,19 @@ asdfa
       ) + right.hashCode
   }
 </pre>
+
+<h2 id="toc_2.4">实践equals和hashCode</h2>
+
+<p>
+以前面所做的实数类<code>Rational</code>来实践相等操作。为了清楚去掉了数学运算方法，强化了
+<code>toString</code>与约分操作，让分母为正数（如<code>1/-2</code>转为<code>-1/2</code>）。
+</p>
+
+<p>
+对<code>equals</code>方法的重写：
+</p>
+
 <pre class="brush: scala">
-
-
-  
-
-28.4 Recipes for equals and hashCode
-
-
-// In file equality/Rational.scala
-
   class Rational(n: Int, d: Int) {
   
     require(d != 0)
@@ -1263,38 +1335,121 @@ asdfa
     override def toString =
       if (denom == 1) numer.toString else numer +"/"+ denom
   }
+</pre>
 
+<h3 id="toc_2.4.1">equals方法基本要点</h3>
 
+<h4 id="toc_2.4.1.1">要点1</h4>
+
+<p>
+如果是在非<code>final</code>类中重写<code>equals</code>方法则应该创建<code>canEqual</code>方法。如果<code>equals</code>继承
+自<code>AnyRef</code>（就是没有被重新定义过），则<code>canEqual</code>定义会是新的，不过它会覆盖之前
+的实现。需求中唯一例外的是关于重定义了继承自<code>AnyRef</code>的<code>equals</code>方法的<code>final</code>类。
+对于它们来说，前几节所描述的子类问题并不会出现，所以不用定义<code>canEqual</code>。
+<code>canEqual</code>的对象类型应该是<code>Any</code>：
+</p>
+
+<pre class="brush: scala">
     def canEqual(other: Any): Boolean =
+</pre>
 
+<h4 id="toc_2.4.1.2">要点2</h4>
 
+<p>
+如果参数对象是当前类的实例则<code>canEqual</code>方法应该返回真，不然应该返回假：
+</p>
+
+<pre class="brush: scala">
       other.isInstanceOf[Rational]
+</pre>
 
+<h4 id="toc_2.4.1.3">要点3</h4>
 
+<p>
+<code>equals</code>方法中参数类型为<code>Any</code>：
+</p>
+
+<pre class="brush: scala">
     override def equals(other: Any): Boolean =
+</pre>
 
+<h4 id="toc_2.4.1.4">要点4</h4>
 
+<p>
+<code>equals</code>方法体要写为单个<code>match</code>表达式，而<code>match</code>的选择器应该是传递给<code>equals</code>的
+对象：
+</p>
+
+<pre class="brush: scala">
   other match {
     // ...
   }
+</pre>
 
+<h4 id="toc_2.4.1.5">要点5</h4>
 
+<p>
+<code>match</code>应该有两个<code>case</code>，第一个是声明为所定义的<code>equals</code>方法类的类型模式：
+</p>
+
+<pre class="brush: scala">
         case that: Rational =&gt;
+</pre>
 
+<h4 id="toc_2.4.1.6">要点6</h4>
 
+<p>
+在这个<code>case</code>语句货栈中，编写一个表达式，把两个对象相等必须为真的独立表达式以逻辑
+的方式结合起来。如果重写的<code>equals</code>方法并非是<code>AnyRef</code>的那一个，就很有可能要包含
+对超类<code>equals</code>方法调用：
+</p>
+
+<pre class="brush: scala">
           super.equals(that) &amp;&amp;
+</pre>
 
+<p>
+如果首个引入<code>canEqual</code>的类定义<code>equals</code>方法，应该调用其参数的<code>canEqual</code>方法，将
+<code>this</code>作为参数传递进去：
+</p>
 
+<pre class="brush: scala">
           (that canEqual this) &amp;&amp;
+</pre>
 
+<p>
+重写的<code>equals</code>方法也应该包含<code>canEqual</code>的调用，除非它们包含了对<code>super.equals</code>的
+调用。因为在这个“除非”情况中，<code>canEqual</code>测试已经在超类中完成。最后，对每个与
+相等性相关的字段分别验证本对象的字段与传入对象的对应字段是否相等：
+</p>
 
+<pre class="brush: scala">
           numer == that.numer &amp;&amp;
           denom == that.denom
+</pre>
 
+<h4 id="toc_2.4.1.7">要点7</h4>
 
+<p>
+对于第二个<code>case</code>用通配模式返回假：
+</p>
+
+<pre class="brush: scala">
   case _ =&gt; false
+</pre>
+
+<p>
+按照上面的要点来做就能基本保证相等性关系的正确。
+</p>
 
 
+<h3 id="toc_2.4.2">hashCode方法</h3>
+
+<p>
+基本上思路就是所有字段一个一个加、乘质数：
+</p>
+
+<pre class="brush: scala">
   override def hashCode: Int =
     41 * (
       41 * (
@@ -1305,27 +1460,59 @@ asdfa
         ) + c.hashCode
       ) + d.hashCode
     ) + e.hashCode
+</pre>
 
+<p>
+也可以不对类型为<code>Int</code>、<code>Short</code>、<code>Byte</code>、<code>Char</code>类型字段调用<code>hashCode</code>，这些可以
+用它们对应的<code>Int</code>值作为哈希。由于我们的实数类成员都是<code>Int</code>的，所以可以简单地写
+成这样：
+</p>
 
-  override def hashCode: Int =
+<pre class="brush: scala">
+  override [[def]] hashCode: Int =
     41 * (
       41 + numer
     ) + denom
+</pre>
 
+<p>
+加上的数字是质数，在最里面的<code>number</code>加上41是为了防止第一个乘法等到0的可能性，
+其实最里面的那个41可以换成任何非0整数，这里就和外层一样都用41了看起来整齐一些。
+</p>
 
+<p>
+如果<code>equals</code>方法把<code>super.equals(that)</code>调用作为其逻辑的开头，那么也同样应该调用
+<code>super.hashCode</code>开始<code>hashCode</code>逻辑。如：
+</p>
+
+<pre class="brush: scala">
   override def hashCode: Int =
     41 * (
       41 * (
         super.hashCode
       ) + numer
     ) + denom
+</pre>
 
+<p>
+因为超类的<code>hashCode</code>可能已经有些其他的操作了。比如已经对内部数组成员与集合成员
+进行过其他的哈希逻辑。
+</p>
 
+<p>
+如果发现哈希太耗性能，在对象是不可变的情况下可以把结果存起来。这样用<code>val</code>而不是
+<code>def</code>直接重写<code>hashCode</code>：
+</p>
+
+<pre class="brush: scala">
   override val hashCode: Int =
     41 * (
       41 + numer
     ) + denom
 </pre>
+
+
+<h1 id="toc_3">结合Scala与Java</h1>
 
 <pre class="brush: scala">
 </pre>

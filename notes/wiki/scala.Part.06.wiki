@@ -849,7 +849,11 @@ asdfa
 
 == 定义带参数类型的相等性 ==
 
+前面的`equals`方法都用到了模式匹配来判断类型。这个办法在参数类型的场景下就需要
+调整了。
 
+以二叉树为例子来说明。类型参数为`T`.它有由两个实现类：空树和非空分支。非空树由
+包含的元素`elem`和左右两个子树组成：
 
 {{{class="brush: scala"
   trait Tree[+T] {
@@ -873,11 +877,14 @@ asdfa
     val right: Tree[T]
   ) extends Tree[T]
 }}}
+
+对于相等性方法来说，特质`Tree`不用实现，单例对象空树就用从`AnyRef`继承下来的默认
+实现：因为它只能和自己相等，所以内容相等就是引用相等。
+
+给`Branch`加上`hashCode`和`equals`方法就麻烦了。相等的逻辑应该是存放元素相等并且
+左右子树都相等才相等。所以按照之前的思路加上相等性方法：
+
 {{{class="brush: scala"
-
-
-// In file equality/Tree3.scala
-
   class Branch[T](
     val elem: T,
     val left: Tree[T],
@@ -892,18 +899,26 @@ asdfa
     }
   }
 }}}
+
+上面的代码会有`unchecked`警告。加上`-unchecked`选项编译会揭示出有如下问题：
+
 {{{class="brush: scala"
-
-
    $ fsc -unchecked Tree.scala
   Tree.scala:14: warning: non variable type-argument T in type 
   pattern is unchecked since it is eliminated by erasure
       case that: Branch[T] => this.elem == that.elem && 
                  ^
 }}}
+
+这是说针对模式匹配`Branch[t]`系统只能检查当`other`引用的是某种`Brantch`，不能
+检查参数类型`T`。原因在“参数类型化”这一章已经说过：集合类型的参数类型化会在编译
+时被抹去，无法被检查。
+
+其实内容的类型并不重要，只要这两个类的字段一样的话也OK，不一定要是同一个类。比如
+说是`Nil`元素和两个空子树`Branch`，考虑这两个`Branch`为相等是说过通的，不论它们
+的静态类型是什么：
+
 {{{class="brush: scala"
-
-
   scala> val b1 = new Branch[List[String]](Nil,
       |      EmptyTree, EmptyTree)
   b1: Branch[List[String]] = Branch@2f1eb9
@@ -915,30 +930,34 @@ asdfa
   scala> b1 == b2
   res0: Boolean = true
 }}}
+
+可能有些人期望相等性要求类型也相等，但由于考虑到Scala会抹去集合元素类型，所以
+这样不考虑类型只比较字段的方式也说得过去。
+
+为了去掉`unchecked`警告只要把元素类型`T`改成小写的`t`：
+
 {{{class="brush: scala"
-
-
-// In file equality/Tree3.scala
-
   case that: Branch[t] => this.elem == that.elem && 
                           this.left == that.left &&
                           this.right == that.right
 }}}
+
+因为在“模式匹配”里说过小写字母开始的类型参数表示末知的类型`t`表示未知的类型：
+
 {{{class="brush: scala"
-
-
   case that: Branch[t] => 
 }}}
+
+所以上面这行对所有类型都可以匹配成功，等于是用`_`代替：
+
 {{{class="brush: scala"
-
-
   case that: Branch[_] =>
 }}}
+
+最后要为`Branch`类定义`hashCode`和`canEqual`，它们在随着`equals`方法一起修改。
+初步的方案是拿到所有字段的`hashCode`值，然后用质数来加乘：
+
 {{{class="brush: scala"
-
-
-// In file equality/Tree3.scala
-
   override def hashCode: Int =
     41 * (
       41 * (
@@ -946,28 +965,31 @@ asdfa
       ) + left.hashCode
     ) + right.hashCode
 }}}
+
+当然这只是可选的方案之一。
+
+`canEqual`实现方案：
+
 {{{class="brush: scala"
-
-
-// In file equality/Tree3.scala
-
   def canEqual(other: Any) = other match {
     case that: Branch[_] => true
     case _ => false
   }
 }}}
+
+上面用到了类型的模式匹配，当然用`isInstanceOf`来实现也可以：
+
 {{{class="brush: scala"
-
-
-// In file equality/Tree3.scala
-
     def canEqual(other: Any) = other.isInstanceOf[Branch[_]]
 }}}
+
+注意上面的下划线代表的意义。`Branch[_]`技术上说是方法类型参数而不是类型模式，
+所以不应该有`_`这样的未定义的部分。`Branch[_]`是会在下一章中介绍的“存在类型
+简写”，现在可以把它当作是一个有着未知部分的类型。虽然在技术上说下划线在模式匹配
+和方法调用的类型参数中代表两种不同的东西，但本质上含意是相同的，就是把某些东西
+标记为未知。最终版本的代码如下：
+
 {{{class="brush: scala"
-
-
-// In file equality/Tree4.scala
-
   class Branch[T](
     val elem: T,
     val left: Tree[T],
@@ -992,16 +1014,15 @@ asdfa
       ) + right.hashCode
   }
 }}}
+
+== 实践equals和hashCode ==
+
+以前面所做的实数类`Rational`来实践相等操作。为了清楚去掉了数学运算方法，强化了
+`toString`与约分操作，让分母为正数（如`1/-2`转为`-1/2`）。
+
+对`equals`方法的重写：
+
 {{{class="brush: scala"
-
-
-  
-
-28.4 Recipes for equals and hashCode
-
-
-// In file equality/Rational.scala
-
   class Rational(n: Int, d: Int) {
   
     require(d != 0)
@@ -1035,38 +1056,99 @@ asdfa
     override def toString =
       if (denom == 1) numer.toString else numer +"/"+ denom
   }
+}}}
 
+=== equals方法基本要点 ===
 
+==== 要点1 ====
+
+如果是在非`final`类中重写`equals`方法则应该创建`canEqual`方法。如果`equals`继承
+自`AnyRef`（就是没有被重新定义过），则`canEqual`定义会是新的，不过它会覆盖之前
+的实现。需求中唯一例外的是关于重定义了继承自`AnyRef`的`equals`方法的`final`类。
+对于它们来说，前几节所描述的子类问题并不会出现，所以不用定义`canEqual`。
+`canEqual`的对象类型应该是`Any`：
+
+{{{class="brush: scala"
     def canEqual(other: Any): Boolean =
+}}}
 
+==== 要点2 ====
 
+如果参数对象是当前类的实例则`canEqual`方法应该返回真，不然应该返回假：
+
+{{{class="brush: scala"
       other.isInstanceOf[Rational]
+}}}
 
+==== 要点3 ====
 
+`equals`方法中参数类型为`Any`：
+
+{{{class="brush: scala"
     override def equals(other: Any): Boolean =
+}}}
 
+==== 要点4 ====
 
+`equals`方法体要写为单个`match`表达式，而`match`的选择器应该是传递给`equals`的
+对象：
+
+{{{class="brush: scala"
   other match {
     // ...
   }
+}}}
 
+==== 要点5 ====
 
+`match`应该有两个`case`，第一个是声明为所定义的`equals`方法类的类型模式：
+
+{{{class="brush: scala"
         case that: Rational =>
+}}}
 
+==== 要点6 ====
 
+在这个`case`语句货栈中，编写一个表达式，把两个对象相等必须为真的独立表达式以逻辑
+的方式结合起来。如果重写的`equals`方法并非是`AnyRef`的那一个，就很有可能要包含
+对超类`equals`方法调用：
+
+{{{class="brush: scala"
           super.equals(that) &&
+}}}
 
+如果首个引入`canEqual`的类定义`equals`方法，应该调用其参数的`canEqual`方法，将
+`this`作为参数传递进去：
 
+{{{class="brush: scala"
           (that canEqual this) &&
+}}}
 
+重写的`equals`方法也应该包含`canEqual`的调用，除非它们包含了对`super.equals`的
+调用。因为在这个“除非”情况中，`canEqual`测试已经在超类中完成。最后，对每个与
+相等性相关的字段分别验证本对象的字段与传入对象的对应字段是否相等：
 
+{{{class="brush: scala"
           numer == that.numer &&
           denom == that.denom
+}}}
 
+==== 要点7 ====
 
+对于第二个`case`用通配模式返回假：
+
+{{{class="brush: scala"
   case _ => false
+}}}
+
+按照上面的要点来做就能基本保证相等性关系的正确。
 
 
+=== hashCode方法 ===
+
+基本上思路就是所有字段一个一个加、乘质数：
+
+{{{class="brush: scala"
   override def hashCode: Int =
     41 * (
       41 * (
@@ -1077,27 +1159,49 @@ asdfa
         ) + c.hashCode
       ) + d.hashCode
     ) + e.hashCode
+}}}
 
+也可以不对类型为`Int`、`Short`、`Byte`、`Char`类型字段调用`hashCode`，这些可以
+用它们对应的`Int`值作为哈希。由于我们的实数类成员都是`Int`的，所以可以简单地写
+成这样：
 
-  override def hashCode: Int =
+{{{class="brush: scala"
+  override [[def]] hashCode: Int =
     41 * (
       41 + numer
     ) + denom
+}}}
 
+加上的数字是质数，在最里面的`number`加上41是为了防止第一个乘法等到0的可能性，
+其实最里面的那个41可以换成任何非0整数，这里就和外层一样都用41了看起来整齐一些。
 
+如果`equals`方法把`super.equals(that)`调用作为其逻辑的开头，那么也同样应该调用
+`super.hashCode`开始`hashCode`逻辑。如：
+
+{{{class="brush: scala"
   override def hashCode: Int =
     41 * (
       41 * (
         super.hashCode
       ) + numer
     ) + denom
+}}}
 
+因为超类的`hashCode`可能已经有些其他的操作了。比如已经对内部数组成员与集合成员
+进行过其他的哈希逻辑。
 
+如果发现哈希太耗性能，在对象是不可变的情况下可以把结果存起来。这样用`val`而不是
+`def`直接重写`hashCode`：
+
+{{{class="brush: scala"
   override val hashCode: Int =
     41 * (
       41 + numer
     ) + denom
 }}}
+
+
+= 结合Scala与Java =
 
 {{{class="brush: scala"
 }}}
