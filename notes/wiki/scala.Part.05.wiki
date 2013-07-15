@@ -1748,21 +1748,1195 @@ XML的模式很像字面量，差别在于如果加入转义花括号，那么�
 
 = 使用对象的模块化编程 =
 
+== 问题 ==
+
+以高内聚低耦合为目标构建大型应用。
+
+== 实践项目：食谱应用 ==
+
+构建一个web项目，不仅要把项目分层，而且变了方便测试，还要对要测试的相关层进行
+模仿。
+
+先进行建模工作。
+
+食品类只有一个名字：
+
+{{{class="brush: scala"
+  package org.stairwaybook.recipe
+
+  abstract class Food(val name: String) {
+    override def toString = name
+  }
+}}}
+
+食谱只有名称、材料列表、做法：
+
+{{{class="brush: scala"
+  package org.stairwaybook.recipe
+
+  class Recipe(
+    val name: String,
+    val ingredients: List[Food],
+    val instructions: String
+  ) {
+    override def toString = name
+  }
+}}}
+
+食品和食谱都是要被持久化到数据库里的。下面再建立了这两个类的一些单例对象用来
+测试：
+
+{{{class="brush: scala"
+  package org.stairwaybook.recipe
+
+  object Apple extends Food("Apple")
+  object Orange extends Food("Orange")
+  object Cream extends Food("Cream")
+  object Sugar extends Food("Sugar")
+
+  object FruitSalad extends Recipe(
+    "fruit salad",
+    List(Apple, Orange, Cream, Sugar),
+    "Stir it all together."
+  )
+}}}
+
+现在来模拟数据库和浏览功能。因为只是模拟，没有真的数据库，用列表来代替：
+
+{{{class="brush: scala"
+  package org.stairwaybook.recipe
+
+  object SimpleDatabase {
+    def allFoods = List(Apple, Orange, Cream, Sugar)
+
+    def foodNamed(name: String): Option[Food] =
+      allFoods.find(_.name == name)
+
+    def allRecipes: List[Recipe] = List(FruitSalad)
+  }
+
+  object SimpleBrowser {
+    def recipesUsing(food: Food) =
+      SimpleDatabase.allRecipes.filter(recipe =>
+        recipe.ingredients.contains(food))
+  }
+}}}
+
+测试调用：
+
+{{{class="brush: scala"
+  scala> val apple = SimpleDatabase.foodNamed("Apple").get
+  apple: Food = Apple
+
+  scala> SimpleBrowser.recipesUsing(apple)
+  res0: List[Recipe] = List(fruit salad)
+}}}
+
+添加数据库对食品分类的功能。通过`FoodCategory`类表示食物类型，再用一个列表保存
+所有的食物分类。注意关键字`private`不仅增加了访问限制，又可以保证对它的重构
+不会影响其他的外部模块，因为外部模块本来就不能直接访问它。
+
+单例对象可以方便地把程序分成多个模块，改进后的代码如下：
+
+{{{class="brush: scala"
+  package org.stairwaybook.recipe
+
+  object SimpleDatabase {
+    def allFoods = List(Apple, Orange, Cream, Sugar)
+
+    def foodNamed(name: String): Option[Food] =
+      allFoods.find(_.name == name)
+
+    def allRecipes: List[Recipe] = List(FruitSalad)
+
+    case class FoodCategory(name: String, foods: List[Food])
+
+    private var categories = List(
+      FoodCategory("fruits", List(Apple, Orange)),
+      FoodCategory("misc", List(Cream, Sugar)))
+
+    def allCategories = categories
+  }
+
+  object SimpleBrowser {
+    def recipesUsing(food: Food) =
+      SimpleDatabase.allRecipes.filter(recipe =>
+        recipe.ingredients.contains(food))
+
+    def displayCategory(category: SimpleDatabase.FoodCategory) {
+      println(category)
+    }
+  }
+}}}
 
 
+== 抽象概念 ==
 
+现在的代码虽然已经分成了数据库模拟与浏览器模块，但这并不是真正模块化的。问题在于
+浏览器模拟是“硬链接”到数据库模块上的：
 
+{{{class="brush: scala"
+  SimpleDatabase.allRecipes.filter(recipe => ...
+}}}
 
-
-
-
-
-
+这样数据库模块的改动会影响到浏览模块。解决方案是：如果模块是对象，那模块的模板
+就是类。把浏览器定义为类，所用的数据库指定为类的抽象成员。数据库类应具备的方法有
+`allFoods`、`allRecipes`、`allCategories`。
 
 
 {{{class="brush: scala"
+  abstract class Browser {
+    val database: Database
+
+    def recipesUsing(food: Food) =
+      database.allRecipes.filter(recipe =>
+        recipe.ingredients.contains(food))
+
+    def displayCategory(category: database.FoodCategory) { 
+      println(category)
+    }
+  }
+
+  abstract class Database {
+    def allFoods: List[Food]
+    def allRecipes: List[Recipe]
+ 
+    def foodNamed(name: String) =
+      allFoods.find(f => f.name == name)
+
+    case class FoodCategory(name: String, foods: List[Food])
+    def allCategories: List[FoodCategory]
+  }
 }}}
+
+单例对象由对应的类继承而来：
+
 {{{class="brush: scala"
+  object SimpleDatabase extends Database {
+    def allFoods = List(Apple, Orange, Cream, Sugar)
+
+    def allRecipes: List[Recipe] = List(FruitSalad)
+
+    private var categories = List(
+      FoodCategory("fruits", List(Apple, Orange)),
+      FoodCategory("misc", List(Cream, Sugar)))
+
+    def allCategories = categories
+  }
+
+
+  object SimpleBrowser extends Browser {
+    val database = SimpleDatabase
+  }
 }}}
+
+现在模块的具体实现是可以替换的：
+
 {{{class="brush: scala"
+  scala> val apple = SimpleDatabase.foodNamed("Apple").get
+  apple: Food = Apple
+
+  scala> SimpleBrowser.recipesUsing(apple)
+  res1: List[Recipe] = List(fruit salad)
 }}}
+
+在需要的时候可以换一个模块的新实现：
+
+{{{class="brush: scala"
+  object StudentDatabase extends Database {
+    object FrozenFood extends Food("FrozenFood")
+
+    object HeatItUp extends Recipe(
+      "heat it up",
+      List(FrozenFood),
+      "Microwave the 'food' for 10 minutes.")
+
+    def allFoods = List(FrozenFood)
+    def allRecipes = List(HeatItUp)
+    def allCategories = List(
+      FoodCategory("edible", List(FrozenFood)))
+  }
+
+  object StudentBrowser extends Browser {
+    val database = StudentDatabase
+  }
+}}}
+
+
+== 把模块拆分为特质 ==
+
+如果单个模块放在一个文件里太大的话，用特技拆成多个文件：
+
+{{{class="brush: scala"
+  trait FoodCategories {
+    case class FoodCategory(name: String, foods: List[Food])
+    def allCategories: List[FoodCategory]
+  }
+}}}
+
+现在`Database`类可以混入`FodCategories`特质而无须定义`FoodCategory`和
+`allCategories`：
+
+{{{class="brush: scala"
+  abstract class Database extends FoodCategories {
+    def allFoods: List[Food]
+    def allRecipes: List[Recipe]
+    def foodNamed(name: String) =
+      allFoods.find(f => f.name == name)
+  }
+}}}
+
+再把`SimpleDatabase`分成食物和食谱两个特质：
+
+{{{class="brush: scala"
+  object SimpleDatabase extends Database
+      with SimpleFoods with SimpleRecipes
+}}}
+
+食物特质：
+
+{{{class="brush: scala"
+  trait SimpleFoods {
+    object Pear extends Food("Pear")
+    def allFoods = List(Apple, Pear)
+    def allCategories = Nil
+  }
+}}}
+
+但食谱物质遇到了问题：
+
+{{{class="brush: scala"
+  trait SimpleRecipes { // Does not compile
+    object FruitSalad extends Recipe(
+      "fruit salad",
+      List(Apple, Pear),  // Uh oh
+      "Mix it all together."
+    )
+    def allRecipes = List(FruitSalad)
+  }
+}}}
+
+不能编译的原因是`Pear`没有处于使用它的特质中。编译器不知道`SimpleRecipes`只会与
+`SimpleFoods`混搭在一起。针对这种情况Scala提供了自身类型（self type）。表明在
+类中提到到`this`时，对于`this`的类型假设。混入了多个特质时指定这些特质为假设性
+特质。
+
+在这个例子中只要指定`SimpleFoods`一个特质为假设性特质就够了，现在`Pear`在作用域
+里了：
+
+{{{class="brush: scala"
+  trait SimpleRecipes {
+    this: SimpleFoods =>
+
+    object FruitSalad extends Recipe(
+      "fruit salad",
+      List(Apple, Pear),   // Now Pear is in scope
+      "Mix it all together."
+    )
+    def allRecipes = List(FruitSalad)
+  }
+}}}
+
+`Pear`的引用被认为是`this.Pear`。因为任何混入了`SimpleRecipes`的具体类都必须同时
+是`SimpleFoods`的子类，所以说`Pear`会是它的成员，所以没有安全问题。而抽象子类
+不用遵守这个限制，因为抽象子类不能`new`实例化，所以不存在`this.Pear`引用失败的
+风险。
+
+== 运行期链接 ==
+
+Scala又一个牛B的特性是可以在运行进链接，并根据运行时决定哪个模块将链接到哪个模块
+。如，下面的代码可以在运行时选择数据库并打印输出所胡苹果食谱：
+
+{{{class="brush: scala"
+  object GotApples {
+    def main(args: Array[String]) {
+      val db: Database =
+        if(args(0) == "student")
+          StudentDatabase
+        else
+          SimpleDatabase
+
+      object browser extends Browser {
+        val database = db
+      }
+
+      val apple = SimpleDatabase.foodNamed("Apple").get
+
+      for(recipe <- browser.recipesUsing(apple))
+        println(recipe)
+    } 
+  }
+}}}
+
+如果先简单数据库，会看到水果色拉食谱；如果选小学生数据库，会找不到苹果食谱：
+
+
+{{{class="brush: scala"
+  $ scala GotApples simple
+  fruit salad
+  $ scala GotApples student
+  $
+}}}
+
+虽然这里和本章形状的硬链接版本一样写死了`StudentDatabase`和`SimpleDatabase`类名
+，但区别是它们处于可替换的文件中。
+
+这有点像Java中用Spring的XML配置注入。Scala里通过程序来配置还可以增加语法检查。
+
+
+== 跟踪模块实例 ==
+
+虽然代码一样但上一节中创建不同浏览器和数据库模块依然是分离的模块，所以每个模块
+都有自己的内容，包括内嵌类。比如说`SimpleDatabase`里的`FoodCategory`就与
+`StudentBatabase`里的`FoodCategory`不是同一个类：
+
+
+{{{class="brush: scala"
+  scala> val category = StudentDatabase.allCategories.head
+  category: StudentDatabase.FoodCategory = 
+  FoodCategory(edible,List(FrozenFood))
+
+  scala> SimpleBrowser.displayCategory(category)
+  <console>:12: error: type mismatch;
+   found   : StudentDatabase.FoodCategory
+   required: SimpleBrowser.database.FoodCategory
+         SimpleBrowser.displayCategory(category)
+                                       ^
+}}}
+
+把`FoodCategory`定义移到类或特质之外可以让所有的`FoodCategory`都相同。开发人员
+可以选择是不是要这样做。就上面的例子来说两个`FoodCategory`类确实是不同的，
+所以编译器会报错很正常。
+
+但有时可能会遇到虽然两个类型相同但是编译器却不能识别的情况。这时可以用单例类型来
+解决这个问题。例如在`GotApples`程序里，类型检查器不知道`db`和`browser.database`
+是相同的。所以如果尝试在两个对象之间传递分类信息会引起类型错误：
+
+{{{class="brush: scala"
+  object GotApples {
+    // same definitions...
+  
+    for (category <- db.allCategories)
+      browser.displayCategory(category)
+  
+    // ...
+  }
+  
+  GotApples2.scala:14: error: type mismatch;
+   found   : db.FoodCategory
+   required: browser.database.FoodCategory
+          browser.displayCategory(category)
+                                  ^
+  one error found
+}}}
+
+要避免这个错误，需要通知类型检查器它们是同一个对象。可以通过改变
+`browser.database`的定义实现：
+
+{{{class="brush: scala"
+  object browser extends Browser {
+    val database: db.type = db
+  }
+}}}
+
+这个定义基本上和前面一样，就是`database`的类型很怪`db.type`。结尾`.type`表示它是
+单例类型。这是一个特殊的类型，内容只保存一个对象，在这里就是`db`指向的那个对象。
+因为这个东西一般没有什么用处所以编译器不默认引入它。但是在这里的单例类型可以让
+编译器知道`db`和`browser.database`是同样的对象，这些信息可以消除类型错误。
+
+
+= 对象相等性 =
+
+== Scala中的相等性 ==
+
+Scala和Java不同，`eq`表示同一实体；`==`表示实体含义相同。
+
+Scala中的`==`不能重写，因为在`Any`类中被定义为`final`的：
+
+{{{class="brush: scala"
+  final def == (that: Any): Boolean = 
+    if (null eq this) {null eq that} else {this equals that}
+}}}
+
+不过可以看到这里调用了`equals`方法，可以覆盖它来定义相等性方法。
+  
+
+== 缩写相等性方法 ==
+
+要正确实现相等性方法比想象中的困难。而且因为相等性是很多其他操作的基础，如果出错
+的话，像是把`C`类型的实例放到不可重复集这样的操作也会出错：
+
+{{{class="brush: scala"
+  var hashSet: Set[C] = new collection.immutable.HashSet
+  hashSet += elem1
+  hashSet contains elem2    // returns false!
+}}}
+
+重写`equals`方法是常常会出现的四种错误，在本节以后的部分会分别讨论：
+
+* 定义时方法签名写错了。
+* 只改了`equals`忘记改了`hashCode`。
+* 通过可变字段来定义`equals`方法。
+* 没有通过对等的关系来定义`equals`方法。
+
+=== 陷阱1：方法签名错误 ===
+
+对于以下的点类，考虑怎么实现`equals`方法：
+
+{{{class="brush: scala"
+  class Point(val x: Int, val y: Int) { ... }
+}}}
+
+下面的实现看起来不错，其实是错的：
+
+{{{class="brush: scala"
+  // An utterly wrong definition of equals
+  def equals(other: Point): Boolean =
+    this.x == other.x && this.y == other.y
+}}}
+
+粗看好像没有问题：
+
+{{{class="brush: scala"
+  scala> val p1, p2 = new Point(1, 2)
+  p1: Point = Point@62d74e
+  p2: Point = Point@254de0
+
+  scala> val q = new Point(2, 3)
+  q: Point = Point@349f8a
+
+  scala> p1 equals p2
+  res0: Boolean = true
+
+  scala> p1 equals q
+  res1: Boolean = false
+}}}
+
+但是一但放到集体里，那就出问题了：
+
+{{{class="brush: scala"
+  scala> import scala.collection.mutable._
+  import scala.collection.mutable._
+
+  scala> val coll = HashSet(p1)
+  coll: scala.collection.mutable.Set[Point] = 
+  Set(Point@62d74e)
+
+  scala> coll contains p2
+  res2: Boolean = false
+}}}
+
+`p1`等于`p2`，而且`p1`已经在`coll`里了，但是为什么程序判断`coll`里不包含`p2`呢？
+为了调查我们遮住一个参与比较的点的精确类开，然后再做以下操作：
+
+把`p2a`作为`p2`的别名，只不是类型是`Any`而不是`Point`，再用`p2a`而不是`p2`来比较
+：
+
+{{{class="brush: scala"
+  scala> val p2a: Any = p2
+  p2a: Any = Point@254de0
+
+  scala> p1 equals p2a
+  res3: Boolean = false
+}}}
+
+问题在于`equals`方法没有重写标准`equals`方法，因为它的类型不同。根类`Any`中定义
+的类型是：
+
+{{{class="brush: scala"
+  def equals(other: Any): Boolean
+}}}
+
+所以说有`Point`没有覆盖`Any`里的相等方法，只是重载了。现在有了两个`equals`方法。
+参数如果是`Any`的话调用的是参数是`Any`版本的方法。而`HashSet`的`contains`方法是
+泛型集合，所以它只调用`Object`类的`equals`方法而不是`Point`是重载的版本。更好的
+版本如下：
+
+{{{class="brush: scala"
+  // A better definition, but still not perfect
+  override def equals(other: Any) = other match {
+    case that: Point => this.x == that.x && this.y == that.y
+    case _ => false
+  }
+}}}
+
+还有一个陷阱是方法名错误。通常如果用正确的签名（即参数是`Any`类型）来重新定义
+`==`方法编译器会报错，因为`Any`是`final`方法，就像是这样：
+
+{{{class="brush: scala"
+  def ==(other: Point): Boolean = // Don't do this!
+}}}
+
+虽然上面这里把参数类型改了，通过了编译。但这里还只是重载而不是覆盖。
+
+
+=== 陷阱2：只改equals没有改hashCode ===
+
+asdfa
+
+有些集合判断时还要看`hashCode`方法。对于下面的例子来说，有一定机率下还是会得到
+`false`。说“一定机率是因为”哈希码还是有一定机率会碰撞的：
+
+{{{class="brush: scala"
+  scala> val p1, p2 = new Point(1, 2)
+  p1: Point = Point@670f2b
+  p2: Point = Point@14f7c0
+
+  scala> HashSet(p1) contains p2
+  res4: Boolean = false
+}}}
+
+要记住按规范来说如果两个实例是相等的话，那么二者的哈希码也一定要一样。这里合适的
+`hashCode`定义如下：
+
+{{{class="brush: scala"
+  class Point(val x: Int, val y: Int) {
+    override def hashCode = 41 * (41 + x) + y
+    override def equals(other: Any) = other match { 
+      case that: Point => this.x == that.x && this.y == that.y 
+      case _ => false 
+    }
+  }
+}}}
+
+注意这里使用了常量41是一个质数。
+
+
+=== 陷阱3：用可变字段定义equals ===
+
+如果坐标的`x`与`y`是可变的`var`：
+
+{{{class="brush: scala"
+  class Point(var x: Int, var y: Int) { // Problematic
+    override def hashCode = 41 * (41 + x) + y
+    override def equals(other: Any) = other match { 
+      case that: Point => this.x == that.x && this.y == that.y 
+      case _ => false 
+    }
+  }
+}}}
+
+放到了集合里又改变的话会引起麻烦：
+
+{{{class="brush: scala"
+  scala> val p = new Point(1, 2)
+  p: Point = Point@2b
+
+  scala> val coll = HashSet(p)
+  coll: scala.collection.mutable.Set[Point] = Set(Point@2b)
+
+  scala> coll contains p
+  res5: Boolean = true
+}}}
+
+改变以后：
+
+{{{class="brush: scala"
+  scala> p.x += 1
+
+  scala> coll contains p
+  res7: Boolean = false
+}}}
+
+如果是用集合成员`elements.contains(..)`看到的结果会更加奇怪：
+
+{{{class="brush: scala"
+  scala> coll.elements contains p
+  res8: Boolean = true
+}}}
+
+推荐的做法是不要把关于可变字段的相等判断不要叫`equals`。起个别的名字叫
+`equalsContent`之类的，用它来判断。
+
+
+=== 陷阱4：不对等的equals方法 ===
+
+必须符合的原则：
+
+* 自反：对于任何非空实例`x`，`x.equals(x)`一定为真。
+* 对称：对于非空`x`与`y`，`x.equals(y)`当且仅当`y.equals(x)`为真时为真。
+* 传递：对于非空`x`，`y`，`z`，传递。
+* 一致：对于`x.equals(y)`只要内容没有改过无论重复调用多少次结果都一样。
+* 空值：对于非空`x`，`x.equals(null)`结果应为假。
+
+以上的要求我们目前的代码都符合，但当引入了子类以后情况就复杂了。现在给点类加上
+子类彩色类`ColoredPoint`，子类里增加了一个字段`Color`类的`color`保存颜色信息：
+
+{{{class="brush: scala"
+  object Color extends Enumeration {
+    val Red, Orange, Yellow, Green, Blue, Indigo, Violet = Value
+  }
+}}}
+
+新的相等方法把颜色的相等也考虑进来，如果超类的坐标判断相等且现在的颜色与相等的话
+就是相等的：
+
+{{{class="brush: scala"
+  class ColoredPoint(x: Int, y: Int, val color: Color.Value) 
+      extends Point(x, y) { // Problem: equals not symmetric
+
+    override def equals(other: Any) = other match {
+      case that: ColoredPoint => 
+        this.color == that.color && super.equals(that)
+      case _ => false
+    }
+  }
+}}}
+
+但是把超类和子类混在一起的时候，就不符合前面定义的必须符合的原则了：
+
+{{{class="brush: scala"
+  scala> val p = new Point(1, 2)
+  p: Point = Point@2b
+
+  scala> val cp = new ColoredPoint(1, 2, Color.Red)
+  cp: ColoredPoint = ColoredPoint@2b
+}}}
+
+没有考虑颜色，结果为真：
+
+{{{class="brush: scala"
+  scala> p equals cp
+  res8: Boolean = true
+}}}
+
+考虑了颜色，为假：
+
+{{{class="brush: scala"
+  scala> cp equals p
+  res9: Boolean = false
+}}}
+
+这样违背了对称原则。会引起不可知的后果：
+
+{{{class="brush: scala"
+  scala> HashSet[Point](p) contains cp
+  res10: Boolean = true
+
+  scala> HashSet[Point](cp) contains p
+  res11: Boolean = false
+}}}
+
+为了解决这情况开发人员面临两个选择：要么把检查设定得更加严格（有一个方向为假两边
+都为假）；或是更加宽容。
+
+以更加宽容为例，我们决定无论`x equals y`还是`y equals x`只要有一个为真那么就表示
+两个都为真：
+
+{{{class="brush: scala"
+  class ColoredPoint(x: Int, y: Int, val color: Color.Value) 
+      extends Point(x, y) { // Problem: equals not transitive
+
+    override def equals(other: Any) = other match {
+      case that: ColoredPoint =>
+        (this.color == that.color) && super.equals(that)
+      case that: Point =>
+        that equals this
+      case _ =>
+        false
+    }
+  }
+}}}
+
+现在解决了对称问题以后又有了一个新的问题：现在违背了传递性原则。下面定义了两个
+不同颜色的点。和之前没有颜色的超类比较，这三个关系不是传递的：
+
+{{{class="brush: scala"
+  scala> val redp = new ColoredPoint(1, 2, Color.Red)
+  redp: ColoredPoint = ColoredPoint@2b
+
+  scala> val bluep = new ColoredPoint(1, 2, Color.Blue)
+  bluep: ColoredPoint = ColoredPoint@2b
+
+
+  scala> redp == p
+  res12: Boolean = true
+
+  scala> p == bluep
+  res13: Boolean = true
+
+	// not transitive
+  scala> redp == bluep
+  res14: Boolean = false
+}}}
+
+问题出在前面让两边对称关系有一个为真一个为假时设结果真为真上。那再试试这种情况下
+检查更加严格让两边都为假试试。
+
+父类检查是不是真的是父类：
+
+{{{class="brush: scala"
+  // A technically valid, but unsatisfying, equals method
+  class Point(val x: Int, val y: Int) {
+    override def hashCode = 41 * (41 + x) + y
+    override def equals(other: Any) = other match {
+      case that: Point => 
+        this.x == that.x && this.y == that.y && 
+        this.getClass == that.getClass
+      case _ => false
+    }
+  }
+}}}
+
+子类里检查颜色对不对：
+
+{{{class="brush: scala"
+  class ColoredPoint(x: Int, y: Int, val color: Color.Value) 
+      extends Point(x, y) {
+
+    override def equals(other: Any) = other match {
+      case that: ColoredPoint =>
+        (this.color == that.color) && super.equals(that)
+      case _ => false
+    }
+  }
+}}}
+
+但这样好像太严格了，考虑下面这样以变通的方式定义了一个坐标为`(1, 2)`的匿名类的
+点：
+
+{{{class="brush: scala"
+  scala> val pAnon = new Point(1, 1) { override val y = 2 }
+  pAnon: Point = $anon$1@2b
+}}}
+
+但这样虽然字段和超类一样但是因为不是父类一样的类型所以相等判断为假。
+
+到目前好像我们被卡住了，没有办法完全符合四条原则。其实办法是有的，要在`equals`和
+`hashCode`这两个方法以外再定义一个新的方法说明该类的对象不与任何定义了不同相等性
+方法的超类对象相等。
+
+现在多了一个`canEqual`方法：
+
+{{{class="brush: scala"
+  def canEqual(other: Any): Boolean
+}}}
+
+如果子类覆盖了`canEqual`方法，那么返回真，不然返回假。`equals`方法调用`canEqual`
+进行双向比对：
+
+{{{class="brush: scala"
+  class Point(val x: Int, val y: Int) {
+    override def hashCode = 41 * (41 + x) + y
+    override def equals(other: Any) = other match {
+      case that: Point =>
+        (that canEqual this) &&
+        (this.x == that.x) && (this.y == that.y)
+      case _ =>
+        false
+    }
+    def canEqual(other: Any) = other.isInstanceOf[Point]
+  }
+}}}
+
+根据上面的`Point`类的`canEqual`实现，它所有的实例都可以相等。
+
+而子类`ColorPoint`的定义：
+
+{{{class="brush: scala"
+  class ColoredPoint(x: Int, y: Int, val color: Color.Value) 
+      extends Point(x, y) {
+
+    override def hashCode = 41 * super.hashCode + color.hashCode
+    override def equals(other: Any) = other match {
+      case that: ColoredPoint =>
+        (that canEqual this) &&
+        super.equals(that) && this.color == that.color
+      case _ =>
+        false
+    }
+    override def canEqual(other: Any) =
+      other.isInstanceOf[ColoredPoint]
+  }
+}}}
+
+现在即是相等的又是传递的。从父类到子类的方向，因为在父类的`equals`方法执行过程中
+子类的`canEquals`会返回假；从子类到父类的方向，在子类的`equals`方法会发现传入的
+参数的类型不是自己的这个类而返回假。
+
+另一方面，只要不重写相等性方法，不同的子类实体可以相等：
+
+{{{class="brush: scala"
+  scala> val p = new Point(1, 2)
+  p: Point = Point@6bc
+
+  scala> val cp = new ColoredPoint(1, 2, Color.Indigo)
+  cp: ColoredPoint = ColoredPoint@11421
+
+  scala> val pAnon = new Point(1, 1) { override val y = 2 }
+  pAnon: Point = $anon$1@6bc
+
+  scala> val coll = List(p)
+  coll: List[Point] = List(Point@6bc)
+
+  scala> coll contains p 
+  res0: Boolean = true
+
+  scala> coll contains cp
+  res1: Boolean = false
+
+  scala> coll contains pAnon
+  res2: Boolean = true
+}}}
+
+上面的代码中`ColoredPoint`重写了`canEqual`方法，所以不能和父类相等，而匿名类没有
+重写所以可以相等。
+
+注意上面的实现对于把实例放入不可重复集的场景来说，`coll contains pAnon`会返回假
+，但其实我们期望的是`coll contains cp`会返回假。这样一来在向不可重复集里放这两个
+不同子类实例后，检查`contains`时会取得不同的结果。
+
+
+== 定义带参数类型的相等性 ==
+
+前面的`equals`方法都用到了模式匹配来判断类型。这个办法在参数类型的场景下就需要
+调整了。
+
+以二叉树为例子来说明。类型参数为`T`.它有由两个实现类：空树和非空分支。非空树由
+包含的元素`elem`和左右两个子树组成：
+
+{{{class="brush: scala"
+  trait Tree[+T] {
+    def elem: T
+    def left: Tree[T]
+    def right: Tree[T]
+  }
+
+  object EmptyTree extends Tree[Nothing] {
+    def elem =
+      throw new NoSuchElementException("EmptyTree.elem")
+    def left =
+      throw new NoSuchElementException("EmptyTree.left")
+    def right =
+      throw new NoSuchElementException("EmptyTree.right")
+  }
+
+  class Branch[+T](
+    val elem: T,
+    val left: Tree[T],
+    val right: Tree[T]
+  ) extends Tree[T]
+}}}
+
+对于相等性方法来说，特质`Tree`不用实现，单例对象空树就用从`AnyRef`继承下来的默认
+实现：因为它只能和自己相等，所以内容相等就是引用相等。
+
+给`Branch`加上`hashCode`和`equals`方法就麻烦了。相等的逻辑应该是存放元素相等并且
+左右子树都相等才相等。所以按照之前的思路加上相等性方法：
+
+{{{class="brush: scala"
+  class Branch[T](
+    val elem: T,
+    val left: Tree[T],
+    val right: Tree[T]
+  ) extends Tree[T] {
+
+    override def equals(other: Any) = other match {
+      case that: Branch[T] => this.elem == that.elem && 
+                              this.left == that.left &&
+                              this.right == that.right
+      case _ => false
+    }
+  }
+}}}
+
+上面的代码会有`unchecked`警告。加上`-unchecked`选项编译会揭示出有如下问题：
+
+{{{class="brush: scala"
+   $ fsc -unchecked Tree.scala
+  Tree.scala:14: warning: non variable type-argument T in type 
+  pattern is unchecked since it is eliminated by erasure
+      case that: Branch[T] => this.elem == that.elem && 
+                 ^
+}}}
+
+这是说针对模式匹配`Branch[t]`系统只能检查当`other`引用的是某种`Brantch`，不能
+检查参数类型`T`。原因在“参数类型化”这一章已经说过：集合类型的参数类型化会在编译
+时被抹去，无法被检查。
+
+其实内容的类型并不重要，只要这两个类的字段一样的话也OK，不一定要是同一个类。比如
+说是`Nil`元素和两个空子树`Branch`，考虑这两个`Branch`为相等是说过通的，不论它们
+的静态类型是什么：
+
+{{{class="brush: scala"
+  scala> val b1 = new Branch[List[String]](Nil,
+      |      EmptyTree, EmptyTree)
+  b1: Branch[List[String]] = Branch@2f1eb9
+
+  scala> val b2 = new Branch[List[Int]](Nil,
+      |      EmptyTree, EmptyTree)
+  b2: Branch[List[Int]] = Branch@be55d1
+
+  scala> b1 == b2
+  res0: Boolean = true
+}}}
+
+可能有些人期望相等性要求类型也相等，但由于考虑到Scala会抹去集合元素类型，所以
+这样不考虑类型只比较字段的方式也说得过去。
+
+为了去掉`unchecked`警告只要把元素类型`T`改成小写的`t`：
+
+{{{class="brush: scala"
+  case that: Branch[t] => this.elem == that.elem && 
+                          this.left == that.left &&
+                          this.right == that.right
+}}}
+
+因为在“模式匹配”里说过小写字母开始的类型参数表示末知的类型`t`表示未知的类型：
+
+{{{class="brush: scala"
+  case that: Branch[t] => 
+}}}
+
+所以上面这行对所有类型都可以匹配成功，等于是用`_`代替：
+
+{{{class="brush: scala"
+  case that: Branch[_] =>
+}}}
+
+最后要为`Branch`类定义`hashCode`和`canEqual`，它们在随着`equals`方法一起修改。
+初步的方案是拿到所有字段的`hashCode`值，然后用质数来加乘：
+
+{{{class="brush: scala"
+  override def hashCode: Int =
+    41 * (
+      41 * (
+        41 + elem.hashCode
+      ) + left.hashCode
+    ) + right.hashCode
+}}}
+
+当然这只是可选的方案之一。
+
+`canEqual`实现方案：
+
+{{{class="brush: scala"
+  def canEqual(other: Any) = other match {
+    case that: Branch[_] => true
+    case _ => false
+  }
+}}}
+
+上面用到了类型的模式匹配，当然用`isInstanceOf`来实现也可以：
+
+{{{class="brush: scala"
+    def canEqual(other: Any) = other.isInstanceOf[Branch[_]]
+}}}
+
+注意上面的下划线代表的意义。`Branch[_]`技术上说是方法类型参数而不是类型模式，
+所以不应该有`_`这样的未定义的部分。`Branch[_]`是会在下一章中介绍的“存在类型
+简写”，现在可以把它当作是一个有着未知部分的类型。虽然在技术上说下划线在模式匹配
+和方法调用的类型参数中代表两种不同的东西，但本质上含意是相同的，就是把某些东西
+标记为未知。最终版本的代码如下：
+
+{{{class="brush: scala"
+  class Branch[T](
+    val elem: T,
+    val left: Tree[T],
+    val right: Tree[T]
+  ) extends Tree[T] {
+
+    override def equals(other: Any) = other match {
+      case that: Branch[_] => (that canEqual this) && 
+                              this.elem == that.elem && 
+                              this.left == that.left &&
+                              this.right == that.right
+      case _ => false
+    }
+
+    def canEqual(other: Any) = other.isInstanceOf[Branch[_]]
+
+    override def hashCode: Int =
+      41 * (
+        41 * (
+          41 + elem.hashCode
+        ) + left.hashCode
+      ) + right.hashCode
+  }
+}}}
+
+== 实践equals和hashCode ==
+
+以前面所做的实数类`Rational`来实践相等操作。为了清楚去掉了数学运算方法，强化了
+`toString`与约分操作，让分母为正数（如`1/-2`转为`-1/2`）。
+
+对`equals`方法的重写：
+
+{{{class="brush: scala"
+  class Rational(n: Int, d: Int) {
+  
+    require(d != 0)
+  
+    private val g = gcd(n.abs, d.abs)
+    val numer = (if (d < 0) -n else n) / g
+    val denom = d.abs / g
+  
+    private def gcd(a: Int, b: Int): Int =
+      if (b == 0) a else gcd(b, a % b)
+  
+    override def equals(other: Any): Boolean =
+      other match {
+  
+        case that: Rational =>
+          (that canEqual this) &&
+          numer == that.numer &&
+          denom == that.denom
+
+        case _ => false
+      }
+
+    def canEqual(other: Any): Boolean =
+      other.isInstanceOf[Rational]
+
+    override def hashCode: Int =
+      41 * (
+        41 + numer
+      ) + denom
+  
+    override def toString =
+      if (denom == 1) numer.toString else numer +"/"+ denom
+  }
+}}}
+
+=== equals方法基本要点 ===
+
+==== 要点1 ====
+
+如果是在非`final`类中重写`equals`方法则应该创建`canEqual`方法。如果`equals`继承
+自`AnyRef`（就是没有被重新定义过），则`canEqual`定义会是新的，不过它会覆盖之前
+的实现。需求中唯一例外的是关于重定义了继承自`AnyRef`的`equals`方法的`final`类。
+对于它们来说，前几节所描述的子类问题并不会出现，所以不用定义`canEqual`。
+`canEqual`的对象类型应该是`Any`：
+
+{{{class="brush: scala"
+    def canEqual(other: Any): Boolean =
+}}}
+
+==== 要点2 ====
+
+如果参数对象是当前类的实例则`canEqual`方法应该返回真，不然应该返回假：
+
+{{{class="brush: scala"
+      other.isInstanceOf[Rational]
+}}}
+
+==== 要点3 ====
+
+`equals`方法中参数类型为`Any`：
+
+{{{class="brush: scala"
+    override def equals(other: Any): Boolean =
+}}}
+
+==== 要点4 ====
+
+`equals`方法体要写为单个`match`表达式，而`match`的选择器应该是传递给`equals`的
+对象：
+
+{{{class="brush: scala"
+  other match {
+    // ...
+  }
+}}}
+
+==== 要点5 ====
+
+`match`应该有两个`case`，第一个是声明为所定义的`equals`方法类的类型模式：
+
+{{{class="brush: scala"
+        case that: Rational =>
+}}}
+
+==== 要点6 ====
+
+在这个`case`语句货栈中，编写一个表达式，把两个对象相等必须为真的独立表达式以逻辑
+的方式结合起来。如果重写的`equals`方法并非是`AnyRef`的那一个，就很有可能要包含
+对超类`equals`方法调用：
+
+{{{class="brush: scala"
+          super.equals(that) &&
+}}}
+
+如果首个引入`canEqual`的类定义`equals`方法，应该调用其参数的`canEqual`方法，将
+`this`作为参数传递进去：
+
+{{{class="brush: scala"
+          (that canEqual this) &&
+}}}
+
+重写的`equals`方法也应该包含`canEqual`的调用，除非它们包含了对`super.equals`的
+调用。因为在这个“除非”情况中，`canEqual`测试已经在超类中完成。最后，对每个与
+相等性相关的字段分别验证本对象的字段与传入对象的对应字段是否相等：
+
+{{{class="brush: scala"
+          numer == that.numer &&
+          denom == that.denom
+}}}
+
+==== 要点7 ====
+
+对于第二个`case`用通配模式返回假：
+
+{{{class="brush: scala"
+  case _ => false
+}}}
+
+按照上面的要点来做就能基本保证相等性关系的正确。
+
+
+=== hashCode方法 ===
+
+基本上思路就是所有字段一个一个加、乘质数：
+
+{{{class="brush: scala"
+  override def hashCode: Int =
+    41 * (
+      41 * (
+        41 * (
+          41 * (
+            41 + a.hashCode
+          ) + b.hashCode
+        ) + c.hashCode
+      ) + d.hashCode
+    ) + e.hashCode
+}}}
+
+也可以不对类型为`Int`、`Short`、`Byte`、`Char`类型字段调用`hashCode`，这些可以
+用它们对应的`Int`值作为哈希。由于我们的实数类成员都是`Int`的，所以可以简单地写
+成这样：
+
+{{{class="brush: scala"
+  override [[def]] hashCode: Int =
+    41 * (
+      41 + numer
+    ) + denom
+}}}
+
+加上的数字是质数，在最里面的`number`加上41是为了防止第一个乘法等到0的可能性，
+其实最里面的那个41可以换成任何非0整数，这里就和外层一样都用41了看起来整齐一些。
+
+如果`equals`方法把`super.equals(that)`调用作为其逻辑的开头，那么也同样应该调用
+`super.hashCode`开始`hashCode`逻辑。如：
+
+{{{class="brush: scala"
+  override def hashCode: Int =
+    41 * (
+      41 * (
+        super.hashCode
+      ) + numer
+    ) + denom
+}}}
+
+因为超类的`hashCode`可能已经有些其他的操作了。比如已经对内部数组成员与集合成员
+进行过其他的哈希逻辑。
+
+如果发现哈希太耗性能，在对象是不可变的情况下可以把结果存起来。这样用`val`而不是
+`def`直接重写`hashCode`：
+
+{{{class="brush: scala"
+  override val hashCode: Int =
+    41 * (
+      41 + numer
+    ) + denom
+}}}
+
