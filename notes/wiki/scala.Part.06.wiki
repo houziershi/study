@@ -4,14 +4,1281 @@
 
 %toc Part VI
 
-
-
-
 = 结合Scala与Java =
 
+== 在Java中使用Scala ==
+
+虽然Scala代码被编译成了Java字节码，但还是要知道编译成了字节码以后长什么样子。
+
+=== 一般性原则 ===
+
+Scala尽可能把Scala特性编译成对等的Java特性，如：类、方法、字符串、异常等。
+
+虽然在运行时进行确定重载方法是一个很好的方案，但是为了和Java的重载一致Scala还是
+和Java保持一致使用编译时解析重载。这样Scala的方法与调用方式可以和Java的一致。
+
+但是像特质这样在Java里没有对应的特性就比较麻烦，还有Java和Scala的泛型要细节上是
+有冲突的，只能用别的方式解决。注意在不同版本中这样的解决方案会不断的优化改变。
+所以可靠的方式还是用`javap`工具检查`.class`文件。
+
+=== 值类型 ===
+
+`Int`这样的值类型会尽量用Java的`Int`表示。但有些情况下如`List[Any]`时不能确定用
+的是哪一种类型，所以会用`Interger`这样的包装器类。
+
+=== 单例对象 ===
+
+由于在Java里没有对应的特性，所以采用静态和实例方法结合的方式。每个Scala的单例
+对象编译器都会创建一个名称后加美元符号的Java类。对于名为`App`的单例对象编译器
+产出一个名为`App$`的Java类。这个类拥有Scala单例对象的所有字段和方法，这个Java类
+同时还有一个名为`MODULE$`的静态字段，保存该类在运行期创建的一个实例。
+
+完整的例子：
+
 {{{class="brush: scala"
+  object App {
+    def main(args: Array[String]) {
+      println("Hello, world!")
+    }
+  }
+}}}
+
+会生成一个Java类`App$`：
+
+{{{class="brush: scala"
+  $ javap App$
+  public final class App$ extends java.lang.Object
+  implements scala.ScalaObject{
+      public static final App$ MODULE$;
+      public static {};
+      public App$();
+      public void main(java.lang.String[]);
+      public int $tag();
+  }
+}}}
+
+如果只有单例对象`App`而没有叫作`App`的Scala类，那么编译器还要自动创建一个叫`App`
+的Java类。这个类对于每个Scala单例对象的方法都有一个静态转发方法与之对应：
+
+{{{class="brush: scala"
+  $ javap App
+  Compiled from "App.scala"
+  public final class App extends java.lang.Object{
+      public static final int $tag();
+      public static final void main(java.lang.String[]);
+  }
+}}}
+
+反之如果已经有一个名为`App`的类了，Scala会创建一个相对应的Java类`App`来保存定义
+`App`类的成员。在这种情况下就不包含任何转发到同名单例对象的方法，Java代码必须
+通过`MODULE$`字段来访问这个单例。
+
+
+=== 作为接口的特质 ===
+
+每个特质都会创建一个同名的Java接口。这个接口可以作为Java类型使用，可以通过这个
+接口类型的变量来调用Scala的对象方法。
+
+反过来如果要在Java中建立一个Scala特质的情况非常罕见，但也有特殊情况下需要这样做
+。如果Scala特质只有抽象方法的话就直接翻译成Java接口。所以本质上说能Scala语法来
+编写Java接口。
+
+
+== 注解 ==
+
+=== 标准注解的额外效果 ===
+
+有一些注解编译器在针对Java平台编译时会产额外的信息。编译器会首先按Scala原则去
+处理，然后针对Java做一些额外的工作。
+
+==== 过期 ====
+
+`@deprecated`标记的方法或类，编译器会为产的代码添加Java自己的过期注解。所以Java
+也会警告过期。
+
+==== volatile字段 ====
+
+对应到Java里的`volatile`修饰符。所以这两套机制一样，对volatile字段的访问也完全
+根据Java内存模型所规定的volatile字段处理原则来进行排列。
+
+==== 序列化 ====
+
+`@serializable`被加上Java的`Serializable`接口。`@SerialVersionUID`被转成Java的
+版本字段：
+
+{{{class="brush: scala"
+  // Java serial version marker
+  private final static long SerialVersionUID = 1234L
+}}}
+
+`@transient`变量会被加上Java的`transient`修饰符： 
+
+
+=== 抛出的异常 ===
+
+Scala不检查抛出的异常是否被捕获。也就是说Scala没有`throws`声明。所以所有的Scala
+都被翻译成不抛出任何异常的Java方法。这样做的原因是`throws`声明就是为了强制开发
+人员一定要处理异常。但是的很多开发人员写Java在捕获了以后也不处理，这样语法上虽然
+过了但是等于没有抛出声明。比如下面这样的`catch`块里一句语句也没有：
+
+{{{class="brush: scala"
+try {
+	...
+} catch (IOException e) {
+	// do nothing
+}
+}}}
+
+这样异常没有处理，反而还给代码包了一层`try-catch`。Scala为了代码干净就直接不声明
+抛出异常了。
+
+但是为了和Java程序对接，声明一下会抛出哪些异常还是有必要的。所以通过注解标签
+`@throws`来说明：
+
+{{{class="brush: scala"
+  import java.io._
+  class Reader(fname: String) {
+    private val in =
+      new BufferedReader(new FileReader(fname))
+ 
+    @throws(classOf[IOException])
+    def read() = in.read()
+  }
+}}}
+
+从Java看来是这个样子的：
+
+{{{class="brush: scala"
+  $ javap Reader
+  Compiled from "Reader.scala"
+  public class Reader extends java.lang.Object implements
+  scala.ScalaObject{
+      public Reader(java.lang.String);
+      public int read()       throws java.io.IOException;
+      public int $tag();
+  }
+  $
+}}}
+
+
+=== Java注解 ===
+
+Java注解可以直接在Scala代码中用，任何Java框架都会看到这些注解。如Junit的注解：
+
+{{{class="brush: scala"
+  import org.junit.Test
+  import org.junit.Assert.assertEquals
+
+  class SetTest {
+
+    @Test
+    def testMultiAdd {
+      val set = Set() + 1 + 2 + 3 + 1 + 2 + 3
+      assertEquals(3, set.size)
+    }
+  }
+}}}
+
+Scala可以直接用：
+
+{{{class="brush: scala"
+  $ scala -cp junit-4.3.1.jar:. org.junit.runner.JUnitCore SetTest
+  JUnit version 4.3.1
+  .
+  Time: 0.023
+ 
+  OK (1 test)
+}}}
+
+
+=== 编写自己的注解 ===
+
+为了让注解对Java反射可见，必须用Java语法编写并用`javac`编译。将来Scala可能会有
+自己的反射，但现在Scala还没有办法来实现Java注解的全部功能。
+
+但是有可以要使用Scala反射来访问Scala的注解。所以要先用Java来写：
+
+{{{class="brush: scala"
+  import java.lang.annotation.*;
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target(ElementType.METHOD)
+  public @interface Ignore { }
+}}}
+
+使用`javac`编译过以后，Scala里使用的方式：
+
+{{{class="brush: scala"
+  object Tests {
+    @Ignore
+    def testData = List(0, 1, -1, 5, -5)
+
+    def test1 {
+      assert(testData == (testData.head :: testData.tail))
+    }
+
+    def test2 {
+      assert(testData.contains(testData.head))
+    }
+  }
+}}}
+
+这里的`test1`和`test2`应该是测试方法，尽管`testData`以`test`开头，但实际上应该
+被忽略。
+
+通过Java的反身API来观察这些注解是否被用到：
+
+{{{class="brush: scala"
+  for {
+    method <- Tests.getClass.getMethods
+    if method.getName.startsWith("test")
+    if method.getAnnotation(classOf[Ignore]) == null
+  } {
+    println("found a test method: " + method)
+  }
+}}}
+
+在这里用反射方法`getClass`和`getMethods`来检查输入对象类的所有字段。与注解相关的
+部分是`getAnnotation`方法，它用来查找特定类型的注解，这里用来查找我们定义的
+`Ignore`类型的注解。运行起来是这样的：
+
+{{{class="brush: scala"
+  $ javac Ignore.java
+  $ scalac Tests.scala
+  $ scalac FindTests.scala
+  $ scala FindTests
+  found a test method: public void Tests$.test2()
+  found a test method: public void Tests$.test1()
+}}}
+
+注意这些方法在Java反射看来是位于`Test$`类而不是`Test`类中，因为这是单例对象。
+
+还要注意Java注解的限制，比如，注解的参数只能用常量不能用表达式。（可以用
+`@serial(1234)`而不能用@serial(x*2)）。
+
+== 存在类型 ==
+
+所有Java类型在Scala中都有对等的概念。一般的类型可以用同名的类型表示，如Java中的
+`Pattern`对应Scala里的`Pattern`、`Iterator<Component>`对应`Iterator[Component]`
+。但是像是Java里的`Iterator<?>`或`Iterator<? extends Component>`这样的通配符类型
+或是`Iterator`这样没有参数的原始类型要用到一种额外的叫作“存在类型”的类型来表示。
+
+存在类型是Scala语言所支持的特性，但实际上它的作用是用于从Scala访问Java类型。
+这一节里会介绍它的工作机制，但它的主要用途是当Scala访问Java时能够理解编译器报错
+的信息。存在类型的通用形式如下：
+
+{{{class="brush: scala"
+  type forSome { declarations }
+}}}
+
+`type`是任意的Scala类型，`declarations`是一个抽象的`val`和`type`列表。这个定义
+可以解读为：声明的变量和类型是存在但未知的，正如类中的抽象成员那样。这个类型进而
+被允许引用这些声明的变量和类型，虽然编译器不知道具体是什么类。
+
+看一个具体的例子，Java中的`Iterator<?>`可以在Scala中写为：
+
+{{{class="brush: scala"
+  Iterator[T] forSome { type T }
+}}}
+
+Java中的`Iterator<? extends Component>`在Scala中写为：
+
+{{{class="brush: scala"
+  Iterator[T] forSome { type T <: Component }
+}}}
+
+还有简写法，`Iterator[T] forSome{type T}`简写为`Iterator[_]`。像占位符一样用`_`
+来组成字面量来表示类型。
+
+指定上界和下界的方式也可以简写，`Iterator[_ <: Component]`相当于：
+
+{{{class="brush: scala"
+  Iterator[T] forSome { type T <: Component }
+}}}
+
+存在类型对于对于简单的用例来说，可以当`forSome`不存在。虽然`forSome`语句中的类型
+和值是未知的，Scala还是会检查程序是否完备。举例来说，对于以下的Java类：
+
+{{{class="brush: scala"
+  // This is a Java class with wildcards
+  public class Wild {
+    Collection<?> contents() {
+      Collection<String> stuff = new Vector<String>();
+      stuff.add("a");
+      stuff.add("b");
+      stuff.add("see");
+      return stuff;
+    }
+  }
+}}}
+
+如果在Scala中访问这个类，会看到它有一个存在类型：
+
+{{{class="brush: scala"
+  scala> val contents = (new Wild).contents
+  contents: java.util.Collection[?0] forSome { type ?0 } =
+     [a, b, see]
+}}}
+
+要看这个集合里有多少元素，可以简单忽略存在定义部分，像平常一样调用`size`方法：
+
+{{{class="brush: scala"
+  scala> contents.size()
+  res0: Int = 3
+}}}
+
+对于复杂的类型的情况，存在类型会显得笨拙一些。因为没有办法给存在类型命名。以创建
+一个可变Scala类型为例，需要用`contents`的元素初始化它：
+
+{{{class="brush: scala"
+  import scala.collection.mutable.Set
+  val iter = (new Wild).contents.iterator
+  val set = Set.empty[???]     // what type goes here? 这里要用什么类型？
+  while (iter.hasMore)
+    set += iter.next()
+}}}
+
+第三行里没有办法给出Java集合里的元素类型名称，所以不能给出`set`方法的满足类型。
+为了绕过此问题，应该考试如下两种技巧：
+
+1）将存在的类型传入方法时，把类型参数从`forSome`语句移到方法的类型参数中。
+在方法体内，可以用这个类型参数来指定本来在`forSome`语句中的类型。
+
+2）不要从方法返回存在的类型，而是返回一个带有`forSome`语句中的每个类型的抽象成员
+的对象（参见抽象对象一章）。
+
+使用这两个技巧，之前的代码写成这个样子：
+
+{{{class="brush: scala"
+  import scala.collection.mutable.Set
+  import java.util.Collection
+
+  abstract class SetAndType {
+    type Elem
+    val set: Set[Elem]
+  }
+
+  def javaSet2ScalaSet[T](jset: Collection[T]): SetAndType = {
+    val sset = Set.empty[T]  // now T can be named!
+
+    val iter = jset.iterator
+    while (iter.hasNext)
+      sset += iter.next()
+
+    return new SetAndType {
+      type Elem = T
+      val set = sset
+    }
+  }
+}}}
+
+综上所棕，对于Scala来说，用存在类型实现的这么复杂的东西用Scala的抽象类都聚脂实现
+。所以Scala中几乎不用存在类型。
+
+
+
+= Actor和并发 =
+
+== 天堂中的烦恼 ==
+
+主要介绍Java并发与同步锁的问题，所以略了。
+
+== actor和消息传递 ==
+
+actor是一个类似线程的实体，它有一个接收消息的邮箱。Scala里实现actor的方法是继承
+`scala.actors.Actor`并实现其`act`方法。下面一个简单的例子都不检查它的邮箱，只是
+把一个消息打印五次然后退出：
+
+{{{class="brush: scala"
+  import scala.actors._
+
+  object SillyActor extends Actor {
+    def act() { 
+      for (i <- 1 to 5) {
+        println("I'm acting!")
+        Thread.sleep(1000)
+      }
+    }
+  }
+}}}
+
+启动方法和Java线程类似，也是调用`start`方法：
+
+{{{class="brush: scala"
+  scala> SillyActor.start()
+  I'm acting!
+  res4: scala.actors.Actor = SillyActor$@1945696
+
+  scala> I'm acting!
+  I'm acting!
+  I'm acting!
+  I'm acting!
+}}}
+
+注意输出的文本与Scala交互程序的回显交错在一起了，因为这是在另一个独立的线程里。
+所以运行是独立的。再来看第二版的actor：
+
+{{{class="brush: scala"
+  import scala.actors._
+
+  object SeriousActor extends Actor {
+    def act() { 
+      for (i <- 1 to 5) {
+        println("To be or not to be.")
+        Thread.sleep(1000)
+      }
+    }
+  }
+}}}
+
+这里同时运行两个actor：
+
+{{{class="brush: scala"
+  scala> SillyActor.start(); SeriousActor.start()
+  res3: scala.actors.Actor = seriousActor$@1689405
+
+  scala> To be or not to be.
+  I'm acting!
+  To be or not to be.
+  I'm acting!
+  To be or not to be.
+  I'm acting!
+  To be or not to be.
+  I'm acting!
+  To be or not to be.
+  I'm acting!
+}}}
+
+还可以用对象`scala.actor.Actor`中名为`actor`的工具来创建actor：
+
+{{{class="brush: scala"
+  scala> import scala.actors.Actor._
+
+  scala> val seriousActor2 = actor {
+       |    for (i <- 1 to 5)
+       |      println("That is the question.")
+       |    Thread.sleep(1000)
+       | }
+
+  scala> That is the question.
+  That is the question.
+  That is the question.
+  That is the question.
+  That is the question.
+}}}
+
+注意上面用`actor`工具创建的actor在创建后是立即启动的。
+
+actor之间的协作方式是通过`!`来发送消息：
+
+{{{class="brush: scala"
+  scala> SillyActor ! "hi there"
+}}}
+
+虽然消息`"hi there"`被发给了`SillyActor`，但消息只是放在邮箱里保持未读状态。下面
+的新版本会通过`receive`来收消息，然后只是把消息打印出来：
+
+{{{class="brush: scala"
+  val echoActor = actor {
+    while (true) {
+      receive {
+        case msg =>
+          println("received message: "+ msg)
+      }
+    }
+  }
+}}}
+
+注意这里的使用的偏函数字面量，除了没有`match`关键字外，和match表达式样子很像。
+
+当actor发消息时并不会阻塞，收到消息时也不会被打断。发送的消息在接收的actor的邮箱
+里等待被处理，赶到以接收都actor调用`receive`方法：
+
+{{{class="brush: scala"
+  scala> echoActor ! "hi there"
+  received message: hi there
+
+  scala> echoActor ! 15
+
+  scala> received message: 15
+}}}
+
+正如“模式匹配”一章中“模式无处不在”这一节中所说的，偏函数（特质`PartialFunction`
+的实例）并不是完整的函数。所以它不对所有输入值有都定义。除了接受单个`apply`方法
+外，偏函数还提供一个`isDefineAt`方法，同样只接收单个参数。如果偏函数能处理传给
+`isDefineAt`函数的参数，那么`isDefineAt`返回`true`。把这个消息传递给偏函数的
+`apply`方法，`apply`方法就会处理这个消息。
+
+例如`echoActor`的`apply`方法会打印`"received message: "`，然后再输出消息对象的
+`toString`结果。如果邮箱里没有让`isDefineAt`返回`true`的消息，则被调用`receive`
+的actor将会被阻塞，赶到有匹配的消息。
+
+举例来说，以下是只处理`Int`类型消息的actor：
+
+{{{class="brush: scala"
+  scala> val intActor = actor {
+       |   receive {
+       |     case x: Int => // I only want Ints
+       |       println("Got an Int: "+ x)
+       |   }
+       | }
+  intActor: scala.actors.Actor = 
+    scala.actors.Actor$$anon$1@34ba6b
+}}}
+
+如果是`String`或`Double`类型的消息会被忽略：
+
+{{{class="brush: scala"
+  scala> intActor ! "hello"
+  scala> intActor ! Math.Pi
+}}}
+
+给个`Int`就会有响应：
+
+{{{class="brush: scala"
+  scala> intActor ! 12
+  Got an Int: 12
+}}}
+
+== 把原生线程当作actor ==
+
+Actor子系统会管理线程，所以定义了actor以后开发人员不用操心actor与线程的对应关系
+是怎么样的。
+
+Actor子系统也有反过来的情形，但不能用`Thread.current`，因为没有必要的方法，应该
+用`Actor.self`来把当前线程当作actor来查看。
+
+这在交互环境中调用actor很有用，如：
+
+{{{class="brush: scala"
+  scala> import scala.actors.Actor._
+  import scala.actors.Actor._
+
+  scala> self ! "hello"
+
+  scala> self.receive { case x => x }
+  res6: Any = hello
+}}}
+
+上面的`receive`方法返回由传递给它的偏函数计算出的值。在本例中，偏函数返回消息
+本身，所以消息被交互环境打印了出来。
+
+因为`receive`是阻塞的，所以不知道要等到啥时候。所以如果使用了这项技巧，最好是用
+`receive`的变种`receiveWithin`。因为它可以指定一个以毫秒计的超时时限：
+
+{{{class="brush: scala"
+  scala> self.receiveWithin(1000) { case x => x } // wait a sec!
+  res7: Any = TIMEOUT
+}}}
+
+== 通过重用线程取得更好的性能 ==
+
+Acter建立在普通的Java线程上，用之前的方法每actor个都占一个线程。为了重用线程，
+Scala提供了`receive`方法外的另一个方法`react`。它处理消息以后不会返回，返回类型
+是`Nothing`。其实在后台，`react`在完成后会抛出一个异常。
+
+因为不返回所以当前线程的调用栈可以被再次使用，所以如果全用`react`的话只要一个
+线程就可以运行所有的actor。实例应用中应该用当量几个`receive`，尽量多用`react`。
+
+因为`react`不返回所以接收消息处理器必须同时处理消息并执行actor所有剩下的工作。
+通常做法是用一个顶级的工作方法，比如`act`自身，以供处理器在完成时调用。下面的
+例子显示了这种方式。等待内容为主机名的字符串，如果有的话，返回那个主机名对应的
+IP地址：
+
+{{{class="brush: scala"
+  object NameResolver extends Actor {
+    import java.net.{InetAddress, UnknownHostException}
+
+    def act() { 
+      react {
+        case (name: String, actor: Actor) =>
+          actor ! getIp(name)
+          act()
+        case "EXIT" =>
+          println("Name resolver exiting.")
+          // quit
+        case msg =>
+          println("Unhandled message: "+ msg)
+          act()
+      }
+    }
+
+    def getIp(name: String): Option[InetAddress] = {
+      try {
+        Some(InetAddress.getByName(name))
+      } catch {
+        case _:UnknownHostException => None
+      }
+    }
+  }
+}}}
+
+调用方式：
+
+{{{class="brush: scala"
+  scala> NameResolver.start()
+  res0: scala.actors.Actor = NameResolver$@90d6c5
+
+  scala> NameResolver ! ("www.scala-lang.org", self)
+
+  scala> self.receiveWithin(0) { case x => x }
+  res2: Any = Some(www.scala-lang.org/128.178.154.102)
+
+  scala> NameResolver ! ("wwwwww.scala-lang.org", self)
+
+  scala> self.receiveWithin(0) { case x => x }
+  res4: Any = None
+}}}
+
+由于通过`react`重用线程的方案非常普遍，所以actor库对此有特别的支持。`actor.loop`
+函数重复执行一个代码块，哪怕代码调用的是`react`。下面用`loog`来重写
+`NameResolver`的`act`方法。下面的例子与前一个例子不同的地方是它并不退出来响应
+`"EXIT"`消息，而是一直循环响应消息：
+
+{{{class="brush: scala"
+  def act() { 
+    loop {
+      react {
+        case (name: String, actor: Actor) =>
+          actor ! getIp(name)
+        case msg =>
+          println("Unhandled message: " + msg)
+      }
+    }
+  }
+}}}
+
+=== react工作原理 ===
+
+返回类型`Nothing`表示永远不会正常返回的函数，相反，总是以一个异常方式完成。
+
+虽然不同版本中实现方式还在不断调整，但可以认为`react`是这样工作的：
+
+actor的`start`方法被调用时，`start`方法会以某种方式确保最终会有某个线程来调用
+actor的`act`方法。如果`act`调用了`react`，则`react`方法会在actor邮箱里查找偏函数
+能够处理的消息。如果找到`react`会安排在未来某个时间处理该消息并抛出异常。如果
+没有act还是处于“冷存储”状态等待邮箱里有新消息时重新激活并抛出异常。无论哪种情况
+`react`都会以这个异常的方式完成其执行，`act`方法也随之结束。调用`act`的线程会
+捕获这个异常，并忘记这个actor，转而处理其他任务。
+
+这就是为什么想到`react`在处理第一个消息之外做更多的事，就需要在偏函数中再次调用
+`act`方法，或使用其他手段让`react`再次被调用。
+
+
+== 良好的actor风格 ==
+
+=== actor不应该阻塞 ===
+
+当一个阻塞时，另一个actor可以会发出别的请求。多个actor等一个阻塞的actor会带来
+死锁。actor应该允许某种表示动作可以执行的消息发送给它。通常这样要安排其他的actor
+帮助。例如通过调用`Thread.sleep`代替并阻塞当前的actor，可以创建一个助手actor，
+这个actor睡眠并在一定时间后发加一个消息：
+
+{{{class="brush: scala"
+  actor {
+    Thread.sleep(time)
+    mainActor ! "WAKEUP"
+  } 
+}}}
+
+这个助手actor虽然阻塞了，但是由于它不会收到消息，所以这是OK的。主actor可以继续
+响应新的请求。
+
+下面的`emoteLater`方法展示了这处处理方式的用法。它创建了一个新的actor来执行
+`sleep`以便主actor不阻塞。以确保它向正确的actor发送`"Emote"`消息，我们必须小心地
+在主actor中对`self`求值面不是在助手actor中：
+
+{{{class="brush: scala"
+  val sillyActor2 = actor {
+    def emoteLater() {
+      val mainActor = self
+      actor {
+        Thread.sleep(1000)
+        mainActor ! "Emote"
+      }
+    }
+ 
+    var emoted = 0
+    emoteLater()
+
+    loop {
+      react {
+        case "Emote" =>
+          println("I'm acting!")
+          emoted += 1
+          if (emoted < 5)
+            emoteLater()
+        case msg =>
+          println("Received: "+ msg)
+      }
+    }
+  }
+}}}
+
+由于这个actor并不在`sleep`方法中阻塞，而是助手actor阻塞，所以主actor可以在等待
+下次表演前继续做其他的事情。与早先的`SillyActor`不同，这个actor会在等待下一个
+输出的同时继续打印消息：
+
+{{{class="brush: scala"
+  scala> sillyActor2 ! "hi there"
+  scala> Received: hi there
+  I'm acting!
+  I'm acting!
+  I'm acting!
+}}}
+
+=== 只通过消息与actor通信 ===
+
+{{{class="brush: scala"
+ def act() { 
+   loop {
+     react {
+       case (name: String, actor: Actor) =>
+         actor ! (name, getIp(name))
+     }
+   }
+ }
 }}}
 {{{class="brush: scala"
+
+
+  lookerUpper ! ("www.scala-lang.org", self)
+}}}
+{{{class="brush: scala"
+
+
+  case class LookupIP(hostname: String, requester: Actor)
+
+  lookerUpper ! LookupIP("www.scala-lang.org", self)
+}}}
+{{{class="brush: scala"
+
+
+// In file concurrency/Actors.scala
+
+  import scala.actors.Actor._
+  import java.net.{InetAddress, UnknownHostException}
+
+  case class LookupIP(name: String, respondTo: Actor)
+  case class LookupResult(
+    name: String, 
+    address: Option[InetAddress]
+  )
+
+  object NameResolver2 extends Actor {
+
+    def act() { 
+      loop {
+        react {
+          case LookupIP(name, actor) =>
+            actor ! LookupResult(name, getIp(name))
+        }
+      }
+    }
+
+    def getIp(name: String): Option[InetAddress] = {
+      // As before (in Listing 30.3)
+    }
+  }
+}}}
+{{{class="brush: scala"
+
+
+  
+
+30.6 A longer example: Parallel discrete event simulation
+
+
+  trait Simulant extends Actor
+  class Wire extends Simulant
+}}}
+{{{class="brush: scala"
+
+
+// In file concurrency/ParallelSimulation.scala
+
+  case class Ping(time: Int)
+  case class Pong(time: Int, from: Actor)
+}}}
+{{{class="brush: scala"
+
+
+  class Clock extends Actor {
+    private var running = false
+    private var currentTime = 0
+    private var agenda: List[WorkItem] = List()
+  }
+}}}
+{{{class="brush: scala"
+
+
+// In file concurrency/ParallelSimulation.scala
+
+  case class WorkItem(time: Int, msg: Any, target: Actor)
+
+
+// In file concurrency/ParallelSimulation.scala
+
+  case class AfterDelay(delay: Int, msg: Any, target: Actor)
+}}}
+{{{class="brush: scala"
+
+
+// In file concurrency/ParallelSimulation.scala
+
+  case object Start
+  case object Stop
+}}}
+{{{class="brush: scala"
+
+
+// In file concurrency/ParallelSimulation.scala
+
+  class Clock extends Actor {
+    private var running = false
+    private var currentTime = 0
+    private var agenda: List[WorkItem] = List()
+    private var allSimulants: List[Actor] = List()
+    private var busySimulants: Set[Actor] = Set.empty
+}}}
+{{{class="brush: scala"
+
+
+// In file concurrency/ParallelSimulation.scala
+
+  start()
+}}}
+{{{class="brush: scala"
+
+
+// In file concurrency/ParallelSimulation.scala
+
+  def add(sim: Simulant) {
+    allSimulants = sim :: allSimulants
+  }
+}}}
+{{{class="brush: scala"
+
+
+// In file concurrency/ParallelSimulation.scala
+
+  def act() {
+    loop {
+      if (running && busySimulants.isEmpty)
+        advance()
+
+      reactToOneMessage()
+    }
+  }
+}}}
+{{{class="brush: scala"
+
+
+// In file concurrency/ParallelSimulation.scala
+
+  def advance() {
+    if (agenda.isEmpty && currentTime > 0) {
+      println("** Agenda empty.  Clock exiting at time "+
+              currentTime+".")
+      self ! Stop
+      return
+    }
+      
+    currentTime += 1
+    println("Advancing to time "+currentTime)
+
+    processCurrentEvents()
+    for (sim <- allSimulants)
+      sim ! Ping(currentTime)
+      
+    busySimulants = Set.empty ++ allSimulants
+  }
+}}}
+{{{class="brush: scala"
+
+
+// In file concurrency/ParallelSimulation.scala
+
+  private def processCurrentEvents() {
+    val todoNow = agenda.takeWhile(_.time <= currentTime)
+
+    agenda = agenda.drop(todoNow.length)
+
+    for (WorkItem(time, msg, target) <- todoNow) {
+      assert(time == currentTime)
+      target ! msg
+    }
+  }
+}}}
+{{{class="brush: scala"
+
+
+// In file concurrency/ParallelSimulation.scala
+
+  def reactToOneMessage() {
+    react {
+      case AfterDelay(delay, msg, target) =>
+        val item = WorkItem(currentTime + delay, msg, target)
+        agenda = insert(agenda, item)
+
+      case Pong(time, sim) =>
+        assert(time == currentTime)
+        assert(busySimulants contains sim)
+        busySimulants -= sim
+          
+      case Start => running = true
+
+      case Stop =>
+        for (sim <- allSimulants)
+          sim ! Stop
+        exit()
+    }
+  }
+}}}
+{{{class="brush: scala"
+
+
+// In file concurrency/ParallelSimulation.scala
+
+  def act() {
+    loop {
+      react {
+        case Stop => exit()
+        case Ping(time) =>
+          if (time == 1) simStarting()
+          clock ! Pong(time, self)
+        case msg => handleSimMessage(msg)
+      }
+    }
+  }
+}}}
+{{{class="brush: scala"
+
+
+// In file concurrency/ParallelSimulation.scala
+
+  trait Simulant extends Actor {
+    val clock: Clock
+    def handleSimMessage(msg: Any)
+    def simStarting() { }
+    def act() {
+      loop {
+        react {
+          case Stop => exit()
+          case Ping(time) =>
+            if (time == 1) simStarting()
+            clock ! Pong(time, self)
+          case msg => handleSimMessage(msg)
+        }
+      }
+    }
+    start()
+  }
+}}}
+{{{class="brush: scala"
+
+
+// In file concurrency/Circuit.scala
+
+  class Circuit {
+    val clock = new Clock
+    // simulation messages
+    // delay constants
+    // Wire and Gate classes and methods
+    // misc. utility methods
+  }
+}}}
+{{{class="brush: scala"
+
+
+// In file concurrency/Circuit.scala
+
+  case class SetSignal(sig: Boolean)
+  case class SignalChanged(wire: Wire, sig: Boolean)
+}}}
+{{{class="brush: scala"
+
+
+// In file concurrency/Circuit.scala
+
+  val WireDelay = 1
+  val InverterDelay = 2
+  val OrGateDelay = 3
+  val AndGateDelay = 3
+}}}
+{{{class="brush: scala"
+
+
+// In file concurrency/Circuit.scala
+
+  class Wire(name: String, init: Boolean) extends Simulant {
+    def this(name: String) { this(name, false) }
+    def this() { this("unnamed") }
+
+    val clock = Circuit.this.clock
+    clock.add(this)
+
+    private var sigVal = init
+    private var observers: List[Actor] = List()
+}}}
+{{{class="brush: scala"
+
+
+// In file concurrency/Circuit.scala
+
+  def handleSimMessage(msg: Any) {
+    msg match {
+      case SetSignal(s) =>
+        if (s != sigVal) {
+          sigVal = s
+          signalObservers()
+        }
+    }
+  }
+    
+  def signalObservers() {
+    for (obs <- observers)
+      clock ! AfterDelay(
+        WireDelay,
+        SignalChanged(this, sigVal),
+        obs)
+  }
+
+
+// In file concurrency/Circuit.scala
+
+  override def simStarting() { signalObservers() }
+}}}
+{{{class="brush: scala"
+
+
+// In file concurrency/Circuit.scala
+
+  def addObserver(obs: Actor) {
+    observers = obs :: observers
+  }
+
+  override def toString = "Wire("+ name +")"
+}}}
+{{{class="brush: scala"
+
+
+// In file concurrency/Circuit.scala
+
+  private object DummyWire extends Wire("dummy")
+}}}
+{{{class="brush: scala"
+
+
+// In file concurrency/Circuit.scala
+
+  abstract class Gate(in1: Wire, in2: Wire, out: Wire)
+      extends Simulant {
+}}}
+{{{class="brush: scala"
+
+
+// In file concurrency/Circuit.scala
+
+  def computeOutput(s1: Boolean, s2: Boolean): Boolean
+}}}
+{{{class="brush: scala"
+
+
+// In file concurrency/Circuit.scala
+
+  val delay: Int
+}}}
+{{{class="brush: scala"
+
+
+// In file concurrency/Circuit.scala
+
+  val clock = Circuit.this.clock
+  clock.add(this)
+}}}
+{{{class="brush: scala"
+
+
+// In file concurrency/Circuit.scala
+
+  in1.addObserver(this)
+  in2.addObserver(this)
+}}}
+{{{class="brush: scala"
+
+
+// In file concurrency/Circuit.scala
+
+  var s1, s2 = false
+}}}
+{{{class="brush: scala"
+
+
+// In file concurrency/Circuit.scala
+
+  def handleSimMessage(msg: Any) {
+    msg match {
+      case SignalChanged(w, sig) =>
+        if (w == in1)
+          s1 = sig
+        if (w == in2)
+          s2 = sig
+        clock ! AfterDelay(delay,
+            SetSignal(computeOutput(s1, s2)),
+            out)
+    }
+  }
+}}}
+{{{class="brush: scala"
+
+
+// In file concurrency/Circuit.scala
+
+  def orGate(in1: Wire, in2: Wire, output: Wire) = 
+    new Gate(in1, in2, output) {
+      val delay = OrGateDelay
+      def computeOutput(s1: Boolean, s2: Boolean) = s1 || s2 
+    }
+  
+  def andGate(in1: Wire, in2: Wire, output: Wire) = 
+    new Gate(in1, in2, output) {
+      val delay = AndGateDelay
+      def computeOutput(s1: Boolean, s2: Boolean) = s1 && s2 
+    }
+}}}
+{{{class="brush: scala"
+
+
+// In file concurrency/Circuit.scala
+
+  def inverter(input: Wire, output: Wire) = 
+    new Gate(input, DummyWire, output) {
+      val delay = InverterDelay
+      def computeOutput(s1: Boolean, ignored: Boolean) = !s1
+    }
+}}}
+{{{class="brush: scala"
+
+
+// In file concurrency/Circuit.scala
+
+  def probe(wire: Wire) = new Simulant {
+    val clock = Circuit.this.clock
+    clock.add(this)
+    wire.addObserver(this)
+    def handleSimMessage(msg: Any) {
+      msg match {
+        case SignalChanged(w, s) =>
+           println("signal "+ w +" changed to "+ s)
+      }
+    }
+  }
+}}}
+{{{class="brush: scala"
+
+
+// In file concurrency/Circuit.scala
+
+  def start() { clock ! Start }
+}}}
+{{{class="brush: scala"
+
+
+// In file concurrency/Adders.scala
+
+  trait Adders extends Circuit {
+    def halfAdder(a: Wire, b: Wire, s: Wire, c: Wire) {
+      val d, e = new Wire
+      orGate(a, b, d)
+      andGate(a, b, c)
+      inverter(c, e)
+      andGate(d, e, s)
+    }
+
+    def fullAdder(a: Wire, b: Wire, cin: Wire,
+        sum: Wire, cout: Wire) {
+
+      val s, c1, c2 = new Wire
+      halfAdder(a, cin, s, c1)
+      halfAdder(b, s, sum, c2)
+      orGate(c1, c2, cout)
+    }
+  }
+
+
+  val circuit = new Circuit with Adders
+}}}
+{{{class="brush: scala"
+
+
+  val circuit =
+    new Circuit 
+      with Adders 
+      with Multiplexers
+      with FlipFlops
+      with MultiCoreProcessors
+}}}
+{{{class="brush: scala"
+
+
+// In file concurrency/Demo.scala
+
+  object Demo {
+    def main(args: Array[String]) {
+      val circuit = new Circuit with Adders
+      import circuit._
+
+      val ain = new Wire("ain", true)
+      val bin = new Wire("bin", false)
+      val cin = new Wire("cin", true)
+      val sout = new Wire("sout")
+      val cout = new Wire("cout")
+
+      probe(ain)
+      probe(bin)
+      probe(cin)
+      probe(sout)
+      probe(cout)
+    
+      fullAdder(ain, bin, cin, sout, cout)
+
+      circuit.start()
+    }
+  }
+}}}
+{{{class="brush: scala"
+
+
+  Advancing to time 1
+  Advancing to time 2
+  signal Wire(cout) changed to false
+  signal Wire(cin) changed to true
+  signal Wire(ain) changed to true
+  signal Wire(sout) changed to false
+  signal Wire(bin) changed to false
+  Advancing to time 3
+  Advancing to time 4
+  Advancing to time 5
+  Advancing to time 6
+  Advancing to time 7
+  Advancing to time 8
+  Advancing to time 9
+  Advancing to time 10
+  signal Wire(cout) changed to true
+  Advancing to time 11
+  Advancing to time 12
+  Advancing to time 13
+  Advancing to time 14
+  Advancing to time 15
+  Advancing to time 16
+  Advancing to time 17
+  Advancing to time 18
+  signal Wire(sout) changed to true
+  Advancing to time 19
+  Advancing to time 20
+  Advancing to time 21
+  signal Wire(sout) changed to false
+  ** Agenda empty.  Clock exiting at time 21.
 }}}
 {{{class="brush: scala"
 }}}
