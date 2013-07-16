@@ -728,6 +728,27 @@ actor的`act`方法。如果`act`调用了`react`，则`react`方法会在actor�
 
 === 只通过消息与actor通信 ===
 
+Scala可以混用actor模式与共享数据／锁模式两种方式。但第二种方式有锁死线程和线程
+不安全变量的风险。
+
+
+=== 优选不可变消息 ===
+
+虽然actor模式对于线程来说数据是不共享的，但还是有共享数据的情况：就是消息会在
+多个actor中传递，如果传递过程中被改变的话是被谁改的都不知道。
+
+而且下面会说到，有些消息会有一个指向自己的引用。所以尽量使用不可变的消息。
+
+=== 让消息自包含 ===
+
+因为actor是非阻塞的，发出一个请求不等响应就做别的事情的。等响应回来都不知道是
+响应哪个请求的。所以一个简单的方案是以发出的消息里包含与请求相关的冗余信息。
+
+如果请求是一个不可变的对象，花费代价很少的一个方案是在返回值中包含一个指向请求
+自己的引用。这样就知道响应是对应哪个请求的了。
+
+举例，IP查询功能的actor在返回IP时带一个当时请求的主机名该有多好：
+
 {{{class="brush: scala"
  def act() { 
    loop {
@@ -738,23 +759,24 @@ actor的`act`方法。如果`act`调用了`react`，则`react`方法会在actor�
    }
  }
 }}}
+
+另一个增加冗余的方案是为每类消息制作样本类。比如当字符串看起来意义不是很明确：
+
 {{{class="brush: scala"
-
-
   lookerUpper ! ("www.scala-lang.org", self)
 }}}
+
+但有了类型名字看起来就好理解多了：
+
 {{{class="brush: scala"
-
-
   case class LookupIP(hostname: String, requester: Actor)
 
   lookerUpper ! LookupIP("www.scala-lang.org", self)
 }}}
+
+下面是使用样本类而不是简单的元组来查询IP的程序：
+
 {{{class="brush: scala"
-
-
-// In file concurrency/Actors.scala
-
   import scala.actors.Actor._
   import java.net.{InetAddress, UnknownHostException}
 
@@ -780,59 +802,106 @@ actor的`act`方法。如果`act`调用了`react`，则`react`方法会在actor�
     }
   }
 }}}
+
+
+== 更加长的例子：并行离散事件模拟 ==
+
+把“有状态对象”一章的电路模拟强化成并行化的。
+
+=== 总体设计 ===
+
+核心思路是把每个模拟的对象都用actor，状态位于actor内部。这样实现并行性。
+
+在类层级上，因为不同的模拟对象可能会有一些共通行为，所以抽象一个`Simulant`特质
+出来。线路、门等都可以加上这个特质：
+
 {{{class="brush: scala"
-
-
-  
-
-30.6 A longer example: Parallel discrete event simulation
-
-
   trait Simulant extends Actor
   class Wire extends Simulant
 }}}
+
+时间同步问题：每个参与者都自己的任务列表顺序而不看任务的时间处理任务的话，可能
+参与者A正在处理时间点90秒的任务；参与者B已经在处理时间点100的任务。A的任务要与
+B的任务协作时就有问题。所以要同步，任何参与者都不应该当其他参与者完成时间位于
+`n-1`的任务前，处理时间位于`n`的任务。
+
+专门有一个actor来控制时钟，给模拟对象发出`ping`消息，模拟对象在准备好让钟走到下
+一个时间单位时发出`pong`消息给时钟：
+
 {{{class="brush: scala"
-
-
-// In file concurrency/ParallelSimulation.scala
-
   case class Ping(time: Int)
   case class Pong(time: Int, from: Actor)
 }}}
+
+这两个消息里可以没有字段，但这里的冗余是有好处的。`ping`里的`time`是为了回写到
+`pong`的`time`里，知道对应成功的是哪个时间。
+
+现在的原则是每个模拟对象在处理完了要完成的任务以后才会响应`ping`消息。但问题是
+任务有可以是别的模拟对象要发给它的，所以当前任务做完了并不一定是真的做完了，
+可能是其他模拟对象还没有把任务发过来。
+
+为了简化这个问题，要再增加两个限制。首先，要假设模拟对象之间不直接发送消息，而
+只是相互安排事件日程。其次，它们不向当前的时间点`n`提交事件，而是给`n+1`以上的
+时间提交事件。虽然有点限制，但对于模拟的事件来说，有点时延还是可以接受的。
+
+还有一个方案：模拟对象可以相互发消息，但是要精心设计一个机制来决定一个actor何时
+可以安全地送回一个`Pong`。每个模拟对象都应该延迟响应`Ping`消息直到它发出的所有
+请求都已经完成了处理。所以传递的消息要加一些额外的内容。
+
+现在假定模拟对象之间不发直接消息，只发送事件日程表。这样还要有一个工作项的日程表
+这个日程表也可能由时钟actor所持有。这样时钟actor就可以等到当前时间点所有工作项的
+请求都发送完成后再发出`Ping`消息。Actor们知道收到`Ping`时就表示当前时间点所有的
+工作项都已经拿到了，可以马上送回`Pong`，因为不会有更多的工作发过来了。时钟由类
+`Clock`实现：
+
 {{{class="brush: scala"
-
-
   class Clock extends Actor {
     private var running = false
     private var currentTime = 0
     private var agenda: List[WorkItem] = List()
   }
 }}}
+
+最后要设计如何设置好一个初始模拟场景。一种自然的方式是在时钟停止的状态下创建模拟
+，添加所有的模拟对象再连接在一起，然后启动时钟。注意一定要绝对确认所有的东西都
+连接好了再启动时钟。
+
+所以关键在于如何确定都已经连接好了，方案有很多。这里用最简单的方法是在设置过程中
+不向actor发消息，这样当最后一个消息调用返回就知道模拟被完整地构建好了。最终的
+编码模式是用常规的方法调用将模拟设置好，然后可以在模拟运行时使用actor发消息。
+
+基本设计完成其他的就比较直接。`WorkItem`还是像“有状态对象”里实现的那样有一个时间
+和一个动作成员，区别在动作模拟，老版本是用无参函数，在这里的并行版本中使用目标
+actor和发往该actor的消息：
+
 {{{class="brush: scala"
-
-
-// In file concurrency/ParallelSimulation.scala
-
   case class WorkItem(time: Int, msg: Any, target: Actor)
+}}}
 
+`afterDelay`方法变成了发往时钟的`AfterDelay`消息。无参函数被替换成了一个消息和
+一个目标actor：
 
-// In file concurrency/ParallelSimulation.scala
-
+{{{class="brush: scala"
   case class AfterDelay(delay: Int, msg: Any, target: Actor)
 }}}
+
+定义要求模拟启动和停止的消息：
+
 {{{class="brush: scala"
-
-
-// In file concurrency/ParallelSimulation.scala
-
   case object Start
   case object Stop
 }}}
+
+总体设计就是这样，时钟`Clock`有当前时间和日程表，它只会在`Ping`了所有模拟对象并
+确保它们准备好了以后才往前进。`Simulant`特质来模拟参与者，它们所代表的参与者们
+通过向时钟发送工作项增加到日程表的方式来和其他参与者们通信。
+
+=== 实现模拟架构 ===
+
+`Clock`类的`running`初始为`false`。模拟初始化全都完成以后，会发`Start`消息给它，
+才会变成`true`。保证初始化完成以后才会运行：
+
 {{{class="brush: scala"
-
-
-// In file concurrency/ParallelSimulation.scala
-
   class Clock extends Actor {
     private var running = false
     private var currentTime = 0
@@ -840,27 +909,29 @@ actor的`act`方法。如果`act`调用了`react`，则`react`方法会在actor�
     private var allSimulants: List[Actor] = List()
     private var busySimulants: Set[Actor] = Set.empty
 }}}
+
+时钟可以在创建后后马上调用`start()`方法，因为`running`还是`false`。所以不会真的
+运行：
+
 {{{class="brush: scala"
-
-
-// In file concurrency/ParallelSimulation.scala
-
   start()
 }}}
+
+`allSimulants`是所有模拟对象，不会变所以用列表；`busySimulants`是正有任务的，会
+不断添加删除所以用集。一旦模拟器开始运行，它只有当`busySimulants`为空时才会进入
+下一个时间单位，并把`allSimulants`的成员全放到`busySimulants`里：
+
 {{{class="brush: scala"
-
-
-// In file concurrency/ParallelSimulation.scala
-
   def add(sim: Simulant) {
     allSimulants = sim :: allSimulants
   }
 }}}
+
+以上是时钟状态的描述，再来看时钟活动。它的主循环由两个职责交替：让时钟前进、响应
+消息。一旦时间　前进，它只能在至少收到一个消息时才会再次前进，所以把主循环定义为
+这两个活动交替是安全的：
+
 {{{class="brush: scala"
-
-
-// In file concurrency/ParallelSimulation.scala
-
   def act() {
     loop {
       if (running && busySimulants.isEmpty)
@@ -870,11 +941,17 @@ actor的`act`方法。如果`act`调用了`react`，则`react`方法会在actor�
     }
   }
 }}}
+
+时间的推进除了简单地`currentTime`步进之外还有些额外的工作：
+
+首先，如果日程表是空的而且模拟不是刚刚开始，那么模拟需要退出。
+
+其次，如果日程表非空，则当前时间点所有的工作需要现在进行。
+
+再次，所有的模拟对象要放到`busySimulant`中，并发`Ping`消息给它们。等它们全响应
+之后才能再次推进时间。
+
 {{{class="brush: scala"
-
-
-// In file concurrency/ParallelSimulation.scala
-
   def advance() {
     if (agenda.isEmpty && currentTime > 0) {
       println("** Agenda empty.  Clock exiting at time "+
@@ -893,11 +970,10 @@ actor的`act`方法。如果`act`调用了`react`，则`react`方法会在actor�
     busySimulants = Set.empty ++ allSimulants
   }
 }}}
+
+处理当前事件只示过是简单地处理所有在日程表最上方时间为`currentTime`的事件：
+
 {{{class="brush: scala"
-
-
-// In file concurrency/ParallelSimulation.scala
-
   private def processCurrentEvents() {
     val todoNow = agenda.takeWhile(_.time <= currentTime)
 
@@ -909,11 +985,16 @@ actor的`act`方法。如果`act`调用了`react`，则`react`方法会在actor�
     }
   }
 }}}
+
+上面的方法有三步：首先，`takeWile`取出所有当前时间的条目存入`todoNow`。然后，用
+`drop`从日程表中去掉这些。最后遍历这些条目并向它们的发送目标消息。`assert`是为了
+确保排程器的逻辑没有问题。
+
+有了这些基础工作，处理时间可能收到的消息就会很简单。`AfterDelay`消息把新的条目
+添加到工作队列；`Pong`消息从忙碌列表中去掉一个；`Start`让模拟开始；`Stop`让时钟
+停止：
+
 {{{class="brush: scala"
-
-
-// In file concurrency/ParallelSimulation.scala
-
   def reactToOneMessage() {
     react {
       case AfterDelay(delay, msg, target) =>
@@ -934,11 +1015,13 @@ actor的`act`方法。如果`act`调用了`react`，则`react`方法会在actor�
     }
   }
 }}}
+
+`insert`方法和老版本的一样，就不列出来了。它把条目加入日程表并保证顺序正确。
+
+时钟类到这里实现完毕，现在来看模拟特质。本质上说一个`Simulant`可以是理解模拟消息
+`Stop`和`Ping`并与它们合作的任何actor。其`act`方法简单这样实现：
+
 {{{class="brush: scala"
-
-
-// In file concurrency/ParallelSimulation.scala
-
   def act() {
     loop {
       react {
@@ -951,11 +1034,15 @@ actor的`act`方法。如果`act`调用了`react`，则`react`方法会在actor�
     }
   }
 }}}
+
+每当收到`Stop`，它就退出；收到`Ping`就响应一个`Pong`；如果`Ping`的时间为`1`，则
+在返回`Pong`前调用`simStarting`让子类可以定义当模拟开始运行时应该发生的行为。
+其他的所有消息都由子类来翻译，给抽象方法`handleSimMessage`方法。
+
+还有一个抽象成员`clock`记录时钟以回复`Ping`消息并安排新的工作项。由于在时钟发
+消息来以前不会做任何事情，所以可以在对象创建以后马上运行：
+
 {{{class="brush: scala"
-
-
-// In file concurrency/ParallelSimulation.scala
-
   trait Simulant extends Actor {
     val clock: Clock
     def handleSimMessage(msg: Any)
@@ -974,42 +1061,43 @@ actor的`act`方法。如果`act`调用了`react`，则`react`方法会在actor�
     start()
   }
 }}}
+
+=== 实现一个电路模拟 ===
+
+电路类`Circuit`：
+
 {{{class="brush: scala"
-
-
-// In file concurrency/Circuit.scala
-
   class Circuit {
     val clock = new Clock
-    // simulation messages
-    // delay constants
-    // Wire and Gate classes and methods
-    // misc. utility methods
+    // 模拟消息
+    // 延时常量
+    // Wire 类和 Gate 类的方法
+    // 其他工具方法
   }
 }}}
+
+模拟消息这块：一旦模拟开始运行，线路和门就只能通过发消息通信，所以要对每一种信息
+定义一个消息类型。这样消息只有两种：门要告诉线路改输出状态，线路要告诉门输入状态
+改了：
+
 {{{class="brush: scala"
-
-
-// In file concurrency/Circuit.scala
-
   case class SetSignal(sig: Boolean)
   case class SignalChanged(wire: Wire, sig: Boolean)
 }}}
+
+电路是有时间延迟的，不过这个值不确定，就先用个`val`放着吧：
+
 {{{class="brush: scala"
-
-
-// In file concurrency/Circuit.scala
-
   val WireDelay = 1
   val InverterDelay = 2
   val OrGateDelay = 3
   val AndGateDelay = 3
 }}}
+
+`Wire`和`Gate`类。线路记录当前的信号状态并观察门的列表的模拟对象。因为混入了
+`Simulant`特质所以也需要指定一个时间：
+
 {{{class="brush: scala"
-
-
-// In file concurrency/Circuit.scala
-
   class Wire(name: String, init: Boolean) extends Simulant {
     def this(name: String) { this(name, false) }
     def this() { this("unnamed") }
@@ -1020,11 +1108,11 @@ actor的`act`方法。如果`act`调用了`react`，则`react`方法会在actor�
     private var sigVal = init
     private var observers: List[Actor] = List()
 }}}
+
+`handleSimMessage`方法来处理收到的消息。线路只会收到`SetSignal`消息设定信号，
+注意只有新的信号与当前的信号不同时会改变状态并发出消息通知别的模拟对象：
+
 {{{class="brush: scala"
-
-
-// In file concurrency/Circuit.scala
-
   def handleSimMessage(msg: Any) {
     msg match {
       case SetSignal(s) =>
@@ -1042,80 +1130,78 @@ actor的`act`方法。如果`act`调用了`react`，则`react`方法会在actor�
         SignalChanged(this, sigVal),
         obs)
   }
+}}}
 
+上面的代码中将线路初始状态传给任何作为观察者的门也很重要。这个动作只在初始化时做
+一次，以后只收改变信号的消息。模拟开始的发送初始信号也只要简单地提供一个
+`simStarting()`方法：
 
-// In file concurrency/Circuit.scala
-
+{{{class="brush: scala"
   override def simStarting() { signalObservers() }
 }}}
+
+还有怎么连接门的问题。用一个新的方法来连接门，并加上一个`toString`方法:
+
 {{{class="brush: scala"
-
-
-// In file concurrency/Circuit.scala
-
   def addObserver(obs: Actor) {
     observers = obs :: observers
   }
 
   override def toString = "Wire("+ name +")"
 }}}
+
+线路的实现完成，现在再来看门。与门和或门有两个输入而非门只有一个输入，为了代码
+简单那就设定所有的门都有两个入口而非门会忽视第二个入口。被忽视的可以设为某个永远
+为`false`的线路：
+
 {{{class="brush: scala"
-
-
-// In file concurrency/Circuit.scala
-
   private object DummyWire extends Wire("dummy")
 }}}
+
+通用的门超类：
+
 {{{class="brush: scala"
-
-
-// In file concurrency/Circuit.scala
-
   abstract class Gate(in1: Wire, in2: Wire, out: Wire)
       extends Simulant {
 }}}
+
+抽象方法算出输出信号：
+
 {{{class="brush: scala"
-
-
-// In file concurrency/Circuit.scala
-
   def computeOutput(s1: Boolean, s2: Boolean): Boolean
 }}}
+
+不同的门有不同的延迟：
+
 {{{class="brush: scala"
-
-
-// In file concurrency/Circuit.scala
-
   val delay: Int
 }}}
+
+时钟可以在创建好后马上加上：
+
 {{{class="brush: scala"
-
-
-// In file concurrency/Circuit.scala
-
   val clock = Circuit.this.clock
   clock.add(this)
 }}}
+
+连接两个线路作为输入连上门：
+
 {{{class="brush: scala"
-
-
-// In file concurrency/Circuit.scala
-
   in1.addObserver(this)
   in2.addObserver(this)
 }}}
+
+门唯一的本地状态就是它每一输入线路最近一次信号。这个状态要保存，因为线路只会在
+状态变化时才发信号，而输出信号要两个线路的信号一起才能算出来：
+
 {{{class="brush: scala"
-
-
-// In file concurrency/Circuit.scala
-
   var s1, s2 = false
 }}}
+
+响应消息是在收到输入线路信号变化时重新算输出信号，并用`SetSignal`发消息给输出
+线路：
+
 {{{class="brush: scala"
-
-
-// In file concurrency/Circuit.scala
-
   def handleSimMessage(msg: Any) {
     msg match {
       case SignalChanged(w, sig) =>
@@ -1129,11 +1215,10 @@ actor的`act`方法。如果`act`调用了`react`，则`react`方法会在actor�
     }
   }
 }}}
+
+具体的门实现就简单了：
+
 {{{class="brush: scala"
-
-
-// In file concurrency/Circuit.scala
-
   def orGate(in1: Wire, in2: Wire, output: Wire) = 
     new Gate(in1, in2, output) {
       val delay = OrGateDelay
@@ -1146,22 +1231,23 @@ actor的`act`方法。如果`act`调用了`react`，则`react`方法会在actor�
       def computeOutput(s1: Boolean, s2: Boolean) = s1 && s2 
     }
 }}}
+
+非门有一个假的输入：
+
 {{{class="brush: scala"
-
-
-// In file concurrency/Circuit.scala
-
   def inverter(input: Wire, output: Wire) = 
     new Gate(input, DummyWire, output) {
       val delay = InverterDelay
       def computeOutput(s1: Boolean, ignored: Boolean) = !s1
     }
 }}}
+
+模拟电路的功能已经完成了。但增加一个查看器观察线路的变化还是有必要的。定义一个
+接收`Wire`类作为参数的并输出文本的`probe`方法。这个方法可以简单地制作一个新把
+自己连接到指定线路和模拟对象来实现。这个模拟对象可以通过打印出新的信号来响应
+`SignalChanged`消息：
+
 {{{class="brush: scala"
-
-
-// In file concurrency/Circuit.scala
-
   def probe(wire: Wire) = new Simulant {
     val clock = Circuit.this.clock
     clock.add(this)
@@ -1174,18 +1260,19 @@ actor的`act`方法。如果`act`调用了`react`，则`react`方法会在actor�
     }
   }
 }}}
+
+这里基本上`Circuit`类就完成了。调用时创建一个`Circuit`类实例，和一组门电路，在
+需要观察的线路上加上`prob`，开始模拟。启动模拟的方法只要向时钟发`Start`消息
+就行：
+
 {{{class="brush: scala"
-
-
-// In file concurrency/Circuit.scala
-
   def start() { clock ! Start }
 }}}
+
+和前面非并行的版本不同我们把半加器和全加器包装成了`Adders`特质。由于继承自
+`Circuit`所以它可以访问`Circuit`的成员如`Wire`和`orGate`：
+
 {{{class="brush: scala"
-
-
-// In file concurrency/Adders.scala
-
   trait Adders extends Circuit {
     def halfAdder(a: Wire, b: Wire, s: Wire, c: Wire) {
       val d, e = new Wire
@@ -1197,7 +1284,6 @@ actor的`act`方法。如果`act`调用了`react`，则`react`方法会在actor�
 
     def fullAdder(a: Wire, b: Wire, cin: Wire,
         sum: Wire, cout: Wire) {
-
       val s, c1, c2 = new Wire
       halfAdder(a, cin, s, c1)
       halfAdder(b, s, sum, c2)
@@ -1208,9 +1294,11 @@ actor的`act`方法。如果`act`调用了`react`，则`react`方法会在actor�
 
   val circuit = new Circuit with Adders
 }}}
+
+上面最后一行的`circuit`变量保存了拥有所有`Circuit`方法和所有`Adders`方法的电路。
+这就是通过特质而不是用类来组合逻辑的强大之处。可以混入任何想要用的组件：
+
 {{{class="brush: scala"
-
-
   val circuit =
     new Circuit 
       with Adders 
@@ -1218,11 +1306,12 @@ actor的`act`方法。如果`act`调用了`react`，则`react`方法会在actor�
       with FlipFlops
       with MultiCoreProcessors
 }}}
+
+=== 把所有内容结合在一起 ===
+
+一切大功告成。简单地演示如下：
+
 {{{class="brush: scala"
-
-
-// In file concurrency/Demo.scala
-
   object Demo {
     def main(args: Array[String]) {
       val circuit = new Circuit with Adders
@@ -1246,9 +1335,15 @@ actor的`act`方法。如果`act`调用了`react`，则`react`方法会在actor�
     }
   }
 }}}
+
+这里`import`了所有成员，所以可以把`circuit.probe(ain)`简写成`probe(ain)`。
+
+创建了两条输出`sout`、`cout`。还创建了三条输入线路：`ain`初始化为`true`、`bin`
+初始化为`false`、`cin`初始化为`true`。意思是给数值`0`加`1`，并带入一个进位`1`。
+
+五条线路上都有`probe`观测。把线路加到全加器中，模拟开始，输出如下：
+
 {{{class="brush: scala"
-
-
   Advancing to time 1
   Advancing to time 2
   signal Wire(cout) changed to false
@@ -1280,6 +1375,13 @@ actor的`act`方法。如果`act`调用了`react`，则`react`方法会在actor�
   signal Wire(sout) changed to false
   ** Agenda empty.  Clock exiting at time 21.
 }}}
+
+对于输入`1,0,1`输出进位`1`和为`0`。
+
+
+= 连接符解析 =
+
+
 {{{class="brush: scala"
 }}}
 {{{class="brush: scala"
