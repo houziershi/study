@@ -13,6 +13,8 @@ Scala基础：[[scala]]
 
 === Java ===
 
+基础：[[java]]
+
 虚拟机：[[java.jvm]]
 
 代码示例：[[java.example]]

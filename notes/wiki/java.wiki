@@ -1,0 +1,158 @@
+
+
+%title Java基础
+
+%toc Java基础
+
+= 多线程 =
+
+== 中断一个线程 ==
+
+一个无限循环，但会在收到`InterruptedException`时退出：
+
+{{{class="brush: java"
+package test.thread;
+public class T1 extends Thread {
+
+	@Override
+	public void run() {
+		while (true) {
+			System.out.println("T1 running...");
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				break;
+			}
+		}
+	}
+
+}
+}}}
+
+通过调用线程对象的`interrupt`方法使其收到`InterruptedException `异常：
+
+{{{class="brush: java"
+package test.thread;
+import org.junit.Test;
+
+public class ThreadTest {
+
+	@Test
+	public void testInterrupt() {
+		T1 t1 = new T1();
+		t1.start();
+		try {
+			t1.join(7000);
+		} catch (InterruptedException e) {
+			// do nothing
+		}
+		t1.interrupt();
+	}
+
+}
+}}}
+
+== JDK5的锁与条件 ==
+
+某个线程调用`Lock`对象的`lock`方法来锁住，它用`unlock`放开其他线程就都不能用。
+注意这两个方法的调用一定要用`try-finally`包起来。
+
+通过`Lock`对象的`newCondition`方法来取得`Condition`对象。它的`await`方法会释放锁
+并挂起当前线程，等待其他线程调用这个对象的`signal`或`signalAll`访求表示条件已经
+满足。这些方法的调用推荐用`try-finally`包起来。
+
+
+时间监听器接口在时间增长时执行操作：
+
+{{{class="brush: java"
+package thread;
+
+import java.util.Date;
+
+public interface ClockListener {
+
+	public void update(Date date);
+
+}
+}}}
+
+时钟类记录时间增长：
+
+{{{class="brush: java"
+package thread;
+
+import java.util.Date;
+
+public class Clock implements Runnable {
+	private ClockListener listener;
+	private boolean run = true;
+
+	public Clock(ClockListener listener) {
+		this.listener = listener;
+		new Thread(this).start();
+	}
+
+	@Override
+	public void run() {
+		long lastTime = System.currentTimeMillis();
+		while (this.run) {
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				// do nothing
+			}
+			long now = System.currentTimeMillis();
+			if ((now / 1000) - (lastTime / 1000) >= 1) {
+				listener.update(new Date(now));
+				lastTime = now;
+			}
+		}
+	}
+
+	public void stop() {
+		this.run = false;
+	}
+
+}
+}}}
+
+测试，检查记录的时间列表是不是每个时间项目都比前一个增加一秒钟：
+
+{{{class="brush: java"
+package thread;
+
+import java.util.Date;
+
+public class Clock implements Runnable {
+	private ClockListener listener;
+	private boolean run = true;
+
+	public Clock(ClockListener listener) {
+		this.listener = listener;
+		new Thread(this).start();
+	}
+
+	@Override
+	public void run() {
+		long lastTime = System.currentTimeMillis();
+		while (this.run) {
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				// do nothing
+			}
+			long now = System.currentTimeMillis();
+			if ((now / 1000) - (lastTime / 1000) >= 1) {
+				listener.update(new Date(now));
+				lastTime = now;
+			}
+		}
+	}
+
+	public void stop() {
+		this.run = false;
+	}
+
+}
+}}}
+

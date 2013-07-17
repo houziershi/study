@@ -1,0 +1,204 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+
+
+<title>Java基础</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+
+<h1>Java基础</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">多线程</a>
+<ul>
+<li><a href="#toc_1.1">中断一个线程</a>
+<li><a href="#toc_1.2">JDK5的锁与条件</a>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">多线程</h1>
+
+<h2 id="toc_1.1">中断一个线程</h2>
+
+<p>
+一个无限循环，但会在收到<code>InterruptedException</code>时退出：
+</p>
+
+<pre class="brush: java">
+package test.thread;
+public class T1 extends Thread {
+
+	@Override
+	public void run() {
+		while (true) {
+			System.out.println("T1 running...");
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				break;
+			}
+		}
+	}
+
+}
+</pre>
+
+<p>
+通过调用线程对象的<code>interrupt</code>方法使其收到<code>InterruptedException </code>异常：
+</p>
+
+<pre class="brush: java">
+package test.thread;
+import org.junit.Test;
+
+public class ThreadTest {
+
+	@Test
+	public void testInterrupt() {
+		T1 t1 = new T1();
+		t1.start();
+		try {
+			t1.join(7000);
+		} catch (InterruptedException e) {
+			// do nothing
+		}
+		t1.interrupt();
+	}
+
+}
+</pre>
+
+<h2 id="toc_1.2">JDK5的锁与条件</h2>
+
+<p>
+某个线程调用<code>Lock</code>对象的<code>lock</code>方法来锁住，它用<code>unlock</code>放开其他线程就都不能用。
+注意这两个方法的调用一定要用<code>try-finally</code>包起来。
+</p>
+
+<p>
+通过<code>Lock</code>对象的<code>newCondition</code>方法来取得<code>Condition</code>对象。它的<code>await</code>方法会释放锁
+并挂起当前线程，等待其他线程调用这个对象的<code>signal</code>或<code>signalAll</code>访求表示条件已经
+满足。这些方法的调用推荐用<code>try-finally</code>包起来。
+</p>
+
+
+<p>
+时间监听器接口在时间增长时执行操作：
+</p>
+
+<pre class="brush: java">
+package thread;
+
+import java.util.Date;
+
+public interface ClockListener {
+
+	public void update(Date date);
+
+}
+</pre>
+
+<p>
+时钟类记录时间增长：
+</p>
+
+<pre class="brush: java">
+package thread;
+
+import java.util.Date;
+
+public class Clock implements Runnable {
+	private ClockListener listener;
+	private boolean run = true;
+
+	public Clock(ClockListener listener) {
+		this.listener = listener;
+		new Thread(this).start();
+	}
+
+	@Override
+	public void run() {
+		long lastTime = System.currentTimeMillis();
+		while (this.run) {
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				// do nothing
+			}
+			long now = System.currentTimeMillis();
+			if ((now / 1000) - (lastTime / 1000) &gt;= 1) {
+				listener.update(new Date(now));
+				lastTime = now;
+			}
+		}
+	}
+
+	public void stop() {
+		this.run = false;
+	}
+
+}
+</pre>
+
+<p>
+测试，检查记录的时间列表是不是每个时间项目都比前一个增加一秒钟：
+</p>
+
+<pre class="brush: java">
+package thread;
+
+import java.util.Date;
+
+public class Clock implements Runnable {
+	private ClockListener listener;
+	private boolean run = true;
+
+	public Clock(ClockListener listener) {
+		this.listener = listener;
+		new Thread(this).start();
+	}
+
+	@Override
+	public void run() {
+		long lastTime = System.currentTimeMillis();
+		while (this.run) {
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				// do nothing
+			}
+			long now = System.currentTimeMillis();
+			if ((now / 1000) - (lastTime / 1000) &gt;= 1) {
+				listener.update(new Date(now));
+				lastTime = now;
+			}
+		}
+	}
+
+	public void stop() {
+		this.run = false;
+	}
+
+}
+</pre>
+ </div>
+</body>
+</html>
