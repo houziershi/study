@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+
+
+<title>JQuery</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>JQuery</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">表单</a>
+<ul>
+<li><a href="#toc_1.1">值域组件</a>
+<ul>
+<li><a href="#toc_1.1.1">文本框文本区域</a>
+<li><a href="#toc_1.1.2">多选框</a>
+<li><a href="#toc_1.1.3">单选组</a>
+<li><a href="#toc_1.1.4">下拉框</a>
+</ul>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">表单</h1>
+
+<h2 id="toc_1.1">值域组件</h2>
+
+<h3 id="toc_1.1.1">文本框文本区域</h3>
+
+<pre class="brush: javascript">
+$("#txt").attr("value");
+$("#txt").attr("value",'');//清空内容
+$("#txt").attr("value",'11');//填充内容
+</pre>
+
+
+<h3 id="toc_1.1.2">多选框</h3>
+
+<pre class="brush: javascript">
+$("#checkbox_id").attr("value");  
+$("#chk1").attr("checked",'');//不打勾
+$("#chk2").attr("checked",true);//打勾
+if($("#chk1").attr('checked')==undefined) //判断是否已经打勾
+</pre>
+
+<h3 id="toc_1.1.3">单选组</h3>
+
+<pre class="brush: javascript">
+$("input[@type=radio][@checked]").val();
+</pre>
+
+<p>
+设置value=2的项目为当前选中项
+</p>
+<pre class="brush: javascript">
+$("input[@type=radio]").attr("checked",'2');
+</pre>
+
+<p>
+radio单选组的第二个元素为当前选中值
+</p>
+<pre class="brush: javascript">
+$('input[@name=items]').get(1).checked = true;
+</pre>
+
+<h3 id="toc_1.1.4">下拉框</h3>
+ 
+<pre class="brush: javascript">
+$('#sel').val();
+</pre>
+
+<p>
+设置value=-sel3的项目为当前选中项
+</p>
+<pre class="brush: javascript">
+$("#sel").attr("value",'-sel3');
+</pre>
+
+<p>
+清空下拉框
+</p>
+<pre class="brush: javascript">
+$("#sel").empty();
+</pre>
+
+<p>
+添加下拉框的option
+</p>
+<pre class="brush: javascript">
+$("&lt;option value='1'&gt;1111&lt;/option&gt;&lt;option value='2'&gt;2222&lt;/option&gt;")
+	.appendTo("#sel")
+</pre>
+
+
+<p>
+select下拉框的第二个元素为当前选中值
+</p>
+<pre class="brush: javascript">
+$('#select_id')[0].selectedIndex = 1;
+</pre>
+
+<p>
+获取select被选中项的文本
+</p>
+<pre class="brush: javascript">
+var item = $("select[@name=items] option[@selected]").text();
+</pre>
+ </div>
+</body>
+</html>

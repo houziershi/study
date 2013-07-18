@@ -25,6 +25,9 @@ JavaScript基础：[[Javascript]]
 
 JavaScript正则：[[javascript.regex]]
 
+JQuery：[[JQuery]]
+
+
 ExtJs：[[ExtJS]]
 
 = 常用工具 =
@@ -37,6 +40,9 @@ Vim：[[vim]]
 
 VimWiki：[[vimwiki]]
 
+= 数据库 =
+
+DB2： [[DB2]]
 
 = 服务器 =
 
