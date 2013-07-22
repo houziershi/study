@@ -15,6 +15,8 @@ Scala基础：[[scala]]
 
 基础：[[java]]
 
+常用库：[[java.libs]]
+
 虚拟机：[[java.jvm]]
 
 代码示例：[[java.example]]
@@ -32,15 +34,50 @@ ExtJs：[[ExtJS]]
 
 = 常用工具 =
 
+== 命令行 ==
+
+[[tmux]]
+
+== 文件管理 ==
+
+[[Gnome.Commander]]
+
+[[rsync]]
+
+== 系统模拟器 ==
+Cygwin：[[Cygwin]]
+
+== 网络 ==
+
+putty： [[putty]]
+
+== 版本控制 ==
+
 Git：[[git]]
 
+[[Subversion]]
+
+== 构建工具 ==
+
 Maven：[[maven]]
+
+== 编辑器 ==
 
 Vim：[[vim]]
 
 VimWiki：[[vimwiki]]
 
+== IDE ==
+
+[[eclipse]]
+
+== 多媒体 ==
+
+[[SMplayer]]
+
 = 数据库 =
+
+[[mysql]]
 
 DB2： [[DB2]]
 
@@ -55,6 +92,12 @@ DB2： [[DB2]]
 == 常用工具 ==
 
 [[linux.base]]
+
+[[linux.disc]]
+
+== 桌面环境 ==
+
+[[Desktop.Entry]]
 
 = 标准 =
 

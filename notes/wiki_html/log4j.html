@@ -1,0 +1,216 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+
+
+<title>log4j</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+<p>
+log4j基础
+</p>
+
+<h1 id="toc_1">日志有级别</h1>
+
+<p>
+debug &lt; info &lt; warn &lt; error &lt; fatal
+</p>
+
+<p>
+默认就是这五个了，可以自己加新的级别，但正常情况下应该是用不着的。
+</p>
+
+<p>
+在java程序中，记录不同级别日志的方法就是对应的：
+</p>
+
+<pre class="brush: bash">
+log.debug("Debug info.");
+log.info("Info info");
+log.warn("Warn info");
+log.error("Error info");
+log.fatal("Fatal info"); 
+</pre>
+
+<h1 id="toc_2">日志有输出</h1>
+
+<p>
+输出适配器定义了日志输出的目标与输出的格式。输出的目标可以是控制台、文件、
+邮件……
+</p>
+
+<p>
+配置文件中配置一个输出到控制台的适配器：
+</p>
+<pre class="brush: bash">
+log4j.appender.ConsoleInfo=org.apache.log4j.ConsoleAppender
+log4j.appender.ConsoleInfo.Encoding=UTF-8
+log4j.appender.ConsoleInfo.layout=org.apache.log4j.PatternLayout
+log4j.appender.ConsoleInfo.layout.ConversionPattern=%d %-5p - %m%n 
+</pre>
+
+<p>
+再看一个输出到文件的：
+</p>
+
+<pre class="brush: bash">
+log4j.appender.FileInfo=org.apache.log4j.RollingFileAppender
+log4j.appender.FileInfo.Encoding=UTF-8
+log4j.appender.FileInfo.layout=org.apache.log4j.PatternLayout
+log4j.appender.FileInfo.layout.ConversionPattern=%d %-5p - %m%n
+log4j.appender.FileInfo.File=./log-info.log
+log4j.appender.FileInfo.MaxFileSize = 500KB
+log4j.appender.FileInfo.MaxBackupIndex = 1 
+</pre>
+
+
+<h1 id="toc_3">日志有实例</h1>
+
+<p>
+<code>log4j.rootLogger</code>这个实例肯定是存在的（即使不配置它），默认的级别是<code>DEBUG</code>。
+</p>
+
+<h2 id="toc_3.1">自定义实例</h2>
+
+<p>
+logger实例的名字可以随便起。比如在java程序中：
+</p>
+
+<pre class="brush: java">
+Logger logger = Logger.getLogger("dao");
+Logger logger = Logger.getLogger("dao.user");
+Logger logger = Logger.getLogger("dao.lesson"); 
+</pre>
+
+<p>
+这样就取得了三个logger，在配置日志的时候分别用对应的<code>log4j.logger.名字</code>来指定
+它们的日志级别：
+</p>
+
+<pre class="brush: bash">
+log4j.logger.dao=INFO
+log4j.logger.dao.user=DEBUG
+log4j.logger.dao.lesson=DEBUG 
+</pre>
+
+<h2 id="toc_3.2">继承关系</h2>
+
+<p>
+ 这里有一个问题，logger名称中的点号意义有点像Java类名与包名。所以子包中的日志
+ 会在上一级包中再输出一遍。
+</p>
+
+<p>
+因为user和lesson都是DEBUG级别的，所以dao中除了正常的INFO日志，也还会包含下面
+user和lesson的内容。
+</p>
+
+<p>
+相当于：user和lesson的DEBUG日志不光自己记录了一遍，还在dao中记录了一遍，一共
+记录了两遍。这样在服务器上重复记录日志太浪费性能和存储空间了，所以我们可以指定
+取消继承：
+</p>
+
+<pre class="brush: bash">
+log4j.logger.dao=INFO
+log4j.logger.dao.user=DEBUG
+log4j.logger.dao.lesson=DEBUG
+ 
+log4j.additivity.user.lesson=false
+log4j.additivity.dao.lesson=false 
+</pre>
+
+<h2 id="toc_3.3">命名惯例</h2>
+
+<p>
+一般在习惯上，我们都会用程序所在类的类名来作为日志的名字。因为一般情况下用不着
+在一个类中有多个日志，而且包名加类名还很好地体现了层级关系：
+</p>
+
+<pre class="brush: java">
+package com.izenesoft.b5m.pdc.service;
+
+public class PdcUserShareService {
+  private static Logger LOGGER =
+    logger.getLogger(PdcUserShareService.class);
+} 
+</pre>
+
+
+<h1 id="toc_4">日志有配置</h1>
+
+<p>
+日志的配置文件为<code>log4j.properties</code>。有了日志的级别和输出，就可以定义一个具体的
+日志实例了：
+</p>
+
+<pre class="brush: bash">
+实例=级别,输出1,输出2,输出3 ... 
+</pre>
+
+<p>
+例如：
+</p>
+
+<pre class="brush: bash">
+log4j.rootLogger=INFO, FileInfo
+log4j.logger.com.mycop=DEBUG, ConsoleDebug, FileDebug
+log4j.additivity.com.mycop=false 
+</pre>
+
+
+<h1 id="toc_5">例子</h1>
+
+<pre class="brush: bash">
+#
+log4j.rootLogger=INFO, FileInfo
+log4j.logger.com.mycop=DEBUG, ConsoleDebug, FileDebug
+log4j.additivity.com.mycop=false
+ 
+# log info to console
+log4j.appender.ConsoleInfo=org.apache.log4j.ConsoleAppender
+log4j.appender.ConsoleInfo.Encoding=UTF-8
+log4j.appender.ConsoleInfo.layout=org.apache.log4j.PatternLayout
+log4j.appender.ConsoleInfo.layout.ConversionPattern=%d %-5p - %m%n
+ 
+# log debug to console
+log4j.appender.ConsoleDebug=org.apache.log4j.ConsoleAppender
+log4j.appender.ConsoleDebug.Encoding=UTF-8
+log4j.appender.ConsoleDebug.layout=org.apache.log4j.PatternLayout
+log4j.appender.ConsoleDebug.layout.ConversionPattern=%d %-5p [%t] %l - %m%n
+ 
+# log to info file
+log4j.appender.FileInfo=org.apache.log4j.RollingFileAppender
+log4j.appender.FileInfo.Encoding=UTF-8
+log4j.appender.FileInfo.layout=org.apache.log4j.PatternLayout
+log4j.appender.FileInfo.layout.ConversionPattern=%d %-5p - %m%n
+log4j.appender.FileInfo.File=./log-info.log
+log4j.appender.FileInfo.MaxFileSize = 500KB
+log4j.appender.FileInfo.MaxBackupIndex = 1
+ 
+# log to DebugFile
+log4j.appender.FileDebug=org.apache.log4j.RollingFileAppender
+log4j.appender.FileDebug.Encoding=UTF-8
+log4j.appender.FileDebug.layout=org.apache.log4j.PatternLayout
+log4j.appender.FileDebug.layout.ConversionPattern=%d %-5p [%t] %l - %m%n
+log4j.appender.FileDebug.File=./log-debug.log
+log4j.appender.FileDebug.MaxFileSize = 500KB
+log4j.appender.FileDebug.MaxBackupIndex = 1 
+</pre>
+ </div>
+</body>
+</html>

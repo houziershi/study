@@ -28,8 +28,19 @@ deb http://downloads.sourceforge.net/project/ubuntuzilla/mozilla/apt/ all main
 加密钥并安装：
 
 {{{class="brush: bash"
+gpg --keyserver keyserver.ubuntu7.com --recv C1289A29
+gpg --export --armor C1289A29 | sudo apt-key add -
+}}}
+
+可以简写：
+
+{{{class="brush: bash"
 sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com C1289A29
-sudo apt-get update
+}}}
+
+安装：
+
+{{{class="brush: bash"
 sudo apt-get install firefox-mozilla-build
 }}}
 
@@ -98,6 +109,24 @@ update-alternatives --config x-www-browser
 上面的命令会列出所有相关的程序，输入序号选择一个默认的。
 
 
+= 任务管理 = 
+
+中断任务：`Control + C`
+
+挂起任务：`Control + Z`
+
+显示当前任务的作业号`q：jobs`
+
+指定任务８在后台执行
+{{{class="brush: bash"
+bg %8
+}}}
+
+指定任务８在前台执行
+{{{class="brush: bash"
+fg %8
+}}}
+
 = 文件操作 =
 
 == 散列 ==
@@ -127,6 +156,43 @@ log.txt
 $ 
 }}}
 
+=== zip ===
+
+zip命令可以用来将文件压缩成为常用的zip格式。unzip命令则用来解压缩zip文件。
+
+1. 我想把一个文件abc.txt和一个目录dir1压缩成为yasuo.zip：
+{{{class="brush: bash"
+zip -r yasuo.zip abc.txt dir1
+}}}
+
+2.我下载了一个yasuo.zip文件，想解压缩：
+{{{class="brush: bash"
+unzip yasuo.zip
+}}}
+
+3.我当前目录下有abc1.zip，abc2.zip和abc3.zip，我想一起解压缩它们：
+{{{class="brush: bash"
+unzip abc\?.zip
+// ?表示一个字符，如果用*表示任意多个字符。
+}}}
+
+
+4.我有一个很大的压缩文件large.zip，我不想解压缩，只想看看它里面有什么：
+{{{class="brush: bash"
+unzip -v large.zip
+}}}
+
+5.我下载了一个压缩文件large.zip，想验证一下这个压缩文件是否下载完全了：
+{{{class="brush: bash"
+unzip -t large.zip
+}}}
+
+6.我用-v选项发现music.zip压缩文件里面有很多目录和子目录，并且子目录中其实都是
+歌曲mp3文件，我想把这些文件都下载到第一级目录，而不是一层一层建目录：
+{{{class="brush: bash"
+unzip -j music.zip
+}}}
+
 = 文本文件 =
 
 == 查找 ==
@@ -136,6 +202,28 @@ find / -name "*.conf" | xargs grep "alias"
 }}}
 
 == 编码与格式 ==
+
+=== 字符编码 ===
+
+转换单个文件：
+
+{{{class="brush: bash"
+iconv -f GBK -t UTF-8 tt.json > tt.json
+}}}
+
+把当前目录下的文件转换编码：
+
+{{{class="brush: bash"
+sed -i "s/old/new/g" `grep old -rl ./`
+}}}
+
+或是：
+
+{{{class="brush: bash"
+`enca -L zh_CN -x utf-8 *`
+}}}
+
+=== 换行 ===
 
 Windows文本文件的`^M`，注意这个`^M`的输入方式为`CTRL v CTRL m`。
 

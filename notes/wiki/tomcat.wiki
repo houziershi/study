@@ -161,7 +161,9 @@ $ catalina.sh start
 
 == 自动重新部署Servlet ==
 
-开发过程中自动重部署修改过的Servlet是个方便的功能，但生产环境这样就太浪费了。修改对应WebApp`web.xml`文件的`Context`元素中设定`reload-able`属性并重启Tomcat。这样也可以在`Manager`应用程序中手动重载工程。
+开发过程中自动重部署修改过的Servlet是个方便的功能，但生产环境这样就太浪费了。
+修改对应WebApp`web.xml`文件的`Context`元素中设定`reload-able`属性并重启Tomcat。
+这样也可以在`Manager`应用程序中手动重载工程。
 
 == Tomcat Admin webapp ==
 

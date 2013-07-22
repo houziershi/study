@@ -16,25 +16,47 @@
 <script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
 
 
-<title>ExtJs 4</title>
+<title>Gnome.Commander</title>
 </head>
 <body  onresize='changeTocSize()'>
 	<div class="note-main"> 
 
-
-<h1>ExtJs 4</h1>
+<h1 id="toc_1" class="justcenter">默认文件打开方式</h1>
 
 <p>
-<a href="ExtJs.Overview.html">ExtJs.Overview</a>
+ 配置文件位置：
+</p>
+<pre class="brush: bash">
+ ~/.local/share/applications/defaults.list
+</pre>
+
+  
+<h1 id="toc_2" class="justcenter">按日期批量更改照片名</h1>
+
+<p>
+ Control-A -&gt; Mark -&gt; Select All
 </p>
 
 <p>
-<a href="ExtJs.Concepts.html">ExtJs.Concepts</a>
+ File -&gt; Advance Rename Tool
 </p>
 
 <p>
-<a href="ExtJs.tmp.html">ExtJs.tmp</a>
+ 清空Template，然后Metatag -&gt; Exif -&gt; Date and time(original)，
+ 在<code>$T(Exif.DateTimeOriginal)</code>后补上.jpg。
 </p>
+
+<p>
+ 在Regex replacing中设定替换规则，替换掉特殊字符防止在windows系统下打不开文件。
+</p>
+
+<p>
+ 当然直接rename也可以：
+</p>
+	
+<pre class="brush: bash">
+ rename 's/:/-/' *.jpg
+</pre>
  </div>
 </body>
 </html>

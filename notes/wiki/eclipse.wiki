@@ -1,0 +1,112 @@
+= JRE参数 =
+
+Preferences->Java->Installed JREs->"edit"
+
+{{{class="brush: bash"
+-Xmx1024m -Xms512m -XX:PermSize=64m -XX:MaxPermSize=128m 
+}}}
+
+= ant =
+
+run -> External Tools -> External Tools Configurations...
+
+jre:
+{{{class="brush: bash"
+-Xms768m -Xmx1024m -XX:MaxPermSize=512m
+}}}
+
+指定ant home：
+
+windows -> preferences -> Ant Home...
+
+指定默认ant文件
+
+Window -> Show View -> Ant
+
+在打开的ant视图中点加号蚂蚁按钮指定构建文件。
+
+= Debug =
+
+ 指定远程应用
+
+run -> Debug confilgurations... -> 新建揿钮 -> Remote Java Application
+
+指定关系远程应用与本地工程源代码关联：
+
+Source标签页 -> add -> Java Project
+
+
+= 把java项目转为Web项目 =
+
+`.project`文件中加上：
+
+{{{class="brush: xml"
+<nature>org.eclipse.wst.common.project.facet.core.nature</nature>
+<nature>org.eclipse.wst.common.modulecore.ModuleCoreNature</nature>
+<nature>org.eclipse.jem.workbench.JavaEMFNature</nature> 
+}}}
+
+项目菜单的"“project properties"，左边树中点中"Project Facets"勾上"Java"和
+“Dynamic Web Module”。
+
+= 指定WEB项目的根目录位置 =
+
+ 可以在项目属性的“Deployment Assembly”中设置。
+
+也可以直接改配置文件的方法：
+
+打开文件:
+
+{{{class="brush: xml" 
+<项目目录>/.settings/org.eclipse.wst.common.component
+}}}
+
+找到
+
+{{{class="brush: xml"
+    <wb-resource deploy-path="/" source-path="/WebContent"/> 
+}}}
+
+并修改，如
+
+{{{class="brush: xml"
+    <wb-resource deploy-path="/" source-path="/webapp"/> 
+}}}
+
+当然，对于大项目，最方便的还是安装tomcat插件，然后配置tomcat的`server.xml`如下
+
+{{{class="brush: xml"
+<Host name= "localhost"   appBase= "webapps"
+  unpackWARs="true"  autoDeploy= "true"
+  xmlValidation="false"  xmlNamespaceAware= "false" > 
+    <Context path=""  docBase= "E:\workspaces\doone\mondrian\webapp"  
+      debug= "0"  reloadable= "true" /> 
+</Host> 
+}}}
+
+WTP 自带的结构
+
+{{{class="brush: xml"
+<Context  docBase="mondrian "   path="/mondrian "
+  reloadable="true"  source="org.eclipse.jst.j2ee.server:mondrian "/> 
+}}}
+
+= 项目漏包的问题 =
+
+可以在项目属性的“Deployment Assembly”中设置。在对面页面上“ADD”加上包。
+
+= 关闭对javascript的验证 =
+
+ Windows->preferences，JavaScript->Editor->Content Assist，ent Assist，
+ 去掉Enable auto Active。
+
+file ".project", delete :
+
+{{{class="brush: xml"
+<buildCommand>
+     <name>org.eclipse.wst.jsdt.core.javascriptValidator</name>
+      <arguments></arguments>
+</buildCommand>
+ 
+<nature>org.eclipse.wst.jsdt.core.jsNature</nature> 
+}}}

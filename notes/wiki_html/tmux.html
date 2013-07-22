@@ -1,0 +1,355 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+
+
+<title>tmux</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+<h1 id="toc_1">线程基础知识</h1>
+
+<p>
+你是不是经常需要 SSH 或者 telent 远程登录到 Linux 服务器？你是不是经常为一些
+长时间运行的任务而头疼，比如系统备份、ftp 传输等等。通常情况下我们都是为每一个
+这样的任务开一个远程终端窗口，因为他们执行的时间太长了。必须等待它执行完毕，
+在此期间可不能关掉窗口或者断开连 接，否则这个任务就会被杀掉，一切半途而废了。
+</p>
+
+<p>
+让我们来看看为什么关掉窗口/断开连接会使得正在运行的程序死掉。
+</p>
+
+<p>
+在Linux/Unix中，有这样几个概念：
+</p>
+
+<p>
+进程组（process group）：一个或多个进程的集合，每一个进程组有唯一一个进程组ID，
+即进程组长进程的ID。
+</p>
+
+<p>
+会话期（session）：一个或多个进程组的集合，有唯一一个会话期首进程（session 
+leader）。会话期ID为首进程的ID。
+</p>
+
+<p>
+会话期可以有一个单独的控制终端（controlling terminal）。与控制终端连接的会话期
+首进程叫做控制进程（controlling process）。当前与终端交互的进程称为前台进程组。
+其余进程组称为后台进程组。
+</p>
+
+<h2 id="toc_1.1">元凶：SIGHUP 信号</h2>
+
+<p>
+根据POSIX.1定义：
+</p>
+
+<p>
+挂断信号（SIGHUP）默认的动作是终止程序。
+</p>
+
+<p>
+当终端接口检测到网络连接断开，将挂断信号发送给控制进程（会话期首进程）。
+</p>
+
+<p>
+如果会话期首进程终止，则该信号发送到该会话期前台进程组。
+</p>
+
+<p>
+一个进程退出导致一个孤儿进程组中产生时，如果任意一个孤儿进程组进程处于STOP状态
+，发送SIGHUP和SIGCONT信号到该进程组中所有进程。
+</p>
+
+<p>
+因此当网络断开或终端窗口关闭后，控制进程收到SIGHUP信号退出，会导致该会话期内
+其他进程退出。
+</p>
+
+<p>
+我们来看一个例子。打开两个SSH终端窗口，在其中一个运行<code>top</code>命令。
+</p>
+
+<pre class="brush: bash">
+[root@tivf09 root]# top
+</pre>
+
+<p>
+在另一个终端窗口，找到top的进程ID为5180，其父进程ID为5128，即登录shell。
+</p>
+
+<pre class="brush: bash">
+[root@tivf09 root]# ps -ef|grep top
+root      5180  5128  0 01:03 pts/0    00:00:02 top
+root      5857  3672  0 01:12 pts/2    00:00:00 grep top
+</pre>
+
+<p>
+使用<code>pstree</code>命令可以更清楚地看到这个关系：
+</p>
+
+<pre class="brush: bash">
+[root@tivf09 root]# pstree -H 5180|grep top
+|-sshd-+-sshd---bash---top
+</pre>
+
+<p>
+使用<code>ps-xj</code>命令可以看到，登录shell（PID 5128）和top在同一个会话期，shell为会话期
+首进程，所在进程组PGID为5128，top所在进程组PGID为5180，为前台进程组。
+</p>
+
+<pre class="brush: bash">
+[root@tivf09 root]# ps -xj|grep 5128
+ 5126  5128  5128  5128 pts/0     5180 S        0   0:00 -bash
+ 5128  5180  5180  5128 pts/0     5180 S        0   0:50 top
+ 3672 18095 18094  3672 pts/2    18094 S        0   0:00 grep 5128
+</pre>
+
+<p>
+关闭第一个SSH窗口，在另一个窗口中可以看到top也被杀掉了。
+</p>
+
+<pre class="brush: bash">
+[root@tivf09 root]# ps -ef|grep 5128
+root     18699  3672  0 04:35 pts/2    00:00:00 grep 5128
+</pre>
+
+<p>
+如果我们可以忽略SIGHUP信号，关掉窗口应该就不会影响程序的运行了。<code>nohup</code>命令可以
+达到这个目的，如果程序的标 准输出/标准错误是终端，nohup默认将其重定向到
+<code>nohup.out</code>文件。值得注意的是nohup命令只是使得程序忽略SIGHUP信号，还需要使用
+标记<code>&amp;</code>把它放在后台运行。
+</p>
+
+<pre class="brush: bash">
+nohup &lt;command&gt; [argument…] &amp;
+</pre>
+
+<p>
+虽然nohup很容易使用，但还是比较“简陋”的，对于简单的命令能够应付过来，对于复杂
+的需要人机交互的任务就麻烦了。
+</p>
+
+ 
+<h1 id="toc_2">tmux操作基础</h1>
+
+<p>
+安装过程中可能会有路径没有建立导致无法启动，看一下是缺少哪些路径：
+</p>
+
+<pre class="brush: bash">
+strace -e trace=file tmux ..restofyourcommand...
+</pre>
+
+<p>
+手动把少掉的路径建起来就可以了。
+</p>
+
+<p>
+在控制台中执行下面的各项tmux命令。
+</p>
+
+<ul>
+<li>
+<code>Ctrl+b</code>激活控制台；
+
+</ul>
+
+ 
+<h1 id="toc_3">server 服务器</h1>
+
+<p>
+输入tmux命令时就开启了一个服务器。
+</p>
+
+ 
+<h1 id="toc_4">session 会话</h1>
+
+
+<p>
+一个服务器可以包含多个会话。管理tmux会话：
+</p>
+
+<pre class="brush: bash">
+$ tmux at   # attach running sessions to a terminal
+$ tmux ls   # list running tmux sessions
+$ exit      # close tmux session
+</pre>
+
+<p>
+在多个终端中共用一个会话：
+</p>
+
+<pre class="brush: bash">
+$ tmux new -s session_name # make new named session
+$ tmux at -t session_name  # attach to exist session (allowing shared sessions)
+$ tmux kill-session -t session_name  # kill named session
+</pre>
+
+<p>
+在控制台中：
+</p>
+
+<ul>
+<li>
+<code>d</code>脱离当前会话；这样可以暂时返回Shell界面，输入tmux attach能够重新进入之前的会话
+
+<li>
+<code>D</code>选择要脱离的会话；在同时开启了多个会话时使用
+
+<li>
+<code>Ctrl+z</code>挂起当前会话
+
+<li>
+<code>r</code>强制重绘未脱离的会话
+
+<li>
+<code>s</code>选择并切换会话；在同时开启了多个会话时使用
+
+</ul>
+ 
+<h1 id="toc_5">window    窗口</h1>
+
+<p>
+一个会话可以包含多个窗口。
+</p>
+
+<ul>
+<li>
+<code>c</code> 创建新窗口
+
+<li>
+<code>&amp;</code>关闭当前窗口
+
+<li>
+<code>p/n</code>切换至上／下一窗口
+
+<li>
+<code>0-9</code>切换至指定窗口
+
+<li>
+<code>l</code>在前后两个窗口间互相切换
+
+<li>
+<code>w</code>通过窗口列表切换窗口
+
+<li>
+<code>,</code>重命名当前窗口；这样便于识别
+
+<li>
+<code>.</code>修改当前窗口编号；相当于窗口重新排序
+
+<li>
+<code>f</code>在所有窗口中查找指定文本
+
+<li>
+<code>pane</code>面板。
+
+</ul>
+
+<h1 id="toc_6">面版 pane</h1>
+
+<p>
+一个窗口可以包含多个面板。
+</p>
+
+<ul>
+<li>
+<code>”</code>将当前面板平分为上下两块
+
+<li>
+<code>%</code>将当前面板平分为左右两块
+
+<li>
+<code>x</code>关闭当前面板
+
+<li>
+<code>!</code>将当前面板置于新窗口；即新建一个窗口，其中仅包含当前面板
+
+<li>
+<code>Ctrl+方向键</code>以1个单元格为单位移动边缘以调整当前面板大小
+
+<li>
+<code>Alt+方向键</code>以5个单元格为单位移动边缘以调整当前面板大小
+
+<li>
+<code>方向键</code>切换窗口
+
+<li>
+<code>Space</code>在预置的面板布局中循环切换；依次包括<code>even-horizontal</code>、<code>even-vertical</code>、<code>main-horizontal</code>、<code>main-vertical</code>、<code>tiled</code>
+
+<li>
+<code>q</code>显示面板编号
+
+<li>
+<code>o</code>在当前窗口中选择下一面板
+
+<li>
+<code>方向键</code>移动光标以选择面板
+
+<li>
+<code>{</code>向前置换当前面板
+
+<li>
+<code>}</code>向后置换当前面板
+
+<li>
+<code>Alt+o</code>逆时针旋转当前窗口的面板
+
+<li>
+<code>Ctrl+o</code>顺时针旋转当前窗口的面板
+
+</ul>
+
+ 
+<h1 id="toc_7">复制粘贴</h1>
+
+<ul>
+<li>
+<code>[</code>进入复制模式；
+
+<li>
+<code>q</code>/<code>Esc</code>退出
+
+<li>
+<code>CTRL-SPACE</code>或<code>CTRL-@</code>开始选择文本
+
+<li>
+<code>ALT-w</code>复制内容
+
+<li>
+<code>]</code>粘贴复制的内容
+
+</ul>
+
+<h1 id="toc_8">系统操作</h1>
+
+<ul>
+<li>
+<code>?</code>列出所有快捷键；按q返回
+
+<li>
+<code>:</code>进入命令行模式；此时可以输入支持的命令，例如kill-server可以关闭服务器
+
+<li>
+<code>~</code>列出提示信息缓存；其中包含了之前tmux返回的各种提示信息
+
+</ul>
+ </div>
+</body>
+</html>

@@ -1,0 +1,35 @@
+%title Cygwin
+
+%toc Cygwin
+
+
+
+中文问题`~/.inputrc`
+
+{{{class="brush: bash"
+set meta-flag on
+set convert-meta off
+set input-meta on
+set output-meta on
+}}}
+
+
+`~/bashrc`：
+
+{{{class="brush: bash"
+alias ls='ls -hF ?Cshow-control-chars ?Ccolor=tty'
+}}}
+
+vim：
+
+{{{class="brush: bash"
+cp /usr/share/vim/vin70/vimrc_example.vim  ~/.vimrc
+}}}
+
+编码：
+
+{{{class="brush: bash"
+set fenc=utf-8 "?趨Ĭ?Ͻ???
+set fencs=utf-8,usc-bom,gb18030,gbk,gb2312,cp936,euc-jp
+}}}
+

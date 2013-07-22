@@ -1,0 +1,65 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+
+
+<title>mysql</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1 id="toc_1">mysql简单分表</h1>
+
+<p>
+只有myISAM能用，挫。
+</p>
+
+<pre class="brush: bash">
+CREATE TABLE IF NOT EXISTS `user1` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `name` varchar(50) DEFAULT NULL,
+    `gender` int(1) NOT NULL DEFAULT '0',
+    PRIMARY KEY (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1; 
+ 
+CREATE TABLE IF NOT EXISTS `user2` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `name` varchar(50) DEFAULT NULL,
+    `gender` int(1) NOT NULL DEFAULT '0',
+    PRIMARY KEY (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
+ 
+CREATE TABLE IF NOT EXISTS `user3` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `name` varchar(50) DEFAULT NULL,
+    `gender` int(1) NOT NULL DEFAULT '0',
+    PRIMARY KEY (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
+ 
+drop table `alluser`;
+CREATE TABLE IF NOT EXISTS `alluser` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `name` varchar(50) DEFAULT NULL,
+    `gender` int(1) NOT NULL DEFAULT '0',
+    INDEX(id)
+) ENGINE=MERGE UNION=(user2,user3,user1) INSERT_METHOD=LAST AUTO_INCREMENT=1;
+ 
+INSERT INTO `alluser` (`name`, `gender`) VALUES('eee', 0);
+</pre>
+ </div>
+</body>
+</html>

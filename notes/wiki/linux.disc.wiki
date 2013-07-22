@@ -1,0 +1,124 @@
+
+
+= 查看分区使用情况 =
+
+{{{class="brush: bash"	
+df -T          # 显示格式
+df -a          # 显示所有文件系统的磁盘使用情况，包括0块(block)的文件系统，如/proc文件系统。
+df -k          # 以k字节为单位显示。
+df -i          # 显示i节点信息，而不是磁盘块。
+ 
+df -t          # 显示各指定类型的文件系统的磁盘空间使用情况。
+df -x          # 列出不是某一指定类型文件系统的磁盘空间使用情况(与t选项相反)。
+}}}
+
+= 挂载 =
+
+挂载光驱
+
+{{{class="brush: bash"	
+sudo mount /dev/hdc /mnt/cdrom
+}}}
+
+
+挂载ISO镜像
+
+{{{class="brush: bash"	
+sudo mount -o loop -t iso9660 aaa.iso /media/aaa
+}}}
+
+取消挂载
+
+{{{class="brush: bash"
+sudo umount /media/aaa
+}}}
+
+挂载U盘
+
+{{{class="brush: bash"
+udisks --mount /dev/sdd /media/udisk
+}}}
+
+取消挂载U盘
+
+{{{class="brush: bash"
+udisks --unmount /media/udisk
+}}}
+ 
+
+= 修改卷标 =
+
+{{{class="brush: bash"
+sudo apt-get install e2fsprogs ntfsprogs
+ 
+# 修改ext2/ext3磁盘卷标
+sudo e2label /dev/sdb1 Jade-TOSHIBA
+ 
+# 修改ntfs磁盘卷标
+sudo ntfslabel /dev/sdb1 Jade-TOSHIBA
+}}}
+
+
+
+= 将光盘转为镜像 =
+
+{{{class="brush: bash"	
+cp /dev/cdrom aaa.iso
+}}}
+
+
+= 远程文件系统 =
+
+== samba ==
+
+安装
+
+{{{class="brush: bash"
+sudo apt-get install samba smbfs
+}}}
+
+准备目录
+
+{{{class="brush: bash"
+sudo mkdir /media/file_data/share
+sudo chmod 777 /media/file_data/share
+}}}
+
+准备账号
+
+{{{class="brush: bash"
+sudo groupadd guest
+sudo useradd -g guest guest
+}}}
+
+准备samba密码
+
+{{{class="brush: bash"
+sudo smbpasswd -a guest
+}}}
+
+配置文件
+
+{{{class="brush: bash"
+sudo mv -f /etc/samba/smb.conf /etc/samba/smb.conf.bak
+sudo vi /etc/samba/smb.conf
+}}}
+
+添加
+
+{{{class="brush: bash"
+[tmp]
+    comment = morgan-laptop smb share
+    path = /media/file_data/share
+    browseable = yes
+    writeable = yes
+    public = yes
+}}}
+
+测试配置文件正确后重启服务
+
+{{{class="brush: bash"
+sudo testparm
+sudo /etc/init.d/smbd restart
+}}}
+

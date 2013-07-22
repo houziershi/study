@@ -37,18 +37,24 @@
 <li><a href="#toc_1.1.5">配置默认程序优先级</a>
 </ul>
 </ul>
-<li><a href="#toc_2">文件操作</a>
+<li><a href="#toc_2">任务管理</a>
+<li><a href="#toc_3">文件操作</a>
 <ul>
-<li><a href="#toc_2.1">散列</a>
-<li><a href="#toc_2.2">压缩</a>
+<li><a href="#toc_3.1">散列</a>
+<li><a href="#toc_3.2">压缩</a>
 <ul>
-<li><a href="#toc_2.2.1">bzip2</a>
+<li><a href="#toc_3.2.1">bzip2</a>
+<li><a href="#toc_3.2.2">zip</a>
 </ul>
 </ul>
-<li><a href="#toc_3">文本文件</a>
+<li><a href="#toc_4">文本文件</a>
 <ul>
-<li><a href="#toc_3.1">查找</a>
-<li><a href="#toc_3.2">编码与格式</a>
+<li><a href="#toc_4.1">查找</a>
+<li><a href="#toc_4.2">编码与格式</a>
+<ul>
+<li><a href="#toc_4.2.1">字符编码</a>
+<li><a href="#toc_4.2.2">换行</a>
+</ul>
 </ul>
 </ul>
 </div>
@@ -83,8 +89,23 @@ deb http://downloads.sourceforge.net/project/ubuntuzilla/mozilla/apt/ all main
 </p>
 
 <pre class="brush: bash">
+gpg --keyserver keyserver.ubuntu7.com --recv C1289A29
+gpg --export --armor C1289A29 | sudo apt-key add -
+</pre>
+
+<p>
+可以简写：
+</p>
+
+<pre class="brush: bash">
 sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com C1289A29
-sudo apt-get update
+</pre>
+
+<p>
+安装：
+</p>
+
+<pre class="brush: bash">
 sudo apt-get install firefox-mozilla-build
 </pre>
 
@@ -175,9 +196,37 @@ update-alternatives --config x-www-browser
 </p>
 
 
-<h1 id="toc_2">文件操作</h1>
+<h1 id="toc_2">任务管理</h1>
 
-<h2 id="toc_2.1">散列</h2>
+<p>
+中断任务：<code>Control + C</code>
+</p>
+
+<p>
+挂起任务：<code>Control + Z</code>
+</p>
+
+<p>
+显示当前任务的作业号<code>q：jobs</code>
+</p>
+
+<p>
+指定任务８在后台执行
+</p>
+<pre class="brush: bash">
+bg %8
+</pre>
+
+<p>
+指定任务８在前台执行
+</p>
+<pre class="brush: bash">
+fg %8
+</pre>
+
+<h1 id="toc_3">文件操作</h1>
+
+<h2 id="toc_3.1">散列</h2>
 
 <pre class="brush: bash">
 echo "yangpan220" | md5sum
@@ -192,9 +241,9 @@ echo -n 'yangpan220' | md5sum
 </pre>
 
 
-<h2 id="toc_2.2">压缩</h2>
+<h2 id="toc_3.2">压缩</h2>
 
-<h3 id="toc_2.2.1">bzip2</h3>
+<h3 id="toc_3.2.1">bzip2</h3>
 
 <pre class="brush: bash">
 $ bzip2 -v log.txt 
@@ -206,15 +255,94 @@ log.txt
 $ 
 </pre>
 
-<h1 id="toc_3">文本文件</h1>
+<h3 id="toc_3.2.2">zip</h3>
 
-<h2 id="toc_3.1">查找</h2>
+<p>
+zip命令可以用来将文件压缩成为常用的zip格式。unzip命令则用来解压缩zip文件。
+</p>
+
+<p>
+1. 我想把一个文件abc.txt和一个目录dir1压缩成为yasuo.zip：
+</p>
+<pre class="brush: bash">
+zip -r yasuo.zip abc.txt dir1
+</pre>
+
+<p>
+2.我下载了一个yasuo.zip文件，想解压缩：
+</p>
+<pre class="brush: bash">
+unzip yasuo.zip
+</pre>
+
+<p>
+3.我当前目录下有abc1.zip，abc2.zip和abc3.zip，我想一起解压缩它们：
+</p>
+<pre class="brush: bash">
+unzip abc\?.zip
+// ?表示一个字符，如果用*表示任意多个字符。
+</pre>
+
+
+<p>
+4.我有一个很大的压缩文件large.zip，我不想解压缩，只想看看它里面有什么：
+</p>
+<pre class="brush: bash">
+unzip -v large.zip
+</pre>
+
+<p>
+5.我下载了一个压缩文件large.zip，想验证一下这个压缩文件是否下载完全了：
+</p>
+<pre class="brush: bash">
+unzip -t large.zip
+</pre>
+
+<p>
+6.我用-v选项发现music.zip压缩文件里面有很多目录和子目录，并且子目录中其实都是
+歌曲mp3文件，我想把这些文件都下载到第一级目录，而不是一层一层建目录：
+</p>
+<pre class="brush: bash">
+unzip -j music.zip
+</pre>
+
+<h1 id="toc_4">文本文件</h1>
+
+<h2 id="toc_4.1">查找</h2>
 
 <pre class="brush: bash">
 find / -name "*.conf" | xargs grep "alias" 
 </pre>
 
-<h2 id="toc_3.2">编码与格式</h2>
+<h2 id="toc_4.2">编码与格式</h2>
+
+<h3 id="toc_4.2.1">字符编码</h3>
+
+<p>
+转换单个文件：
+</p>
+
+<pre class="brush: bash">
+iconv -f GBK -t UTF-8 tt.json &gt; tt.json
+</pre>
+
+<p>
+把当前目录下的文件转换编码：
+</p>
+
+<pre class="brush: bash">
+sed -i "s/old/new/g" `grep old -rl ./`
+</pre>
+
+<p>
+或是：
+</p>
+
+<pre class="brush: bash">
+`enca -L zh_CN -x utf-8 *`
+</pre>
+
+<h3 id="toc_4.2.2">换行</h3>
 
 <p>
 Windows文本文件的<code>^M</code>，注意这个<code>^M</code>的输入方式为<code>CTRL v CTRL m</code>。

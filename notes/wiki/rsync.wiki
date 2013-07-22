@@ -1,0 +1,41 @@
+= rsync配置 =
+
+密码文件，权限必须是600：`/etc/rsyncd.secrets`
+{{{class="brush: bash"
+user01:123456 
+}}}
+
+欢迎信息文本：`/etc/motd`
+{{{class="brush: bash"
+Welcome to Ubuntu 12.04.1 LTS (GNU/Linux 3.2.0-34-generic x86_64)
+ * Documentation:  https://help.ubuntu.com/ 
+}}}
+
+/etc/rsyncd.conf。主要配置文件：
+{{{class="brush: bash"
+motd file=/etc/motd
+log file=/var/log/rsyncd
+pid file=/var/run/rsyncd.pid
+port=873
+ 
+[jade-archived]
+comment = jade's archived file
+path = /media/file_data/archived
+secrets file = /etc/rsyncd.secrets
+auth users = user01
+gid = user01
+uid = user01
+use chroot = yes
+read only = yes
+list = yes 
+}}}
+
+启动服务器
+{{{class="brush: bash"
+sudo rsync --daemon --config=/etc/rsyncd.conf 
+}}}
+
+客户端同步：
+{{{class="brush: bash"
+rsync -vzrtopg --delete --progress user01@127.0.0.1::jade-archived / 
+}}}

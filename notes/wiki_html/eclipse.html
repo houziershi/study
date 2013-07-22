@@ -1,0 +1,185 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+
+
+<title>eclipse</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+<h1 id="toc_1">JRE参数</h1>
+
+<p>
+Preferences-&gt;Java-&gt;Installed JREs-&gt;"edit"
+</p>
+
+<pre class="brush: bash">
+-Xmx1024m -Xms512m -XX:PermSize=64m -XX:MaxPermSize=128m 
+</pre>
+
+<h1 id="toc_2">ant</h1>
+
+<p>
+run -&gt; External Tools -&gt; External Tools Configurations...
+</p>
+
+<p>
+jre:
+</p>
+<pre class="brush: bash">
+-Xms768m -Xmx1024m -XX:MaxPermSize=512m
+</pre>
+
+<p>
+指定ant home：
+</p>
+
+<p>
+windows -&gt; preferences -&gt; Ant Home...
+</p>
+
+<p>
+指定默认ant文件
+</p>
+
+<p>
+Window -&gt; Show View -&gt; Ant
+</p>
+
+<p>
+在打开的ant视图中点加号蚂蚁按钮指定构建文件。
+</p>
+
+<h1 id="toc_3">Debug</h1>
+
+<p>
+ 指定远程应用
+</p>
+
+<p>
+run -&gt; Debug confilgurations... -&gt; 新建揿钮 -&gt; Remote Java Application
+</p>
+
+<p>
+指定关系远程应用与本地工程源代码关联：
+</p>
+
+<p>
+Source标签页 -&gt; add -&gt; Java Project
+</p>
+
+
+<h1 id="toc_4">把java项目转为Web项目</h1>
+
+<p>
+<code>.project</code>文件中加上：
+</p>
+
+<pre class="brush: xml">
+&lt;nature&gt;org.eclipse.wst.common.project.facet.core.nature&lt;/nature&gt;
+&lt;nature&gt;org.eclipse.wst.common.modulecore.ModuleCoreNature&lt;/nature&gt;
+&lt;nature&gt;org.eclipse.jem.workbench.JavaEMFNature&lt;/nature&gt; 
+</pre>
+
+<p>
+项目菜单的"“project properties"，左边树中点中"Project Facets"勾上"Java"和
+“Dynamic Web Module”。
+</p>
+
+<h1 id="toc_5">指定WEB项目的根目录位置</h1>
+
+<p>
+ 可以在项目属性的“Deployment Assembly”中设置。
+</p>
+
+<p>
+也可以直接改配置文件的方法：
+</p>
+
+<p>
+打开文件:
+</p>
+
+<pre class="brush: xml">
+&lt;项目目录&gt;/.settings/org.eclipse.wst.common.component
+</pre>
+
+<p>
+找到
+</p>
+
+<pre class="brush: xml">
+    &lt;wb-resource deploy-path="/" source-path="/WebContent"/&gt; 
+</pre>
+
+<p>
+并修改，如
+</p>
+
+<pre class="brush: xml">
+    &lt;wb-resource deploy-path="/" source-path="/webapp"/&gt; 
+</pre>
+
+<p>
+当然，对于大项目，最方便的还是安装tomcat插件，然后配置tomcat的<code>server.xml</code>如下
+</p>
+
+<pre class="brush: xml">
+&lt;Host name= "localhost"   appBase= "webapps"
+  unpackWARs="true"  autoDeploy= "true"
+  xmlValidation="false"  xmlNamespaceAware= "false" &gt; 
+    &lt;Context path=""  docBase= "E:\workspaces\doone\mondrian\webapp"  
+      debug= "0"  reloadable= "true" /&gt; 
+&lt;/Host&gt; 
+</pre>
+
+<p>
+WTP 自带的结构
+</p>
+
+<pre class="brush: xml">
+&lt;Context  docBase="mondrian "   path="/mondrian "
+  reloadable="true"  source="org.eclipse.jst.j2ee.server:mondrian "/&gt; 
+</pre>
+
+<h1 id="toc_6">项目漏包的问题</h1>
+
+<p>
+可以在项目属性的“Deployment Assembly”中设置。在对面页面上“ADD”加上包。
+</p>
+
+<h1 id="toc_7">关闭对javascript的验证</h1>
+
+<p>
+ Windows-&gt;preferences，JavaScript-&gt;Editor-&gt;Content Assist，ent Assist，
+ 去掉Enable auto Active。
+</p>
+
+<p>
+file ".project", delete :
+</p>
+
+<pre class="brush: xml">
+&lt;buildCommand&gt;
+     &lt;name&gt;org.eclipse.wst.jsdt.core.javascriptValidator&lt;/name&gt;
+      &lt;arguments&gt;&lt;/arguments&gt;
+&lt;/buildCommand&gt;
+ 
+&lt;nature&gt;org.eclipse.wst.jsdt.core.jsNature&lt;/nature&gt; 
+</pre>
+ </div>
+</body>
+</html>

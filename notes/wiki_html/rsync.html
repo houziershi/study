@@ -16,25 +16,61 @@
 <script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
 
 
-<title>ExtJs 4</title>
+<title>rsync</title>
 </head>
 <body  onresize='changeTocSize()'>
 	<div class="note-main"> 
-
-
-<h1>ExtJs 4</h1>
+<h1 id="toc_1">rsync配置</h1>
 
 <p>
-<a href="ExtJs.Overview.html">ExtJs.Overview</a>
+密码文件，权限必须是600：<code>/etc/rsyncd.secrets</code>
 </p>
+<pre class="brush: bash">
+user01:123456 
+</pre>
 
 <p>
-<a href="ExtJs.Concepts.html">ExtJs.Concepts</a>
+欢迎信息文本：<code>/etc/motd</code>
 </p>
+<pre class="brush: bash">
+Welcome to Ubuntu 12.04.1 LTS (GNU/Linux 3.2.0-34-generic x86_64)
+ * Documentation:  https://help.ubuntu.com/ 
+</pre>
 
 <p>
-<a href="ExtJs.tmp.html">ExtJs.tmp</a>
+/etc/rsyncd.conf。主要配置文件：
 </p>
+<pre class="brush: bash">
+motd file=/etc/motd
+log file=/var/log/rsyncd
+pid file=/var/run/rsyncd.pid
+port=873
+ 
+[jade-archived]
+comment = jade's archived file
+path = /media/file_data/archived
+secrets file = /etc/rsyncd.secrets
+auth users = user01
+gid = user01
+uid = user01
+use chroot = yes
+read only = yes
+list = yes 
+</pre>
+
+<p>
+启动服务器
+</p>
+<pre class="brush: bash">
+sudo rsync --daemon --config=/etc/rsyncd.conf 
+</pre>
+
+<p>
+客户端同步：
+</p>
+<pre class="brush: bash">
+rsync -vzrtopg --delete --progress user01@127.0.0.1::jade-archived / 
+</pre>
  </div>
 </body>
 </html>

@@ -1,0 +1,26 @@
+
+ = 默认文件打开方式 =
+
+ 配置文件位置：
+{{{class="brush: bash"
+ ~/.local/share/applications/defaults.list
+}}}
+
+  
+ = 按日期批量更改照片名 =
+
+ Control-A -> Mark -> Select All
+
+ File -> Advance Rename Tool
+
+ 清空Template，然后Metatag -> Exif -> Date and time(original)，
+ 在`$T(Exif.DateTimeOriginal)`后补上.jpg。
+
+ 在Regex replacing中设定替换规则，替换掉特殊字符防止在windows系统下打不开文件。
+
+ 当然直接rename也可以：
+	
+{{{class="brush: bash"
+ rename 's/:/-/' *.jpg
+}}}
+ 

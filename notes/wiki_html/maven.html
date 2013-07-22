@@ -214,11 +214,15 @@ mvn source:jar
 <h1 id="toc_5">Hudson</h1>
 
 <p>
-用 Hudson + Maven做持续集成，并不幸也遇到了类似的错误，那么上述两种方式都将不再起作用了，因为Hudson使用自己的maven-agent来启动Maven，不会去调用Maven的脚本，自然相应的配置也就无效了。
+用 Hudson + Maven做持续集成，并不幸也遇到了类似的错误，那么上述两种方式都将不再
+起作用了，因为Hudson使用自己的maven-agent来启动Maven，不会去调用Maven的脚本，
+自然相应的配置也就无效了。
 </p>
 
 <p>
-好在Hudson也给为我们提供了配置点，在Hudson的项目配置页面中，有一块Build区域，这里我们已经设置了Root Pom和Goals。注意该区域的右下角有一个"Advanced..."按钮，点击会看到MAVEN_OPTS输入框，这里输入"-Xmx512m"就OK了。
+好在Hudson也给为我们提供了配置点，在Hudson的项目配置页面中，有一块Build区域，
+这里我们已经设置了Root Pom和Goals。注意该区域的右下角有一个"Advanced..."按钮，
+点击会看到MAVEN_OPTS输入框，这里输入"-Xmx512m"就OK了。
 </p>
  </div>
 </body>

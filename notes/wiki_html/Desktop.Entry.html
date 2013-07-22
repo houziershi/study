@@ -1,0 +1,365 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+
+
+<title>Desktop.Entry</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+<p>
+ 通常放置的位置：
+</p>
+
+<pre class="brush: bash">
+/usr/share/applications/ 
+</pre>
+
+<pre class="brush: bash">
+/opt/gnome/share/applications/ 
+</pre>
+
+<p>
+例子：
+</p>
+<pre class="brush: bash">
+[Desktop Entry]
+Version = 1.0
+Encoding = UTF-8
+Name = Quick Start Tour
+GenericName = User Tutorial
+Comment = Computer Based Training tutorial to \
+     guide and help you learn how to use the Desktop
+Exec =
+gnome-open /usr/share/doc/manual/sled-gnome-cbt_en/index.html
+Icon = cbt
+StartupNotify = true
+Terminal = false
+Type = Application
+Categories = GNOME;Application;Documentation;
+OnlyShowIn = GNOME;
+X-SuSE-translate = true
+Name[cs] = Rychlá prohlídka systému
+Comment[cs] = V?ukov? program seznamující u?ivatele
+       se základy pracovního prost?edí
+GenericName[cs] = U?ivatelsk? tutoriál
+Name[hu] = Rendszerbemutató
+Comment[hu] = A munkaállomés használatát bemutató segédlet
+GenericName[hu] = Felhasználói segédlet
+</pre>
+<p>
+主要属性：
+</p>
+
+<p>
+"Version"：[可选]
+该数值指定了当前 Desktop Entry 文件所遵循的 Desktop Entry 文件标准版本。
+</p>
+
+<p>
+"Encoding"：[1.0 版本不推荐使用]
+该数值指定了当前 Desktop Entry 文件中特定字符串所使用的编码方式。尽管
+Desktop Entry 文件标准 1.0 不再推荐使用该关键字，但由于历史原因该关键字仍然广泛
+出现在现有的 Desktop Entry 文件中。
+</p>
+
+<p>
+"Name"：[必选]
+该数值指定了相关应用程序的名称。比如在清单1中关键字"Name"的数值是
+"Quick Start Tour"。打开文件浏览器，进入"/usr/share/applications"目录，
+就可以看见"cbt.desktop"文件所定义的快捷方式的显示样式，如图2所示。其中，快捷方式
+的显示名称由关键字"Name"的数值所决定，快捷方式所使用的图标由下文中将要介绍的
+关键字"Icon"的数值来决定。
+</p>
+
+<p>
+"GenericName"：[可选]
+该数值指定了相关应用程序的通用名称。比如在清单1中关键字"GenericName"的数值是
+"User Tutorial"。打开应用程序浏览器，就可以看见字符串"User Tutorial"被显示在图标
+的右侧，
+</p>
+
+<p>
+"Comment"：[可选]
+该数值是对当前Desktop Entry的简单描述。
+</p>
+
+<p>
+"Type"：[必选]
+关键字"Type"定义了Desktop Entry文件的类型。常见的"Type"数值是"Application"
+和"Link"。"Type = Application"表示当前Desktop Entry文件指向了一个应用程序；
+而"Type = Link"表示当前Desktop Entry文件指向了一个URL (Uniform Resource Locator)
+。
+</p>
+
+<p>
+"Exec"：[可选]
+关键字"Exec"只有在"Type"类型是"Application"时才有意义。"Exec"的数值定义了启动
+指定应用程序所要执行的命令，在此命令是可以带参数的。在本例中，关键字"Exec"的数值
+是字符串"gnome-open /usr/share/doc/manual/sled-gnome-cbt_en/index.html"。在shell中输入该字符串并按回车键同样可以启动指定应用程序。
+</p>
+
+<p>
+"URL"：[可选]
+关键字"URL"只有在"Type"类型是"Link"时才有意义。"URL"的数值定义了该Desktop Entry
+文件指向的URL。
+</p>
+<pre class="brush: bash">
+Type = Link
+URL = http://www.ibm.com/developerworks
+</pre>
+
+<p>
+双击含有上述内容的Desktop Entry文件将启动web浏览器，并打开指定网页
+"<a href="http://www.ibm.com/developerworks"，">http://www.ibm.com/developerworks"，</a>
+</p>
+
+<p>
+"Icon"：[可选]
+该数值定义了当前Desktop Entry文件在应用程序浏览器或是在文件浏览器中所显示的图标
+。如果关键字"Icon"的数值是以绝对路径的格式给出，那么其数值所指定图标文件将被使用
+；反之，Linux系统将使用"Icon Theme Specification"[2]在系统指定图标目录下定位所
+需要使用的图标文件。比如在本例中关键字"Icon"的数值是"cbt"，它实际对应着系统指定
+图标目录下的图片文件"cbt.png"cbt.png 。
+</p>
+
+<p>
+"StartupNotify"：[可选]
+关键字"StartupNotify"的数值是布尔值（true 或是 false）。该关键字只有在"Type"类型
+是"Application"时才有意义。其数值的含义由规范"Startup Notification Protocol 
+Specifications"[3]定义，在此不再详述。
+</p>
+
+<p>
+"Terminal"：[可选]
+和"StartupNotify"一样，关键字"StartupNotify"的数值也是布尔值，并且该关键字只有
+在"Type"类型是"Application"时才有意义。其数值指出了相关应用程序（即关键字"Exec"
+的数值）是否需要在终端窗口中运行。本文将在下一节中给出关键字"Terminal"的具体使用
+方法。
+</p>
+
+<p>
+"Categories"：[可选]
+关键字"Categories"只有在"Type"类型是"Application"时才有意义。"Categories"的数值
+指出了相关应用程序在菜单中显示的类别。具体菜单分类由规范"Desktop Specification 
+Menu"具体定义[4]。
+</p>
+
+<p>
+"OnlyShowIn"和"NotShowIn"：[可选]
+这两个关键字分别定义了当前Desktop Entry是否在特定Linux 桌面系统（例如：Linux 
+GNOME 或 Linux KDE）下显示（由"OnlyShowIn"定义），或不显示（由"NotShowIn"定义）。
+具体定义请参考"Desktop Specification Menu"[4]。
+</p>
+
+<p>
+X-SuSE-translate"：[SUSE Linux特有]
+关键字"X-SuSE-translate"是SUSE Linux（<a href="http://www.novell.com/linux/）特有的。">http://www.novell.com/linux/）特有的。</a>
+"X-SuSE-translate"符合SUSE RPM Package风格。"X-SuSE-translate"数值表示是否要对
+关键字"Name"和"GenericName"进行翻译。详情请参考"SUSE Package Conventions"[5]。
+</p>
+
+<p>
+"[LOCALE]"
+根据"Desktop Entry Specification"规范[1]，在关键字后加上字符串"[LOCALE]"就可以
+对该关键字进行特定的本地化定义。"LOCALE"的合法取值为：
+</p>
+<pre class="brush: bash">
+LOCALE= lang_COUNTRY.ENCODING@MODIFIER
+</pre>
+
+<p>
+在此，域"_COUNTRY"，".ENCODING"和"@MODIFIER"是可以被忽略的。当指定Desktop 
+Entry文件被解析时，解析器应当根据当前POSIX locale来正确获取本地化的关键字数值。
+例如清单1就分别定义了在"cs"和"hu"语言环境下关键字"Name"，"Comment"和
+"GenericName"的不同数值。
+</p>
+
+<p>
+其余关键字
+除了上述在清单1中出现的关键字外，"Desktop Entry Specification"还定义了"Hidden"，
+"TryExec"，"MimeType"等可选关键字。用户可以根据需要进行选取。
+分析文件：
+</p>
+
+<p>
+操作 Desktop Entry 文件的第一步是获取文件的内容。假设有一 Desktop Entry 文件，
+其路径信息存储在变量 pPath 中：
+</p>
+<pre class="brush: bash">
+const char* pPath;
+</pre>
+
+<p>
+下列代码将把该文件内容读入内存"buffer"中。
+</p>
+<pre class="brush: bash">
+int file_size = 0;
+char *file_contents = NULL;
+char *buffer = NULL;
+ 
+if( eel_read_entire_file ( pPath, &amp;file_size, &amp;file_contents ) == GNOME_VFS_OK )
+{
+    buffer = (char *)g_realloc ( file_contents, file_size + 1 );
+    buffer[file_size] = '\0';
+}
+else
+{
+    return 1;
+}
+</pre>
+
+<p>
+获取 Desktop Entry 文件内容后，就可进一步分析文件内容。在此，分析的重点是获取
+关键字"Type"，"Exec"/"URL"，以及"Terminal"的数值。首先定义结构 DestopEntryType：
+</p>
+
+<pre class="brush: bash">
+enum DestopEntryType
+{
+    Application, // Type = Application
+    Link,             // Type = Link
+    Unknown
+};
+</pre>
+
+<p>
+下列程序将提取关键字"Type"，"Exec"/"URL"和"Terminal"的数值，并把这些数值分别
+存储在变量"type"，"uri"和"bTerminal"中。
+</p>
+
+<pre class="brush: bash">
+DestopEntryType type = Unknown;
+char *uri = NULL;
+bool bTerminal = false;
+ 
+GnomeDesktopItem *desktop_file;
+ 
+desktop_file = gnome_desktop_item_new_from_string( NULL, buffer, file_size,
+(GnomeDesktopItemLoadFlags)0, NULL );
+if ( !desktop_file )
+{
+    g_free( buffer );
+    return 1;
+}
+ 
+const char *strType = gnome_desktop_item_get_string( desktop_file, "Type" );
+if ( !strType )
+{
+    g_free( buffer );
+    gnome_desktop_item_unref ( desktop_file );
+    return 1;
+}
+ 
+if ( 0 == strcmp( strType, "Application" ) )    //type = Application
+{
+    const char *exec_str = gnome_desktop_item_get_string( desktop_file, "Exec" );
+    if( !exec_str )
+    {
+        g_free( buffer );
+        gnome_desktop_item_unref( desktop_file );
+        return 1;
+    }
+   uri = g_strdup( exec_str );
+    type = Application;
+ 
+    const char *strTerminal = gnome_desktop_item_get_string( desktop_file, "Terminal" );
+    if ( strTerminal )
+    {
+        if ( 0 == strcmp( "true", strTerminal ) )
+            bTerminal = true;
+        else
+            bTerminal = false;
+    }
+}
+else if(strcmp(strType, "Link") == 0)    //type = Link
+{
+    uri = g_strdup( gnome_desktop_item_get_string( desktop_file, "URL" ) );
+    type = Link;
+}
+ 
+g_free( buffer );
+gnome_desktop_item_unref( desktop_file );
+</pre>
+
+<p>
+有了关键字"Type"，"Exec"和"Terminal"的数值，就可如下运行Desktop Entry文件。
+</p>
+<pre class="brush: bash">
+if ( type == Application )
+{
+    if( bTerminal )
+        eel_gnome_open_terminal_on_screen( uri, NULL );
+    else
+        eel_gnome_shell_execute_on_screen( uri, NULL);
+    g_free( uri );
+    return 0;
+}
+</pre>
+
+<p>
+有了关键字"Type"，"URL"和"Terminal"的数值，就可如下运行Desktop Entry文件
+</p>
+<pre class="brush: bash">
+if ( type == Link )
+{
+    gnome_url_show( uri, NULL );
+    g_free( uri );
+    return 0;
+}
+</pre>
+<p>
+创建实例：
+</p>
+
+<p>
+application例子：
+</p>
+<pre class="brush: bash">
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Name=Visit DeveloperWorks Application
+GenericName=A developer's website
+Comment=Submit your paper
+Icon=gaim
+StartupNotify=true
+Terminal=false
+Type=Application
+Exec=firefox http://www.ibm.com/developerworks
+Categories=GNOME;Application;Documentation;
+OnlyShowIn=GNOME;
+X-SuSE-translate=true 
+</pre>
+
+<p>
+link例子：
+</p>
+<pre class="brush: bash">
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Name=Visit DeveloperWorks Application
+GenericName=A developer's website
+Comment=Submit your paper
+Icon=gaim
+Type=Link
+URL=http://www.ibm.com/developerworks
+X-SuSE-translate=true
+</pre>
+ </div>
+</body>
+</html>

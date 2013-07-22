@@ -1,0 +1,38 @@
+
+
+= mysql简单分表 =
+
+只有myISAM能用，挫。
+
+{{{class="brush: bash"
+CREATE TABLE IF NOT EXISTS `user1` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `name` varchar(50) DEFAULT NULL,
+    `gender` int(1) NOT NULL DEFAULT '0',
+    PRIMARY KEY (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1; 
+ 
+CREATE TABLE IF NOT EXISTS `user2` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `name` varchar(50) DEFAULT NULL,
+    `gender` int(1) NOT NULL DEFAULT '0',
+    PRIMARY KEY (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
+ 
+CREATE TABLE IF NOT EXISTS `user3` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `name` varchar(50) DEFAULT NULL,
+    `gender` int(1) NOT NULL DEFAULT '0',
+    PRIMARY KEY (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
+ 
+drop table `alluser`;
+CREATE TABLE IF NOT EXISTS `alluser` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `name` varchar(50) DEFAULT NULL,
+    `gender` int(1) NOT NULL DEFAULT '0',
+    INDEX(id)
+) ENGINE=MERGE UNION=(user2,user3,user1) INSERT_METHOD=LAST AUTO_INCREMENT=1;
+ 
+INSERT INTO `alluser` (`name`, `gender`) VALUES('eee', 0);
+}}}

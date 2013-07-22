@@ -1,0 +1,5 @@
+
+Connection -> SSH -> Tunnels ，设定Source port:xxxx
+
+Destination: 空白, Dynamic，设定完记得按Add。边上的open
+

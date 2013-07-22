@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=cp936">
 
 <script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
 
@@ -16,25 +16,42 @@
 <script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
 
 
-<title>ExtJs 4</title>
+<title>例子</title>
 </head>
 <body  onresize='changeTocSize()'>
 	<div class="note-main"> 
 
+<h1>例子</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">例子</a>
+</ul>
+</div>
 
-<h1>ExtJs 4</h1>
+<h1 id="toc_1">例子</h1>
 
-<p>
-<a href="ExtJs.Overview.html">ExtJs.Overview</a>
-</p>
 
-<p>
-<a href="ExtJs.Concepts.html">ExtJs.Concepts</a>
-</p>
-
-<p>
-<a href="ExtJs.tmp.html">ExtJs.tmp</a>
-</p>
+<pre class="brush: javascript">
+function loadOrderCascadeInfo(omsOrderSysId, openWinFunc, showWin) {
+    Ext.Ajax.request({
+        url:path('/omsOrder/orderDetailShow.do'),
+        params:{
+            omsOrderSysId : omsOrderSysId
+        },
+        success:function (json) {
+            var data = Ext.decode(json.responseText);
+            if (data.success &amp;&amp; data.result ) {
+                openWinFunc(data.result, showWin);
+            } else {
+                Ext.Msg.alert(messages['common.title.tips'], messages['Ext.MessageBox.system.errorMsg']);
+            }
+        },
+        failure:function () {
+            Ext.Msg.alert(messages['common.title.tips'], messages['Ext.MessageBox.system.errorMsg']);
+        }
+    });
+}
+</pre>
  </div>
 </body>
 </html>

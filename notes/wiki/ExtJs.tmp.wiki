@@ -1,0 +1,31 @@
+%title Р§зг
+
+%toc Р§зг
+
+= Р§зг =
+
+
+{{{class="brush: javascript"
+function loadOrderCascadeInfo(omsOrderSysId, openWinFunc, showWin) {
+    Ext.Ajax.request({
+        url:path('/omsOrder/orderDetailShow.do'),
+        params:{
+            omsOrderSysId : omsOrderSysId
+        },
+        success:function (json) {
+            var data = Ext.decode(json.responseText);
+            if (data.success && data.result ) {
+                openWinFunc(data.result, showWin);
+            } else {
+                Ext.Msg.alert(messages['common.title.tips'], messages['Ext.MessageBox.system.errorMsg']);
+            }
+        },
+        failure:function () {
+            Ext.Msg.alert(messages['common.title.tips'], messages['Ext.MessageBox.system.errorMsg']);
+        }
+    });
+}
+}}}
+
+
+

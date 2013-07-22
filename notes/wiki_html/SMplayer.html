@@ -1,0 +1,84 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+
+
+<title>SMplayer</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+<p>
+ options-&gt;preferences-&gt;audio
+</p>
+
+<p>
+ 把“output driver”改成“alsa”会好一点。如果还不行就再随便勾勾点点其他的东西<sup><small>_</small></sup>。
+</p>
+
+<p>
+ 其他界面上和音量相关的有这么几个地方：
+</p>
+
+<p>
+ audio-&gt;filters-&gt;volume nornaliation
+</p>
+
+  
+
+<p>
+ 直接改配置文件也一样： /etc/mplayer/mplayer.conf
+</p>
+
+
+<p>
+ 和音量相关的可以加上这一行：af=volnorm
+</p>
+
+<p>
+ 还是觉得不够，试试 af=volnorm,volume=5
+ volume设多少自己实验，不要设太大，会严重失真
+</p>
+
+  
+
+<p>
+ 其他情况：
+</p>
+
+<p>
+mlayer播放avi的时候，默认的音量偏小，即使调到最大音量也不如Media Player Classic放出来的声音大,修改mplayer.ini:
+添加af=volume:v
+af表示Audio Filter，v是分贝值，-200表示完全静音，60表示增大到原音量的1000倍，10的（60/20）次方=1000，一般设为10分贝就可以了
+如果已经有af的选项，比如af=volnorm，volume参数和原参数用,（逗号）隔开即可，即af=volnorm,volume=10
+</p>
+
+<p>
+另:有些片子的人声会显得特别小，此时将mplayer.ini中的softvol设为0即可
+</p>
+										  
+
+<p>
+在播放AC3的avi时，因为是六声道，而电脑只有两声道，所以声音会很小，解决办法是在mplayer.ini中加入:
+ao=dsound
+</p>
+
+<p>
+channels=6
+</p>
+ </div>
+</body>
+</html>
