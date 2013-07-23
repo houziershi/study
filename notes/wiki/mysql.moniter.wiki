@@ -1,0 +1,35 @@
+
+
+= mysql常用监控方法 =
+
+== 查看sql查询耗时 ==
+
+sql查询耗时通过日志来记录，配置文件为：`/etc/mysql/my.cnf`
+
+{{{class="brush: bash"
+# 记录查询时间的日志位置
+log_slow_queries = /var/log/mysql/mysql-slow.log
+# 时间越过一秒的查询才记录到日志中
+long_query_time = 1
+}}}
+
+== 查看连接占用 ==
+
+只要观测到mysql端口占的连接就可以了：
+
+{{{class="brush: bash"
+# 显示到mysql的连接
+netstat -atn | grep 3306
+ 
+# 统计连接数量
+netstat -atn | grep 3306
+ 
+# 盯着看数量
+while true; do sleep 1; netstat -atn | grep -c :8080; done
+}}}
+
+最后那句可以用：
+
+{{{class="brush: bash"
+watch -n1 "netstat -atn | grep -c :8080"
+}}}

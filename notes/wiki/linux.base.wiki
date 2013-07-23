@@ -79,6 +79,48 @@ apt-get purge xxx
 apt-get remove --purge xxx
 }}}
 
+=== 安装Oracle JDK ===
+
+使用PPA源：
+
+{{{class="brush: bash"
+sudo add-apt-repository ppa:webupd8team/java
+sudo apt-get update
+sudo apt-get install oracle-java7-installer
+}}}
+
+安装完成后检查当前的版本：
+
+{{{class="brush: bash"
+java -version
+}}}
+
+应该已经是Oracle官方的版本了：
+
+{{{class="brush: bash"
+java version "1.7.0_04"
+Java(TM) SE Runtime Environment (build 1.7.0_04-b20)
+Java HotSpot(TM) Server VM (build 23.0-b21, mixed mode)
+}}}
+
+以后可以手动选择java运行环境：
+
+{{{class="brush: bash"
+sudo update-alternatives --config java
+}}}
+
+在安装过程中，会要求用户同意Oracle的协议。虽然只要动一下手就可以了，但是在有些
+情况下我们希望能全自动安装，以下的命令可以自动同意协议：
+
+{{{class="brush: bash"
+sudo echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections
+}}}
+
+要删除也很简单：
+
+{{{class="brush: bash"
+sudo apt-get remove oracle-java7-installer
+}}}
 
 === 配置默认程序优先级 ===
 

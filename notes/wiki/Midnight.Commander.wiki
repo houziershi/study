@@ -1,0 +1,209 @@
+= Midnight Commander (mc) 使用备忘 =
+
+== 界面 ==
+
+=== 区域1 === 
+
+菜单栏：位置在顶部，按 F9 或 Esc 9 把焦点定到菜单栏。
+
+# Left：控制左边目录面板的显示结果。
+# File：文件操作选项。
+# Command：编辑MC的配置选项。
+# Options：改变布局，设置VFS。
+# Right：控制右边目录面板的显示结果。
+
+=== 区域2 ===
+
+目录面板：中间最大的两块，显示浏览信息。
+
+=== 区域3 ===
+
+功能按键：位置在最底部。按 F1-F9 或 Esc 加到 0-9 调用对应的功能。
+
+# Help：帮助文件。
+# Menu：用户自定义菜单。
+# View：显示文件内容。
+# Edit：用MC自带的编辑器mcedit来编辑文件。
+# Copy：复制选中的文件。
+# RenMov：移动选中的文件。
+# Mkdir：在选中的目录下新建目录。
+# Delete：删除选中的文件。
+# PullDn：在按键“F9”坏掉的时候把焦点转到菜单栏。
+# Quit：退出（Esc 0）
+
+=== 区域4 ===
+
+命令行提示符：输入命令，然后加车～ ^_^
+
+* `C-o`：在MC与命令行之间切换。
+* `C-x t`：把光标所在的文件名复制到命令行中。
+
+
+= 常用按键 =
+ 
+== 结果面板 ==
+
+* `Tab`：在两个结果面板中切换。
+* `C-r`：刷新目录的内容。
+* `M-t`：切换结果面板显示效果。
+* 上、下、page-up、page-down、Home、End：结果面板中浏览。
+* lynx模式下左右方向键回上级目录与进入目录。
+* `C-\`：打开常用目录列表。
+* `A-c`：到指定的目录。
+
+== 查找功能 ==
+
+* `C-s`：当前目录中查找。
+* `M-?`：查找文件。
+* `C-x d`：比较目录。
+
+== 文件操作 ==
+* `F3`：查看文件内容。
+* `F8`：删除文件。
+* `C-x c`：chmod。
+* `C-x o`：chown。
+* `C-x s`：symlink。
+* `C-x l`：link。
+
+== 目录操作 ==
+
+比较面板中的两个目录：Command->CompareDirectories。（`C-x d`）
+ 
+ 
+= 常用配置 =
+
+F9 -> Options -> Configuration：
+
+文件操作：
+
+Esc键模式：
+
+执行后暂停：
+
+== 其他选项 ==
+
+* Use internal edit
+* use internal view
+* auto menus：启动MC时自动打开菜单（按F2）不建议启用。
+* Drop down menus
+* Shell patterns
+* Complete: show all
+* rotating dash
+* Cd follows links
+* Safe delete：不建议启用，这样按F8时会有两次确认。
+* Auto save setup
+
+ 
+== F9 -> Options -> Layout ==
+
+面板分隔：
+
+* 水平；
+* 垂直；
+* 大小。
+
+终端输出：
+
+* 行数。
+
+其他：
+
+* 显示菜单；
+* 显示命令行；
+* 快捷键行；
+* 提示Tips；
+* XTerm终端标题；
+* 显示空闲硬盘空间。
+
+ 
+== F9 -> Options -> Panel options ==
+
+主要选项：
+
+* Show mini-status
+* use SI size units
+* Mix all files
+* 显示备份文件：
+* 显示隐藏文件：
+* 快速加入目录：
+* Mark moves down：按F9聚焦到顶部菜单后不用按回车。
+* Reverse files only
+* simple swap
+* 自动保存面板设置：
+
+浏览：
+
+* Lynx模式（左右方向进入目录与退出到上级目录）；
+* 页面滚动；
+* 鼠标滚动。
+
+文件高亮：
+
+* 文件类型；
+* 权限。
+
+快速查找：
+
+* 大小写敏感；
+* 面板排序。
+ 
+
+ 
+= 常用例子 =
+
+== 复制多个文件 ==
+
+# 移动到文件上按"Insert"或"C-t"标记要复制的文件。
+# 按"F5"弹出对话框（默认复制目标是另一个浏览面板的位置，对话框中选项的快捷键为“M-高亮字母”）。
+
+== 复制匹配文件名文件 ==
+
+# 在目录中按“+”输入文件名，如：“*.zip”会选中多个匹配文件。相对地使用“-”取消选择多个文件。
+# 按`F6`移动到指定目录。
+
+== 文件操作 ==
+
+* 浏览或编辑文件：`F`键。
+* 执行程序或用外部程序打开文件：双击或用回车。（通过Command菜单编辑外部文件）
+* 顶部的“File”（F9）菜单：修改文件的权限，所有者，链接与符号链接。
+* 底部的“File”（F2）菜单：文件的压缩等操作。
+
+== 通过命令行连接FTP ==
+
+{{{class="brush: bash"
+    cd ftp://ftp.yoursite.com
+    cd ftp://username:password@ftp.yoursite.com
+}}}
+
+== 通过顶部菜单连接FTP ==
+
+顶部菜单(F9) -> Left/Right(l/r) -> FTP Link(p)
+    
+{{{class="brush: bash"
+    ftp://ftp.yoursite.com 或 ftp://username:password@ftp.yoursite.com
+}}}
+
+一般来说可以只输入用户名，会在下一步中要求再输入密码。
+
+如果用户名中有`@`可以用双引号把用户名包起来：
+
+{{{class="brush: bash"
+"user@name":password@ftp.yoursite.com
+}}}
+
+如果用户名中已经带了ftp，那还是换别的客户端吧……。当然还有另一个方法：
+
+`$HOME`目录下： `touch .netrc && chmod 600 .netrc`添加以下内容：
+
+{{{class="brush: bash"
+machine ftp.yoursite.com login ftp@www.yoursite.com password 密码
+}}}
+
+可以在"Options"菜单中改变Ftp的设置。
+
+== 使用Samba ==
+
+如果你的版本支持samba：
+
+* 在“Left / Right”菜单选择“SMB Link”。
+* 命令行中：`cd smb://xxx.xxx.xxx.xxx/`。

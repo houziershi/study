@@ -40,6 +40,11 @@
 <li><a href="#toc_1.2.5">Command-line-X</a>
 </ul>
 </ul>
+<li><a href="#toc_2">运行监控</a>
+<ul>
+<li><a href="#toc_2.1">JConsole</a>
+<li><a href="#toc_2.2">VisualVM</a>
+</ul>
 </ul>
 </div>
 
@@ -185,6 +190,71 @@ jni很少使用，除了使用JNI或本地库时。打开时，它将报告各�
 
 <p>
 JVM命令行选项时常发生变化，因此，定期查看是一个好主意。
+</p>
+
+
+<h1 id="toc_2">运行监控</h1>
+
+<p>
+被监控的程序要添加监控启动参数：
+</p>
+
+<pre class="brush: bash">
+-Djava.rmi.server.hostname=172.16.7.10
+-Dcom.sun.management.jmxremote.port=9001
+-Dcom.sun.management.jmxremote.ssl=false
+-Dcom.sun.management.jmxremote.authenticate=false
+</pre>
+
+<p>
+MyEclipse启动Tomcat可以加在Tomcat的JDK-&gt;Optional Java VM arguments里。
+</p>
+
+<h2 id="toc_2.1">JConsole</h2>
+
+<p>
+JConsole在open JDK与Oracle JDK里都有。运行后直接IP:Port监控系统占用。
+</p>
+
+
+<h2 id="toc_2.2">VisualVM</h2>
+
+<p>
+Oracle JDK中自带；Open JDK中没有，要另外下载。
+</p>
+
+<p>
+如果用的是windows，要注意不能把环境变量中的<code>%TMP%</code>目录指定为fat格式分区下。
+或是添加启动参数：
+</p>
+
+<pre class="brush: bash">
+-XX:+PerfBypassFileSystemCheck
+</pre>
+
+<p>
+安装插件："Tools"-&gt;"Plugin"
+</p>
+
+<p>
+添加远程应用：左边菜单"Remote"-&gt;"Add Remote Host..."-&gt;"Add JMX Connextion..."
+</p>
+
+<p>
+<code>Overview</code>：主要java运行环境与参数。
+</p>
+
+<p>
+<code>Monitor</code>：资源占用。常用来检查PermGen的占用情况来调整最合适的PermGen大小。
+</p>
+
+<p>
+<code>Threads</code>：用色彩表示线程的活动情况。绿色为活动的线程。"Details"页中显示饼图。
+</p>
+
+<p>
+<code>Samper</code>：统计应用中各方法占用的资源。点击"CPU"开始统计，"Stop"结束。
+可以通过底部的输入框查找指定的方法。
 </p>
  </div>
 </body>

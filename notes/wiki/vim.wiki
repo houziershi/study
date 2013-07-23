@@ -2,6 +2,95 @@
 
 %toc Vim
 
+= 安装 =
+
+== 手动编译 ==
+
+ 卸载gvim(或vim-gtk, 大多都是这两个版本，如果不是的话自己查看一下)：
+
+{{{class="brush: bash"
+ sudo apt-get remove vim-gnome
+}}}
+
+安装编译依赖
+
+{{{class="brush: bash"
+sudo apt-get build-dep libncurses5-dev vim vim-gtk  
+}}}
+
+安装mercurial
+
+{{{class="brush: bash"
+sudo apt-get install mercurial
+}}}
+
+下载gvim源码：http://www.vim.org/sources.php
+
+{{{class="brush: bash"
+hg clone https://vim.googlecode.com/hg/ gvim
+cd gvim
+hg pull
+hg update
+}}}
+
+设置编译选项，我的配置是：
+
+{{{class="brush: bash"
+./configure --enable-multibyte \
+            --enable-fontset \
+            --enable-xim  \
+            --enable-gui=auto \
+            --enable-luainterp=dynamic  \
+            --enable-pythoninterp=dynamic \
+            --enable-pythoninterp \
+            --enable-python3interp=dynamic \
+            --enable-rubyinterp=dynamic \
+            --enable-rubyinterp \
+            --enable-perlinterp \
+            --enable-cscope \
+            --enable-sniff \
+            --with-x  \
+            --with-compiledby=erocpil  \
+            --with-features=huge \
+            --with-python-config-dir=/usr/lib/python2.7/config \
+            --with-python3-config-dir=/usr/lib/python3.2/config \
+            --prefix=/opt/morganstudio/gvim
+}}}
+
+详细选项参见`./configure --help`：
+
+{{{class="brush: bash"
+  --sbindir=DIR           system admin executables [EPREFIX/sbin]
+  --enable-luainterp=OPTS     Include Lua interpreter.  default=no OPTS=no/yes/dynamic
+  --enable-mzschemeinterp   Include MzScheme interpreter.
+  --enable-perlinterp=OPTS     Include Perl interpreter.  default=no OPTS=no/yes/dynamic
+  --enable-pythoninterp=OPTS   Include Python interpreter. default=no OPTS=no/yes/dynamic
+  --enable-python3interp=OPTS   Include Python3 interpreter. default=no OPTS=no/yes/dynamic
+  --enable-tclinterp      Include Tcl interpreter.
+  --enable-rubyinterp=OPTS     Include Ruby interpreter.  default=no OPTS=no/yes/dynamic
+  --enable-cscope         Include cscope interface.
+  --disable-netbeans      Disable NetBeans integration support.
+  --enable-sniff          Include Sniff interface.
+  --enable-multibyte      Include multibyte editing support.
+  --enable-hangulinput    Include Hangul input support.
+  --enable-xim            Include XIM input support.
+  --enable-fontset        Include X fontset output support.
+  --enable-gui=OPTS     X11 GUI default=auto OPTS=auto/no/gtk2/gnome2/motif/athena/neXtaw/photon/carbon
+
+  --with-features=TYPE    tiny, small, normal, big or huge (default: normal)
+  --with-lua-prefix=PFX   Prefix where Lua is installed.
+  --with-plthome=PLTHOME   Use PLTHOME.
+  --with-python-config-dir=PATH  Python's config directory
+  --with-python3-config-dir=PATH  Python's config directory
+  --with-tclsh=PATH       which tclsh to use (default: tclsh8.0)
+  --with-ruby-command=RUBY  name of the Ruby command (default: ruby)
+  --with-x                use the X Window System
+}}}
+
+= 配置 =
+
+立即更新配置：`:so %`
+
 
 = 编码格式 =
 

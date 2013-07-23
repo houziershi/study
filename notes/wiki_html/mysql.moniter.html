@@ -1,0 +1,66 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+
+
+<title>mysql.moniter</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1 id="toc_1">mysql常用监控方法</h1>
+
+<h2 id="toc_1.1">查看sql查询耗时</h2>
+
+<p>
+sql查询耗时通过日志来记录，配置文件为：<code>/etc/mysql/my.cnf</code>
+</p>
+
+<pre class="brush: bash">
+# 记录查询时间的日志位置
+log_slow_queries = /var/log/mysql/mysql-slow.log
+# 时间越过一秒的查询才记录到日志中
+long_query_time = 1
+</pre>
+
+<h2 id="toc_1.2">查看连接占用</h2>
+
+<p>
+只要观测到mysql端口占的连接就可以了：
+</p>
+
+<pre class="brush: bash">
+# 显示到mysql的连接
+netstat -atn | grep 3306
+ 
+# 统计连接数量
+netstat -atn | grep 3306
+ 
+# 盯着看数量
+while true; do sleep 1; netstat -atn | grep -c :8080; done
+</pre>
+
+<p>
+最后那句可以用：
+</p>
+
+<pre class="brush: bash">
+watch -n1 "netstat -atn | grep -c :8080"
+</pre>
+ </div>
+</body>
+</html>

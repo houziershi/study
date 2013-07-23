@@ -31,8 +31,11 @@ JavaScript正则：[[javascript.regex]]
 
 JQuery：[[JQuery]]
 
-
 ExtJs：[[ExtJS]]
+
+=== Python ===
+
+[[python.example]]
 
 = 常用工具 =
 
@@ -41,6 +44,8 @@ ExtJs：[[ExtJS]]
 [[tmux]]
 
 == 文件管理 ==
+
+[[Midnight.Commander]]
 
 [[Gnome.Commander]]
 
@@ -81,6 +86,8 @@ VimWiki：[[vimwiki]]
 
 [[mysql]]
 
+[[mysql.moniter]]
+
 DB2： [[DB2]]
 
 = 服务器 =
@@ -91,11 +98,11 @@ DB2： [[DB2]]
 
 = Linux =
 
-== 常用工具 ==
-
 [[linux.base]]
 
 [[linux.disc]]
+
+[[raspberry.pi]]
 
 == 桌面环境 ==
 
