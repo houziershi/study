@@ -1,0 +1,187 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+
+
+<title>Java并发</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>Java并发</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">对象组合</a>
+<ul>
+<li><a href="#toc_1.1">锁错对象</a>
+<li><a href="#toc_1.2">恢复中断</a>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">对象组合</h1>
+
+<h2 id="toc_1.1">锁错对象</h2>
+
+<p>
+同一个原子操作没有锁住同一个对象：
+</p>
+
+<pre class="brush: java">
+@NotThreadSafe
+public class ListHelper&lt;E&gt; {
+
+	// 虽然是并发安全列表，但用的锁是列表自己
+	public List&lt;E&gt; list =
+		Collections.synchronizedList(new ArrayList&lt;E&gt;());
+		
+	// ...
+	
+	// 这里的同步锁用的是this
+	public synchronized boolean putIfAbsent(E x) {
+		boolean absent = !list.contains(x);
+		if (absent) list.add(x);
+		return absent;
+	}
+}
+</pre>
+
+<p>
+下面这样就对了，锁住的是同一个对象：
+</p>
+
+<pre class="brush: java">
+@ThreadSafe
+public class ListHelper&lt;E&gt; {
+
+	// 虽然是并发安全列表，但用的锁是列表自己
+	public List&lt;E&gt; list =
+		Collections.synchronizedList(new ArrayList&lt;E&gt;());
+		
+	// ...
+	
+	public synchronized boolean putIfAbsent(E x) {
+		// 也是锁的list  
+		synchronized (list) {
+			boolean absent = !list.contains(x);
+			if (absent) list.add(x);
+			return absent;
+		}
+	}
+}
+</pre>
+
+
+<h2 id="toc_1.2">恢复中断</h2>
+
+<p>
+处理异常以后如果应该中断当前线程，应该中断：
+</p>
+
+<pre class="brush: java">
+public class TaskRunnable implements Runnable {
+	BlockingQueue&lt;Task&gt; queue;
+
+	//...
+
+	public void run() {
+		try {
+			processTask(queue.take());
+		} catch (InterruptedException e) {
+			// 中断当前线程
+			Thread.currentThread().interrupt();
+		}
+	}
+}
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+<pre class="brush: java">
+</pre>
+ </div>
+</body>
+</html>
