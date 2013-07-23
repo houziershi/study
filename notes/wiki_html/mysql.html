@@ -21,14 +21,19 @@
 <body  onresize='changeTocSize()'>
 	<div class="note-main"> 
 
+<h1 id="toc_1">备份</h1>
 
-<h1 id="toc_1">mysql简单分表</h1>
+<pre class="brush: bash">
+mysqldump -h180.153.140.112 -ub5m -p -B b5m_develop --table mail_subscribe_info
+</pre>
+
+<h1 id="toc_2">mysql简单分表</h1>
 
 <p>
 只有myISAM能用，挫。
 </p>
 
-<pre class="brush: bash">
+<pre class="brush: sql">
 CREATE TABLE IF NOT EXISTS `user1` (
     `id` int(11) NOT NULL AUTO_INCREMENT,
     `name` varchar(50) DEFAULT NULL,
@@ -59,6 +64,63 @@ CREATE TABLE IF NOT EXISTS `alluser` (
 ) ENGINE=MERGE UNION=(user2,user3,user1) INSERT_METHOD=LAST AUTO_INCREMENT=1;
  
 INSERT INTO `alluser` (`name`, `gender`) VALUES('eee', 0);
+</pre>
+
+
+<h2 id="toc_2.1">多表关联更新删除操作</h2>
+
+<p>
+注意事项：
+1、尽量不要用IN来包含ID标识执行查询，那样会使索引失效
+2、执行语句之前先用SELECT查询获取COUNT看执行前后是否一致
+</p>
+
+<p>
+执行方法格式如下：
+</p>
+
+<h3 id="toc_2.1.1">join...on...写法</h3>
+
+<p>
+update
+</p>
+
+<pre class="brush: sql">
+UPDATE TABLE_1 A, TABLE_2 AS B SET A.PARAM_VALUE = 1, B.PARAM_VALUE = 1 WHERE A.TID = B.TID AND 1 = 1;
+</pre>
+ 
+<p>
+delete
+</p>
+
+<pre class="brush: sql">
+DELETE TABLE_1 AS A, TABLE_2 AS B FROM TABLE_1 AS A, TABLE_2 AS B WHERE A.TID = B.TID AND 1 = 1;
+</pre>
+ 
+<h3 id="toc_2.1.2">where a.id = b.id 链接写法</h3>
+
+<p>
+update
+</p>
+
+<pre class="brush: sql">
+UPDATE TABLE_1 AS A LEFT JOIN TABLE_2 B ON A.TID = B.TID SET A.PARAM_VALUE = 0 WHERE 1 = 1;
+</pre>
+ 
+<p>
+delete
+</p>
+
+<pre class="brush: sql">
+DELETE TABLE_1 AS A, TABLE_2 AS B FROM TABLE_1 AS A LEFT JOIN TABLE_2 AS B ON A.TID = B.TID WHERE 1 = 1;
+</pre>
+ 
+<h3 id="toc_2.1.3">Update with Select</h3>
+
+<pre class="brush: sql">
+update related_category INNER JOIN product_category
+	ON related_category.rel_cat_id = product_category.cat_id
+	SET related_category.rel_cat_name = product_category.cat_name
 </pre>
  </div>
 </body>

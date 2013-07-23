@@ -100,3 +100,46 @@ jni很少使用，除了使用JNI或本地库时。打开时，它将报告各�
 * `-Xloggc:`，和`-verbose:gc`做同样的事，但是记录一个文件而不输出到命令行窗口。
 
 JVM命令行选项时常发生变化，因此，定期查看是一个好主意。
+
+
+= 运行监控 =
+
+被监控的程序要添加监控启动参数：
+
+{{{class="brush: bash"
+-Djava.rmi.server.hostname=172.16.7.10
+-Dcom.sun.management.jmxremote.port=9001
+-Dcom.sun.management.jmxremote.ssl=false
+-Dcom.sun.management.jmxremote.authenticate=false
+}}}
+
+MyEclipse启动Tomcat可以加在Tomcat的JDK->Optional Java VM arguments里。
+
+== JConsole ==
+
+JConsole在open JDK与Oracle JDK里都有。运行后直接IP:Port监控系统占用。
+
+
+== VisualVM ==
+
+Oracle JDK中自带；Open JDK中没有，要另外下载。
+
+如果用的是windows，要注意不能把环境变量中的`%TMP%`目录指定为fat格式分区下。
+或是添加启动参数：
+
+{{{class="brush: bash"
+-XX:+PerfBypassFileSystemCheck
+}}}
+
+安装插件："Tools"->"Plugin"
+
+添加远程应用：左边菜单"Remote"->"Add Remote Host..."->"Add JMX Connextion..."
+
+`Overview`：主要java运行环境与参数。
+
+`Monitor`：资源占用。常用来检查PermGen的占用情况来调整最合适的PermGen大小。
+
+`Threads`：用色彩表示线程的活动情况。绿色为活动的线程。"Details"页中显示饼图。
+
+`Samper`：统计应用中各方法占用的资源。点击"CPU"开始统计，"Stop"结束。
+可以通过底部的输入框查找指定的方法。
