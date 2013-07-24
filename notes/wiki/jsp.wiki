@@ -1,0 +1,26 @@
+= jstl入门 =
+
+JSP 最佳实践: 使用JSTL来更新JSP页面
+ 
+http://www.ibm.com/developerworks/cn/java/j-jsp05273/
+
+JSTL 入门: 表达式语言
+  
+http://www.ibm.com/developerworks/cn/java/j-jstl0211/
+
+JSTL 入门: 探讨 core
+   
+http://www.ibm.com/developerworks/cn/java/j-jstl0318/
+
+JSTL 入门: 表示就是一切
+  
+http://www.ibm.com/developerworks/cn/java/j-jstl0415/
+
+JSTL 入门,第4部分: 访问SQL和XML内容  
+
+http://www.ibm.com/developerworks/cn/java/j-jstl0520/
+
+
+{{{class="brush: xml"
+
+}}}

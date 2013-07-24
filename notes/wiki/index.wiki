@@ -21,15 +21,15 @@ Scala基础：[[scala]]
 
 虚拟机：[[java.jvm]]
 
+[[jsp]]
+
+[[struts]]
+
 代码示例：[[java.example]]
 
 === JavaScript ===
 
 JavaScript基础：[[Javascript]]
-
-JavaScript正则：[[javascript.regex]]
-
-JQuery：[[JQuery]]
 
 ExtJs：[[ExtJS]]
 
@@ -58,6 +58,8 @@ Cygwin：[[Cygwin]]
 
 putty： [[putty]]
 
+email：[[email]]
+
 == 版本控制 ==
 
 Git：[[git]]
@@ -71,6 +73,8 @@ Maven：[[maven]]
 == 编辑器 ==
 
 Vim：[[vim]]
+
+[[vim.java]]
 
 VimWiki：[[vimwiki]]
 
@@ -107,6 +111,16 @@ DB2： [[DB2]]
 == 桌面环境 ==
 
 [[Desktop.Entry]]
+
+[[fonts]]
+
+[[scrot]]
+
+[[synergy]]
+
+[[pidgin]]
+
+[[moc]]
 
 = 标准 =
 

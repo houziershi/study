@@ -16,33 +16,40 @@
 <script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
 
 
-<title>Javascript</title>
+<title>scrot</title>
 </head>
 <body  onresize='changeTocSize()'>
 	<div class="note-main"> 
-
-
-<h1>Javascript</h1>
+<h2 id="toc_0.1">scrot截图</h2>
 
 <p>
-基础：<a href="javascript.base.html">javascript.base</a>
+<code>scort &lt;文件名&gt;</code>默认产生的文件名是时间加上图像大小。
 </p>
 
 <p>
-正则：<a href="javascript.regex.html">javascript.regex</a>
+常用参数：
 </p>
 
-<p>
-性能：<a href="javascript.perform.html">javascript.perform</a>
-</p>
+<ul>
+<li>
+<code>-bs</code>：抓取窗口
 
-<p>
-JQuery：<a href="JQuery.html">JQuery</a>
-</p>
+<li>
+<code>-s</code>：抓矩形
 
-<p>
-例子：<a href="javascirpt.example.html">javascirpt.example</a>
-</p>
+<li>
+<code>-cd &lt;延迟的秒数&gt;</code>：其中d表示延时抓取，c显示倒计时。
+
+<li>
+<code>-t &lt;百分比&gt;</code>：缩略图。
+
+<li>
+<code>-q &lt;1-100&gt;</code>：图像压缩等级，默认是75
+
+<li>
+<code>-e &lt;操作&gt;</code>：截图后执行的操作。如移动到指定目录：<code>-e 'mv $f ~/tmp/'</code>
+
+</ul>
  </div>
 </body>
 </html>

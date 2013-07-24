@@ -16,33 +16,35 @@
 <script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
 
 
-<title>Javascript</title>
+<title>fonts</title>
 </head>
 <body  onresize='changeTocSize()'>
 	<div class="note-main"> 
-
-
-<h1>Javascript</h1>
+<h1 id="toc_1">字体配置</h1>
 
 <p>
-基础：<a href="javascript.base.html">javascript.base</a>
+字体配置文件：
+</p>
+
+<pre class="brush: bash">
+~/.fonts.conf
+</pre>
+
+<p>
+通过文泉驿视觉习惯工具可以很方便地生成字体配置文件：
 </p>
 
 <p>
-正则：<a href="javascript.regex.html">javascript.regex</a>
+<a href="http://wenq.org/cloud/fcdesigner.html">http://wenq.org/cloud/fcdesigner.html</a>
 </p>
 
 <p>
-性能：<a href="javascript.perform.html">javascript.perform</a>
+重建字体配置：
 </p>
 
-<p>
-JQuery：<a href="JQuery.html">JQuery</a>
-</p>
-
-<p>
-例子：<a href="javascirpt.example.html">javascirpt.example</a>
-</p>
+<pre class="brush: bash">
+fc-cache -f -v
+</pre>
  </div>
 </body>
 </html>

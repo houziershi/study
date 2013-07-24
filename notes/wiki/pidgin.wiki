@@ -1,0 +1,13 @@
+
+pidgin配置google企业账号
+
+* Protocol: XMPP
+* username: 用户名
+* Domain: 你的公司.com
+
+Advanced
+
+* Port: 5222
+* server: talk.google.com
+* file transfer proxies: proxy.eu.jabber.org
+

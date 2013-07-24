@@ -1,0 +1,17 @@
+= 字体配置 =
+
+字体配置文件：
+
+{{{class="brush: bash"	
+~/.fonts.conf
+}}}
+
+通过文泉驿视觉习惯工具可以很方便地生成字体配置文件：
+
+http://wenq.org/cloud/fcdesigner.html
+
+重建字体配置：
+
+{{{class="brush: bash"	
+fc-cache -f -v
+}}}

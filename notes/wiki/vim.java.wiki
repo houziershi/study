@@ -1,0 +1,19 @@
+
+= vim java补全 =
+
+下载javacomplete，然后解压到`~/.vim`。
+
+修改`~/.vimrc`:
+
+{{{class="brush: bash"
+" javaautocomplete
+" Only do this part when compiled with support for autocommands.
+if has("autocmd")
+    autocmd Filetype java setlocal omnifunc=javacomplete#Complete
+endif
+}}}
+
+使用：
+
+`Ctrl-X` `Ctrl-o`进行补全。第一次用时会在自动编译出`~/Reflection.class`。
+

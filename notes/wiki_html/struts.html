@@ -1,0 +1,178 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+
+
+<title>struts</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+<h1 id="toc_1">方法调用</h1>
+
+
+<h2 id="toc_1.1">类方法的调用</h2>
+
+<p>
+被调用的静态方法：
+</p>
+
+<pre class="brush: java">
+package common.util;
+ 
+public class AppTools {
+ 
+    /**
+     * 根据值产生css样式
+     *
+     * @param rank
+     * @return
+     */
+    public static String getRankClass(Double rank) {
+        String cssName = "zero";
+        long rankLong = Math.round(rank);
+        if (rankLong == 1) {
+            className = "star1";
+        } else if (rankLong == 2) {
+            className = "star2";
+        } else if (rankLong == 3) {
+            className = "star3";
+        } else if (rankLong == 4) {
+            className = "star4";
+        } else if (rankLong == 5) {
+            className = "star5";
+        }
+        return className;
+    }
+ 
+}
+</pre>
+
+<p>
+页面调用：
+</p>
+
+<pre class="brush: html">
+&lt;s:iterator id="rec" value="resultList"&gt;
+    &lt;div class="&lt;s:property value="@common.util.AppTools@getRankClass(#rec.sumRate)" /&gt;" /&gt;
+&lt;/iterator&gt;
+ 
+&lt;!-- --&gt;
+&lt;s:set name="encodeKeyword" value="@common.util.SUIAppTools@urlEncode(queryStr)"/&gt;
+${encodeKeyword }
+</pre>
+
+
+<h1 id="toc_2">编码</h1>
+
+<h2 id="toc_2.1">对字符串的转码</h2>
+
+<pre class="brush: html">
+URLEncoder.encode(str, "utf-8");
+</pre>
+
+<pre class="brush: jsp">
+&lt;%@ taglib prefix="s" uri="/struts-tags" %&gt;
+ 
+&lt;s:include value="/title.jsp"&gt;
+    &lt;!-- 字符串常量 --&gt;
+    &lt;s:param name="titleStr" value="'Hello'" /&gt;
+    &lt;!-- 作用域变量 --&gt;
+    &lt;s:param name="msgStr" value="dto.msgStr" /&gt;
+&lt;/s:include&gt;
+</pre>
+
+<pre class="brush: html">
+&lt;%@ taglib prefix="s" uri="/struts-tags" %&gt;
+ 
+&lt;!-- 变量作用域为param --&gt;
+${param.titleStr }
+&lt;!-- 重新赋值到默认作用域 --&gt;
+&lt;s:set var='msgStr'&gt;${param.msgStr }&lt;/s:set&gt;
+${msgStr }
+</pre>
+
+<pre class="brush: html">
+&lt;%@ taglib prefix="s" uri="/struts-tags" %&gt;
+ 
+&lt;s:action name="commBar" executeResult="true"&gt;
+    &lt;!-- 字符串常量 --&gt;
+    &lt;s:param name="titleStr" value="'Hello'" /&gt;
+    &lt;!-- 作用域变量 --&gt;
+    &lt;s:param name="msgStr" value="dto.msgStr" /&gt;
+&lt;/s:action&gt;
+</pre>
+
+<pre class="brush: html">
+&lt;%@ taglib prefix="s" uri="/struts-tags" %&gt;
+ 
+&lt;!-- 变量作用域为request --&gt;
+${request.titleStr }
+</pre>
+
+
+<h1 id="toc_3">日期国际化</h1>
+
+<p>
+classpath顶层位置的配置文件<code>format.properties</code>：
+</p>
+
+<pre class="brush: html">
+format.amount={0,number,\#\#\#,\#\#0.00}
+format.date ={0,date,yyyy/MM/dd}
+format.dateTime ={0,date,yyyy-MM-dd HH\:mm}
+</pre>
+
+<p>
+页面调用国际化：
+</p>
+
+<pre class="brush: html">
+&lt;!-- 调用金额格式 --&gt;
+&lt;s:i18n name="format"&gt;
+    &lt;s:text name="format.amount" &gt;
+        &lt;s:param value="dto.amount" /&gt;
+    &lt;/s:text&gt;
+&lt;/s:i18n&gt;
+ 
+ 
+&lt;!-- 调用日期格式格式 --&gt;
+&lt;s:i18n name="format"&gt;
+    &lt;s:text name="format.date" &gt;
+        &lt;s:param value="dto.orderTime" /&gt;
+    &lt;/s:text&gt;
+&lt;/s:i18n&gt;
+ 
+&lt;!-- 调用日期格式格式2 --&gt;
+&lt;s:i18n name="format"&gt;
+    &lt;s:text name="format.dateTime" &gt;
+        &lt;s:param value="dto.orderTime" /&gt;
+    &lt;/s:text&gt;
+&lt;/s:i18n&gt;
+</pre>
+
+<h1 id="toc_4">请示参数覆盖</h1>
+
+<p>
+<code>s:action</code>会覆盖后台处理过程中改变的参数，用以下选项覆盖：
+</p>
+
+<pre class="brush: html">
+&lt;s:action name="suiHeader.jsp" ignoreContextParams="true"&gt;
+&lt;/s:action&gt;
+</pre>
+ </div>
+</body>
+</html>

@@ -1,0 +1,45 @@
+= moc播放器配置 =
+
+安装moc播放器与相关的ffmpeg解码：
+
+{{{class="brush: bash"
+sudo apt-get install moc moc-ffmpeg-plugin 
+}}}
+
+配置文件位置`~/.moc/config`：
+
+{{{class="brush: bash"
+XTermTheme = nightly_theme # 背景透明
+ReadTags   = no            # 中文歌名乱码
+}}}
+
+启动：
+
+{{{class="brush: bash"
+mocp
+}}}
+
+基本命令：
+
+{{{class="brush: bash"
+h # 打开帮助
+ 
+i # 输入指定目录 进入文件夹
+o # 打开url
+ 
+l # 关闭／打开 播放列表
+j # 调整 右面播放列表中的歌曲的顺序
+ 
+a # 将目录中的歌曲加入到右面的播放列表。
+d # 可将右面播放列表中的歌曲删除
+C # 清空播放列表
+ 
+g # 搜索歌曲
+ 
+s # 设置是否“resdtags”
+ 
+T # 自带的主题浏览切换
+ 
+q # 回到终端但不退出播放
+Q # 完全退出
+}}}

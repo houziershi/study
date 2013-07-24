@@ -1,0 +1,147 @@
+= 方法调用 =
+
+
+== 类方法的调用 ==
+
+被调用的静态方法：
+
+{{{class="brush: java"
+package common.util;
+ 
+public class AppTools {
+ 
+    /**
+     * 根据值产生css样式
+     *
+     * @param rank
+     * @return
+     */
+    public static String getRankClass(Double rank) {
+        String cssName = "zero";
+        long rankLong = Math.round(rank);
+        if (rankLong == 1) {
+            className = "star1";
+        } else if (rankLong == 2) {
+            className = "star2";
+        } else if (rankLong == 3) {
+            className = "star3";
+        } else if (rankLong == 4) {
+            className = "star4";
+        } else if (rankLong == 5) {
+            className = "star5";
+        }
+        return className;
+    }
+ 
+}
+}}}
+
+页面调用：
+
+{{{class="brush: html"
+<s:iterator id="rec" value="resultList">
+    <div class="<s:property value="@common.util.AppTools@getRankClass(#rec.sumRate)" />" />
+</iterator>
+ 
+<!-- -->
+<s:set name="encodeKeyword" value="@common.util.SUIAppTools@urlEncode(queryStr)"/>
+${encodeKeyword }
+}}}
+
+
+= 编码 =
+
+== 对字符串的转码 ==
+
+{{{class="brush: html"
+URLEncoder.encode(str, "utf-8");
+}}}
+
+{{{class="brush: jsp"
+<%@ taglib prefix="s" uri="/struts-tags" %>
+ 
+<s:include value="/title.jsp">
+    <!-- 字符串常量 -->
+    <s:param name="titleStr" value="'Hello'" />
+    <!-- 作用域变量 -->
+    <s:param name="msgStr" value="dto.msgStr" />
+</s:include>
+}}}
+
+{{{class="brush: html"
+<%@ taglib prefix="s" uri="/struts-tags" %>
+ 
+<!-- 变量作用域为param -->
+${param.titleStr }
+<!-- 重新赋值到默认作用域 -->
+<s:set var='msgStr'>${param.msgStr }</s:set>
+${msgStr }
+}}}
+
+{{{class="brush: html"
+<%@ taglib prefix="s" uri="/struts-tags" %>
+ 
+<s:action name="commBar" executeResult="true">
+    <!-- 字符串常量 -->
+    <s:param name="titleStr" value="'Hello'" />
+    <!-- 作用域变量 -->
+    <s:param name="msgStr" value="dto.msgStr" />
+</s:action>
+}}}
+
+{{{class="brush: html"
+<%@ taglib prefix="s" uri="/struts-tags" %>
+ 
+<!-- 变量作用域为request -->
+${request.titleStr }
+}}}
+
+
+= 日期国际化 =
+
+classpath顶层位置的配置文件`format.properties`：
+
+{{{class="brush: html"
+format.amount={0,number,\#\#\#,\#\#0.00}
+format.date ={0,date,yyyy/MM/dd}
+format.dateTime ={0,date,yyyy-MM-dd HH\:mm}
+}}}
+
+页面调用国际化：
+
+{{{class="brush: html"
+<!-- 调用金额格式 -->
+<s:i18n name="format">
+    <s:text name="format.amount" >
+        <s:param value="dto.amount" />
+    </s:text>
+</s:i18n>
+ 
+ 
+<!-- 调用日期格式格式 -->
+<s:i18n name="format">
+    <s:text name="format.date" >
+        <s:param value="dto.orderTime" />
+    </s:text>
+</s:i18n>
+ 
+<!-- 调用日期格式格式2 -->
+<s:i18n name="format">
+    <s:text name="format.dateTime" >
+        <s:param value="dto.orderTime" />
+    </s:text>
+</s:i18n>
+}}}
+
+= 请示参数覆盖 =
+
+`s:action`会覆盖后台处理过程中改变的参数，用以下选项覆盖：
+
+{{{class="brush: html"
+<s:action name="suiHeader.jsp" ignoreContextParams="true">
+</s:action>
+}}}
+
+
+
+

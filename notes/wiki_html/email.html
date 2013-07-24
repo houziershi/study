@@ -1,0 +1,831 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+
+
+<title>email</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>email</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">安装</a>
+<li><a href="#toc_2">配置</a>
+<ul>
+<li><a href="#toc_2.1">offlineimap</a>
+<li><a href="#toc_2.2">msmtp</a>
+<li><a href="#toc_2.3">mutt</a>
+<li><a href="#toc_2.4">w3m</a>
+<li><a href="#toc_2.5">urlview</a>
+<li><a href="#toc_2.6">mutt联系人别名</a>
+<li><a href="#toc_2.7">nautilus支持</a>
+<li><a href="#toc_2.8">mail-notification桌面邮件提醒</a>
+</ul>
+<li><a href="#toc_3">mutt基本操作</a>
+<ul>
+<li><a href="#toc_3.1">默认的按键定义</a>
+<li><a href="#toc_3.2">标识的意义</a>
+<li><a href="#toc_3.3">查找与过滤邮件</a>
+<li><a href="#toc_3.4">管理邮件</a>
+<li><a href="#toc_3.5">线索操作</a>
+<li><a href="#toc_3.6">写邮件</a>
+<li><a href="#toc_3.7">发送邮件</a>
+<li><a href="#toc_3.8">转发带附件的邮件</a>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">安装</h1>
+
+<pre class="brush: bash">
+sudo apt-get install mail-notification offlineimap msmtp urlview muttprint 
+w3m elinks
+</pre>
+
+<h1 id="toc_2">配置</h1>
+
+<h2 id="toc_2.1">offlineimap</h2>
+
+<p>
+配置文件<code>~/.offlineimaprc</code>
+</p>
+
+<pre class="brush: bash">
+[general]
+# NOTE: cronjob calls the quiet UI with -u
+ui = TTY.TTYUI
+accounts = gmail-evoker, gmail-qiwei, b5m-qiwei
+ 
+[Account gmail-evoker]
+localrepository = gmail-evoker-Local
+remoterepository = gmail-evoker-Remote
+ 
+[Repository gmail-evoker-Local]
+type = Maildir
+localfolders = ~/Mail/gmail-evoker
+ 
+[Repository gmail-evoker-Remote]
+type = Gmail
+remoteuser = aaa@gmail.com
+remotepass = aaa
+ssl = yes
+realdelete = no
+ 
+ 
+[Account gmail-qiwei]
+localrepository = gmail-qiwei-Local
+remoterepository = gmail-qiwei-Remote
+ 
+[Repository gmail-qiwei-Local]
+type = Maildir
+localfolders = ~/Mail/gmail-qiwei
+ 
+[Repository gmail-qiwei-Remote]
+type = Gmail
+remoteuser = bbb@gmail.com
+remotepass = bbb
+ssl = yes
+realdelete = no
+ 
+ 
+[Account b5m-qiwei]
+localrepository = b5m-qiwei-Local
+remoterepository = b5m-qiwei-Remote
+ 
+[Repository b5m-qiwei-Local]
+type = Maildir
+localfolders = ~/Mail/b5m-qiwei
+ 
+[Repository b5m-qiwei-Remote]
+type = Gmail
+remoteuser = ccc@b5m.com
+remotepass = ccc
+ssl = yes
+realdelete = no
+</pre>
+
+<h2 id="toc_2.2">msmtp</h2>
+
+<p>
+先确认服务器的验证方式：
+</p>
+
+<pre class="brush: bash">
+msmtp --host=smtp.163.com --serverinfo
+SMTP server at smtp.163.com (m12-12.163.com [220.181.12.12]), port 25:
+    163.com Anti-spam GT for Coremail System (163com[20121016])
+Capabilities:
+    PIPELINING:
+        Support for command grouping for faster transmission
+    STARTTLS:
+        Support for TLS encryption via the STARTTLS command
+    AUTH:
+        Supported authentication methods:
+        PLAIN LOGIN
+This server might advertise more or other capabilities when TLS is active.
+</pre>
+
+<p>
+配置文件<code>~/.msmtprc</code>文件的权限一定要为<code>600</code>：
+</p>
+
+<pre class="brush: bash">
+# ========================
+# aaa@gmail.com
+# ========================
+account gmail-evoker
+host smtp.gmail.com
+port 587
+protocol smtp
+tls on
+# tls_nocertcheck
+tls_starttls on
+tls_trust_file /etc/ssl/certs/ca-certificates.crt
+auth on
+from aaa@gmail.com
+user aaa@gmail.com
+password aaa
+ 
+# ========================
+# bbb@gmail.com
+# ========================
+account gmail-qiwei
+host smtp.gmail.com
+port 587
+protocol smtp
+tls on
+# tls_nocertcheck
+tls_starttls on
+tls_trust_file /etc/ssl/certs/ca-certificates.crt
+auth on
+from bbb@gmail.com
+user bbb@gmail.com
+password bbb
+ 
+# ========================
+# ccc@b5m.com
+# ========================
+account b5m-qiwei
+host smtp.gmail.com
+port 587
+protocol smtp
+tls on
+# tls_nocertcheck
+tls_starttls on
+tls_trust_file /etc/ssl/certs/ca-certificates.crt
+auth on
+from ccc@b5m.com
+user ccc@b5m.com
+password ccc
+ 
+account default: gmail-evoker
+</pre>
+
+<h2 id="toc_2.3">mutt</h2>
+
+<p>
+配置文件<code>~/.mutt/muttrc</code>：
+</p>
+
+<pre class="brush: bash">
+# ===========================
+# 全局设置
+# ===========================
+set quit=ask-no
+set charset="utf-8"
+set assumed_charset="utf-8:gb2312:gb18030:gbk"
+set locale="en_US.UTF-8"
+set wait_key=yes    # 当外部程序退出时，是否要求用户按一个键才返回。
+ 
+charset-hook ^us-ascii$   gb2312
+charset-hook ^iso-8859-1$ gb2312
+charset-hook !utf-8       gb2312
+ 
+set alias_file = "$HOME/.mutt/alies.txt"  # 按 "a" 为来信者取别名时，使用哪一个别名文件保存这个别名。
+source "$HOME/.mutt/alies.txt"
+ 
+ 
+ 
+# ===========================
+# 设置邮件目录
+# ===========================
+set sort_browser=alpha      # 其他还可以用：date / size / unsorted
+set mbox_type = Maildir
+set folder = "$HOME/Mail"
+set header_cache = "$HOME/Mail/.hcache"
+set spoolfile = +"gmail-evoker/INBOX"
+mailboxes +"gmail-evoker/archive2010"
+mailboxes +"gmail-evoker/archive2011"
+mailboxes +"gmail-evoker/archive2012"
+mailboxes +"gmail-evoker/bill"
+mailboxes +"gmail-evoker/[Gmail].Sent Mail"
+mailboxes +"gmail-evoker/[Gmail].Spam"
+mailboxes +"gmail-evoker/ibm_lesson"
+mailboxes +"gmail-evoker/INBOX"
+mailboxes +"gmail-evoker/maillist_cpyug"
+mailboxes +"gmail-evoker/maillist_maven_zh"
+mailboxes +"gmail-evoker/maillist_qindao"
+mailboxes +"gmail-evoker/maillist_shlug"
+mailboxes +"gmail-evoker/maillist_ubuntu_cn"
+mailboxes +"gmail-evoker/maillist_vim_cn"
+mailboxes +"gmail-evoker/shopping"
+mailboxes +"gmail-evoker/sns"
+mailboxes +"gmail-evoker/Trash"
+mailboxes +"gmail-qiwei/163_ecnu"
+mailboxes +"gmail-qiwei/163_inbox"
+mailboxes +"gmail-qiwei/[Gmail].Drafts"
+mailboxes +"gmail-qiwei/[Gmail].Sent Mail"
+mailboxes +"gmail-qiwei/[Gmail].Spam"
+mailboxes +"gmail-qiwei/INBOX"
+mailboxes +"gmail-qiwei/izene_account"
+mailboxes +"gmail-qiwei/izene_inbox"
+mailboxes +"b5m-qiwei/account_info"
+mailboxes +"b5m-qiwei/[Gmail].Drafts"
+mailboxes +"b5m-qiwei/[Gmail].Sent Mail"
+mailboxes +"b5m-qiwei/[Gmail].Spam"
+mailboxes +"b5m-qiwei/INBOX"
+ 
+ 
+ 
+# ===========================
+# 邮件列表
+# ===========================
+subscribe mlml@googlegroups.com
+subscribe mlml@googlegroups.com
+ 
+ 
+ 
+ 
+# ===========================
+# 邮件线索显示
+# ===========================
+set index_format="%4C %Z %{[%y-%b-%d]} %-15.15L (%4l) %s"
+set sort = threads
+set sort_aux = reverse-last-date-received # 当用 thread 排序方式时，我们对各个 thread 的相对排序顺序。
+set ascii_chars=yes                       # ascii树形显示thread
+ 
+set resolve=yes                           # 当 "t" 或者 "D" 之类的标记操作时，是否自动把光标移动到下一封信件。
+set noconfirmappend                       # 移动邮件时是否提醒已经存在的邮件
+ 
+# ===========================
+# 邮件内容显示
+# ===========================
+bind pager J next-entry
+bind pager K previous-entry
+bind pager j next-line
+bind pager k previous-line
+ 
+set pager_stop            # 一封邮件看完不会自动转到下一封邮件
+set pager_index_lines=6   # 留出多少行显示邮件列表？
+set menu_scroll           # scroll in menus
+set smart_wrap            # don't split words
+set tilde                 # show tildes like in vim
+ 
+set mailcap_path="$HOME/.mailcap"
+# 那些类型的附件是允许直接通过 .mailcap 浏览的？
+auto_view text/html
+# auto_view application/msword
+auto_view image/*
+ 
+ 
+#color  obj         front           back
+#----- ------------ --------------- ---------
+ color normal       brightgreen     default           # 普通
+ color status       brightyellow    blue              # 状态栏
+ color message      black           white             # 信息
+ color error        red             white             # 错误信息
+ color indicator    brightwhite     magenta           # 游标
+ color tree         red             default           # 线索树
+ color index        green           brightblue    ~N  # 新邮件
+ color index        green           brightblue    ~O  # 未读
+ color index        red             white         ~D  # 标记删除
+ color markers      black           white             #
+ color hdrdefault   blue            default           # 邮件头颜色
+ color attachment   green           blue              # 附件
+ color quoted       blue            default           # 引文颜色
+ color signature    blue            default           # 签名
+ color tilde        green           default           # 空白
+ color search       black           brightyellow      #
+ color bold         brightyellow    default           #
+ mono  bold         bold
+ mono  underline    underline
+ mono  indicator    reverse
+ 
+ 
+ 
+# ===========================
+# 设置邮件编辑
+# ===========================
+set editor="vim +/^$"
+set envelope_from  = yes
+set edit_headers   = yes        # 是否把邮件头也放在编辑器里可以修改？
+set include                     # 回信时是否包含原文。
+set indent_str     ="&gt; "        # 回信的引文之前插入那个符号
+set fcc_attach                  # save attachments with the body
+set forward_format = "Fwd: %s"  # format for subject when forwarding
+set forward_quote               # include message in forwards
+unset mime_forward              # forward attachments as part of body
+ 
+ 
+# ===========================
+# 设置邮件发送
+# ===========================
+set sendmail = "/usr/bin/msmtp"
+set realname = "Jade.Shan"
+set content_type="text/plain"
+set from = "Jade.Shan&lt;aaa@gmail.com&gt;"
+set signature="$HOME/.mutt/signature-jade.txt"
+ 
+# 你的信件如果全是英文，那么信件就会被设置为us-ascii 编码，
+# 如果出现了法语字符，那么就会用 iso-8859-1，
+# 如果出现了汉字就会用 gb2312，
+# 如果以上都不是，那么就用 utf-8。
+# set send_charset="us-ascii:iso-8859-1:gb2312:utf-8"
+set send_charset="utf-8"
+ 
+set record="~/Mail/=sent-mail-`date +%Y-%m`"     # 备份已发邮件的位置
+ 
+# 设置各个目录下发出的邮件是纯文本还是HTML。
+# 可以在邮件发出前通过 control+t 修改
+folder-hook "gmail-evoker"           set content_type="text/plain"
+folder-hook "gmail-qiwei"            set content_type="text/plain"
+folder-hook "b5m-qiwei"              set content_type="text/html"
+# 设置发信人
+folder-hook "gmail-evoker"           set from="Jade.Shan&lt;aaa@gmail.com&gt;"
+folder-hook "gmail-qiwei/163_ecnu"   set from="Qiwei.Shan&lt;eee@163.com&gt;"
+folder-hook "gmail-qiwei/163_inbox"  set from="Qiwei.Shan&lt;eee@163.com&gt;"
+folder-hook "b5m-qiwei"              set from="Qiwei.Shan&lt;ccc@b5m.com&gt;"
+# 设置签名
+folder-hook "gmail-evoker"           set signature="$HOME/.mutt/signature-jade.txt"
+folder-hook "gmail-qiwei"            set signature="$HOME/.mutt/signature-jade.txt"
+folder-hook "b5m-qiwei"              set signature="$HOME/.mutt/signature-izene.txt"
+</pre>
+
+<h2 id="toc_2.4">w3m</h2>
+
+<p>
+用w3m阅读html邮件，配置文件<code>~/.mailcap</code>：
+</p>
+
+<pre class="brush: bash">
+image/*; w3m-img %s
+text/html; w3m -dump -I %{charset} -T text/html %s; copiousoutput
+</pre>
+
+<h2 id="toc_2.5">urlview</h2>
+
+<p>
+<code>Ctrl+b</code>在firefox浏览器中打开邮件里的连接，配置文件：<code>~/.urlview</code>：
+</p>
+
+<pre class="brush: bash">
+REGEXP (((http|https|ftp|gopher)|mailto)[.:][^ &gt;"\t]*|www\.[-a-z0-9.]+)[^ .,;\t&gt;"&gt;\):]
+COMMAND firefox %s
+</pre>
+
+<p>
+muttrc中加入：
+</p>
+
+<pre class="brush: bash">
+macro pager \cb &lt;pipe-entry&gt;'urlview'&lt;enter&gt; 'Follow links with urlview'
+</pre>
+
+<h2 id="toc_2.6">mutt联系人别名</h2>
+
+<pre class="brush: bash">
+alias boss   \"Big Boss\"  &lt;big.boss@gmail.com&gt;
+</pre>
+
+<h2 id="toc_2.7">nautilus支持</h2>
+
+<p>
+ 在nautilus中“右键-&gt;Scripts-&gt;mutt.sh”发送文件为邮件附件。
+</p>
+
+<p>
+配置文件：<code>.gnome2/nautilus-scripts/mutt.sh</code>
+</p>
+
+<pre class="brush: bash">
+#!/bin/bash
+# 用mutt来发送多个附件
+MAIL="mutt "
+while [ ! -z $1 ]
+do
+    MAIL=$MAIL"-a $1 "
+    shift
+done
+gnome-terminal -e "$MAIL"
+</pre>
+
+<h2 id="toc_2.8">mail-notification桌面邮件提醒</h2>
+
+<pre class="brush: bash">
+mail-notification -p &amp;
+</pre>
+
+<h1 id="toc_3">mutt基本操作</h1>
+
+<h2 id="toc_3.1">默认的按键定义</h2>
+
+<p>
+这里是一些默认的按键定义：（在列表页和信件页都可以使用）
+</p>
+
+<ul>
+<li>
+<code>m</code>：写信
+
+<li>
+<code>r</code>：回信
+
+<li>
+<code>d</code>：标记删除
+
+<li>
+<code>$</code>：应用标记
+
+<li>
+<code>j</code>：下一项
+
+<li>
+<code>k</code>：上一项
+
+<li>
+<code>a</code>：加入地址簿
+
+<li>
+<code>v</code>：查看附件
+
+<li>
+<code>s</code>：储存
+
+<li>
+<code>q</code>：退至上一层
+
+<li>
+<code>?</code>：帮助
+
+</ul>
+
+<h2 id="toc_3.2">标识的意义</h2>
+
+<ul>
+<li>
+<code> </code>：空表示这封邮件的 To: Cc: Bcc: 都没有你的地址，很多垃圾邮件都有这个特征。
+
+<li>
+<code>+</code>：表示(To: 是你的地址之一)，而且是唯一的收件人。
+
+<li>
+<code>T</code>：表示(To: 包括了你的地址之一)，但是你不是唯一的收件人。这是一封群体信件。
+
+<li>
+<code>C</code>：表示你的地址出现在 CC:，但是你不是唯一的被抄送的人。
+
+<li>
+<code>F</code>：表示这封邮件是你发出去的。
+
+<li>
+<code>L</code>：表示这是一封你已经加入的邮件列表寄来的。
+
+</ul>
+
+<h2 id="toc_3.3">查找与过滤邮件</h2>
+
+<p>
+用<code>l</code>来过滤邮件，可以采用mutt自定义的patterns。常用的patterns：
+</p>
+
+<table>
+<tr>
+<td>
+~c EXPR
+</td>
+<td>
+cc给EXPR
+</td>
+</tr>
+<tr>
+<td>
+~f EXPR
+</td>
+<td>
+from来自EXPR
+</td>
+</tr>
+<tr>
+<td>
+~t EXPR
+</td>
+<td>
+to给EXPR
+</td>
+</tr>
+<tr>
+<td>
+~s EXPR
+</td>
+<td>
+subject是EXPR
+</td>
+</tr>
+<tr>
+<td>
+~C EXPR
+</td>
+<td>
+to或者cc给EXPR
+</td>
+</tr>
+<tr>
+<td>
+~d [min]-[max]
+</td>
+<td>
+发送日期在这个时间段内
+</td>
+</tr>
+</table>
+
+<p>
+绝对时间例子：
+</p>
+
+<table>
+<tr>
+<td>
+~d 15/1/08-18/1/08
+</td>
+<td>
+在08年1月15日至18日之间
+</td>
+</tr>
+<tr>
+<td>
+~d 15-
+</td>
+<td>
+在当月15日之后
+</td>
+</tr>
+<tr>
+<td>
+~d -25
+</td>
+<td>
+在当月25日之前
+</td>
+</tr>
+<tr>
+<td>
+~d 15*2d
+</td>
+<td>
+在当月15日前后各两天
+</td>
+</tr>
+<tr>
+<td>
+~d 15-2w
+</td>
+<td>
+在当月15日之前两周
+</td>
+</tr>
+<tr>
+<td>
+~d 15/2+1m
+</td>
+<td>
+在当年2月15日之后1月
+</td>
+</tr>
+<tr>
+<td>
+~d 15-1y
+</td>
+<td>
+在当月15日之前1年
+</td>
+</tr>
+</table>
+
+<p>
+相对时间例子：
+</p>
+
+<table>
+<tr>
+<td>
+~d &lt;1d
+</td>
+<td>
+一天内的邮件
+</td>
+</tr>
+<tr>
+<td>
+~d &gt;1w
+</td>
+<td>
+一周前的邮件
+</td>
+</tr>
+<tr>
+<td>
+~d &lt;2m
+</td>
+<td>
+两个月内的邮件
+</td>
+</tr>
+<tr>
+<td>
+~d &lt;1y
+</td>
+<td>
+一年内的邮件
+</td>
+</tr>
+</table>
+
+<p>
+两个patterns自动与操作，可以用|来或操作，用!来否操作。
+</p>
+
+<h2 id="toc_3.4">管理邮件</h2>
+
+<ul>
+<li>
+列出所有邮箱：<code>Y</code>
+
+<li>
+选择一封邮件：<code>t</code>
+
+<li>
+按条件来选择：<code>T &lt;正则&gt;</code>
+
+<li>
+删除邮件：<code>d</code>
+
+<li>
+取消删除：<code>u</code>
+
+<li>
+移动邮件：<code>;s&lt;输入目录名或按？选择目录&gt;</code>
+
+</ul>
+
+<h2 id="toc_3.5">线索操作</h2>
+
+<ul>
+<li>
+选择整个线索：<code>ESC t</code>
+
+</ul>
+
+<ul>
+<li>
+折叠当前线索：<code>ESC v</code>
+
+<li>
+折叠所有线索：<code>ESC V</code>
+
+</ul>
+
+<ul>
+<li>
+移动到父线索：<code>P</code>
+
+</ul>
+
+<ul>
+<li>
+移动到上一组子线索：<code>ESC p</code>
+
+<li>
+移动到下一组子线索：<code>ESC n</code>
+
+</ul>
+
+<ul>
+<li>
+移动到上一组线索：<code>Ctrl + p</code>
+
+<li>
+移动到下一组线索：<code>Ctrl + n</code>
+
+</ul>
+
+<ul>
+<li>
+删除整个线索：    <code>Ctrl + d</code>
+
+<li>
+取消删除整个线索：<code>Ctrl + u</code>
+
+</ul>
+
+<ul>
+<li>
+删除子线索：    <code>ESC + d</code>
+
+<li>
+取消删除子线索：<code>ESC + u</code>
+
+</ul>
+
+<ul>
+<li>
+断开一个线索&lt;break-thread&gt;：       <code>#</code>
+
+<li>
+标记邮件后连接到线索&lt;link-thread&gt;：<code>&amp;</code>
+
+</ul>
+
+<h2 id="toc_3.6">写邮件</h2>
+
+<ul>
+<li>
+在<code>To:</code>的提示下按<code>Tab</code>就可以显示联系人列表，然后你可以移动光标选择联系人。
+
+<li>
+在邮件索引中按<code>a</code>添加一个联系人。
+
+</ul>
+
+<p>
+如果是用VIM 作为文本编辑器，将所编辑文件的一部分作为正文发送邮件是件很容易的
+事情，只需要在<code>vimrc</code>中增加如下：
+</p>
+
+<pre class="brush: bash">
+vmap ,ml :w! /tmp/mutt-mail-from-vim.tmp&lt;cr&gt;:!mutt -i /tmp/mutt-mail-from-vim.tmp&lt;cr&gt;
+</pre>
+
+<h2 id="toc_3.7">发送邮件</h2>
+
+<p>
+编辑好收件人、主题、信件正文后，
+</p>
+
+<ul>
+<li>
+按<code>c</code>可以添加抄送，
+
+<li>
+按<code>b</code>可以添加密送，
+
+<li>
+按<code>a</code>可以添加附件，
+
+<li>
+按<code>y</code>发出信件。
+
+<li>
+按<code>Ctrl+t</code>修改邮件格式。
+
+</ul>
+
+<h2 id="toc_3.8">转发带附件的邮件</h2>
+
+<ul>
+<li>
+方法一：按键<code>b</code>直接转发邮件。
+
+<li>
+方法二：按键<code>Esc E</code>编辑当前邮件。再按<code>Esc F</code>把发件人改成自己。
+
+<li>
+方法三：按键<code>v</code>打开附件列表。选中一个附件或用<code>t</code>标记多个附件。按<code>f</code>发送。
+
+<li>
+方法四：当<code>mime_forward_decode=yes</code>可以把整个邮件打包为一个附件转发。
+
+</ul>
+
+<p>
+附件文件名或描述乱码时按<code>d</code>修改。
+</p>
+ </div>
+</body>
+</html>

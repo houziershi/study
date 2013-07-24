@@ -16,32 +16,35 @@
 <script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
 
 
-<title>Javascript</title>
+<title>vim.java</title>
 </head>
 <body  onresize='changeTocSize()'>
 	<div class="note-main"> 
 
-
-<h1>Javascript</h1>
+<h1 id="toc_1">vim java补全</h1>
 
 <p>
-基础：<a href="javascript.base.html">javascript.base</a>
+下载javacomplete，然后解压到<code>~/.vim</code>。
 </p>
 
 <p>
-正则：<a href="javascript.regex.html">javascript.regex</a>
+修改<code>~/.vimrc</code>:
+</p>
+
+<pre class="brush: bash">
+" javaautocomplete
+" Only do this part when compiled with support for autocommands.
+if has("autocmd")
+    autocmd Filetype java setlocal omnifunc=javacomplete#Complete
+endif
+</pre>
+
+<p>
+使用：
 </p>
 
 <p>
-性能：<a href="javascript.perform.html">javascript.perform</a>
-</p>
-
-<p>
-JQuery：<a href="JQuery.html">JQuery</a>
-</p>
-
-<p>
-例子：<a href="javascirpt.example.html">javascirpt.example</a>
+<code>Ctrl-X</code> <code>Ctrl-o</code>进行补全。第一次用时会在自动编译出<code>~/Reflection.class</code>。
 </p>
  </div>
 </body>

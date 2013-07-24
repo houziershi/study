@@ -76,9 +76,14 @@ div.toc { height:450px; }
 .toc li { color: #eff; }
 .toc a { color: #eff; }
 
+
+table { border-collapse:collapse; }
+table,th, td { border: 1px solid #00ff00; }
+
 /* 代码高亮 */
 .syntaxhighlighter table { width: 100%; }
 .syntaxhighlighter td.gutter { width: 1em; }
 .syntaxhighlighter .gutter .line { padding-right: 0.3em; }
+
 /* 去掉syntaxhighlighter上的小问号 */
 .syntaxhighlighter .toolbar { display: none; }

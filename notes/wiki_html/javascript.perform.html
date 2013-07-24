@@ -1,0 +1,324 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+
+
+<title>javascript.perform</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+<h1 id="toc_1">效率问题</h1>
+
+<h2 id="toc_1.1">JS自身的效率</h2>
+
+<h3 id="toc_1.1.1">全局导入</h3>
+
+<p>
+我们在编码过程中多多少少会使用到一些全局变量（<code>window</code>,<code>document</code>,自定义全局变量等等），了解javascript作用域链的人都知道，在局部作用域中访问全局变量需要一层一层遍历整个作用域链直至顶级作用域，而局部变量的访问效率则会更快更高，因此在局部作用域中高频率使用一些全局对象时可以将其导入到局部作用域中，例如：
+</p>
+
+<p>
+作为参数传入模块
+</p>
+<pre class="brush: javascript">
+(function(window,$){
+	var xxx = window.xxx;
+	$("#xxx1").xxx();
+	$("#xxx2").xxx();
+})(window,jQuery);
+</pre>
+
+<p>
+暂存到局部变量
+</p>
+<pre class="brush: javascript">
+function() {
+	var doc = document;
+	var global = window.global;
+}
+</pre>
+
+<h3 id="toc_1.1.2">eval以及类eval问题</h3>
+
+<p>
+我们都知道<code>eval</code>可以将一段字符串当做js代码来执行处理，据说使用eval执行的代码比不使用eval的代码慢100倍以上（具体效率我没有测试，有兴趣同学可以测试一下）
+</p>
+
+<p>
+JavaScript 代码在执行前会进行类似“预编译”的操作：首先会创建一个当前执行环境下的活动对象，并将那些用<code>var</code>申明的变量设置为活动对象的属性，但是此时这些变量的赋值都是<code>undefined</code>，并将那些以<code>function</code>定义的函数也添加为活动对象的属性，而且它们的值正是函数的定义。但是，如果你使用了<code>eval</code>，则其中的代码（实际上为字符串）无法预先识别其上下文，无法被提前解析和优化，即无法进行预编译的操作。所以，其性能也会大幅度降低
+</p>
+
+<p>
+其实现在大家一般都很少会用eval了，这里我想说的是几个类eval的场景(<code>new Function{}</code>,<code>setTimeout</code>,<code>setInterver</code>)
+</p>
+<pre class="brush: javascript">
+setTimtout("alert(1)",1000);
+setInterver("alert(1)",1000);
+(new Function("alert(1)"))();
+</pre>
+
+<p>
+上述几种类型代码执行效率都会比较低，因此建议直接传入匿名方法、或者方法的引用给<code>setTimeout</code>方法。
+</p>
+
+<h3 id="toc_1.1.3">闭包结束后释放掉不再被引用的变量</h3>
+	
+<pre class="brush: javascript">
+var f = (function(){
+	var a = {name:"var3"};
+	var b = ["var1","var2"];
+	var c = document.getElementByTagName("li");
+	//****其它变量
+	//***一些运算
+	var res = function(){
+		alert(a.name);
+	}
+	return res;
+})()
+</pre>
+
+<p>
+上述代码中变量f的返回值是由一个立即执行函数构成的闭包中返回的方法<code>res</code>，该变量保留了对于这个闭包中所有变量（<code>a</code>,<code>b</code>,<code>c</code>等）的引用，因此这两个变量会一直驻留在内存空间中,尤其是对于dom元素的引用对内存的消耗会很大，而我们在<code>res</code>中只使用到了<code>a</code>变量的值，因此，在闭包返回前我们可以将其它变量释放
+</p>
+	
+<pre class="brush: javascript">
+var f = (function(){
+	var a = {name:"var3"};
+	var b = ["var1","var2"];
+	var c = document.getElementByTagName("li");
+	//****其它变量
+	//***一些运算
+	//闭包返回前释放掉不再使用的变量
+	b = c = null;
+	var res = function(){
+		alert(a.name);
+	}
+	return res;
+})()
+</pre>
+
+<h2 id="toc_1.2">Js操作dom的效率</h2>
+
+<h3 id="toc_1.2.1">减少reflow</h3>
+
+<p>
+什么是reflow？
+</p>
+
+<p>
+当 DOM 元素的属性发生变化 (如 color) 时, 浏览器会通知 render 重新描绘相应的元素, 此过程称为 repaint。
+</p>
+
+<p>
+如果该次变化涉及元素布局 (如 width), 浏览器则抛弃原有属性, 重新计算并把结果传递给 render 以重新描绘页面元素, 此过程称为 reflow。
+</p>
+
+<p>
+减少reflow的方法
+</p>
+
+<ol>
+<li>
+先将元素从<code>document</code>中删除，完成修改后再把元素放回原来的位置（当对某元素及其子元素进行大量reflow操作时，1,2两种方法效果才会比较明显）
+
+<li>
+将元素的<code>display</code>设置为<code>none</code>，完成修改后再把<code>display</code>修改为原来的值
+
+<li>
+修改多个样式属性时定义<code>class</code>类代替多次修改<code>style</code>属性
+
+<li>
+大量添加元素到页面时使用<code>documentFragment</code>
+
+</ol>
+
+<p>
+例如：
+</p>
+
+<pre class="brush: javascript">
+for(var i=0;i&lt;100:i++){
+    var child = docuemnt.createElement("li");
+    child.innerHtml = "child";
+    document.getElementById("parent").appendChild(child);
+}
+</pre>
+
+<p>
+上述代码会多次操作dom，效率比较低，可以改为下面的形式：
+</p>
+
+<p>
+创建<code>documentFragment</code>，将所有元素加入到<code>docuemntFragment</code>不会改变dom结构，最后将其添加到页面，只进行了一次reflow。
+</p>
+
+<pre class="brush: javascript">
+var frag = document.createDocumentFragment();
+for(var i=0;i&lt;100:i++){
+        var child = docuemnt.createElement("li");
+        child.innerHtml = "child";
+    frag.appendChild(child);
+}
+document.getElementById("parent").appendChild(frag);
+</pre>
+
+<h3 id="toc_1.2.2">暂存dom状态信息</h3>
+
+<p>
+当代码中需要多次访问元素的状态信息，在状态不变的情况下我们可以将其暂存到变量中，这样可以避免多次访问dom带来内存的开销，典型的例子就是：
+</p>
+
+<pre class="brush: javascript">
+var lis = document.getElementByTagName("li");
+for(var i=1; i&lt;lis.length; i++){
+    //***
+}
+</pre>
+
+<p>
+上述方式会在每一次循环都去访问dom元素，我们可以简单将代码优化如下
+</p>
+
+<pre class="brush: javascript">
+var lis = document.getElementByTagName("li");
+for(var i=1,j=lis.length; i&lt;j; i++) { // 把长度给j，只执行一次
+    //***
+}
+</pre>
+
+<h3 id="toc_1.2.3">缩小选择器的查找范围</h3>
+
+<p>
+查找dom元素时尽量避免大面积遍历页面元素，尽量使用精准选择器，或者指定上下文以缩小查找范围，以jquery为例：
+</p>
+
+<ol>
+<li>
+少用模糊匹配的选择器：例如<code>"[name*='_fix']"</code>，多用诸如<code>id</code>以及逐步缩小范围的复合选择器<code>"li.active"</code>等。
+
+<li>
+指定上下文：例如<code>"#parent .class"</code>，<code>(".class",$el)</code>等。
+
+</ol>
+
+<h3 id="toc_1.2.4">使用事件委托</h3>
+
+<p>
+使用场景：一个有大量记录的列表，每条记录都需要绑定点击事件，在鼠标点击后实现某些功能，我们通常的做法是给每条记录都绑定监听事件，这种做法会导致页面会有大量的事件监听器，效率比较低下。
+</p>
+
+<p>
+基本原理：我们都知道dom规范中事件是会冒泡的，也就是说在不主动阻止事件冒泡的情况下任何一个元素的事件都会按照<code>dom</code>树的结构逐级冒泡至顶端。而<code>event</code>对象中也提供了<code>event.target</code>（IE下是<code>srcElement</code>）指向事件源，因此我们即使在父级元素上监听该事件也可以找到触发该事件的最原始的元素，这就是委托的基本原理。
+</p>
+
+<p>
+示例
+</p>
+
+<pre class="brush: javascript">
+$("ul li").bind("click",function(){
+    alert($(this).attr("data"));
+})
+</pre>
+
+<p>
+上述写法其实是给所有的<code>li</code>元素都绑定了<code>click</code>事件来监听鼠标点击每一个元素的事件，这样页面上会有大量的事件监听器。
+</p>
+
+<p>
+根据上面介绍的监听事件的原理我们来改写一下
+</p>
+
+<pre class="brush: javascript">
+$("ul").bind("click",function(e){
+    if(e.target.nodeName.toLowerCase() ==="li"){
+        alert($(e.target).attr("data"));
+    }
+})
+</pre>
+
+<p>
+这样一来，我们就可以只添加一个事件监听器去捕获所有<code>li</code>上触发的事件，并做出相应的操作。
+</p>
+
+<p>
+当然，我们不必每次都做事件源的判断工作，可以将其抽象一下交给工具类来完成。jquery中的<code>delegate()</code>方法就实现了该功能。
+</p>
+
+<p>
+语法是这样的<code>$(selector).delegate(childSelector,event,data,function)</code>，例如：
+</p>
+
+<pre class="brush: javascript">
+$("div").delegate("button","click",function(){
+  $("p").slideToggle();
+});
+</pre>
+	
+<p>
+参数说明（引自w3school）
+</p>
+
+<table>
+<tr>
+<td>
+参数
+</td>
+<td>
+描述
+</td>
+</tr>
+<tr>
+<td>
+childSelector
+</td>
+<td>
+必需。规定要附加事件处理程序的一个或多个子元素。
+</td>
+</tr>
+<tr>
+<td>
+event
+</td>
+<td>
+必需。规定附加到元素的一个或多个事件。由空格分隔多个事件值。必须是有效的事件。
+</td>
+</tr>
+<tr>
+<td>
+data
+</td>
+<td>
+可选。规定传递到函数的额外数据。
+</td>
+</tr>
+<tr>
+<td>
+function
+</td>
+<td>
+必需。规定当事件发生时运行的函数。
+</td>
+</tr>
+</table>
+
+<p>
+Tips:事件委托还有一个好处就是，即使在事件绑定之后动态添加的元素上触发的事件同样可以监听到哦，这样就不用在每次动态加入元素到页面后都为其绑定事件了。
+</p>
+ </div>
+</body>
+</html>

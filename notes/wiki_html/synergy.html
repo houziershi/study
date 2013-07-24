@@ -1,0 +1,124 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+
+
+<title>synergy</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+<h1 id="toc_1">使用Synergy多台电脑共享键盘鼠标</h1>
+
+<p>
+以前阿左童鞋有本本（系统Debian 6）一部，公司台式机（Win xp）一台。工作时把
+ 台机的显示器作为本本的外接显示器，然后用tsclient连台机的远程桌面。
+</p>
+
+<p>
+恰逢同事离职，抢在IT部门前霸占了同事的显示器。现在手上有电脑二台显示器三部，
+今天用Synergy连起来。
+</p>
+
+<h2 id="toc_1.1">准备工作</h2>
+
+<p>
+首先我们要先确定两台电脑的主机名。Debian下通过<code>hostname</code>得到主机名为<code>laptop</code>：
+</p>
+
+<h2 id="toc_1.2">Debian作为服务器</h2>
+
+<pre class="brush: bash">
+sudo apt-get install synergy
+</pre>
+
+<p>
+修改配置文件<code>/etc/synergy.conf</code>：
+</p>
+
+<pre class="brush: bash">
+section: screens
+    laptop:
+    leo.server.com:
+end
+ 
+ # section: aliases
+ #   laptop:
+ #   172.16.0.20
+ #   leo.server.com:
+ #   172.16.0.11
+ # end
+ 
+ 
+section: links
+    leo.server.com:
+        left = laptop
+    laptop:
+        right = leo.server.com
+end
+</pre>
+
+<p>
+section中声明了用来共享键盘鼠标的两台主机。
+</p>
+
+<p>
+links中定义的跳转的方法：
+</p>
+
+<p>
+鼠标移出leo.server.com的左边，跳转到laptop；
+</p>
+
+<p>
+鼠标移出laptop右边，跳转到leo.server.com。
+</p>
+
+
+<h2 id="toc_1.3">启动服务</h2>
+
+<pre class="brush: bash">
+参数-f　可选：指定输出调试信息到控制台
+</pre>
+
+
+<h2 id="toc_1.4">Win XP作为客户端</h2>
+
+<ul>
+<li>
+安装Synergy后直接通过图形界面配置。
+
+<li>
+勾选：Client (user another computer's keyboard and mouse)
+
+<li>
+Name of The server:中输入服务器的IP或主机名
+
+<li>
+“Edit”-&gt;Screen name中设置屏幕名leo.server.com。
+
+</ul>
+
+
+<h2 id="toc_1.5">其他</h2>
+
+<p>
+以上的配置内容仅仅做到刚刚能用。还有很多细节可能参考文档了（反正阿左觉得这样够用
+就行了），如：Synergy的连接和传输都是非加密的；还有快捷键的配置，好像只看到在
+图型界面里有，不知道配置文件里怎么配置。
+</p>
+ </div>
+</body>
+</html>
