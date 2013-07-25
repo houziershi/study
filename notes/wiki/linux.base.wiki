@@ -7,13 +7,423 @@
 
 = 软件安装 =
 
-== apt ==
+== dpkg包管理工具 ==  
 
-=== 查看已经安装的包 ===
+=== 查看包信息 ===
+
+* `dpkg --info "软件包名"` 列出软件包解包后的包名称。
+* `dpkg -l` 列出当前系统中所有的包。.可以和参数less一起使用在分屏查看。
+* `dpkg -l | grep -i "软件包名"` 查看系统中与"软件包名"相关联的包。
+* `dpkg -l 正则表达式` 列出所有与模式相匹配的软件包。
+* `dpkg -s` 查询已安装的包的详细信息。
+* `dpkg -L` 查询系统中已安装的软件包所安装的位置。
+* `dpkg -S` 查询系统中某个文件属于哪个软件包。
+* `dpkg -I` 查询deb包的详细信息，软件包下载到本地之后看看是不是想要。
+
+=== 安装 ===
+
+* `dpkg -i` 手动安装软件包，不解决依赖的问题
+
+=== 卸载 ===
+
+* `dpkg -r` 卸载软件包.不是完全的卸载,它的配置文件还存在.  
+* `dpkg -P` 全部卸载(但是还是不能解决软件包的依赖性的问题)  
+* `dpkg -reconfigure` 重新配置  
+
+清除所有已删除包的残馀配置文件：
 
 {{{class="brush: bash"
-dpkg -l |grep openssh-server
+dpkg -l | grep ^rc|awk '{print $2}' | #xargs dpkg -P
 }}}
+
+
+== APT管理器 ==
+
+=== 设置软件源 ===
+
+拿安装盘做源，方法如下：
+
+* `apt-cdrom ident` 扫描光盘的信息。
+* `apt-cdrom add` 添加光盘源。
+
+网络源最常用的方法就是把源添加到`/etc/apt/source.list`中，之后更新
+`apt-get update`。
+
+
+=== 查看包信息 ===
+
+`apt-cache` 加上不同的子命令和参数的使用可以实现查找、显示软件、包信息及包信赖
+关系等功能。
+
+* `apt-cache stats` 显示当前系统所有使用的Debain数据源的统计信息。
+* `apt-cache search 正则表达式` 可以查找相关的软件包。
+* `apt-cache show 包名` 可以显示指定软件包的详细信息。
+* `apt-cache showsrc` 查在下载之前找看源码包的文件信息。
+* `apt-cache depends 包名` 可以查找软件包的依赖关系。
+
+
+=== 安装软件 ===
+
+* `apt-get install` 安装软件包。
+* `apt-get --reinstall` 重新安装软件包。
+* `apt-get source` 下载源码包。
+
+* `apt-get build-dep 包名` 构建源码包的编译环境。
+* `auto-apt run ./configure` 编译时缺少h文件的自动处理。
+* `apt-get -f install` 解决依赖性这个问题。
+
+=== 删除软件 ===
+
+在用命令`apt-get install`之前，是先将软件包下载到`/var/cache/apt/archives`中，
+之后再进行安装。可以用`apt-get clean`清除`/var/cache/apt/archives`目录中的
+软件包。
+
+* `apt-get clean` 清除无用的软件包  
+* `apt-get autoremove` 删除系统不再使用的孤立软件  
+* `apt-get remove 包名` #卸载一个已安装的软件包（保留配置文件）。
+* `apt-get --purge remove` 完全卸载软件包（删除配置文件）。  
+* `dpkg --force-all --purge packagename` 强制卸载，风险大！
+
+=== 升级包 ===
+
+* `apt-get upgrade` 更新系统中所有的包到最新版。
+* `apt-get dist-upgrade` #将系统升级到新版本  
+
+
+== aptitude命令行模式 ==
+
+命令行APT的前端工具。aptitude在处理依赖问题上更佳一些，在删除一个包时，会同时
+删除本身所依赖的包。这样，系统中不会残留无用的包，整个系统更为干净。
+
+* `aptitude search string` 搜索包。
+* `aptitude show pkgname` 显示包的详细信息。
+
+* `aptitude install pkgname` 安装包。
+
+* `aptitude clean` 删除下载的包文件。
+* `aptitude autoclean` 仅删除过期的包文件。
+
+* `aptitude remove pkgname` 删除包。
+* `aptitude purge pkgname` 删除包及其配置文件。
+
+* `aptitude update` 更新可用的包列表。
+* `aptitude upgrade` 升级可用的包。
+* `aptitude dist-upgrade` 将系统升级到新的发行版。
+
+== aptitude界面模式 ==
+
+=== 软件包列表 ===
+
+软件包分成以下几类列出，在所在的行按回车打开分类。底部会显示当前包的信息，按`i`
+显示更详细信息，按`q`退出。
+
+* `+` 标记安装。
+* `-` 标记删除。
+* `g` 让所有标记生效。
+
+Updated Packages :: 升级的软件包
+
+此选项列出在归档库中出先新版本的软件包。通常，当用户完成选择处理，aptitude
+下载安装了请求的软件包后，这里的软件包都将被升级。
+
+New Packages :: 新软件包
+
+更新（aptitude update，或在 aptitude中键入`u`）软件包列表后所增加的软件包，
+让用户了解Debian归档库增加了哪些内容。每次更新，新的软件包就会累加到这里，
+直至您键入`f`将累加清除，并将它们集合到主包库中。
+
+Installed Packages :: 已安装软件包
+
+这些软件包已经安装在您的机器上，但资源库软件包列表显示不需要对它们进行升级。
+
+Not Installed Packages :: 尚未安裝的软件包
+
+就象名称标识的，这些软件包当前没有安装在您的机器上。当您清除未安装的
+新软件包时，将会进入这部分。
+
+Obsolete or Locally Created Packages :: 废弃或本地创建的软件包
+
+这些软件包目前已安装在您的机器上，但是它们并未出现在`/etc/apt/sources`。
+list为APT配置的资源库中。
+
+Virtual Packages :: 虚拟包
+
+虚拟包是由一些软件包提供的逻辑概念。例如：`mail-transport-agent`就是由postfix
+和sendmail， 以及其它等等软件包提供的。
+
+Tasks :: 任务
+
+任务是一组软件包，它们提供了一种简单的方法来选择一组预定义的完成特定任务的
+软件包。在后面将对此做更进一步的讲解。aptitude允许对任务进行浏览和安装。 
+
+软件包列表中的软件包状态:
+
+* `v` 虚拟
+* `B` 损坏
+* `u` 解包
+* `C` 预配置
+* `H` 预安装
+* `c` 卸载未清除
+* `p` 清除软件包
+* `i` 已经安装
+* `E` 内部错误
+	
+
+在aptitude软件包列表中的请求操作:
+
+* `h` 保持
+* `p`	清除
+* `d`	删除（卸载）
+* `B`	损坏
+* `i`	安装
+* `r`	重装
+* `u`	升级
+
+=== 底部窗口 ===
+
+底部窗口给出主窗口当前显示的上下文信息。可以用`a`和`z`实现滚屏，`i`在不同
+信息视图间切换。最后，`D`则用于显示和隐藏信息区。
+
+下边是默认安装时相关背景颜色说明:
+
+| 绿   | 安装新软件包         |
+| 青   | 将软件包升级的最新   |
+| 品红 | 删除或清除软件包     |
+| 白   | 保存版本（禁止升级） |
+
+* `q` 退出。
+* `?` 帮助。
+* `u` 升级已经安装的包。
+
+
+=== 过滤与查询 ===
+
+和正则表达式一样，可以用`^`和`$`匹配名称的起始字符和结束字符。
+
+
+`/` 并提供一些判断语句，来查询软件包的名称。
+`\` 用于查询下一个匹配。
+
+`l` 以某种标准限制软件包的显示，这同样适用于查询。下边是一些重要的判断谓词：
+
+* `~ahold` 保持现有版本的软件包          
+* `~b` 损坏的软件包                  
+* `~d<text>` 描述中含有<text>内容的软件包  
+* `~g` 无用的软件包                  
+* `~m<maint>` 由<maint>维护的软件包         
+* `~n<text>` 名称中含有<text>的软件包      
+* `~V<version>` 版本号中含有<version>的软件包 
+
+这些谓词是可以联合起来使用的。例如，`~ahold~dmail`选择在描述字中含有`mail`的
+被保持现有版本的软件包。
+
+在两个谓词间使用管道符号`|`，可以对两个表达式进行逻辑或操作:`~v|~b`选择所有
+受损软件包或虚拟软件包。
+
+查询不会忽略两个谓词间的空格，`~V.0`和`~V .0`是不一样的，后边的一个不会
+有匹配结果。
+
+感叹号对表达式取反:`!~b`查询所有未受损的软件包。可以使用括号来表达复杂的
+布尔逻辑：`~g(~dmanual|~sdoc)`将查询所有包含manual或在doc部分的受损软件包。
+
+需要注意的是， 当搜寻正则表达式中含有某些特殊字符， 象`()`，代字号`~`，和
+感叹号时， 则必须使用代字号进行转义。 
+
+
+=== 选择包 ===
+
+* `+` 选定要安装的软件包。
+* `-` 选定要删除的软件包。
+* `_` 选定要清除的软件包。
+* `=` 保持软件包的当前版本，阻止其被升级。
+* `:` 仅在aptitude会话期间锁定软件包。
+* `L` 请求重装软件包。
+* `M` 将软件包标记为自动安装。这些包会在没有依赖的手动包时自动删除。
+* `m` 将软件包标记为手动。
+* `R` 请求重新配置软件包。
+* `I` 请求立即安装软件包与依赖包，同`apt-get install <package>`。
+* `F` 禁止安装某个版本的软件包。但是，对更高版本正常使用。
+* `B` 调用reportbug，申报一个软件包的错误。
+* `C` 下载并显示一个软件包的变更日志。
+* `g` 进入所有请求变更的预览窗口。如果在预览屏键入此键，将执行变更操作。
+* `d` 查询相关软件包: `suggest/recommanded/depends`
+* `r` 查询依赖包
+* `/` 搜索
+* `\` 继续搜索 
+
+`Control-u`组合键可用于取消上一步的动作。
+
+展开一个软件包的节点，将会在屏幕上输出软件包的详细信息。除了有关软件包的有用
+信息外，在发现aptitude给出的解决方案不能满足您的需求时， 可以在屏幕中方便的
+浏览相关声明并交互的解决依赖问题。 
+
+=== 受损的软件包 ===
+
+当aptitude遇到不能解决依赖问题时，会以红色背景高亮显示有问题的软件包，并显示
+标题窗口中错误数量。并会在标题窗口中显示受损包的数量， 例如:`#Broken: 2`
+
+{{{class="brush: bash"
+mygray Actions Undo Package Search Options Views Help 		 
+mygrayf10: Menu ?: Help q: Quit u: Update g: Download/I 		 
+mygrayaptitude 0.2.15.9 #Broken: 2 Will use 1118kB of 		 
+mygray--- Packages being automatically installed to satisfy 		 
+mygray--\ Packages being deleted due to unsatisfied depende 		 
+mygrayid postfix -1974kB 2.1.5-9 		 
+mygrayiB postfix-mysql 2.1.5-9 		 
+mygrayiB postfix-tls 2.1.5-9 		 
+mygrayi webmin-postfix 1.180-4 		 
+mygray--\ Packages to be installed 		 
+mygraypi exim4 +32.8kB <none> 		 
+mygray--- Packages which are suggested by other packages 		 
+mygray 		 
+}}}
+
+受损的软件包是指那些不能满足依赖关系的，或相互冲突的软件包（这种情况下两个
+软件包都是broken的）。aptitude显然不会允许用户选择安装broken的软件包。因此，
+需要首先修正这种问题:
+
+当broken软件包的个数非零，并且aptitude被告知动作未定时（用户键入了`g`键），
+在显示这些未决问题摘要之前aptitude将试图解决所有的问题。通常，使用保守的方法
+进行自动修正，所以前面的所做的选择有可能被丢弃。在键入`g`前将一直检查broken
+软件包的数量，或者详细显示broken软件包的信息，这将丢弃前边所做的修改。幸运
+的是，aptitude允许通过`C_`或`C_u`来取消最后的操作，然后进行手动解决。
+
+当在aptitude中修复broken软件包时，它的过滤（或限制）功能非常的有用。键入
+`I`进入`~b`，aptitude将会只显示broken的软件包。使用软件包细节列表，通过选择
+缺少的依赖包，手动解决冲突，稍做努力就可修正出现的问题。另外，您也可以简单的
+键入`b`，找到第二个broken软件包。
+
+当broken的软件包数量增加时，可能需要过滤显示软件包列表。键入`I`应用前面的
+过滤设置，以缩小仍处于broken状态的软件包列表（希望少了很多）。重复操作，在
+短时间内就会修复所有broken的软件包。 
+
+=== 清洁您的系统 ===
+
+当aptitude选择了软件包以解决其它的依赖问题时，它将这个软件包标记为自动安装。
+因此，当依赖软件包卸载时，这些软件包也会自动卸载，这有助于您的系统保持清洁。
+也可以使用`M`和`m`手动修改安装标示:首先添加这一标示，随后就会卸载它。
+`~g`谓词可以用于根据这一标示进行搜索和限制。
+
+虽然aptitude的这一功能非常的不错，但是deborphan也提供近似的功能，并且操作起来
+更加灵活。 
+
+=== 虚拟包 ===
+
+有时候，软件包可能需要其它必需选择的软件包提供一个概念。这种需求的一个典型
+例子可以在软件包的关联信息中找到。at被设计为依赖能发送电子邮件的程序。
+在Debian中，有不下十种邮件传输代理软件，并不是写死到at的依赖信息中，软件包
+只是简单的通过依赖于概念包`mail-transport-agent`来实现。提供了所需功能的
+软件包都声明提供了这种概念，在Debian中，是通过所谓的“虚拟包”来实现的。在系统中
+安装了任意一个提供了`mail-transport-agent`虚拟包的软件包，Debian软件包工具都
+认为满足了依赖关系。
+
+{{{class="brush: bash"
+mygrayv --\ mail-transport-agent <none> <none> 		 
+mygray --- Packages which depend on mail-transport-agent 		 
+mygray --\ Versions 		 
+mygrayp xmail 1.21-3sarge1 		 
+mygrayp masqmail 0.2.20-1sarge1 		 
+mygrayp courier-mta 0.47-4sarge4 		 
+mygrayp xmail 1.21-3 		 
+mygrayp ssmtp 2.61-2 		 
+mygrayp sendmail-bin 8.13.4-3 		 
+mygrayi postfix 2.1.5-9 		 
+mygrayp nullmailer 1.00RC7-22 		 
+mygrayp masqmail 0.2.20-1 		 
+mygrayp exim4-daemon-light 4.50-8 		 
+mygrayp exim4-daemon-heavy 4.50-8 		 
+mygrayp exim 3.36-16 		 
+mygrayp esmtp-run 0.5.0-4 		 
+mygrayp courier-mta 0.47-4 		 
+}}}
+
+aptitude的Virtual Packages（虚拟包）选项可以用于快速定位提供同一功能的软件包
+列表。这样当默认设置不能满足您的需求时，可以使用这一功能快速的完成调整。
+
+=== 任务的概念 ===
+
+一个Debian系统通常用于完成某些任务。比如，您可能把它作为您的桌面系统，或数据库
+服务器，或web服务器，邮件服务器，等等。Debian提出的任务的概念是指满足某种需求的
+一系列典型的软件包；上边的任务，您可以通过安装一系列的软件包，来分别构建一个
+相应的服务器，或一个桌面环境。
+
+{{{class="brush: bash"
+mygray--\ Tasks 		 
+mygray --\ End-user 		 
+mygray --\ Desktop environment 		 
+mygrayp fortune-mod <none> 1:1.99.1-2 		 
+mygrayp gdm <none> 2.6.0.8-1 		 
+mygrayp gimp <none> 2.2.6-1 		 
+mygrayp gnome <none> 64 		 
+mygrayp gnome-desktop-environment <none> 64 		 
+mygrayp kde <none> 5:44 		 
+mygrayp kde-core <none> 5:44 		 
+mygrayTasks are groups of packages which provide an easy way to select a 		 
+mygraypredefinedset of packages for a particular purpose. 		 
+mygrayIf you select a package, an explanation of its current state will appear 		 
+mygrayin this space. 		 
+}}}
+
+传统的程序tasksel提供了一个选择这些软件集合的界面，不过它的功能被集成到了
+aptitude中，并进行了扩展，因此aptitude更受欢迎。
+
+任务就是选择一个抽象的概念，然后安装一系列的所必需的软包件，让本地系统可以
+运行为典型的环境。本质上来讲，任务与关联包（或伪软件包）相似，依赖于扮演着不同
+角色的所需软件包，它只是一个虚拟软件包，并没有相关的真实 deb 文件。另外，任务
+仅仅是个建议，用户可以不选择任务建议中的一些软件包。您可能会觉得更喜欢aptitude
+主选择屏幕最下边的任务界面。与处理软件包相似，任务可以视作单个的实体，或展开
+展示的建议的软件包。另外，用户也可将任务展开，检查一下建议安装的软件包列表。
+可以只简单的安装任务所包含软件包的一部分，而不是全部安装。您会发现aptitude中的
+任务有点象软件包的规则匹配。
+
+也可以通过将任务描述文件放置到`/usr/share/tasksel`目录下，来自定义任务。在
+tasksel软件包安装的README文件中提供了有关如何构建任务的文档。 
+
+
+=== 强大的命令行 ===
+
+aptitude提供了一个有趣的命令行模式，可以作为一个基本的嵌入模式来取代`apt-get`
+并具有`apt-cache`的查询能力，并在aptitude的交互接口增加了搜索判断。
+
+通常，aptitude的命令行请求形如:
+
+{{{class="brush: bash"
+aptitude action [arguments...]
+}}}
+
+常用的一些操作:
+
+{{{class="brush: bash"
+aptitude update * 更新软件包列表， 同图形界面的[u]键 *
+aptitude upgrade * 升级软件包， 等同与 apt-get upgrade *
+aptitude dist-upgrade *升级系统， 等同与 apt-get dist-upgrade *
+aptitude [ install | remove | purge ] pkg1 [pkg2...] * ...*
+aptitude search pattern1 [pattern2...] * ...*
+}}}
+
+就象apt-get，可以在交互界面使用拼接字符将多个不同的查询动作置于同一命令行中。
+下面的情况中，安装`A`，删除`B`，清除`C`，保持`D.'+'`是冗余的，因为默认为安装。
+
+{{{class="brush: bash"
+aptitude install A+ B- C_ D=
+}}}
+
+aptitude的命令行界面的优越之处在于在统一界面下集成了很多程序以及它们的功能。
+另外，响应安装请求时，aptitude可以解决依赖问题，并且在不再需要这些软级包时，
+将其自动卸载。
+
+=== 操作日志 ===
+
+aptitude将您所有的请求动作写入`/var/log/aptitude`。这个文件可以方便的用于安装和
+删除软件的跟踪。如果您使用`apt-get`安装软件，用dpkg卸载软件，aptitude的日志很快
+就会同步。另外，aptitude只记录请求。如果某一动作失败了，它是不会记录的。 
+
+== synaptic ==
+
+GTK图形的APT的前端工具。
+
+
+== 以安装Firefox作为例子 ==
 
 === 安装 ===
 

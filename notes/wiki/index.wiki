@@ -37,38 +37,9 @@ ExtJs：[[ExtJS]]
 
 [[python.example]]
 
-= 常用工具 =
 
-== 命令行 ==
 
-[[tmux]]
-
-== 文件管理 ==
-
-[[Midnight.Commander]]
-
-[[Gnome.Commander]]
-
-[[rsync]]
-
-== 系统模拟器 ==
-Cygwin：[[Cygwin]]
-
-== 网络 ==
-
-putty： [[putty]]
-
-email：[[email]]
-
-== 版本控制 ==
-
-Git：[[git]]
-
-[[Subversion]]
-
-== 构建工具 ==
-
-Maven：[[maven]]
+= 开发工具 =
 
 == 编辑器 ==
 
@@ -82,9 +53,17 @@ VimWiki：[[vimwiki]]
 
 [[eclipse]]
 
-== 多媒体 ==
+== 版本控制 ==
 
-[[SMplayer]]
+Git：[[git]]
+
+[[Subversion]]
+
+== 构建工具 ==
+
+Maven：[[maven]]
+
+
 
 = 数据库 =
 
@@ -94,15 +73,21 @@ VimWiki：[[vimwiki]]
 
 DB2： [[DB2]]
 
+
+
 = 服务器 =
 
 [[nginx]]
 
 [[tomcat]]
 
+
+
 = Linux =
 
 [[linux.base]]
+
+[[linux.install]]
 
 [[linux.disc]]
 
@@ -118,14 +103,6 @@ DB2： [[DB2]]
 
 [[synergy]]
 
-[[pidgin]]
-
-[[moc]]
-
-= 标准 =
-
-网络标准：[[stand.net]]
-
 == 网络 ==
 
 网络配置：[[linux.net]]
@@ -133,3 +110,41 @@ DB2： [[DB2]]
 网络故障：[[linux.net.problem]]
 
 
+
+= 常用工具 =
+
+== 命令行 ==
+
+[[tmux]]
+
+== 文件管理 ==
+
+[[Midnight.Commander]]
+
+[[Gnome.Commander]]
+
+[[rsync]]
+
+== 系统模拟器 ==
+
+Cygwin：[[Cygwin]]
+
+== 网络 ==
+
+putty： [[putty]]
+
+email：[[email]]
+
+pidgin：[[pidgin]]
+
+== 多媒体 ==
+
+[[SMplayer]]
+
+[[moc]]
+
+
+
+= 标准 =
+
+网络标准：[[stand.net]]
