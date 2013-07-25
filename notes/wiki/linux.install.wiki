@@ -1,0 +1,430 @@
+
+%title  系统安装备忘
+
+%toc 系统安装备忘
+
+= 备份 =
+
+备份没有在github上存着的东西： offlineimap、msmtprc、pidgin聊天记录、firefox
+收藏夹 等等……继续补充……
+
+
+= 安装 =
+
+好像一时还想不到什么话说……
+
+
+= 配置 =
+
+== 主机名 ==
+
+改了`/etc/hostname`以后，别忘记了还有`/etc/hosts`。
+
+== locale ==
+
+安装locales程序：
+
+{{{class="brush: bash"
+apt-get install locales
+}}}
+
+然后配置所用的语系：
+	
+{{{class="brush: bash"
+dpkg-reconfigure locales
+}}}
+
+中文常用的的locale：
+
+* en_US.ISO-8859-1
+* en_US.UTF-8
+* zh_CN.GB2312
+* zh_CN.GB18030
+* zh_CN.UTF-8
+* zh_CN.GBK
+* zh_TW.BIG5
+* zh_TW.UTF-8
+
+缺省locale为en_US.utf8，
+
+这样就完成了，可以查看一下中的语系：
+
+{{{class="brush: bash"
+locale -a
+}}}
+
+
+== 用户 ==
+
+添加常用账号，默认会建立同名组：
+
+{{{class="brush: bash"
+groupadd user001
+useradd user001 -g user001 -d /home/user001 -s /usr/bin/zsh
+}}}
+
+修改密码：
+
+{{{class="brush: bash"
+passwd user001
+}}}
+
+建立用户目录，别忘记修改权限，不然什么东西都被人家看到……（羞）：
+
+{{{class="brush: bash"
+mkdir /home/user001
+chgrp user001 /home/user001
+chown user001 /home/user001
+chmod 700 /home/user001
+}}}
+
+同步用户和组（不过不是直接修改配置文件的话应该用不着）：
+
+{{{class="brush: bash"
+grpconv
+}}}
+
+再提醒一下自己以后删除用户的时候不要-r参数忘记删除home目录和mail。 还有
+`userdel`会把用户的组也一块删除掉，当心当心：
+
+{{{class="brush: bash"
+userdel -r user001
+}}}
+
+用于天朝特色用途的账号，没有登录的必要。不给shell：
+
+{{{class="brush: bash"
+useradd user001 -g user001 -s /bin/false
+}}}
+
+
+== sudo ==
+
+安装`sudo`：
+
+{{{class="brush: bash"
+apt-get install sudo
+}}}
+
+编辑`/etc/sudoers`增加sudo权限：
+
+{{{class="brush: bash"
+user001 ALL=(ALL) ALL
+}}}
+
+更详细的配置介绍：
+
+=== 别名设置 ===
+
+别名主要分成4种，分别是：
+
+1）`Host_Alias`主机别名，就是主机的列表。如：
+
+{{{class="brush: bash"
+Host_Alias HOST_FLAG = hostname1, hostname2, hostname3
+}}}
+
+2）`Cmnd_Alias`命令别名，就是允许执行的命令的列表。如：
+
+{{{class="brush: bash"
+Cmnd_Alias COMMAND_FLAG = command1, command2, command3
+}}}
+
+
+3）`User_Alias`用户别名，就是具有sudo权限的用户的列表。如：
+
+{{{class="brush: bash"
+User_Alias USER_FLAG = user1, user2, user3
+}}}
+
+
+4）`Runas_Alias` Runas别名，就是用户以什么身份执行（例如root，或者oracle）的列表
+。如：
+
+{{{class="brush: bash"
+Runas_Alias RUNAS_FLAG = operator1, operator2, operator3
+}}}
+
+别名格式是:
+
+{{{class="brush: bash"
+Alias_Type NAME = item1, item2, ……
+}}}
+
+=== 权限设置 ===
+
+首先看看授权规则。格式:
+
+{{{class="brush: bash"
+授权用户 主机 = [(目的用户)] [NOPASSWD:] 命令列表
+}}}
+
+如：
+
+{{{class="brush: bash"
+tony ALL=(ALL) NOPASSWD:ALL
+}}}
+
+其中`NOPASSWD`是指不需要密码验证
+
+配置文件完整的例子：
+
+{{{class="brush: bash"
+# groups
+User_Alias  ROOT = user1, user2, user3
+User_Alias  WEBMASTERS = user4, user5, user6
+  
+# commands
+Cmnd_Alias  APACHE = /usr/local/sbin/kickapache
+Cmnd_Alias  TAIL = /usr/bin/tail
+Cmnd_Alias      SHUTDOWN = /sbin/shutdown
+Cmnd_Alias      APT = /usr/bin/apt-get, /usr/bin/dpkg
+  
+# privileges
+ROOT        ALL = (ALL) ALL
+WEBMASTERS  ALL = PASSWD : APACHE, TAIL
+admin       ALL = NOPASSWD : /etc/init.d/apache
+}}}
+
+参数：
+
+* `-l` 显示出自己（执行 sudo 的使用者）的权限
+* `-v` 因为 sudo 在第一次执行时或是在 N 分钟内没有执行（N 预设为五）会问密码，这个参数是重新做一次确认，假如超过 N 分钟，也会问密码
+* `-k` 将会强迫使用者在下一次执行 sudo 时问密码（不论有没有超过 N 分钟）
+* `-b` 将要执行的指令放在后台执行
+* `-p` prompt 能够更改问密码的提示语，其中 %u 会代换为使用者的帐号名称， %h 会显示主机名称
+* `-u` username/#uid 不加此参数，代表要以 root 的身份执行指令，而加了此参数，能够以 username 的身份执行指令（#uid 为该 username 的使用者号码）
+* `-s` 执行环境变量中的 SHELL 所指定的 shell ，或是 /etc/passwd 里所指定的 shell
+* `-H` 将环境变数中的 HOME （家目录）指定为要变更身份的使用者家目录（如不加 -u 参数就是系统管理者 root ）
+
+
+
+= 安全设置 =
+
+== SSH ==
+
+修改SSH端口，禁止root远程登录，`/etc/ssh/sshd_config`：
+
+{{{class="brush: bash"
+Port 1234
+PermitRootLogin no
+}}}
+
+重启服务：
+
+{{{class="brush: bash"
+service sshd restart
+}}}
+
+生成登录用的密钥
+
+{{{class="brush: bash"
+ssh-keygen -t rsa
+}}}
+
+把公钥上传到服务器：
+
+{{{class="brush: bash"
+cat  ~/.ssh/id_rsa.pub | ssh user001@192.168.1.1 "cat - >> ~/.ssh/authorized_keys"
+}}}
+
+如果密钥中设置了`passphrase`，则需要输`passphrase`登录服务器。为了更方便可以
+通过`ssh-agent`来帮助修改`~/.ssh/id_rsa`文件。看起来像是自动输入passphrase(只是
+像而已)：
+
+{{{class="brush: bash"
+ssh-add
+}}}
+
+备注：对于SSH2兼容格式的公钥，可以转换成为Openssh兼容格式
+
+{{{class="brush: bash"
+ssh-keygen -i -f Identity.pub >> /root/.ssh/authorized_keys2
+}}}
+
+禁止密码登录，只允许key登录：还不知道怎么搞～OTZ
+
+== iptables ==
+
+清除已有的规则：
+
+{{{class="brush: bash"
+iptables -F
+iptables -X
+iptables -Z
+}}}
+
+开放常用的端口：
+
+{{{class="brush: bash"
+# 允许本地回环接口
+iptables -A INPUT -s 127.0.0.1 -d 127.0.0.1 -j ACCEPT
+# 放行已经连接的相关连接
+iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+# 不限制外出
+iptables -A OUTPUT -j ACCEPT
+# 放行常用入口请求 ssh http ftp
+iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+iptables -A INPUT -p tcp --dport 21 -j ACCEPT
+iptables -A INPUT -p tcp --dport 20 -j ACCEPT
+# 同样格式的其他入口
+# 禁止其他访问入口，注意别把ssh的22端口给禁了
+iptables -A INPUT -j REJECT
+iptables -A FORWARD -j REJECT
+ 
+# 封一个IP
+iptables -I INPUT -s 123.45.6.7 -j DROP
+# 封123.0.0.1~123.255.255.254整个段
+iptables -I INPUT -s 123.0.0.0/8 -j DROP
+# 封123.45.0.1到123.45.255.254
+iptables -I INPUT -s 124.45.0.0/16 -j DROP
+# 封123.45.6.1到123.45.6.254
+iptables -I INPUT -s 123.45.6.0/24 -j DROP
+}}}
+
+检查已经添加的规则：
+
+{{{class="brush: bash"
+iptables -L -n --line-numbers
+}}}
+
+可以按显示的chain类与行号删除一条规则，如INPUT中的第3条：
+
+{{{class="brush: bash"
+iptables -D INPUT 3
+}}}
+
+网卡启动时加载规则`/etc/network/if-pre-up.d/iptables`：
+
+{{{class="brush: bash"
+#!/bin/bash
+iptables-restore < /etc/iptables.rules
+}}}
+
+权限：
+
+{{{class="brush: bash"
+chmod +x /etc/network/if-pre-up.d/iptables
+}}}
+
+网卡关闭时保存规则`/etc/network/if-post-down.d/iptables`：
+
+
+{{{class="brush: bash"
+#!/bin/bash
+iptables-save > /etc/iptables.rules
+}}}
+
+权限：
+
+{{{class="brush: bash"
+chmod +x /etc/network/if-post-down.d/iptables
+}}}
+
+
+== iptables-persistent ==
+
+这是debian内用于iptables规则持久化的工具，你可以编辑`/etc/iptables/rules.v4`来
+修改防火墙规则。一般来说，至少要包含以下内容：
+
+{{{class="brush: bash"
+-A INPUT -m state –state RELATED,ESTABLISHED -j ACCEPT
+-A INPUT -i lo -j ACCEPT
+-A INPUT -i tun+ -j ACCEPT
+-A INPUT -i ppp+ -j ACCEPT
+-A INPUT -p tcp -m multiport –dport 22,xxx,xxx,xxx -j ACCEPT
+-A INPUT -p udp -m multiport –dport xxx,xxx,xxx -j ACCEPT
+}}}
+
+强烈建议先保存一个没问题的iptables，然后直接修改iptables，再保存。这样当改错了
+导致无法管理的时候，只要重启就可以恢复vps工作。
+
+ 
+== denyhosts ==
+
+python编写用来踢掉试图尝试ssh密码的ip。如果已经用了通过key的连接方式，你可以一次
+就直接踢掉对方ip。
+
+
+ 
+= 网络管理 =
+
+== ifstat ==
+
+ifstat是用于网络流量管理的工具，可以告诉你网络目标的流量是多少。
+ 
+== dnsutils ==
+
+dnsutils里面包含了不少用于管理dns的工具，包括我们常用的nslookup，还有相对少用的
+dig。
+ 
+== mtr-tiny ==
+
+mtr是一个traceroute工具，比后者好用很多。这个工具可以快速跟踪路由。
+ 
+== vnstat ==
+
+vnstat是用于跟踪网卡流量的工具，尤其对于每个月都有限额的vps，这个工具更有意义。
+注意安装完成后需要初始化每个网卡，然后重启服务，而不是马上能够工作。
+
+ 
+ 
+= 网络服务 =
+
+== pptp ==
+
+pptp是一个经典的vpn服务，直接安装pptpd就好。注意，部分手机不支持128bit的mppe，
+关闭后可以连接。但是windows只支持128bit的mppe，关掉就无法连接。So，自己权衡。
+ 
+== openvpn ==
+ 
+openpn是一个非常稳定而强大的vpn程序，他使用udp作为连接协议。其实openvpn有tcp协议
+模式，但是速度比udp慢很多。openvpn的配置可以参考贝壳童鞋的文章（反正很本文很多
+工具都是从他blog上学来的）：
+
+1.搭建家用的OpenVPN服务器：http://shell909090.com/blog/2009/09/%E6%90%AD%E5%BB%BA%E5%AE%B6%E7%94%A8%E7%9A%84openvpn%E6%9C%8D%E5%8A%A1%E5%99%A8/
+2.说说x509证书链：http://shell909090.com/blog/2011/04/%E8%AF%B4%E8%AF%B4x509%E8%AF%81%E4%B9%A6%E9%93%BE/
+3.再论openvpn的搭建：http://shell909090.com/blog/2011/05/%E5%86%8D%E8%AE%BAopenvpn%E7%9A%84%E6%90%AD%E5%BB%BA/
+ 
+== ssh ==
+ 
+ssh用于翻墙常见两种模式，固定端口转发和动态端口转发。前者使用`-R`将远程的某个
+端口映射到本地。通常而言，映射的都是squid或者polipo（推荐后者，内存消耗更小，
+更好配置）。这样相当于在 本地可以访问远程的代理，从而达到翻墙的效果。命令：
+
+{{{class="brush: bash"
+ssh -L port:localhost:port …
+}}}
+ 
+而动态端口转发则是使用：
+
+{{{class="brush: bash"
+ssh -D port …
+}}}
+
+将本地的port端口变成一个支持socks5协议的代理服务器。相比而言，`-D`模式更加灵活，
+提供了全协议的访问， 本地可以通过`polipo`转换为http代理。而`-L`模式则不能提供
+socks5代理功能（除非远程的端口上是socks5代理服务，但是这样就回到了`-D`模式，
+反而多开了一个服务）。但是有些时候（例如android的ssh翻墙软件）只支持后者的模式。
+
+另外，不要用日常管理帐号翻墙。新开一个翻墙帐号，并且设定独立的key。然后禁用shell
+，在ssh的时候，使用参数`-CNq`，这个参数可以不打开shell。如果网络不稳定，可以加上
+`-o ServerAliveInterval 30`。
+ 
+== stunnel ==
+
+stunnel本身没有任何功效，他只是将你的普通连接转换为ssl连接而已。当这个程序搭配
+其他程序，例如`polipo`，就可以实现一个ssl级别的代理。
+ 
+== httptunnel ==
+
+这是一个服务软件，服务器端运行一个httptunnel，客户端运行一个。而后客户端就可以
+获得一个到服务器端的tcp连接，不受限的。
+ 
+== polipo ==
+
+polipo常见有两种模式，端口转发模式和ssl模式。两者都在前文有说。端口转发模式配合
+ssh用，ssl模式配合stunnel用。以上的服务看似很多，实际上，在128M内存的实例上完全
+可以运行其中大部分的服务。你可以在一台服务器上运行其中多个，以保证全天候的服务。
+

@@ -1,0 +1,649 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+
+
+<title> 系统安装备忘</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>系统安装备忘</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">备份</a>
+<li><a href="#toc_2">安装</a>
+<li><a href="#toc_3">配置</a>
+<ul>
+<li><a href="#toc_3.1">主机名</a>
+<li><a href="#toc_3.2">locale</a>
+<li><a href="#toc_3.3">用户</a>
+<li><a href="#toc_3.4">sudo</a>
+<ul>
+<li><a href="#toc_3.4.1">别名设置</a>
+<li><a href="#toc_3.4.2">权限设置</a>
+</ul>
+</ul>
+<li><a href="#toc_4">安全设置</a>
+<ul>
+<li><a href="#toc_4.1">SSH</a>
+<li><a href="#toc_4.2">iptables</a>
+<li><a href="#toc_4.3">iptables-persistent</a>
+<li><a href="#toc_4.4">denyhosts</a>
+</ul>
+<li><a href="#toc_5">网络管理</a>
+<ul>
+<li><a href="#toc_5.1">ifstat</a>
+<li><a href="#toc_5.2">dnsutils</a>
+<li><a href="#toc_5.3">mtr-tiny</a>
+<li><a href="#toc_5.4">vnstat</a>
+</ul>
+<li><a href="#toc_6">网络服务</a>
+<ul>
+<li><a href="#toc_6.1">pptp</a>
+<li><a href="#toc_6.2">openvpn</a>
+<li><a href="#toc_6.3">ssh</a>
+<li><a href="#toc_6.4">stunnel</a>
+<li><a href="#toc_6.5">httptunnel</a>
+<li><a href="#toc_6.6">polipo</a>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">备份</h1>
+
+<p>
+备份没有在github上存着的东西： offlineimap、msmtprc、pidgin聊天记录、firefox
+收藏夹 等等……继续补充……
+</p>
+
+
+<h1 id="toc_2">安装</h1>
+
+<p>
+好像一时还想不到什么话说……
+</p>
+
+
+<h1 id="toc_3">配置</h1>
+
+<h2 id="toc_3.1">主机名</h2>
+
+<p>
+改了<code>/etc/hostname</code>以后，别忘记了还有<code>/etc/hosts</code>。
+</p>
+
+<h2 id="toc_3.2">locale</h2>
+
+<p>
+安装locales程序：
+</p>
+
+<pre class="brush: bash">
+apt-get install locales
+</pre>
+
+<p>
+然后配置所用的语系：
+</p>
+	
+<pre class="brush: bash">
+dpkg-reconfigure locales
+</pre>
+
+<p>
+中文常用的的locale：
+</p>
+
+<ul>
+<li>
+en_US.ISO-8859-1
+
+<li>
+en_US.UTF-8
+
+<li>
+zh_CN.GB2312
+
+<li>
+zh_CN.GB18030
+
+<li>
+zh_CN.UTF-8
+
+<li>
+zh_CN.GBK
+
+<li>
+zh_TW.BIG5
+
+<li>
+zh_TW.UTF-8
+
+</ul>
+
+<p>
+缺省locale为en_US.utf8，
+</p>
+
+<p>
+这样就完成了，可以查看一下中的语系：
+</p>
+
+<pre class="brush: bash">
+locale -a
+</pre>
+
+
+<h2 id="toc_3.3">用户</h2>
+
+<p>
+添加常用账号，默认会建立同名组：
+</p>
+
+<pre class="brush: bash">
+groupadd user001
+useradd user001 -g user001 -d /home/user001 -s /usr/bin/zsh
+</pre>
+
+<p>
+修改密码：
+</p>
+
+<pre class="brush: bash">
+passwd user001
+</pre>
+
+<p>
+建立用户目录，别忘记修改权限，不然什么东西都被人家看到……（羞）：
+</p>
+
+<pre class="brush: bash">
+mkdir /home/user001
+chgrp user001 /home/user001
+chown user001 /home/user001
+chmod 700 /home/user001
+</pre>
+
+<p>
+同步用户和组（不过不是直接修改配置文件的话应该用不着）：
+</p>
+
+<pre class="brush: bash">
+grpconv
+</pre>
+
+<p>
+再提醒一下自己以后删除用户的时候不要-r参数忘记删除home目录和mail。 还有
+<code>userdel</code>会把用户的组也一块删除掉，当心当心：
+</p>
+
+<pre class="brush: bash">
+userdel -r user001
+</pre>
+
+<p>
+用于天朝特色用途的账号，没有登录的必要。不给shell：
+</p>
+
+<pre class="brush: bash">
+useradd user001 -g user001 -s /bin/false
+</pre>
+
+
+<h2 id="toc_3.4">sudo</h2>
+
+<p>
+安装<code>sudo</code>：
+</p>
+
+<pre class="brush: bash">
+apt-get install sudo
+</pre>
+
+<p>
+编辑<code>/etc/sudoers</code>增加sudo权限：
+</p>
+
+<pre class="brush: bash">
+user001 ALL=(ALL) ALL
+</pre>
+
+<p>
+更详细的配置介绍：
+</p>
+
+<h3 id="toc_3.4.1">别名设置</h3>
+
+<p>
+别名主要分成4种，分别是：
+</p>
+
+<p>
+1）<code>Host_Alias</code>主机别名，就是主机的列表。如：
+</p>
+
+<pre class="brush: bash">
+Host_Alias HOST_FLAG = hostname1, hostname2, hostname3
+</pre>
+
+<p>
+2）<code>Cmnd_Alias</code>命令别名，就是允许执行的命令的列表。如：
+</p>
+
+<pre class="brush: bash">
+Cmnd_Alias COMMAND_FLAG = command1, command2, command3
+</pre>
+
+
+<p>
+3）<code>User_Alias</code>用户别名，就是具有sudo权限的用户的列表。如：
+</p>
+
+<pre class="brush: bash">
+User_Alias USER_FLAG = user1, user2, user3
+</pre>
+
+
+<p>
+4）<code>Runas_Alias</code> Runas别名，就是用户以什么身份执行（例如root，或者oracle）的列表
+。如：
+</p>
+
+<pre class="brush: bash">
+Runas_Alias RUNAS_FLAG = operator1, operator2, operator3
+</pre>
+
+<p>
+别名格式是:
+</p>
+
+<pre class="brush: bash">
+Alias_Type NAME = item1, item2, ……
+</pre>
+
+<h3 id="toc_3.4.2">权限设置</h3>
+
+<p>
+首先看看授权规则。格式:
+</p>
+
+<pre class="brush: bash">
+授权用户 主机 = [(目的用户)] [NOPASSWD:] 命令列表
+</pre>
+
+<p>
+如：
+</p>
+
+<pre class="brush: bash">
+tony ALL=(ALL) NOPASSWD:ALL
+</pre>
+
+<p>
+其中<code>NOPASSWD</code>是指不需要密码验证
+</p>
+
+<p>
+配置文件完整的例子：
+</p>
+
+<pre class="brush: bash">
+# groups
+User_Alias  ROOT = user1, user2, user3
+User_Alias  WEBMASTERS = user4, user5, user6
+  
+# commands
+Cmnd_Alias  APACHE = /usr/local/sbin/kickapache
+Cmnd_Alias  TAIL = /usr/bin/tail
+Cmnd_Alias      SHUTDOWN = /sbin/shutdown
+Cmnd_Alias      APT = /usr/bin/apt-get, /usr/bin/dpkg
+  
+# privileges
+ROOT        ALL = (ALL) ALL
+WEBMASTERS  ALL = PASSWD : APACHE, TAIL
+admin       ALL = NOPASSWD : /etc/init.d/apache
+</pre>
+
+<p>
+参数：
+</p>
+
+<ul>
+<li>
+<code>-l</code> 显示出自己（执行 sudo 的使用者）的权限
+
+<li>
+<code>-v</code> 因为 sudo 在第一次执行时或是在 N 分钟内没有执行（N 预设为五）会问密码，这个参数是重新做一次确认，假如超过 N 分钟，也会问密码
+
+<li>
+<code>-k</code> 将会强迫使用者在下一次执行 sudo 时问密码（不论有没有超过 N 分钟）
+
+<li>
+<code>-b</code> 将要执行的指令放在后台执行
+
+<li>
+<code>-p</code> prompt 能够更改问密码的提示语，其中 %u 会代换为使用者的帐号名称， %h 会显示主机名称
+
+<li>
+<code>-u</code> username/#uid 不加此参数，代表要以 root 的身份执行指令，而加了此参数，能够以 username 的身份执行指令（#uid 为该 username 的使用者号码）
+
+<li>
+<code>-s</code> 执行环境变量中的 SHELL 所指定的 shell ，或是 /etc/passwd 里所指定的 shell
+
+<li>
+<code>-H</code> 将环境变数中的 HOME （家目录）指定为要变更身份的使用者家目录（如不加 -u 参数就是系统管理者 root ）
+
+</ul>
+
+
+
+<h1 id="toc_4">安全设置</h1>
+
+<h2 id="toc_4.1">SSH</h2>
+
+<p>
+修改SSH端口，禁止root远程登录，<code>/etc/ssh/sshd_config</code>：
+</p>
+
+<pre class="brush: bash">
+Port 1234
+PermitRootLogin no
+</pre>
+
+<p>
+重启服务：
+</p>
+
+<pre class="brush: bash">
+service sshd restart
+</pre>
+
+<p>
+生成登录用的密钥
+</p>
+
+<pre class="brush: bash">
+ssh-keygen -t rsa
+</pre>
+
+<p>
+把公钥上传到服务器：
+</p>
+
+<pre class="brush: bash">
+cat  ~/.ssh/id_rsa.pub | ssh user001@192.168.1.1 "cat - &gt;&gt; ~/.ssh/authorized_keys"
+</pre>
+
+<p>
+如果密钥中设置了<code>passphrase</code>，则需要输<code>passphrase</code>登录服务器。为了更方便可以
+通过<code>ssh-agent</code>来帮助修改<code>~/.ssh/id_rsa</code>文件。看起来像是自动输入passphrase(只是
+像而已)：
+</p>
+
+<pre class="brush: bash">
+ssh-add
+</pre>
+
+<p>
+备注：对于SSH2兼容格式的公钥，可以转换成为Openssh兼容格式
+</p>
+
+<pre class="brush: bash">
+ssh-keygen -i -f Identity.pub &gt;&gt; /root/.ssh/authorized_keys2
+</pre>
+
+<p>
+禁止密码登录，只允许key登录：还不知道怎么搞～OTZ
+</p>
+
+<h2 id="toc_4.2">iptables</h2>
+
+<p>
+清除已有的规则：
+</p>
+
+<pre class="brush: bash">
+iptables -F
+iptables -X
+iptables -Z
+</pre>
+
+<p>
+开放常用的端口：
+</p>
+
+<pre class="brush: bash">
+# 允许本地回环接口
+iptables -A INPUT -s 127.0.0.1 -d 127.0.0.1 -j ACCEPT
+# 放行已经连接的相关连接
+iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+# 不限制外出
+iptables -A OUTPUT -j ACCEPT
+# 放行常用入口请求 ssh http ftp
+iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+iptables -A INPUT -p tcp --dport 21 -j ACCEPT
+iptables -A INPUT -p tcp --dport 20 -j ACCEPT
+# 同样格式的其他入口
+# 禁止其他访问入口，注意别把ssh的22端口给禁了
+iptables -A INPUT -j REJECT
+iptables -A FORWARD -j REJECT
+ 
+# 封一个IP
+iptables -I INPUT -s 123.45.6.7 -j DROP
+# 封123.0.0.1~123.255.255.254整个段
+iptables -I INPUT -s 123.0.0.0/8 -j DROP
+# 封123.45.0.1到123.45.255.254
+iptables -I INPUT -s 124.45.0.0/16 -j DROP
+# 封123.45.6.1到123.45.6.254
+iptables -I INPUT -s 123.45.6.0/24 -j DROP
+</pre>
+
+<p>
+检查已经添加的规则：
+</p>
+
+<pre class="brush: bash">
+iptables -L -n --line-numbers
+</pre>
+
+<p>
+可以按显示的chain类与行号删除一条规则，如INPUT中的第3条：
+</p>
+
+<pre class="brush: bash">
+iptables -D INPUT 3
+</pre>
+
+<p>
+网卡启动时加载规则<code>/etc/network/if-pre-up.d/iptables</code>：
+</p>
+
+<pre class="brush: bash">
+#!/bin/bash
+iptables-restore &lt; /etc/iptables.rules
+</pre>
+
+<p>
+权限：
+</p>
+
+<pre class="brush: bash">
+chmod +x /etc/network/if-pre-up.d/iptables
+</pre>
+
+<p>
+网卡关闭时保存规则<code>/etc/network/if-post-down.d/iptables</code>：
+</p>
+
+
+<pre class="brush: bash">
+#!/bin/bash
+iptables-save &gt; /etc/iptables.rules
+</pre>
+
+<p>
+权限：
+</p>
+
+<pre class="brush: bash">
+chmod +x /etc/network/if-post-down.d/iptables
+</pre>
+
+
+<h2 id="toc_4.3">iptables-persistent</h2>
+
+<p>
+这是debian内用于iptables规则持久化的工具，你可以编辑<code>/etc/iptables/rules.v4</code>来
+修改防火墙规则。一般来说，至少要包含以下内容：
+</p>
+
+<pre class="brush: bash">
+-A INPUT -m state –state RELATED,ESTABLISHED -j ACCEPT
+-A INPUT -i lo -j ACCEPT
+-A INPUT -i tun+ -j ACCEPT
+-A INPUT -i ppp+ -j ACCEPT
+-A INPUT -p tcp -m multiport –dport 22,xxx,xxx,xxx -j ACCEPT
+-A INPUT -p udp -m multiport –dport xxx,xxx,xxx -j ACCEPT
+</pre>
+
+<p>
+强烈建议先保存一个没问题的iptables，然后直接修改iptables，再保存。这样当改错了
+导致无法管理的时候，只要重启就可以恢复vps工作。
+</p>
+
+ 
+<h2 id="toc_4.4">denyhosts</h2>
+
+<p>
+python编写用来踢掉试图尝试ssh密码的ip。如果已经用了通过key的连接方式，你可以一次
+就直接踢掉对方ip。
+</p>
+
+
+ 
+<h1 id="toc_5">网络管理</h1>
+
+<h2 id="toc_5.1">ifstat</h2>
+
+<p>
+ifstat是用于网络流量管理的工具，可以告诉你网络目标的流量是多少。
+</p>
+ 
+<h2 id="toc_5.2">dnsutils</h2>
+
+<p>
+dnsutils里面包含了不少用于管理dns的工具，包括我们常用的nslookup，还有相对少用的
+dig。
+</p>
+ 
+<h2 id="toc_5.3">mtr-tiny</h2>
+
+<p>
+mtr是一个traceroute工具，比后者好用很多。这个工具可以快速跟踪路由。
+</p>
+ 
+<h2 id="toc_5.4">vnstat</h2>
+
+<p>
+vnstat是用于跟踪网卡流量的工具，尤其对于每个月都有限额的vps，这个工具更有意义。
+注意安装完成后需要初始化每个网卡，然后重启服务，而不是马上能够工作。
+</p>
+
+ 
+ 
+<h1 id="toc_6">网络服务</h1>
+
+<h2 id="toc_6.1">pptp</h2>
+
+<p>
+pptp是一个经典的vpn服务，直接安装pptpd就好。注意，部分手机不支持128bit的mppe，
+关闭后可以连接。但是windows只支持128bit的mppe，关掉就无法连接。So，自己权衡。
+</p>
+ 
+<h2 id="toc_6.2">openvpn</h2>
+ 
+<p>
+openpn是一个非常稳定而强大的vpn程序，他使用udp作为连接协议。其实openvpn有tcp协议
+模式，但是速度比udp慢很多。openvpn的配置可以参考贝壳童鞋的文章（反正很本文很多
+工具都是从他blog上学来的）：
+</p>
+
+<p>
+1.搭建家用的OpenVPN服务器：<a href="http://shell909090.com/blog/2009/09/%E6%90%AD%E5%BB%BA%E5%AE%B6%E7%94%A8%E7%9A%84openvpn%E6%9C%8D%E5%8A%A1%E5%99%A8/">http://shell909090.com/blog/2009/09/%E6%90%AD%E5%BB%BA%E5%AE%B6%E7%94%A8%E7%9A%84openvpn%E6%9C%8D%E5%8A%A1%E5%99%A8/</a>
+2.说说x509证书链：<a href="http://shell909090.com/blog/2011/04/%E8%AF%B4%E8%AF%B4x509%E8%AF%81%E4%B9%A6%E9%93%BE/">http://shell909090.com/blog/2011/04/%E8%AF%B4%E8%AF%B4x509%E8%AF%81%E4%B9%A6%E9%93%BE/</a>
+3.再论openvpn的搭建：<a href="http://shell909090.com/blog/2011/05/%E5%86%8D%E8%AE%BAopenvpn%E7%9A%84%E6%90%AD%E5%BB%BA/">http://shell909090.com/blog/2011/05/%E5%86%8D%E8%AE%BAopenvpn%E7%9A%84%E6%90%AD%E5%BB%BA/</a>
+</p>
+ 
+<h2 id="toc_6.3">ssh</h2>
+ 
+<p>
+ssh用于翻墙常见两种模式，固定端口转发和动态端口转发。前者使用<code>-R</code>将远程的某个
+端口映射到本地。通常而言，映射的都是squid或者polipo（推荐后者，内存消耗更小，
+更好配置）。这样相当于在 本地可以访问远程的代理，从而达到翻墙的效果。命令：
+</p>
+
+<pre class="brush: bash">
+ssh -L port:localhost:port …
+</pre>
+ 
+<p>
+而动态端口转发则是使用：
+</p>
+
+<pre class="brush: bash">
+ssh -D port …
+</pre>
+
+<p>
+将本地的port端口变成一个支持socks5协议的代理服务器。相比而言，<code>-D</code>模式更加灵活，
+提供了全协议的访问， 本地可以通过<code>polipo</code>转换为http代理。而<code>-L</code>模式则不能提供
+socks5代理功能（除非远程的端口上是socks5代理服务，但是这样就回到了<code>-D</code>模式，
+反而多开了一个服务）。但是有些时候（例如android的ssh翻墙软件）只支持后者的模式。
+</p>
+
+<p>
+另外，不要用日常管理帐号翻墙。新开一个翻墙帐号，并且设定独立的key。然后禁用shell
+，在ssh的时候，使用参数<code>-CNq</code>，这个参数可以不打开shell。如果网络不稳定，可以加上
+<code>-o ServerAliveInterval 30</code>。
+</p>
+ 
+<h2 id="toc_6.4">stunnel</h2>
+
+<p>
+stunnel本身没有任何功效，他只是将你的普通连接转换为ssl连接而已。当这个程序搭配
+其他程序，例如<code>polipo</code>，就可以实现一个ssl级别的代理。
+</p>
+ 
+<h2 id="toc_6.5">httptunnel</h2>
+
+<p>
+这是一个服务软件，服务器端运行一个httptunnel，客户端运行一个。而后客户端就可以
+获得一个到服务器端的tcp连接，不受限的。
+</p>
+ 
+<h2 id="toc_6.6">polipo</h2>
+
+<p>
+polipo常见有两种模式，端口转发模式和ssl模式。两者都在前文有说。端口转发模式配合
+ssh用，ssl模式配合stunnel用。以上的服务看似很多，实际上，在128M内存的实例上完全
+可以运行其中大部分的服务。你可以在一台服务器上运行其中多个，以保证全天候的服务。
+</p>
+ </div>
+</body>
+</html>
