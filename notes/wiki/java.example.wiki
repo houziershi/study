@@ -9,7 +9,7 @@
 
 === 生成验证码 ===
 
-{{{class="brush: java"
+{{{class="brush: java; highlight: [2,3,7]"
     import java.awt.Color;  
     import java.awt.Font;  
     import java.awt.Graphics2D;  
