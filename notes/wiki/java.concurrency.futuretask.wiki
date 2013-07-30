@@ -1,0 +1,46 @@
+
+= Callable =
+
+`Runnable`不能有返回值、也不能抛出异常，所以`Callable`更加好。例如一个返回`void`
+的`Callable`就是`Callable<void>`。
+
+`Callable`的接口方法是`call()`，接收一个`Future`参数。
+
+
+= Future =
+
+{{{class="brush: java"
+ExecutorService executor = ...
+future = executor.submit(task);
+future.get();
+}}}
+
+`ExecutorService`的成员方法`cancel(boolean)`设置能否可以被打断。
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+= FutureTask =
+
+代表一个任务，以`Callable`为构造函数的参数。`get()`方法等任务完成后返回结果。

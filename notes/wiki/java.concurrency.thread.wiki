@@ -1,0 +1,185 @@
+
+= 线程 =
+
+== 创建线程 ==
+
+`Runnable`接口的`run`方法是要运行的逻辑。
+
+`Thread`类实现`run`方法。方法里是执行的逻辑。`start()`方法表示启动新线程。
+
+== 线程优先级 ==
+
+线程的成员方法`setPriority`。如设置当前线程的优先级为普通：
+
+{{{class="brush: java"
+Thread.currentThread.setPriority(Thread.NORNAL_PRIORITY)
+}}}
+
+可用优先级：
+
+* NORMAL_PRIORITY
+* MIN_PRIORITY
+* MAX_PRIORITY
+* 等……
+
+== 守护线程 ==
+
+分为“普通线程”和“守护线程”，区别是如果还有普通线程没有执行完毕，JVM是关不掉的。
+
+普通线程创建的线程默认都是普通线程，除非用`setDaemon(true)`指定：
+
+{{{class="brush: java"
+Thread t1 = new Thread(runnable);
+t1.setDaemon(true);
+t1.start();
+}}}
+
+
+== 控制线程执行 ==
+
+=== sleep、yield、join ===
+
+暂停线程：`Thread.sleep()`
+
+让出CPU：`Thread.yield()`
+
+给其他线程执行的机会，如：循环处理多个记录的时候每个循环里`yield`一下，或阻塞
+在IO时`yield`一下。
+
+等待其他线程完毕：`t1.join()`
+
+当前的线程停下，等这个`t1`的线程执行完了以后再执行当前线程。
+
+=== 中断 ===
+
+对一个线程发出停止信号，如：`t1.interrupted()`要求线程`t1`停止。
+
+这样`t1`的执行就会抛出`InterruptedException`异常，它是受检查异常，表示当前线程
+被其他线程打断。如下面的代码收到异常后就`break`了，那么线程就中断了：
+
+{{{class="brush: java"
+class T1 extends Thread {
+	while(true) {
+		try { /* do something */ }
+		catch (InterruptedException e) { break; }
+	}
+}
+}}}
+
+如果去掉上面的`break`那线程就中断不了了。
+
+执行线程并中断的过程如下：
+
+{{{class="brush: java"
+T1 t1 = new T1();
+t1.start();
+t1.join();
+t1.interrupt();
+}}}
+
+
+== 线程协作 ==
+
+每个对象都有`wait`与`notify`和`notifyAll`方法，选一个对象作为标志来同步：
+
+＊ 以对象`o`为标志，当前线程停止，让给其他线程执行：
+
+{{{class="brush: java"
+synchronized { o.wait(); } //当前线程停止，等待唤醒。
+}}}
+
+这样当前线程就不会再醒过来，除非其他线程里调用对象`o`的`nodify`或是`nodifyAll`
+方法：
+
+{{{class="brush: java"
+synchronized { o.notifyAll(); } // 唤醒所有以o为标志等待的线程
+}}}
+
+
+== 内置锁同步 ==
+
+`synchronized`针对一个对象加锁，如果修饰类静态方法，那锁来自于所在的类`Class`
+对象。
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+{{{class="brush: java"
+}}}
+
+
+
+
+
+
+
+
+
+

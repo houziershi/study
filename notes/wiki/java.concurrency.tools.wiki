@@ -1,0 +1,106 @@
+
+%title 并发包工具
+
+%toc 并发包工具
+
+[[java.concurrency.class]]
+
+[[java.concurrency.latch]]
+
+[[java.concurrency.futuretask]]
+
+[[java.concurrency.semaphore]]
+
+[[java.concurrency.Executor]]
+
+[[java.concurrency.Lock]]
+
+[[java.concurrency.Condition]]
+
+
+
+
+
+
+= 生产者消费者模式 =
+
+用`Executor`接口。这个框架分开了任务提交与任务执行的解耦。
+
+`CompletionService`并行任务工具。
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+{{{class="brush: java"
+}}}
+
+
+
+

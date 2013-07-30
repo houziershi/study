@@ -1,0 +1,95 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+
+
+<title>java.concurrency.class</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+<h1 id="toc_1">非线程安全类</h1>
+
+<p>
+迭代非线程安全集合会抛出<code>ConcurrentModifyException</code>。
+</p>
+
+
+<h1 id="toc_2">原子操作</h1>
+
+<p>
+<code>java.utils.concurrent.atomic</code>包装器把对象包装成原子操作。
+</p>
+
+<p>
+<code>AtomicLong</code>类的原子方法<code>incrementAndGet()</code>和<code>decresmentAndGet()</code>。
+</p>
+
+
+
+
+<h1 id="toc_3">队列</h1>
+
+<h2 id="toc_3.1">常用</h2>
+
+<ul>
+<li>
+<code>PriorityBlockingQueue</code>带优先级的队列。
+
+</ul>
+ 
+<h2 id="toc_3.2">阻塞方式</h2>
+
+<ul>
+<li>
+<code>Queue</code>不阻塞，空时取返回空；满时放抛异常。
+
+<li>
+<code>BlockingQueue</code>会阻塞。
+
+</ul>
+
+
+<h2 id="toc_3.3">饱和策略</h2>
+
+<ul>
+<li>
+<code>Abort</code>：抛异常，调用者处理异常。
+
+<li>
+<code>Discard</code>：丢掉任务。
+
+<li>
+<code>DiscardOlds</code>：丢掉最老的任务。
+
+<li>
+<code>DiscardPolicy</code>：丢掉优先级最低的。
+
+<li>
+<code>Caller_Runs</code>：不抛异常，退回给调用者。用一个<code>execute()</code>执行它。
+
+</ul>
+
+<h2 id="toc_3.4">队列工作的问题</h2>
+
+<p>
+请求来太快了把等待队列也占满了。太长或是无限的队列，用<code>SynchronizeQueue</code>避免
+队列任务。它不是真的队列而是一个移交机制（相当于只有一个容量的队列），前一个
+请求没有处理完后一个请求会被拒绝。
+</p>
+ </div>
+</body>
+</html>

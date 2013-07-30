@@ -3,193 +3,20 @@
 
 %toc Java并发
 
-= 常见问题 =
+= Java线程 =
 
-== 竞争条件 ==
+[[java.concurrency.thread]]
 
-多个线程访问同一资源。`final`保证字段访问的原子性。
+= 线程安全问题 =
 
-== 可见性 ==
+[[java.concurrency.unsafty]]
 
-对一个目标的操作并不一定通过了内存栅栏。其他的线程看不到这个变化。
 
-用`synchronized`修饰的`getter setter`，用`volatile`声明变量。
+= 线程安全方案 =
 
+[[java.concurrency.solution]]
 
-== 发布未完成对象 ==
+= 并发包工具 =
 
-构造函数中使用到的内部类会得到当前对象的引用，等于已经发布出去了。所以不要在
-`public`构造函数中使用内部类，如新建线程并启动之类的。
+[[java.concurrency.tools]]
 
-推荐用静态的工厂方法应用到这样的场景。
-
-
-== 阻塞队列 ==
-
-不能用循环忙等待，标志位退出的方式。可以在队列里放一个特殊成员，读到它就表示
-应该退出。
-
-
-
-
-= 同步包装器与并发类 =
-
-
-= 常用模式 =
-
-== 封闭 ==
-
-资源只能在一个线程中被访问。
-
-== 监视器模式 ==
-
-用一个或多个对象来控制对不同操作锁。
-
-=== 锁错对象 ===
-
-同一个原子操作没有锁住同一个对象：
-
-{{{class="brush: java; highlight: [4, 8]"
-@NotThreadSafe
-public class ListHelper<E> {
-
-	public List<E> list = Collections.synchronizedList(new ArrayList<E>());
-		
-	// ...
-	
-	public synchronized boolean putIfAbsent(E x) {
-		boolean absent = !list.contains(x);
-		if (absent) list.add(x);
-		return absent;
-	}
-}
-}}}
-
-虽然是并发安全列表，但列表锁的是列表自己；而方法锁的是对象。
-
-下面这样就对了，应该锁住的是同一个对象：
-
-{{{class="brush: java; highlight: [4,9]"
-@ThreadSafe
-public class ListHelper<E> {
-
-	public List<E> list = Collections.synchronizedList(new ArrayList<E>());
-		
-	// ...
-	
-	public synchronized boolean putIfAbsent(E x) {
-		synchronized (list) {
-			boolean absent = !list.contains(x);
-			if (absent) list.add(x);
-			return absent;
-		}
-	}
-}
-}}}
-
-== 闭锁（Latch） ==
-
-线程安全机制。
-
-== 生产者消费者模式 ==
-
-用`Executor`接口。这个框架分开了任务提交与任务执行的解耦。
-
-`CompletionService`并行任务工具。
-
-{{{class="brush: java"
-}}}
-
-
-
-{{{class="brush: java"
-}}}
-
-
-
-{{{class="brush: java"
-}}}
-
-
-
-{{{class="brush: java"
-}}}
-
-
-
-{{{class="brush: java"
-}}}
-
-
-
-{{{class="brush: java"
-}}}
-
-
-
-{{{class="brush: java"
-}}}
-
-
-
-{{{class="brush: java"
-}}}
-
-
-
-{{{class="brush: java"
-}}}
-
-
-
-{{{class="brush: java"
-}}}
-
-
-
-{{{class="brush: java"
-}}}
-
-
-
-{{{class="brush: java"
-}}}
-
-
-
-{{{class="brush: java"
-}}}
-
-
-
-{{{class="brush: java"
-}}}
-
-
-{{{class="brush: java"
-}}}
-
-
-
-
-
-== 恢复中断 ==
-
-处理异常以后如果应该中断当前线程，应该中断：
-
-{{{class="brush: java"
-public class TaskRunnable implements Runnable {
-	BlockingQueue<Task> queue;
-
-	//...
-
-	public void run() {
-		try {
-			processTask(queue.take());
-		} catch (InterruptedException e) {
-			// 中断当前线程
-			Thread.currentThread().interrupt();
-		}
-	}
-}
-}}}

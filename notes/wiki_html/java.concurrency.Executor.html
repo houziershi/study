@@ -1,0 +1,196 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+
+
+<title>Executor框架</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>Executor框架</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">线程池</a>
+<ul>
+<li><a href="#toc_1.1">各种不同的线程池</a>
+<li><a href="#toc_1.2">创建线程池</a>
+<li><a href="#toc_1.3">Executor</a>
+</ul>
+<li><a href="#toc_2">执行任务</a>
+</ul>
+</div>
+
+<p>
+<code>Executor</code>框架作为线程池的实现用来代替<code>Thread</code>来管理线程，防止每个任务都建立
+新的线程。也可以作为一个基于“生产者－消费者模式”任务队列，这个框架分开了建立
+任务提交与任务执行的解耦。
+</p>
+
+
+
+<h1 id="toc_1">线程池</h1>
+
+<h2 id="toc_1.1">各种不同的线程池</h2>
+
+<h2 id="toc_1.2">创建线程池</h2>
+
+<pre class="brush: java">
+Executor pool = Executors.newFixedThreadPool(num);
+</pre>
+
+<p>
+方法：
+</p>
+
+<ul>
+<li>
+<code>shutdown()</code>
+
+<li>
+<code>shutdownNow()</code>
+
+<li>
+<code>isShutdown()</code>
+
+<li>
+<code>isInited()</code>
+
+<li>
+<code>awaitTermination()</code>
+
+</ul>
+
+<h2 id="toc_1.3">Executor</h2>
+
+<p>
+<code>Executor</code>接口代表一个任务，要实现的方法<code>execute</code>里是对<code>Runnable</code>对象的调用：
+</p>
+
+<pre class="brush: java">
+public interface Executor {
+	void execute(Runnable command);
+}
+</pre>
+
+<p>
+可以重写它来实现不同的策略，如：
+</p>
+
+<p>
+为每个请求都创建一个线程：
+</p>
+
+<pre class="brush: java">
+public class ThreadPerTaskExecutor implements Executor {
+	void execute(Runnable r) {
+		new Thread(r).start();
+	}
+}
+</pre>
+
+<p>
+或用同步的方法在当前线程中执行任务：
+</p>
+
+<pre class="brush: java">
+public class WithinThreadExecutor implements Executor {
+	void execute(Runnable r) {
+		r.run();
+	}
+}
+</pre>
+
+<h1 id="toc_2">执行任务</h1>
+
+
+<p>
+继承<code>execute</code>方法　
+</p>
+
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+<pre class="brush: java">
+</pre>
+ </div>
+</body>
+</html>

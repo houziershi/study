@@ -1,0 +1,165 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+
+
+<title>线程安全问题</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>线程安全问题</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">常见问题</a>
+<ul>
+<li><a href="#toc_1.1">竞争条件</a>
+<li><a href="#toc_1.2">可见性</a>
+<li><a href="#toc_1.3">发布未完成对象</a>
+<li><a href="#toc_1.4">迭代集合</a>
+<li><a href="#toc_1.5">阻塞队列</a>
+<li><a href="#toc_1.6">Copy-on-Write</a>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">常见问题</h1>
+
+<h2 id="toc_1.1">竞争条件</h2>
+
+<p>
+多个线程访问同一资源。<code>final</code>保证字段访问的原子性。
+</p>
+
+<h2 id="toc_1.2">可见性</h2>
+
+<p>
+对一个目标的操作并不一定通过了内存栅栏。其他的线程看不到这个变化。
+</p>
+
+<p>
+用<code>synchronized</code>修饰的<code>getter setter</code>，用<code>volatile</code>声明变量。
+</p>
+
+
+<h2 id="toc_1.3">发布未完成对象</h2>
+
+<p>
+构造函数中使用到的内部类会得到当前对象的引用，等于已经发布出去了。所以不要在
+<code>public</code>构造函数中使用内部类，如新建线程并启动之类的。
+</p>
+
+<p>
+推荐用静态的工厂方法应用到这样的场景。
+</p>
+
+<h2 id="toc_1.4">迭代集合</h2>
+
+<p>
+迭代过程中可能已经被修改。注意<code>toString</code>也是基于迭代的。
+</p>
+
+
+<h2 id="toc_1.5">阻塞队列</h2>
+
+<p>
+不能用循环忙等待，标志位退出的方式。可以在队列里放一个特殊成员，读到它就表示
+应该退出。
+</p>
+
+<h2 id="toc_1.6">Copy-on-Write</h2>
+
+<p>
+每次修改其实都是做了一个新的副本。
+</p>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+<pre class="brush: java">
+</pre>
+ </div>
+</body>
+</html>

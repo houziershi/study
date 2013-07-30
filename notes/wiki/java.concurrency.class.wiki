@@ -1,0 +1,41 @@
+
+= 非线程安全类 =
+
+迭代非线程安全集合会抛出`ConcurrentModifyException`。
+
+
+= 原子操作 =
+
+`java.utils.concurrent.atomic`包装器把对象包装成原子操作。
+
+`AtomicLong`类的原子方法`incrementAndGet()`和`decresmentAndGet()`。
+
+
+
+
+= 队列 =
+
+== 常用 ==
+
+* `PriorityBlockingQueue`带优先级的队列。
+ 
+== 阻塞方式 ==
+
+* `Queue`不阻塞，空时取返回空；满时放抛异常。
+* `BlockingQueue`会阻塞。
+
+
+== 饱和策略 ==
+
+* `Abort`：抛异常，调用者处理异常。
+* `Discard`：丢掉任务。
+* `DiscardOlds`：丢掉最老的任务。
+* `DiscardPolicy`：丢掉优先级最低的。
+* `Caller_Runs`：不抛异常，退回给调用者。用一个`execute()`执行它。
+
+== 队列工作的问题 ==
+
+请求来太快了把等待队列也占满了。太长或是无限的队列，用`SynchronizeQueue`避免
+队列任务。它不是真的队列而是一个移交机制（相当于只有一个容量的队列），前一个
+请求没有处理完后一个请求会被拒绝。
+

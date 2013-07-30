@@ -1,0 +1,226 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+
+
+<title>线程安全方案</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>线程安全方案</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">封闭</a>
+<li><a href="#toc_2">监视器模式</a>
+<ul>
+<li><a href="#toc_2.1">锁错对象</a>
+<li><a href="#toc_2.2">恢复中断</a>
+</ul>
+<li><a href="#toc_3">实现单例</a>
+</ul>
+</div>
+
+
+<h1 id="toc_1">封闭</h1>
+
+<p>
+资源只能在一个线程中被访问。
+</p>
+
+
+
+
+<h1 id="toc_2">监视器模式</h1>
+
+<p>
+用一个或多个对象来控制对不同操作锁。
+</p>
+
+<h2 id="toc_2.1">锁错对象</h2>
+
+<p>
+同一个原子操作没有锁住同一个对象：
+</p>
+
+<pre class="brush: java; highlight: [4, 8]">
+@NotThreadSafe
+public class ListHelper&lt;E&gt; {
+
+	public List&lt;E&gt; list = Collections.synchronizedList(new ArrayList&lt;E&gt;());
+		
+	// ...
+	
+	public synchronized boolean putIfAbsent(E x) {
+		boolean absent = !list.contains(x);
+		if (absent) list.add(x);
+		return absent;
+	}
+}
+</pre>
+
+<p>
+虽然是并发安全列表，但列表锁的是列表自己；而方法锁的是对象。
+</p>
+
+<p>
+下面这样就对了，应该锁住的是同一个对象：
+</p>
+
+<pre class="brush: java; highlight: [4,9]">
+@ThreadSafe
+public class ListHelper&lt;E&gt; {
+
+	public List&lt;E&gt; list = Collections.synchronizedList(new ArrayList&lt;E&gt;());
+		
+	// ...
+	
+	public synchronized boolean putIfAbsent(E x) {
+		synchronized (list) {
+			boolean absent = !list.contains(x);
+			if (absent) list.add(x);
+			return absent;
+		}
+	}
+}
+</pre>
+
+
+
+<h2 id="toc_2.2">恢复中断</h2>
+
+<p>
+处理异常以后如果应该中断当前线程，应该中断：
+</p>
+
+<pre class="brush: java">
+public class TaskRunnable implements Runnable {
+	BlockingQueue&lt;Task&gt; queue;
+
+	//...
+
+	public void run() {
+		try {
+			processTask(queue.take());
+		} catch (InterruptedException e) {
+			// 中断当前线程
+			Thread.currentThread().interrupt();
+		}
+	}
+}
+</pre>
+
+
+
+<h1 id="toc_3">实现单例</h1>
+
+<p>
+提前初始化：
+</p>
+
+<pre class="brush: java">
+Class ConnectionFactory {
+	private static Connection conn = new Connection();
+
+	public static Connection getInstance() {
+		return conn;
+	}
+}	
+</pre>
+
+<p>
+嫌提前消耗了资源，那用私有内部类实现延迟初始化：
+</p>
+
+<pre class="brush: java">
+Class ConnectionFactory {
+	private static class Holder {
+		public static Connection conn = new Connection();
+	}
+
+	public static Connection getInstance() {
+		return Holder.conn;
+	}
+}	
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+<pre class="brush: java">
+</pre>
+ </div>
+</body>
+</html>

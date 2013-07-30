@@ -1,0 +1,97 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+
+
+<title>java.concurrency.Condition</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1 id="toc_1">条件队列的缺陷</h1>
+
+<p>
+例子：现在有一个队列被多个线程访问。
+</p>
+
+<p>
+出队方法检查如果没有元素就等待其他线程放入元素以后再唤醒它。成功放入元素以后，
+它也会唤醒一下其他线程，因为可能有别的取出线程看到队列空了以后等待有元素的：
+</p>
+
+<pre class="brush: java">
+public void put(Object obj) {
+	while(this.isFull())
+		wait();
+
+	doPut(obj);
+	notifyAll();
+}
+</pre>
+
+<p>
+以上设计有些问题：
+</p>
+
+<ul>
+<li>
+被唤醒的原因不一定是因为队列不满了。
+
+<li>
+就算是因为队列空了，也有可能在异步过程中其他线程又放满了。
+
+</ul>
+
+<p>
+对于以上的忙等待模式，可以改进为下面的套路：用一个对象作为锁来同步防止又被改掉
+了：
+</p>
+
+<pre class="brush: java">
+void func() throws InterruptException {
+	synchronized (lock) {
+		while(!isReady)
+			lock.wait();
+
+		// do something
+	}
+}
+</pre>
+
+<p>
+这样解决了出错问题，但还有性能问题：<code>notify()</code>选一个唤醒，而<code>notifyAll()</code>会唤醒
+多个线程。很多被唤醒的线程不是真的满足了条件，它们会又一次竞争锁。然后只有一个
+得到锁其他的又进入等待。这样很浪费。
+</p>
+
+
+<h1 id="toc_2">Condition</h1>
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+<pre class="brush: java">
+</pre>
+ </div>
+</body>
+</html>

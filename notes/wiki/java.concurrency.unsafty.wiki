@@ -1,0 +1,116 @@
+
+%title 线程安全问题
+
+%toc 线程安全问题
+
+= 常见问题 =
+
+== 竞争条件 ==
+
+多个线程访问同一资源。`final`保证字段访问的原子性。
+
+== 可见性 ==
+
+对一个目标的操作并不一定通过了内存栅栏。其他的线程看不到这个变化。
+
+用`synchronized`修饰的`getter setter`，用`volatile`声明变量。
+
+
+== 发布未完成对象 ==
+
+构造函数中使用到的内部类会得到当前对象的引用，等于已经发布出去了。所以不要在
+`public`构造函数中使用内部类，如新建线程并启动之类的。
+
+推荐用静态的工厂方法应用到这样的场景。
+
+== 迭代集合 ==
+
+迭代过程中可能已经被修改。注意`toString`也是基于迭代的。
+
+
+== 阻塞队列 ==
+
+不能用循环忙等待，标志位退出的方式。可以在队列里放一个特殊成员，读到它就表示
+应该退出。
+
+== Copy-on-Write ==
+
+每次修改其实都是做了一个新的副本。
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+{{{class="brush: java"
+}}}
+
+
+
+

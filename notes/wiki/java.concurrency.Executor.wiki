@@ -1,0 +1,141 @@
+
+%title Executor框架
+
+%toc Executor框架
+
+`Executor`框架作为线程池的实现用来代替`Thread`来管理线程，防止每个任务都建立
+新的线程。也可以作为一个基于“生产者－消费者模式”任务队列，这个框架分开了建立
+任务提交与任务执行的解耦。
+
+
+
+= 线程池 =
+
+== 各种不同的线程池 ==
+
+== 创建线程池 ==
+
+{{{class="brush: java"
+Executor pool = Executors.newFixedThreadPool(num);
+}}}
+
+方法：
+
+* `shutdown()`
+* `shutdownNow()`
+* `isShutdown()`
+* `isInited()`
+* `awaitTermination()`
+
+== Executor ==
+
+`Executor`接口代表一个任务，要实现的方法`execute`里是对`Runnable`对象的调用：
+
+{{{class="brush: java"
+public interface Executor {
+	void execute(Runnable command);
+}
+}}}
+
+可以重写它来实现不同的策略，如：
+
+为每个请求都创建一个线程：
+
+{{{class="brush: java"
+public class ThreadPerTaskExecutor implements Executor {
+	void execute(Runnable r) {
+		new Thread(r).start();
+	}
+}
+}}}
+
+或用同步的方法在当前线程中执行任务：
+
+{{{class="brush: java"
+public class WithinThreadExecutor implements Executor {
+	void execute(Runnable r) {
+		r.run();
+	}
+}
+}}}
+
+= 执行任务 =
+
+
+继承`execute`方法　
+
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+{{{class="brush: java"
+}}}
+
+
+
+
+
+

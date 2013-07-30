@@ -1,0 +1,179 @@
+
+%title 线程安全方案
+
+%toc 线程安全方案
+
+
+= 封闭 =
+
+资源只能在一个线程中被访问。
+
+
+
+
+= 监视器模式 =
+
+用一个或多个对象来控制对不同操作锁。
+
+== 锁错对象 ==
+
+同一个原子操作没有锁住同一个对象：
+
+{{{class="brush: java; highlight: [4, 8]"
+@NotThreadSafe
+public class ListHelper<E> {
+
+	public List<E> list = Collections.synchronizedList(new ArrayList<E>());
+		
+	// ...
+	
+	public synchronized boolean putIfAbsent(E x) {
+		boolean absent = !list.contains(x);
+		if (absent) list.add(x);
+		return absent;
+	}
+}
+}}}
+
+虽然是并发安全列表，但列表锁的是列表自己；而方法锁的是对象。
+
+下面这样就对了，应该锁住的是同一个对象：
+
+{{{class="brush: java; highlight: [4,9]"
+@ThreadSafe
+public class ListHelper<E> {
+
+	public List<E> list = Collections.synchronizedList(new ArrayList<E>());
+		
+	// ...
+	
+	public synchronized boolean putIfAbsent(E x) {
+		synchronized (list) {
+			boolean absent = !list.contains(x);
+			if (absent) list.add(x);
+			return absent;
+		}
+	}
+}
+}}}
+
+
+
+== 恢复中断 ==
+
+处理异常以后如果应该中断当前线程，应该中断：
+
+{{{class="brush: java"
+public class TaskRunnable implements Runnable {
+	BlockingQueue<Task> queue;
+
+	//...
+
+	public void run() {
+		try {
+			processTask(queue.take());
+		} catch (InterruptedException e) {
+			// 中断当前线程
+			Thread.currentThread().interrupt();
+		}
+	}
+}
+}}}
+
+
+
+= 实现单例 =
+
+提前初始化：
+
+{{{class="brush: java"
+Class ConnectionFactory {
+	private static Connection conn = new Connection();
+
+	public static Connection getInstance() {
+		return conn;
+	}
+}	
+}}}
+
+嫌提前消耗了资源，那用私有内部类实现延迟初始化：
+
+{{{class="brush: java"
+Class ConnectionFactory {
+	private static class Holder {
+		public static Connection conn = new Connection();
+	}
+
+	public static Connection getInstance() {
+		return Holder.conn;
+	}
+}	
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+{{{class="brush: java"
+}}}
+
+
+
+

@@ -1,0 +1,98 @@
+
+= 外部锁（显示锁） =
+
+JDK5还提供了外部锁：`java.util.concurrent.locks.Lock`。补充`synchronized`对应
+的内置锁。
+
+* 内置锁在`synchronized`代码结束后自动释放。
+* 内置锁无法实现非阻塞结构的加锁规则。
+* 外部锁必须手动释放，所以一定要在`finally`块中释放。
+
+{{{class="brush: java"
+Lock lock = new ReentrantLock();
+
+lock.lock();
+try {
+	/* do something */ 
+} finally {
+	lock.unlock();
+}
+}}}
+
+
+== 避免死锁 ==
+
+内置锁容易死锁，外部锁`tryLock()`方法尽量避免死锁。因为这个方法会在取不到锁时
+退回，下次再试。
+
+如下面的在两个账户之间的转账程序：
+
+{{{class="brush: java"
+public void transferMoney(Account fromAccount, Account toAccount, 
+		BigDecimal amt) 
+{
+	while (true) {
+		if (fromAccount.lock.tryLock()) {
+			try {
+				if (toAccount.lock.tryLock()) {
+					try {
+						if (fromAccount.getBalance().Compareto(amount) < 0) {
+							throw new InsufficientFundsException(); // 余额不足
+						} else {
+							fromAccount.debit(amount);
+							toAccount.credit(amount);
+					} finally {
+						toAccount.lock.unlock();
+					}
+				}
+			} finally {
+				fromAccount.lock.unlock();
+			}
+		}
+	}
+}
+}}}
+
+还可以指定时限：
+
+{{{class="brush: java"
+if (!lock.tryLock(time, NANOSECONDS))
+	return false;
+try {
+	/* do something */
+} finally {
+	lock.unlock();
+}
+}}}
+
+还可以指定取锁过程中可以中断。这样还要再处理中断异常的：
+
+{{{class="brush: java"
+try {
+	lock.lockInterruptibly(); // 可中断
+	try {
+		// do something 
+	} finally {
+		lock.unlock();
+	}
+} catch (InterruptedException) {
+	// do something
+}
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
