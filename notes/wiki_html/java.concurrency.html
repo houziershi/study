@@ -25,33 +25,100 @@
 <h1>Java并发</h1>
 <div class="toc">
 <ul>
-<li><a href="#toc_1">对象组合</a>
+<li><a href="#toc_1">常见问题</a>
 <ul>
-<li><a href="#toc_1.1">锁错对象</a>
-<li><a href="#toc_1.2">恢复中断</a>
+<li><a href="#toc_1.1">竞争条件</a>
+<li><a href="#toc_1.2">可见性 </a>
+<li><a href="#toc_1.3">发布未完成对象 </a>
+<li><a href="#toc_1.4">阻塞队列</a>
+</ul>
+<li><a href="#toc_2">同步包装器与并发类 </a>
+<li><a href="#toc_3">常用模式</a>
+<ul>
+<li><a href="#toc_3.1">封闭</a>
+<li><a href="#toc_3.2">监视器模式 </a>
+<ul>
+<li><a href="#toc_3.2.1">锁错对象</a>
+</ul>
+<li><a href="#toc_3.3">闭锁（Latch） </a>
+<li><a href="#toc_3.4">生产者消费者模式 </a>
+<li><a href="#toc_3.5">恢复中断</a>
 </ul>
 </ul>
 </div>
 
-<h1 id="toc_1">对象组合</h1>
+<h1 id="toc_1">常见问题</h1>
 
-<h2 id="toc_1.1">锁错对象</h2>
+<h2 id="toc_1.1">竞争条件</h2>
+
+<p>
+多个线程访问同一资源。`final`保证字段访问的原子性。
+</p>
+
+<h2 id="toc_1.2">可见性 </h2>
+
+<p>
+对一个目标的操作并不一定通过了内存栅栏。其他的线程看不到这个变化。
+</p>
+
+<p>
+用`synchronized<code>修饰的`getter setter</code>，用<code>volatile</code>声明变量。
+</p>
+
+
+<h2 id="toc_1.3">发布未完成对象 </h2>
+
+<p>
+构造函数中使用到的内部类会得到当前对象的引用，等于已经发布出去了。所以不要在
+<code>public</code>构造函数中使用内部类，如新建线程并启动之类的。
+</p>
+
+<p>
+推荐用静态的工厂方法应用到这样的场景。
+</p>
+
+
+<h2 id="toc_1.4">阻塞队列</h2>
+
+<p>
+不能用循环忙等待，标志位退出的方式。可以在队列里放一个特殊成员，读到它就表示
+应该退出。
+</p>
+
+
+
+
+<h1 id="toc_2">同步包装器与并发类 </h1>
+
+
+<h1 id="toc_3">常用模式</h1>
+
+<h2 id="toc_3.1">封闭</h2>
+
+<p>
+资源只能在一个线程中被访问。
+</p>
+
+<h2 id="toc_3.2">监视器模式 </h2>
+
+<p>
+用一个或多个对象来控制对不同操作锁。
+</p>
+
+<h3 id="toc_3.2.1">锁错对象</h3>
 
 <p>
 同一个原子操作没有锁住同一个对象：
 </p>
 
-<pre class="brush: java">
+<pre class="brush: java; highlight: [4, 8]">
 @NotThreadSafe
 public class ListHelper&lt;E&gt; {
 
-	// 虽然是并发安全列表，但用的锁是列表自己
-	public List&lt;E&gt; list =
-		Collections.synchronizedList(new ArrayList&lt;E&gt;());
+	public List&lt;E&gt; list = Collections.synchronizedList(new ArrayList&lt;E&gt;());
 		
 	// ...
 	
-	// 这里的同步锁用的是this
 	public synchronized boolean putIfAbsent(E x) {
 		boolean absent = !list.contains(x);
 		if (absent) list.add(x);
@@ -61,21 +128,22 @@ public class ListHelper&lt;E&gt; {
 </pre>
 
 <p>
-下面这样就对了，锁住的是同一个对象：
+虽然是并发安全列表，但列表锁的是列表自己；而方法锁的是对象。
 </p>
 
-<pre class="brush: java">
+<p>
+下面这样就对了，应该锁住的是同一个对象：
+</p>
+
+<pre class="brush: java; highlight: [4,9]">
 @ThreadSafe
 public class ListHelper&lt;E&gt; {
 
-	// 虽然是并发安全列表，但用的锁是列表自己
-	public List&lt;E&gt; list =
-		Collections.synchronizedList(new ArrayList&lt;E&gt;());
+	public List&lt;E&gt; list = Collections.synchronizedList(new ArrayList&lt;E&gt;());
 		
 	// ...
 	
 	public synchronized boolean putIfAbsent(E x) {
-		// 也是锁的list  
 		synchronized (list) {
 			boolean absent = !list.contains(x);
 			if (absent) list.add(x);
@@ -85,8 +153,99 @@ public class ListHelper&lt;E&gt; {
 }
 </pre>
 
+<h2 id="toc_3.3">闭锁（Latch） </h2>
 
-<h2 id="toc_1.2">恢复中断</h2>
+<p>
+线程安全机制。
+</p>
+
+<h2 id="toc_3.4">生产者消费者模式 </h2>
+
+<p>
+用`Executor`接口。这个框架分开了任务提交与任务执行的解耦。
+</p>
+
+<p>
+<code>CompletionService</code>并行任务工具。
+</p>
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+
+
+<h2 id="toc_3.5">恢复中断</h2>
 
 <p>
 处理异常以后如果应该中断当前线程，应该中断：
@@ -107,80 +266,6 @@ public class TaskRunnable implements Runnable {
 		}
 	}
 }
-</pre>
-
-
-
-<pre class="brush: java">
-</pre>
-
-
-
-<pre class="brush: java">
-</pre>
-
-
-
-<pre class="brush: java">
-</pre>
-
-
-
-<pre class="brush: java">
-</pre>
-
-
-
-<pre class="brush: java">
-</pre>
-
-
-
-<pre class="brush: java">
-</pre>
-
-
-
-<pre class="brush: java">
-</pre>
-
-
-
-<pre class="brush: java">
-</pre>
-
-
-
-<pre class="brush: java">
-</pre>
-
-
-
-<pre class="brush: java">
-</pre>
-
-
-
-<pre class="brush: java">
-</pre>
-
-
-
-<pre class="brush: java">
-</pre>
-
-
-
-<pre class="brush: java">
-</pre>
-
-
-
-<pre class="brush: java">
-</pre>
-
-
-<pre class="brush: java">
 </pre>
  </div>
 </body>
