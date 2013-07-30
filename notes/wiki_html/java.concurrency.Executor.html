@@ -30,8 +30,13 @@
 <li><a href="#toc_1.1">各种不同的线程池</a>
 <li><a href="#toc_1.2">创建线程池</a>
 <li><a href="#toc_1.3">Executor</a>
+<li><a href="#toc_1.4">执行任务</a>
 </ul>
-<li><a href="#toc_2">执行任务</a>
+<li><a href="#toc_2">周期性任务</a>
+<ul>
+<li><a href="#toc_2.1">忙等待方案</a>
+<li><a href="#toc_2.2">周期性任务线程池</a>
+</ul>
 </ul>
 </div>
 
@@ -115,32 +120,82 @@ public class WithinThreadExecutor implements Executor {
 }
 </pre>
 
-<h1 id="toc_2">执行任务</h1>
-
+<h2 id="toc_1.4">执行任务</h2>
 
 <p>
 继承<code>execute</code>方法　
 </p>
 
 
+<h1 id="toc_2">周期性任务</h1>
 
+<h2 id="toc_2.1">忙等待方案</h2>
 
 <pre class="brush: java">
+public void loopTask() {
+	while (flag) {
+		doSomething();
+		sleep(100);
+	}
+}
 </pre>
 
+<ul>
+<li>
+这样的任务，每启动一个实例，就会有一个线程。操作系统最大线程数是有限的。
 
+<li>
+注意<code>sleep(100)</code>，占用了一个线程，大部分时间不害休眠状态。
+
+</ul>
+
+<h2 id="toc_2.2">周期性任务线程池</h2>
+
+<p>
+<code>ScheduledThreadPoolExecutor</code>适合执行周期性任务。注意要用<code>static final</code>修饰才能
+由多个线程共享：
+</p>
 
 <pre class="brush: java">
+private static final ScheduledExecutorService timer = 
+	Executors.newScheduledThreadPool(10);
 </pre>
 
-
+<p>
+成员方法<code>scheduleAtFixedRate(runnable)</code>接收任务，执行间隔等设置：
+</p>
 
 <pre class="brush: java">
+private void init() {
+	replenishTask = timer.scheduleAtFixedRate(
+		new Runnable() {
+			public void run() {
+				// do something...
+			}
+		}, 0, 1, TimeUnit.SECONDS);
+}
 </pre>
 
+<p>
+注意任务要处理掉异常，因为如果有异常抛出的话会中断周期任务。
+</p>
 
+<p>
+<code>ScheduledExecutorService.shutdown()</code>关闭线程池。但是要注意已经启动的线程停不
+下来。所以在创建线程池时指定线程的构造器让创建出来的线程都是守护线程：
+</p>
 
 <pre class="brush: java">
+import java.util.concurrent.ThreadFactory;
+
+private static final ScheduledExecutorService Timer =
+	Executors.newScheduledThreadPool(10, ThreadFactory() {
+		public Thread newThread(Runnable runnable) {
+			Thread thread = new Thread(runnable);
+			thread.setDaemon(true);
+			return thread;
+		}
+	});
 </pre>
 
 

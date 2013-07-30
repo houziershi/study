@@ -1,0 +1,165 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+
+
+<title>java.concurrency.fork-join</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+<h1 id="toc_1">Fork-Join</h1>
+
+<p>
+Java 7新提供了“Fork-Join”机制。在多个线程并行的情况下，如果有些进程处于等待
+状态会自动转而处理其他可以进行的任务以提高性能。
+</p>
+
+<p>
+适合Fork-Join的情况：
+</p>
+
+<ul>
+<li>
+任务开销不要太大；希望没有副作用；希望没有同步操作。
+
+<li>
+适合分解成小的任务。
+
+</ul>
+
+<h2 id="toc_1.1">实现方式</h2>
+
+<p>
+实现<code>RecursiveTask</code>接口，并重写<code>compute</code>方法。里面可以执行多个<code>ForkJoinTask</code>。
+<code>invokeAll</code>启动所以的任务，先完成或阻塞的子任务会自动转而完成还没有完成的任务。
+如：
+</p>
+
+<pre class="brush: java; highlight: [1,6,10]">
+private static class FileSizeFinder extends RecursiveTask&lt;Long&gt; {
+	@Override
+	public Long compute() {
+		long size = 0;
+		
+		List&lt;ForkJoinTask&lt;Long&gt;&gt; tasks = new ArrayList&lt;ForkJoinTask&lt;Long&gt;&gt;();
+		// add task to list
+		// ...
+		
+		for(final ForkJoinTask&lt;Long&gt; task : invokeAll(tasks)) {
+			size += task.join();
+		}
+		return size;
+	}
+}
+</pre>
+
+<p>
+调用时用<code>ForkJoinPool</code>：
+</p>
+
+<pre class="brush: java">
+private final static ForkJoinPool forkJoinPool = new ForkJoinPool();
+final long total = forkJoinPool.invoke(new FileSizeFinder(new File(args[0])));
+</pre>
+
+<p>
+注意<code>forkJoinPool</code>必须是静态成员才可以在整个应用中共享。
+</p>
+
+<p>
+统计目录下所有文件大小的完整代码如下：
+</p>
+
+<pre class="brush: java">
+package com.agiledeveloper.pcj;
+
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
+import java.util.concurrent.RecursiveTask;
+import java.util.List;
+import java.util.ArrayList;
+import java.io.File;
+
+public class FileSize {
+
+	private final static ForkJoinPool forkJoinPool = new ForkJoinPool();
+
+	private static class FileSizeFinder extends RecursiveTask&lt;Long&gt;
+	{
+		final File file;
+
+		public FileSizeFinder(final File theFile) {
+			file = theFile;
+		}
+
+		@Override
+		public Long compute() {
+			long size = 0;
+			if (file.isFile()) {
+				size = file.length();
+			} else {
+				final File[] children = file.listFiles();
+				if (children != null) {
+					List&lt;ForkJoinTask&lt;Long&gt;&gt; tasks = 
+						new ArrayList&lt;ForkJoinTask&lt;Long&gt;&gt;();
+					for(final File child : children) {
+						if (child.isFile()) {
+							size += child.length();
+						} else {
+							tasks.add(new FileSizeFinder(child));
+						}
+					}
+
+					for(final ForkJoinTask&lt;Long&gt; task : invokeAll(tasks)) {
+						size += task.join();
+					}
+				}
+			}
+
+			return size;
+		}
+	}
+
+	public static void main(final String[] args) {
+		final long start = System.nanoTime();
+		final long total = forkJoinPool.invoke(
+				new FileSizeFinder(new File(args[0])));
+		final long end = System.nanoTime();
+		System.out.println("Total Size: " + total);
+		System.out.println("Time taken: " + (end - start)/1.0e9);		
+	}
+}
+</pre>
+
+
+<pre class="brush: java">
+</pre>
+
+
+<pre class="brush: java">
+</pre>
+
+
+<pre class="brush: java">
+</pre>
+
+
+<pre class="brush: java">
+</pre>
+ </div>
+</body>
+</html>

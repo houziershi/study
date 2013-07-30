@@ -10,20 +10,39 @@
 
 `AtomicLong`类的原子方法`incrementAndGet()`和`decresmentAndGet()`。
 
+包装集合为不可变版本：`Collections.unmodifiableLists(list)`
 
+包装同步版：`SynchronizedMap m = Collection.SynchronizedMap(new HashMap())`
 
+= 并发类 =
+
+并发类如：`ConcurrentHashMap`等为并发环境设计。为了优化性能不只用了一个锁，内部
+分多个块用多个锁同步。所以增加了并发性能。
 
 = 队列 =
 
 == 常用 ==
 
-* `PriorityBlockingQueue`带优先级的队列。
- 
-== 阻塞方式 ==
-
 * `Queue`不阻塞，空时取返回空；满时放抛异常。
-* `BlockingQueue`会阻塞。
+* `SynchrousQueue`会同步插入与删除操作。
+* `BlockingQueue`存取操作会阻塞。
+* `PriorityBlockingQueue`带优先级的队列。
 
+== 阻塞队列 ==
+
+简单的阻塞队列可以用`LinkedblockingQueue`或`ArrayBlockingQueue`。
+
+对于队列空取或满存的情况有四种策略：
+
+* 抛出异常。
+* 特殊值。空取时为`null`；满存时为`false`。
+* 阻塞。
+* 超时。只会阻塞指定的时间。
+
+|      | 抛出异常  | 特殊值   | 阻塞   | 超时                 |
+| 插入 | add(e)    | offer(e) | put(e) | offer(e, time, unit) |
+| 移除 | remove()  | poll()   | take() | poll(time, unit)     |
+| 检查 | element() | peek()   | 不可用 | 不可用               |
 
 == 饱和策略 ==
 

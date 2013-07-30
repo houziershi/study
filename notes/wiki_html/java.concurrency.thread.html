@@ -79,9 +79,17 @@ t1.start();
 </pre>
 
 
-<h2 id="toc_1.4">控制线程执行</h2>
+<h2 id="toc_1.4">内置锁同步</h2>
 
-<h3 id="toc_1.4.1">sleep、yield、join</h3>
+<p>
+<code>synchronized</code>针对一个对象加锁，如果修饰类静态方法，那锁来自于所在的类<code>Class</code>
+对象。
+</p>
+
+
+<h2 id="toc_1.5">控制线程执行</h2>
+
+<h3 id="toc_1.5.1">sleep、yield、join</h3>
 
 <p>
 暂停线程：<code>Thread.sleep()</code>
@@ -104,7 +112,7 @@ t1.start();
 当前的线程停下，等这个<code>t1</code>的线程执行完了以后再执行当前线程。
 </p>
 
-<h3 id="toc_1.4.2">中断</h3>
+<h3 id="toc_1.5.2">中断</h3>
 
 <p>
 对一个线程发出停止信号，如：<code>t1.interrupted()</code>要求线程<code>t1</code>停止。
@@ -140,7 +148,7 @@ t1.interrupt();
 </pre>
 
 
-<h2 id="toc_1.5">线程协作</h2>
+<h2 id="toc_1.6">线程协作</h2>
 
 <p>
 每个对象都有<code>wait</code>与<code>notify</code>和<code>notifyAll</code>方法，选一个对象作为标志来同步：
@@ -163,16 +171,26 @@ synchronized { o.wait(); } //当前线程停止，等待唤醒。
 synchronized { o.notifyAll(); } // 唤醒所有以o为标志等待的线程
 </pre>
 
-
-<h2 id="toc_1.6">内置锁同步</h2>
+<h1 id="toc_2">本地线程变量</h1>
 
 <p>
-<code>synchronized</code>针对一个对象加锁，如果修饰类静态方法，那锁来自于所在的类<code>Class</code>
-对象。
+<code>ThreadLocal</code>类给每个线程都准备一个资源的副本。保证每个资源只有当前线程可以
+访问。
 </p>
 
+<p>
+<code>ThreadLocal</code>对象不能简单地赋值就完了。因为它管理的每个线程的内容都要初始化，
+所以它每次都会调用自己的<code>initialValue()</code>方法。重写这个方法可以完成每个线程的
+初始化。
+</p>
 
 <pre class="brush: java">
+private static ThreadLocal&lt;List&lt;String&gt;&gt; threadLod =
+	new ThreadLocal&lt;List&lt;String&gt;&gt;() {
+		protected List&lt;String&gt; initialValue() {
+			return new ArrayList&lt;String&gt;();
+		}
+	}
 </pre>
 
 

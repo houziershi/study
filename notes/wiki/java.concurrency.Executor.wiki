@@ -59,30 +59,66 @@ public class WithinThreadExecutor implements Executor {
 }
 }}}
 
-= 执行任务 =
-
+== 执行任务 ==
 
 继承`execute`方法　
 
 
+= 周期性任务 =
 
+== 忙等待方案 ==
 
 {{{class="brush: java"
+public void loopTask() {
+	while (flag) {
+		doSomething();
+		sleep(100);
+	}
+}
 }}}
 
+* 这样的任务，每启动一个实例，就会有一个线程。操作系统最大线程数是有限的。
+* 注意`sleep(100)`，占用了一个线程，大部分时间不害休眠状态。
 
+== 周期性任务线程池 ==
+
+`ScheduledThreadPoolExecutor`适合执行周期性任务。注意要用`static final`修饰才能
+由多个线程共享：
 
 {{{class="brush: java"
+private static final ScheduledExecutorService timer = 
+	Executors.newScheduledThreadPool(10);
 }}}
 
-
+成员方法`scheduleAtFixedRate(runnable)`接收任务，执行间隔等设置：
 
 {{{class="brush: java"
+private void init() {
+	replenishTask = timer.scheduleAtFixedRate(
+		new Runnable() {
+			public void run() {
+				// do something...
+			}
+		}, 0, 1, TimeUnit.SECONDS);
+}
 }}}
 
+注意任务要处理掉异常，因为如果有异常抛出的话会中断周期任务。
 
+`ScheduledExecutorService.shutdown()`关闭线程池。但是要注意已经启动的线程停不
+下来。所以在创建线程池时指定线程的构造器让创建出来的线程都是守护线程：
 
 {{{class="brush: java"
+import java.util.concurrent.ThreadFactory;
+
+private static final ScheduledExecutorService Timer =
+	Executors.newScheduledThreadPool(10, ThreadFactory() {
+		public Thread newThread(Runnable runnable) {
+			Thread thread = new Thread(runnable);
+			thread.setDaemon(true);
+			return thread;
+		}
+	});
 }}}
 
 

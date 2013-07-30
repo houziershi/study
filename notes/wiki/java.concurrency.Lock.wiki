@@ -8,6 +8,10 @@ JDK5还提供了外部锁：`java.util.concurrent.locks.Lock`。补充`synchroni
 * 内置锁无法实现非阻塞结构的加锁规则。
 * 外部锁必须手动释放，所以一定要在`finally`块中释放。
 
+== 创建外部锁 ==
+
+`Lock`的实现类`ReentrantLock`可能对已经获得锁的线程重新请示锁。
+
 {{{class="brush: java"
 Lock lock = new ReentrantLock();
 
@@ -81,10 +85,28 @@ try {
 }}}
 
 
+== 分开读写锁 ==
+
+分开读写锁以取得更加细的控制：
 
 {{{class="brush: java"
+private final ReadWriteLock monitor = new ReentrantReadWriteLock();
+
+monitor.readLock.lock()
+monitor.readLock.unlock()
+
+monitor.writeLock.lock()
+monitor.writeLock.unlock()
 }}}
 
+例：成员变量有`a`、`b`两个，操作有三个：
+
+* 读`a`
+* 读`b`
+* 同时修改`a`与`b`
+
+可以用读锁控制前两个操作，写锁控制后一个。这样两个读操作就看不到第三个操作执行
+了一半，只改了`a`还没有修改`b`这样的情况。
 
 
 {{{class="brush: java"

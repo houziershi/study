@@ -31,12 +31,16 @@ Latch让多个线程等待把准备工作完成，再一起向下执行。
 
 <ul>
 <li>
-<code>countDown</code>方法减1。
+子线程调用<code>countDown</code>方法把计数器减1。
 
 <li>
-<code>await</code>方法等待，等计数器到0了启动。
+主线程调用<code>await</code>方法等待，等计数器到0了启动。
 
 </ul>
+
+<p>
+在任务没有返回值的情况下，<code>CountDownLatch</code>比用<code>Future</code>更合适。
+</p>
  </div>
 </body>
 </html>

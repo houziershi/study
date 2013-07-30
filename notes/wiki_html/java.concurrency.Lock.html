@@ -40,6 +40,12 @@ JDK5还提供了外部锁：<code>java.util.concurrent.locks.Lock</code>。补�
 
 </ul>
 
+<h2 id="toc_1.1">创建外部锁</h2>
+
+<p>
+<code>Lock</code>的实现类<code>ReentrantLock</code>可能对已经获得锁的线程重新请示锁。
+</p>
+
 <pre class="brush: java">
 Lock lock = new ReentrantLock();
 
@@ -52,7 +58,7 @@ try {
 </pre>
 
 
-<h2 id="toc_1.1">避免死锁</h2>
+<h2 id="toc_1.2">避免死锁</h2>
 
 <p>
 内置锁容易死锁，外部锁<code>tryLock()</code>方法尽量避免死锁。因为这个方法会在取不到锁时
@@ -121,10 +127,42 @@ try {
 </pre>
 
 
+<h2 id="toc_1.3">分开读写锁</h2>
+
+<p>
+分开读写锁以取得更加细的控制：
+</p>
 
 <pre class="brush: java">
+private final ReadWriteLock monitor = new ReentrantReadWriteLock();
+
+monitor.readLock.lock()
+monitor.readLock.unlock()
+
+monitor.writeLock.lock()
+monitor.writeLock.unlock()
 </pre>
 
+<p>
+例：成员变量有<code>a</code>、<code>b</code>两个，操作有三个：
+</p>
+
+<ul>
+<li>
+读<code>a</code>
+
+<li>
+读<code>b</code>
+
+<li>
+同时修改<code>a</code>与<code>b</code>
+
+</ul>
+
+<p>
+可以用读锁控制前两个操作，写锁控制后一个。这样两个读操作就看不到第三个操作执行
+了一半，只改了<code>a</code>还没有修改<code>b</code>这样的情况。
+</p>
 
 
 <pre class="brush: java">

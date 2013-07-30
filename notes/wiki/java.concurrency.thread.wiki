@@ -35,6 +35,12 @@ t1.start();
 }}}
 
 
+== 内置锁同步 ==
+
+`synchronized`针对一个对象加锁，如果修饰类静态方法，那锁来自于所在的类`Class`
+对象。
+
+
 == 控制线程执行 ==
 
 === sleep、yield、join ===
@@ -95,14 +101,22 @@ synchronized { o.wait(); } //当前线程停止，等待唤醒。
 synchronized { o.notifyAll(); } // 唤醒所有以o为标志等待的线程
 }}}
 
+= 本地线程变量 =
 
-== 内置锁同步 ==
+`ThreadLocal`类给每个线程都准备一个资源的副本。保证每个资源只有当前线程可以
+访问。
 
-`synchronized`针对一个对象加锁，如果修饰类静态方法，那锁来自于所在的类`Class`
-对象。
-
+`ThreadLocal`对象不能简单地赋值就完了。因为它管理的每个线程的内容都要初始化，
+所以它每次都会调用自己的`initialValue()`方法。重写这个方法可以完成每个线程的
+初始化。
 
 {{{class="brush: java"
+private static ThreadLocal<List<String>> threadLod =
+	new ThreadLocal<List<String>>() {
+		protected List<String> initialValue() {
+			return new ArrayList<String>();
+		}
+	}
 }}}
 
 

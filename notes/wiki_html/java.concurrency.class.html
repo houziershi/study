@@ -38,32 +38,137 @@
 <code>AtomicLong</code>类的原子方法<code>incrementAndGet()</code>和<code>decresmentAndGet()</code>。
 </p>
 
+<p>
+包装集合为不可变版本：<code>Collections.unmodifiableLists(list)</code>
+</p>
 
+<p>
+包装同步版：<code>SynchronizedMap m = Collection.SynchronizedMap(new HashMap())</code>
+</p>
 
+<h1 id="toc_3">并发类</h1>
 
-<h1 id="toc_3">队列</h1>
+<p>
+并发类如：<code>ConcurrentHashMap</code>等为并发环境设计。为了优化性能不只用了一个锁，内部
+分多个块用多个锁同步。所以增加了并发性能。
+</p>
 
-<h2 id="toc_3.1">常用</h2>
+<h1 id="toc_4">队列</h1>
 
-<ul>
-<li>
-<code>PriorityBlockingQueue</code>带优先级的队列。
-
-</ul>
- 
-<h2 id="toc_3.2">阻塞方式</h2>
+<h2 id="toc_4.1">常用</h2>
 
 <ul>
 <li>
 <code>Queue</code>不阻塞，空时取返回空；满时放抛异常。
 
 <li>
-<code>BlockingQueue</code>会阻塞。
+<code>SynchrousQueue</code>会同步插入与删除操作。
+
+<li>
+<code>BlockingQueue</code>存取操作会阻塞。
+
+<li>
+<code>PriorityBlockingQueue</code>带优先级的队列。
 
 </ul>
 
+<h2 id="toc_4.2">阻塞队列</h2>
 
-<h2 id="toc_3.3">饱和策略</h2>
+<p>
+简单的阻塞队列可以用<code>LinkedblockingQueue</code>或<code>ArrayBlockingQueue</code>。
+</p>
+
+<p>
+对于队列空取或满存的情况有四种策略：
+</p>
+
+<ul>
+<li>
+抛出异常。
+
+<li>
+特殊值。空取时为<code>null</code>；满存时为<code>false</code>。
+
+<li>
+阻塞。
+
+<li>
+超时。只会阻塞指定的时间。
+
+</ul>
+
+<table>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+抛出异常
+</td>
+<td>
+特殊值
+</td>
+<td>
+阻塞
+</td>
+<td>
+超时
+</td>
+</tr>
+<tr>
+<td>
+插入
+</td>
+<td>
+add(e)
+</td>
+<td>
+offer(e)
+</td>
+<td>
+put(e)
+</td>
+<td>
+offer(e, time, unit)
+</td>
+</tr>
+<tr>
+<td>
+移除
+</td>
+<td>
+remove()
+</td>
+<td>
+poll()
+</td>
+<td>
+take()
+</td>
+<td>
+poll(time, unit)
+</td>
+</tr>
+<tr>
+<td>
+检查
+</td>
+<td>
+element()
+</td>
+<td>
+peek()
+</td>
+<td>
+不可用
+</td>
+<td>
+不可用
+</td>
+</tr>
+</table>
+
+<h2 id="toc_4.3">饱和策略</h2>
 
 <ul>
 <li>
@@ -83,7 +188,7 @@
 
 </ul>
 
-<h2 id="toc_3.4">队列工作的问题</h2>
+<h2 id="toc_4.4">队列工作的问题</h2>
 
 <p>
 请求来太快了把等待队列也占满了。太长或是无限的队列，用<code>SynchronizeQueue</code>避免

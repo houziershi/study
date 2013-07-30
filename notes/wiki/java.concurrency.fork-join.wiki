@@ -1,0 +1,126 @@
+
+= Fork-Join =
+
+Java 7新提供了“Fork-Join”机制。在多个线程并行的情况下，如果有些进程处于等待
+状态会自动转而处理其他可以进行的任务以提高性能。
+
+适合Fork-Join的情况：
+
+* 任务开销不要太大；希望没有副作用；希望没有同步操作。
+* 适合分解成小的任务。
+
+== 实现方式 ==
+
+实现`RecursiveTask`接口，并重写`compute`方法。里面可以执行多个`ForkJoinTask`。
+`invokeAll`启动所以的任务，先完成或阻塞的子任务会自动转而完成还没有完成的任务。
+如：
+
+{{{class="brush: java; highlight: [1,6,10]"
+private static class FileSizeFinder extends RecursiveTask<Long> {
+	@Override
+	public Long compute() {
+		long size = 0;
+		
+		List<ForkJoinTask<Long>> tasks = new ArrayList<ForkJoinTask<Long>>();
+		// add task to list
+		// ...
+		
+		for(final ForkJoinTask<Long> task : invokeAll(tasks)) {
+			size += task.join();
+		}
+		return size;
+	}
+}
+}}}
+
+调用时用`ForkJoinPool`：
+
+{{{class="brush: java"
+private final static ForkJoinPool forkJoinPool = new ForkJoinPool();
+final long total = forkJoinPool.invoke(new FileSizeFinder(new File(args[0])));
+}}}
+
+注意`forkJoinPool`必须是静态成员才可以在整个应用中共享。
+
+统计目录下所有文件大小的完整代码如下：
+
+{{{class="brush: java"
+package com.agiledeveloper.pcj;
+
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
+import java.util.concurrent.RecursiveTask;
+import java.util.List;
+import java.util.ArrayList;
+import java.io.File;
+
+public class FileSize {
+
+	private final static ForkJoinPool forkJoinPool = new ForkJoinPool();
+
+	private static class FileSizeFinder extends RecursiveTask<Long>
+	{
+		final File file;
+
+		public FileSizeFinder(final File theFile) {
+			file = theFile;
+		}
+
+		@Override
+		public Long compute() {
+			long size = 0;
+			if (file.isFile()) {
+				size = file.length();
+			} else {
+				final File[] children = file.listFiles();
+				if (children != null) {
+					List<ForkJoinTask<Long>> tasks = 
+						new ArrayList<ForkJoinTask<Long>>();
+					for(final File child : children) {
+						if (child.isFile()) {
+							size += child.length();
+						} else {
+							tasks.add(new FileSizeFinder(child));
+						}
+					}
+
+					for(final ForkJoinTask<Long> task : invokeAll(tasks)) {
+						size += task.join();
+					}
+				}
+			}
+
+			return size;
+		}
+	}
+
+	public static void main(final String[] args) {
+		final long start = System.nanoTime();
+		final long total = forkJoinPool.invoke(
+				new FileSizeFinder(new File(args[0])));
+		final long end = System.nanoTime();
+		System.out.println("Total Size: " + total);
+		System.out.println("Time taken: " + (end - start)/1.0e9);		
+	}
+}
+}}}
+
+
+{{{class="brush: java"
+}}}
+
+
+{{{class="brush: java"
+}}}
+
+
+{{{class="brush: java"
+}}}
+
+
+{{{class="brush: java"
+}}}
+
+
+
+
