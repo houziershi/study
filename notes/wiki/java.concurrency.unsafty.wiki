@@ -375,12 +375,78 @@ public class Counter {
 
 `currNum`每次必须加一，这是不变性条件。如果发布到了外面其他线程可能乱改。
 
+
+== 扩展现有的类 ==
+
+=== 继承 ===
+
+继承一个已经是线程安全的类：
+
+如：给`Vector`添加“没有则添加”方法：
+
 {{{class="brush: java"
+@ThreadSafe
+public class BetterVecotr<E> extends Vector<E> {
+
+	public synchronized boolean putIfAbsent(E x) {
+		boolean absent = !this.contains(x);
+		if (absent)
+			this.add(x);
+		return absent;
+	}
+}
 }}}
 
+这样线程安全上没有问题，但代码风格上有问题：把实现分开放到了两个类里。
 
+=== 包上工具类 ===
+
+有的时候类是`final`的，不可以被继承。所以只能包上工具类：
 
 {{{class="brush: java"
+@ThreadSafe
+public class ListHelper<E> {
+	public List<E> list = Collections.synchronizedList(new ArrayList<E>());
+
+	public synchronized boolean putIfAbsent(E x) {
+		synchronized (list) {
+			boolean absent = !list.contains(x);
+			if (absent)
+				list.add(x);
+			return absent;
+		}
+	}
+
+}
+}}}
+
+这样线程安全上没有问题，但代码风格上有问题：把实现分开放到了两个类里。
+
+
+=== 组合新类 ===
+
+不依赖其他类是否是线程安全的，全部都自己来维护线程安全性。
+
+下面的版本接收一个非线程安全的`List`，虽然外部其他对这个`List`的操作是非线程
+安全的，但通过我们这里提供了一个原子性的“没有则添加”接口。
+
+{{{class="brush: java"
+@ThreadSafe
+public class ImprovedList<T> implements List<T> {
+	public final List<E> list;
+	
+	public ImprovedList(List<t> list) {
+		this.list = list;
+	}
+
+	public synchronized boolean putIfAbsent(T x) {
+		boolean absent = !list.contains(x);
+		if (absent)
+			list.add(x);
+		return absent;
+	}
+
+}
 }}}
 
 
