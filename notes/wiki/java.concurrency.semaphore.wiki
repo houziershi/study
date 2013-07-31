@@ -1,9 +1,0 @@
-
-信号量控制访问的总数。它的操作提原子的：
-
-* 指定资源的总量：`Semaphore sem = new Semaphore(num);`
-* 新访问记录占用资源：`sem.acquire();`
-* 结束后记录放开资源：`sem.release();`
-
-
-

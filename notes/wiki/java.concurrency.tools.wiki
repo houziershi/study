@@ -5,11 +5,7 @@
 
 [[java.concurrency.class]]
 
-[[java.concurrency.latch]]
-
 [[java.concurrency.futuretask]]
-
-[[java.concurrency.semaphore]]
 
 [[java.concurrency.Executor]]
 

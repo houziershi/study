@@ -1,9 +1,7 @@
 
-= 非线程安全类 =
+%title 并发类
 
-迭代非线程安全集合会抛出`ConcurrentModifyException`。
-
-
+%toc 并发类
 
 
 = 原子操作 =
@@ -35,26 +33,34 @@ private final AtomicReferency<BigInteger> firstNumber =
 
 
 
+= 并发容器 =
 
-= 并发类 =
+Java 5中新加入的并发类为并发环境进行了优化。`Queue`和`BlockingQueue`实现了队列，
 
-并发类如：`ConcurrentHashMap`等为并发环境设计。为了优化性能不只用了一个锁，内部
-分多个块用多个锁同步。所以增加了并发性能。
+`CuncurrentHashMap`实现并发Map。
 
+Java 6引入了`ConcurrentSkipListMap`和`ConcurrentSkipListSet`对应`Sortedmap`和
+`SortedSet`。
 
+并发容器的迭代器不会抛出`ConcurrentModificationExcetpion`，可以不加锁就进行迭代
+。这样的迭代器具有弱一致性（Weakly Consistent），而不是“及时失败”。弱一致性可以
+容忍并发的修改，当创建迭代器时会遍历已有的元素，并可以（但不保证）在迭代器被构造
+后将修改操作反映给容器。
 
+对于并发容器来说`size`或`isEmpty`这样的方法返回的结果可能是已经过期的结果。但
+在并发环境下这样的状态总是在不断变化的，所以这样的方法意义不大。
 
+== 并发队列 ==
 
-= 队列 =
-
-== 常用 ==
+常用队列：
 
 * `Queue`不阻塞，空时取返回空；满时放抛异常。
 * `SynchrousQueue`会同步插入与删除操作。
 * `BlockingQueue`存取操作会阻塞。
 * `PriorityBlockingQueue`带优先级的队列。
 
-== 阻塞队列 ==
+
+=== 阻塞队列 ===
 
 简单的阻塞队列可以用`LinkedblockingQueue`或`ArrayBlockingQueue`。
 
@@ -70,7 +76,7 @@ private final AtomicReferency<BigInteger> firstNumber =
 | 移除 | remove()  | poll()   | take() | poll(time, unit)     |
 | 检查 | element() | peek()   | 不可用 | 不可用               |
 
-== 饱和策略 ==
+=== 饱和策略 ===
 
 * `Abort`：抛异常，调用者处理异常。
 * `Discard`：丢掉任务。
@@ -78,33 +84,244 @@ private final AtomicReferency<BigInteger> firstNumber =
 * `DiscardPolicy`：丢掉优先级最低的。
 * `Caller_Runs`：不抛异常，退回给调用者。用一个`execute()`执行它。
 
-== 队列工作的问题 ==
+=== 队列工作的问题 ===
 
 请求来太快了把等待队列也占满了。太长或是无限的队列，用`SynchronizeQueue`避免
 队列任务。它不是真的队列而是一个移交机制（相当于只有一个容量的队列），前一个
 请求没有处理完后一个请求会被拒绝。
 
+阻塞队列不能用循环忙等待，标志位退出的方式。可以在队列里放一个特殊成员，读到它
+就表示应该退出。
 
+
+
+== ConCurrentHashMap ==
+
+`ConcurrentHashMap`等为并发环境设计。为了优化性能不只用了一个锁，而是采用分段锁
+（Lock Striping），所以增加了并发性能。
+
+`ConcurrentHashMap`是为了强化并发环境下使用，所以没有办法对它的`Map`加锁以独占
+访问。这是弱化独占访问而加强了`get`、`put`、`containsKey`、`remove`等方法的
+并发性的取舍。
+
+
+=== 额外的原子操作 ===
+
+虽然不能加锁独占方问，但为一些复合操作为提供了原子操作。如：“没有则添加”、“相等
+则替换”。
 
 {{{class="brush: java"
+public interface ConcurrentMap<K,V> extends Map<K,V> {
+
+	// Insert into map only if no value is mapped from K
+	V putIfAbsent(K key, V value);
+
+	// Remove only if K is mapped to V
+	boolean remove(K key, V value);
+
+	// Replace value only if K is mapped to oldValue
+	boolean replace(K key, V oldValue, V newValue);
+
+	// Replace value only if K is mapped to some value
+	V replace(K key, V newValue);
+
+}
 }}}
 
 
 
+= 应用：生产者－消费者模式 =
+
+利用队列实现生产者－消费者模式。
+
+== 双端队列与工作密取 ==
+
+工作密取模式：生产者生成任务加到任务队列中，消费者在处理过程中会产生新的任务。
+所以消费都也可以把任务加到工作队列中。
+
+例如：对于网络爬虫来说，一个链接就是一个任务。爬虫把链接加入到队列中，解析器在
+解析网页时会发现网页上有的链接，这又是新的任务。解析器要把新的链接再加到队列中
+去。
+
+Java 6增加了两种容器类型`Deque`（发音为deck）与`BlockingDeque`，分别对应`Queue`
+和`BlockingQueue`扩展为双端队列，可以实现工作密取模式。
+
+== 恢复中断 ==
+
+必须处理`InterruptedException`，不然其他的线程就没有办法中断当前线程了：
+
 {{{class="brush: java"
+public class TaskRunnable implements Runnable {
+	BlockingQueue<Task> queue;
+
+	//...
+
+	public void run() {
+		try {
+			processTask(queue.take());
+		} catch (InterruptedException e) {
+			// 中断当前线程
+			Thread.currentThread().interrupt();
+		}
+	}
+}
+}}}
+
+
+= 闭锁（Latch） =
+
+Latch让多个线程等待把准备工作完成，再一起向下执行。
+
+`CountDownLatch`是一个实现，通过计数器来控制：
+
+* 子线程调用`countDown`方法把计数器减1。
+* 主线程调用`await`方法等待，等计数器到0了启动。
+
+在任务没有返回值的情况下，`CountDownLatch`比用`Future`更合适。
+
+例：在计时测试中使用`CountDownLatch`来启动与停止线程：
+
+{{{class="brush: java; highlight: [11, 13, 25, 26]"
+public class TestHarness {
+    public long timeTasks(int nThreads, final Runnable task)
+            throws InterruptedException {
+        final CountDownLatch startGate = new CountDownLatch(1);
+        final CountDownLatch endGate = new CountDownLatch(nThreads);
+
+        for (int i = 0; i < nThreads; i++) {
+            Thread t = new Thread() {
+                public void run() {
+                    try {
+                        startGate.await();
+                        try {
+                            task.run();
+                        } finally {
+                            endGate.countDown();
+                        }
+                    } catch (InterruptedException ignored) {
+                    }
+                }
+            };
+            t.start();
+        }
+
+        long start = System.nanoTime();
+        startGate.countDown();
+        endGate.await();
+        long end = System.nanoTime();
+        return end - start;
+    }
+}
 }}}
 
 
 
+= Callable =
+
+`Runnable`不能有返回值、也不能抛出异常，所以`Callable`更加好。`Callable`相当于
+可以有返回结果的`Runnable`。例如一个返回`void`的`Callable`就是`Callable<void>`
+。而且还可以抛出受检查或非受检查异常。
+
+`Callable`的接口方法是`call()`。
+
+
+= FutureTask =
+
+`FutureTask`实现了`Future`语义，表示一个会有结果的计算。计算过程是通过`Callable`
+接口实现的。`FutureTask`可以三种状态：
+
+* 等待运行。
+* 正在运行。
+* 已经完成。
+
+当任务处于完成状态以后就一直停在这个状态了。
+
+`Future`通过`get`方法取得计算结果。取结果的行为取决于状态：
+
+* 如果任务已经完成`get`会立即返回结果。
+* 如果还没有完成就阻塞等待。然后成功返回结果或是抛异常。
+
+`FutureTask`确保安全地计算结果从执行计算的线程传递到需要结果的线程。
+
+如下面用`Future`来处理会花费大量时间的数据库访问任务：
+
+{{{class="brush: java; highlight: [6, 19, 20]"
+public class Preloader {
+    ProductInfo loadProductInfo() throws DataLoadException {
+        return null;
+    }
+
+    private final FutureTask<ProductInfo> future =
+        new FutureTask<ProductInfo>(new Callable<ProductInfo>() {
+            public ProductInfo call() throws DataLoadException {
+                return loadProductInfo();
+            }
+        });
+    private final Thread thread = new Thread(future);
+
+    public void start() { thread.start(); }
+
+    public ProductInfo get()
+            throws DataLoadException, InterruptedException {
+        try {
+            return future.get();
+        } catch (ExecutionException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof DataLoadException)
+                throw (DataLoadException) cause;
+            else
+                throw LaunderThrowable.launderThrowable(cause);
+        }
+    }
+
+    interface ProductInfo { }
+}
+
+class DataLoadException extends Exception { }
+}}}
+
+`Callable`会抛出异常，并且任何代码都会抛出`Error`。无论抛出了什么在`Future.get`
+里都会被封装成`ExecutionException`以及`CancellationException`。由于这里抛出的
+类型都是被作为`Throwable`返回的，所以处理起来有些复杂：
+
+因为要判断抛出的类型是`CheckedException`？`RuntimeException`？还是`Error`？
+
+如果是我们预想中的`DataLoadException`，走我们预计的处理方式。其他的可能性用
+下面的工具类`LaunderThrowable`来处理异常。它会把强制把未检查的异常转为
+`RuntimeException`：
+
 {{{class="brush: java"
+public class LaunderThrowable {
+    /**
+     * Coerce an unchecked Throwable to a RuntimeException
+     * <p/>
+     * If the Throwable is an Error, throw it; if it is a
+     * RuntimeException return it, otherwise throw IllegalStateException
+     */
+    public static RuntimeException launderThrowable(Throwable t) {
+        if (t instanceof RuntimeException)
+            return (RuntimeException) t;
+        else if (t instanceof Error)
+            throw (Error) t;
+        else
+            throw new IllegalStateException("Not unchecked", t);
+    }
+}
 }}}
 
 
 
-{{{class="brush: java"
-}}}
+
+= 信号量（Semaphore） =
+
+信号量控制访问的总数。它的操作提原子的：
+
+* 指定资源的总量：`Semaphore sem = new Semaphore(num);`
+* 新访问记录占用资源：`sem.acquire();`
+* 结束后记录放开资源：`sem.release();`
 
 
+= 栅栏（Barrier） =
 
 {{{class="brush: java"
 }}}

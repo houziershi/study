@@ -21,19 +21,8 @@
 <body  onresize='changeTocSize()'>
 	<div class="note-main"> 
 
-<h1 id="toc_1">Callable</h1>
 
-<p>
-<code>Runnable</code>不能有返回值、也不能抛出异常，所以<code>Callable</code>更加好。例如一个返回<code>void</code>
-的<code>Callable</code>就是<code>Callable&lt;void&gt;</code>。
-</p>
-
-<p>
-<code>Callable</code>的接口方法是<code>call()</code>，接收一个<code>Future</code>参数。
-</p>
-
-
-<h1 id="toc_2">Future</h1>
+<h1 id="toc_1">Future</h1>
 
 <pre class="brush: java">
 ExecutorService executor = ...
@@ -67,13 +56,6 @@ future.get();
 
 <pre class="brush: java">
 </pre>
-
-
-<h1 id="toc_3">FutureTask</h1>
-
-<p>
-代表一个任务，以<code>Callable</code>为构造函数的参数。<code>get()</code>方法等任务完成后返回结果。
-</p>
  </div>
 </body>
 </html>
