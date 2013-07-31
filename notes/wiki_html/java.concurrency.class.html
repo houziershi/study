@@ -28,7 +28,11 @@
 </p>
 
 
+
+
 <h1 id="toc_2">原子操作</h1>
+
+<h2 id="toc_2.1">原子操作类</h2>
 
 <p>
 <code>java.utils.concurrent.atomic</code>包装器把对象包装成原子操作。
@@ -38,6 +42,8 @@
 <code>AtomicLong</code>类的原子方法<code>incrementAndGet()</code>和<code>decresmentAndGet()</code>。
 </p>
 
+<h2 id="toc_2.2">原子包装器</h2>
+
 <p>
 包装集合为不可变版本：<code>Collections.unmodifiableLists(list)</code>
 </p>
@@ -46,12 +52,36 @@
 包装同步版：<code>SynchronizedMap m = Collection.SynchronizedMap(new HashMap())</code>
 </p>
 
+<p>
+把一个引用包装成原子访问：
+</p>
+
+<pre class="brush: java">
+private final AtomicReferency&lt;BigInteger&gt; lastNumber = 
+	new AtomicReferency&lt;BigInteger&gt;()
+	
+private final AtomicReferency&lt;BigInteger&gt; firstNumber = 
+	new AtomicReferency&lt;BigInteger&gt;()
+</pre>
+
+<p>
+但注意上面的例子，虽然每个数字的访问是原子性的，但一起操作两个数字的方法不是
+线程安全的。
+</p>
+
+
+
+
 <h1 id="toc_3">并发类</h1>
 
 <p>
 并发类如：<code>ConcurrentHashMap</code>等为并发环境设计。为了优化性能不只用了一个锁，内部
 分多个块用多个锁同步。所以增加了并发性能。
 </p>
+
+
+
+
 
 <h1 id="toc_4">队列</h1>
 
@@ -195,6 +225,76 @@ peek()
 队列任务。它不是真的队列而是一个移交机制（相当于只有一个容量的队列），前一个
 请求没有处理完后一个请求会被拒绝。
 </p>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
  </div>
 </body>
 </html>

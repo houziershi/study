@@ -3,11 +3,94 @@
 
 %toc 线程安全问题
 
-= 常见问题 =
+
+= 恢复中断 =
+
+处理异常以后如果应该中断当前线程，应该中断：
+
+{{{class="brush: java"
+public class TaskRunnable implements Runnable {
+	BlockingQueue<Task> queue;
+
+	//...
+
+	public void run() {
+		try {
+			processTask(queue.take());
+		} catch (InterruptedException e) {
+			// 中断当前线程
+			Thread.currentThread().interrupt();
+		}
+	}
+}
+}}}
+
+
+= 访问原子性 =
+
+= 封闭 =
+
+限制资源只能在一个线程中被访问。
 
 == 竞争条件 ==
 
-多个线程访问同一资源。`final`保证字段访问的原子性。
+竞争条件（Race Condition）：多个线程以不正确的顺序访问同一资源。
+
+`final`保证字段访问的原子性。
+
+== 监视器模式 ==
+
+* 用一个或多个对象来控制对不同操作锁。
+* 对于包含多个变量的不变性每件，要有同一个锁来保护。
+* 对于每个会被多个线程访问的对象，注释写明它是由哪个锁来保护的。
+
+=== 锁错对象 ===
+
+同一个原子操作没有锁住同一个对象：
+
+{{{class="brush: java; highlight: [4, 8]"
+@NotThreadSafe
+public class ListHelper<E> {
+
+	public List<E> list = Collections.synchronizedList(new ArrayList<E>());
+		
+	// ...
+	
+	public synchronized boolean putIfAbsent(E x) {
+		boolean absent = !list.contains(x);
+		if (absent) list.add(x);
+		return absent;
+	}
+}
+}}}
+
+虽然是并发安全列表，但列表锁的是列表自己；而方法锁的是对象。
+
+下面这样就对了，应该锁住的是同一个对象：
+
+{{{class="brush: java; highlight: [4,9]"
+@ThreadSafe
+public class ListHelper<E> {
+
+	public List<E> list = Collections.synchronizedList(new ArrayList<E>());
+		
+	// ...
+	
+	public synchronized boolean putIfAbsent(E x) {
+		synchronized (list) {
+			boolean absent = !list.contains(x);
+			if (absent) list.add(x);
+			return absent;
+		}
+	}
+}
+}}}
+
+
+
+
+= 多线程共享对象 =
+
 
 == 可见性 ==
 
@@ -22,6 +105,37 @@
 `public`构造函数中使用内部类，如新建线程并启动之类的。
 
 推荐用静态的工厂方法应用到这样的场景。
+
+
+== 实现单例 ==
+
+提前初始化：
+
+{{{class="brush: java"
+Class ConnectionFactory {
+	private static Connection conn = new Connection();
+
+	public static Connection getInstance() {
+		return conn;
+	}
+}	
+}}}
+
+嫌提前消耗了资源，那用私有内部类实现延迟初始化：
+
+{{{class="brush: java"
+Class ConnectionFactory {
+	private static class Holder {
+		public static Connection conn = new Connection();
+	}
+
+	public static Connection getInstance() {
+		return Holder.conn;
+	}
+}	
+}}}
+
+
 
 == 迭代集合 ==
 
@@ -110,6 +224,72 @@
 
 {{{class="brush: java"
 }}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+
+{{{class="brush: java"
+}}}
+
+
+{{{class="brush: java"
+}}}
+
+
 
 
 

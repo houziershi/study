@@ -11,11 +11,6 @@
 
 [[java.concurrency.unsafty]]
 
-
-= 线程安全方案 =
-
-[[java.concurrency.solution]]
-
 = 并发包工具 =
 
 [[java.concurrency.tools]]

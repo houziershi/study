@@ -4,7 +4,7 @@
 JDK5还提供了外部锁：`java.util.concurrent.locks.Lock`。补充`synchronized`对应
 的内置锁。
 
-* 内置锁在`synchronized`代码结束后自动释放。
+* 内置锁在`synchronized`代码结束后自动释放。无论是正常离开还是异常跳转。
 * 内置锁无法实现非阻塞结构的加锁规则。
 * 外部锁必须手动释放，所以一定要在`finally`块中释放。
 

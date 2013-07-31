@@ -30,7 +30,7 @@ JDK5还提供了外部锁：<code>java.util.concurrent.locks.Lock</code>。补�
 
 <ul>
 <li>
-内置锁在<code>synchronized</code>代码结束后自动释放。
+内置锁在<code>synchronized</code>代码结束后自动释放。无论是正常离开还是异常跳转。
 
 <li>
 内置锁无法实现非阻塞结构的加锁规则。

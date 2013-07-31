@@ -16,10 +16,34 @@
 <script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
 
 
-<title>java.concurrency.thread</title>
+<title>线程基础</title>
 </head>
 <body  onresize='changeTocSize()'>
 	<div class="note-main"> 
+
+
+<h1>线程基础</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">线程</a>
+<ul>
+<li><a href="#toc_1.1">创建线程</a>
+<li><a href="#toc_1.2">线程优先级</a>
+<li><a href="#toc_1.3">守护线程</a>
+<li><a href="#toc_1.4">多个线程相互协调</a>
+<ul>
+<li><a href="#toc_1.4.1">sleep、yield、join</a>
+<li><a href="#toc_1.4.2">中断</a>
+</ul>
+<li><a href="#toc_1.5">线程协作</a>
+</ul>
+<li><a href="#toc_2">本地线程变量</a>
+<li><a href="#toc_3">内置锁</a>
+<ul>
+<li><a href="#toc_3.1">重入</a>
+</ul>
+</ul>
+</div>
 
 <h1 id="toc_1">线程</h1>
 
@@ -79,17 +103,9 @@ t1.start();
 </pre>
 
 
-<h2 id="toc_1.4">内置锁同步</h2>
+<h2 id="toc_1.4">多个线程相互协调</h2>
 
-<p>
-<code>synchronized</code>针对一个对象加锁，如果修饰类静态方法，那锁来自于所在的类<code>Class</code>
-对象。
-</p>
-
-
-<h2 id="toc_1.5">控制线程执行</h2>
-
-<h3 id="toc_1.5.1">sleep、yield、join</h3>
+<h3 id="toc_1.4.1">sleep、yield、join</h3>
 
 <p>
 暂停线程：<code>Thread.sleep()</code>
@@ -112,7 +128,7 @@ t1.start();
 当前的线程停下，等这个<code>t1</code>的线程执行完了以后再执行当前线程。
 </p>
 
-<h3 id="toc_1.5.2">中断</h3>
+<h3 id="toc_1.4.2">中断</h3>
 
 <p>
 对一个线程发出停止信号，如：<code>t1.interrupted()</code>要求线程<code>t1</code>停止。
@@ -148,7 +164,7 @@ t1.interrupt();
 </pre>
 
 
-<h2 id="toc_1.6">线程协作</h2>
+<h2 id="toc_1.5">线程协作</h2>
 
 <p>
 每个对象都有<code>wait</code>与<code>notify</code>和<code>notifyAll</code>方法，选一个对象作为标志来同步：
@@ -170,6 +186,10 @@ synchronized { o.wait(); } //当前线程停止，等待唤醒。
 <pre class="brush: java">
 synchronized { o.notifyAll(); } // 唤醒所有以o为标志等待的线程
 </pre>
+
+
+
+
 
 <h1 id="toc_2">本地线程变量</h1>
 
@@ -193,6 +213,53 @@ private static ThreadLocal&lt;List&lt;String&gt;&gt; threadLod =
 	}
 </pre>
 
+
+
+
+<h1 id="toc_3">内置锁</h1>
+
+<p>
+<code>synchronized</code>针对一个对象加锁，如果修饰类静态方法，那锁来自于所在的类<code>Class</code>
+对象。
+</p>
+
+<p>
+代码执行到<code>synchronized</code>同步块里时会取得锁，而离开时（无论是正常离开还是异常）
+都会放开锁。
+</p>
+
+<h2 id="toc_3.1">重入</h2>
+
+<p>
+注意内置锁的粒度是“线程”而不是“调用”。一个线程取得了锁，其他线程都不能再
+取得锁。但是本线程还是可以在不同的锁代码块中执行，因为锁的粒度是线程而不是
+代码块或线程。这就叫“重入”。
+</p>
+
+<p>
+例如：父类的方法是<code>synchronized</code>的。子类重写了这个方法，并在方法中调用了父类：
+</p>
+
+<pre class="brush: java">
+public class Widget {
+	public synchronized void doSomething() {
+		//... 
+	}
+}
+
+public class LogginWidget extends Widget {
+	public synchronized void doSomething() {
+		//... 
+		super.doSomething();
+		//... 
+	}
+}
+</pre>
+
+<p>
+上面的代码中，如果锁的粒度是方法调用，那线程就锁死了。但因为粒度是线程，所以可以
+顺利执行。
+</p>
 
 
 <pre class="brush: java">

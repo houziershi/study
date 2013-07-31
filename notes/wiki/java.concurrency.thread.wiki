@@ -1,4 +1,8 @@
 
+%title 线程基础
+
+%toc 线程基础
+
 = 线程 =
 
 == 创建线程 ==
@@ -35,13 +39,7 @@ t1.start();
 }}}
 
 
-== 内置锁同步 ==
-
-`synchronized`针对一个对象加锁，如果修饰类静态方法，那锁来自于所在的类`Class`
-对象。
-
-
-== 控制线程执行 ==
+== 多个线程相互协调 ==
 
 === sleep、yield、join ===
 
@@ -101,6 +99,10 @@ synchronized { o.wait(); } //当前线程停止，等待唤醒。
 synchronized { o.notifyAll(); } // 唤醒所有以o为标志等待的线程
 }}}
 
+
+
+
+
 = 本地线程变量 =
 
 `ThreadLocal`类给每个线程都准备一个资源的副本。保证每个资源只有当前线程可以
@@ -119,6 +121,43 @@ private static ThreadLocal<List<String>> threadLod =
 	}
 }}}
 
+
+
+
+= 内置锁 =
+
+`synchronized`针对一个对象加锁，如果修饰类静态方法，那锁来自于所在的类`Class`
+对象。
+
+代码执行到`synchronized`同步块里时会取得锁，而离开时（无论是正常离开还是异常）
+都会放开锁。
+
+== 重入 ==
+
+注意内置锁的粒度是“线程”而不是“调用”。一个线程取得了锁，其他线程都不能再
+取得锁。但是本线程还是可以在不同的锁代码块中执行，因为锁的粒度是线程而不是
+代码块或线程。这就叫“重入”。
+
+例如：父类的方法是`synchronized`的。子类重写了这个方法，并在方法中调用了父类：
+
+{{{class="brush: java"
+public class Widget {
+	public synchronized void doSomething() {
+		//... 
+	}
+}
+
+public class LogginWidget extends Widget {
+	public synchronized void doSomething() {
+		//... 
+		super.doSomething();
+		//... 
+	}
+}
+}}}
+
+上面的代码中，如果锁的粒度是方法调用，那线程就锁死了。但因为粒度是线程，所以可以
+顺利执行。
 
 
 {{{class="brush: java"

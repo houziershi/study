@@ -25,27 +25,140 @@
 <h1>线程安全问题</h1>
 <div class="toc">
 <ul>
-<li><a href="#toc_1">常见问题</a>
+<li><a href="#toc_1">恢复中断</a>
+<li><a href="#toc_2">访问原子性</a>
+<li><a href="#toc_3">封闭</a>
 <ul>
-<li><a href="#toc_1.1">竞争条件</a>
-<li><a href="#toc_1.2">可见性</a>
-<li><a href="#toc_1.3">发布未完成对象</a>
-<li><a href="#toc_1.4">迭代集合</a>
-<li><a href="#toc_1.5">阻塞队列</a>
-<li><a href="#toc_1.6">Copy-on-Write</a>
+<li><a href="#toc_3.1">竞争条件</a>
+<li><a href="#toc_3.2">监视器模式</a>
+<ul>
+<li><a href="#toc_3.2.1">锁错对象</a>
+</ul>
+</ul>
+<li><a href="#toc_4">多线程共享对象</a>
+<ul>
+<li><a href="#toc_4.1">可见性</a>
+<li><a href="#toc_4.2">发布未完成对象</a>
+<li><a href="#toc_4.3">实现单例</a>
+<li><a href="#toc_4.4">迭代集合</a>
+<li><a href="#toc_4.5">阻塞队列</a>
+<li><a href="#toc_4.6">Copy-on-Write</a>
 </ul>
 </ul>
 </div>
 
-<h1 id="toc_1">常见问题</h1>
 
-<h2 id="toc_1.1">竞争条件</h2>
+<h1 id="toc_1">恢复中断</h1>
 
 <p>
-多个线程访问同一资源。<code>final</code>保证字段访问的原子性。
+处理异常以后如果应该中断当前线程，应该中断：
 </p>
 
-<h2 id="toc_1.2">可见性</h2>
+<pre class="brush: java">
+public class TaskRunnable implements Runnable {
+	BlockingQueue&lt;Task&gt; queue;
+
+	//...
+
+	public void run() {
+		try {
+			processTask(queue.take());
+		} catch (InterruptedException e) {
+			// 中断当前线程
+			Thread.currentThread().interrupt();
+		}
+	}
+}
+</pre>
+
+
+<h1 id="toc_2">访问原子性</h1>
+
+<h1 id="toc_3">封闭</h1>
+
+<p>
+限制资源只能在一个线程中被访问。
+</p>
+
+<h2 id="toc_3.1">竞争条件</h2>
+
+<p>
+竞争条件（Race Condition）：多个线程以不正确的顺序访问同一资源。
+</p>
+
+<p>
+<code>final</code>保证字段访问的原子性。
+</p>
+
+<h2 id="toc_3.2">监视器模式</h2>
+
+<ul>
+<li>
+用一个或多个对象来控制对不同操作锁。
+
+<li>
+对于包含多个变量的不变性每件，要有同一个锁来保护。
+
+<li>
+对于每个会被多个线程访问的对象，注释写明它是由哪个锁来保护的。
+
+</ul>
+
+<h3 id="toc_3.2.1">锁错对象</h3>
+
+<p>
+同一个原子操作没有锁住同一个对象：
+</p>
+
+<pre class="brush: java; highlight: [4, 8]">
+@NotThreadSafe
+public class ListHelper&lt;E&gt; {
+
+	public List&lt;E&gt; list = Collections.synchronizedList(new ArrayList&lt;E&gt;());
+		
+	// ...
+	
+	public synchronized boolean putIfAbsent(E x) {
+		boolean absent = !list.contains(x);
+		if (absent) list.add(x);
+		return absent;
+	}
+}
+</pre>
+
+<p>
+虽然是并发安全列表，但列表锁的是列表自己；而方法锁的是对象。
+</p>
+
+<p>
+下面这样就对了，应该锁住的是同一个对象：
+</p>
+
+<pre class="brush: java; highlight: [4,9]">
+@ThreadSafe
+public class ListHelper&lt;E&gt; {
+
+	public List&lt;E&gt; list = Collections.synchronizedList(new ArrayList&lt;E&gt;());
+		
+	// ...
+	
+	public synchronized boolean putIfAbsent(E x) {
+		synchronized (list) {
+			boolean absent = !list.contains(x);
+			if (absent) list.add(x);
+			return absent;
+		}
+	}
+}
+</pre>
+
+
+
+
+<h1 id="toc_4">多线程共享对象</h1>
+
+
+<h2 id="toc_4.1">可见性</h2>
 
 <p>
 对一个目标的操作并不一定通过了内存栅栏。其他的线程看不到这个变化。
@@ -56,7 +169,7 @@
 </p>
 
 
-<h2 id="toc_1.3">发布未完成对象</h2>
+<h2 id="toc_4.2">发布未完成对象</h2>
 
 <p>
 构造函数中使用到的内部类会得到当前对象的引用，等于已经发布出去了。所以不要在
@@ -67,21 +180,56 @@
 推荐用静态的工厂方法应用到这样的场景。
 </p>
 
-<h2 id="toc_1.4">迭代集合</h2>
+
+<h2 id="toc_4.3">实现单例</h2>
+
+<p>
+提前初始化：
+</p>
+
+<pre class="brush: java">
+Class ConnectionFactory {
+	private static Connection conn = new Connection();
+
+	public static Connection getInstance() {
+		return conn;
+	}
+}	
+</pre>
+
+<p>
+嫌提前消耗了资源，那用私有内部类实现延迟初始化：
+</p>
+
+<pre class="brush: java">
+Class ConnectionFactory {
+	private static class Holder {
+		public static Connection conn = new Connection();
+	}
+
+	public static Connection getInstance() {
+		return Holder.conn;
+	}
+}	
+</pre>
+
+
+
+<h2 id="toc_4.4">迭代集合</h2>
 
 <p>
 迭代过程中可能已经被修改。注意<code>toString</code>也是基于迭代的。
 </p>
 
 
-<h2 id="toc_1.5">阻塞队列</h2>
+<h2 id="toc_4.5">阻塞队列</h2>
 
 <p>
 不能用循环忙等待，标志位退出的方式。可以在队列里放一个特殊成员，读到它就表示
 应该退出。
 </p>
 
-<h2 id="toc_1.6">Copy-on-Write</h2>
+<h2 id="toc_4.6">Copy-on-Write</h2>
 
 <p>
 每次修改其实都是做了一个新的副本。
@@ -92,6 +240,70 @@
 <pre class="brush: java">
 </pre>
 
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
+
+
+
+<pre class="brush: java">
+</pre>
 
 
 <pre class="brush: java">
