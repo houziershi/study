@@ -870,9 +870,55 @@ protected <T> RunnableFuture<T> newTaskFor(Callable<T> task) {
 以一个渲染网页程序为例子：渲染页面文字与下载页面上的图片这两种工作可以并行执行，
 而且因为一个是CPU密集一个是IO密集，即使在单核CPU上性能提升也很明显：
 
-把下载任务做成`Callable`传递给`ExecutorService`
+把下载任务做成`Callable`传递给`ExecutorService`。当主任务要图片时会等
+`Future.get`返回结果。当收到中断异常时，中断当前线程并退出。
 
-{{{class="brush: java"
+{{{class="brush: java; highlight: [2,6,16,20,23]"
+public abstract class FutureRenderer {
+	private final ExecutorService executor = Executors.newCachedThreadPool();
+
+	void renderPage(CharSequence source) {
+		final List<ImageInfo> imageInfos = scanForImageInfo(source);
+		Callable<List<ImageData>> task =
+				new Callable<List<ImageData>>() {
+					public List<ImageData> call() {
+						List<ImageData> result = new ArrayList<ImageData>();
+						for (ImageInfo imageInfo : imageInfos)
+							result.add(imageInfo.downloadImage());
+						return result;
+					}
+				};
+
+		Future<List<ImageData>> future = executor.submit(task);
+		renderText(source);
+
+		try {
+			List<ImageData> imageData = future.get();
+			for (ImageData data : imageData)
+				renderImage(data);
+		} catch (InterruptedException e) {
+			// Re-assert the thread's interrupted status
+			Thread.currentThread().interrupt();
+			// We don't need the result, so cancel the task too
+			future.cancel(true);
+		} catch (ExecutionException e) {
+			throw launderThrowable(e.getCause());
+		}
+	}
+
+	interface ImageData {
+	}
+
+	interface ImageInfo {
+		ImageData downloadImage();
+	}
+
+	abstract void renderText(CharSequence s);
+
+	abstract List<ImageInfo> scanForImageInfo(CharSequence s);
+
+	abstract void renderImage(ImageData i);
+}
 }}}
 
 
