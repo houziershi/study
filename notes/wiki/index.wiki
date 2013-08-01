@@ -13,7 +13,7 @@ Scala基础：[[scala]]
 
 === Java ===
 
-基础：[[java]]
+语言：[[java]]
 
 常用库：[[java.libs]]
 
