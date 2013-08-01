@@ -27,39 +27,40 @@
 <ul>
 <li><a href="#toc_1">备份</a>
 <li><a href="#toc_2">安装</a>
-<li><a href="#toc_3">配置</a>
+<li><a href="#toc_3">源</a>
+<li><a href="#toc_4">配置</a>
 <ul>
-<li><a href="#toc_3.1">主机名</a>
-<li><a href="#toc_3.2">locale</a>
-<li><a href="#toc_3.3">用户</a>
-<li><a href="#toc_3.4">sudo</a>
+<li><a href="#toc_4.1">主机名</a>
+<li><a href="#toc_4.2">locale</a>
+<li><a href="#toc_4.3">用户</a>
+<li><a href="#toc_4.4">sudo</a>
 <ul>
-<li><a href="#toc_3.4.1">别名设置</a>
-<li><a href="#toc_3.4.2">权限设置</a>
+<li><a href="#toc_4.4.1">别名设置</a>
+<li><a href="#toc_4.4.2">权限设置</a>
 </ul>
 </ul>
-<li><a href="#toc_4">安全设置</a>
+<li><a href="#toc_5">安全设置</a>
 <ul>
-<li><a href="#toc_4.1">SSH</a>
-<li><a href="#toc_4.2">iptables</a>
-<li><a href="#toc_4.3">iptables-persistent</a>
-<li><a href="#toc_4.4">denyhosts</a>
+<li><a href="#toc_5.1">SSH</a>
+<li><a href="#toc_5.2">iptables</a>
+<li><a href="#toc_5.3">iptables-persistent</a>
+<li><a href="#toc_5.4">denyhosts</a>
 </ul>
-<li><a href="#toc_5">网络管理</a>
+<li><a href="#toc_6">网络管理</a>
 <ul>
-<li><a href="#toc_5.1">ifstat</a>
-<li><a href="#toc_5.2">dnsutils</a>
-<li><a href="#toc_5.3">mtr-tiny</a>
-<li><a href="#toc_5.4">vnstat</a>
+<li><a href="#toc_6.1">ifstat</a>
+<li><a href="#toc_6.2">dnsutils</a>
+<li><a href="#toc_6.3">mtr-tiny</a>
+<li><a href="#toc_6.4">vnstat</a>
 </ul>
-<li><a href="#toc_6">网络服务</a>
+<li><a href="#toc_7">网络服务</a>
 <ul>
-<li><a href="#toc_6.1">pptp</a>
-<li><a href="#toc_6.2">openvpn</a>
-<li><a href="#toc_6.3">ssh</a>
-<li><a href="#toc_6.4">stunnel</a>
-<li><a href="#toc_6.5">httptunnel</a>
-<li><a href="#toc_6.6">polipo</a>
+<li><a href="#toc_7.1">pptp</a>
+<li><a href="#toc_7.2">openvpn</a>
+<li><a href="#toc_7.3">ssh</a>
+<li><a href="#toc_7.4">stunnel</a>
+<li><a href="#toc_7.5">httptunnel</a>
+<li><a href="#toc_7.6">polipo</a>
 </ul>
 </ul>
 </div>
@@ -78,16 +79,49 @@
 好像一时还想不到什么话说……
 </p>
 
+<h1 id="toc_3">源</h1>
 
-<h1 id="toc_3">配置</h1>
+<pre class="brush: bash">
+deb http://mirrors.sohu.com/debian/ wheezy main non-free contrib
+# deb http://mirrors.sohu.com/debian/ wheezy-proposed-updates main non-free contrib
+deb-src http://mirrors.sohu.com/debian/ wheezy main non-free contrib
+# deb-src http://mirrors.sohu.com/debian/ wheezy-proposed-updates main non-free contrib
 
-<h2 id="toc_3.1">主机名</h2>
+deb http://ftp.cn.debian.org/debian/ wheezy main contrib non-free
+deb http://ftp.cn.debian.org/debian-security/ wheezy/updates main contrib non-free
+# deb http://ftp.cn.debian.org/debian-multimedia/ wheezy main contrib non-free
+deb-src http://ftp.cn.debian.org/debian/ wheezy main contrib non-free
+
+# deb http://mirrors.163.com/debian/ wheezy main contrib non-free
+# deb http://mirrors.163.com/debian-security/ wheezy/updates main contrib non-free
+# deb-src http://mirrors.163.com/debian/ wheezy main contrib non-free
+
+deb http://ftp2.jp.debian.org/debian/ wheezy main contrib non-free
+deb-src http://ftp2.jp.debian.org/debian/ wheezy main contrib non-free
+
+deb http://ftp.jp.debian.org/debian/ wheezy main contrib non-free
+deb-src http://ftp.jp.debian.org/debian/ wheezy main contrib non-free
+
+deb http://ftp.tw.debian.org/debian/ wheezy main contrib non-free
+deb-src http://ftp.tw.debian.org/debian/ wheezy main contrib non-free
+
+deb http://security.debian.org/ wheezy/updates main contrib non-free
+deb-src http://security.debian.org/ wheezy/updates main contrib non-free
+
+deb http://downloads.sourceforge.net/project/ubuntuzilla/mozilla/apt all main
+</pre>
+
+
+
+<h1 id="toc_4">配置</h1>
+
+<h2 id="toc_4.1">主机名</h2>
 
 <p>
 改了<code>/etc/hostname</code>以后，别忘记了还有<code>/etc/hosts</code>。
 </p>
 
-<h2 id="toc_3.2">locale</h2>
+<h2 id="toc_4.2">locale</h2>
 
 <p>
 安装locales程序：
@@ -149,7 +183,7 @@ locale -a
 </pre>
 
 
-<h2 id="toc_3.3">用户</h2>
+<h2 id="toc_4.3">用户</h2>
 
 <p>
 添加常用账号，默认会建立同名组：
@@ -205,7 +239,7 @@ useradd user001 -g user001 -s /bin/false
 </pre>
 
 
-<h2 id="toc_3.4">sudo</h2>
+<h2 id="toc_4.4">sudo</h2>
 
 <p>
 安装<code>sudo</code>：
@@ -227,7 +261,7 @@ user001 ALL=(ALL) ALL
 更详细的配置介绍：
 </p>
 
-<h3 id="toc_3.4.1">别名设置</h3>
+<h3 id="toc_4.4.1">别名设置</h3>
 
 <p>
 别名主要分成4种，分别是：
@@ -276,7 +310,7 @@ Runas_Alias RUNAS_FLAG = operator1, operator2, operator3
 Alias_Type NAME = item1, item2, ……
 </pre>
 
-<h3 id="toc_3.4.2">权限设置</h3>
+<h3 id="toc_4.4.2">权限设置</h3>
 
 <p>
 首先看看授权规则。格式:
@@ -352,9 +386,9 @@ admin       ALL = NOPASSWD : /etc/init.d/apache
 
 
 
-<h1 id="toc_4">安全设置</h1>
+<h1 id="toc_5">安全设置</h1>
 
-<h2 id="toc_4.1">SSH</h2>
+<h2 id="toc_5.1">SSH</h2>
 
 <p>
 修改SSH端口，禁止root远程登录，<code>/etc/ssh/sshd_config</code>：
@@ -411,7 +445,7 @@ ssh-keygen -i -f Identity.pub &gt;&gt; /root/.ssh/authorized_keys2
 禁止密码登录，只允许key登录：还不知道怎么搞～OTZ
 </p>
 
-<h2 id="toc_4.2">iptables</h2>
+<h2 id="toc_5.2">iptables</h2>
 
 <p>
 清除已有的规则：
@@ -506,7 +540,7 @@ chmod +x /etc/network/if-post-down.d/iptables
 </pre>
 
 
-<h2 id="toc_4.3">iptables-persistent</h2>
+<h2 id="toc_5.3">iptables-persistent</h2>
 
 <p>
 这是debian内用于iptables规则持久化的工具，你可以编辑<code>/etc/iptables/rules.v4</code>来
@@ -528,7 +562,7 @@ chmod +x /etc/network/if-post-down.d/iptables
 </p>
 
  
-<h2 id="toc_4.4">denyhosts</h2>
+<h2 id="toc_5.4">denyhosts</h2>
 
 <p>
 python编写用来踢掉试图尝试ssh密码的ip。如果已经用了通过key的连接方式，你可以一次
@@ -537,28 +571,28 @@ python编写用来踢掉试图尝试ssh密码的ip。如果已经用了通过key
 
 
  
-<h1 id="toc_5">网络管理</h1>
+<h1 id="toc_6">网络管理</h1>
 
-<h2 id="toc_5.1">ifstat</h2>
+<h2 id="toc_6.1">ifstat</h2>
 
 <p>
 ifstat是用于网络流量管理的工具，可以告诉你网络目标的流量是多少。
 </p>
  
-<h2 id="toc_5.2">dnsutils</h2>
+<h2 id="toc_6.2">dnsutils</h2>
 
 <p>
 dnsutils里面包含了不少用于管理dns的工具，包括我们常用的nslookup，还有相对少用的
 dig。
 </p>
  
-<h2 id="toc_5.3">mtr-tiny</h2>
+<h2 id="toc_6.3">mtr-tiny</h2>
 
 <p>
 mtr是一个traceroute工具，比后者好用很多。这个工具可以快速跟踪路由。
 </p>
  
-<h2 id="toc_5.4">vnstat</h2>
+<h2 id="toc_6.4">vnstat</h2>
 
 <p>
 vnstat是用于跟踪网卡流量的工具，尤其对于每个月都有限额的vps，这个工具更有意义。
@@ -567,16 +601,16 @@ vnstat是用于跟踪网卡流量的工具，尤其对于每个月都有限额�
 
  
  
-<h1 id="toc_6">网络服务</h1>
+<h1 id="toc_7">网络服务</h1>
 
-<h2 id="toc_6.1">pptp</h2>
+<h2 id="toc_7.1">pptp</h2>
 
 <p>
 pptp是一个经典的vpn服务，直接安装pptpd就好。注意，部分手机不支持128bit的mppe，
 关闭后可以连接。但是windows只支持128bit的mppe，关掉就无法连接。So，自己权衡。
 </p>
  
-<h2 id="toc_6.2">openvpn</h2>
+<h2 id="toc_7.2">openvpn</h2>
  
 <p>
 openpn是一个非常稳定而强大的vpn程序，他使用udp作为连接协议。其实openvpn有tcp协议
@@ -590,7 +624,7 @@ openpn是一个非常稳定而强大的vpn程序，他使用udp作为连接协�
 3.再论openvpn的搭建：<a href="http://shell909090.com/blog/2011/05/%E5%86%8D%E8%AE%BAopenvpn%E7%9A%84%E6%90%AD%E5%BB%BA/">http://shell909090.com/blog/2011/05/%E5%86%8D%E8%AE%BAopenvpn%E7%9A%84%E6%90%AD%E5%BB%BA/</a>
 </p>
  
-<h2 id="toc_6.3">ssh</h2>
+<h2 id="toc_7.3">ssh</h2>
  
 <p>
 ssh用于翻墙常见两种模式，固定端口转发和动态端口转发。前者使用<code>-R</code>将远程的某个
@@ -623,21 +657,21 @@ socks5代理功能（除非远程的端口上是socks5代理服务，但是这�
 <code>-o ServerAliveInterval 30</code>。
 </p>
  
-<h2 id="toc_6.4">stunnel</h2>
+<h2 id="toc_7.4">stunnel</h2>
 
 <p>
 stunnel本身没有任何功效，他只是将你的普通连接转换为ssl连接而已。当这个程序搭配
 其他程序，例如<code>polipo</code>，就可以实现一个ssl级别的代理。
 </p>
  
-<h2 id="toc_6.5">httptunnel</h2>
+<h2 id="toc_7.5">httptunnel</h2>
 
 <p>
 这是一个服务软件，服务器端运行一个httptunnel，客户端运行一个。而后客户端就可以
 获得一个到服务器端的tcp连接，不受限的。
 </p>
  
-<h2 id="toc_6.6">polipo</h2>
+<h2 id="toc_7.6">polipo</h2>
 
 <p>
 polipo常见有两种模式，端口转发模式和ssl模式。两者都在前文有说。端口转发模式配合
