@@ -16,19 +16,19 @@
 <script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
 
 
-<title>class</title>
+<title>并发方案</title>
 </head>
 <body  onresize='changeTocSize()'>
 	<div class="note-main"> 
 
 
-<h1>class</h1>
+<h1>并发方案</h1>
 <div class="toc">
 <ul>
 <li><a href="#toc_1">原子操作</a>
 <ul>
-<li><a href="#toc_1.1">原子操作类 </a>
-<li><a href="#toc_1.2">原子包装器 </a>
+<li><a href="#toc_1.1">原子操作类</a>
+<li><a href="#toc_1.2">原子包装器</a>
 </ul>
 <li><a href="#toc_2">并发容器</a>
 <ul>
@@ -36,21 +36,21 @@
 <ul>
 <li><a href="#toc_2.1.1">阻塞队列</a>
 <li><a href="#toc_2.1.2">饱和策略</a>
-<li><a href="#toc_2.1.3">队列工作的问题 </a>
+<li><a href="#toc_2.1.3">队列工作的问题</a>
 </ul>
 <li><a href="#toc_2.2">ConcurrentHashMap</a>
 <ul>
-<li><a href="#toc_2.2.1">额外的原子操作 </a>
+<li><a href="#toc_2.2.1">额外的原子操作</a>
 </ul>
 </ul>
-<li><a href="#toc_3">应用：生产者－消费者模式 </a>
+<li><a href="#toc_3">应用：生产者－消费者模式</a>
 <ul>
-<li><a href="#toc_3.1">双端队列与工作密取 </a>
+<li><a href="#toc_3.1">双端队列与工作密取</a>
 <li><a href="#toc_3.2">恢复中断</a>
 </ul>
-<li><a href="#toc_4">信号量（Semaphore） </a>
-<li><a href="#toc_5">闭锁（Latch） </a>
-<li><a href="#toc_6">栅栏（Barrier） </a>
+<li><a href="#toc_4">信号量（Semaphore）</a>
+<li><a href="#toc_5">闭锁（Latch）</a>
+<li><a href="#toc_6">栅栏（Barrier）</a>
 <li><a href="#toc_7">Callable</a>
 <li><a href="#toc_8">Future</a>
 <ul>
@@ -58,45 +58,48 @@
 </ul>
 <li><a href="#toc_9">Executor框架</a>
 <ul>
-<li><a href="#toc_9.1">传统任务管理的缺陷 </a>
+<li><a href="#toc_9.1">传统任务管理的缺陷</a>
 <li><a href="#toc_9.2">用Executor框架</a>
-<li><a href="#toc_9.3">重写不同的线程策略 </a>
+<li><a href="#toc_9.3">重写不同的线程策略</a>
 <li><a href="#toc_9.4">不同类型的线程池</a>
 <li><a href="#toc_9.5">Executor生命周期</a>
 </ul>
-<li><a href="#toc_10">延时任务与周期任务 </a>
+<li><a href="#toc_10">延时任务与周期任务</a>
 <ul>
-<li><a href="#toc_10.1">传统方案的不足 </a>
+<li><a href="#toc_10.1">传统方案的不足</a>
 <ul>
-<li><a href="#toc_10.1.1">Timer方案的不足 </a>
-<li><a href="#toc_10.1.2">忙等待方案 </a>
+<li><a href="#toc_10.1.1">Timer方案的不足</a>
+<li><a href="#toc_10.1.2">忙等待方案</a>
 </ul>
 <li><a href="#toc_10.2">周期性任务线程池</a>
 </ul>
 <li><a href="#toc_11">设计并行程序</a>
 <ul>
 <li><a href="#toc_11.1">拆分任务并行执行</a>
+<li><a href="#toc_11.2">CompletionService与BlockingQueue</a>
+<li><a href="#toc_11.3">设置任务的执行时限</a>
 </ul>
+<li><a href="#toc_12">任务的取消与关闭</a>
 </ul>
 </div>
 
 
 <h1 id="toc_1">原子操作</h1>
 
-<h2 id="toc_1.1">原子操作类 </h2>
+<h2 id="toc_1.1">原子操作类</h2>
 
 <p>
 <code>java.utils.concurrent.atomic</code>包装器把对象包装成原子操作。
 </p>
 
 <p>
-<code>AtomicLong</code>类的原子方法<code>incrementAndGet()</code>和`decresmentAndGet()`。
+<code>AtomicLong</code>类的原子方法<code>incrementAndGet()</code>和<code>decresmentAndGet()</code>。
 </p>
 
-<h2 id="toc_1.2">原子包装器 </h2>
+<h2 id="toc_1.2">原子包装器</h2>
 
 <p>
-包装集合为不可变版本：`Collections.unmodifiableLists(list)`
+包装集合为不可变版本：<code>Collections.unmodifiableLists(list)</code>
 </p>
 
 <p>
@@ -125,7 +128,7 @@ private final AtomicReferency&lt;BigInteger&gt; firstNumber =
 <h1 id="toc_2">并发容器</h1>
 
 <p>
-Java 5中新加入的并发类为并发环境进行了优化。`Queue<code>和`BlockingQueue</code>实现了队列，
+Java 5中新加入的并发类为并发环境进行了优化。<code>Queue</code>和<code>BlockingQueue</code>实现了队列，
 </p>
 
 <p>
@@ -133,7 +136,7 @@ Java 5中新加入的并发类为并发环境进行了优化。`Queue<code>和`B
 </p>
 
 <p>
-Java 6引入了`ConcurrentSkipListMap<code>和`ConcurrentSkipListSet</code>对应<code>Sortedmap</code>和
+Java 6引入了<code>ConcurrentSkipListMap</code>和<code>ConcurrentSkipListSet</code>对应<code>Sortedmap</code>和
 <code>SortedSet</code>。
 </p>
 
@@ -145,7 +148,7 @@ Java 6引入了`ConcurrentSkipListMap<code>和`ConcurrentSkipListSet</code>对�
 </p>
 
 <p>
-对于并发容器来说<code>size</code>或`isEmpty`这样的方法返回的结果可能是已经过期的结果。但
+对于并发容器来说<code>size</code>或<code>isEmpty</code>这样的方法返回的结果可能是已经过期的结果。但
 在并发环境下这样的状态总是在不断变化的，所以这样的方法意义不大。
 </p>
 
@@ -174,7 +177,7 @@ Java 6引入了`ConcurrentSkipListMap<code>和`ConcurrentSkipListSet</code>对�
 <h3 id="toc_2.1.1">阻塞队列</h3>
 
 <p>
-简单的阻塞队列可以用`LinkedblockingQueue<code>或`ArrayBlockingQueue</code>。
+简单的阻塞队列可以用<code>LinkedblockingQueue</code>或<code>ArrayBlockingQueue</code>。
 </p>
 
 <p>
@@ -186,7 +189,7 @@ Java 6引入了`ConcurrentSkipListMap<code>和`ConcurrentSkipListSet</code>对�
 抛出异常。
 
 <li>
-特殊值。空取时为`null<code>；满存时为`false</code>。
+特殊值。空取时为<code>null</code>；满存时为<code>false</code>。
 
 <li>
 阻塞。
@@ -205,7 +208,7 @@ Java 6引入了`ConcurrentSkipListMap<code>和`ConcurrentSkipListSet</code>对�
 抛出异常
 </td>
 <td>
-特殊值 
+特殊值
 </td>
 <td>
 阻塞
@@ -250,7 +253,7 @@ poll(time, unit)
 </tr>
 <tr>
 <td>
-检查 
+检查
 </td>
 <td>
 element()
@@ -259,10 +262,10 @@ element()
 peek()
 </td>
 <td>
-不可用 
+不可用
 </td>
 <td>
-不可用 
+不可用
 </td>
 </tr>
 </table>
@@ -283,11 +286,11 @@ peek()
 <code>DiscardPolicy</code>：丢掉优先级最低的。
 
 <li>
-<code>Caller_Runs</code>：不抛异常，退回给调用者。用一个`execute()`执行它。
+<code>Caller_Runs</code>：不抛异常，退回给调用者。用一个<code>execute()</code>执行它。
 
 </ul>
 
-<h3 id="toc_2.1.3">队列工作的问题 </h3>
+<h3 id="toc_2.1.3">队列工作的问题</h3>
 
 <p>
 请求来太快了把等待队列也占满了。太长或是无限的队列，用<code>SynchronizeQueue</code>避免
@@ -311,12 +314,12 @@ peek()
 
 <p>
 <code>ConcurrentHashMap</code>是为了强化并发环境下使用，所以没有办法对它的<code>Map</code>加锁以独占
-访问。这是弱化独占访问而加强了<code>get</code>、`put<code>、`containsKey</code>、`remove`等方法的
+访问。这是弱化独占访问而加强了<code>get</code>、<code>put</code>、<code>containsKey</code>、<code>remove</code>等方法的
 并发性的取舍。
 </p>
 
 
-<h3 id="toc_2.2.1">额外的原子操作 </h3>
+<h3 id="toc_2.2.1">额外的原子操作</h3>
 
 <p>
 虽然不能加锁独占方问，但为一些复合操作为提供了原子操作。如：“没有则添加”、“相等
@@ -343,13 +346,13 @@ public interface ConcurrentMap&lt;K,V&gt; extends Map&lt;K,V&gt; {
 
 
 
-<h1 id="toc_3">应用：生产者－消费者模式 </h1>
+<h1 id="toc_3">应用：生产者－消费者模式</h1>
 
 <p>
 利用队列实现生产者－消费者模式。
 </p>
 
-<h2 id="toc_3.1">双端队列与工作密取 </h2>
+<h2 id="toc_3.1">双端队列与工作密取</h2>
 
 <p>
 工作密取模式：生产者生成任务加到任务队列中，消费者在处理过程中会产生新的任务。
@@ -363,8 +366,8 @@ public interface ConcurrentMap&lt;K,V&gt; extends Map&lt;K,V&gt; {
 </p>
 
 <p>
-Java 6增加了两种容器类型`Deque<code>（发音为deck）与</code>BlockingDeque<code>，分别对应`Queue</code>
-和`BlockingQueue`扩展为双端队列，可以实现工作密取模式。
+Java 6增加了两种容器类型<code>Deque</code>（发音为deck）与<code>BlockingDeque</code>，分别对应<code>Queue</code>
+和<code>BlockingQueue</code>扩展为双端队列，可以实现工作密取模式。
 </p>
 
 <h2 id="toc_3.2">恢复中断</h2>
@@ -392,7 +395,7 @@ public class TaskRunnable implements Runnable {
 
 
 
-<h1 id="toc_4">信号量（Semaphore） </h1>
+<h1 id="toc_4">信号量（Semaphore）</h1>
 
 <p>
 信号量控制访问的总数。它的操作提原子的：
@@ -400,19 +403,19 @@ public class TaskRunnable implements Runnable {
 
 <ul>
 <li>
-指定资源的总量：`Semaphore sem = new Semaphore(num);`
+指定资源的总量：<code>Semaphore sem = new Semaphore(num);</code>
 
 <li>
 新访问记录占用资源：<code>sem.acquire();</code>
 
 <li>
-结束后记录放开资源：`sem.release();`
+结束后记录放开资源：<code>sem.release();</code>
 
 </ul>
 
 
 
-<h1 id="toc_5">闭锁（Latch） </h1>
+<h1 id="toc_5">闭锁（Latch）</h1>
 
 <p>
 Latch让多个线程等待把准备工作完成，再一起向下执行。
@@ -424,10 +427,10 @@ Latch让多个线程等待把准备工作完成，再一起向下执行。
 
 <ul>
 <li>
-子线程调用`countDown`方法把计数器减1。
+子线程调用<code>countDown</code>方法把计数器减1。
 
 <li>
-主线程调用`await`方法等待，等计数器到0了启动。
+主线程调用<code>await</code>方法等待，等计数器到0了启动。
 
 </ul>
 
@@ -476,7 +479,7 @@ public class TestHarness {
 
 
 
-<h1 id="toc_6">栅栏（Barrier） </h1>
+<h1 id="toc_6">栅栏（Barrier）</h1>
 
 <p>
 栅栏和闭锁一样也是控制一组线程，闭锁到一终止状态不能再重新复位了。闭锁用于等待
@@ -489,7 +492,7 @@ public class TestHarness {
 </p>
 
 <p>
-当线程到了栅栏位置以后调用`await`方法阻塞，等待所有线程都到了栅栏后放开栅栏一起
+当线程到了栅栏位置以后调用<code>await</code>方法阻塞，等待所有线程都到了栅栏后放开栅栏一起
 继续执行。栅栏也被复位以备下次使用；
 </p>
 
@@ -499,12 +502,12 @@ public class TestHarness {
 </p>
 
 <p>
-如果成功通过栅栏，那么`await`会给每个线程发一个唯一的索引号，可以在索引中选一个
+如果成功通过栅栏，那么<code>await</code>会给每个线程发一个唯一的索引号，可以在索引中选一个
 领导线程，由它在下一轮中执行一些特殊的工作。
 </p>
 
 <p>
-<code>CyclicBarrier</code>的构造函数还可以接收一个`Runnable`，并在成功通过栅栏时在一个
+<code>CyclicBarrier</code>的构造函数还可以接收一个<code>Runnable</code>，并在成功通过栅栏时在一个
 子任务执行它。但是在线程被释放之前是不能执行的。
 </p>
 
@@ -582,14 +585,14 @@ public class CellularAutomata {
 <h1 id="toc_7">Callable</h1>
 
 <p>
-<code>Runnable</code>不能有返回值、也不能抛出异常，所以`Callable<code>更加好。`Callable</code>相当于
-可以有返回结果的<code>Runnable</code>。例如一个返回`void<code>的`Callable</code>就是<code>Callable&lt;void&gt;</code>
-。而且<code>Runnable</code>只能抛出非受检查异常，而`Callable`可以抛出受检查或非受检查异常。
+<code>Runnable</code>不能有返回值、也不能抛出异常，所以<code>Callable</code>更加好。<code>Callable</code>相当于
+可以有返回结果的<code>Runnable</code>。例如一个返回<code>void</code>的<code>Callable</code>就是<code>Callable&lt;void&gt;</code>
+。而且<code>Runnable</code>只能抛出非受检查异常，而<code>Callable</code>可以抛出受检查或非受检查异常。
 </p>
 
 <p>
 <code>Callable</code>的接口方法是<code>call()</code>。如果想要一个在运行后有返回值是<code>void</code>类型的话
-可以这样：`Callable&lt;Void&gt;`。
+可以这样：<code>Callable&lt;Void&gt;</code>。
 </p>
 
 
@@ -597,8 +600,8 @@ public class CellularAutomata {
 <h1 id="toc_8">Future</h1>
 
 <p>
-<code>FutureTask</code>实现了`Future<code>语义，表示一个会有结果的计算。计算过程是通过</code>Callable`
-接口实现的。`FutureTask`可以三种状态：
+<code>FutureTask</code>实现了<code>Future</code>语义，表示一个会有结果的计算。计算过程是通过<code>Callable</code>
+接口实现的。<code>FutureTask</code>可以三种状态：
 </p>
 
 <ul>
@@ -675,16 +678,16 @@ class DataLoadException extends Exception { }
 
 <p>
 <code>Callable</code>会抛出异常，并且任何代码都会抛出<code>Error</code>。无论抛出了什么在<code>Future.get</code>
-里都会被封装成`ExecutionException<code>以及</code>CancellationException`。由于这里抛出的
-类型都是被作为`Throwable`返回的，所以处理起来有些复杂：
+里都会被封装成<code>ExecutionException</code>以及<code>CancellationException</code>。由于这里抛出的
+类型都是被作为<code>Throwable</code>返回的，所以处理起来有些复杂：
 </p>
 
 <p>
-因为要判断抛出的类型是`CheckedException<code>？`RuntimeException</code>？还是`Error`？
+因为要判断抛出的类型是<code>CheckedException</code>？<code>RuntimeException</code>？还是<code>Error</code>？
 </p>
 
 <p>
-如果是我们预想中的`DataLoadException`，走我们预计的处理方式。其他的可能性用
+如果是我们预想中的<code>DataLoadException</code>，走我们预计的处理方式。其他的可能性用
 下面的工具类<code>LaunderThrowable</code>来处理异常。它会把强制把未检查的异常转为
 <code>RuntimeException</code>：
 </p>
@@ -711,7 +714,7 @@ public class LaunderThrowable {
 <h2 id="toc_8.1">结合Future与CurrentMap实现缓存</h2>
 
 <p>
-先定义一个接口`Computable<code>，`A</code>为输入类型，<code>V</code>为输出类型。接口方法`compute`是
+先定义一个接口<code>Computable</code>，<code>A</code>为输入类型，<code>V</code>为输出类型。接口方法<code>compute</code>是
 计算主逻辑：
 </p>
 
@@ -722,8 +725,8 @@ public interface Computable&lt;A, V&gt; {
 </pre>
 
 <p>
-带缓存的计算功能可以实现这个接口。通过<code>CurrentMap</code>的`putIfAbsent`实现原子性的
-“没有则添加”；用`Future`表示计算正在执行，避免重计算同一个值：
+带缓存的计算功能可以实现这个接口。通过<code>CurrentMap</code>的<code>putIfAbsent</code>实现原子性的
+“没有则添加”；用<code>Future</code>表示计算正在执行，避免重计算同一个值：
 </p>
 
 <pre class="brush: java; highlight: [2, 12, 14, 19, 20, 23, 27]">
@@ -810,7 +813,7 @@ public class Factorizer extends GenericServlet implements Servlet {
 
 <h1 id="toc_9">Executor框架</h1>
 
-<h2 id="toc_9.1">传统任务管理的缺陷 </h2>
+<h2 id="toc_9.1">传统任务管理的缺陷</h2>
 
 <p>
 在同一线程中处理所有任务，性能差：
@@ -860,7 +863,7 @@ public class ThreadPerTaskWebServer {
 <h2 id="toc_9.2">用Executor框架</h2>
 
 <p>
-在Java类库中，任务执行的主要抽象是<code>Executor</code>而不是`Thread`。所以每当看到：
+在Java类库中，任务执行的主要抽象是<code>Executor</code>而不是<code>Thread</code>。所以每当看到：
 </p>
 
 <pre class="brush: java">
@@ -868,11 +871,11 @@ public class ThreadPerTaskWebServer {
 </pre>
 
 <p>
-这样的模式时，要考虑用`Executor<code>来代替`Thread</code>。
+这样的模式时，要考虑用<code>Executor</code>来代替<code>Thread</code>。
 </p>
 
 <p>
-<code>Executor</code>接口代表一个任务，要实现的方法<code>execute</code>里是对`Runnable`对象的调用：
+<code>Executor</code>接口代表一个任务，要实现的方法<code>execute</code>里是对<code>Runnable</code>对象的调用：
 </p>
 
 <pre class="brush: java">
@@ -911,10 +914,10 @@ public class TaskExecutionWebServer {
 }
 </pre>
 
-<h2 id="toc_9.3">重写不同的线程策略 </h2>
+<h2 id="toc_9.3">重写不同的线程策略</h2>
 
 <p>
-前面说到<code>Executor</code>的接口方法`execute`：
+前面说到<code>Executor</code>的接口方法<code>execute</code>：
 </p>
 
 <pre class="brush: java">
@@ -975,7 +978,7 @@ Executor pool = Executors.newFixedThreadPool(num);
 </p>
 
 <p>
-<code>newSingleThreadExecutor</code>：单线程的`Executor`。一个线程因为异常结束再建一个来
+<code>newSingleThreadExecutor</code>：单线程的<code>Executor</code>。一个线程因为异常结束再建一个来
 替换它。能保证依照任务顺序执行。还保证前一个任务的内存操作对下一个任务是
 可见的。
 </p>
@@ -988,12 +991,12 @@ Executor pool = Executors.newFixedThreadPool(num);
 <h2 id="toc_9.5">Executor生命周期</h2>
 
 <p>
-因为是异步的，所以提供了管理生命周期的工具`ExecutorService<code>，它继承了`Executor</code>
+因为是异步的，所以提供了管理生命周期的工具<code>ExecutorService</code>，它继承了<code>Executor</code>
 ，并添加了控制生命周期的方法。
 </p>
 
 <p>
-当`ExecutorService<code>关闭后，再提交任务会被抛弃，或使</code>execute`方法抛出未检查异常
+当<code>ExecutorService</code>关闭后，再提交任务会被抛弃，或使<code>execute</code>方法抛出未检查异常
 <code>RejectedExecutionException</code>。
 </p>
 
@@ -1077,11 +1080,11 @@ public class LifecycleWebServer {
 </pre>
 
 
-<h1 id="toc_10">延时任务与周期任务 </h1>
+<h1 id="toc_10">延时任务与周期任务</h1>
 
-<h2 id="toc_10.1">传统方案的不足 </h2>
+<h2 id="toc_10.1">传统方案的不足</h2>
 
-<h3 id="toc_10.1.1">Timer方案的不足 </h3>
+<h3 id="toc_10.1.1">Timer方案的不足</h3>
 
 <p>
 <code>Timer</code>方案有缺点，因为执行的时候只创建一个线程。前一个任务时间长了会影响后面
@@ -1090,13 +1093,13 @@ public class LifecycleWebServer {
 </p>
 
 <p>
-可以使用阻塞队列<code>DelayQueue</code>，它为`ScheduledThreadPoolExecutor`提供了调度功能。
-<code>DelayQueue</code>里管理一组`Delayed<code>对象，每个都对应一个时间延迟。在</code>DelayQueue`里
-只有某个元素逾期后才能从<code>DelayQueue</code>中执行`take<code>操作。`DelayQueue</code>中的对象按
+可以使用阻塞队列<code>DelayQueue</code>，它为<code>ScheduledThreadPoolExecutor</code>提供了调度功能。
+<code>DelayQueue</code>里管理一组<code>Delayed</code>对象，每个都对应一个时间延迟。在<code>DelayQueue</code>里
+只有某个元素逾期后才能从<code>DelayQueue</code>中执行<code>take</code>操作。<code>DelayQueue</code>中的对象按
 延迟时间排序。
 </p>
 
-<h3 id="toc_10.1.2">忙等待方案 </h3>
+<h3 id="toc_10.1.2">忙等待方案</h3>
 
 <pre class="brush: java">
 public void loopTask() {
@@ -1119,7 +1122,7 @@ public void loopTask() {
 <h2 id="toc_10.2">周期性任务线程池</h2>
 
 <p>
-<code>ScheduledThreadPoolExecutor</code>适合执行周期性任务。注意要用`static final`修饰才能
+<code>ScheduledThreadPoolExecutor</code>适合执行周期性任务。注意要用<code>static final</code>修饰才能
 由多个线程共享：
 </p>
 
@@ -1170,7 +1173,7 @@ private static final ScheduledExecutorService Timer =
 <h1 id="toc_11">设计并行程序</h1>
 
 <p>
-之前已经说过<code>Callable</code>比`Runnable`好：可以有返回值还可以抛出受检查异常。
+之前已经说过<code>Callable</code>比<code>Runnable</code>好：可以有返回值还可以抛出受检查异常。
 </p>
 
 <pre class="brush: java">
@@ -1180,14 +1183,14 @@ public interface Callable&lt;V&gt; {
 </pre>
 
 <p>
-<code>Runnable</code>和`Callable<code>都是对任务的抽象。在</code>Executor`框架中执行任务有四个阶段：
-创建、提交、开始、完成。`Executor`框架中可以取消一个已经提交但是还没有开始执行
+<code>Runnable</code>和<code>Callable</code>都是对任务的抽象。在<code>Executor</code>框架中执行任务有四个阶段：
+创建、提交、开始、完成。<code>Executor</code>框架中可以取消一个已经提交但是还没有开始执行
 的任务；对于已经在执行的任务只能让它响应中断时才能取消。
 </p>
 
 <p>
 <code>Future</code>表示一个任务的使命周期，并提供方法来判断是否已经完成或取消，以及取得
-执行结果和取消任务。当一个`Future`执行完成以后，它就永远停在完成状态上。
+执行结果和取消任务。当一个<code>Future</code>执行完成以后，它就永远停在完成状态上。
 </p>
 
 <pre class="brush: java">
@@ -1209,20 +1212,20 @@ public interface Future&lt;V&gt; {
 </p>
 
 <p>
-<code>ExecutorService</code>中的<code>submit</code>方法以`Runnable<code>或`Callable</code>对象提交给`Executor`，
-从而创建一个`Future<code>。可以用这个</code>Future`来执行任务或取消任务。
+<code>ExecutorService</code>中的<code>submit</code>方法以<code>Runnable</code>或<code>Callable</code>对象提交给<code>Executor</code>，
+从而创建一个<code>Future</code>。可以用这个<code>Future</code>来执行任务或取消任务。
 </p>
 
 <p>
-还可以显式地为某个`Runnalbe<code>或`Callable</code>实例化一个`FutureTask<code>。由于`FutureTask</code>
-实现了`Runnable<code>，所以可以拿它提交给</code>Executor<code>来执行，或是直接调用它的</code>run`方法
+还可以显式地为某个<code>Runnalbe</code>或<code>Callable</code>实例化一个<code>FutureTask</code>。由于<code>FutureTask</code>
+实现了<code>Runnable</code>，所以可以拿它提交给<code>Executor</code>来执行，或是直接调用它的<code>run</code>方法
 。
 </p>
 
 <p>
-从Java 6开始`ExecutorService<code>实现可以改写</code>AbstractExecutorService`中的
-<code>newTaskFor</code> 方法从而根据已经提交的<code>Runnable</code>或`Callable<code>来控制`Future</code>的实例化
-过程。在现有的默认的实现中，仅仅是创建了一个新的`FutureTask`：
+从Java 6开始<code>ExecutorService</code>实现可以改写<code>AbstractExecutorService</code>中的
+<code>newTaskFor</code> 方法从而根据已经提交的<code>Runnable</code>或<code>Callable</code>来控制<code>Future</code>的实例化
+过程。在现有的默认的实现中，仅仅是创建了一个新的<code>FutureTask</code>：
 </p>
 
 <pre class="brush: java">
@@ -1232,8 +1235,8 @@ protected &lt;T&gt; RunnableFuture&lt;T&gt; newTaskFor(Callable&lt;T&gt; task) {
 </pre>
 
 <p>
-在`Runnable<code>或`Callable</code>提交到`Executor`过程中是安全传递的，不会有等到构造了一半
-的情况发生；把`Future`传递给其他线程也是安全的，所以在其他线程中可以放心使用
+在<code>Runnable</code>或<code>Callable</code>提交到<code>Executor</code>过程中是安全传递的，不会有等到构造了一半
+的情况发生；把<code>Future</code>传递给其他线程也是安全的，所以在其他线程中可以放心使用
 <code>get</code>方法取结果。
 </p>
 
@@ -1246,7 +1249,7 @@ protected &lt;T&gt; RunnableFuture&lt;T&gt; newTaskFor(Callable&lt;T&gt; task) {
 </p>
 
 <p>
-把下载任务做成`Callable<code>传递给</code>ExecutorService`。当主任务要图片时会等
+把下载任务做成<code>Callable</code>传递给<code>ExecutorService</code>。当主任务要图片时会等
 <code>Future.get</code>返回结果。当收到中断异常时，中断当前线程并退出。
 </p>
 
@@ -1298,26 +1301,218 @@ public abstract class FutureRenderer {
 }
 </pre>
 
+<p>
+上面的任务虽然很好地把CPU密集任务和IO密集任务分开了，这属于异构任务并行化。这样
+的是很难确定这两边的任务负载是一样的。可能有一边很轻，马上就完成了，另一边还在
+执行。所以很难保证效率提高了多少。
+</p>
 
+<p>
+只有相互独立的同构任务可以并发处理时，才能体现出明显的提升。
+</p>
+
+
+<h2 id="toc_11.2">CompletionService与BlockingQueue</h2>
+
+<p>
+在身<code>Executor</code>提交了一组任务，可以用保留与每个任务相关的<code>Future</code>，反复调用<code>get</code>
+方法，同时设参数<code>timeout</code>为<code>0</code>。这种轮询的方式虽然有用，但可以用更好的方法：
+完成服务<code>CompletionServise</code>。
+</p>
+
+<p>
+<code>CompletionServise</code>相当组合了<code>Executor</code>与<code>BlockingQueue</code>。可以把<code>Callable</code>任务
+交给它执行，然后用类似于队列操作的<code>take</code>和<code>pall</code>等方法取结果。已经完成的结果被
+封装为<code>Future</code>。
+</p>
+
+<p>
+<code>CompletionServise</code>有一个实现类<code>ExecutorCompletionService</code>，可以把计算部分委托
+给<code>Executor</code>。它的实现非常简单。在构造函数中创建一个<code>BlockingQueue</code>来保存计算
+结果。当计算完成后，调用<code>FutureTask</code>中的<code>done</code>方法。当提交某个任务时，该任务
+首先被包装为一个<code>QueueingFuture</code>，这是<code>FutureTask</code>的子类，然后改写<code>dome</code>方法，
+并将结果存入<code>BlockingQueue</code>中。如下面代码，<code>take</code>和<code>poll</code>方法委托给了
+<code>BlockingQueue</code>，这些方法会在得出结果前阻塞。
+</p>
 
 <pre class="brush: java">
+private class QueueingFuture&lt;V&gt; extends FutureTask&lt;V&gt; {
+	QueueingFuture(Callable&lt;V&gt; c) { super(c); }
+	QueueingFuture(Runnable t, V r) { super(t, r); }
+	
+	protected void done() {
+		completionQueue.add(this);
+	}
+}
+</pre>
+
+<p>
+使用<code>CompletionService</code>的例子。主要强化在两个地方：
+</p>
+
+<ul>
+<li>
+为每张图片建立一个独立的任务，并在线程池中启动它们。这样下载变成并行任务。
+
+<li>
+从<code>CompletionService</code>中取得的结果是下载完立即显示出来。
+
+</ul>
+
+
+<pre class="brush: java; highlight: [3, 12, 16, 26]">
+public abstract class Renderer {
+
+	private final ExecutorService executor;
+
+	Renderer(ExecutorService executor) {
+		this.executor = executor;
+	}
+
+	void renderPage(CharSequence source) {
+		final List&lt;ImageInfo&gt; info = scanForImageInfo(source);
+		
+		CompletionService&lt;ImageData&gt; completionService =
+				new ExecutorCompletionService&lt;ImageData&gt;(executor);
+				
+		for (final ImageInfo imageInfo : info)
+			completionService.submit(new Callable&lt;ImageData&gt;() {
+				public ImageData call() {
+					return imageInfo.downloadImage();
+				}
+			});
+
+		renderText(source);
+
+		try {
+			for (int t = 0, n = info.size(); t &lt; n; t++) {
+				Future&lt;ImageData&gt; f = completionService.take();
+				ImageData imageData = f.get();
+				renderImage(imageData);
+			}
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		} catch (ExecutionException e) {
+			throw launderThrowable(e.getCause());
+		}
+	}
+
+	interface ImageData {
+	}
+
+	interface ImageInfo {
+		ImageData downloadImage();
+	}
+
+	abstract void renderText(CharSequence s);
+
+	abstract List&lt;ImageInfo&gt; scanForImageInfo(CharSequence s);
+
+	abstract void renderImage(ImageData i);
+
+}
+</pre>
+
+<p>
+多个<code>ExecutorCompletionService</code>可以共享一个<code>Executor</code>，所以可以创建一个特定的
+<code>Executor</code>来计算私有任务，还可以能共享一个公共<code>Executor</code>的
+<code>ExecutorCompletionService</code>。所以<code>CompletionService</code>的作为就相当于一组计算的句柄
+，这与<code>Future</code>作为单个计算的够本是类似的。通过记录提交给<code>CompletionService</code>任务
+的数量，并计算出已经获得的已经完成结果数量，即使使用一个共享的<code>Executor</code>也可以
+知道已经获得了所有任务结果的时间。
+</p>
+
+
+<h2 id="toc_11.3">设置任务的执行时限</h2>
+
+<p>
+<code>Future.get</code>中可以设定超时限制，超时后抛出<code>TimeoutException</code>。一般在任务超时后
+应该立即<code>Future.cancel(true)</code>停止，从而避免继续计算一个不能再用的结果而浪费计算
+资源。如果编写的任务是可以取消的，可以提前中止它，防止消耗资源。
+</p>
+
+<p>
+例子：从广告服务器上取广告。把广告任务交给<code>Executor</code>。如果超时就取消任务：
+</p>
+
+<pre class="brush: java; highlight: [3,10,15]">
+Page renderPageWithAd() throws InterruptedException {
+	long endNanos = System.nanoTime() + TIME_BUDGET;
+	Future&lt;Ad&gt; f = exec.submit(new FetchAdTask());
+	// Render the page while waiting for the ad
+	Page page = renderPageBody();
+	Ad ad;
+	try {
+		// Only wait for the remaining time budget
+		long timeLeft = endNanos - System.nanoTime();
+		ad = f.get(timeLeft, NANOSECONDS);
+	} catch (ExecutionException e) {
+		ad = DEFAULT_AD;
+	} catch (TimeoutException e) {
+		ad = DEFAULT_AD;
+		f.cancel(true);
+	}
+	page.setAd(ad);
+	return page;
+}
+</pre>
+
+<p>
+超时任务还可以扩展到多个任务的情况。创建n个任务，提交到一个线程池，保留n个
+<code>Future</code>。除了用<code>Future.get</code>方法一个一个取结果，还可以用一组任务为参数直接调用
+<code>invokeAll</code>方法，按任务集合中迭代器顺序把所有的<code>Future</code>添加到返回集合中。这样
+每个<code>Future</code>与对应的<code>Callable</code>关联起来了。所有任务都完毕或是超时以后<code>invokeAll</code>
+方法将返回。可以用<code>get</code>方法或<code>isCancelled</code>方法来判断每个任务是否完成。
+</p>
+
+<pre class="brush: java; highlight: [17,19,24,28,30]">
+private class QuoteTask implements Callable&lt;TravelQuote&gt; {
+	private final TravelCompany company;
+	private final TravelInfo travelInfo;
+	...
+	public TravelQuote call() throws Exception {
+		return company.solicitQuote(travelInfo);
+	}
+}
+
+public List&lt;TravelQuote&gt; getRankedTravelQuotes( TravelInfo travelInfo, 
+		Set&lt;TravelCompany&gt; companies, Comparator&lt;TravelQuote&gt; ranking, 
+		long time, TimeUnit unit) throws InterruptedException 
+{
+	List&lt;QuoteTask&gt; tasks = new ArrayList&lt;QuoteTask&gt;();
+
+	for (TravelCompany company : companies)
+		tasks.add(new QuoteTask(company, travelInfo));
+
+	List&lt;Future&lt;TravelQuote&gt;&gt; futures = exec.invokeAll(tasks, time, unit);
+	List&lt;TravelQuote&gt; quotes = new ArrayList&lt;TravelQuote&gt;(tasks.size());
+	Iterator&lt;QuoteTask&gt; taskIter = tasks.iterator();
+
+	for (Future&lt;TravelQuote&gt; f : futures) {
+		QuoteTask task = taskIter.next();
+		try {
+			quotes.add(f.get());
+		} catch (ExecutionException e) {
+			quotes.add(task.getFailureQuote(e.getCause()));
+		} catch (CancellationException e) {
+			quotes.add(task.getTimeoutQuote(e));
+		}
+	}
+	Collections.sort(quotes, ranking);
+
+	return quotes;
+}
 </pre>
 
 
 
-<pre class="brush: java">
-</pre>
 
+<h1 id="toc_12">任务的取消与关闭</h1>
 
-
-<pre class="brush: java">
-</pre>
-
-
-
-<pre class="brush: java">
-</pre>
-
+<p>
+Java没有提供安全终止线程的机制，<code>Thread</code>的<code>stop</code>与<code>suspend</code>等方法会有一些缺陷，
+应该避免使用。推荐让一个线程调用中断来停止另一个线程。
+</p>
 
 
 <pre class="brush: java">

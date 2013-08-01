@@ -1,7 +1,7 @@
 
-%title class
+%title 并发方案
 
-%toc class
+%toc 并发方案
 
 
 = 原子操作 =
@@ -921,26 +921,190 @@ public abstract class FutureRenderer {
 }
 }}}
 
+上面的任务虽然很好地把CPU密集任务和IO密集任务分开了，这属于异构任务并行化。这样
+的是很难确定这两边的任务负载是一样的。可能有一边很轻，马上就完成了，另一边还在
+执行。所以很难保证效率提高了多少。
 
+只有相互独立的同构任务可以并发处理时，才能体现出明显的提升。
+
+
+== CompletionService与BlockingQueue ==
+
+在身`Executor`提交了一组任务，可以用保留与每个任务相关的`Future`，反复调用`get`
+方法，同时设参数`timeout`为`0`。这种轮询的方式虽然有用，但可以用更好的方法：
+完成服务`CompletionServise`。
+
+`CompletionServise`相当组合了`Executor`与`BlockingQueue`。可以把`Callable`任务
+交给它执行，然后用类似于队列操作的`take`和`pall`等方法取结果。已经完成的结果被
+封装为`Future`。
+
+`CompletionServise`有一个实现类`ExecutorCompletionService`，可以把计算部分委托
+给`Executor`。它的实现非常简单。在构造函数中创建一个`BlockingQueue`来保存计算
+结果。当计算完成后，调用`FutureTask`中的`done`方法。当提交某个任务时，该任务
+首先被包装为一个`QueueingFuture`，这是`FutureTask`的子类，然后改写`dome`方法，
+并将结果存入`BlockingQueue`中。如下面代码，`take`和`poll`方法委托给了
+`BlockingQueue`，这些方法会在得出结果前阻塞。
 
 {{{class="brush: java"
+private class QueueingFuture<V> extends FutureTask<V> {
+	QueueingFuture(Callable<V> c) { super(c); }
+	QueueingFuture(Runnable t, V r) { super(t, r); }
+	
+	protected void done() {
+		completionQueue.add(this);
+	}
+}
+}}}
+
+使用`CompletionService`的例子。主要强化在两个地方：
+
+* 为每张图片建立一个独立的任务，并在线程池中启动它们。这样下载变成并行任务。
+* 从`CompletionService`中取得的结果是下载完立即显示出来。
+
+
+{{{class="brush: java; highlight: [3, 12, 16, 26]"
+public abstract class Renderer {
+
+	private final ExecutorService executor;
+
+	Renderer(ExecutorService executor) {
+		this.executor = executor;
+	}
+
+	void renderPage(CharSequence source) {
+		final List<ImageInfo> info = scanForImageInfo(source);
+		
+		CompletionService<ImageData> completionService =
+				new ExecutorCompletionService<ImageData>(executor);
+				
+		for (final ImageInfo imageInfo : info)
+			completionService.submit(new Callable<ImageData>() {
+				public ImageData call() {
+					return imageInfo.downloadImage();
+				}
+			});
+
+		renderText(source);
+
+		try {
+			for (int t = 0, n = info.size(); t < n; t++) {
+				Future<ImageData> f = completionService.take();
+				ImageData imageData = f.get();
+				renderImage(imageData);
+			}
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		} catch (ExecutionException e) {
+			throw launderThrowable(e.getCause());
+		}
+	}
+
+	interface ImageData {
+	}
+
+	interface ImageInfo {
+		ImageData downloadImage();
+	}
+
+	abstract void renderText(CharSequence s);
+
+	abstract List<ImageInfo> scanForImageInfo(CharSequence s);
+
+	abstract void renderImage(ImageData i);
+
+}
+}}}
+
+多个`ExecutorCompletionService`可以共享一个`Executor`，所以可以创建一个特定的
+`Executor`来计算私有任务，还可以能共享一个公共`Executor`的
+`ExecutorCompletionService`。所以`CompletionService`的作为就相当于一组计算的句柄
+，这与`Future`作为单个计算的够本是类似的。通过记录提交给`CompletionService`任务
+的数量，并计算出已经获得的已经完成结果数量，即使使用一个共享的`Executor`也可以
+知道已经获得了所有任务结果的时间。
+
+
+== 设置任务的执行时限 ==
+
+`Future.get`中可以设定超时限制，超时后抛出`TimeoutException`。一般在任务超时后
+应该立即`Future.cancel(true)`停止，从而避免继续计算一个不能再用的结果而浪费计算
+资源。如果编写的任务是可以取消的，可以提前中止它，防止消耗资源。
+
+例子：从广告服务器上取广告。把广告任务交给`Executor`。如果超时就取消任务：
+
+{{{class="brush: java; highlight: [3,10,15]"
+Page renderPageWithAd() throws InterruptedException {
+	long endNanos = System.nanoTime() + TIME_BUDGET;
+	Future<Ad> f = exec.submit(new FetchAdTask());
+	// Render the page while waiting for the ad
+	Page page = renderPageBody();
+	Ad ad;
+	try {
+		// Only wait for the remaining time budget
+		long timeLeft = endNanos - System.nanoTime();
+		ad = f.get(timeLeft, NANOSECONDS);
+	} catch (ExecutionException e) {
+		ad = DEFAULT_AD;
+	} catch (TimeoutException e) {
+		ad = DEFAULT_AD;
+		f.cancel(true);
+	}
+	page.setAd(ad);
+	return page;
+}
+}}}
+
+超时任务还可以扩展到多个任务的情况。创建n个任务，提交到一个线程池，保留n个
+`Future`。除了用`Future.get`方法一个一个取结果，还可以用一组任务为参数直接调用
+`invokeAll`方法，按任务集合中迭代器顺序把所有的`Future`添加到返回集合中。这样
+每个`Future`与对应的`Callable`关联起来了。所有任务都完毕或是超时以后`invokeAll`
+方法将返回。可以用`get`方法或`isCancelled`方法来判断每个任务是否完成。
+
+{{{class="brush: java; highlight: [17,19,24,28,30]"
+private class QuoteTask implements Callable<TravelQuote> {
+	private final TravelCompany company;
+	private final TravelInfo travelInfo;
+	...
+	public TravelQuote call() throws Exception {
+		return company.solicitQuote(travelInfo);
+	}
+}
+
+public List<TravelQuote> getRankedTravelQuotes( TravelInfo travelInfo, 
+		Set<TravelCompany> companies, Comparator<TravelQuote> ranking, 
+		long time, TimeUnit unit) throws InterruptedException 
+{
+	List<QuoteTask> tasks = new ArrayList<QuoteTask>();
+
+	for (TravelCompany company : companies)
+		tasks.add(new QuoteTask(company, travelInfo));
+
+	List<Future<TravelQuote>> futures = exec.invokeAll(tasks, time, unit);
+	List<TravelQuote> quotes = new ArrayList<TravelQuote>(tasks.size());
+	Iterator<QuoteTask> taskIter = tasks.iterator();
+
+	for (Future<TravelQuote> f : futures) {
+		QuoteTask task = taskIter.next();
+		try {
+			quotes.add(f.get());
+		} catch (ExecutionException e) {
+			quotes.add(task.getFailureQuote(e.getCause()));
+		} catch (CancellationException e) {
+			quotes.add(task.getTimeoutQuote(e));
+		}
+	}
+	Collections.sort(quotes, ranking);
+
+	return quotes;
+}
 }}}
 
 
 
-{{{class="brush: java"
-}}}
 
+= 任务的取消与关闭 =
 
-
-{{{class="brush: java"
-}}}
-
-
-
-{{{class="brush: java"
-}}}
-
+Java没有提供安全终止线程的机制，`Thread`的`stop`与`suspend`等方法会有一些缺陷，
+应该避免使用。推荐让一个线程调用中断来停止另一个线程。
 
 
 {{{class="brush: java"
