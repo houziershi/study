@@ -25,20 +25,12 @@
 <h1>并发包工具</h1>
 <div class="toc">
 <ul>
-<li><a href="#toc_1">生产者消费者模式</a>
+<li><a href="#toc_1">Future</a>
 </ul>
 </div>
 
 <p>
 <a href="java.concurrency.class.html">java.concurrency.class</a>
-</p>
-
-<p>
-<a href="java.concurrency.futuretask.html">java.concurrency.futuretask</a>
-</p>
-
-<p>
-<a href="java.concurrency.Executor.html">java.concurrency.Executor</a>
 </p>
 
 <p>
@@ -54,91 +46,22 @@
 </p>
 
 
-
-
-
-<h1 id="toc_1">生产者消费者模式</h1>
-
-<p>
-用<code>Executor</code>接口。这个框架分开了任务提交与任务执行的解耦。
-</p>
-
 <p>
 <code>CompletionService</code>并行任务工具。
 </p>
 
 
-<pre class="brush: java">
-</pre>
-
-
+<h1 id="toc_1">Future</h1>
 
 <pre class="brush: java">
+ExecutorService executor = ...
+future = executor.submit(task);
+future.get();
 </pre>
 
-
-
-<pre class="brush: java">
-</pre>
-
-
-
-<pre class="brush: java">
-</pre>
-
-
-
-<pre class="brush: java">
-</pre>
-
-
-
-<pre class="brush: java">
-</pre>
-
-
-
-<pre class="brush: java">
-</pre>
-
-
-
-<pre class="brush: java">
-</pre>
-
-
-
-<pre class="brush: java">
-</pre>
-
-
-
-<pre class="brush: java">
-</pre>
-
-
-
-<pre class="brush: java">
-</pre>
-
-
-
-<pre class="brush: java">
-</pre>
-
-
-
-<pre class="brush: java">
-</pre>
-
-
-
-<pre class="brush: java">
-</pre>
-
-
-<pre class="brush: java">
-</pre>
+<p>
+<code>ExecutorService</code>的成员方法<code>cancel(boolean)</code>设置能否可以被打断。
+</p>
  </div>
 </body>
 </html>

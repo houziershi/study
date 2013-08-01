@@ -108,13 +108,3 @@ monitor.writeLock.unlock()
 可以用读锁控制前两个操作，写锁控制后一个。这样两个读操作就看不到第三个操作执行
 了一半，只改了`a`还没有修改`b`这样的情况。
 
-
-{{{class="brush: java"
-}}}
-
-
-
-{{{class="brush: java"
-}}}
-
-

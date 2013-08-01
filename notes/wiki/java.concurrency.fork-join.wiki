@@ -104,23 +104,3 @@ public class FileSize {
 	}
 }
 }}}
-
-
-{{{class="brush: java"
-}}}
-
-
-{{{class="brush: java"
-}}}
-
-
-{{{class="brush: java"
-}}}
-
-
-{{{class="brush: java"
-}}}
-
-
-
-

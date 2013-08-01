@@ -5,10 +5,6 @@
 
 [[java.concurrency.class]]
 
-[[java.concurrency.futuretask]]
-
-[[java.concurrency.Executor]]
-
 [[java.concurrency.Lock]]
 
 [[java.concurrency.Condition]]
@@ -16,88 +12,16 @@
 [[java.concurrency.fork-join]]
 
 
-
-
-
-= 生产者消费者模式 =
-
-用`Executor`接口。这个框架分开了任务提交与任务执行的解耦。
-
 `CompletionService`并行任务工具。
 
 
-{{{class="brush: java"
-}}}
-
-
+= Future =
 
 {{{class="brush: java"
+ExecutorService executor = ...
+future = executor.submit(task);
+future.get();
 }}}
 
-
-
-{{{class="brush: java"
-}}}
-
-
-
-{{{class="brush: java"
-}}}
-
-
-
-{{{class="brush: java"
-}}}
-
-
-
-{{{class="brush: java"
-}}}
-
-
-
-{{{class="brush: java"
-}}}
-
-
-
-{{{class="brush: java"
-}}}
-
-
-
-{{{class="brush: java"
-}}}
-
-
-
-{{{class="brush: java"
-}}}
-
-
-
-{{{class="brush: java"
-}}}
-
-
-
-{{{class="brush: java"
-}}}
-
-
-
-{{{class="brush: java"
-}}}
-
-
-
-{{{class="brush: java"
-}}}
-
-
-{{{class="brush: java"
-}}}
-
-
-
+`ExecutorService`的成员方法`cancel(boolean)`设置能否可以被打断。
 
