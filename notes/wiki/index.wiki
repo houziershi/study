@@ -15,15 +15,9 @@ Scala基础：[[scala]]
 
 基础：[[java]]
 
-并发：[[java.concurrency]]
-
 常用库：[[java.libs]]
 
 虚拟机：[[java.jvm]]
-
-[[jsp]]
-
-[[struts]]
 
 代码示例：[[java.example]]
 

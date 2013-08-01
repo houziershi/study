@@ -16,77 +16,56 @@
 <script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
 
 
-<title>Java基础</title>
+<title>Java</title>
 </head>
 <body  onresize='changeTocSize()'>
 	<div class="note-main"> 
 
 
-
-<h1>Java基础</h1>
+<h1>Java</h1>
 <div class="toc">
 <ul>
 <li><a href="#toc_1">多线程</a>
 <ul>
-<li><a href="#toc_1.1">中断一个线程</a>
-<li><a href="#toc_1.2">JDK5的锁与条件</a>
+<li><a href="#toc_1.1">线程基础</a>
+<li><a href="#toc_1.2">并发</a>
+<li><a href="#toc_1.3">JDK5的锁与条件</a>
 </ul>
 </ul>
 </div>
 
 <h1 id="toc_1">多线程</h1>
 
-<h2 id="toc_1.1">中断一个线程</h2>
+<h2 id="toc_1.1">线程基础</h2>
 
 <p>
-一个无限循环，但会在收到<code>InterruptedException</code>时退出：
+线程控制： <a href="java.thread.html">java.thread</a>
 </p>
 
-<pre class="brush: java">
-package test.thread;
-public class T1 extends Thread {
-
-	@Override
-	public void run() {
-		while (true) {
-			System.out.println("T1 running...");
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				break;
-			}
-		}
-	}
-
-}
-</pre>
+<h2 id="toc_1.2">并发</h2>
 
 <p>
-通过调用线程对象的<code>interrupt</code>方法使其收到<code>InterruptedException </code>异常：
+线程安全问题：<a href="java.concurrency.unsafty.html">java.concurrency.unsafty</a>
 </p>
 
-<pre class="brush: java">
-package test.thread;
-import org.junit.Test;
+<p>
+并发工具类：<a href="java.concurrency.class.html">java.concurrency.class</a>
+</p>
 
-public class ThreadTest {
+<p>
+显式锁：<a href="java.concurrency.Lock.html">java.concurrency.Lock</a>
+</p>
 
-	@Test
-	public void testInterrupt() {
-		T1 t1 = new T1();
-		t1.start();
-		try {
-			t1.join(7000);
-		} catch (InterruptedException e) {
-			// do nothing
-		}
-		t1.interrupt();
-	}
+<p>
+条件队列：<a href="java.concurrency.Condition.html">java.concurrency.Condition</a>
+</p>
 
-}
-</pre>
+<p>
+Fork-Join模式：<a href="java.concurrency.fork-join.html">java.concurrency.fork-join</a>
+</p>
 
-<h2 id="toc_1.2">JDK5的锁与条件</h2>
+
+<h2 id="toc_1.3">JDK5的锁与条件</h2>
 
 <p>
 某个线程调用<code>Lock</code>对象的<code>lock</code>方法来锁住，它用<code>unlock</code>放开其他线程就都不能用。

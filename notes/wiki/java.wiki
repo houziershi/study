@@ -1,56 +1,26 @@
 
+%title Java
 
-%title Java基础
-
-%toc Java基础
+%toc Java
 
 = 多线程 =
 
-== 中断一个线程 ==
+== 线程基础 ==
 
-一个无限循环，但会在收到`InterruptedException`时退出：
+线程控制： [[java.thread]]
 
-{{{class="brush: java"
-package test.thread;
-public class T1 extends Thread {
+== 并发 ==
 
-	@Override
-	public void run() {
-		while (true) {
-			System.out.println("T1 running...");
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				break;
-			}
-		}
-	}
+线程安全问题：[[java.concurrency.unsafty]]
 
-}
-}}}
+并发工具类：[[java.concurrency.class]]
 
-通过调用线程对象的`interrupt`方法使其收到`InterruptedException `异常：
+显式锁：[[java.concurrency.Lock]]
 
-{{{class="brush: java"
-package test.thread;
-import org.junit.Test;
+条件队列：[[java.concurrency.Condition]]
 
-public class ThreadTest {
+Fork-Join模式：[[java.concurrency.fork-join]]
 
-	@Test
-	public void testInterrupt() {
-		T1 t1 = new T1();
-		t1.start();
-		try {
-			t1.join(7000);
-		} catch (InterruptedException e) {
-			// do nothing
-		}
-		t1.interrupt();
-	}
-
-}
-}}}
 
 == JDK5的锁与条件 ==
 
@@ -155,4 +125,6 @@ public class Clock implements Runnable {
 
 }
 }}}
+
+
 

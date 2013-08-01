@@ -1,0 +1,268 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+
+
+<title>线程基础</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+<h1>线程基础</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">线程</a>
+<ul>
+<li><a href="#toc_1.1">创建线程</a>
+<li><a href="#toc_1.2">线程优先级</a>
+<li><a href="#toc_1.3">守护线程</a>
+<li><a href="#toc_1.4">多个线程相互协调</a>
+<ul>
+<li><a href="#toc_1.4.1">sleep、yield、join</a>
+<li><a href="#toc_1.4.2">中断</a>
+</ul>
+<li><a href="#toc_1.5">线程协作</a>
+</ul>
+<li><a href="#toc_2">本地线程变量</a>
+<li><a href="#toc_3">内置锁</a>
+<ul>
+<li><a href="#toc_3.1">重入</a>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">线程</h1>
+
+<h2 id="toc_1.1">创建线程</h2>
+
+<p>
+<code>Runnable</code>接口的<code>run</code>方法是要运行的逻辑。
+</p>
+
+<p>
+<code>Thread</code>类实现<code>run</code>方法。方法里是执行的逻辑。<code>start()</code>方法表示启动新线程。
+</p>
+
+<h2 id="toc_1.2">线程优先级</h2>
+
+<p>
+线程的成员方法<code>setPriority</code>。如设置当前线程的优先级为普通：
+</p>
+
+<pre class="brush: java">
+Thread.currentThread.setPriority(Thread.NORNAL_PRIORITY)
+</pre>
+
+<p>
+可用优先级：
+</p>
+
+<ul>
+<li>
+NORMAL_PRIORITY
+
+<li>
+MIN_PRIORITY
+
+<li>
+MAX_PRIORITY
+
+<li>
+等……
+
+</ul>
+
+<h2 id="toc_1.3">守护线程</h2>
+
+<p>
+分为“普通线程”和“守护线程”，区别是如果还有普通线程没有执行完毕，JVM是关不掉的。
+</p>
+
+<p>
+普通线程创建的线程默认都是普通线程，除非用<code>setDaemon(true)</code>指定：
+</p>
+
+<pre class="brush: java">
+Thread t1 = new Thread(runnable);
+t1.setDaemon(true);
+t1.start();
+</pre>
+
+
+<h2 id="toc_1.4">多个线程相互协调</h2>
+
+<h3 id="toc_1.4.1">sleep、yield、join</h3>
+
+<p>
+暂停线程：<code>Thread.sleep()</code>
+</p>
+
+<p>
+让出CPU：<code>Thread.yield()</code>
+</p>
+
+<p>
+给其他线程执行的机会，如：循环处理多个记录的时候每个循环里<code>yield</code>一下，或阻塞
+在IO时<code>yield</code>一下。
+</p>
+
+<p>
+等待其他线程完毕：<code>t1.join()</code>
+</p>
+
+<p>
+当前的线程停下，等这个<code>t1</code>的线程执行完了以后再执行当前线程。
+</p>
+
+<h3 id="toc_1.4.2">中断</h3>
+
+<p>
+对一个线程发出停止信号，如：<code>t1.interrupted()</code>要求线程<code>t1</code>停止。
+</p>
+
+<p>
+这样<code>t1</code>的执行就会抛出<code>InterruptedException</code>异常，它是受检查异常，表示当前线程
+被其他线程打断。如下面的代码收到异常后就<code>break</code>了，那么线程就中断了：
+</p>
+
+<pre class="brush: java">
+class T1 extends Thread {
+	while(true) {
+		try { 
+			/* do something */ 
+		} catch (InterruptedException e) { 
+			break; 
+		}
+	}
+}
+</pre>
+
+<p>
+如果去掉上面的<code>break</code>那线程就中断不了了。
+</p>
+
+<p>
+执行线程并中断的过程如下：
+</p>
+
+<pre class="brush: java">
+T1 t1 = new T1();
+t1.start();
+t1.join();
+t1.interrupt();
+</pre>
+
+
+<h2 id="toc_1.5">线程协作</h2>
+
+<p>
+每个对象都有<code>wait</code>与<code>notify</code>和<code>notifyAll</code>方法，选一个对象作为标志来同步：
+</p>
+
+<p>
+＊ 以对象<code>o</code>为标志，当前线程停止，让给其他线程执行：
+</p>
+
+<pre class="brush: java">
+synchronized { o.wait(); } //当前线程停止，等待唤醒。
+</pre>
+
+<p>
+这样当前线程就不会再醒过来，除非其他线程里调用对象<code>o</code>的<code>nodify</code>或是<code>nodifyAll</code>
+方法：
+</p>
+
+<pre class="brush: java">
+synchronized { o.notifyAll(); } // 唤醒所有以o为标志等待的线程
+</pre>
+
+
+
+
+
+<h1 id="toc_2">本地线程变量</h1>
+
+<p>
+<code>ThreadLocal</code>类给每个线程都准备一个资源的副本。保证每个资源只有当前线程可以
+访问。
+</p>
+
+<p>
+<code>ThreadLocal</code>对象不能简单地赋值就完了。因为它管理的每个线程的内容都要初始化，
+所以它每次都会调用自己的<code>initialValue()</code>方法。重写这个方法可以完成每个线程的
+初始化。
+</p>
+
+<pre class="brush: java">
+private static ThreadLocal&lt;List&lt;String&gt;&gt; threadLod =
+	new ThreadLocal&lt;List&lt;String&gt;&gt;() {
+		protected List&lt;String&gt; initialValue() {
+			return new ArrayList&lt;String&gt;();
+		}
+	}
+</pre>
+
+
+
+
+
+<h1 id="toc_3">内置锁</h1>
+
+<p>
+<code>synchronized</code>针对一个对象加锁，如果修饰类静态方法，那锁来自于所在的类<code>Class</code>
+对象。
+</p>
+
+<p>
+代码执行到<code>synchronized</code>同步块里时会取得锁，而离开时（无论是正常离开还是异常）
+都会放开锁。
+</p>
+
+<h2 id="toc_3.1">重入</h2>
+
+<p>
+注意内置锁的粒度是“线程”而不是“调用”。一个线程取得了锁，其他线程都不能再
+取得锁。但是本线程还是可以在不同的锁代码块中执行，因为锁的粒度是线程而不是
+代码块或线程。这就叫“重入”。
+</p>
+
+<p>
+例如：父类的方法是<code>synchronized</code>的。子类重写了这个方法，并在方法中调用了父类：
+</p>
+
+<pre class="brush: java">
+public class Widget {
+	public synchronized void doSomething() {
+		//... 
+	}
+}
+
+public class LogginWidget extends Widget {
+	public synchronized void doSomething() {
+		//... 
+		super.doSomething();
+		//... 
+	}
+}
+</pre>
+
+<p>
+上面的代码中，如果锁的粒度是方法调用，那线程就锁死了。但因为粒度是线程，所以可以
+顺利执行。
+</p>
+ </div>
+</body>
+</html>

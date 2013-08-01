@@ -1100,7 +1100,6 @@ public List<TravelQuote> getRankedTravelQuotes( TravelInfo travelInfo,
 
 
 
-
 = 任务的取消与关闭 =
 
 Java没有提供安全终止线程的机制，`Thread`的`stop`与`suspend`等方法会有一些缺陷，

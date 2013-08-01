@@ -3,25 +3,3 @@
 
 %toc 并发包工具
 
-[[java.concurrency.class]]
-
-[[java.concurrency.Lock]]
-
-[[java.concurrency.Condition]]
-
-[[java.concurrency.fork-join]]
-
-
-`CompletionService`并行任务工具。
-
-
-= Future =
-
-{{{class="brush: java"
-ExecutorService executor = ...
-future = executor.submit(task);
-future.get();
-}}}
-
-`ExecutorService`的成员方法`cancel(boolean)`设置能否可以被打断。
-
