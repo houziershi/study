@@ -1696,66 +1696,1000 @@ public void start() {
 它的目的是清理资源，但是由于它的任何状态都可以被多个线程访问，而且不能保证什么
 时候被调用或是会不会被调用。所以清理工作还是及时放在`finally`块中早点做掉保险。
 
+
+
+
+= 线程池的使用 =
+
+== 任务与执行策略之间的隐性耦合 ==
+
+`Executor`框架可以分开提交任务与处理任务的耦合。但任务之间的耦合还是要注意。
+
+== ThreadPoolExecutor ==
+
+一般由`Executors`的工厂方法`newCachedThreadPool`、`newFixedThreadPool`、
+`newScheduledThreadExecutor`产生。一般用`newCachedThreadPool`有比较泛用的配置。
+
+如果产生的默认配置不能满足需求，还可以用它的构造函数定制一个出来： 
+
 {{{class="brush: java"
+public ThreadPoolExecutor(int corePoolSize, int maximumPoolSize,
+	long keepAliveTime, TimeUnit unit,
+	BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory,
+	RejectedExecutionHandler handler) 
+{
+	// ...
+}
+}}}
+
+=== 设置线程池大小 ===
+
+核心大小与最大大小设置了一开始的大小和最大小，存在时间表示一定时间内没有任务就
+代表这个线程可以被回收掉，如果在当前线程池的大小已经超过核心大小那么这些标记的
+线程就会被回收。
+
+`newfixedThreadPool`方法创建的线程池不会超时；`newCachedThreadPood`创建的线程池
+最大是`Integer.MAX_VALUE`，而基本大小是0，超时是1分钟。
+
+=== 配置任务队列 ===
+
+单线程的`Executor`不会有并发任务，它通过线程封闭来实现线程安全性。但在并发线程池
+中会有多个并发任务。请求速度超过处理速度时即使把任务放在队列里，没有运行不占用
+线程资源，也可能因为队列太大而耗尽资源。
+
+`ThreadPoolExecutor`的构造函数可能接收一个`BlockingQueue`来作为任务队列。基本有
+三种方案：
+
+* 无限队列。
+* 有限队列。
+* 同步移交（Synchronous Handoff）。
+
+无限队列是`newFixedThreadPool`和`newSingleThreadExecutor`默认的。一般用一个不
+限制长度的`LinkedBlockingQueue`来实现。
+
+有限的队列可以用`ArrayBlockingQueue`、限制长度的`LinkedBlockingQueue`或
+`PriorityBlockingQueue`配合相应的满策略。
+
+同步移交应用于非常大的或者无限的线程池，可以通过`SynchronousQueue`来实现。它并不
+是真的队列，仅仅是一个从生产者转到消费者的移交机制。相当于一个没有长度的队列，
+要把一个元素放入它，就一定要有一个空闲的线程在等待。如果没有线程等待，而且线程池
+已经满任务会被拒绝。只有在线程池是有界的并且可以拒绝任务时，同步移交才有价值。
+
+`PriorityBlockingQueue`对于任务的优先级有排序，要实现`Comparable`接口。
+
+* 任务独立性
+
+只有任务是相互独立的才能用有限制的队列，不然所依赖的任务进不了队列执行不了就
+锁死了。这时应该用无界的线程池，如`newCachedThreadPool`。
+
+
+=== 饱和策略 ===
+
+`ThreadPoolExecutor`的饱合策略可以通过`setRejectedExecutionHandler`来修改。
+
+* `Abort`：抛未检查异常，调用者处理异常。
+* `Discard`：丢掉任务。
+* `DiscardOlds`：丢掉最老的任务。
+* `DiscardPolicy`：丢掉优先级最低的。
+* `Caller_Runs`：不抛异常，退回给调用者。用一个`execute()`执行它。
+
+`Caller_Runs`不抛弃任务也不抛异常，而是在一个`execute()`执行它。相当于让调用者
+执行，这样调用都就花时间执行任务而暂缓提交新任务了。
+
+下面是一个例子，线程池用`CallerRuns`策略，调用者中用信号量来限制任务产生量：
+
+{{{class="brush: java"
+ThreadPoolExecutor executor = new ThreadPoolExecutor(N_THREADS, N_THREADS,
+			0L, TimeUnit.MILLISECONDS, 
+			new LinkedBlockingQueue<Runnable>(CAPACITY));
+			
+executor.setRejectedExecutionHandler(
+		new ThreadPoolExecutor.CallerRunsPolicy() );
+}}}
+
+调用者中：
+
+{{{class="brush: java; highlight: [4,8,14,21,26]"
+@ThreadSafe
+public class BoundedExecutor {
+	private final Executor exec;
+	private final Semaphore semaphore;
+
+	public BoundedExecutor(Executor exec, int bound) {
+		this.exec = exec;
+		this.semaphore = new Semaphore(bound);
+	}
+
+	public void submitTask(final Runnable command) 
+		throws InterruptedException 
+	{
+		semaphore.acquire();
+		try {
+			exec.execute(new Runnable() {
+					public void run() {
+					try {
+						command.run();
+					} finally {
+						semaphore.release();
+					}
+				}
+			});
+		} catch (RejectedExecutionException e) {
+			semaphore.release();
+		}
+	}
+
+}
+}}}
+
+=== 线程工厂 ===
+
+还可以指定线程池创建线程的工厂方法。比如想要让创建的线程是守护线程、给每个创建
+的线程指定`UncaughtExceptionHandler`等需求。工厂方法的接口如下：
+
+{{{class="brush: java"
+public interface ThreadFactory {
+	Thread newThread(Runnable r);
+}
+}}}
+
+自定义一个工厂方法的例子，这个工厂和产生的线程有名字，可以用来日志跟踪：
+
+{{{class="brush: java"
+public class MyThreadFactory implements ThreadFactory {
+	private final String poolName;
+
+	public MyThreadFactory(String poolName) {
+		this.poolName = poolName;
+	}
+
+	public Thread newThread(Runnable runnable) {
+		return new MyAppThread(runnable, poolName);
+	}
+}
+}}}
+
+注意创建的线程也是自定义的，带有名字：
+
+{{{class="brush: java"
+public class MyAppThread extends Thread {
+	public static final String DEFAULT_NAME = "MyAppThread";
+	private static volatile boolean debugLifecycle = false;
+	private static final AtomicInteger created = new AtomicInteger();
+	private static final AtomicInteger alive = new AtomicInteger();
+	private static final Logger log = Logger.getAnonymousLogger();
+
+	public MyAppThread(Runnable r) {
+		this(r, DEFAULT_NAME);
+	}
+
+	public MyAppThread(Runnable runnable, String name) {
+		super(runnable, name + "-" + created.incrementAndGet());
+		setUncaughtExceptionHandler(
+			new Thread.UncaughtExceptionHandler() {
+				public void uncaughtException(Thread t, Throwable e) {
+					log.log(Level.SEVERE, "UNCAUGHT in thread " + t.getName(), e);
+				}
+		});
+	}
+
+	public void run() {
+		// Copy debug flag to ensure consistent value throughout.
+		boolean debug = debugLifecycle;
+		if (debug) log.log(Level.FINE, "Created " + getName());
+		try {
+			alive.incrementAndGet();
+			super.run();
+		} finally {
+			alive.decrementAndGet();
+			if (debug) log.log(Level.FINE, "Exiting " + getName());
+		}
+	}
+
+	public static int getThreadsCreated() {
+		return created.get();
+	}
+
+	public static int getThreadsAlive() {
+		return alive.get();
+	}
+
+	public static boolean getDebug() {
+		return debugLifecycle;
+	}
+
+	public static void setDebug(boolean b) {
+		debugLifecycle = b;
+	}
+}
+}}}
+
+如果要在程序中利用安全策略来控制对某些特殊代码库的访问权限。可以通过`Executor`
+中的`privilegedThreadFactory`工厂来定制自己的线程工厂。所创建的线程与创建这个
+`privilegedThreadFactory`的线程有同样的访问权限、`AccessControlContext`和
+`conextClassLoader`。如果不用`privilegedThreadFactory`线程池创建的线程将从在需要
+新线程时调用`execute`或`submit`的客户程序中继承访问权限。
+
+{{{class="brush: java"
+}}}
+
+=== 设置现有的ThreadPoolExecutor ===
+
+现有的线程池不能随便改：
+
+{{{class="brush: java"
+ExecutorService exec = Executors.newCachedThreadPool();
+if (exec instanceof ThreadPoolExecutor)
+	((ThreadPoolExecutor) exec).setCorePoolSize(10);
+else
+	throw new AssertionError("Oops, bad assumption");
+}}}
+
+Executors中有一个`unconfigurableExecutorService`工厂方法，它把现有的
+`ExecutorService`包装成了别的东西，只暴露出了`ExecutorService`方法。
+
+`newSingleThreadExecutor`创建的结果就是这样封装过的，因为要的就是单线程的，不能
+让别人改成多线程的。
+
+你也可以在自己的`Executor`中使用这种策略来不让别人改。
+
+
+== 扩展ThreadPoolExecutor ==
+
+它提供了几个方法是可以在子类中重写的：
+
+`afterExecute`在`run`方法正常执行完或是抛出异常时会执行。但如是如果完成后带一个
+`Error`就不会被执行。
+
+`beforeExecute`在任务执行前运行，但如果它抛出了`RuntimeException`那么任务就不会
+执行。
+
+`terminated`在线程池关闭时调用。
+
+例子：给线程池添加统计信息
+
+{{{class="brush: java"
+public class TimingThreadPool extends ThreadPoolExecutor {
+	private final ThreadLocal<Long> startTime = new ThreadLocal<Long>();
+	private final Logger log = Logger.getLogger("TimingThreadPool");
+	private final AtomicLong numTasks = new AtomicLong();
+	private final AtomicLong totalTime = new AtomicLong();
+
+	protected void beforeExecute(Thread t, Runnable r) {
+		super.beforeExecute(t, r);
+		log.fine(String.format("Thread %s: start %s", t, r));
+		startTime.set(System.nanoTime());
+	}
+
+	protected void afterExecute(Runnable r, Throwable t) {
+		try {
+			long endTime = System.nanoTime();
+			long taskTime = endTime - startTime.get();
+			numTasks.incrementAndGet();
+			totalTime.addAndGet(taskTime);
+			log.fine(String.format("Thread %s: end %s, time=%dns",
+					t, r, taskTime));
+		} finally {
+			super.afterExecute(r, t);
+		}
+	}
+
+	protected void terminated() {
+		try {
+			log.info(String.format("Terminated: avg time=%dns",
+			totalTime.get() / numTasks.get()));
+		} finally {
+			super.terminated();
+		}
+	}
+
+}
 }}}
 
 
 
+= 外部锁（显示锁） =
+
+JDK5还提供了外部锁：`java.util.concurrent.locks.Lock`。补充`synchronized`对应
+的内置锁。
+
+* 内置锁在`synchronized`代码结束后自动释放。无论是正常离开还是异常跳转。
+* 内置锁无法实现非阻塞结构的加锁规则。
+* 外部锁必须手动释放，所以一定要在`finally`块中释放。
+
+== 创建外部锁 ==
+
+`Lock`的实现类`ReentrantLock`可能对已经获得锁的线程重新请示锁。
+
 {{{class="brush: java"
+Lock lock = new ReentrantLock();
+
+lock.lock();
+try {
+	/* do something */ 
+} finally {
+	lock.unlock();
+}
+}}}
+
+
+== 避免死锁 ==
+
+内置锁容易死锁，外部锁`tryLock()`方法尽量避免死锁。因为这个方法会在取不到锁时
+退回，下次再试。
+
+如下面的在两个账户之间的转账程序，通过轮询的方式反常尝试取得锁：
+
+{{{class="brush: java; highlight:[4,5,7,14,19]"
+public void transferMoney(Account fromAccount, Account toAccount, 
+		BigDecimal amt) 
+{
+	while (true) {
+		if (fromAccount.lock.tryLock()) {
+			try {
+				if (toAccount.lock.tryLock()) {
+					try {
+						if (fromAccount.getBalance().Compareto(amount) < 0) {
+							throw new InsufficientFundsException(); // 余额不足
+						} else {
+							fromAccount.debit(amount);
+							toAccount.credit(amount);
+					} finally {
+						toAccount.lock.unlock();
+					}
+				}
+			} finally {
+				fromAccount.lock.unlock();
+			}
+		}
+	}
+}
+}}}
+
+还可以指定时限：
+
+{{{class="brush: java"
+if (!lock.tryLock(time, NANOSECONDS))
+	return false;
+try {
+	/* do something */
+} finally {
+	lock.unlock();
+}
+}}}
+
+还可以指定取锁过程中可以响应中断。这样还要多加一个`try-catch`再处理中断异常的：
+
+{{{class="brush: java"
+try {
+	lock.lockInterruptibly(); // 可中断
+	try {
+		// do something 
+	} finally {
+		lock.unlock();
+	}
+} catch (InterruptedException) {
+	// do something
+}
 }}}
 
 
 
+== 分开读写锁 ==
+
+`ReentrantReadWriteLock`分开读写锁以取得更加细的控制：
+
 {{{class="brush: java"
+private final ReadWriteLock monitor = new ReentrantReadWriteLock();
+
+monitor.readLock.lock()
+monitor.readLock.unlock()
+
+monitor.writeLock.lock()
+monitor.writeLock.unlock()
+}}}
+
+例：成员变量有`a`、`b`两个，操作有三个：
+
+* 读`a`
+* 读`b`
+* 同时修改`a`与`b`
+
+可以用读锁控制前两个操作，写锁控制后一个。这样两个读操作就看不到第三个操作执行
+了一半，只改了`a`还没有修改`b`这样的情况。
+
+对于大量读而少量改的情况下，读写锁可以明显提升性能：
+
+{{{class="brush: java; highlight: [4,5,12,16,22,26]"
+public class ReadWriteMap<K,V> {
+	private final Map<K,V> map;
+	private final ReadWriteLock lock = new ReentrantReadWriteLock();
+	private final Lock r = lock.readLock();
+	private final Lock w = lock.writeLock();
+
+	public ReadWriteMap(Map<K,V> map) {
+	this.map = map;
+	}
+
+	public V put(K key, V value) {
+		w.lock();
+		try {
+			return map.put(key, value);
+		} finally {
+			w.unlock();
+		}
+	}
+
+	// Do the same for remove(), putAll(), clear()
+	public V get(Object key) {
+		r.lock();
+		try {
+			return map.get(key);
+		} finally {
+			r.unlock();
+		}
+	}
+
+	// Do the same for other read-only Map methods
+}
+}}}
+
+当然`ConcurrentHashMap`性能已经不错了。这里演示了一下怎么提高其他的Map的并发
+性能。
+
+
+
+
+= Condition =
+
+== 条件队列的缺陷 ==
+
+例子：现在有一个队列被多个线程访问。
+
+出队方法检查如果没有元素就等待其他线程放入元素以后再唤醒它。成功放入元素以后，
+它也会唤醒一下其他线程，因为可能有别的取出线程看到队列空了以后等待有元素的：
+
+{{{class="brush: java"
+public void put(Object obj) {
+	while(this.isFull())
+		wait();
+
+	doPut(obj);
+	notifyAll();
+}
+}}}
+
+以上设计有些问题：
+
+* 被唤醒的原因不一定是因为队列不满了。
+* 就算是因为队列空了，也有可能在异步过程中其他线程又放满了。
+
+对于以上的忙等待模式，可以改进为下面的套路：用一个对象作为锁来同步防止又被改掉
+了：
+
+{{{class="brush: java"
+void func() throws InterruptException {
+	synchronized (lock) {
+		while(!isReady)
+			lock.wait();
+
+		// do something
+	}
+}
+}}}
+
+这样解决了出错问题，但还有性能问题：`notify()`选一个唤醒，而`notifyAll()`会唤醒
+多个线程。很多被唤醒的线程不是真的满足了条件，它们会又一次竞争锁。然后只有一个
+得到锁其他的又进入等待。这样很浪费。
+
+另外，推荐调用`notifyAll`，虽然性能比`notify`低，但是更容易确保类的行为是正确的
+。
+
+== 使用Condition ==
+
+`Condition`提供了更加细致的条件，比条件队列要好。接口的主要方法：
+
+{{{class="brush: java"
+public interface Condition {
+	void await() throws InterruptedException;
+	boolean await(long time, TimeUnit unit) throws InterruptedException;
+	long awaitNanos(long nanosTimeout) throws InterruptedException;
+	void awaitUninterruptibly();
+	boolean awaitUntil(Date deadline) throws InterruptedException;
+	void signal();
+	void signalAll();
+}
+}}}
+
+`Condition`通过外部锁`Lock.newCondition`方法创建。对于同一个`Lock`可以有多个
+`Condition`。`Condition`继承了相差`Lock`对象的公平性，对于公平的锁，线程会按FIFO
+顺序从`Condtion.await`中释放。
+
+通过`Lock`对象的`newCondition`方法来取得`Condition`对象。它的`await`方法会释放锁
+并挂起当前线程，等待其他线程调用这个对象的`signal`或`signalAll`访求表示条件已经
+满足。这些方法的调用推荐用`try-finally`包起来。
+
+
+例子：
+
+{{{class="brush: java; highlight: [4,6,7,9,18,21,26,28,34,37,43,46]"
+@ThreadSafe
+public class ConditionBoundedBuffer<T> {
+
+	protected final Lock lock = new ReentrantLock();
+	
+	// CONDITION PREDICATE: notFull (count < items.length)
+	private final Condition notFull = lock.newCondition();
+	// CONDITION PREDICATE: notEmpty (count > 0)
+	private final Condition notEmpty = lock.newCondition();
+	
+	@GuardedBy("lock")
+	private final T[] items = (T[]) new Object[BUFFER_SIZE];
+	@GuardedBy("lock")
+	private int tail, head, count;
+
+	// BLOCKS-UNTIL: notFull
+	public void put(T x) throws InterruptedException {
+		lock.lock();
+		try {
+			while (count == items.length)
+				notFull.await();
+			items[tail] = x;
+			if (++tail == items.length)
+				tail = 0;
+			++count;
+			notEmpty.signal();
+		} finally {
+			lock.unlock();
+		}
+	}
+
+	// BLOCKS-UNTIL: notEmpty
+	public T take() throws InterruptedException {
+		lock.lock();
+		try {
+			while (count == 0)
+				notEmpty.await();
+			T x = items[head];
+			items[head] = null;
+			if (++head == items.length)
+				head = 0;
+			--count;
+			notFull.signal();
+			return x;
+		} finally {
+			lock.unlock();
+		}
+	}
+
+}
+}}}
+
+例子： 时间监听器接口在时间增长时执行操作：
+
+{{{class="brush: java"
+package thread;
+ 
+import java.util.Date;
+ 
+public interface ClockListener {
+ 
+    public void update(Date date);
+ 
+}
+}}}
+
+时钟类记录时间增长：
+
+{{{class="brush: java"
+package thread;
+ 
+import java.util.Date;
+ 
+public class Clock implements Runnable {
+    private ClockListener listener;
+    private boolean run = true;
+ 
+    public Clock(ClockListener listener) {
+        this.listener = listener;
+        new Thread(this).start();
+    }
+ 
+    @Override
+    public void run() {
+        long lastTime = System.currentTimeMillis();
+        while (this.run) {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                // do nothing
+            }
+            long now = System.currentTimeMillis();
+            if ((now / 1000) - (lastTime / 1000) >= 1) {
+                listener.update(new Date(now));
+                lastTime = now;
+            }
+        }
+    }
+ 
+    public void stop() {
+        this.run = false;
+    }
+ 
+}
+}}}
+
+测试，检查记录的时间列表是不是每个时间项目都比前一个增加一秒钟：
+
+{{{class="brush: java"
+package thread;
+ 
+import java.util.Date;
+ 
+public class Clock implements Runnable {
+    private ClockListener listener;
+    private boolean run = true;
+ 
+    public Clock(ClockListener listener) {
+        this.listener = listener;
+        new Thread(this).start();
+    }
+ 
+    @Override
+    public void run() {
+        long lastTime = System.currentTimeMillis();
+        while (this.run) {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                // do nothing
+            }
+            long now = System.currentTimeMillis();
+            if ((now / 1000) - (lastTime / 1000) >= 1) {
+                listener.update(new Date(now));
+                lastTime = now;
+            }
+        }
+    }
+ 
+    public void stop() {
+        this.run = false;
+    }
+ 
+}
 }}}
 
 
 
-{{{class="brush: java"
-}}}
 
 
 
-{{{class="brush: java"
-}}}
+= Synchronizer =
 
+== AQS ==
 
-
-{{{class="brush: java"
-}}}
-
-
+`ReentrantLock`与`Semaphore`这两个接口的功能很相像，甚至可以通过`ReentrantLock`
+来实现`Semaphore`或反过来。下面是一个用`Lock`械实现信号量的例子：
 
 {{{class="brush: java"
+@ThreadSafe
+public class SemaphoreOnLock {
+	private final Lock lock = new ReentrantLock();
+	// CONDITION PREDICATE: permitsAvailable (permits > 0)
+	private final Condition permitsAvailable = lock.newCondition();
+	@GuardedBy("lock") private int permits;
+
+	SemaphoreOnLock(int initialPermits) {
+		lock.lock();
+		try {
+			permits = initialPermits;
+		} finally {
+			lock.unlock();
+		}
+	}
+
+	// BLOCKS-UNTIL: permitsAvailable
+	public void acquire() throws InterruptedException {
+		lock.lock();
+		try {
+			while (permits <= 0)
+			permitsAvailable.await();
+			--permits;
+		} finally {
+			lock.unlock();
+		}
+	}
+
+	public void release() {
+		lock.lock();
+		try {
+			++permits;
+			permitsAvailable.signal();
+		} finally {
+			lock.unlock();
+		}
+	}
+}
 }}}
 
+实际上外部锁和信号量都是用了同一个基类`AbstractQueuedSynchronizer`即AQS，它是
+很多其他同步类的基类。AQS是一个用于构造锁和同步的框架，`CountDownLatch`、
+`SynchronousQueue`、`FutureTask`等都是通过它实现的。
 
+通过实现AQS构建同步器不心处理在多个位置上的竞争问题，它只会在一个时刻发生阻塞，
+降低了上下文开销。
+
+== 实现AQS ==
+
+一般现有的工具已经够用了。但是有必要了解一下通过AQS实现同步器的原理。最基本的
+两个操作是“获取（acquire）”和“释放（release）”。
+
+一般获取操作要依赖状态，并通常会阻塞。比如取得锁或信号量、`CountDownLatch`中等待
+闭锁到结束状态、`FutureTask`中等待任务完成。
+
+释放操作是不可阻塞的，所以请求时被阻塞的线程都开始执行。
+
+AQS中的状态是一个整数信息，可心通过`getState`、`setState`、`compareSetState`等
+`protected`方法来操作。例如在`ReentrantLock`中用它来表示所有者线程已经重复取得
+该锁的次数、信号量中用来表示剩下的许可数量，`FutureTask`用来表示任务的状态。
+实现类中还可以加上新的信息，如`ReentrantLock`中保存了锁的所有者信息，这样就可以
+区别这是重入不审锁竞争。
+
+下面的伪代码显示了AQS中获取操作与释放操作的形式：
 
 {{{class="brush: java"
+boolean acquire() throws InterruptedException {
+	while (当前状态不允许获取操作) {
+		if (需要阻塞获取请求) {
+			如果当前线程不在队列中，把它放入队列
+			阻塞当前线程
+		}
+		else
+			return failure
+	}
+	可能更新同步器的状态
+	如果线程在队列中，反它移出队列
+	return success
+}
+
+void release() {
+	更新同步器状态
+	if (新状态允许某个被阻塞的线程成功获取)
+		解除队列中一个或多个线程的阻塞状态
+}
 }}}
 
+根据同步器的不同，获取操作可以是独占操作（如`ReentrantLock`），也可以是非独占的
+（如信号量和`CountDownLatch`）。
 
+一个获取操作分成两步。先是判断是否能获取，可以就允许线程执行，不可以就阻塞或失败
+。比如锁是否被其他线程持有，闭锁是否处于结束状态。然后再更新同步器的状态，这可能
+会对其他线程是否能取得这个同步器造成影响。如果是个锁的话，被一个线程获取了就不能
+被其他线程获取了。
+
+如果某同步器支持独占操作，那么要再实现一些保护方法：`tryAcquire`、`tryRelease`、
+`isHeldExclusively`等。如果是可以共享取得同步器的，应该实现：`tryAcquireShared`
+、`tryReleaseShared`等方法。
+
+
+=== 实现一个简单的闭锁 ===
+
+一个简单的二元闭锁。两个公有方法`await`和`signal`分别对应获取和释放。我们定义
+`state`为1时表示打开，为0时表示锁住：
+
+{{{class="brush: java; highlight: [13,15,17,20,21]"
+@ThreadSafe
+public class OneShotLatch {
+	private final Sync sync = new Sync();
+
+	public void signal() {
+		sync.releaseShared(0);
+	}
+
+	public void await() throws InterruptedException {
+		sync.acquireSharedInterruptibly(0);
+	}
+
+	private class Sync extends AbstractQueuedSynchronizer {
+
+		protected int tryAcquireShared(int ignored) {
+			// Succeed if latch is open (state == 1), else fail
+			return (getState() == 1) ? 1 : -1;
+		}
+
+		protected boolean tryReleaseShared(int ignored) {
+			setState(1); // Latch is now open
+			return true; // Other threads may now be able to acquire
+
+		}
+	}
+}
+}}}
+
+注意这里没有直接继承AQS而是在外面包了一层，但这样会暴露出太多AQS的方法给用户，
+所以`java.util.concurrent`包中很多同步器也没有用继承的方式。
+
+
+== Java并发包中的AQS ==
+
+介绍一下Java提供的同步器中是如何使用AQS的。
+
+=== ReentrantLock ===
+
+只支持独占获取操作，所以实现了`tryAcquire`、`tryRelease`、`isHeldExclusively`。
+同步状态保存获取锁操作的次数，还有一个`owner`变量记录当前所有的线程。在
+`tryRelease`中检查`owner`以保证当前线程执行`unlock`时已经获取了锁。`tryAcquire`
+中使用`owner`来判断操作是重入还是竞争：
 
 {{{class="brush: java"
+protected boolean tryAcquire(int ignored) {
+	final Thread current = Thread.currentThread();
+	int c = getState();
+	if (c == 0) {
+		if (compareAndSetState(0, 1)) {
+			owner = current;
+			return true;
+		}
+	} else if (current == owner) {
+		setState(c+1);
+		return true;
+	}
+	return false;
+}
 }}}
 
+=== Semaphore与CountDownLatch ===
 
+信号量的AQS状态用于保存可用的许可数量。`tryAcquireShared`方法来操作许可数量。
+在检查到还有可用的情况下用`compareAndSetState`以原子操作方式减少许可。
 
 {{{class="brush: java"
+
+protected int tryAcquireShared(int acquires) {
+	while (true) {
+		int available = getState();
+		int remaining = available - acquires;
+		if (remaining < 0 || compareAndSetState(available, remaining))
+			return remaining;
+	}
+}
+
+protected boolean tryReleaseShared(int releases) {
+	while (true) {
+		int p = getState();
+		if (compareAndSetState(p, p + releases))
+			return true;
+	}
+}
 }}}
 
+`CountDownLatch`也类似，`countDown`方法调用`release`；`await`调用`acquire`，当
+计数器为0时`acquire`方法立即返回，不然就阻塞。
 
+
+=== FutureTask ===
+
+虽然看起来不像是同步器，但`Future.get`语言非常像闭锁。这里用AQS状态来保证任务
+执行状态，还有其他的状态来保存异常与计算结果。
+
+还特别维护了一个引用指向执行计算任务的线程，因为任务如果取消，这个线程就会中断
+。
+
+
+=== ReentrantReadWriteLock ===
+
+虽然有读和写两个锁，实现中是用单个AQS子类同时管理两个锁。状态值是32位整数。它
+用了16位的状态来表示写入锁计数，并用另一个16位状态来表示读取锁读数。在读锁上的
+操作将使用共享的获取方法与释放方法，在写锁上的操作使用独占的获取方法与释放方法。
+
+AQS在内部维护一个等待线程队列，其中记录了某个线程请求是独占的还是共享。在读写锁
+中，锁可用时如果位于队头部的线程执行的是写入，那会取得这个锁。如果是读操作，那第
+队列中在第一个写入线程之前的所有线程都将获取这个锁。
+
+
+
+= Fork-Join =
+
+Java 7新提供了“Fork-Join”机制。在多个线程并行的情况下，如果有些进程处于等待
+状态会自动转而处理其他可以进行的任务以提高性能。
+
+适合Fork-Join的情况：
+
+* 任务开销不要太大；希望没有副作用；希望没有同步操作。
+* 适合分解成小的任务。
+
+== 实现方式 ==
+
+实现`RecursiveTask`接口，并重写`compute`方法。里面可以执行多个`ForkJoinTask`。
+`invokeAll`启动所以的任务，先完成或阻塞的子任务会自动转而完成还没有完成的任务。
+如：
+
+{{{class="brush: java; highlight: [1,6,10]"
+private static class FileSizeFinder extends RecursiveTask<Long> {
+	@Override
+	public Long compute() {
+		long size = 0;
+		
+		List<ForkJoinTask<Long>> tasks = new ArrayList<ForkJoinTask<Long>>();
+		// add task to list
+		// ...
+		
+		for(final ForkJoinTask<Long> task : invokeAll(tasks)) {
+			size += task.join();
+		}
+		return size;
+	}
+}
+}}}
+
+调用时用`ForkJoinPool`：
 
 {{{class="brush: java"
+private final static ForkJoinPool forkJoinPool = new ForkJoinPool();
+final long total = forkJoinPool.invoke(new FileSizeFinder(new File(args[0])));
 }}}
 
+注意`forkJoinPool`必须是静态成员才可以在整个应用中共享。
 
+统计目录下所有文件大小的完整代码如下：
 
 {{{class="brush: java"
+package com.agiledeveloper.pcj;
+
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
+import java.util.concurrent.RecursiveTask;
+import java.util.List;
+import java.util.ArrayList;
+import java.io.File;
+
+public class FileSize {
+
+	private final static ForkJoinPool forkJoinPool = new ForkJoinPool();
+
+	private static class FileSizeFinder extends RecursiveTask<Long>
+	{
+		final File file;
+
+		public FileSizeFinder(final File theFile) {
+			file = theFile;
+		}
+
+		@Override
+		public Long compute() {
+			long size = 0;
+			if (file.isFile()) {
+				size = file.length();
+			} else {
+				final File[] children = file.listFiles();
+				if (children != null) {
+					List<ForkJoinTask<Long>> tasks = 
+						new ArrayList<ForkJoinTask<Long>>();
+					for(final File child : children) {
+						if (child.isFile()) {
+							size += child.length();
+						} else {
+							tasks.add(new FileSizeFinder(child));
+						}
+					}
+
+					for(final ForkJoinTask<Long> task : invokeAll(tasks)) {
+						size += task.join();
+					}
+				}
+			}
+
+			return size;
+		}
+	}
+
+	public static void main(final String[] args) {
+		final long start = System.nanoTime();
+		final long total = forkJoinPool.invoke(
+				new FileSizeFinder(new File(args[0])));
+		final long end = System.nanoTime();
+		System.out.println("Total Size: " + total);
+		System.out.println("Time taken: " + (end - start)/1.0e9);		
+	}
+}
 }}}
-
-
-
-
-
-
