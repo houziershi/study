@@ -15,30 +15,93 @@ $("#txt").attr("value",'');//清空内容
 $("#txt").attr("value",'11');//填充内容
 }}}
 
+=== 单选组 ===
+
+{{{class="brush: html"
+	<input type="radio" name="sex" value="Female" />女
+	<input type="radio" name="sex" value="Male" />男
+}}}
+
+读取值：
+
+{{{class="brush: javascript"
+		var gender = $("input[name='sex']:checked").val();
+}}}
+
+设置值：
+
+{{{class="brush: javascript"
+		$("input[name=sex][value=Female]").attr("checked",true);
+}}}
 
 === 多选框 ===
 
-{{{class="brush: javascript"
-$("#checkbox_id").attr("value");  
-$("#chk1").attr("checked",'');//不打勾
-$("#chk2").attr("checked",true);//打勾
-if($("#chk1").attr('checked')==undefined) //判断是否已经打勾
+
+{{{class="brush: html"
+<input type="checkbox" name="test" value="0" />0&nbsp;&nbsp;  
+<input type="checkbox" name="test" value="1" />1&nbsp;&nbsp;  
+<input type="checkbox" name="test" value="2" />2&nbsp;&nbsp;  
+<input type="checkbox" name="test" value="3" />3&nbsp;&nbsp;  
+<input type="checkbox" name="test" value="4" />4&nbsp;&nbsp;  
+<input type="checkbox" name="test" value="5" />5&nbsp;&nbsp;  
+<input type="checkbox" name="test" value="6" />6&nbsp;&nbsp;  
+<input type="checkbox" name="test" value="7" />7&nbsp;&nbsp;  
+
+<input type="button" id="btn1" value="全选">     
+<input type="button" id="btn2" value="取消全选">     
+<input type="button" id="btn3" value="选中所有奇数">     
+<input type="button" id="btn4" value="反选">     
+
+<input type="button" onclick="jqchk();" value="提  交" />  
 }}}
 
-=== 单选组 ===
+取值：
 
 {{{class="brush: javascript"
-$("input[@type=radio][@checked]").val();
+function chk(){  
+  var chk_value =[];  
+  var obj=document.getElementsByName('test');
+  for(var i=0; i<obj.length; i++){  
+		if(obj[i].checked)
+			chk_value.push( obj[i].value);  
+  }  
+  alert(chk_value.length==0 ?'你还没有选择任何内容！':chk_value);  
+};
+
+
+function jqchk(){
+  var chk_value =[];  
+  $('input[name="test"]:checked').each(function(){  
+   chk_value.push($(this).val());  
+  });  
+  alert(chk_value.length==0 ?'你还没有选择任何内容！':chk_value);  
+};
 }}}
 
-设置value=2的项目为当前选中项
-{{{class="brush: javascript"
-$("input[@type=radio]").attr("checked",'2');
-}}}
+设值：
 
-radio单选组的第二个元素为当前选中值
 {{{class="brush: javascript"
-$('input[@name=items]').get(1).checked = true;
+$("#btn1").click(function(){     
+	$("[name='test']").attr("checked",'true');//全选     
+});
+
+$("#btn2").click(function(){     
+	$("[name='test']").removeAttr("checked");//取消全选     
+});
+
+$("#btn3").click(function(){     
+	$("[name='test']:even").attr("checked",'true');//选中所有奇数     
+});   
+
+$("#btn4").click(function(){     
+	$("[name='test']").each(function(){     
+		if($(this).attr("checked")) {     
+			$(this).removeAttr("checked");
+		} else {     
+			$(this).attr("checked",'true');     
+		}
+	})
+});
 }}}
 
 === 下拉框 ===
