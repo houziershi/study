@@ -1,0 +1,61 @@
+
+= 枚举（enum） =
+
+不能用`ordinal`自增当值时，增加一个`value`表示值：
+
+{{{class="brush: java"
+public enum CardType {
+	Gray(1), White(2), Black(3);
+
+	private int value;
+
+	private static final CardType[] valueArr = CardType.values();
+
+	private CardType(int value) {
+		this.value = value;
+	}
+
+	public int getValue() {
+		return value;
+	}
+
+	public static CardType valueOf(int value) {
+		for (CardType e : valueArr)
+		if (e.value == value)
+			return e;
+		return null;
+	}
+}
+}}}
+
+通过`ordinal()`、`name()`、`getValue()`取得对应的值：
+
+{{{class="brush: java"
+	assertTrue(0 == CardType.Gray.ordinal());
+	assertEquals("Gray", CardType.Gray.name());
+	assertTrue(1 == CardType.Gray.getValue());
+
+	assertTrue(1 == CardType.White.ordinal());
+	assertEquals("White", CardType.White.name());
+	assertTrue(2 == CardType.White.getValue());
+
+	assertTrue(2 == CardType.Black.ordinal());
+	assertEquals("Black", CardType.Black.name());
+	assertTrue(3 == CardType.Black.getValue());
+}}}
+
+根据`ordinal`、`name`、`value`生成枚举对象：
+
+{{{class="brush: java"
+	int ordinal = 2;
+	CardType type = CardType.values()[ordinal];
+	assertEquals(type, CardType.Black);
+
+	type = CardType.valueOf("Black");
+	assertEquals(type, CardType.Black);
+
+	type = CardType.valueOf(3);
+	assertEquals(type, CardType.Black);
+}}}
+
+

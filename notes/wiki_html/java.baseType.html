@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+
+
+<title>java.baseType</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+<h1 id="toc_1">枚举（enum）</h1>
+
+<p>
+不能用<code>ordinal</code>自增当值时，增加一个<code>value</code>表示值：
+</p>
+
+<pre class="brush: java">
+public enum CardType {
+	Gray(1), White(2), Black(3);
+
+	private int value;
+
+	private static final CardType[] valueArr = CardType.values();
+
+	private CardType(int value) {
+		this.value = value;
+	}
+
+	public int getValue() {
+		return value;
+	}
+
+	public static CardType valueOf(int value) {
+		for (CardType e : valueArr)
+		if (e.value == value)
+			return e;
+		return null;
+	}
+}
+</pre>
+
+<p>
+通过<code>ordinal()</code>、<code>name()</code>、<code>getValue()</code>取得对应的值：
+</p>
+
+<pre class="brush: java">
+	assertTrue(0 == CardType.Gray.ordinal());
+	assertEquals("Gray", CardType.Gray.name());
+	assertTrue(1 == CardType.Gray.getValue());
+
+	assertTrue(1 == CardType.White.ordinal());
+	assertEquals("White", CardType.White.name());
+	assertTrue(2 == CardType.White.getValue());
+
+	assertTrue(2 == CardType.Black.ordinal());
+	assertEquals("Black", CardType.Black.name());
+	assertTrue(3 == CardType.Black.getValue());
+</pre>
+
+<p>
+根据<code>ordinal</code>、<code>name</code>、<code>value</code>生成枚举对象：
+</p>
+
+<pre class="brush: java">
+	int ordinal = 2;
+	CardType type = CardType.values()[ordinal];
+	assertEquals(type, CardType.Black);
+
+	type = CardType.valueOf("Black");
+	assertEquals(type, CardType.Black);
+
+	type = CardType.valueOf(3);
+	assertEquals(type, CardType.Black);
+</pre>
+ </div>
+</body>
+</html>
