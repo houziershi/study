@@ -1,4 +1,12 @@
 
+= 数组 =
+
+声明时不能指定大小：`type [] var;`或`type var []`
+
+创建时指定大小：`new type var[size]`
+
+字面量：`{item1, item2, ... }`
+
 = 枚举（enum） =
 
 不能用`ordinal`自增当值时，增加一个`value`表示值：
