@@ -113,6 +113,8 @@ DB2： [[DB2]]
 
 [[tmux]]
 
+[[expect]]
+
 == 文件管理 ==
 
 [[Midnight.Commander]]
