@@ -29,10 +29,10 @@
 <ul>
 <li><a href="#toc_1.1">值域组件</a>
 <ul>
-<li><a href="#toc_1.1.1">文本框文本区域</a>
+<li><a href="#toc_1.1.1">文本框文本区域 </a>
 <li><a href="#toc_1.1.2">单选组</a>
 <li><a href="#toc_1.1.3">多选框</a>
-<li><a href="#toc_1.1.4">下拉框</a>
+<li><a href="#toc_1.1.4">下拉框 </a>
 </ul>
 </ul>
 </ul>
@@ -42,7 +42,7 @@
 
 <h2 id="toc_1.1">值域组件</h2>
 
-<h3 id="toc_1.1.1">文本框文本区域</h3>
+<h3 id="toc_1.1.1">文本框文本区域 </h3>
 
 <pre class="brush: javascript">
 $("#txt").attr("value");
@@ -124,19 +124,19 @@ function jqchk(){
 </p>
 
 <pre class="brush: javascript">
-$("#btn1").click(function(){     
+$("#btn1").click(function(){
 	$("[name='test']").attr("checked",'true');//全选     
 });
 
-$("#btn2").click(function(){     
+$("#btn2").click(function(){
 	$("[name='test']").removeAttr("checked");//取消全选     
 });
 
-$("#btn3").click(function(){     
+$("#btn3").click(function(){
 	$("[name='test']:even").attr("checked",'true');//选中所有奇数     
 });   
 
-$("#btn4").click(function(){     
+$("#btn4").click(function(){
 	$("[name='test']").each(function(){     
 		if($(this).attr("checked")) {     
 			$(this).removeAttr("checked");
@@ -147,47 +147,82 @@ $("#btn4").click(function(){
 });
 </pre>
 
-<h3 id="toc_1.1.4">下拉框</h3>
+<h3 id="toc_1.1.4">下拉框 </h3>
+
+<pre class="brush: html">
+&lt;select id="select_id" name="cars"&gt;
+	&lt;option value="volvo"&gt;Volvo&lt;/option&gt;
+	&lt;option value="saab"&gt;Saab&lt;/option&gt;
+	&lt;option value="micibi"&gt;Micibis&lt;/option&gt;
+	&lt;option value="byd"&gt;BYD&lt;/option&gt;
+	&lt;option value="fiat"&gt;Fiat&lt;/option&gt;
+	&lt;option value="audi"&gt;Audi&lt;/option&gt;
+&lt;/select&gt;
+
+&lt;input type="button" id="btn1" value="当前文本"&gt;
+&lt;input type="button" id="btn2" value="选中"&gt;
+&lt;input type="button" id="btn3" value="添加"&gt;
+&lt;input type="button" id="btn4" value="删除"&gt;
+</pre>
  
+<p>
+取值：
+</p>
+
 <pre class="brush: javascript">
-$('#sel').val();
+$("#btn1").click(function(){
+		alert('当前值：' + $("#select_id").val());
+		alert('当前文本：' + $("#select_id").find("option:selected").text() );
+		alert('当前索引：' + $("#select_id ").get(0).selectedIndex);
+		alert('最大索引：' + $("#select_id option:last").attr("index"));
+});
 </pre>
 
 <p>
-设置value=-sel3的项目为当前选中项
+设置值：
 </p>
+
 <pre class="brush: javascript">
-$("#sel").attr("value",'-sel3');
+$("#btn2").click(function(){
+		alert('选中索引3');
+		$("#select_id ").get(0).selectedIndex=2
+		alert('选中值为volvo');
+		$("#select_id ").val('valvo');
+		alert('选中文本为BYD');
+		$("#select_id option:[text='BYD']").attr("selected", true);
+});
 </pre>
 
 <p>
-清空下拉框
+添加：
 </p>
+
 <pre class="brush: javascript">
-$("#sel").empty();
+$("#btn3").click(function(){
+		alert('尾部加上一项：');
+		$("#select_id").append("&lt;option value='porsche'&gt;Porsche&lt;/option&gt;");
+		alert('头上加上一项：');
+		$("#select_id").prepend("&lt;option value='honda'&gt;Honda&lt;/option&gt;");
+});
 </pre>
 
 <p>
-添加下拉框的option
+删除：
 </p>
-<pre class="brush: javascript">
-$("&lt;option value='1'&gt;1111&lt;/option&gt;&lt;option value='2'&gt;2222&lt;/option&gt;")
-	.appendTo("#sel")
-</pre>
 
-
-<p>
-select下拉框的第二个元素为当前选中值
-</p>
 <pre class="brush: javascript">
-$('#select_id')[0].selectedIndex = 1;
-</pre>
-
-<p>
-获取select被选中项的文本
-</p>
-<pre class="brush: javascript">
-var item = $("select[@name=items] option[@selected]").text();
+$("#btn4").click(function(){
+		alert('删除最后一个');
+		$("#select_id option:last").remove();
+		alert('删除第一个');
+		$("#select_id option:first").remove();
+		alert('删除值为saab');
+		$("#select_id option[value='saab']").remove();
+		alert('删除文本是BYD');
+		$("#select_id option:[text='BYD']").remove();
+		alert('清空所有');
+		$("#select_id").empty();
+});
 </pre>
  </div>
 </body>

@@ -81,19 +81,19 @@ function jqchk(){
 设值：
 
 {{{class="brush: javascript"
-$("#btn1").click(function(){     
+$("#btn1").click(function(){
 	$("[name='test']").attr("checked",'true');//全选     
 });
 
-$("#btn2").click(function(){     
+$("#btn2").click(function(){
 	$("[name='test']").removeAttr("checked");//取消全选     
 });
 
-$("#btn3").click(function(){     
+$("#btn3").click(function(){
 	$("[name='test']:even").attr("checked",'true');//选中所有奇数     
 });   
 
-$("#btn4").click(function(){     
+$("#btn4").click(function(){
 	$("[name='test']").each(function(){     
 		if($(this).attr("checked")) {     
 			$(this).removeAttr("checked");
@@ -105,36 +105,73 @@ $("#btn4").click(function(){
 }}}
 
 === 下拉框 ===
+
+{{{class="brush: html"
+<select id="select_id" name="cars">
+	<option value="volvo">Volvo</option>
+	<option value="saab">Saab</option>
+	<option value="micibi">Micibis</option>
+	<option value="byd">BYD</option>
+	<option value="fiat">Fiat</option>
+	<option value="audi">Audi</option>
+</select>
+
+<input type="button" id="btn1" value="当前文本">
+<input type="button" id="btn2" value="选中">
+<input type="button" id="btn3" value="添加">
+<input type="button" id="btn4" value="删除">
+}}}
  
+取值：
+
 {{{class="brush: javascript"
-$('#sel').val();
+$("#btn1").click(function(){
+		alert('当前值：' + $("#select_id").val());
+		alert('当前文本：' + $("#select_id").find("option:selected").text() );
+		alert('当前索引：' + $("#select_id ").get(0).selectedIndex);
+		alert('最大索引：' + $("#select_id option:last").attr("index"));
+});
 }}}
 
-设置value=-sel3的项目为当前选中项
+设置值：
+
 {{{class="brush: javascript"
-$("#sel").attr("value",'-sel3');
+$("#btn2").click(function(){
+		alert('选中索引3');
+		$("#select_id ").get(0).selectedIndex=2
+		alert('选中值为volvo');
+		$("#select_id ").val('valvo');
+		alert('选中文本为BYD');
+		$("#select_id option:[text='BYD']").attr("selected", true);
+});
 }}}
 
-清空下拉框
+添加：
+
 {{{class="brush: javascript"
-$("#sel").empty();
+$("#btn3").click(function(){
+		alert('尾部加上一项：');
+		$("#select_id").append("<option value='porsche'>Porsche</option>");
+		alert('头上加上一项：');
+		$("#select_id").prepend("<option value='honda'>Honda</option>");
+});
 }}}
 
-添加下拉框的option
-{{{class="brush: javascript"
-$("<option value='1'>1111</option><option value='2'>2222</option>")
-	.appendTo("#sel")
-}}}
+删除：
 
-
-select下拉框的第二个元素为当前选中值
 {{{class="brush: javascript"
-$('#select_id')[0].selectedIndex = 1;
-}}}
-
-获取select被选中项的文本
-{{{class="brush: javascript"
-var item = $("select[@name=items] option[@selected]").text();
+$("#btn4").click(function(){
+		alert('删除最后一个');
+		$("#select_id option:last").remove();
+		alert('删除第一个');
+		$("#select_id option:first").remove();
+		alert('删除值为saab');
+		$("#select_id option[value='saab']").remove();
+		alert('删除文本是BYD');
+		$("#select_id option:[text='BYD']").remove();
+		alert('清空所有');
+		$("#select_id").empty();
+});
 }}}
 
 
