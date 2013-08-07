@@ -1,6 +1,21 @@
 
 {{{class="brush: bash"
+cat ssh_test.sh
+#!/bin/bash
+/usr/bin/expect -c "
+set timeout 10
+spawn ssh root@192.168.1.1
+expect "password:" {exp_send "123456"\r;}
+interact"
 }}}
+
+参数说明：
+
+`set timeout`设置一个等待时间。
+`spawn`是expect的初始命令，启动一个进程信息（需要执行的命令）。
+`expect`用于匹配输出操作，当执行ssh命令后，匹配到`"password:"`。
+`exp_send`后面的动作在匹配后发出。
+`interact`是执行脚本中把控制权交给用户。
 
 
 
