@@ -1,0 +1,219 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+
+
+<title>常见问题与调优</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>常见问题与调优</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">常见问题</a>
+<ul>
+<li><a href="#toc_1.1">高端硬件利用</a>
+<li><a href="#toc_1.2">集群同步引起内存溢出</a>
+<li><a href="#toc_1.3">堆外内存导致溢出错误</a>
+<li><a href="#toc_1.4">外部命令调用导致系统缓慢</a>
+<li><a href="#toc_1.5">与其他系统的IO连接太多</a>
+</ul>
+<li><a href="#toc_2">常用的加速手段</a>
+<ul>
+<li><a href="#toc_2.1">字节码验证</a>
+<li><a href="#toc_2.2">虚拟机JIT编译器</a>
+<li><a href="#toc_2.3">内存空间设置</a>
+<li><a href="#toc_2.4">屏蔽代码中的GC调用</a>
+<li><a href="#toc_2.5">换垃圾收集器</a>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">常见问题</h1>
+
+<h2 id="toc_1.1">高端硬件利用</h2>
+
+<p>
+大对象直接进入老年代，这样即使一次性的也不会马上被销毁掉。等老年代Full GC的时候
+才干掉。如果是64位JVM加大内存，Full GC要花很长时间……
+</p>
+
+<p>
+64位系统问题：
+</p>
+
+<ul>
+<li>
+内存回收时间长
+
+<li>
+性能低于32位
+
+<li>
+内存大，产的转储文件也大，十几个G的转储文件几乎无法分析
+
+<li>
+指针膨胀与数据类型对齐导致占用内存大很多
+
+</ul>
+
+<p>
+改用多个32位的JDK也会有些问题：
+</p>
+
+<ul>
+<li>
+对全局资源如磁盘的竞争、每个要有自己的连接池与缓存
+
+<li>
+限制内存最多4G
+
+</ul>
+
+<h2 id="toc_1.2">集群同步引起内存溢出</h2>
+
+<p>
+带着<code>-XX:+HeapDumpOnOutOfMemoryError</code>等溢出后看dump文件。发现JBossCache全局缓存
+为了同步保存缓存内容以备重发，在不同步情况下缓存太多内容。
+</p>
+
+<h2 id="toc_1.3">堆外内存导致溢出错误</h2>
+
+<p>
+带着<code>-XX:+HeapDumpOnOutOfMemoryError</code>也没有dump文件，GC不频繁，Eden、Survivor、
+老年代、永久代都占不多。所以堆外内存导致的溢出看不出来。
+</p>
+
+<p>
+操作系统给每个进程的空间有限，如Windows最大2G，如果Java堆点了1.6GB那堆外只有剩下
+的400M可用了。而且堆外内存不会自动回收，只在老年代Full GC后才会调用回收。而且在
+打开了<code>-XX:+DisableExplicitGC</code>的情况下还不会回收。
+</p>
+
+<p>
+注意会占用较大内存的区域：
+</p>
+
+<p>
+Direct Memory：通过<code>-XX:MaxDirectMemorySize</code>调整，不足时抛出<code>OutOfMemoryError</code>
+或<code>OutOfMemoryError:Direct buffer memory</code>
+</p>
+
+<p>
+线程堆栈：通过<code>-Xss</code>调整大小，内存不足时抛出<code>StackOverflowError</code>（栈深度）或
+<code>OutOfMemoryError: unable to create new native thread</code>（无法建立新线程）
+</p>
+
+<p>
+Socket缓存区：每个Socket连接都有收（37KB）与发（25KB）两个缓存区，无法分配会抛出
+<code>IOException: Too many open files</code>。
+</p>
+
+<p>
+JNI代码：本地库在调用内存不在堆中。
+</p>
+
+<p>
+虚拟机和GC：别忘记这两个也是要点内存的。
+</p>
+
+<h2 id="toc_1.4">外部命令调用导致系统缓慢</h2>
+
+<p>
+<code>Runtime.getRuntime().exec()</code>调用本地命令非常消耗资源：先克隆一个和虚拟机环境
+变量一样的进程，用它调用外部命令，然后再退出。
+</p>
+
+<p>
+这种情况下用<code>mpstat</code>看到操作系统调用很高，Solaris的<code>Dtrace</code>看到占用CPU最大的是
+fork系统调用。
+</p>
+
+<h2 id="toc_1.5">与其他系统的IO连接太多</h2>
+
+<p>
+通过Socket连接其他系统的调用，对方系统慢，Socket连接越来越多，JVM崩溃。
+</p>
+
+
+
+<h1 id="toc_2">常用的加速手段</h1>
+
+<h2 id="toc_2.1">字节码验证</h2>
+
+<p>
+对于已经有很多人在用的程序，可以在加载阶段关闭字节码验证：<code>-Xverify:none</code>
+</p>
+
+<h2 id="toc_2.2">虚拟机JIT编译器</h2>
+
+<p>
+频繁调用的代码判定为热代码，交由JIT(Just In Time)编译器产生本地代码。根据环境用
+的优化手段可能比较激进，本地代码可能比C/C++更加快，在优化条件不成立的时候再逆
+优化回来。但这会占用运行的时间，被称为“编译时间”。为了省下编译时间可以用<code>-Xinit</code>
+禁止编译，但这得不偿失，没有优化成本地代码全都是字节码运行会很慢。
+</p>
+
+<p>
+<code>-client</code>模式的C1编译器，<code>-server</code>模式下C2编译器优化更好。运行过程中即时编译的
+时间更多但优化速度更快。对长时间运行的程序是个好选择。
+</p>
+
+<h2 id="toc_2.3">内存空间设置</h2>
+
+<p>
+对于每个区域来说，满了以后除了调用GC还要看看有没有到最大内存限制，没有到还要扩大
+。所以会有其实只要扩空间不用调GC的情况，可以把开始空间大小和最大空间设一样大。
+</p>
+
+<ul>
+<li>
+新生代没有初始大小和最大设置，只有一个大小设置：<code>-Xmn</code>；
+
+<li>
+老年代：<code>-Xms</code>、<code>-Xmx</code>；
+
+<li>
+永久代：<code>-XX:permSizeMax</code>、<code>-XX:permSize</code>。
+
+</ul>
+
+
+<h2 id="toc_2.4">屏蔽代码中的GC调用</h2>
+
+<p>
+工具命令<code>jstat -gccause 进程号</code>可看到最近一次GC调用的原因，如果是显示由于代码的
+显式调用<code>System.gc()</code>比较多，可以考虑<code>-XX:+DisableExplicitGC</code>屏蔽掉程序里的显式
+调用。
+</p>
+
+
+<h2 id="toc_2.5">换垃圾收集器</h2>
+
+<p>
+对于收集器调用时程序停止而且CPU占用又不高的情况，可以考虑换并发的CMS收集器（参数
+<code>-XX:+UseConcMarkSweepGC</code>）配合ParNew（参数<code>-XX:+UseParNewGC</code>）
+</p>
+
+<p>
+由于CMS默认老年代使用68%时触发，如果这觉得这个太频繁可以调整一下，比如改成85％：
+<code>-XX:+CMSInitialtingOccupancyFraction=85</code>
+</p>
+ </div>
+</body>
+</html>

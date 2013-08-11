@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+
+
+<title>java.jvm.other</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+<h3 id="toc_0.0.1">bootclasspath</h3>
+
+<p>
+定期将一个类放入类路径是很有帮助的，这类路径与库存JRE附带的类路径或者以某种方式
+扩展的JRE类路径略有不同。（新Java Crypto API提供商就是一个例子）。如果您想要扩展
+JRE，那么您定制的实现必须可以使用引导程序<code>ClassLoader</code>，该引导程序可以加载
+<code>rt.jar</code>中的<code>java.lang.Object</code>及其所有相关文件。
+</p>
+
+<p>
+尽管您可以非法打开<code>rt.jar</code>并将您的定制实现或新数据包移入其中，但从技术上您就违反
+了您下载JDK时同意的协议了。
+</p>
+
+<p>
+相反，使用JVM自己的<code>-Xbootclasspath</code>选项，以及皮肤<code>-Xbootclasspath/p</code>
+和<code>-Xbootclasspath/a</code>。
+</p>
+
+<p>
+<code>-Xbootclasspath</code>使您可以设置完整的引导类路径（这通常包括一个对<code>rt.jar</code>的引用）
+，以及一些其他JDK附带的（不是<code>rt.jar</code>的一部分）JAR文件。<code>-Xbootclasspath/p</code>将值
+前置到现有<code>bootclasspath</code>中，并将<code>-Xbootclasspath/a</code>附加到其中。
+</p>
+
+<p>
+例如，如果您修改了库中的<code>java.lang.Integer</code>，并将修改放在一个子路径<code>mods</code>下，那
+么<code>-Xbootclasspath/amods</code>参数将新<code>Integer</code>放在默认的参数前面。
+</p>
+
+<h3 id="toc_0.0.2">verbose</h3>
+
+<p>
+对于虚拟的或任何类型的Java应用程序，<code>-verbose</code>是一个很有用的一级诊断使用程序。
+该标志有三个子标志：<code>gc</code>、<code>class</code>和<code>jni</code>。
+</p>
+
+<p>
+开发人员尝试寻找是否 JVM 垃圾收集器发生故障或者导致性能低下，通常首先要做的就是
+执行 gc。不幸的是，解释 gc 输出很麻烦 — 足够写一本书。更糟糕的是，在命令行中打印
+的输出在不同的Java或JVM 中会发生改变，这使得正确解释变得更难。
+</p>
+
+<p>
+一般来说，如果垃圾收集器是一个分代收集器（多数“企业级”VMs都是）。某种虚拟标志
+将会出现，来指出一个全部清扫GC通路；在Sun JVM中，标志在GC输出行的开始以
+<code>[FullGC...]</code>形式出现。
+</p>
+
+<p>
+想要诊断ClassLoader或不匹配的类冲突，class可以帮上大忙。它不仅报告类何时加载，
+还报告类从何处加载，包括到JAR的路径（如果来自JAR）。
+</p>
+
+<p>
+jni很少使用，除了使用JNI或本地库时。打开时，它将报告各种JNI事件，比如，本地库
+何时加载，方法何时弹回；再一次强调，在不同JVM版本中，输出会发生变化。
+</p>
+
+<h3 id="toc_0.0.3">Command-line-X</h3>
+
+<p>
+我列出了JVM中提供的我喜欢的命令行选项，但是还有一些更多的需要您自己发现，运行
+命令行参数<code>-X</code>，列出JVM提供的所有非标准（但大部分都是安全的）参数—例如：
+</p>
+
+<ul>
+<li>
+<code>-Xint</code>，在解释模式下运行JVM（对于测试JIT编译器实际上是否对您的代码起作用或者验证是否JIT编译器中有一个bug，这都很有用）。
+
+<li>
+<code>-Xloggc:</code>，和<code>-verbose:gc</code>做同样的事，但是记录一个文件而不输出到命令行窗口。
+
+</ul>
+
+<p>
+JVM命令行选项时常发生变化，因此，定期查看是一个好主意。
+</p>
+ </div>
+</body>
+</html>

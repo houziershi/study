@@ -1,0 +1,291 @@
+
+%title 监控工具
+
+%toc 监控工具
+
+= 基本JVN监控工具 =
+
+== 远程监控启动参数 ==
+
+被监控的程序要添加监控启动参数：
+
+{{{class="brush: bash"
+-Djava.rmi.server.hostname=172.16.7.10
+-Dcom.sun.management.jmxremote.port=9001
+-Dcom.sun.management.jmxremote.ssl=false
+-Dcom.sun.management.jmxremote.authenticate=false
+}}}
+
+MyEclipse启动Tomcat可以加在Tomcat的JDK->Optional Java VM arguments里。
+
+== 虚拟机进程 ==
+
+`jps`命令，显示虚拟机执行的主类与LVMID（本虚拟机唯一ID）。对本地单个虚拟机来说
+LVMID与OS进程号一样，多个虚拟机只能用`jps`来看LVMID。
+
+{{{class="brush: bash"
+jps [options] [host]
+}}}
+
+参数：
+
+| -m | 显示传给main()的参数 |
+| -l | 主类的全名           |
+| -v | JVM参数              |
+
+== 进程状态 ==
+
+指定进程号、循环间隔与次数：
+
+{{{class="brush: bash"
+jstat -gcutil 14101                                                                                               ──(Sun,Aug11)─┘
+  S0     S1     E      O      P     YGC     YGCT    FGC    FGCT     GCT   
+  0.00  99.42  10.74   1.55  40.26      1    0.012     0    0.000    0.012
+}}}
+
+`S0 S1 E O P`代表两个Sivivor、Eden、老年代、永久代的使用比。
+
+`YGC YGCT FGC FGCT GCT`启动以来新生代与老生代GC次数与耗时、总GC耗时。
+
+
+== 配置信息 ==
+
+`jinfo`查看配置参数。`-flag 参数名`查看参数默认值，`java -XX:+PrintFlagsFinal`也可以。
+`-sysprops 属性名`显示虚拟机`System.getProperties()`。
+
+== 内存转储 ==
+
+`jmap`输出内存转储文件。其他野路子的方法如：
+
+* 启动参数`-XX:+HeapDumpOnOutOfMemoryError`在内存耗尽时转储；
+* `-XX:+HeapDumpOnCtrlBreak`在按键`Control+Break`时生成；
+* linux下`kill -3`“恐吓”一下VM；
+
+`jmap`使用：
+
+{{{class="brush: bash"
+$ jmap -dump:live,format=b,file=tmp.dmp 14101
+Dumping heap to /home/morgan/tmp/tmp.dmp ...
+File exists
+}}}
+
+常用参数：
+
+| -dump          | `-dump:[live,]format=b,file=文件名`，`Live`则只要存活对象 |
+| -finalizerinfo | 显示F-Queue中等待finalize方法的对象                       |
+| -heap          | 详细堆信息、回收器类型、参数配置、分代状况                |
+| -histo         | 堆中对象统计信息，包括类＝实例数量和合计容量              |
+| -permstat      | 以ClassLoader为统计口径显示永久代内存状态                 |
+| -F             | VM线程对-dump 选项没有响应时，用来强制生成dump快照        |
+
+
+== 分析转储文件 ==
+
+`jhat`分析dump文件，分析完后会启动一个小Http服务器：
+
+{{{class="brush: bash"
+$ jhat tmp.dmp
+Reading from tmp.dmp...
+Dump file created Sun Aug 11 15:01:22 CST 2013
+Snapshot read, resolving...
+Resolving 29341 objects...
+Chasing references, expect 5 dots.....
+Eliminating duplicate references.....
+Snapshot resolved.
+Started HTTP server on port 7000
+Server is ready.
+}}}
+
+可以用浏览器查看`http://localhost:7000/`，还可以用对象查询语言（OQL）查询。
+
+
+== 跟踪堆栈 ==
+
+`jstack`生成VM当前的线程快照（一般称为`threaddump`或`javacore`文件）,查看各线程
+的调用堆栈。
+
+{{{class="brush: bash"
+jstack [option] vmid
+}}}
+
+常用参数：
+
+| -F | 正常请求无响应时，强制输出堆栈 |
+| -l | 加上锁信息                     |
+| -m | 对于本地调用，显示C/C++栈      |
+
+例子：
+
+{{{class="brush: bash"
+$ jstack -l 14101
+2013-08-11 16:37:22
+Full thread dump OpenJDK 64-Bit Server VM (23.7-b01 mixed mode):
+
+"Attach Listener" daemon prio=10 tid=0x00007f4c64001000 nid=0x3eda waiting on condition [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+   Locked ownable synchronizers:
+	- None
+
+...
+
+"main" prio=10 tid=0x00007f4c8800d000 nid=0x3716 in Object.wait() [0x00007f4c8f808000]
+   java.lang.Thread.State: WAITING (on object monitor)
+	at java.lang.Object.wait(Native Method)
+	- waiting on <0x00000000c2cbf198> (a org.mortbay.thread.QueuedThreadPool$Lock)
+	at java.lang.Object.wait(Object.java:503)
+	at org.mortbay.thread.QueuedThreadPool.join(QueuedThreadPool.java:298)
+	- locked <0x00000000c2cbf198> (a org.mortbay.thread.QueuedThreadPool$Lock)
+	at org.mortbay.jetty.Server.join(Server.java:332)
+	at runjettyrun.Bootstrap.main(Bootstrap.java:98)
+
+   Locked ownable synchronizers:
+	- None
+
+"VM Thread" prio=10 tid=0x00007f4c880a7800 nid=0x371d runnable 
+
+"GC task thread#0 (ParallelGC)" prio=10 tid=0x00007f4c8801b000 nid=0x371b runnable 
+
+"GC task thread#1 (ParallelGC)" prio=10 tid=0x00007f4c8801d000 nid=0x371c runnable 
+
+"VM Periodic Task Thread" prio=10 tid=0x00007f4c8812d000 nid=0x373d waiting on condition 
+
+JNI global references: 1963
+}}}
+
+`java.lang.Thread`类的方法`getAllStackTraces()`方法也可以取得部分线程堆栈信息，
+如一个jsp页面就可以查看当前应用的堆栈：
+
+{{{class="brush: bash"
+<%@ page import="java.util.Map"%>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>threads</title>
+</head>
+<body>
+	<pre>
+<%
+	for (Map.Entry<Thread, StackTraceElement[]> stackTrackEntry : Thread
+			.getAllStackTraces().entrySet()) //
+	{
+		Thread thread = (Thread) stackTrackEntry.getKey();
+		StackTraceElement[] stack = (StackTraceElement[]) stackTrackEntry
+				.getValue();
+		if (thread.equals(Thread.currentThread())) {
+			continue;
+		}
+		out.print("\nThread: " + thread.getName() + "\n");
+		for (StackTraceElement element : stack) {
+			out.print("\t" + element + "\n");
+		}
+	}
+%>
+</pre>
+</body>
+</html>
+}}}
+
+
+
+
+= JConsole =
+
+JConsole在open JDK与Oracle JDK里都有。运行后直接IP:Port监控系统占用。
+
+{{{class="brush: bash"
+}}}
+
+
+
+
+= VisualVM =
+
+Oracle JDK中自带；Open JDK中没有，要另外下载。
+
+如果用的是windows，要注意不能把环境变量中的`%TMP%`目录指定为fat格式分区下。
+或是添加启动参数：
+
+{{{class="brush: bash"
+-XX:+PerfBypassFileSystemCheck
+}}}
+
+安装插件：`Tools`->`Plugin`
+
+添加远程应用：左边菜单`Remote`->`Add Remote Host...`->`Add JMX Connextion...`
+
+== 界面主要标签页 ==
+
+`Overview`：主要java运行环境与参数。
+
+`Monitor`：资源占用。常用来检查PermGen的占用情况来调整最合适的PermGen大小。
+
+`Threads`：用色彩表示线程的活动情况。绿色为活动的线程。"Details"页中显示饼图。
+
+`Samper`：统计应用中各方法占用的资源。点击"CPU"开始统计，"Stop"结束。
+可以通过底部的输入框查找指定的方法。
+
+== 核心转储 ==
+
+转储：
+
+* 方法一：左边的`Application`区域右键菜单
+* 方法二：应用的`Monitor`标签->`Heap Dump`
+
+读取转储文件： `File`->`Load`
+
+== 性能分析 ==
+
+`Profiler`标签页中有CPU和内存性能分析。点击"CPU"开始统计，"Stop"结束。可以
+通过底部的输入框查找指定的方法。
+
+JDK1.5以后Client模式下加入并自动启用了类共享（多JVM情况下共享`rt.jar`以节约资源
+优化性能），在这里用Profiler性能分析会引起程序崩溃。要用`-Xshare:off`关闭共享
+优化。
+
+{{{class="brush: bash"
+}}}
+
+
+
+{{{class="brush: bash"
+}}}
+
+
+
+{{{class="brush: bash"
+}}}
+
+
+
+{{{class="brush: bash"
+}}}
+
+
+
+{{{class="brush: bash"
+}}}
+
+
+
+{{{class="brush: bash"
+}}}
+
+
+
+{{{class="brush: bash"
+}}}
+
+
+
+{{{class="brush: bash"
+}}}
+
+
+
+
+{{{class="brush: bash"
+}}}
+
+
+

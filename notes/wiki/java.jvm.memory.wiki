@@ -1,0 +1,155 @@
+
+%title 虚拟机内存
+
+%toc 虚拟机内存
+
+= 内存区域 =
+
+== Java堆（Java Heap） ==
+
+{{{class="brush: bash"
+-Xms20m -Xmx20m -XX:+HeapDumpOnOutOfMemoryError
+}}}
+
+运行该命令通知JVM拍摄一个“堆转储快照”，并将其保存在一个文件中以便处理，通常使用
+`jhat`工具。您可以使用相应的`-XX:HeapDumpPath`标志指定到保存文件的实际路径。
+
+`-XX:+HeapDumpOnCtrlBreak`参数在`Control + Break`时产生转储文件。
+
+== 虚拟机栈（JVM Statck） ==
+
+HotSpot模拟机中`-Xoss`没有用的，栈容量由`-Xss`设定。
+
+== 本地方法栈（Native Statck） ==
+
+基本同上。
+
+== 方法区（Method Area） ==
+
+设置大小：`-XX:PermSize`和`-XX:MaxPermSize`
+
+不对类进行回收：`-Xnoclassgc`
+
+查看类加载与卸载信息：`-=verbose:class`、`-XX:+TraceClassLoading`、
+`-XX:+TraceClassUnLoading`
+
+`-=verbose:class`、`-XX:+TraceClassLoading`可以在Product版JVM中使用。
+`-XX:+TraceClassUnLoading`只能在fastdebug版中使用。
+
+=== 常量池（Runtime Constant Pool） ===
+
+== 直接内存区（Direct Memory） ==
+
+`-XX:MaxDirectMemorySize`默认和`-Xmx`的一样。
+
+
+= GC与内存分配策略 =
+
+收集器日志：`-XX:+PrintGCDetails`
+
+跨代码快速运行`grep`，就会发现清单1所示的问题—原始Java性能反模式如手动调用GC:
+
+{{{class="brush: java"
+System.gc();
+}}}
+
+显式垃圾收集是一个非常糟糕的主意——就像将您和一个疯狂的斗牛犬锁在一个电话亭里。
+尽管调用的语法是依赖实现的，但如果您的JVM正在运行一个分代的垃圾回收器（大多数是
+）`System.gc()`;强迫VM执行一个堆的“全部清扫”，虽然有的没有必要。全部清扫比一个
+常规GC操作要昂贵好几个数量级，这只是个简单数学问题。
+
+Sun的工程师为这个特殊的人工错误提供一个JVM标志：`-XX:+DisableExplicitGC`。自动将
+`System.gc()`调用转换成一个空操作，提供运行代码的机会。您自己看看`System.gc()`
+对于整个JVM执行有害还是有利。
+
+
+== 回收算法 ==
+
+=== 新生代 ===
+
+新生代大小：`-Xmn10M`
+
+新生代中Eden与Survivor比例，默认8比1：`-XX:SurvivorRatio=8`
+
+=== 老年代 ===
+
+设置大对象直接放老年代：`-XX:PretenureSizeThreshold=3145728`单位是`B`不能用`M`。
+
+每活过一次GC的对象年龄加一岁。默认一岁放在Servivor里，15岁放到老年代：
+`-XX:MaxTenuringThreshold=15`。但即使不到年龄，如果相同年龄的占空间大小点到了
+Survivor的一半，也入老年代。
+
+=== 空间分配担保 ===
+
+防止分配担保失败时过多调用Full GC：`-XX:+HandlePromotionFailure`
+
+
+== 垃圾收集器种类 ==
+
+=== 新生代收集器 ===
+
+==== Serial ====
+
+Client模式下默认收集器。开关：`UseSerialGC`
+
+==== ParNew ====
+
+Serial多线程版本`-XX:+UseParNewGC`。
+
+CMS收集器（Concurrent Mark Sweep）作为老年代收集器，不能用Parallel Scavenge配合
+。所以这种情况下只能用ParNew或Serial。
+
+要用`-XX:+UseConcMarkSweepGC`选项让ParNew配CMS，当CMS抛Concurrent Mode Failure
+失败后换Serial Old新生代收集器。
+
+==== Parallel Scavenge ====
+
+吞吐量优先更加高效。
+
+控制收集停顿时间：`-XX:MaxGCPauseMillis`；
+
+设置时间比`(1/(1+值))`：`-XX:GCTimeRatio`。默认值99，即(1/(1+99))等于1%。
+
+策略参数`-XX:+UseAdaptiveSizePolicy`，设以后不用手工设置新生代大小`-Xmm`、Eden与
+Survivor区的比例`-XX:PretenureSizeThreshold`等细节。
+
+=== 老年代收集器 ===
+
+==== Serial Old ====
+
+单线程，Client模式下使用。
+
+==== CMS ====
+
+默认在老年代使用了70%后触发。设置触发百分比： 
+`-XX:CMSInitiatingOccupancyFraction`
+
+由于算法基于标记回收产生碎片较多，`-XX:+UseCMSCompactAtFullCollection`在Full GC
+后整理碎片。
+
+=== G1收集器 ===
+
+=== 收集器参数 ===
+
+| UseSerialGC            | Client模式默认，Serial与Serial Old组合           |
+| UseParNewGC            | ParNew与Serial Old组合                           |
+| UseConcMarkSweepGC     | ParNew配CMS，当CMS抛并发模式异常换Serial Old     |
+| UseParallelGC          | Sever模式默认，Parallel Scavenge与Serial Old组合 |
+| UseParallelOldGC       | 使用Parallel Scavenge与Parallel Old组合          |
+| SurvivorRatio          | `Eden`与`Survivor`容量比，默认8比1               |
+| PretenureSizeThreshold | 多大的对象直接入老年代                           |
+| MaxTenuringThreshold   | 进入老年代的年龄                                 |
+| UseAdaptiveSizePolicy  | 动态调整Java堆中各区域大小及进入老年代的年龄     |
+| HandlePromotionFailure | 分配担保失败，老年代放不下Eden和Survivor的情况   |
+| ParallelGCThreads      | 并行GC时内存回收的线程数                         |
+| GCTimeRatio            | GC占有时间比                                     |
+
+Parallel Scavenge
+
+| MaxGCPauseMillis | GC最大停顿时间 |
+
+CMS收集器参数
+
+| CMSInitiatingOccupancyFraction | 老年代使用多少次后触发GC     |
+| UseCMSCompactAtFullCollection  | 是否在完成GC后整理内存       |
+| CMSFullGCsBeforeCompaction     | 进行若干次GC后再内存整理一次 |
