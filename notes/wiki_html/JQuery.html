@@ -35,6 +35,8 @@
 <li><a href="#toc_1.1.4">下拉框 </a>
 </ul>
 </ul>
+<li><a href="#toc_2">cookies操作</a>
+<li><a href="#toc_3">事件</a>
 </ul>
 </div>
 
@@ -224,6 +226,434 @@ $("#btn4").click(function(){
 		$("#select_id").empty();
 });
 </pre>
+
+<h1 id="toc_2">cookies操作</h1>
+
+<p>
+定义工具类：
+</p>
+
+<pre class="brush: javascript">
+jQuery.cookie = function(name, value, options) {
+	if (typeof value != 'undefined') {
+		options = options || {};
+		if (value === null) {
+			value = '';
+			options = $.extend({}, options);
+			options.expires = -1;
+		}
+		var expires = '';
+		if (options.expires &amp;&amp; (typeof options.expires == 'number' || options.expires.toUTCString)) {
+			var date;
+			if (typeof options.expires == 'number') {
+				date = new Date();
+				date.setTime(date.getTime() + (options.expires * 24 * 60 * 60 * 1000));
+			} else {
+				date = options.expires;
+			}
+			expires = '; expires=' + date.toUTCString();
+		}
+		var path = options.path ? '; path=' + (options.path) : '';
+		var domain = options.domain ? '; domain=' + (options.domain) : '';
+		var secure = options.secure ? '; secure' : '';
+		document.cookie = [name, '=', encodeURIComponent(value), expires, path, domain, secure].join('');
+		} else {
+			var cookieValue = null;
+			if (document.cookie &amp;&amp; document.cookie != '') {
+			var cookies = document.cookie.split(';');
+			for (var i = 0; i &lt; cookies.length; i++) {
+				var cookie = jQuery.trim(cookies[i]);
+				if (cookie.substring(0, name.length + 1) == (name + '=')) {
+					cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+					break;
+				}
+			}
+		}
+		return cookieValue;
+	}
+};
+</pre>
+
+<p>
+调用的例子：
+</p>
+
+<pre class="brush: html">
+&lt;input type="button" id="write_cokies" value="wirte"&gt;
+&lt;input type="button" id="read_ookies" value="read"&gt;
+&lt;input type="button" id="delete_cookies" value="delete"&gt;
+</pre>
+
+<p>
+JS：
+</p>
+
+<pre class="brush: javascript">
+$(document).ready(function() {
+	$('#write_cokies').click(function(){
+		$.cookie('name', 'jade',{expires: 7});				  
+	});
+	$('#read_ookies').click(function(){
+		var name = $.cookie('name');
+		alert (name);
+	});
+	$('#delete_cookies').click(function(){
+		$.cookie('name', null);							  
+	});
+});
+</pre>
+
+
+
+<h1 id="toc_3">事件</h1>
+
+
+<table>
+<tr>
+<td>
+方法
+</td>
+<td>
+描述
+</td>
+</tr>
+<tr>
+<td>
+bind()
+</td>
+<td>
+向匹配元素附加一个或更多事件处理器 
+</td>
+</tr>
+<tr>
+<td>
+blur()
+</td>
+<td>
+触发、或将函数绑定到指定元素的 blur 事件
+</td>
+</tr>
+<tr>
+<td>
+change()
+</td>
+<td>
+触发、或将函数绑定到指定元素的 change 事件
+</td>
+</tr>
+<tr>
+<td>
+click()
+</td>
+<td>
+触发、或将函数绑定到指定元素的 click 事件
+</td>
+</tr>
+<tr>
+<td>
+dblclick()
+</td>
+<td>
+触发、或将函数绑定到指定元素的 double click 事件
+</td>
+</tr>
+<tr>
+<td>
+delegate()
+</td>
+<td>
+向匹配元素的当前或未来的子元素附加一个或多个事件处理器 
+</td>
+</tr>
+<tr>
+<td>
+die()
+</td>
+<td>
+移除所有通过 live() 函数添加的事件处理程序。 
+</td>
+</tr>
+<tr>
+<td>
+error()
+</td>
+<td>
+触发、或将函数绑定到指定元素的 error 事件
+</td>
+</tr>
+<tr>
+<td>
+event.isDefaultPrevented()
+</td>
+<td>
+返回 event 对象上是否调用了 event.preventDefault()。 
+</td>
+</tr>
+<tr>
+<td>
+event.pageX
+</td>
+<td>
+相对于文档左边缘的鼠标位置。 
+</td>
+</tr>
+<tr>
+<td>
+event.pageY
+</td>
+<td>
+相对于文档上边缘的鼠标位置。 
+</td>
+</tr>
+<tr>
+<td>
+event.preventDefault()
+</td>
+<td>
+阻止事件的默认动作。 
+</td>
+</tr>
+<tr>
+<td>
+event.result
+</td>
+<td>
+包含由被指定事件触发的事件处理器返回的最后一个值。 
+</td>
+</tr>
+<tr>
+<td>
+event.target
+</td>
+<td>
+触发该事件的 DOM 元素。 
+</td>
+</tr>
+<tr>
+<td>
+event.timeStamp
+</td>
+<td>
+该属性返回从 1970 年 1 月 1 日到事件发生时的毫秒数。 
+</td>
+</tr>
+<tr>
+<td>
+event.type
+</td>
+<td>
+描述事件的类型。 
+</td>
+</tr>
+<tr>
+<td>
+event.which
+</td>
+<td>
+指示按了哪个键或按钮。 
+</td>
+</tr>
+<tr>
+<td>
+focus()
+</td>
+<td>
+触发、或将函数绑定到指定元素的 focus 事件
+</td>
+</tr>
+<tr>
+<td>
+keydown()
+</td>
+<td>
+触发、或将函数绑定到指定元素的 key down 事件
+</td>
+</tr>
+<tr>
+<td>
+keypress()
+</td>
+<td>
+触发、或将函数绑定到指定元素的 key press 事件
+</td>
+</tr>
+<tr>
+<td>
+keyup()
+</td>
+<td>
+触发、或将函数绑定到指定元素的 key up 事件
+</td>
+</tr>
+<tr>
+<td>
+live()
+</td>
+<td>
+为当前或未来的匹配元素添加一个或多个事件处理器 
+</td>
+</tr>
+<tr>
+<td>
+load()
+</td>
+<td>
+触发、或将函数绑定到指定元素的 load 事件
+</td>
+</tr>
+<tr>
+<td>
+mousedown()
+</td>
+<td>
+触发、或将函数绑定到指定元素的 mouse down 事件
+</td>
+</tr>
+<tr>
+<td>
+mouseenter()
+</td>
+<td>
+触发、或将函数绑定到指定元素的 mouse enter 事件
+</td>
+</tr>
+<tr>
+<td>
+mouseleave()
+</td>
+<td>
+触发、或将函数绑定到指定元素的 mouse leave 事件
+</td>
+</tr>
+<tr>
+<td>
+mousemove()
+</td>
+<td>
+触发、或将函数绑定到指定元素的 mouse move 事件
+</td>
+</tr>
+<tr>
+<td>
+mouseout()
+</td>
+<td>
+触发、或将函数绑定到指定元素的 mouse out 事件
+</td>
+</tr>
+<tr>
+<td>
+mouseover()
+</td>
+<td>
+触发、或将函数绑定到指定元素的 mouse over 事件
+</td>
+</tr>
+<tr>
+<td>
+mouseup()
+</td>
+<td>
+触发、或将函数绑定到指定元素的 mouse up 事件
+</td>
+</tr>
+<tr>
+<td>
+one()
+</td>
+<td>
+向匹配元素添加事件处理器。每个元素只能触发一次该处理器。 
+</td>
+</tr>
+<tr>
+<td>
+ready()
+</td>
+<td>
+文档就绪事件（当 HTML 文档就绪可用时）
+</td>
+</tr>
+<tr>
+<td>
+resize()
+</td>
+<td>
+触发、或将函数绑定到指定元素的 resize 事件
+</td>
+</tr>
+<tr>
+<td>
+scroll()
+</td>
+<td>
+触发、或将函数绑定到指定元素的 scroll 事件
+</td>
+</tr>
+<tr>
+<td>
+select()
+</td>
+<td>
+触发、或将函数绑定到指定元素的 select 事件
+</td>
+</tr>
+<tr>
+<td>
+submit()
+</td>
+<td>
+触发、或将函数绑定到指定元素的 submit 事件
+</td>
+</tr>
+<tr>
+<td>
+toggle()
+</td>
+<td>
+绑定两个或多个事件处理器函数，当发生轮流的 click 事件时执行。 
+</td>
+</tr>
+<tr>
+<td>
+trigger()
+</td>
+<td>
+所有匹配元素的指定事件
+</td>
+</tr>
+<tr>
+<td>
+triggerHandler()
+</td>
+<td>
+第一个被匹配元素的指定事件 
+</td>
+</tr>
+<tr>
+<td>
+unbind()
+</td>
+<td>
+从匹配元素移除一个被添加的事件处理器
+</td>
+</tr>
+<tr>
+<td>
+undelegate()
+</td>
+<td>
+从匹配元素移除一个被添加的事件处理器，现在或将来
+</td>
+</tr>
+<tr>
+<td>
+unload()
+</td>
+<td>
+触发、或将函数绑定到指定元素的 unload 事件
+</td>
+</tr>
+</table>
  </div>
 </body>
 </html>

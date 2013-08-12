@@ -510,7 +510,7 @@ Latch让多个线程等待把准备工作完成，再一起向下执行。
 例：在计时测试中使用<code>CountDownLatch</code>来启动与停止线程：
 </p>
 
-<pre class="brush: java; highlight: [11, 13, 25, 26]">
+<pre class="brush: java; highlight: [11, 15, 25, 26]">
 public class TestHarness {
 	public long timeTasks(int nThreads, final Runnable task)
 			throws InterruptedException {
@@ -709,7 +709,7 @@ public class CellularAutomata {
 如下面用<code>Future</code>来处理会花费大量时间的数据库访问任务：
 </p>
 
-<pre class="brush: java; highlight: [6, 19, 20]">
+<pre class="brush: java; highlight: [6, 19, 21]">
 public class Preloader {
 	ProductInfo loadProductInfo() throws DataLoadException {
 		return null;
