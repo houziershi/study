@@ -41,6 +41,14 @@
 <ul>
 <li><a href="#toc_3.1">重入</a>
 </ul>
+<li><a href="#toc_4">锁优化</a>
+<ul>
+<li><a href="#toc_4.1">处旋锁与自适应自旋</a>
+<li><a href="#toc_4.2">锁消除</a>
+<li><a href="#toc_4.3">锁粗化</a>
+<li><a href="#toc_4.4">轻量级锁</a>
+<li><a href="#toc_4.5">偏向锁</a>
+</ul>
 </ul>
 </div>
 
@@ -262,6 +270,28 @@ public class LogginWidget extends Widget {
 <p>
 上面的代码中，如果锁的粒度是方法调用，那线程就锁死了。但因为粒度是线程，所以可以
 顺利执行。
+</p>
+
+
+<h1 id="toc_4">锁优化</h1>
+
+<h2 id="toc_4.1">处旋锁与自适应自旋</h2>
+
+<h2 id="toc_4.2">锁消除</h2>
+
+<h2 id="toc_4.3">锁粗化</h2>
+
+<h2 id="toc_4.4">轻量级锁</h2>
+
+<p>
+只有两个线程竞争时有用，对象头<code>Mark World</code>与线程栈相互指向来简单标记锁状态。
+超过两个线程竞争时转为互斥锁。
+</p>
+
+<h2 id="toc_4.5">偏向锁</h2>
+
+<p>
+消除在没有竞争状态下的同步原语，连CAS都省了。
 </p>
  </div>
 </body>

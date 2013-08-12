@@ -2672,10 +2672,21 @@ public class TimingThreadPool extends ThreadPoolExecutor {
 
 <p>
 JDK5还提供了外部锁：<code>java.util.concurrent.locks.Lock</code>。补充<code>synchronized</code>对应
-的内置锁。
+的内置锁。如外部锁可以<code>newCondition()</code>方法设置多个<code>Condition</code>条件，而内部锁
+<code>synchronized</code>中锁对象的<code>wait()</code>和<code>notify()</code>、<code>notifyAll()</code>只能实现一个隐含条件
+如果要和多个条件关联要添加一个锁。
 </p>
 
 <ul>
+<li>
+外部锁在等不到锁时可放弃等锁转处理其他任务。
+
+<li>
+外部锁构造函数可指定为公平锁（多个等锁的请求按申请锁的顺序给锁）。
+
+<li>
+外部锁可以<code>newCondition()</code>方法设置多个<code>Condition</code>条件。
+
 <li>
 内置锁在<code>synchronized</code>代码结束后自动释放。无论是正常离开还是异常跳转。
 
