@@ -35,7 +35,7 @@
 <li><a href="#toc_2.1">Scala Shell</a>
 <li><a href="#toc_2.2">脚本</a>
 <ul>
-<li><a href="#toc_2.2.1">OS可执行脚本 </a>
+<li><a href="#toc_2.2.1">OS可执行脚本</a>
 </ul>
 <li><a href="#toc_2.3">Scala程序</a>
 <li><a href="#toc_2.4">脚本与程序的区别</a>
@@ -58,7 +58,7 @@
 
 <p>
 Mac OS X系统的默认字符编码早就改成了UTF-8但它bundle的Java默认字符编码却一直是
-MacRoman。在启动REPL时传入参数`-Dfile.encoding=UTF-8`。
+MacRoman。在启动REPL时传入参数<code>-Dfile.encoding=UTF-8</code>。
 </p>
 
 <p>
@@ -77,14 +77,14 @@ $ vim `which scala`
 </pre>
 
 <p>
-把`-D<code>参数加到</code>JAVA_OPTS`里即可。
+把<code>-D</code>参数加到<code>JAVA_OPTS</code>里即可。
 </p>
 
 <h2 id="toc_1.2">Vim插件</h2>
 
 <p>
-到[[<a href="https://github.com/scala/scala-dist]]上下载，">https://github.com/scala/scala-dist]]上下载，</a>
-复制<code>tool-support/src/vim</code>到`.vim`目录下。
+到<a href="https://github.com/scala/scala-dist">https://github.com/scala/scala-dist</a>上下载，
+复制<code>tool-support/src/vim</code>到<code>.vim</code>目录下。
 </p>
 
 
@@ -115,7 +115,7 @@ scala&gt;
 </p>
 
 <p>
-退出`Scala Shell<code>：`:quit</code>或`:q`
+退出<code>Scala Shell</code>：<code>:quit</code>或<code>:q</code>
 </p>
 
 <p>
@@ -130,7 +130,7 @@ res1: Int = 1
 </pre>
 
 <p>
-另一个方法是在REPL中输入`:paste<code>粘贴代码，按下`Control + D</code>。
+另一个方法是在REPL中输入<code>:paste</code>粘贴代码，按下<code>Control + D</code>。
 </p>
 
 <h2 id="toc_2.2">脚本</h2>
@@ -176,7 +176,7 @@ more
 fun
 </pre>
 
-<h3 id="toc_2.2.1">OS可执行脚本 </h3>
+<h3 id="toc_2.2.1">OS可执行脚本</h3>
 
 <p>
 Unix下可执行脚本：
@@ -256,8 +256,8 @@ object ChecksumAccumulator {
 </pre>
 
 <p>
-然后是主程序。独立运行的程序一定要有`main<code>方法（仅有一个参数`Array[String]</code>而且
-结果类型为`Unit`）的单例对象。
+然后是主程序。独立运行的程序一定要有<code>main</code>方法（仅有一个参数<code>Array[String]</code>而且
+结果类型为<code>Unit</code>）的单例对象。
 </p>
 
 <pre class="brush: scala" title="Summer.scala">
@@ -283,7 +283,7 @@ object Summer {
 </pre>
 
 <p>
-有一个`fast Scala compiler`的后台进程可以在第一次被调用后一直跑在后台，
+有一个<code>fast Scala compiler</code>的后台进程可以在第一次被调用后一直跑在后台，
 节省一下每次编译的速度：
 </p>
 
@@ -302,7 +302,7 @@ object Summer {
 </pre>
 
 <p>
-编译完后可以看到生成的`.class`文件：
+编译完后可以看到生成的<code>.class</code>文件：
 </p>
 
 <pre class="brush: bash">
@@ -350,7 +350,7 @@ object MyApp extends Application {
 <h2 id="toc_3.1">Ant任务</h2>
 
 <p>
-相关的Ant任务有`scalac<code>、`fsc</code>和`scaladoc<code>，这里只介绍</code>scalac`。
+相关的Ant任务有<code>scalac</code>、<code>fsc</code>和<code>scaladoc</code>，这里只介绍<code>scalac</code>。
 </p>
 
 <pre class="brush: bash" title="build.properties">
@@ -401,7 +401,7 @@ deploy.name=scala-example
 </pre>
 
 <p>
-以后可能会用到的jar包还有`scala-actors.jar<code>和`scala-dbc.jar</code>.
+以后可能会用到的jar包还有<code>scala-actors.jar</code>和<code>scala-dbc.jar</code>.
 </p>
 
 
@@ -445,7 +445,7 @@ pom.xml文件：
 	&lt;build&gt;
 		&lt;plugins&gt;
 
-			&lt;!--     命令行用maven进行构建                                   --&gt;
+			&lt;!--     命令行用maven进行构建                               --&gt;
 			&lt;plugin&gt;
 				&lt;groupid&gt;org.scala-tools&lt;/groupid&gt;
 				&lt;artifactid&gt;maven-scala-plugin&lt;/artifactid&gt;

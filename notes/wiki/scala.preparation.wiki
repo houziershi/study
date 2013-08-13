@@ -330,7 +330,7 @@ pom.xml文件：
 	<build>
 		<plugins>
 
-			<!--     命令行用maven进行构建                                   -->
+			<!--     命令行用maven进行构建                               -->
 			<plugin>
 				<groupid>org.scala-tools</groupid>
 				<artifactid>maven-scala-plugin</artifactid>

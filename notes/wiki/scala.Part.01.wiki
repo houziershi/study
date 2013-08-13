@@ -135,7 +135,6 @@ args.foreach( arg => println(arg) )
 {{{class="brush: scala"
 args.foreach( println )
 }}}
-}}}
 
 
 == for循环 ==
