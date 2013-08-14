@@ -1,0 +1,36 @@
+
+%title Maven配置
+
+%toc Maven配置
+
+= 配置 =
+
+环境变量`M2_HOME`指向安装根目录。
+
+还有内存大小的分配：
+
+{{{class="brush: bash"
+set MAVEN_OPTS= -Xms128m -Xmx512m
+}}}
+
+检查安装是否成功：
+
+{{{class="brush: bash"
+mvn -v
+}}}
+
+如果有输出版本信息就安装正确。
+
+初始化：
+
+{{{class="brush: bash"
+mvn help:system
+}}}
+
+= 建立工程 =
+
+列出各种工程的模块，然后选一个：
+
+{{{class="brush: bash"
+mvn archetype:generate
+}}}

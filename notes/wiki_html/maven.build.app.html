@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+
+
+<title>Maven构建</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>Maven构建</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">建立普通Java项目结构</a>
+<ul>
+<li><a href="#toc_1.1">基本命令</a>
+<li><a href="#toc_1.2">包依赖</a>
+<ul>
+<li><a href="#toc_1.2.1">检查包依赖</a>
+<li><a href="#toc_1.2.2">导出所有jar包</a>
+<li><a href="#toc_1.2.3">把源代码打成jar包</a>
+</ul>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">建立普通Java项目结构</h1>
+
+<pre class="brush: bash">
+mvn archetype:create -DarchetypeGroupId=org.apache.maven.archetypes \
+		-DgroupId=com.alibaba.base -DartifactId=ftpserver
+</pre>
+
+<p>
+第一个参数-DarchetypeGroupId 是制定archetype插件的所属的groupId
+</p>
+
+<p>
+第二个参数-DgroupId是制定你将要创建的项目的groupId, 根据自己项目情况做相应的修改
+</p>
+
+<p>
+第三个参数-DartifactId是制定你要创建的构件ID, 这个例子是 ftpserver
+</p>
+
+
+<h2 id="toc_1.1">基本命令</h2>
+
+<pre class="brush: bash">
+mvn clean
+mvn validate
+mvn compile
+mvn test
+mvn package
+mvn install
+mvn site
+mvn depoly
+</pre>
+
+<h2 id="toc_1.2">包依赖</h2>
+
+<h3 id="toc_1.2.1">检查包依赖</h3>
+<p>
+<code>mvn dependency:list</code>查看当前项目的已解析依赖
+</p>
+
+<p>
+<code>mvn dependency:tree</code>查看当前项目的依赖树
+</p>
+
+<p>
+<code>mvn dependency:analyze</code>分析当前项目的依赖状况，可以找到一些warning：
+</p>
+
+<ul>
+<li>
+使用了未声明的依赖
+
+<li>
+没有使用已声明的依赖（有些看起来是没有用到，但是他们是spring运行必须的） 
+
+</ul>
+
+<h3 id="toc_1.2.2">导出所有jar包</h3>
+
+<p>
+导出所有需要的jar包到lib目录下：
+</p>
+	
+<pre class="brush: bash">
+mvn dependency:copy-dependencies -DoutputDirectory=lib
+</pre>
+
+<h3 id="toc_1.2.3">把源代码打成jar包</h3>
+
+<pre class="brush: bash">
+mvn source:jar
+</pre>
+ </div>
+</body>
+</html>

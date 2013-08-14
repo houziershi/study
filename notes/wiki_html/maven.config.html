@@ -16,29 +16,63 @@
 <script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
 
 
-<title>Maven入门</title>
+<title>Maven配置</title>
 </head>
 <body  onresize='changeTocSize()'>
 	<div class="note-main"> 
 
 
-<h1>Maven入门</h1>
+<h1>Maven配置</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">配置</a>
+<li><a href="#toc_2">建立工程</a>
+</ul>
+</div>
+
+<h1 id="toc_1">配置</h1>
 
 <p>
-<a href="maven.config.html">maven.config</a>
+环境变量<code>M2_HOME</code>指向安装根目录。
 </p>
 
 <p>
-<a href="maven.build.app.html">maven.build.app</a>
+还有内存大小的分配：
+</p>
+
+<pre class="brush: bash">
+set MAVEN_OPTS= -Xms128m -Xmx512m
+</pre>
+
+<p>
+检查安装是否成功：
+</p>
+
+<pre class="brush: bash">
+mvn -v
+</pre>
+
+<p>
+如果有输出版本信息就安装正确。
 </p>
 
 <p>
-<a href="maven.build.webapp.html">maven.build.webapp</a>
+初始化：
 </p>
 
+<pre class="brush: bash">
+mvn help:system
+</pre>
+
+<h1 id="toc_2">建立工程</h1>
+
 <p>
-<a href="maven.deploy.hudson.html">maven.deploy.hudson</a>
+列出各种工程的模块，然后选一个：
 </p>
+
+<pre class="brush: bash">
+mvn archetype:generate
+</pre>
  </div>
 </body>
 </html>

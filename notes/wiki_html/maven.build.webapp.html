@@ -1,0 +1,177 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+
+
+<title>Maven构建web项目</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>Maven构建web项目</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">建立普通Java EE项目结构</a>
+<ul>
+<li><a href="#toc_1.1">压缩Js与Css</a>
+</ul>
+<li><a href="#toc_2">发布web项目</a>
+<ul>
+<li><a href="#toc_2.1">Jetty插件</a>
+</ul>
+</ul>
+</div>
+
+
+<h1 id="toc_1">建立普通Java EE项目结构</h1>
+
+<pre class="brush: bash">
+mvn archetype:generate -DgroupId=hx.frame -DartifactId=frame-web \
+			-DarchetypeArtifactId=maven-archetype-webapp
+</pre>
+
+<h2 id="toc_1.1">压缩Js与Css</h2>
+
+<pre class="brush: xml">
+&lt;!-- YUI Compressor Maven压缩插件 --&gt;	
+&lt;plugin&gt;	
+	&lt;groupId&gt;net.alchim31.maven&lt;/groupId&gt;	
+	&lt;artifactId&gt;yuicompressor-maven-plugin&lt;/artifactId&gt;	
+	&lt;version&gt;1.3.0&lt;/version&gt;	 
+	&lt;configuration&gt;	
+		&lt;!-- 读取js,css文件采用UTF-8编码 --&gt;	
+		&lt;encoding&gt;UTF-8&lt;/encoding&gt;	
+		&lt;!-- 不显示js可能的错误 --&gt;	
+		&lt;jswarn&gt;false&lt;/jswarn&gt;	
+		&lt;!-- 无改动就不压缩 --&gt;	
+		&lt;force&gt;false&lt;/force&gt;	
+		&lt;!-- 在指定的列号后换行 --&gt;	
+		&lt;linebreakpos&gt;-1&lt;/linebreakpos&gt;	
+		&lt;!-- 压缩之前先执行聚合文件操作 --&gt;	
+		&lt;preProcessAggregates&gt;true&lt;/preProcessAggregates&gt;	
+		&lt;!-- 压缩后保存文件后缀 --&gt;	
+		&lt;suffix&gt;.min&lt;/suffix&gt;	
+		&lt;!-- 源目录，即需压缩的根目录 --&gt;	
+		&lt;sourceDirectory&gt;${basedir}/mobile&lt;/sourceDirectory&gt;	
+		&lt;!-- 压缩js和css文件 --&gt;	
+		&lt;includes&gt;	
+			&lt;include&gt;**/*.js&lt;/include&gt;	
+			&lt;include&gt;**/*.css&lt;/include&gt;	
+		&lt;/includes&gt;	
+		&lt;!-- 以下目录和文件不会被压缩 --&gt;	
+		&lt;excludes&gt;	
+			&lt;exclude&gt;**/*.min.js&lt;/exclude&gt;	
+			&lt;exclude&gt;**/*.min.css&lt;/exclude&gt;	
+			&lt;exclude&gt;scripts/data/*.js&lt;/exclude&gt;	
+		&lt;/excludes&gt;	
+		&lt;!-- 压缩后输出文件目录 --&gt;	
+		&lt;outputDirectory&gt;${basedir}/mobile&lt;/outputDirectory&gt;	
+		&lt;!-- 聚合文件 --&gt;	
+		&lt;aggregations&gt;	
+			&lt;!-- 一个聚合项目 --&gt;	
+			&lt;aggregation&gt;	
+				&lt;!-- 合并每一个文件后插入一新行 --&gt;	
+				&lt;insertNewLine&gt;true&lt;/insertNewLine&gt;	
+				&lt;!-- 需合并文件的根文件夹 --&gt;	
+				&lt;inputDir&gt;${basedir}/mobile/scripts&lt;/inputDir&gt;	
+				&lt;!-- 最终合并的输出文件 --&gt;	
+				&lt;output&gt;${basedir}/mobile/scripts/app/app.js&lt;/output&gt;	
+				&lt;!-- 把以下js文件合并成一个js文件，是按顺序合并的 --&gt;	
+				&lt;includes&gt;	
+					&lt;include&gt;app/core.js&lt;/include&gt;	
+					&lt;include&gt;app/mlmanager.js&lt;/include&gt;	
+					&lt;include&gt;app/tmpl.js&lt;/include&gt;	
+					&lt;include&gt;app/ui.js&lt;/include&gt;	
+				&lt;/includes&gt;	
+			&lt;/aggregation&gt;	
+			&lt;!-- css 文件压缩成一个文件	--&gt;	
+			&lt;aggregation&gt;	
+				&lt;!-- 合并每一个文件后插入一新行 --&gt;	
+				&lt;insertNewLine&gt;true&lt;/insertNewLine&gt;	
+				&lt;!-- 需合并文件的根文件夹 --&gt;	
+				&lt;inputDir&gt;${project.build.directory}&lt;/inputDir&gt;	
+				&lt;!-- 最终合并的输出文件 --&gt;	
+				&lt;output&gt;${project.build.directory}/${project.build.finalName}/staicfile/css/selcss.pack.css&lt;/output&gt;	
+				&lt;!-- 把以下js文件合并成一个js文件，是按顺序合并的 --&gt;	
+				&lt;includes&gt;	
+						&lt;include&gt;**/css/*.css&lt;/include&gt;	
+				&lt;/includes&gt;	
+			&lt;/aggregation&gt;	
+			&lt;!-- js 文件压缩成一个文件	--&gt;	
+			&lt;aggregation&gt;	
+				&lt;insertNewLine&gt;true&lt;/insertNewLine&gt;	
+				&lt;inputDir&gt;${project.build.directory}&lt;/inputDir&gt;	
+				&lt;output&gt;${project.build.directory}/${project.build.finalName}/staicfile/js/seljs.pack.js&lt;/output&gt;	
+				&lt;includes&gt;	
+					&lt;include&gt;**/js/*.js&lt;/include&gt;	
+				&lt;/includes&gt;	
+				&lt;excludes&gt;	
+					&lt;exclude&gt;**/*.min.js&lt;/exclude&gt;	
+					&lt;exclude&gt;**/*-min.js&lt;/exclude&gt;	
+				&lt;/excludes&gt;	
+			&lt;/aggregation&gt;	
+		&lt;/aggregations&gt;	
+	&lt;/configuration&gt;	
+&lt;/plugin&gt;	
+</pre>
+
+<p>
+执行参数：
+</p>
+
+<pre class="brush: bash">
+mvn yuicompressor:compress  
+</pre>
+
+<h1 id="toc_2">发布web项目</h1>
+
+<h2 id="toc_2.1">Jetty插件</h2>
+
+<p>
+这个插件可以启动一个jetty web服务器，启动速度喜人，一旦启动，修改了jsp，页面上可以直接反应出来，修改了servlet代码，运行一下<code>mvn compile</code>也可以立马反应出来，方便开发 
+</p>
+
+<p>
+在pom.xml中这样配置： 
+</p>
+
+<pre class="brush: xml">
+&lt;build&gt;
+	&lt;finalName&gt;frame-web&lt;/finalName&gt;
+	&lt;plugins&gt;
+		&lt;plugin&gt;
+		&lt;groupId&gt;org.mortbay.jetty&lt;/groupId&gt;
+		&lt;artifactId&gt;jetty-maven-plugin&lt;/artifactId&gt;
+		&lt;version&gt;7.1.6.v20100715&lt;/version&gt;
+		&lt;configuration&gt;
+			&lt;scanIntervalSeconds&gt;3&lt;/scanIntervalSeconds&gt;
+			&lt;webAppConfig&gt;
+				&lt;contextPath&gt;/test&lt;/contextPath&gt;
+			&lt;/webAppConfig&gt;
+		&lt;/configuration&gt;
+		&lt;/plugin&gt;
+	&lt;/plugins&gt;
+&lt;/build&gt;
+</pre>
+
+<p>
+然后命令行运行：<code>mvn jetty:run</code>
+访问一下：<code>localhost:8080/test/</code>就可以看到你的index.jsp了 
+</p>
+ </div>
+</body>
+</html>

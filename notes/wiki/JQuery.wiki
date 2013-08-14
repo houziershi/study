@@ -3,6 +3,12 @@
 
 %toc JQuery
 
+在控制台中导入JS文件：
+
+{{{class="brush: javascript"
+include("http://code.jquery.com/jquery-latest.min.js");
+}}}
+
 = 表单 =
 
 == 值域组件 ==

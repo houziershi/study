@@ -1,0 +1,58 @@
+
+%title Maven构建
+
+%toc Maven构建
+
+= 建立普通Java项目结构 =
+
+{{{class="brush: bash"
+mvn archetype:create -DarchetypeGroupId=org.apache.maven.archetypes \
+		-DgroupId=com.alibaba.base -DartifactId=ftpserver
+}}}
+
+第一个参数-DarchetypeGroupId 是制定archetype插件的所属的groupId
+
+第二个参数-DgroupId是制定你将要创建的项目的groupId, 根据自己项目情况做相应的修改
+
+第三个参数-DartifactId是制定你要创建的构件ID, 这个例子是 ftpserver
+
+
+== 基本命令 ==
+
+{{{class="brush: bash"
+mvn clean
+mvn validate
+mvn compile
+mvn test
+mvn package
+mvn install
+mvn site
+mvn depoly
+}}}
+
+== 包依赖 ==
+
+=== 检查包依赖 ===
+`mvn dependency:list`查看当前项目的已解析依赖
+
+`mvn dependency:tree`查看当前项目的依赖树
+
+`mvn dependency:analyze`分析当前项目的依赖状况，可以找到一些warning：
+
+* 使用了未声明的依赖
+* 没有使用已声明的依赖（有些看起来是没有用到，但是他们是spring运行必须的） 
+
+=== 导出所有jar包 ===
+
+导出所有需要的jar包到lib目录下：
+	
+{{{class="brush: bash"
+mvn dependency:copy-dependencies -DoutputDirectory=lib
+}}}
+
+=== 把源代码打成jar包 ===
+
+{{{class="brush: bash"
+mvn source:jar
+}}}
+

@@ -1,0 +1,135 @@
+
+%title Maven构建web项目
+
+%toc Maven构建web项目
+
+
+= 建立普通Java EE项目结构 =
+
+{{{class="brush: bash"
+mvn archetype:generate -DgroupId=hx.frame -DartifactId=frame-web \
+			-DarchetypeArtifactId=maven-archetype-webapp
+}}}
+
+== 压缩Js与Css ==
+
+{{{class="brush: xml"
+<!-- YUI Compressor Maven压缩插件 -->	
+<plugin>	
+	<groupId>net.alchim31.maven</groupId>	
+	<artifactId>yuicompressor-maven-plugin</artifactId>	
+	<version>1.3.0</version>	 
+	<configuration>	
+		<!-- 读取js,css文件采用UTF-8编码 -->	
+		<encoding>UTF-8</encoding>	
+		<!-- 不显示js可能的错误 -->	
+		<jswarn>false</jswarn>	
+		<!-- 无改动就不压缩 -->	
+		<force>false</force>	
+		<!-- 在指定的列号后换行 -->	
+		<linebreakpos>-1</linebreakpos>	
+		<!-- 压缩之前先执行聚合文件操作 -->	
+		<preProcessAggregates>true</preProcessAggregates>	
+		<!-- 压缩后保存文件后缀 -->	
+		<suffix>.min</suffix>	
+		<!-- 源目录，即需压缩的根目录 -->	
+		<sourceDirectory>${basedir}/mobile</sourceDirectory>	
+		<!-- 压缩js和css文件 -->	
+		<includes>	
+			<include>**/*.js</include>	
+			<include>**/*.css</include>	
+		</includes>	
+		<!-- 以下目录和文件不会被压缩 -->	
+		<excludes>	
+			<exclude>**/*.min.js</exclude>	
+			<exclude>**/*.min.css</exclude>	
+			<exclude>scripts/data/*.js</exclude>	
+		</excludes>	
+		<!-- 压缩后输出文件目录 -->	
+		<outputDirectory>${basedir}/mobile</outputDirectory>	
+		<!-- 聚合文件 -->	
+		<aggregations>	
+			<!-- 一个聚合项目 -->	
+			<aggregation>	
+				<!-- 合并每一个文件后插入一新行 -->	
+				<insertNewLine>true</insertNewLine>	
+				<!-- 需合并文件的根文件夹 -->	
+				<inputDir>${basedir}/mobile/scripts</inputDir>	
+				<!-- 最终合并的输出文件 -->	
+				<output>${basedir}/mobile/scripts/app/app.js</output>	
+				<!-- 把以下js文件合并成一个js文件，是按顺序合并的 -->	
+				<includes>	
+					<include>app/core.js</include>	
+					<include>app/mlmanager.js</include>	
+					<include>app/tmpl.js</include>	
+					<include>app/ui.js</include>	
+				</includes>	
+			</aggregation>	
+			<!-- css 文件压缩成一个文件	-->	
+			<aggregation>	
+				<!-- 合并每一个文件后插入一新行 -->	
+				<insertNewLine>true</insertNewLine>	
+				<!-- 需合并文件的根文件夹 -->	
+				<inputDir>${project.build.directory}</inputDir>	
+				<!-- 最终合并的输出文件 -->	
+				<output>${project.build.directory}/${project.build.finalName}/staicfile/css/selcss.pack.css</output>	
+				<!-- 把以下js文件合并成一个js文件，是按顺序合并的 -->	
+				<includes>	
+						<include>**/css/*.css</include>	
+				</includes>	
+			</aggregation>	
+			<!-- js 文件压缩成一个文件	-->	
+			<aggregation>	
+				<insertNewLine>true</insertNewLine>	
+				<inputDir>${project.build.directory}</inputDir>	
+				<output>${project.build.directory}/${project.build.finalName}/staicfile/js/seljs.pack.js</output>	
+				<includes>	
+					<include>**/js/*.js</include>	
+				</includes>	
+				<excludes>	
+					<exclude>**/*.min.js</exclude>	
+					<exclude>**/*-min.js</exclude>	
+				</excludes>	
+			</aggregation>	
+		</aggregations>	
+	</configuration>	
+</plugin>	
+}}}
+
+执行参数：
+
+{{{class="brush: bash"
+mvn yuicompressor:compress  
+}}}
+
+= 发布web项目 =
+
+== Jetty插件 ==
+
+这个插件可以启动一个jetty web服务器，启动速度喜人，一旦启动，修改了jsp，页面上可以直接反应出来，修改了servlet代码，运行一下`mvn compile`也可以立马反应出来，方便开发 
+
+在pom.xml中这样配置： 
+
+{{{class="brush: xml"
+<build>
+	<finalName>frame-web</finalName>
+	<plugins>
+		<plugin>
+		<groupId>org.mortbay.jetty</groupId>
+		<artifactId>jetty-maven-plugin</artifactId>
+		<version>7.1.6.v20100715</version>
+		<configuration>
+			<scanIntervalSeconds>3</scanIntervalSeconds>
+			<webAppConfig>
+				<contextPath>/test</contextPath>
+			</webAppConfig>
+		</configuration>
+		</plugin>
+	</plugins>
+</build>
+}}}
+
+然后命令行运行：`mvn jetty:run`
+访问一下：`localhost:8080/test/`就可以看到你的index.jsp了 
+
+
