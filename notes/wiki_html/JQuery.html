@@ -37,6 +37,10 @@
 </ul>
 <li><a href="#toc_2">cookies操作</a>
 <li><a href="#toc_3">事件</a>
+<li><a href="#toc_4">提交</a>
+<ul>
+<li><a href="#toc_4.1">跨域提交</a>
+</ul>
 </ul>
 </div>
 
@@ -657,6 +661,41 @@ unload()
 </td>
 </tr>
 </table>
+
+
+<h1 id="toc_4">提交</h1>
+
+<h2 id="toc_4.1">跨域提交</h2>
+
+<p>
+以JSONP实现跨域提交，JQuery中用<code>$.getJSON(url, data, callback)</code>方式。URL中要加上
+参数<code>&amp;format=json&amp;callback=?</code>：
+</p>
+
+<pre class="brush: javascript">
+	var url = url + "?time="+new Date().getTime() +"&amp;format=json&amp;callback=?";
+	$.getJSON(url, param, function(json) {
+		// ....
+	});
+</pre>
+
+<p>
+其中<code>callback</code>会被替换为一个唯一的函数名。在服务端要取得<code>callback</code>的值，形式类似
+于<code>JSONP293041629</code>再用它把返回的Json包起来：
+</p>
+
+<p>
+<code>string message = "jsonp1294734708682({\"userid\":0,\"username\":\"null\"})";</code>
+</p>
+
+<p>
+例子：
+</p>
+
+<pre class="brush: java">
+String callbackName = req.getParameter("callback");
+String result = callbackName + "(" + json + ")";  
+</pre>
  </div>
 </body>
 </html>

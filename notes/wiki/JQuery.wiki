@@ -295,3 +295,29 @@ $(document).ready(function() {
 | unload()                   | 触发、或将函数绑定到指定元素的 unload 事件                    |
 
 
+= 提交 =
+
+== 跨域提交 ==
+
+以JSONP实现跨域提交，JQuery中用`$.getJSON(url, data, callback)`方式。URL中要加上
+参数`&format=json&callback=?`：
+
+{{{class="brush: javascript"
+	var url = url + "?time="+new Date().getTime() +"&format=json&callback=?";
+	$.getJSON(url, param, function(json) {
+		// ....
+	});
+}}}
+
+其中`callback`会被替换为一个唯一的函数名。在服务端要取得`callback`的值，形式类似
+于`JSONP293041629`再用它把返回的Json包起来：
+
+`string message = "jsonp1294734708682({\"userid\":0,\"username\":\"null\"})";`
+
+例子：
+
+{{{class="brush: java"
+String callbackName = req.getParameter("callback");
+String result = callbackName + "(" + json + ")";  
+}}}
+
