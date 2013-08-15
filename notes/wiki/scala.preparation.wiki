@@ -350,7 +350,6 @@ deploy.name=scala-example
 
 === 内存参数配置 ===
 
-
 {{{class="brush: xml; highlight: [17,18]" title="pom.xml"
 <project>
   ...
@@ -377,6 +376,7 @@ deploy.name=scala-example
 </project>
 }}}
 
+
 === 编译开关 ===
 
 {{{class="brush: xml; highlight: [9,10,11]" title="pom.xml"
@@ -400,82 +400,180 @@ deploy.name=scala-example
 
 === 使用本地的scala's jar ===
 
-You should define property `scala.home`. DO NOT DEPLOY (or install) with this 
-option, it'll break user's projects.
+可以不用maven库里的scala版本而是本地`scala.home`变量指定的版本。但不要这样部署
+与安装，这样会搞坏工程的。这里用到了：
 
-In this case `${scala.home}/lib/scala-library.jar` and 
-`${scala.home}/lib/scala-compiler.jar` are used to compile, to run,...
+* `${scala.home}/lib/scala-library.jar`
+* `${scala.home}/lib/scala-compiler.jar`
 
 {{{class="brush: xml; highlight: [17,18]" title="pom.xml"
 mvn compile -Dscala.home=<path/of/scalaHome>
 }}}
 
 
-{{{class="brush: xml; highlight: [17,18]" title="pom.xml"
-}}}
+== 运行 ==
 
+=== 运行Scala程序 ===
 
-{{{class="brush: xml; highlight: [17,18]" title="pom.xml"
-}}}
+定义Scala语言依赖；定义启动器指定运行类与id、参数，启动器可以有多个
 
+{{{class="brush: xml; highlight: [20,21,38,39,41,42]" title="pom.xml"
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+	http://maven.apache.org/maven-v4_0_0.xsd">
 
-{{{class="brush: xml; highlight: [17,18]" title="pom.xml"
-}}}
-
-=== 混合Java与Scala === 
-
-{{{class="brush: xml; highlight: [17,18]" title="pom.xml"
-<?xml version="1.0" encoding="UTF-8"?>
-
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-
-	<groupId>sandbox</groupId>
-	<artifactId>testJavaAndScala</artifactId>
+	<groupId>org.scala-lang.demo</groupId>
+	<artifactId>scala-test</artifactId>
+	<packaging>jar</packaging>
 	<version>1.0-SNAPSHOT</version>
-	<name>Test for Java + Scala compilation</name>
-	<description>Test for Java + Scala compilation</description>
+	<name>Demo of maven for Scala Lang website</name>
+	<url>http://scala-lang.org</url>
+
+	<properties>
+		<scala.version>2.10.2</scala.version>
+	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.scala-lang</groupId>
 			<artifactId>scala-library</artifactId>
-			<version>2.7.2</version>
+			<version>2.10.2</version>
 		</dependency>
 	</dependencies>
 
 	<build>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-          <groupId>net.alchim31.maven</groupId>
-          <artifactId>scala-maven-plugin</artifactId>
-          <version>3.1.5</version>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-compiler-plugin</artifactId>
-					<version>2.0.2</version>
-				</plugin>
-			</plugins>
-		</pluginManagement>
+		<sourceDirectory>src/main/scala</sourceDirectory>
+		<testSourceDirectory>src/test/scala</testSourceDirectory>
 		<plugins>
 			<plugin>
-        <groupId>net.alchim31.maven</groupId>
-        <artifactId>scala-maven-plugin</artifactId>
+				<groupId>net.alchim31.maven</groupId>
+				<artifactId>scala-maven-plugin</artifactId>
+				<version>3.1.5</version>
+				<configuration>
+					<scalaVersion>${scala.version}</scalaVersion>
+					<launchers>
+						<launcher>
+							<id>foo</id>
+							<mainClass>Example</mainClass>
+							<args>
+								<arg>Hello</arg>
+								<arg>World</arg>
+							</args>
+						</launcher>
+					</launchers>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
+}}}
+
+指定类启动：
+
+{{{class="brush: bash" title="pom.xml"
+mvn scala:run -DmainClass=Example
+}}}
+
+也可以指定启动器id启动：
+
+{{{class="brush: bash" title="pom.xml"
+mvn scala:run -Dlauncher=foo
+}}}
+
+== 单元测试 ==
+
+导入ScalaTest与Junit包；定义编译测试任务；
+
+{{{class="brush: xml" title="pom.xml"
+	<dependencies>
+		<dependency>
+			<groupId>org.scala-lang</groupId>
+			<artifactId>scala-library</artifactId>
+			<version>2.10.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.scalatest</groupId>
+			<artifactId>scalatest_2.10</artifactId>
+			<version>1.9.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.10</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<sourceDirectory>src/main/scala</sourceDirectory>
+		<testSourceDirectory>src/test/scala</testSourceDirectory>
+		<plugins>
+			<plugin>
+				<groupId>net.alchim31.maven</groupId>
+				<artifactId>scala-maven-plugin</artifactId>
+				<version>3.1.5</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.12</version>
+			</plugin>
+		</plugins>
+	</build>
+}}}
+
+不过我测试中好像surefire插件一段不加上也能启用sufire任务。
+
+在Scala程序里`@RunWith`注解让surefire能找到继承自`FunSuite`的测试类：
+
+{{{class="brush: scala; highlight: [7,9]" title="TestUnitTest.scala"
+package com.tysonhamilton.scalatest.test
+
+import org.scalatest.junit.JUnitRunner
+import org.scalatest.FunSuite
+import org.junit.runner.RunWith
+
+@RunWith(classOf[JUnitRunner])
+class TestUnitTest extends FunSuite {
+	test("TwoPlusTwo") {
+		val twoPlusTwo = 2 + 2
+		assert(twoPlusTwo == 4)
+	}
+}
+}}}
+
+运行的命令：
+
+*  `maven:clean`
+*  `scala:compile`
+*  `scala:testCompile`
+*  `surefire:test`
+
+还可以把测试用例的编译与运行放到Maven的生命周期中去：
+
+{{{class="brush: xml; highlight: [11,18,32]" title="pom.xml"
+	<build>
+		<sourceDirectory>src/main/scala</sourceDirectory>
+		<testSourceDirectory>src/test/scala</testSourceDirectory>
+		<plugins>
+			<plugin>
+				<groupId>net.alchim31.maven</groupId>
+				<artifactId>scala-maven-plugin</artifactId>
+				<version>3.1.5</version>
 				<executions>
 					<execution>
-						<id>scala-compile-first</id>
-						<phase>process-resources</phase>
+						<id>compile-scala</id>
+						<phase>compile</phase>
 						<goals>
-						    <goal>add-source</goal>
 							<goal>compile</goal>
 						</goals>
 					</execution>
 					<execution>
-						<id>scala-test-compile</id>
-						<phase>process-test-resources</phase>
+						<id>compile-tests-scala</id>
+						<phase>compile</phase>
 						<goals>
 							<goal>testCompile</goal>
 						</goals>
@@ -484,18 +582,83 @@ mvn compile -Dscala.home=<path/of/scalaHome>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.12</version>
 				<executions>
 					<execution>
-						<phase>compile</phase>
+						<id>surefire-test</id>
+						<phase>test</phase>
 						<goals>
-							<goal>compile</goal>
+							<goal>test</goal>
 						</goals>
 					</execution>
 				</executions>
 			</plugin>
 		</plugins>
 	</build>
+}}}
 
-</project>
+这样就并到三个周期里去了：
+
+*  `maven:clean`
+*  `maven:compile`
+*  `maven:test`
+
+=== 混合Java与Scala === 
+
+{{{class="brush: xml; highlight: [17,18]" title="pom.xml"
+<build>
+	<pluginManagement>
+		<plugins>
+			<plugin>
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>scala-maven-plugin</artifactId>
+        <version>3.1.5</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.0.2</version>
+			</plugin>
+		</plugins>
+	</pluginManagement>
+	<plugins>
+		<plugin>
+      <groupId>net.alchim31.maven</groupId>
+      <artifactId>scala-maven-plugin</artifactId>
+			<executions>
+				<execution>
+					<id>scala-compile-first</id>
+					<phase>process-resources</phase>
+					<goals>
+					  <goal>add-source</goal>
+						<goal>compile</goal>
+					</goals>
+				</execution>
+				<execution>
+					<id>scala-test-compile</id>
+					<phase>process-test-resources</phase>
+					<goals>
+						<goal>testCompile</goal>
+					</goals>
+				</execution>
+			</executions>
+		</plugin>
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-compiler-plugin</artifactId>
+			<executions>
+				<execution>
+					<phase>compile</phase>
+					<goals>
+						<goal>compile</goal>
+					</goals>
+				</execution>
+			</executions>
+		</plugin>
+	</plugins>
+</build>
+}}}
+
+{{{class="brush: xml; highlight: [17,18]" title="pom.xml"
 }}}
