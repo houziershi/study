@@ -299,41 +299,36 @@ deploy.name=scala-example
 == maven构建 ==
 
 
-1、命令行用maven进行scala项目构建 
+* 注意不同版本的Scala字节码有差异，所以要指明版本。
+* 加入了插件以后要指定版本，如果不清楚的话调用时加上`-U`选项。
 
-2、产生eclipse项目文件
-
-pom.xml文件：
-
-{{{class="brush: xml" title="build.xml"
+{{{class="brush: xml; highlight: [15,26,36]" title="pom.xml"
 <project xmlns="http://maven.apache.org/POM/4.0.0" 
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
-		http://maven.apache.org/maven-v4_0_0.xsd">
+	http://maven.apache.org/maven-v4_0_0.xsd">
 
-	<groupid>com.xxx</groupid>
-	<artifactid>xxx</artifactid>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.scala-lang.demo</groupId>
+	<artifactId>scala-test</artifactId>
+	<packaging>jar</packaging>
 	<version>1.0-SNAPSHOT</version>
-	<modelversion>4.0.0</modelversion>
+	<name>Demo of maven for Scala Lang website</name>
+	<url>http://scala-lang.org</url>
 
-
-	<!-- 定义scala的版本。因为scala的版本是不兼容的，比如说2.8编译的 -->
-	<!-- class文件不能跟2.9的类库一起使用。                          -->
-	<!--                                                             -->
-	<!-- 这个定义同时会影响maven-scala-plugin中使用的scala版本。当   -->
-	<!-- 然你也可以在 dependencies 中通过 ${scala.version} 使用这个  -->
-	<!-- 版本号                                                      -->
 	<properties>
-		<scala.version>2.8.1</scala.version>
+		<scala.version>2.10.2</scala.version>
 	</properties>
 
 	<build>
-		<plugins>
+		<sourceDirectory>src/main/scala</sourceDirectory>
+		<testSourceDirectory>src/test/scala</testSourceDirectory>
 
-			<!--     命令行用maven进行构建                               -->
+		<plugins>
 			<plugin>
-				<groupid>org.scala-tools</groupid>
-				<artifactid>maven-scala-plugin</artifactid>
+				<groupId>net.alchim31.maven</groupId>
+				<artifactId>scala-maven-plugin</artifactId>
+				<version>3.1.5</version>
 				<executions>
 					<execution>
 						<goals>
@@ -342,74 +337,165 @@ pom.xml文件：
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
-
-			<!--  maven-eclipse-plugin 部分是产生eclipse项目，对应使用       -->
-			<!--  scala-ide打开downloadSources 下载类库源代码，可以在        -->
-			<!--  eclipse中直接查看 sourceIncludes 段必须加入，不然会        -->
-			<!--  出现代码目录中看不到scala文件的情况。                      -->
-			<plugin>
-				<artifactid>maven-eclipse-plugin</artifactid>
 				<configuration>
-					<downloadsources>true</downloadsources>
-					<buildcommands>
-						<buildcommand>org.scala-ide.sdt.core.scalabuilder</buildcommand>
-					</buildcommands>
-					<projectnatures>
-						<projectnature>org.scala-ide.sdt.core.scalanature</projectnature>
-						<projectnature>org.eclipse.jdt.core.javanature</projectnature>
-					</projectnatures>
-					<classpathcontainers>
-						<classpathcontainer>
-							org.eclipse.jdt.launching.JRE_CONTAINER
-						</classpathcontainer>
-						<classpathcontainer>
-							org.scala-ide.sdt.launching.SCALA_CONTAINER
-						</classpathcontainer>
-					</classpathcontainers>
-					<sourceincludes>
-						<sourceinclude>**/*.scala</sourceinclude>
-					</sourceincludes>
+					<scalaVersion>${scala.version}</scalaVersion>
 				</configuration>
 			</plugin>
+		</plugins>
 
-			<!--  用于引入额外的代码目录这个配置同时对命令行构建和eclipse项目  -->
-			<!--  生成有效。例子中的这个是一个Java与Scala混合项目。            -->
-			<plugin>
-				<groupid>org.codehaus.mojo</groupid>
-				<artifactid>build-helper-maven-plugin</artifactid>
-				<executions>
-					<execution>
-						<id>add-source</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>add-source</goal>
-						</goals>
-						<configuration>
-							<sources>
-								<source>src/main/scala</source>
-							</sources>
-						</configuration>
-					</execution>
-					<execution>
-						<id>add-test-source</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>add-test-source</goal>
-						</goals>
-						<configuration>
-							<sources>
-								<source>src/test/scala</source>
-							</sources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+	</build>
 
-		</plugin>
-	</plugins>
-</build>
+</project>
+}}}
+
+=== 内存参数配置 ===
+
+
+{{{class="brush: xml; highlight: [17,18]" title="pom.xml"
+<project>
+  ...
+      <plugin>
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>scala-maven-plugin</artifactId>
+        <version>3.1.5</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compile</goal>
+              <goal>testCompile</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <jvmArgs>
+            <jvmArg>-Xms64m</jvmArg>
+            <jvmArg>-Xmx1024m</jvmArg>
+          </jvmArgs>
+        </configuration>
+      </plugin>
+  ...
+</project>
+}}}
+
+=== 编译开关 ===
+
+{{{class="brush: xml; highlight: [9,10,11]" title="pom.xml"
+<project>
+  ...
+  <plugin>
+    <groupId>net.alchim31.maven</groupId>
+    <artifactId>scala-maven-plugin</artifactId>
+    <version>3.1.5</version>
+    <configuration>
+      <args>
+        <arg>-unchecked</arg>
+        <arg>-deprecation</arg>
+        <arg>-explaintypes</arg>
+      </args>
+    </configuration>
+  </plugin>
+  ...
+</project>
+}}}
+
+=== 使用本地的scala's jar ===
+
+You should define property `scala.home`. DO NOT DEPLOY (or install) with this 
+option, it'll break user's projects.
+
+In this case `${scala.home}/lib/scala-library.jar` and 
+`${scala.home}/lib/scala-compiler.jar` are used to compile, to run,...
+
+{{{class="brush: xml; highlight: [17,18]" title="pom.xml"
+mvn compile -Dscala.home=<path/of/scalaHome>
 }}}
 
 
+{{{class="brush: xml; highlight: [17,18]" title="pom.xml"
+}}}
 
+
+{{{class="brush: xml; highlight: [17,18]" title="pom.xml"
+}}}
+
+
+{{{class="brush: xml; highlight: [17,18]" title="pom.xml"
+}}}
+
+=== 混合Java与Scala === 
+
+{{{class="brush: xml; highlight: [17,18]" title="pom.xml"
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>sandbox</groupId>
+	<artifactId>testJavaAndScala</artifactId>
+	<version>1.0-SNAPSHOT</version>
+	<name>Test for Java + Scala compilation</name>
+	<description>Test for Java + Scala compilation</description>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.scala-lang</groupId>
+			<artifactId>scala-library</artifactId>
+			<version>2.7.2</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+          <groupId>net.alchim31.maven</groupId>
+          <artifactId>scala-maven-plugin</artifactId>
+          <version>3.1.5</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>2.0.2</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+		<plugins>
+			<plugin>
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>scala-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>scala-compile-first</id>
+						<phase>process-resources</phase>
+						<goals>
+						    <goal>add-source</goal>
+							<goal>compile</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>scala-test-compile</id>
+						<phase>process-test-resources</phase>
+						<goals>
+							<goal>testCompile</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>compile</phase>
+						<goals>
+							<goal>compile</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
+}}}

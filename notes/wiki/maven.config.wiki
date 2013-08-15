@@ -27,6 +27,30 @@ mvn -v
 mvn help:system
 }}}
 
+= 配置文件 =
+
+配置文件位置：`~/.m2/conf/settings.xml`
+
+== HTTP代理 ==
+
+{{{class="brush: xml"
+<proxies>
+	<proxy>
+		<id>my-proxy</id>
+		<active>true</active>
+		<protocol>http</protocol>
+		<host>218.14.227.197</host>
+		<port>3128</port>
+		<username>username</username>
+		<password>p@ssw0rd</password>
+		<nonProxyHosts>repository.mycom.com|*.google.com</nonProxyHosts>
+	</proxy>
+</proxies>
+}}}
+
+
+
+
 = 建立工程 =
 
 列出各种工程的模块，然后选一个：

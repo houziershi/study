@@ -1,0 +1,55 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+	http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.scala-lang.demo</groupId>
+	<artifactId>scala-test</artifactId>
+	<packaging>jar</packaging>
+	<version>1.0-SNAPSHOT</version>
+	<name>Demo of maven for Scala Lang website</name>
+	<url>http://scala-lang.org</url>
+
+
+	<properties>
+		<scala.version>2.10.2</scala.version>
+	</properties>
+
+	<build>
+		<sourceDirectory>src/main/scala</sourceDirectory>
+		<testSourceDirectory>src/test/scala</testSourceDirectory>
+
+		<plugins>
+			<plugin>
+				<groupId>net.alchim31.maven</groupId>
+				<artifactId>scala-maven-plugin</artifactId>
+				<version>3.1.5</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>compile</goal>
+							<goal>testCompile</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<scalaVersion>${scala.version}</scalaVersion>
+					<launchers>
+						<launcher>
+							<id>foo</id>
+							<mainClass>Example</mainClass>
+							<args>
+								<arg>Hello</arg>
+								<arg>World</arg>
+							</args>
+						</launcher>
+					</launchers>
+				</configuration>
+			</plugin>
+		</plugins>
+
+	</build>
+
+</project>
+

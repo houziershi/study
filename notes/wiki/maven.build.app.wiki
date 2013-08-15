@@ -10,35 +10,83 @@ mvn archetype:create -DarchetypeGroupId=org.apache.maven.archetypes \
 		-DgroupId=com.alibaba.base -DartifactId=ftpserver
 }}}
 
-第一个参数-DarchetypeGroupId 是制定archetype插件的所属的groupId
-
-第二个参数-DgroupId是制定你将要创建的项目的groupId, 根据自己项目情况做相应的修改
-
-第三个参数-DartifactId是制定你要创建的构件ID, 这个例子是 ftpserver
+* `-DarchetypeGroupId`是制定`archetype`插件的所属的`groupId`。
+* `-DgroupId`是制定你将要创建的项目的`groupId`。
+* `-DartifactId`是制定你要创建的构件ID, 这个例子是`ftpserver`。
 
 
 == 基本命令 ==
 
-{{{class="brush: bash"
-mvn clean
-mvn validate
-mvn compile
-mvn test
-mvn package
-mvn install
-mvn site
-mvn depoly
+* `mvn clean`
+* `mvn validate`
+* `mvn compile`
+* `mvn test`
+* `mvn package`
+* `mvn install`
+* `mvn site`
+* `mvn depoly`
+
+== Java版本 ==
+
+默认只支持`1.3`要通过`pom.xml`添加插件来支持新版本：
+
+{{{class="brush: xml"
+<project>
+	<build>
+		<pluginManagement>
+			<plugins>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.0</version>
+					<configuration>
+						<source>1.7</source>
+						<target>1.7</target>
+						<encoding>utf8</encoding>
+					</configuration>
+				</plugin>
+
+			</plugins>
+		</pluginManagement>
+	</build>
+</project>
+}}}
+
+== Jar 包 ==
+
+{{{class="brush: xml"
+<project>
+	<build>
+		<pluginManagement>
+			<plugins>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-resources-plugin</artifactId>
+					<configuration>
+						<encoding>UTF-8</encoding>
+					</configuration>
+				</plugin>
+
+			</plugins>
+		</pluginManagement>
+	</build>
+</project>
 }}}
 
 == 包依赖 ==
 
+`pom.xml`中`project/dependencies/dependency`对应一个依赖。其中属性`scope`为范围
+，默认是`compile`，可以指定为`test`。
+
 === 检查包依赖 ===
+
 `mvn dependency:list`查看当前项目的已解析依赖
 
 `mvn dependency:tree`查看当前项目的依赖树
 
 `mvn dependency:analyze`分析当前项目的依赖状况，可以找到一些warning：
-
 * 使用了未声明的依赖
 * 没有使用已声明的依赖（有些看起来是没有用到，但是他们是spring运行必须的） 
 

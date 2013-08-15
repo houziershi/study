@@ -26,7 +26,11 @@
 <div class="toc">
 <ul>
 <li><a href="#toc_1">配置</a>
-<li><a href="#toc_2">建立工程</a>
+<li><a href="#toc_2">配置文件</a>
+<ul>
+<li><a href="#toc_2.1">HTTP代理</a>
+</ul>
+<li><a href="#toc_3">建立工程</a>
 </ul>
 </div>
 
@@ -64,7 +68,33 @@ mvn -v
 mvn help:system
 </pre>
 
-<h1 id="toc_2">建立工程</h1>
+<h1 id="toc_2">配置文件</h1>
+
+<p>
+配置文件位置：<code>~/.m2/conf/settings.xml</code>
+</p>
+
+<h2 id="toc_2.1">HTTP代理</h2>
+
+<pre class="brush: xml">
+&lt;proxies&gt;
+	&lt;proxy&gt;
+		&lt;id&gt;my-proxy&lt;/id&gt;
+		&lt;active&gt;true&lt;/active&gt;
+		&lt;protocol&gt;http&lt;/protocol&gt;
+		&lt;host&gt;218.14.227.197&lt;/host&gt;
+		&lt;port&gt;3128&lt;/port&gt;
+		&lt;username&gt;username&lt;/username&gt;
+		&lt;password&gt;p@ssw0rd&lt;/password&gt;
+		&lt;nonProxyHosts&gt;repository.mycom.com|*.google.com&lt;/nonProxyHosts&gt;
+	&lt;/proxy&gt;
+&lt;/proxies&gt;
+</pre>
+
+
+
+
+<h1 id="toc_3">建立工程</h1>
 
 <p>
 列出各种工程的模块，然后选一个：
