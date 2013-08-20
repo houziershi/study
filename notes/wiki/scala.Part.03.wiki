@@ -1926,7 +1926,18 @@ op(a, op(b, op(c, z)))
 
 在以后的“实现列表”章节中讨论类型推断失败的原因。
 
-如果觉得`/:`和`:\`看起来不清楚，可以用List提供的`foldLeft`和`foldRight`方法代替。
+如果觉得`/:`和`:\`看起来不清楚，可以用List提供的`foldLeft`和`foldRight`方法代替
+。比如下面这个查找最大元素的方法：
+
+{{{class="brush: scala"
+scala> def findMax(l:List[Int]) = {
+     | l.foldLeft(Integer.MIN_VALUE) {Math.max}
+     | }
+findMax: (l: List[Int])Int
+
+scala> findMax(List(-77,99,-3,18,7,21))
+res0: Int = 99
+}}}
 
 === 例子：使用折叠实现列表反转 ===
 

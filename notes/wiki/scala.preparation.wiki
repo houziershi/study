@@ -47,11 +47,11 @@ Type :help for more information.
 scala> 
 }}}
 
-输入回车自动换行。
+`Control+a`到行头、`Control+e`到行尾，输入回车自动换行。
 
 发现输错了，再按几个回车就退出了。
 
-退出`Scala Shell`：`:quit`或`:q`
+退出`Scala Shell`：`exit`或`:quit`或`:q`
 
 在REPL环境中只能一行一行读取，所以如果要换行的话，不能让一行在语法上看起来已经
 结束：
@@ -63,6 +63,17 @@ res1: Int = 1
 }}}
 
 另一个方法是在REPL中输入`:paste`粘贴代码，按下`Control + D`。
+
+在系统shell中还可以用参数`-e`传递语句与参数给Scala：
+
+{{{class="brush: bash"
+$ scala -e "println(\"\"+args(0)+\",\"+args(1))" welcome "hello world"
+No such file or class on classpath: hello
+welcome, hello world
+}}}
+
+也可以在Scala Shell中通过`:load`选项导入一个外部的脚本文件，如：
+`:load script.scala`
 
 == 脚本 ==
 
@@ -98,6 +109,9 @@ even
 more
 fun
 }}}
+
+Scala会把脚本放到一个名为`Main`类中的`main()`方法里，可以用`-savecompiled`选项
+来生成Jar文件查看生成的字节码。
 
 === OS可执行脚本 ===
 
