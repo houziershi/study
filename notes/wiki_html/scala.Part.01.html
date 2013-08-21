@@ -167,6 +167,7 @@
 <p>
 <code>val</code>不可变变量；<code>var</code>可变变量。格式：
 </p>
+
 <pre class="brush: scala">
 // 基本格式
 val msg: java.lang.String = "Hello"
@@ -176,6 +177,25 @@ val msg: String = "Hello"
 
 // 自动推导类型
 val msg = "Hello"
+</pre>
+
+
+<p>
+注意：Scala与Java不同，赋值操作是没有返回值的，所以下面的语句是错误的：
+</p>
+
+<pre class="brush: scala">
+var a,b,c = 1
+a = b = c
+</pre>
+
+<p>
+还有常用的控制结构赋值判断的形式也是不能用的：
+</p>
+
+
+<pre class="brush: scala">
+while (null != input.readLine) { /* ... */ }
 </pre>
 
 <h2 id="toc_1.2">语句定义</h2>
@@ -337,6 +357,9 @@ scala&gt; for (i &lt;- 0 to 10) print(i)
 012345678910
 </pre>
 
+<p>
+注意在for循环里每个<code>i</code>都是一个<code>val</code>而不是<code>var</code>。每次都创建一个新的<code>val i</code>。
+</p>
 
 <h2 id="toc_1.6">方法与操作符</h2>
 
@@ -1055,6 +1078,11 @@ scala&gt; println("""     \|    hello
 aa|aa.
 </pre>
 
+<p>
+如果管道符号<code>|</code>有别的作用，可以用<code>stripMargin()</code>方法的变体来设置其他的边缘（
+margin）符号。
+</p>
+
 
 <h2 id="toc_4.2">符号</h2>
 
@@ -1111,6 +1139,14 @@ scala&gt; updateRecordByName('pcOK, "OK Computer")
 <p>
 操作符也是普通方法的另一种写法。方法可以当操作符写；操作符也可以当作方法写；
 操作符的重载也就是方法的重载。
+</p>
+
+<p>
+这引出了另一个问题：既然Scala没有操作符，那么操作符的优先级特性怎么实现的呢？
+</p>
+
+<p>
+其实Scala定义了方法的优先级。
 </p>
 
 <h3 id="toc_4.3.1">中缀操作符（infix）</h3>
@@ -1240,6 +1276,10 @@ Scala里的“对象”是指的一种对“类”起补充说明、有点像Jav
 </ul>
 
 <h2 id="toc_5.1">定义类</h2>
+
+<p>
+注意：Scala中的类和方法默认是<code>public</code>的。
+</p>
 
 <p>
 简单定义类与创建对象：

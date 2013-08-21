@@ -10,6 +10,7 @@
 == 变量定义 ==
 
 `val`不可变变量；`var`可变变量。格式：
+
 {{{class="brush: scala"
 // 基本格式
 val msg: java.lang.String = "Hello"
@@ -19,6 +20,21 @@ val msg: String = "Hello"
 
 // 自动推导类型
 val msg = "Hello"
+}}}
+
+
+注意：Scala与Java不同，赋值操作是没有返回值的，所以下面的语句是错误的：
+
+{{{class="brush: scala"
+var a,b,c = 1
+a = b = c
+}}}
+
+还有常用的控制结构赋值判断的形式也是不能用的：
+
+
+{{{class="brush: scala"
+while (null != input.readLine) { /* ... */ }
 }}}
 
 == 语句定义 ==
@@ -144,6 +160,7 @@ scala> for (i <- 0 to 10) print(i)
 012345678910
 }}}
 
+注意在for循环里每个`i`都是一个`val`而不是`var`。每次都创建一个新的`val i`。
 
 == 方法与操作符 ==
 
@@ -732,6 +749,9 @@ scala> println("""     \|    hello
 aa|aa.
 }}}
 
+如果管道符号`|`有别的作用，可以用`stripMargin()`方法的变体来设置其他的边缘（
+margin）符号。
+
 
 == 符号 ==
 
@@ -777,6 +797,10 @@ scala> updateRecordByName('pcOK, "OK Computer")
 
 操作符也是普通方法的另一种写法。方法可以当操作符写；操作符也可以当作方法写；
 操作符的重载也就是方法的重载。
+
+这引出了另一个问题：既然Scala没有操作符，那么操作符的优先级特性怎么实现的呢？
+
+其实Scala定义了方法的优先级。
 
 === 中缀操作符（infix） ===
 
@@ -879,6 +903,8 @@ res20: Boolean = true
 * “类”的实例在Java里叫“对象”，而Scala里就叫“实例”。
 
 == 定义类 ==
+
+注意：Scala中的类和方法默认是`public`的。
 
 简单定义类与创建对象：
 
