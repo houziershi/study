@@ -63,7 +63,7 @@ expand_rootfs :: 将根分区扩展到整张SD卡
 overscan :: 可以扩充或者缩小屏幕的设置
 
 除非一启动就发现显示的内容能刚好填满整个电视的画面。大部分情况下是不能填满
-或者超过，如果这样就要enable这个，然 后在系统启动之后，更改`config.txt`
+或者超过，如果这样就要enable这个，然 后在系统启动之后，更改`/boot/config.txt`
 中的`overscan_left`、`overscan_right`、`overscan_top`和`overscan_bottom`
 的内容，如果显示内容超出屏幕的范围（显示不全），就要设置这些值为正值，
 如果是1080p，一般设置为48。如果显示的内容不能填满屏幕，则设置这些值为负值，

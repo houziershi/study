@@ -102,7 +102,7 @@ sudo raspi-config
 
 <p>
 除非一启动就发现显示的内容能刚好填满整个电视的画面。大部分情况下是不能填满
-或者超过，如果这样就要enable这个，然 后在系统启动之后，更改<code>config.txt</code>
+或者超过，如果这样就要enable这个，然 后在系统启动之后，更改<code>/boot/config.txt</code>
 中的<code>overscan_left</code>、<code>overscan_right</code>、<code>overscan_top</code>和<code>overscan_bottom</code>
 的内容，如果显示内容超出屏幕的范围（显示不全），就要设置这些值为正值，
 如果是1080p，一般设置为48。如果显示的内容不能填满屏幕，则设置这些值为负值，

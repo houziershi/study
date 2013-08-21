@@ -411,9 +411,9 @@ mvn compile -Dscala.home=<path/of/scalaHome>
 }}}
 
 
-== 运行 ==
+=== 运行 ===
 
-=== 运行Scala程序 ===
+==== 运行Scala程序 ====
 
 定义Scala语言依赖；定义启动器指定运行类与id、参数，启动器可以有多个
 
@@ -482,7 +482,7 @@ mvn scala:run -DmainClass=Example
 mvn scala:run -Dlauncher=foo
 }}}
 
-== 单元测试 ==
+==== 运行单元测试 ====
 
 导入ScalaTest与Junit包；定义编译测试任务；
 
@@ -604,7 +604,7 @@ class TestUnitTest extends FunSuite {
 *  `maven:compile`
 *  `maven:test`
 
-=== 混合Java与Scala === 
+=== 构建混合Java与Scala ===
 
 {{{class="brush: xml; highlight: [17,18]" title="pom.xml"
 <build>

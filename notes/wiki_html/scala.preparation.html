@@ -48,14 +48,12 @@
 <li><a href="#toc_3.2.1">内存参数配置</a>
 <li><a href="#toc_3.2.2">编译开关</a>
 <li><a href="#toc_3.2.3">使用本地的scala's jar</a>
-</ul>
-<li><a href="#toc_3.3">运行</a>
+<li><a href="#toc_3.2.4">运行</a>
 <ul>
-<li><a href="#toc_3.3.1">运行Scala程序</a>
+<li><a href="#toc_3.2.4.1">运行Scala程序</a>
+<li><a href="#toc_3.2.4.2">运行单元测试</a>
 </ul>
-<li><a href="#toc_3.4">单元测试</a>
-<ul>
-<li><a href="#toc_3.4.1">混合Java与Scala</a>
+<li><a href="#toc_3.2.5">构建混合Java与Scala</a>
 </ul>
 </ul>
 </ul>
@@ -547,9 +545,9 @@ mvn compile -Dscala.home=&lt;path/of/scalaHome&gt;
 </pre>
 
 
-<h2 id="toc_3.3">运行</h2>
+<h3 id="toc_3.2.4">运行</h3>
 
-<h3 id="toc_3.3.1">运行Scala程序</h3>
+<h4 id="toc_3.2.4.1">运行Scala程序</h4>
 
 <p>
 定义Scala语言依赖；定义启动器指定运行类与id、参数，启动器可以有多个
@@ -624,7 +622,7 @@ mvn scala:run -DmainClass=Example
 mvn scala:run -Dlauncher=foo
 </pre>
 
-<h2 id="toc_3.4">单元测试</h2>
+<h4 id="toc_3.2.4.2">运行单元测试</h4>
 
 <p>
 导入ScalaTest与Junit包；定义编译测试任务；
@@ -776,7 +774,7 @@ class TestUnitTest extends FunSuite {
 
 </ul>
 
-<h3 id="toc_3.4.1">混合Java与Scala</h3>
+<h3 id="toc_3.2.5">构建混合Java与Scala</h3>
 
 <pre class="brush: xml; highlight: [17,18]" title="pom.xml">
 &lt;build&gt;
