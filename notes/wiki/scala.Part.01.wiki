@@ -78,6 +78,28 @@ y +
 z
 }}}
 
+注意一个容易出错的例子，下面第一个列表赋值语句后加上了分号，另一个没有：
+
+{{{class="brush: scala"
+val list1 = new java.util.ArrayList[Int];
+{ println("Created list1") }
+val list2 = new java.util.ArrayList[Int]
+{ println ("created list2") }
+println( list1.getClass() )
+println(list2.getClass())
+}}}
+
+以上代码用脚本执行，可以看到第一个没有分号的语句类型不是`ArrayList`：
+
+{{{class="brush: bash"
+Created list1
+created list2
+class java.util.ArrayList
+class Main$$anon$2$$anon$1
+}}}
+
+原因是第二个没有分号，Scala解释器以为是要创建一个继承自`ArrayList`的匿名内部类。
+
 == 函数定义 ==
 
 取最大的函数，函数体的最后一行作为结果返回： 
@@ -125,6 +147,23 @@ f: ()java.lang.String
 scala> f
 res2: java.lang.String = This String get returned!
 }}}
+
+=== 避免显式return ===
+
+Scala中默认把最后一句语句的结果作为函数的返回值。推荐不要显式地return，因为这样
+就直接跳出了方法，至少会影响Scala自动推算返回类型的能力：
+
+{{{class="brush: scala"
+def check1() = true
+
+def check2() : Boolean = return true
+
+println(check1)
+println(check2)
+}}}
+
+对于有return语句，就是显式提供返回类型；不然编译不过。所以最好不显式用return语句
+，让编译器推断返回类型。
 
 == 函数字面量（Function Literal） ==
 

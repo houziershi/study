@@ -84,9 +84,9 @@
 <li><a href="#toc_6.2">隐式引用</a>
 <li><a href="#toc_6.3">访问修饰符</a>
 <ul>
-<li><a href="#toc_6.3.1">private</a>
-<li><a href="#toc_6.3.2">protected</a>
-<li><a href="#toc_6.3.3">public</a>
+<li><a href="#toc_6.3.1">public</a>
+<li><a href="#toc_6.3.2">private</a>
+<li><a href="#toc_6.3.3">protected</a>
 <li><a href="#toc_6.3.4">保护的范围</a>
 <li><a href="#toc_6.3.5">伴生对象的可见度性</a>
 </ul>
@@ -3141,11 +3141,23 @@ Predef对象包含了许多Scala程序中常用到的类型，方法和隐式转
 Scala与Java对访问修饰符的对待方式有一些重要的差异。
 </p>
 
-<h3 id="toc_6.3.1">private</h3>
+<h3 id="toc_6.3.1">public</h3>
 
 <p>
-标记为<code>private</code>的成员仅在包含了成员定义的类或对象内部可见。但不同于Java，Scala里
-这个规则同样应用到了内部类上。这种方式更一致。
+没有任何标记就是公开的，可以在任何地方被访问。与Java中默认是<code>protected</code>不同，
+Scala中默认是<code>public</code>的。
+</p>
+
+
+<h3 id="toc_6.3.2">private</h3>
+
+<p>
+标记为<code>private</code>的成员仅在包含了成员定义的类或对象内部可见。不仅如此，Scala中还
+可以进一步限制只在当前的实例中可见。
+</p>
+
+<p>
+不同于Java，Scala里这个规则同样应用到了内部类上。这种方式更一致。
 </p>
 
 <pre class="brush: scala">
@@ -3170,11 +3182,11 @@ Scala里，<code>(new Inner).f()</code>访问非法，因为<code>f</code>在<co
 这点与Java不同，Java会允许这两种访问因为它允许外部类访问其内部类的私有成员。
 </p>
 
-<h3 id="toc_6.3.2">protected</h3>
+<h3 id="toc_6.3.3">protected</h3>
 
 <p>
-Java中<code>protected</code>可以被同一个包里的类访问。Scala里，只在定义了成员的类的子类中
-可以被访问，同一包中的其他类不能访问。
+Java中<code>protected</code>可以被子类或同一个包中的类访问。Scala里，只在定义了成员的类的
+子类中可以被访问，同一包中的其他类不能访问。
 </p>
 
 <pre class="brush: scala">
@@ -3191,18 +3203,11 @@ Java中<code>protected</code>可以被同一个包里的类访问。Scala里，�
   } 
 </pre>
 
-<h3 id="toc_6.3.3">public</h3>
-
-<p>
-没有任何标记就是公开的，可以在任何地方被访问。
-</p>
-
-
 <h3 id="toc_6.3.4">保护的范围</h3>
 
 <p>
 Scala里的访问修饰符可以通过使用修饰词增加。格式为<code>private[X]</code>或<code>protected[X]</code>的
-修饰符表示针对<code>X</code>的私有或保护，这里<code>X</code>指代某些外围的包、类或单例对象。
+修饰符表示针对<code>X</code>的私有或保护，这里<code>X</code>指代某些外围的包、类与其单例对象。
 </p>
 
 <p>
