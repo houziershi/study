@@ -2802,6 +2802,22 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 
 <h1 id="toc_4">隐式转换和参数</h1>
 
+<p>
+隐式转换很有用，但有时要注意隐式转换相引起的类型变化：
+</p>
+
+<pre class="brush: scala">
+"mon".reverse == "mon" // false
+</pre>
+
+<p>
+因为类型已经变为<code>RichString</code>，这样就是相等的了：
+</p>
+
+<pre class="brush: scala">
+"mon".reverse.toString == "mon" // false
+</pre>
+
 <h2 id="toc_4.1">隐式转换</h2>
 
 <p>

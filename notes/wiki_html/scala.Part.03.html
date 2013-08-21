@@ -2486,8 +2486,19 @@ op(a, op(b, op(c, z)))
 </p>
 
 <p>
-如果觉得<code>/:</code>和<code>:\</code>看起来不清楚，可以用List提供的<code>foldLeft</code>和<code>foldRight</code>方法代替。
+如果觉得<code>/:</code>和<code>:\</code>看起来不清楚，可以用List提供的<code>foldLeft</code>和<code>foldRight</code>方法代替
+。比如下面这个查找最大元素的方法：
 </p>
+
+<pre class="brush: scala">
+scala&gt; def findMax(l:List[Int]) = {
+     | l.foldLeft(Integer.MIN_VALUE) {Math.max}
+     | }
+findMax: (l: List[Int])Int
+
+scala&gt; findMax(List(-77,99,-3,18,7,21))
+res0: Int = 99
+</pre>
 
 <h3 id="toc_2.7.5">例子：使用折叠实现列表反转</h3>
 

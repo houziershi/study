@@ -118,7 +118,7 @@ scala&gt;
 </pre>
 
 <p>
-输入回车自动换行。
+<code>Control+a</code>到行头、<code>Control+e</code>到行尾，输入回车自动换行。
 </p>
 
 <p>
@@ -126,7 +126,7 @@ scala&gt;
 </p>
 
 <p>
-退出<code>Scala Shell</code>：<code>:quit</code>或<code>:q</code>
+退出<code>Scala Shell</code>：<code>exit</code>或<code>:quit</code>或<code>:q</code>
 </p>
 
 <p>
@@ -142,6 +142,21 @@ res1: Int = 1
 
 <p>
 另一个方法是在REPL中输入<code>:paste</code>粘贴代码，按下<code>Control + D</code>。
+</p>
+
+<p>
+在系统shell中还可以用参数<code>-e</code>传递语句与参数给Scala：
+</p>
+
+<pre class="brush: bash">
+$ scala -e "println(\"\"+args(0)+\",\"+args(1))" welcome "hello world"
+No such file or class on classpath: hello
+welcome, hello world
+</pre>
+
+<p>
+也可以在Scala Shell中通过<code>:load</code>选项导入一个外部的脚本文件，如：
+<code>:load script.scala</code>
 </p>
 
 <h2 id="toc_2.2">脚本</h2>
@@ -186,6 +201,11 @@ even
 more
 fun
 </pre>
+
+<p>
+Scala会把脚本放到一个名为<code>Main</code>类中的<code>main()</code>方法里，可以用<code>-savecompiled</code>选项
+来生成Jar文件查看生成的字节码。
+</p>
 
 <h3 id="toc_2.2.1">OS可执行脚本</h3>
 
