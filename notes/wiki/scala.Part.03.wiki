@@ -611,6 +611,27 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
 * 在有值的情况下，返回的值形式为`Some(value)`，`value`就是值。
 * 在无值的情况下，返回的是一个`None`对象。
 
+`Option`类型的`getOrElse`方法可以定义在没有值返回时的默认行为：
+
+{{{class="brush: scala"
+scala> def commentOnPractice(input: String) = {
+     |     if(input == "test") Some("good") else None
+     | }
+commentOnPractice: (input: String)Option[String]
+
+scala> val comment  = commentOnPractice("test")
+comment: Option[String] = Some(good)
+
+scala> println(comment.getOrElse("No comments"))
+good
+
+scala> val comment  = commentOnPractice("hack")
+comment: Option[String] = None
+
+scala> println(comment.getOrElse("No comments"))
+No comments
+}}}
+
 比如Scala的`Map`类型的`get`方法就是`Option`类型。在`key`有值的情况下返回
 `Some（value）`；没有这个键的情况下返回`None`对象：
 

@@ -444,8 +444,8 @@ type Action = () =&gt; Unit
 </pre>
 
 <p>
-注意这里为了方便去掉了空列表的情况。为了防止编译器警告我们在模式匹配里故意漏掉了列表为空的情况，在
-这里使用了<code>(agenda: @unchecked) match</code>而不是<code>agenda match</code>。
+注意这里为了方便去掉了空列表的情况。为了防止编译器警告我们在模式匹配里故意漏掉了
+列表为空的情况，在这里使用了<code>(agenda: @unchecked) match</code>而不是<code>agenda match</code>。
 </p>
 
 <p>
@@ -523,14 +523,15 @@ type Action = () =&gt; Unit
 </p>
 
 <p>
-<code>addAction(p: Action)</code>：添加动作到线路上。基本思想是所有附加在某线路上的动作过程在每次信号改变
-时被执行。通过连接组件可以为线路添加该组件的功能。加上的动作会在被加到线路时以及每次线路信号改变时
-被执行。
+<code>addAction(p: Action)</code>：添加动作到线路上。基本思想是所有附加在某线路上的动作过程
+在每次信号改变时被执行。通过连接组件可以为线路添加该组件的功能。加上的动作会在被
+加到线路时以及每次线路信号改变时被执行。
 </p>
 
 <p>
-实现代码<code>sigVal</code>代表当前信号，<code>actions</code>是附加的动作过程。需要注意的是<code>setSignal</code>方法，当信号
-改变时，新的信号首先被保存在变量<code>sigVal</code>中，然后执行所有线路附加动作：
+实现代码<code>sigVal</code>代表当前信号，<code>actions</code>是附加的动作过程。需要注意的是<code>setSignal</code>
+方法，当信号改变时，新的信号首先被保存在变量<code>sigVal</code>中，然后执行所有线路附加
+动作：
 </p>
 
 <pre class="brush: scala">
@@ -1125,7 +1126,29 @@ i :: trailing
 <h2 id="toc_2.3">变化型注解</h2>
 
 <p>
-上面的<code>Queue</code>特质创建实例时一定要加类型参数：
+对于容器类来说，成员的类型很重要：
+</p>
+
+<pre class="brush: scala">
+scala&gt; import java.util._
+import java.util._
+
+scala&gt; var la = new ArrayList[Any]
+la: java.util.ArrayList[Any] = []
+
+scala&gt; var lb = new ArrayList[String]
+lb: java.util.ArrayList[String] = []
+
+scala&gt; var ln = new ArrayList
+ln: java.util.ArrayList[Nothing] = []
+</pre>
+
+<p>
+注意没有类型参数的类型被定为了<code>ArrayList[Nothing]</code>。而<code>Nothing</code>是所有类的子类，
+</p>
+
+<p>
+所以<code>Queue</code>特质创建实例时一定要加类型参数：
 </p>
 
 <pre class="brush: scala">

@@ -164,6 +164,19 @@ strace -e trace=file tmux ..restofyourcommand...
 在控制台中执行下面的各项tmux命令。
 </p>
 
+<p>
+默认前缀为<code>Ctrl-b</code>，如果要改成和screen一样<code>Ctrl-a</code>的话：
+</p>
+
+<pre class="brush: bash">
+set -g prefix ^a
+unbind ^b
+</pre>
+
+<p>
+设置vi风格的移动方式：<code>setw -g mode-keys vi</code>
+</p>
+
 <ul>
 <li>
 <code>Ctrl+b</code>激活控制台；
@@ -177,8 +190,23 @@ strace -e trace=file tmux ..restofyourcommand...
 输入tmux命令时就开启了一个服务器。
 </p>
 
+
+<h1 id="toc_4">系统操作</h1>
+
+
+<ul>
+<li>
+<code>?</code>列出所有快捷键；按q返回
+
+<li>
+<code>:</code>进入命令行模式；此时可以输入支持的命令，例如kill-server可以关闭服务器
+
+<li>
+<code>~</code>列出提示信息缓存；其中包含了之前tmux返回的各种提示信息
+
+</ul>
  
-<h1 id="toc_4">session 会话</h1>
+<h1 id="toc_5">session 会话</h1>
 
 
 <p>
@@ -210,6 +238,9 @@ $ tmux kill-session -t session_name  # kill named session
 <code>d</code>脱离当前会话；这样可以暂时返回Shell界面，输入tmux attach能够重新进入之前的会话
 
 <li>
+<code>$</code>重命名当前会话。
+
+<li>
 <code>D</code>选择要脱离的会话；在同时开启了多个会话时使用
 
 <li>
@@ -223,7 +254,7 @@ $ tmux kill-session -t session_name  # kill named session
 
 </ul>
  
-<h1 id="toc_5">window    窗口</h1>
+<h1 id="toc_6">window窗口</h1>
 
 <p>
 一个会话可以包含多个窗口。
@@ -232,6 +263,9 @@ $ tmux kill-session -t session_name  # kill named session
 <ul>
 <li>
 <code>c</code> 创建新窗口
+
+<li>
+<code>b</code>重命名当前窗口
 
 <li>
 <code>&amp;</code>关闭当前窗口
@@ -262,7 +296,7 @@ $ tmux kill-session -t session_name  # kill named session
 
 </ul>
 
-<h1 id="toc_6">面版 pane</h1>
+<h1 id="toc_7">面版 pane</h1>
 
 <p>
 一个窗口可以包含多个面板。
@@ -316,8 +350,56 @@ $ tmux kill-session -t session_name  # kill named session
 
 </ul>
 
+<p>
+我的配置将分割操作改为vi风格的<code>v</code>和<code>s</code>,而pane之间的跳转也改为vi风格,调整pane的
+大小也是一样。配置如下：
+</p>
+	
+<pre class="brush: bash">
+# split windows like vim.  - Note: vim's definition of a horizontal/vertical split is reversed from tmux's
+unbind '"'
+unbind %
+unbind s
+bind s split-window -v
+bind S split-window -v -l 40
+bind v split-window -h
+bind V split-window -h -l 120
  
-<h1 id="toc_7">复制粘贴</h1>
+# navigate panes with hjkl
+bind h select-pane -L
+bind j select-pane -D
+bind k select-pane -U
+bind l select-pane -R
+ 
+# resize panes like vim
+bind &lt; resize-pane -L 10
+bind L resize-pane -L 100
+bind &gt; resize-pane -R 10
+bind R resize-pane -R 100
+bind - resize-pane -D 5
+bind D resize-pane -D 36
+bind + resize-pane -U 5
+bind U resize-pane -U 35
+ 
+# swap panes
+bind ^u swapp -U
+bind ^d swapp -D
+</pre>
+
+<p>
+同时还绑定了
+</p>
+	
+<pre class="brush: bash">
+bind q killp
+</pre>
+
+<p>
+使用<code>q</code>来关闭pane，免去了关闭确认。但是会覆盖掉原有的p操作，显示pane编号。我不
+需要这个，覆盖就覆盖了。
+</p>
+
+<h1 id="toc_8">复制粘贴</h1>
 
 <ul>
 <li>
@@ -337,19 +419,119 @@ $ tmux kill-session -t session_name  # kill named session
 
 </ul>
 
-<h1 id="toc_8">系统操作</h1>
+<p>
+有些人喜欢将复制粘贴设为类似vi的模式，使用<code>esc</code>进入复制模式，<code>v</code>进入粘贴模式，
+选择后<code>y</code>进行复制。<code>&lt;Prefix-p&gt;</code>进行粘贴。不过这样会和zsh有冲突。要改在话：
+</p>
+	
+<pre class="brush: bash">
+# Copy and paste like in vim
+unbind [
+bind Escape copy-mode
+unbind p
+bind p paste-buffer
+bind -t vi-copy 'v' begin-selection
+bind -t vi-copy 'y' copy-selection
+</pre>
 
-<ul>
-<li>
-<code>?</code>列出所有快捷键；按q返回
+<p>
+所有的复制都会被记录到缓冲区，输入<code>#</code>或者<code>tmux list-buffers</code>查看缓冲区，同时也
+进入了复制模式。也可以使用<code>=</code>来选择并粘贴缓冲区内容。tmux的缓冲区和系统剪贴板是
+完全独立的，为了复制到系统剪贴板，我做了如下处理，对于<code>mac os X</code>用户：
+</p>
 
-<li>
-<code>:</code>进入命令行模式；此时可以输入支持的命令，例如kill-server可以关闭服务器
+<p>
+第一步：
+</p>
+	
+<pre class="brush: bash">
+brew install reattach-to-user-namespace
+</pre>
 
-<li>
-<code>~</code>列出提示信息缓存；其中包含了之前tmux返回的各种提示信息
+<p>
+而后增加配置：
+</p>
 
-</ul>
+<pre class="brush: bash">
+# getting tmux to copy a buffer to system clipboard
+set-option -g default-command "reattach-to-user-namespace -l zsh" # or bash...
+bind y run "tmux save-buffer - | reattach-to-user-namespace pbcopy" \; display-message "Copied tmux buffer to system clipboard"
+bind C-v run "reattach-to-user-namespace pbpaste | tmux load-buffer - &amp;&amp; tmux paste-buffer"
+</pre>
+
+<p>
+这样，在tmux中进行复制后。按下前缀键后键入<code>y</code>,就会在状态栏显示已粘贴到剪贴板，
+如图：
+</p>
+
+<p>
+此时，就可以用<code>cmd-v</code>进行粘贴了。系统剪贴板的也可以键入<code>C-v</code>粘贴。（当然，更
+方便的还是直接<code>cmd-v</code>,无需前缀键）。对于linux用户,可以使用xclip,配置如下：
+</p>
+	
+<pre class="brush: bash">
+bind y run-shell "tmux show-buffer | xclip -sel clip -i" \; display-message "Copied tmux buffer to system clipboard"
+</pre>
+
+<p>
+同样键入<code>y</code>复制buffer中最新的内容到系统剪贴板。
+</p>
+
+<h1 id="toc_9">配置</h1>
+
+<p>
+tmux可以进入命令行模式，快捷键为<code>:</code>。而且运行的命令在不同的session中都会生效。
+我绑定了一个命令：
+</p>
+
+<pre class="brush: bash">
+bind r source-file ~/.tmux.conf \; display "Configuration Reloaded!"
+</pre>
+
+<p>
+这样只要输入<code>r</code>,就可以重新加载<code>tmux.conf</code>配置文件。
+</p>
+
+<p>
+还可以用来进行自动化布局，例如：
+</p>
+
+<pre class="brush: bash">
+selectp -t 0            
+splitw -h -p 50          
+selectp -t 1             
+splitw -v -p 40 'node' 
+selectp -t 2
+</pre>
+
+<p>
+将其保存在随便在一个文件中，而后使用和上述类似的source-file加载该文件，就会分隔
+三个pane，其中一个pane会输入node，开启一个node的js shell。其中的50，40 为占窗口
+大小的百分比。
+</p>
+
+<p>
+同时，tmux还支持运行shell脚本。可以写一个shell脚本进行各种环境初始化和布局初始化
+。这里就不再介绍了
+</p>
+ 
+<h1 id="toc_10">状态栏</h1>
+
+<p>
+tmux的状态栏配置非常简单。比如：
+</p>
+
+<pre class="brush: bash">
+set -g status-left "#[fg=green]s#S:w#I.p#P#[default]"
+</pre>
+
+<p>
+#S,#I,#p分别表示session，window，pane编号。状态栏左侧看起来就像是：<code>s0:w1.p1</code>
+</p>
+
+<p>
+当然，你可以让状态行更强大,可以使用tmux-powerline。
+</p>
  </div>
 </body>
 </html>

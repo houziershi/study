@@ -291,7 +291,8 @@ class Main$$anon$2$$anon$1
 <h2 id="toc_1.3">函数定义</h2>
 
 <p>
-取最大的函数，函数体的最后一行作为结果返回： 
+函数定义中的<code>=</code>很重要，对于有<code>=</code>的函数，比如下面这个比较大小的函数，函数体的最后
+一行作为结果返回： 
 </p>
 
 <pre class="brush: scala">
@@ -1467,14 +1468,16 @@ class Rational(n: Int, d: Int)
 
 <p>
 Java类具有可以带参数的构造器，而Scala类可以直接带参数。在类名<code>Rational</code>
-之后括号里的<code>n</code>和<code>d</code>，被称为类参数（class parameter）。<code>n</code>和<code>d</code>并不是类中的字段
-，而是主构造器的两个参数。
+之后括号里的<code>n</code>和<code>d</code>，被称为类参数（class parameter）。Scala编译器会收集这两个
+参数并创造一个带同样的两个参数的主构造器（primary constructor）。
 </p>
 
 <p>
-Scala编译器会收集这两个类参数并创造一个带同样的两个参数的主构造器（primary 
-constructor）。
+这里的<code>n</code>和<code>d</code>前面没有用<code>val</code>或<code>var</code>修饰，所以只会生成私有的同名字段与私有的get
+、set方法，外部的类是访问不到这两个字段的。如果有<code>val</code>或<code>var</code>的话，生成私有的
+<code>final</code>或非<code>final</code>的，但访问方法是<code>public</code>的。
 </p>
+
 
 <p>
 注意：Scala编译器将把你放在类内部的任何不是字段的部分或者方法定义的代码作为
@@ -1513,6 +1516,21 @@ class Rational(n: Int, d: Int) {
 <h2 id="toc_5.6">字段</h2>
 
 <p>
+Scala自动为成员生成getter/setter访问器，但格式与Java不同。例如对字段<code>position</code>
+生成读取方法为<code>position()</code>，赋值方法为<code>position_=(String)</code>。注意转为Java代码后
+<code>=</code>是关键字，所以在Java里调用的话是<code>position_eq(java.lang.String)</code>。
+</p>
+
+<p>
+如果想要生成Java风格的访问方法，可以加上<code>scala.reflect.BeanProperty</code>注解：
+</p>
+
+<pre class="brush: scala" title="Rational.scala">
+@scala.reflect.BeanProperty
+var age: Int = _
+</pre>
+
+<p>
 要注意的是：
 </p>
 
@@ -1521,8 +1539,9 @@ scala&gt; class Rational(n: Int, d: Int)
 </pre>
 
 <p>
-在前面主构造器部分已经提别提到：<code>n</code>和<code>d</code>并不是类中的字段，
-而是主构造器的两个参数。所以下面代码是无法访问到某个实例的<code>n</code>和<code>d</code>的：
+在前面主构造器部分已经提别提到：主构造器的两个参数<code>n</code>和<code>d</code>没有<code>val</code>或<code>var</code>修饰，
+所以在类中生成的字段与访问器都是私有的，外部无法访问。所以下面代码是无法访问到
+某个实例的<code>n</code>和<code>d</code>的：
 </p>
 
 <pre class="brush: scala">
@@ -1642,8 +1661,10 @@ def max(that: Rational) =
 
 <p>
 Java里，构造器的第一个动作必须要么调用同类里的另一个构造器，要么直接调用超类的
-构造器。Scala的类里面，只有主构造器可以调用超类的构造器。Scala里更严格的限制
-实际上是权衡了更高的简洁度和与Java构造器相比的简易性所付出的代价之后作出的设计。
+构造器。Scala的类里面，只有主构造器可以调用超类的构造器，从构造器的第一个语句
+要么调用主构造器，要么调用另一个从构造器。Scala里更严格的限制实际上是权衡了更高
+的简洁度和与Java构造器相比的简易性所付出的代价之后作出的设计：主构造器就像一个
+守门人，即控制实例的初始化也控制着与超类的沟通。
 </p>
 
 <p>
@@ -1953,7 +1974,9 @@ class Currency {}
 object USD extends Currency{ }
 </pre>
 
-
+<p>
+但是注意单例对象无法初始化，所以不能给主构造器传递参数。
+</p>
 
 <h2 id="toc_6.2">伴生对象</h2>
 
@@ -1988,7 +2011,6 @@ object ChecksumAccumulator {
 		}
 	}
 }
-
 </pre>
 
 <p>
@@ -2002,6 +2024,56 @@ println(res1)
 val res2 = ChecksumAccumulator.caculate("So simple!")
 println(res2)
 </pre>
+
+
+<p>
+一个典型的应用场景是，把类的主构造器做成私有的，通过伴生对象来访问工厂方法：
+</p>
+
+<pre class="brush: scala">
+class Marker private (val color:String) {
+    println("Createing " + this)
+
+    override def toString(): String = "make color " + color
+}
+
+object Marker {
+  private val markers = Map(
+    "red" -&gt; new Marker("red"),
+    "green" -&gt; new Marker("green"),
+    "blue" -&gt; new Marker("blue")
+  )
+
+  def getMarker(color: String) =
+    if(markers.contains(color))  markers(color) else null
+}
+
+println(Marker getMarker "blue")
+println(Marker getMarker "blue")
+println(Marker getMarker "red" )
+println(Marker getMarker "red" )
+</pre>
+
+<p>
+伴生对象把<code>对象名(参数表)</code>的形式转为<code>对象名.apply(参数表)</code>的调用，看起来像是一个
+不用<code>new</code>的构造函数：
+</p>
+
+<pre class="brush: scala">
+class Marker private (val color:String) {
+    println("Createing " + this)
+
+    override def toString(): String = "make color " + color
+}
+
+object Marker {
+    def apply(color: String) = new Marker(color)
+}
+
+val a = Marker("yellow")
+val b = Marker("black")
+</pre>
+
 
 
 <h2 id="toc_6.3">与Java的区别</h2>

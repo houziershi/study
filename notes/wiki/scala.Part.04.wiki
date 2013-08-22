@@ -260,8 +260,8 @@ type Action = () => Unit
   }
 }}}
 
-注意这里为了方便去掉了空列表的情况。为了防止编译器警告我们在模式匹配里故意漏掉了列表为空的情况，在
-这里使用了`(agenda: @unchecked) match`而不是`agenda match`。
+注意这里为了方便去掉了空列表的情况。为了防止编译器警告我们在模式匹配里故意漏掉了
+列表为空的情况，在这里使用了`(agenda: @unchecked) match`而不是`agenda match`。
 
 完整的代码在包`org.stairwaybook.simulation`里：
 
@@ -325,12 +325,13 @@ type Action = () => Unit
 
 `setSignal(sig: Boolean)`：设置线路信号。
 
-`addAction(p: Action)`：添加动作到线路上。基本思想是所有附加在某线路上的动作过程在每次信号改变
-时被执行。通过连接组件可以为线路添加该组件的功能。加上的动作会在被加到线路时以及每次线路信号改变时
-被执行。
+`addAction(p: Action)`：添加动作到线路上。基本思想是所有附加在某线路上的动作过程
+在每次信号改变时被执行。通过连接组件可以为线路添加该组件的功能。加上的动作会在被
+加到线路时以及每次线路信号改变时被执行。
 
-实现代码`sigVal`代表当前信号，`actions`是附加的动作过程。需要注意的是`setSignal`方法，当信号
-改变时，新的信号首先被保存在变量`sigVal`中，然后执行所有线路附加动作：
+实现代码`sigVal`代表当前信号，`actions`是附加的动作过程。需要注意的是`setSignal`
+方法，当信号改变时，新的信号首先被保存在变量`sigVal`中，然后执行所有线路附加
+动作：
 
 {{{class="brush: scala"
   class Wire {
@@ -849,7 +850,25 @@ i :: trailing
 
 == 变化型注解 ==
 
-上面的`Queue`特质创建实例时一定要加类型参数：
+对于容器类来说，成员的类型很重要：
+
+{{{class="brush: scala"
+scala> import java.util._
+import java.util._
+
+scala> var la = new ArrayList[Any]
+la: java.util.ArrayList[Any] = []
+
+scala> var lb = new ArrayList[String]
+lb: java.util.ArrayList[String] = []
+
+scala> var ln = new ArrayList
+ln: java.util.ArrayList[Nothing] = []
+}}}
+
+注意没有类型参数的类型被定为了`ArrayList[Nothing]`。而`Nothing`是所有类的子类，
+
+所以`Queue`特质创建实例时一定要加类型参数：
 
 {{{class="brush: scala"
   scala> def doesNotCompile(q: Queue) {}

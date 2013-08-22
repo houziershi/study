@@ -98,6 +98,15 @@ strace -e trace=file tmux ..restofyourcommand...
 
 在控制台中执行下面的各项tmux命令。
 
+默认前缀为`Ctrl-b`，如果要改成和screen一样`Ctrl-a`的话：
+
+{{{class="brush: bash"
+set -g prefix ^a
+unbind ^b
+}}}
+
+设置vi风格的移动方式：`setw -g mode-keys vi`
+
 * `Ctrl+b`激活控制台；
 
  
@@ -105,6 +114,13 @@ strace -e trace=file tmux ..restofyourcommand...
 
 输入tmux命令时就开启了一个服务器。
 
+
+= 系统操作 =   
+
+
+* `?`列出所有快捷键；按q返回
+* `:`进入命令行模式；此时可以输入支持的命令，例如kill-server可以关闭服务器
+* `~`列出提示信息缓存；其中包含了之前tmux返回的各种提示信息
  
 = session 会话 =
 
@@ -128,16 +144,18 @@ $ tmux kill-session -t session_name  # kill named session
 在控制台中：
 
 * `d`脱离当前会话；这样可以暂时返回Shell界面，输入tmux attach能够重新进入之前的会话
+* `$`重命名当前会话。
 * `D`选择要脱离的会话；在同时开启了多个会话时使用
 * `Ctrl+z`挂起当前会话
 * `r`强制重绘未脱离的会话
 * `s`选择并切换会话；在同时开启了多个会话时使用
  
-= window    窗口 =
+= window窗口 =
 
 一个会话可以包含多个窗口。
 
 * `c` 创建新窗口
+* `b`重命名当前窗口
 * `&`关闭当前窗口
 * `p/n`切换至上／下一窗口
 * `0-9`切换至指定窗口
@@ -168,7 +186,49 @@ $ tmux kill-session -t session_name  # kill named session
 * `Alt+o`逆时针旋转当前窗口的面板
 * `Ctrl+o`顺时针旋转当前窗口的面板
 
+我的配置将分割操作改为vi风格的`v`和`s`,而pane之间的跳转也改为vi风格,调整pane的
+大小也是一样。配置如下：
+	
+{{{class="brush: bash"
+# split windows like vim.  - Note: vim's definition of a horizontal/vertical split is reversed from tmux's
+unbind '"'
+unbind %
+unbind s
+bind s split-window -v
+bind S split-window -v -l 40
+bind v split-window -h
+bind V split-window -h -l 120
  
+# navigate panes with hjkl
+bind h select-pane -L
+bind j select-pane -D
+bind k select-pane -U
+bind l select-pane -R
+ 
+# resize panes like vim
+bind < resize-pane -L 10
+bind L resize-pane -L 100
+bind > resize-pane -R 10
+bind R resize-pane -R 100
+bind - resize-pane -D 5
+bind D resize-pane -D 36
+bind + resize-pane -U 5
+bind U resize-pane -U 35
+ 
+# swap panes
+bind ^u swapp -U
+bind ^d swapp -D
+}}}
+
+同时还绑定了
+	
+{{{class="brush: bash"
+bind q killp
+}}}
+
+使用`q`来关闭pane，免去了关闭确认。但是会覆盖掉原有的p操作，显示pane编号。我不
+需要这个，覆盖就覆盖了。
+
 = 复制粘贴 =  
 
 * `[`进入复制模式；
@@ -177,8 +237,87 @@ $ tmux kill-session -t session_name  # kill named session
 * `ALT-w`复制内容
 * `]`粘贴复制的内容
 
-= 系统操作 =   
+有些人喜欢将复制粘贴设为类似vi的模式，使用`esc`进入复制模式，`v`进入粘贴模式，
+选择后`y`进行复制。`<Prefix-p>`进行粘贴。不过这样会和zsh有冲突。要改在话：
+	
+{{{class="brush: bash"
+# Copy and paste like in vim
+unbind [
+bind Escape copy-mode
+unbind p
+bind p paste-buffer
+bind -t vi-copy 'v' begin-selection
+bind -t vi-copy 'y' copy-selection
+}}}
 
-* `?`列出所有快捷键；按q返回
-* `:`进入命令行模式；此时可以输入支持的命令，例如kill-server可以关闭服务器
-* `~`列出提示信息缓存；其中包含了之前tmux返回的各种提示信息
+所有的复制都会被记录到缓冲区，输入`#`或者`tmux list-buffers`查看缓冲区，同时也
+进入了复制模式。也可以使用`=`来选择并粘贴缓冲区内容。tmux的缓冲区和系统剪贴板是
+完全独立的，为了复制到系统剪贴板，我做了如下处理，对于`mac os X`用户：
+
+第一步：
+	
+{{{class="brush: bash"
+brew install reattach-to-user-namespace
+}}}
+
+而后增加配置：
+
+{{{class="brush: bash"
+# getting tmux to copy a buffer to system clipboard
+set-option -g default-command "reattach-to-user-namespace -l zsh" # or bash...
+bind y run "tmux save-buffer - | reattach-to-user-namespace pbcopy" \; display-message "Copied tmux buffer to system clipboard"
+bind C-v run "reattach-to-user-namespace pbpaste | tmux load-buffer - && tmux paste-buffer"
+}}}
+
+这样，在tmux中进行复制后。按下前缀键后键入`y`,就会在状态栏显示已粘贴到剪贴板，
+如图：
+
+此时，就可以用`cmd-v`进行粘贴了。系统剪贴板的也可以键入`C-v`粘贴。（当然，更
+方便的还是直接`cmd-v`,无需前缀键）。对于linux用户,可以使用xclip,配置如下：
+	
+{{{class="brush: bash"
+bind y run-shell "tmux show-buffer | xclip -sel clip -i" \; display-message "Copied tmux buffer to system clipboard"
+}}}
+
+同样键入`y`复制buffer中最新的内容到系统剪贴板。
+
+= 配置 =
+
+tmux可以进入命令行模式，快捷键为`:`。而且运行的命令在不同的session中都会生效。
+我绑定了一个命令：
+
+{{{class="brush: bash"
+bind r source-file ~/.tmux.conf \; display "Configuration Reloaded!"
+}}}
+
+这样只要输入`r`,就可以重新加载`tmux.conf`配置文件。
+
+还可以用来进行自动化布局，例如：
+
+{{{class="brush: bash"
+selectp -t 0            
+splitw -h -p 50          
+selectp -t 1             
+splitw -v -p 40 'node' 
+selectp -t 2
+}}}
+
+将其保存在随便在一个文件中，而后使用和上述类似的source-file加载该文件，就会分隔
+三个pane，其中一个pane会输入node，开启一个node的js shell。其中的50，40 为占窗口
+大小的百分比。
+
+同时，tmux还支持运行shell脚本。可以写一个shell脚本进行各种环境初始化和布局初始化
+。这里就不再介绍了
+ 
+= 状态栏 =
+
+tmux的状态栏配置非常简单。比如：
+
+{{{class="brush: bash"
+set -g status-left "#[fg=green]s#S:w#I.p#P#[default]"
+}}}
+
+#S,#I,#p分别表示session，window，pane编号。状态栏左侧看起来就像是：`s0:w1.p1`
+
+当然，你可以让状态行更强大,可以使用tmux-powerline。
+

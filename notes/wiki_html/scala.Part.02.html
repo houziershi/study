@@ -3207,7 +3207,8 @@ Java中<code>protected</code>可以被子类或同一个包中的类访问。Sca
 
 <p>
 Scala里的访问修饰符可以通过使用修饰词增加。格式为<code>private[X]</code>或<code>protected[X]</code>的
-修饰符表示针对<code>X</code>的私有或保护，这里<code>X</code>指代某些外围的包、类与其单例对象。
+修饰符表示针对<code>X</code>的私有或保护，这里<code>X</code>指代某些外围的包、类与其单例对象，也可以
+用<code>this</code>表示只有当前类自己可以访问。
 </p>
 
 <p>
