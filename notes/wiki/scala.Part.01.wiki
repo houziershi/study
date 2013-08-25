@@ -2445,11 +2445,10 @@ Scala提供了许多方法去除冗余信息并把函数文本写得更简短。
 
 == 部分应用函数（partially applied function） ==
 
-下划线不仅能代替一个参数，还可以代替整个参数列表：
+下划线占位符不仅能代替一个参数，还可以代替整个参数列表：
 
 {{{class="brush: scala"
   someNumbers.foreach(println(_))
-  
 }}}
 
 或简化为：
@@ -2460,6 +2459,17 @@ Scala提供了许多方法去除冗余信息并把函数文本写得更简短。
 
 注意：在函数名和下划线之间留一个空格，因为不这样做编译器会认为在调用名为
 `println_`的方法。
+
+另一个用占位符代表整个参数的例子：
+
+{{{class="brush: scala"
+scala> def max(a:Int, b:Int):Int = if(a > b)  a else b
+max: (a: Int, b: Int)Int
+
+scala> var res = (Integer.MIN_VALUE /: list) { max _ }
+res: Int = 99
+}}}
+
 
 Scala把短格式直接看作是你输入了下列代码：
 
@@ -2500,7 +2510,8 @@ Scala里，当你调用函数，传入任何需要的参数，你就是在把函
   res13: Int = 6
 }}}
 
-实际发生的事情是这样的：
+简单地来说，如果参数没有给齐，Scala会建立一个新类，它有一个特殊的`apply`方法。对
+偏函数的调用其实是对这个`apply`方法的调用。更加细节的描述是这样的：
 
 名为`a`的变量指向一个函数值对象。这个函数值是由Scala编译器依照偏应用函数表达式
 `sum _`，自动产生的类的一个实例。
@@ -2872,4 +2883,70 @@ Scala仅优化了直接递归调用使其返回同一个函数。如果递归是
 因此你或许希望Scala编译器能执行尾调用优化，但在这个例子里做不到。因此，尾调用
 优化受限于方法或嵌套函数在最后一个操作调用本身，而没有转到某个函数值或什么其它的
 中间函数的情况。
+
+== Execute Around Method 模式 ==
+
+举个例子，对于资源`Resource`一定要执行善后工作`cleanUp`。这里把构造函数做成私有
+来限制只能通过伴生对象来构造：
+
+{{{class="brush: scala"
+class Resource private() {
+	println("Starting transaction...")
+
+	private def cleanUp() { println("Ending transaction...") }
+
+	def op1 = println("operation 1")
+	def op2 = println("operation 2")
+	def op3 = println("operation 3")
+}
+}}}
+
+伴生类的中可以创建实例，成员方法`use`创建实例并传入到作为参数的回调方法中：
+
+{{{class="brush: scala"
+object Resource {
+	def use(codeBlock:Resource => Unit) {
+		val resource = new Resource
+		try{
+			codeBlock(resource)
+		} finally {
+			resource.cleanUp
+		}
+	}
+}
+}}}
+
+使用时传入：
+
+{{{class="brush: scala"
+Resource.use {
+	resource =>
+	resource.op1
+	resource.op2
+	resource.op3
+	resource.op1
+}
+}}}
+
+调用时的输出：
+
+{{{class="brush: bash"
+scala tmp.scala
+Starting transaction...
+operation 1
+operation 2
+operation 3
+operation 1
+Ending transaction...
+}}}
+
+
+
+
+
+
+
+
+
+
 
