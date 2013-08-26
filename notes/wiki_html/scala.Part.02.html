@@ -75,8 +75,9 @@
 <li><a href="#toc_5.4">实现Ordered特质来排序</a>
 <li><a href="#toc_5.5">特质的叠加次序</a>
 <li><a href="#toc_5.6">特质的叠加</a>
-<li><a href="#toc_5.7">为什么不是多重继承</a>
-<li><a href="#toc_5.8">什么情况下要用特质</a>
+<li><a href="#toc_5.7">特质方法的延迟绑定</a>
+<li><a href="#toc_5.8">为什么不是多重继承</a>
+<li><a href="#toc_5.9">什么情况下要用特质</a>
 </ul>
 <li><a href="#toc_6">包和引用</a>
 <ul>
@@ -2642,8 +2643,78 @@ Scala专门提供了<code>Ordered</code>特质来简化比较工作。只要实�
 </pre>
 
 
+<h2 id="toc_5.7">特质方法的延迟绑定</h2>
 
-<h2 id="toc_5.7">为什么不是多重继承</h2>
+<p>
+在基类方法为抽象时情况比较复杂。比如下面这个抽象<code>Writer</code>类的抽象方法
+<code>writeMessage()</code>：
+</p>
+
+<pre class="brush: scala">
+abstract class Writer {
+	def writeMessage(message: String)
+}
+</pre>
+
+<p>
+这样在特质中一定要修饰方法为<code>abstract override</code>，这里两个特质的功能分别是转大写
+与过滤敏感词：
+</p>
+
+<pre class="brush: scala">
+trait UpperCaseWriter extends Writer  {
+	abstract override def writeMessage(message: String) =
+		super.writeMessage(message.toUpperCase)
+}
+
+trait ProfanityFilteredWriter extends Writer  {
+	abstract override def writeMessage(message: String) =
+		super.writeMessage(message.replace("stupid","s-----"))
+}
+</pre>
+
+<p>
+特质的实现里调用了<code>super.writeMessage(...)</code>，这样的调用要延迟绑定，以后混入这些
+特质的类需要提供这个方法的实现。实现类如下：
+</p>
+
+<pre class="brush: scala">
+class StringWriterDelegate extends Writer {
+	val writer = new java.io.StringWriter
+
+	def writeMessage(message: String) = writer.write(message)
+
+	override def toString(): String = writer.toString
+}
+</pre>
+
+<p>
+混入特质并调用：
+</p>
+
+<pre class="brush: scala">
+val wa = 
+	new StringWriterDelegate with UpperCaseWriter with ProfanityFilteredWriter
+val wb = 
+	new StringWriterDelegate with ProfanityFilteredWriter with UpperCaseWriter
+
+wa writeMessage "There is no sin except stupidity"
+wb writeMessage "There is no sin except stupidity"
+
+println(wa)
+println(wb)
+</pre>
+
+<p>
+输出结果：
+</p>
+
+<pre class="brush: bash">
+THERE IS NO SIN EXCEPT S-----ITY
+THERE IS NO SIN EXCEPT STUPIDITY
+</pre>
+
+<h2 id="toc_5.8">为什么不是多重继承</h2>
 
 <p>
 特质是一种继承多个类似于类的结构的方式，但是它与许多语言中的多重继承有很重要的
@@ -2783,7 +2854,7 @@ FourLegged : Any &lt; AnyRef &lt; Animal &lt; HasLegs &lt; FourLegged
        Cat : Any &lt; AnyRef &lt; Animal &lt; Furry &lt; HasLegs &lt; FourLegged &lt; Cat
 </pre>
 
-<h2 id="toc_5.8">什么情况下要用特质</h2>
+<h2 id="toc_5.9">什么情况下要用特质</h2>
 
 <p>
 没有固定的规律，但是包含了几条可供考虑的导则。

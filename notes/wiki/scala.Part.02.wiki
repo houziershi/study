@@ -2056,6 +2056,66 @@ Scala专门提供了`Ordered`特质来简化比较工作。只要实现`Ordered`
 }}}
 
 
+== 特质方法的延迟绑定 ==
+
+在基类方法为抽象时情况比较复杂。比如下面这个抽象`Writer`类的抽象方法
+`writeMessage()`：
+
+{{{class="brush: scala"
+abstract class Writer {
+	def writeMessage(message: String)
+}
+}}}
+
+这样在特质中一定要修饰方法为`abstract override`，这里两个特质的功能分别是转大写
+与过滤敏感词：
+
+{{{class="brush: scala"
+trait UpperCaseWriter extends Writer  {
+	abstract override def writeMessage(message: String) =
+		super.writeMessage(message.toUpperCase)
+}
+
+trait ProfanityFilteredWriter extends Writer  {
+	abstract override def writeMessage(message: String) =
+		super.writeMessage(message.replace("stupid","s-----"))
+}
+}}}
+
+特质的实现里调用了`super.writeMessage(...)`，这样的调用要延迟绑定，以后混入这些
+特质的类需要提供这个方法的实现。实现类如下：
+
+{{{class="brush: scala"
+class StringWriterDelegate extends Writer {
+	val writer = new java.io.StringWriter
+
+	def writeMessage(message: String) = writer.write(message)
+
+	override def toString(): String = writer.toString
+}
+}}}
+
+混入特质并调用：
+
+{{{class="brush: scala"
+val wa = 
+	new StringWriterDelegate with UpperCaseWriter with ProfanityFilteredWriter
+val wb = 
+	new StringWriterDelegate with ProfanityFilteredWriter with UpperCaseWriter
+
+wa writeMessage "There is no sin except stupidity"
+wb writeMessage "There is no sin except stupidity"
+
+println(wa)
+println(wb)
+}}}
+
+输出结果：
+
+{{{class="brush: bash"
+THERE IS NO SIN EXCEPT S-----ITY
+THERE IS NO SIN EXCEPT STUPIDITY
+}}}
 
 == 为什么不是多重继承 ==
 
