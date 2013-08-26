@@ -1,3 +1,5 @@
 Naming Conventions（规范，协议）
 
 discouraged 气馁，使劝阻
+
+pendant 英 [ˈpendənt] 美 [ˈpɛndənt] n.（装在项链等上的）垂饰，坠儿
