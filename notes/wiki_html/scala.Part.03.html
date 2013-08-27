@@ -159,8 +159,7 @@
   case class Var(name: String) extends Expr
   case class Number(num: Double) extends Expr
   case class UnOp(operator: String, arg: Expr) extends Expr
-  case class BinOp(operator: String,
-      left: Expr, right: Expr) extends Expr
+  case class BinOp(operator: String, left: Expr, right: Expr) extends Expr
 </pre>
 
 <p>
@@ -432,7 +431,26 @@ res1: Expr = Number(1.0)
 </pre>
 
 <p>
-其实也有强制使用小写常量名的方式：<code>this.pi</code>或<code>obj.pi</code>的形式表示是常量模式；如果
+在区别常量与变量时Scala一般默认常量是以大写开头命名的，所以下面的代码编译不过：
+</p>
+
+<pre class="brush: scala; highlight:[7]">
+class Sample {
+	val max = 100
+	val MIN = 0
+
+	def process(input: Int) {
+		input match {
+			case max =&gt; println("Don't try this at home") // Compile error
+			case MIN =&gt; println("min")
+			_ =&gt; println("Unreachable!!")
+		}
+	}
+}
+</pre>
+
+<p>
+强制使用小写常量名要加上限定，如：<code>this.pi</code>或<code>obj.pi</code>的形式表示是常量模式；如果
 这样还没有用，可以用反引号包起来，如：
 </p>
 

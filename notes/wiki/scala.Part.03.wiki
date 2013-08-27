@@ -23,8 +23,7 @@
   case class Var(name: String) extends Expr
   case class Number(num: Double) extends Expr
   case class UnOp(operator: String, arg: Expr) extends Expr
-  case class BinOp(operator: String,
-      left: Expr, right: Expr) extends Expr
+  case class BinOp(operator: String, left: Expr, right: Expr) extends Expr
 }}}
 
 上面为表达式定义了一个抽象的基类，四个子类分别代表四种具体的表达式。要注意的是
@@ -239,7 +238,24 @@ res1: Expr = Number(1.0)
                      ^
 }}}
 
-其实也有强制使用小写常量名的方式：`this.pi`或`obj.pi`的形式表示是常量模式；如果
+在区别常量与变量时Scala一般默认常量是以大写开头命名的，所以下面的代码编译不过：
+
+{{{class="brush: scala; highlight:[7]"
+class Sample {
+	val max = 100
+	val MIN = 0
+
+	def process(input: Int) {
+		input match {
+			case max => println("Don't try this at home") // Compile error
+			case MIN => println("min")
+			_ => println("Unreachable!!")
+		}
+	}
+}
+}}}
+
+强制使用小写常量名要加上限定，如：`this.pi`或`obj.pi`的形式表示是常量模式；如果
 这样还没有用，可以用反引号包起来，如：
 
 {{{class="brush: scala"
