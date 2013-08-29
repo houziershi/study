@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+
+
+<title>AngularJs</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>AngularJs</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">入门</a>
+<ul>
+<li><a href="#toc_1.1">Hello World</a>
+</ul>
+<li><a href="#toc_2">应用实例</a>
+<ul>
+<li><a href="#toc_2.1">定义模块</a>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">入门</h1>
+
+<h2 id="toc_1.1">Hello World</h2>
+
+<pre class="brush: html; highlight:[2,4,8,9]"  title="00.startup/basic.html">
+&lt;!doctype html&gt;
+&lt;html ng-app&gt;
+  &lt;head&gt;
+    &lt;script src="../angular.min.js"&gt;&lt;/script&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;div&gt;
+      &lt;input type="text" ng-model="yourName" placeholder="Enter a name here"&gt;
+      &lt;h1&gt;Hello, {{yourName}}!&lt;/h1&gt;
+    &lt;/div&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+</pre>
+
+<p>
+就这样没有任何代码就实现了内容与文本框一起改变的功能：
+</p>
+
+<ul>
+<li>
+<code>ng-app</code>标记了一个模块，没有它AngularJs不会起作为。
+
+<li>
+<code>ng-model="yourName"</code>建立了文本框与模型<code>yourName</code>的双向绑定。
+
+<li>
+<code>{{yourName}}</code>显示模型的值。
+
+</ul>
+
+<h1 id="toc_2">应用实例</h1>
+
+<p>
+通过实践创建一个项目<code>myApp</code>来学习，把js代码都放在<code>js/main.js</code>中。
+</p>
+
+<h2 id="toc_2.1">定义模块</h2>
+
+<p>
+通过<code>angular.module</code>方法定义模块，
+</p>
+
+<pre class="brush: js"  title="00.startup/js/main.js">
+var app = angular.module('myApp', []);
+</pre>
+
+<p>
+这样在页面上可以声明把模块绑定到指定的DOM中：
+</p>
+
+<pre class="brush: html; highlight:[2,4,8,9]"  title="00.startup/index.html">
+&lt;!doctype html&gt;
+&lt;html ng-app="myApp"&gt;
+  &lt;head&gt;
+    &lt;script src="../angular.min.js"&gt;&lt;/script&gt;
+    &lt;script src="js/main.js"&gt;&lt;/script&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+</pre>
+
+<p>
+绑定的地方就是AngularJs运行应用的地方。
+</p>
+ </div>
+</body>
+</html>

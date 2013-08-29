@@ -27,6 +27,8 @@ JavaScript基础：[[Javascript]]
 
 JQuery：[[JQuery]]
 
+AngularJs：[[AngularJs]]
+
 ExtJs：[[ExtJS]]
 
 === Python ===

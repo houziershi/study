@@ -1,0 +1,61 @@
+
+%title AngularJs
+
+%toc AngularJs
+
+= 入门 =
+
+== Hello World ==
+
+{{{class="brush: html; highlight:[2,4,8,9]"  title="00.startup/basic.html"
+<!doctype html>
+<html ng-app>
+  <head>
+    <script src="../angular.min.js"></script>
+  </head>
+  <body>
+    <div>
+      <input type="text" ng-model="yourName" placeholder="Enter a name here">
+      <h1>Hello, {{yourName}}!</h1>
+    </div>
+  </body>
+</html>
+}}}
+
+就这样没有任何代码就实现了内容与文本框一起改变的功能：
+
+* `ng-app`标记了一个模块，没有它AngularJs不会起作为。
+* `ng-model="yourName"`建立了文本框与模型`yourName`的双向绑定。
+* `{{yourName}}`显示模型的值。
+
+= 应用实例 =
+
+通过实践创建一个项目`myApp`来学习，把js代码都放在`js/main.js`中。
+
+== 定义模块 ==
+
+通过`angular.module`方法定义模块，
+
+{{{class="brush: js"  title="00.startup/js/main.js"
+var app = angular.module('myApp', []);
+}}}
+
+这样在页面上可以声明把模块绑定到指定的DOM中：
+
+{{{class="brush: html; highlight:[2,4,8,9]"  title="00.startup/index.html"
+<!doctype html>
+<html ng-app="myApp">
+  <head>
+    <script src="../angular.min.js"></script>
+    <script src="js/main.js"></script>
+  </head>
+  <body>
+  </body>
+</html>
+}}}
+
+绑定的地方就是AngularJs运行应用的地方。
+
+
+
+

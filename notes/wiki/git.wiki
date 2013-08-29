@@ -18,9 +18,8 @@ git config --global user.email aaa@bbb.com
 
 如果合作人里面有个废柴要在win下开发，让他打开以下开关实现：
 
-提交时，自动把`<CR><LF>`转为`<LF>`；
-
-签出时，自动把`<LF>`转为`<CR><LF>`：
+* 提交时，自动把`<CR><LF>`转为`<LF>`；
+* 签出时，自动把`<LF>`转为`<CR><LF>`：
 
 {{{class="brush: bash"
 git config --global core.autocrlf true
@@ -44,31 +43,37 @@ git config --global core.autocrlf false
 先要申请账号，建立自己的repo。
 
 然后上传自己的ssh-key作为连接凭证。上传后检查是否能成功连接：
+
 {{{class="brush: bash"
 ssh -T git@github.com
 }}}
 
 如果失败，用debug方式检查一下是不是因为防火墙的原因：
+
 {{{class="brush: bash"
 ssh -vT git@github.com
 }}}
 
 还有一个失败的可能性是因为没有把私钥加上：
+
 {{{class="brush: bash"
 ssh-add ~/.ssh/id_rsa
 }}}
 
 验证可能成功连接后，把repo复制下来：
+
 {{{class="brush: bash"
 git clone git@github.com:Jade-Shan/Jade-Wubi.git
 }}}
 
 复制下来的第一次提交声明提交到来源：
+
 {{{class="brush: bash"
 git push origin master
 }}}
 
 以后的直接push就可以了：
+
 {{{class="brush: bash"
 git push
 }}}
@@ -167,16 +172,19 @@ git diff
 }}}
 
 在提交这前，先把改动添加到index file：
+
 {{{class="brush: bash"
 git add readme.txt
 }}}
 
 查看index file和版本库之间的差别：
+
 {{{class="brush: bash"
 git diff --cached
 }}}
 
 查看文件和版本库之间的差别：
+
 {{{class="brush: bash"
 git diff HEAD
 }}}
@@ -187,13 +195,14 @@ git commit
 }}}
 
 可以省略比对和快照的过程，直接一次提交所有的变更。但仅提交现有的文件，
-新文件还是要git add：
+新文件还是要`git add`：
 
 {{{class="brush: bash"
 git commit -a
 }}}
 
 在检查修改内容的过程中，还可以查看当前工作的状态：
+
 {{{class="brush: bash"
 git status
 }}}
@@ -226,14 +235,14 @@ soft表示回退到index，`HEAD^`指定上一个版本：
 git reset --soft
 }}}
 
-默认的位置是mixed，回到工作版本：
+默认的位置是`mixed`，回到工作版本：
 
 {{{class="brush: bash"
 git reset --mixed
 git reset
 }}}
 
-hard会把所有位置中的版本都回退掉：
+`hard`会把所有位置中的版本都回退掉：
 
 {{{class="brush: bash"
 git reset --hard
@@ -255,7 +264,7 @@ git checkout -- benchmarks.rb
 修改最后一次提交
 
 有时候我们提交完了才发现漏掉了几个文件没有加，或者提交信息写错了。想要撤消刚才
-的提交操作，可以使用 --amend 选项重新提交：
+的提交操作，可以使用`--amend`选项重新提交：
 
 {{{class="brush: bash"
 git commit --amend
@@ -298,40 +307,41 @@ git-show-branch
 
 == 新建分支 ==
 
-想要建一个新的叫experimenal的分支：
+想要建一个新的叫`experimenal`的分支：
 {{{class="brush: bash"
 git branch experienal
 }}}
 
 == 切换分支 ==
 
-在切换分支之前要保证当前分支处于commit状态。
+在切换分支之前要保证当前分支处于`commit`状态。
 
-切换到experimenal分支：
+切换到`experimenal`分支：
 
 {{{class="brush: bash"
 git checkout experimenal
 }}}
 
 
-使用checkout可以在多个分支上随意切换。在一个分支上的操作不会影响到另一个分支。
+使用`checkout`可以在多个分支上随意切换。在一个分支上的操作不会影响到另一个分支。
 
 可以把分支的创建与切换合并为一步：
+
 {{{class="brush: bash"
 git checkout -b experimenal
 }}}
 
 == 合并分支 ==
 
-两个分支必须都已经commit才能合并。
+两个分支必须都已经`commit`才能合并。
 
-要把experimenal合并到master，要先切到master：
+要把`experimenal`合并到`master`，要先切到`master`：
 
 {{{class="brush: bash"
 git checkout master
 }}}
 
-然后把experimenal合并过来：
+然后把`experimenal`合并过来：
 
 {{{class="brush: bash"
 git merge experimenal
@@ -349,12 +359,12 @@ git commit -a
 gitk
 }}}
 
-合并成功了以后可以删除原来的experimenal：
+合并成功了以后可以删除原来的`experimenal`：
 {{{class="brush: bash"
 git branch -d experimenal
 }}}
 
-如果分支还没有合并，可以用大写-D表示强制删除，通常在分支失败时用：
+如果分支还没有合并，可以用大写`-D`表示强制删除，通常在分支失败时用：
 {{{class="brush: bash"
 git branch -D experimenal
 }}}
@@ -373,6 +383,7 @@ mkdir wubi2
 用户B从我的版本库中导出。
 
 在没有服务器的情况下：
+
 {{{class="brush: bash"
 git clone wubi wubi2
 }}}
@@ -384,13 +395,15 @@ git clone git://git.jade.com/wubi wubi2
 }}}
 
 然后别人可以在我的代码基础上进行开发，然后提交：
+
 {{{class="brush: bash"
 git commit -a
 }}}
 
 == 发布本地提交的内容 ==
 
-用户B提交的内容只有自己能看到，他想让别人得到他的工作成果的话，就要把他提交的内容发布给其他开发者。
+用户B提交的内容只有自己能看到，他想让别人得到他的工作成果的话，就要把他提交的
+内容发布给其他开发者。
 
 如果服务器允许直接发布，那可以直接发布到服务器：
 
@@ -407,7 +420,8 @@ git format-patch origin
 
 == 取得其他人提交的内容 ==
 
-回到我这边，我知道别人已经提交了，现在要取得别人的工作成果。如果不放心别人的工作，根据别人的远程仓库名为master的分支在本地建立一个名为otherone的分支。
+回到我这边，我知道别人已经提交了，现在要取得别人的工作成果。如果不放心别人的工作
+，根据别人的远程仓库名为`master`的分支在本地建立一个名为`otherone`的分支。
 
 在没有服务器的情况下：
 
@@ -434,7 +448,9 @@ git whatchanged -p master..otherone
 git branch -D otherone
 }}}
 
-如果觉得没有问题了可以用pull命令导入别人的修改。其实pull命令相当于是fetch命令和merge命令的一个组合。当然如果信任对方的话，也可以不建立分支检查（略过上面的所有步骤）直接导入。
+如果觉得没有问题了可以用`pull`命令导入别人的修改。其实`pull`命令相当于是`fetch`
+命令和`merge`命令的一个组合。当然如果信任对方的话，也可以不建立分支检查（略过
+上面的所有步骤）直接导入。
 
 从目录：
 
@@ -454,10 +470,11 @@ git pull git://git.jade.com/wubi master
 git pull
 }}}
 
-其实，用“`git pull .`”就相当于“`git merge`”。
+其实，用`git pull .`就相当于`git merge`。
 
+用户B继续开发时先要取得我的工作成果，可以直接`pull`不用加参数。因为`clone`的时候
+已经记住了来源：
 
-用户B继续开发时先要取得我的工作成果，可以直接pull不用加参数。因为clone的时候已经记住了来源：
 {{{class="brush: bash"
 git pull
 }}}
@@ -466,15 +483,19 @@ git pull
 
 合作开发与合并分支都有可能发生冲突，看到如下错误信息：
 
+{{{class="brush: bash"
 Automatic merge failed; fix conflicts and then commit the result.
+}}}
 
-这个时候要手动排除冲突，源代码被会git修改。以“====”分隔冲突的两边。修改完成了以后可以再次提交：
+这个时候要手动排除冲突，源代码被会git修改。以`====`分隔冲突的两边。修改完成了
+以后可以再次提交：
 
 {{{class="brush: bash"
 git commit -a
 }}}
 
-有一点要注意，git会自动在merge完成以后添加一个原始冲突的备份`.orig`文件。如果嫌这个文件碍眼的话可以设置不生成这个东西：
+有一点要注意，git会自动在merge完成以后添加一个原始冲突的备份`.orig`文件。如果嫌
+这个文件碍眼的话可以设置不生成这个东西：
 
 用命令：
 
@@ -508,7 +529,8 @@ git config --global mergetool.keepBackup false
 git mergetool
 }}}
 
-在vimdiff窗口中会上面一半会分别显示本地版本、原始版本、过程版本，下半部分是冲突的版本：
+在vimdiff窗口中会上面一半会分别显示本地版本、原始版本、过程版本，下半部分是冲突
+的版本：
 
 <img src="images/vimdiff.ui.png" />
 
@@ -524,7 +546,8 @@ git mergetool
 
 一个方法是用`:buffers`查出来Buffer编号。一般来说下半编号是1，上面三个是从2到4。
 
-另一个方法是用关键字匹配。vimdiff一般把上面三个窗口中的文件名为XXXX.REMOTE.yyy，XXXX.BASE.yyy，XXXX.LOCAL.yyy。用`diffget REMOTE`就是取远程的。
+另一个方法是用关键字匹配。vimdiff一般把上面三个窗口中的文件名为`XXXX.REMOTE.yyy`
+，`XXXX.BASE.yyy`，`XXXX.LOCAL.yyy`。用`diffget REMOTE`就是取远程的。
 
 经过合并以后的版面会有点乱，可以用`:diffupdate`重新生成`diff`格式。
 
@@ -538,7 +561,7 @@ git mergetool
 git log
 }}}
 
-加上参数-p可以显示详细日志信息，如提交的改动：
+加上参数`-p`可以显示详细日志信息，如提交的改动：
 
 {{{class="brush: bash"
 git log -p
@@ -582,10 +605,10 @@ git log --pretty=fromat:"%h - %an, %ar : %s"
 %s	提交说明
 }}}
 
-用`oneline`或`format`时结合`--graph`选项，可以看到开头多出一些 ASCII 字符串表示的简单图形，形象地展示了每个提交所在的分支及其分化衍合情况。
+用`oneline`或`format`时结合`--graph`选项，可以看到开头多出一些ASCII字符串表示的
+简单图形，形象地展示了每个提交所在的分支及其分化衍合情况。
 
  
-
 也可以指定查看分支的名字：
 
 {{{class="brush: bash"
@@ -601,7 +624,7 @@ git show HEAD^^ # 查看 HEAD 的父的父母的信息
 git show HEAD~4 # 查看 HEAD 上溯 4 代的信息
 }}}
 
-要注意的是 git-merge 是会产生双父版本的,这种情况这样处理:
+要注意的是`git-merge`是会产生双父版本的,这种情况这样处理:
 
 {{{class="brush: bash"
 git show HEAD^1 # 查看 HEAD 的第一个父代
@@ -635,15 +658,16 @@ git log V3..V7
 git log V3.. 
 }}}
 
-注意`<since>..<until>`中任何一个被省略都将被默认设置为 HEAD。所以如果使用`..<until>`的话,git log 在大部分情况下会输出空的。
+注意`<since>..<until>`中任何一个被省略都将被默认设置为`HEAD`。所以如果使用
+`..<until>`的话，`git log`在大部分情况下会输出空的。
 
-显示 2 周前到现在的所有历史记录。具体语法可查询git-ref-parse 命令的帮助文件。
+显示 2 周前到现在的所有历史记录。具体语法可查询`git-ref-parse`命令的帮助文件。
 
 {{{class="brush: bash"
 git log –since=”2 weeks ago”
 }}}
 
-将显示在 experimental分支，但不在stable分支的历史记录：
+将显示在experimental分支，但不在stable分支的历史记录：
 
 {{{class="brush: bash"
 git log stable..experimental 
@@ -693,6 +717,9 @@ gitk –since=”2 weeks ago” drivers/
 
 
 
+= 其他 =
+
+长期分支建议开`rerere`，`git config rerere.enable true`详情`man git-rerere`
 
 
 
