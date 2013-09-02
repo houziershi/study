@@ -11,9 +11,10 @@
 <script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
 <script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
 
-<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
 <script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
 
 
 <title>Part V</title>
@@ -1472,7 +1473,7 @@ Array、RichString等）的共同超类。
 
 <p>
 这里的<code>List(...)</code>形式的模式其实是由<code>scala.List</code>的伴生对象定义了<code>unapplySeq</code>方法
-的抽取器，相差定义如下：
+的抽取器，相关定义如下：
 </p>
 
 <pre class="brush: scala">
@@ -1540,7 +1541,7 @@ List对象包含了带可变数量参数的<code>apply</code>方法，从而允�
 <h3 id="toc_3.7.1">形成正则表达式</h3>
 
 <p>
-Scala相差类放在<code>scala.util.matching</code>包里：
+Scala相关正则的类放在<code>scala.util.matching</code>包里：
 </p>
 
 <pre class="brush: scala">
@@ -1643,7 +1644,7 @@ regex findPrefixOf str
 
 <p>
 Scala所有的正则表达式都定义了抽取器，可以用来鉴别匹配于正则表达式分组的子字符串
-。例如，下面这样解构数值字符串：
+，相当于买一送一。例如，下面这样解构数值字符串：
 </p>
 
 <pre class="brush: scala">
@@ -1847,7 +1848,7 @@ Scala里可以直接给XML写字面量。解释器把从根标签的开始到结
 </pre>
 
 <p>
-上面的xml类型<code>Elem</code>类，其他一些与XML相差的重要类有：
+上面的xml类型<code>Elem</code>类，其他一些与XML相关的重要类有：
 </p>
 
 <ul>

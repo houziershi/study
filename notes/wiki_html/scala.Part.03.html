@@ -11,9 +11,10 @@
 <script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
 <script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
 
-<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
 <script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
 
 
 <title>Part III</title>
@@ -276,6 +277,15 @@ res1: Expr = Number(1.0)
   scala&gt; simplifyTop(UnOp("-", UnOp("-", Var("x"))))
   res4: Expr = Var(x)
 </pre>
+
+<p>
+注意：
+</p>
+
+<p>
+在作为参数时，即使是在构造函数没有参数的情况下，样本类后面带的括号不能省略。不然
+传递过去的就不是样本类实例，而是伴生对象。
+</p>
 
 <h3 id="toc_1.1.3">match与switch的比较</h3>
 
@@ -781,7 +791,7 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
 
 <h2 id="toc_1.4">模式重叠</h2>
 
-<pre class="brush: scala">
+<pre class="brush: scala; highlight:[8,10]">
   def simplifyAll(expr: Expr): Expr = expr match {
     case UnOp("-", UnOp("-", e)) =&gt;
       simplifyAll(e) // `-' is its own inverse
@@ -1154,11 +1164,16 @@ No comments
 
 <p>
 Scala在编译器在把这样的表达式转为偏函数时会对模式进行两次翻译：一次是真实函数的
-实现；另一次是测试函数是否对参数有定义的实现。例如上面的函数
-<dl>
-<dt>`{case x :: y </dt>
-<dd>_ =&gt; y}`会被翻译成：</dd>
-</dl>
+实现；另一次是测试函数是否对参数有定义的实现。例如上面的函数 
+</p>
+
+<pre class="brush: scala">
+{case x :: y :: _ =&gt; y}
+// trans to
+</pre>
+
+<p>
+会被翻译成：
 </p>
 
 <pre class="brush: scala">

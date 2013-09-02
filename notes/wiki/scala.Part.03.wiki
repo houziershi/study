@@ -111,6 +111,11 @@ res1: Expr = Number(1.0)
   res4: Expr = Var(x)
 }}}
 
+注意：
+
+在作为参数时，即使是在构造函数没有参数的情况下，样本类后面带的括号不能省略。不然
+传递过去的就不是样本类实例，而是伴生对象。
+
 === match与switch的比较 ===
 
 * `match`是一种表达式，所以有返回结果。
@@ -525,7 +530,7 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
 
 == 模式重叠 ==
 
-{{{class="brush: scala"
+{{{class="brush: scala; highlight:[8,10]"
   def simplifyAll(expr: Expr): Expr = expr match {
     case UnOp("-", UnOp("-", e)) =>
       simplifyAll(e) // `-' is its own inverse
@@ -821,8 +826,14 @@ No comments
 }}}
 
 Scala在编译器在把这样的表达式转为偏函数时会对模式进行两次翻译：一次是真实函数的
-实现；另一次是测试函数是否对参数有定义的实现。例如上面的函数
-`{case x :: y :: _ => y}`会被翻译成：
+实现；另一次是测试函数是否对参数有定义的实现。例如上面的函数 
+
+{{{class="brush: scala"
+{case x :: y :: _ => y}
+// trans to
+}}}
+
+会被翻译成：
 
 {{{class="brush: scala"
   new PartialFunction[List[Int], Int] {

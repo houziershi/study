@@ -11,9 +11,10 @@
 <script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
 <script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
 
-<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
 <script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
 
 
 <title>Part VI</title>
@@ -679,7 +680,7 @@ actor之间的协作方式是通过<code>!</code>来发送消息：
 
 <p>
 当actor发消息时并不会阻塞，收到消息时也不会被打断。发送的消息在接收的actor的邮箱
-里等待被处理，赶到以接收都actor调用<code>receive</code>方法：
+里等待被处理，直到以接收都actor调用<code>receive</code>方法：
 </p>
 
 <pre class="brush: scala">
@@ -702,7 +703,7 @@ actor之间的协作方式是通过<code>!</code>来发送消息：
 <p>
 例如<code>echoActor</code>的<code>apply</code>方法会打印<code>"received message: "</code>，然后再输出消息对象的
 <code>toString</code>结果。如果邮箱里没有让<code>isDefineAt</code>返回<code>true</code>的消息，则被调用<code>receive</code>
-的actor将会被阻塞，赶到有匹配的消息。
+的actor将会被阻塞，直到有匹配的消息。
 </p>
 
 <p>
@@ -789,7 +790,7 @@ Scala提供了<code>receive</code>方法外的另一个方法<code>react</code>�
 
 <p>
 因为不返回所以当前线程的调用栈可以被再次使用，所以如果全用<code>react</code>的话只要一个
-线程就可以运行所有的actor。实例应用中应该用当量几个<code>receive</code>，尽量多用<code>react</code>。
+线程就可以运行所有的actor。实例应用中应该用少用几个<code>receive</code>，尽量多用<code>react</code>。
 </p>
 
 <p>
@@ -848,7 +849,7 @@ IP地址：
 
 <p>
 由于通过<code>react</code>重用线程的方案非常普遍，所以actor库对此有特别的支持。<code>actor.loop</code>
-函数重复执行一个代码块，哪怕代码调用的是<code>react</code>。下面用<code>loog</code>来重写
+函数重复执行一个代码块，哪怕代码调用的是<code>react</code>。下面用<code>loop</code>来重写
 <code>NameResolver</code>的<code>act</code>方法。下面的例子与前一个例子不同的地方是它并不退出来响应
 <code>"EXIT"</code>消息，而是一直循环响应消息：
 </p>
@@ -915,9 +916,9 @@ actor的<code>act</code>方法。如果<code>act</code>调用了<code>react</cod
 </p>
 
 <p>
-下面的<code>emoteLater</code>方法展示了这处处理方式的用法。它创建了一个新的actor来执行
+下面的<code>emoteLater</code>方法展示了这种处理方式的用法。它创建了一个新的actor来执行
 <code>sleep</code>以便主actor不阻塞。以确保它向正确的actor发送<code>"Emote"</code>消息，我们必须小心地
-在主actor中对<code>self</code>求值面不是在助手actor中：
+在主actor中对<code>self</code>求值而不是在助手actor中：
 </p>
 
 <pre class="brush: scala">
@@ -1103,7 +1104,7 @@ B的任务协作时就有问题。所以要同步，任何参与者都不应该�
 
 <p>
 现在的原则是每个模拟对象在处理完了要完成的任务以后才会响应<code>ping</code>消息。但问题是
-任务有可以是别的模拟对象要发给它的，所以当前任务做完了并不一定是真的做完了，
+任务也可能是别的模拟对象要发给它的，所以当前任务做完了并不一定是真的做完了，
 可能是其他模拟对象还没有把任务发过来。
 </p>
 

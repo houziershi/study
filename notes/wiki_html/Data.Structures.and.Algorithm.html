@@ -1,0 +1,76 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>数据结构与算法</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>数据结构与算法</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">排序</a>
+</ul>
+</div>
+
+<h1 id="toc_1">排序</h1>
+
+<p>
+The euclidean plane usually has \(x\) and \( y \) as standard variables.
+</p>
+
+<p>
+block displaymath: use <code>{{\(</code> and <code>}}\)</code> to enclose a displaymath environment. 
+The opening syntax must be on a single line, as the closing one. The contents are to be written on one or more lines in-between, e.g.:
+</p>
+
+<p>
+text text
+</p>
+\[
+\sum_{i=1}^N a_i^2 = \infty
+\]
+<p>
+text text
+</p>
+
+<p>
+block environments: other block environments are supported in addition to displaymath. These include gather, align, cases, etc.. To use them, use %% placeholders after {{$ when you open your math block, e.g.:
+</p>
+
+\begin{equation*}
+bla bla
+\end{equation*}
+
+<p>
+Vimwiki and MathJax are smart enough to allow for whitespaces at the beginning or end of the line. However, their use is discouraged.
+</p>
+
+<p>
+Note: block environments are mostly used for writing several lines of math after one another. This can be obtained e.g. via the align LaTeX environment:
+</p>
+
+\begin{align}
+formula1 &amp;= result1 \\
+formula2 &amp;= result2
+\end{align}
+ </div>
+</body>
+</html>

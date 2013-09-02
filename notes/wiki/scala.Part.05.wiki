@@ -1054,7 +1054,7 @@ Array、RichString等）的共同超类。
 }}}
 
 这里的`List(...)`形式的模式其实是由`scala.List`的伴生对象定义了`unapplySeq`方法
-的抽取器，相差定义如下：
+的抽取器，相关定义如下：
 
 {{{class="brush: scala"
   package scala
@@ -1104,7 +1104,7 @@ List对象包含了带可变数量参数的`apply`方法，从而允许编写如
 
 === 形成正则表达式 ===
 
-Scala相差类放在`scala.util.matching`包里：
+Scala相关正则的类放在`scala.util.matching`包里：
 
 {{{class="brush: scala"
   scala> import scala.util.matching.Regex
@@ -1189,7 +1189,7 @@ regex findPrefixOf str
 === 正则表达式抽取值 ===
 
 Scala所有的正则表达式都定义了抽取器，可以用来鉴别匹配于正则表达式分组的子字符串
-。例如，下面这样解构数值字符串：
+，相当于买一送一。例如，下面这样解构数值字符串：
 
 {{{class="brush: scala"
   scala> val Decimal(sign, integerpart, decimalpart) = "-1.23"  
@@ -1343,7 +1343,7 @@ Scala里可以直接给XML写字面量。解释器把从根标签的开始到结
          </a>
 }}}
 
-上面的xml类型`Elem`类，其他一些与XML相差的重要类有：
+上面的xml类型`Elem`类，其他一些与XML相关的重要类有：
 
 * `Node`类，所有XML节点的抽象。
 * `Text`类，只有文本的节点。
