@@ -129,7 +129,7 @@ auto_export :: 保存后自动生成html文件。如果文件大的话会比较�
 
 目录的结构见：
 
-<img src="images/vimwiki-mockups.png" />
+<img src="images/vimwiki/vimwiki-mockups.png" />
 
 
 = 基本操作 =
