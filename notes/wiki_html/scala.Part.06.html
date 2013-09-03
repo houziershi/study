@@ -388,7 +388,7 @@ Scala可以直接用：
 
 <p>
 还要注意Java注解的限制，比如，注解的参数只能用常量不能用表达式。（可以用
-<code>@serial(1234)</code>而不能用@serial(x*2)）。
+<code>@serial(1234)</code>而不能用<code>@serial(x*2)</code>）。
 </p>
 
 <h2 id="toc_1.3">存在类型</h2>
@@ -627,7 +627,8 @@ actor是一个类似线程的实体，它有一个接收消息的邮箱。Scala�
 </pre>
 
 <p>
-还可以用对象<code>scala.actor.Actor</code>中名为<code>actor</code>的工具来创建actor：
+还可以用伴生对象<code>scala.actor.Actor</code>的<code>actor</code>方法来创建actor，它接收一个函数值/
+闭包做参数：
 </p>
 
 <pre class="brush: scala">
@@ -647,11 +648,11 @@ actor是一个类似线程的实体，它有一个接收消息的邮箱。Scala�
 </pre>
 
 <p>
-注意上面用<code>actor</code>工具创建的actor在创建后是立即启动的。
+注意上面用<code>actor</code>方法创建的actor在创建后是立即启动的。
 </p>
 
 <p>
-actor之间的协作方式是通过<code>!</code>来发送消息：
+actor之间的协作方式是通过<code>!()</code>方法来发送消息：
 </p>
 
 <pre class="brush: scala">
@@ -659,8 +660,12 @@ actor之间的协作方式是通过<code>!</code>来发送消息：
 </pre>
 
 <p>
-虽然消息<code>"hi there"</code>被发给了<code>SillyActor</code>，但消息只是放在邮箱里保持未读状态。下面
-的新版本会通过<code>receive</code>来收消息，然后只是把消息打印出来：
+虽然消息<code>"hi there"</code>被发给了<code>SillyActor</code>，但消息只是放在邮箱里保持未读状态。
+</p>
+
+<p>
+下面的新版本会通过<code>receive()</code>方法来收消息，这个方法也可以接收一个闭包作为参数。
+如下面这样只是把消息打印出来：
 </p>
 
 <pre class="brush: scala">
@@ -680,7 +685,7 @@ actor之间的协作方式是通过<code>!</code>来发送消息：
 
 <p>
 当actor发消息时并不会阻塞，收到消息时也不会被打断。发送的消息在接收的actor的邮箱
-里等待被处理，直到以接收都actor调用<code>receive</code>方法：
+里等待被处理，直到以接收都actor调用<code>receive()</code>方法：
 </p>
 
 <pre class="brush: scala">
@@ -748,7 +753,7 @@ Actor子系统会管理线程，所以定义了actor以后开发人员不用操�
 
 <p>
 Actor子系统也有反过来的情形，但不能用<code>Thread.current</code>，因为没有必要的方法，应该
-用<code>Actor.self</code>来把当前线程当作actor来查看。
+用<code>scala.actors.Actor</code>的<code>self</code>方法得到一个与当前线程关联的actor：
 </p>
 
 <p>
