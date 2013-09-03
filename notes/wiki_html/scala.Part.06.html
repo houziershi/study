@@ -55,23 +55,29 @@
 <li><a href="#toc_2.1">天堂中的烦恼</a>
 <li><a href="#toc_2.2">actor和消息传递</a>
 <li><a href="#toc_2.3">把原生线程当作actor</a>
-<li><a href="#toc_2.4">通过重用线程取得更好的性能</a>
+<li><a href="#toc_2.4">简单的并行计算例子</a>
+<li><a href="#toc_2.5">消息传递</a>
 <ul>
-<li><a href="#toc_2.4.1">react工作原理</a>
+<li><a href="#toc_2.5.1">发送不阻塞</a>
+<li><a href="#toc_2.5.2">接收消息不中断</a>
 </ul>
-<li><a href="#toc_2.5">良好的actor风格</a>
+<li><a href="#toc_2.6">通过重用线程取得更好的性能</a>
 <ul>
-<li><a href="#toc_2.5.1">actor不应该阻塞</a>
-<li><a href="#toc_2.5.2">只通过消息与actor通信</a>
-<li><a href="#toc_2.5.3">优选不可变消息</a>
-<li><a href="#toc_2.5.4">让消息自包含</a>
+<li><a href="#toc_2.6.1">react工作原理</a>
 </ul>
-<li><a href="#toc_2.6">更加长的例子：并行离散事件模拟</a>
+<li><a href="#toc_2.7">良好的actor风格</a>
 <ul>
-<li><a href="#toc_2.6.1">总体设计</a>
-<li><a href="#toc_2.6.2">实现模拟架构</a>
-<li><a href="#toc_2.6.3">实现一个电路模拟</a>
-<li><a href="#toc_2.6.4">把所有内容结合在一起</a>
+<li><a href="#toc_2.7.1">actor不应该阻塞</a>
+<li><a href="#toc_2.7.2">只通过消息与actor通信</a>
+<li><a href="#toc_2.7.3">优选不可变消息</a>
+<li><a href="#toc_2.7.4">让消息自包含</a>
+</ul>
+<li><a href="#toc_2.8">更加长的例子：并行离散事件模拟</a>
+<ul>
+<li><a href="#toc_2.8.1">总体设计</a>
+<li><a href="#toc_2.8.2">实现模拟架构</a>
+<li><a href="#toc_2.8.3">实现一个电路模拟</a>
+<li><a href="#toc_2.8.4">把所有内容结合在一起</a>
 </ul>
 </ul>
 <li><a href="#toc_3">连接符解析</a>
@@ -675,12 +681,8 @@ actor之间的协作方式是通过<code>!</code>来发送消息：
 </pre>
 
 <p>
-注意这里的使用的偏函数字面量，除了没有<code>match</code>关键字外，和match表达式样子很像。
-</p>
-
-<p>
-当actor发消息时并不会阻塞，收到消息时也不会被打断。发送的消息在接收的actor的邮箱
-里等待被处理，直到以接收都actor调用<code>receive</code>方法：
+当actor发消息时并不会阻塞，收到消息时处理的过程是阻塞的，不会被打断。发送的消息
+在接收的actor的邮箱里等待被处理，直到actor调用<code>receive</code>方法：
 </p>
 
 <pre class="brush: scala">
@@ -691,6 +693,11 @@ actor之间的协作方式是通过<code>!</code>来发送消息：
 
   scala&gt; received message: 15
 </pre>
+
+<p>
+这里要解释一下<code>receive</code>以偏函数字面量作为参数。注意这里的使用的偏函数字面量，
+除了没有<code>match</code>关键字外，和match表达式样子很像。
+</p>
 
 <p>
 正如“模式匹配”一章中“模式无处不在”这一节中所说的，偏函数（特质<code>PartialFunction</code>
@@ -747,12 +754,9 @@ Actor子系统会管理线程，所以定义了actor以后开发人员不用操�
 </p>
 
 <p>
-Actor子系统也有反过来的情形，但不能用<code>Thread.current</code>，因为没有必要的方法，应该
-用<code>Actor.self</code>来把当前线程当作actor来查看。
-</p>
-
-<p>
-这在交互环境中调用actor很有用，如：
+Java里可以用<code>Thread.current</code>得到当前线程的引用，类似地，Scala里<code>Actor</code>对象的
+<code>Actor.self</code>方法可以取得用当前线程生成的Actor的引用。这样在交互环境可以少写很多
+代码，如：
 </p>
 
 <pre class="brush: scala">
@@ -780,7 +784,111 @@ Actor子系统也有反过来的情形，但不能用<code>Thread.current</code>
   res7: Any = TIMEOUT
 </pre>
 
-<h2 id="toc_2.4">通过重用线程取得更好的性能</h2>
+<h2 id="toc_2.4">简单的并行计算例子</h2>
+
+<p>
+要计算从1到n的所有整数累加，可以分成多段并行执行。下面是处理每一段的方法：
+</p>
+
+<pre class="brush: scala">
+import scala.actors._
+import scala.actors.Actor._
+
+def sumPart(floor:Int, top:Int) = {
+	(0 /: (floor to top)) {
+		(sum, i) =&gt; { sum + i }
+	}
+}
+</pre>
+
+<p>
+把整个区间分成多个段并行执行：
+</p>
+
+<pre class="brush: scala; highlight:[4,9,13]">
+def sumAll(num:Int) = {
+	val RANGE = 10
+	val partCount = (num.toDouble / RANGE).ceil.toInt
+	val caller = self
+
+	for (i &lt;- 0 until partCount) {
+		val floor = i * RANGE + 1;
+		val top = num min (i + 1) * RANGE
+		actor { caller ! sumPart(floor, top) }
+	}
+
+	(0 /: (0 until partCount)) {
+		(allSum, i) =&gt; receive {
+			case sumInRange:Int =&gt; { allSum + sumInRange }
+		}
+	}
+
+}
+</pre>
+
+<p>
+调用：
+</p>
+
+<pre class="brush: scala">
+println( sumAll(100) )
+</pre>
+
+<h2 id="toc_2.5">消息传递</h2>
+
+<p>
+每个actor都有自己的消息队列：
+</p>
+
+<ul>
+<li>
+<code>InputChannel[Any]</code>接收队列。
+
+<li>
+<code>OutputChannel[Any]</code>发送队列。
+
+</ul>
+
+<p>
+注意actor传递消息有两个重要的特性：
+</p>
+
+<h3 id="toc_2.5.1">发送不阻塞</h3>
+
+<p>
+对于以下的代码来说：
+</p>
+
+<pre class="brush: scala">
+op1();
+myActor ! "msg"
+op2();
+</pre>
+
+<p>
+即使中间一步发消息的动作如果要花很长时间，感觉也像是<code>op1()</code>执行以后接着就是
+<code>op2()</code>的执行，好像发消息的动作不占用时间一样。
+</p>
+
+<h3 id="toc_2.5.2">接收消息不中断</h3>
+
+<p>
+如果不用<code>receive</code>方法去检查接收队列，actor根本不知道有没有消息进来，所以对于以下
+的代码：
+</p>
+
+<pre class="brush: scala">
+op1();
+op2();
+receive { case msg =&gt; println(msg) }
+</pre>
+
+<p>
+在<code>op1()</code>和<code>op2()</code>执行过程中如果外部有发消息给当前actor，由于还没有调用<code>receive</code>
+方法，actor根本就不知道有消息进来，所以<code>op1()</code>和<code>op2()</code>的执行不会被打断。
+</p>
+
+<h2 id="toc_2.6">通过重用线程取得更好的性能</h2>
 
 <p>
 Acter建立在普通的Java线程上，用之前的方法每actor个都占一个线程。为了重用线程，
@@ -800,7 +908,7 @@ Scala提供了<code>receive</code>方法外的另一个方法<code>react</code>�
 IP地址：
 </p>
 
-<pre class="brush: scala">
+<pre class="brush: scala; highlight:[4,8,14]">
   object NameResolver extends Actor {
     import java.net.{InetAddress, UnknownHostException}
 
@@ -808,13 +916,13 @@ IP地址：
       react {
         case (name: String, actor: Actor) =&gt;
           actor ! getIp(name)
-          act()
+          act()                         // 再次调用
         case "EXIT" =&gt;
           println("Name resolver exiting.")
           // quit
         case msg =&gt;
           println("Unhandled message: "+ msg)
-          act()
+          act()                         // 再次调用
       }
     }
 
@@ -867,7 +975,7 @@ IP地址：
   }
 </pre>
 
-<h3 id="toc_2.4.1">react工作原理</h3>
+<h3 id="toc_2.6.1">react工作原理</h3>
 
 <p>
 返回类型<code>Nothing</code>表示永远不会正常返回的函数，相反，总是以一个异常方式完成。
@@ -887,14 +995,14 @@ actor的<code>act</code>方法。如果<code>act</code>调用了<code>react</cod
 </p>
 
 <p>
-这就是为什么想到<code>react</code>在处理第一个消息之外做更多的事，就需要在偏函数中再次调用
+这就是为什么想要<code>react</code>在处理第一个消息之外做更多的事，就需要在偏函数中再次调用
 <code>act</code>方法，或使用其他手段让<code>react</code>再次被调用。
 </p>
 
 
-<h2 id="toc_2.5">良好的actor风格</h2>
+<h2 id="toc_2.7">良好的actor风格</h2>
 
-<h3 id="toc_2.5.1">actor不应该阻塞</h3>
+<h3 id="toc_2.7.1">actor不应该阻塞</h3>
 
 <p>
 当一个阻塞时，另一个actor可以会发出别的请求。多个actor等一个阻塞的actor会带来
@@ -962,7 +1070,7 @@ actor的<code>act</code>方法。如果<code>act</code>调用了<code>react</cod
   I'm acting!
 </pre>
 
-<h3 id="toc_2.5.2">只通过消息与actor通信</h3>
+<h3 id="toc_2.7.2">只通过消息与actor通信</h3>
 
 <p>
 Scala可以混用actor模式与共享数据／锁模式两种方式。但第二种方式有锁死线程和线程
@@ -970,7 +1078,7 @@ Scala可以混用actor模式与共享数据／锁模式两种方式。但第二�
 </p>
 
 
-<h3 id="toc_2.5.3">优选不可变消息</h3>
+<h3 id="toc_2.7.3">优选不可变消息</h3>
 
 <p>
 虽然actor模式对于线程来说数据是不共享的，但还是有共享数据的情况：就是消息会在
@@ -981,7 +1089,7 @@ Scala可以混用actor模式与共享数据／锁模式两种方式。但第二�
 而且下面会说到，有些消息会有一个指向自己的引用。所以尽量使用不可变的消息。
 </p>
 
-<h3 id="toc_2.5.4">让消息自包含</h3>
+<h3 id="toc_2.7.4">让消息自包含</h3>
 
 <p>
 因为actor是非阻塞的，发出一个请求不等响应就做别的事情的。等响应回来都不知道是
@@ -1058,13 +1166,13 @@ Scala可以混用actor模式与共享数据／锁模式两种方式。但第二�
 </pre>
 
 
-<h2 id="toc_2.6">更加长的例子：并行离散事件模拟</h2>
+<h2 id="toc_2.8">更加长的例子：并行离散事件模拟</h2>
 
 <p>
 把“有状态对象”一章的电路模拟强化成并行化的。
 </p>
 
-<h3 id="toc_2.6.1">总体设计</h3>
+<h3 id="toc_2.8.1">总体设计</h3>
 
 <p>
 核心思路是把每个模拟的对象都用actor，状态位于actor内部。这样实现并行性。
@@ -1182,7 +1290,7 @@ actor和发往该actor的消息：
 通过向时钟发送工作项增加到日程表的方式来和其他参与者们通信。
 </p>
 
-<h3 id="toc_2.6.2">实现模拟架构</h3>
+<h3 id="toc_2.8.2">实现模拟架构</h3>
 
 <p>
 <code>Clock</code>类的<code>running</code>初始为<code>false</code>。模拟初始化全都完成以后，会发<code>Start</code>消息给它，
@@ -1378,7 +1486,7 @@ actor和发往该actor的消息：
   }
 </pre>
 
-<h3 id="toc_2.6.3">实现一个电路模拟</h3>
+<h3 id="toc_2.8.3">实现一个电路模拟</h3>
 
 <p>
 电路类<code>Circuit</code>：
@@ -1665,7 +1773,7 @@ actor和发往该actor的消息：
       with MultiCoreProcessors
 </pre>
 
-<h3 id="toc_2.6.4">把所有内容结合在一起</h3>
+<h3 id="toc_2.8.4">把所有内容结合在一起</h3>
 
 <p>
 一切大功告成。简单地演示如下：

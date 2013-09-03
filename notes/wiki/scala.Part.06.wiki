@@ -488,10 +488,8 @@ actor之间的协作方式是通过`!`来发送消息：
   }
 }}}
 
-注意这里的使用的偏函数字面量，除了没有`match`关键字外，和match表达式样子很像。
-
-当actor发消息时并不会阻塞，收到消息时也不会被打断。发送的消息在接收的actor的邮箱
-里等待被处理，直到以接收都actor调用`receive`方法：
+当actor发消息时并不会阻塞，收到消息时处理的过程是阻塞的，不会被打断。发送的消息
+在接收的actor的邮箱里等待被处理，直到actor调用`receive`方法：
 
 {{{class="brush: scala"
   scala> echoActor ! "hi there"
@@ -501,6 +499,9 @@ actor之间的协作方式是通过`!`来发送消息：
 
   scala> received message: 15
 }}}
+
+这里要解释一下`receive`以偏函数字面量作为参数。注意这里的使用的偏函数字面量，
+除了没有`match`关键字外，和match表达式样子很像。
 
 正如“模式匹配”一章中“模式无处不在”这一节中所说的，偏函数（特质`PartialFunction`
 的实例）并不是完整的函数。所以它不对所有输入值有都定义。除了接受单个`apply`方法
@@ -544,10 +545,9 @@ actor之间的协作方式是通过`!`来发送消息：
 Actor子系统会管理线程，所以定义了actor以后开发人员不用操心actor与线程的对应关系
 是怎么样的。
 
-Actor子系统也有反过来的情形，但不能用`Thread.current`，因为没有必要的方法，应该
-用`Actor.self`来把当前线程当作actor来查看。
-
-这在交互环境中调用actor很有用，如：
+Java里可以用`Thread.current`得到当前线程的引用，类似地，Scala里`Actor`对象的
+`Actor.self`方法可以取得用当前线程生成的Actor的引用。这样在交互环境可以少写很多
+代码，如：
 
 {{{class="brush: scala"
   scala> import scala.actors.Actor._
@@ -570,6 +570,86 @@ Actor子系统也有反过来的情形，但不能用`Thread.current`，因为�
   res7: Any = TIMEOUT
 }}}
 
+== 简单的并行计算例子 ==
+
+要计算从1到n的所有整数累加，可以分成多段并行执行。下面是处理每一段的方法：
+
+{{{class="brush: scala"
+import scala.actors._
+import scala.actors.Actor._
+
+def sumPart(floor:Int, top:Int) = {
+	(0 /: (floor to top)) {
+		(sum, i) => { sum + i }
+	}
+}
+}}}
+
+把整个区间分成多个段并行执行：
+
+{{{class="brush: scala; highlight:[4,9,13]"
+def sumAll(num:Int) = {
+	val RANGE = 10
+	val partCount = (num.toDouble / RANGE).ceil.toInt
+	val caller = self
+
+	for (i <- 0 until partCount) {
+		val floor = i * RANGE + 1;
+		val top = num min (i + 1) * RANGE
+		actor { caller ! sumPart(floor, top) }
+	}
+
+	(0 /: (0 until partCount)) {
+		(allSum, i) => receive {
+			case sumInRange:Int => { allSum + sumInRange }
+		}
+	}
+
+}
+}}}
+
+调用：
+
+{{{class="brush: scala"
+println( sumAll(100) )
+}}}
+
+== 消息传递 ==
+
+每个actor都有自己的消息队列：
+
+* `InputChannel[Any]`接收队列。
+* `OutputChannel[Any]`发送队列。
+
+注意actor传递消息有两个重要的特性：
+
+=== 发送不阻塞 ===
+
+对于以下的代码来说：
+
+{{{class="brush: scala"
+op1();
+myActor ! "msg"
+op2();
+}}}
+
+即使中间一步发消息的动作如果要花很长时间，感觉也像是`op1()`执行以后接着就是
+`op2()`的执行，好像发消息的动作不占用时间一样。
+
+=== 接收消息不中断 ===
+
+如果不用`receive`方法去检查接收队列，actor根本不知道有没有消息进来，所以对于以下
+的代码：
+
+{{{class="brush: scala"
+op1();
+op2();
+receive { case msg => println(msg) }
+}}}
+
+在`op1()`和`op2()`执行过程中如果外部有发消息给当前actor，由于还没有调用`receive`
+方法，actor根本就不知道有消息进来，所以`op1()`和`op2()`的执行不会被打断。
+
 == 通过重用线程取得更好的性能 ==
 
 Acter建立在普通的Java线程上，用之前的方法每actor个都占一个线程。为了重用线程，
@@ -584,7 +664,7 @@ Scala提供了`receive`方法外的另一个方法`react`。它处理消息以�
 例子显示了这种方式。等待内容为主机名的字符串，如果有的话，返回那个主机名对应的
 IP地址：
 
-{{{class="brush: scala"
+{{{class="brush: scala; highlight:[4,8,14]"
   object NameResolver extends Actor {
     import java.net.{InetAddress, UnknownHostException}
 
@@ -592,13 +672,13 @@ IP地址：
       react {
         case (name: String, actor: Actor) =>
           actor ! getIp(name)
-          act()
+          act()                         // 再次调用
         case "EXIT" =>
           println("Name resolver exiting.")
           // quit
         case msg =>
           println("Unhandled message: "+ msg)
-          act()
+          act()                         // 再次调用
       }
     }
 
@@ -660,7 +740,7 @@ actor的`act`方法。如果`act`调用了`react`，则`react`方法会在actor�
 `react`都会以这个异常的方式完成其执行，`act`方法也随之结束。调用`act`的线程会
 捕获这个异常，并忘记这个actor，转而处理其他任务。
 
-这就是为什么想到`react`在处理第一个消息之外做更多的事，就需要在偏函数中再次调用
+这就是为什么想要`react`在处理第一个消息之外做更多的事，就需要在偏函数中再次调用
 `act`方法，或使用其他手段让`react`再次被调用。
 
 
