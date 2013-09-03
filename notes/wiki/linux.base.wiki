@@ -4,6 +4,9 @@
 
 %toc Linux基本操作
 
+= 系统信息 =
+
+`uname -a`、`cat /etc/issue`
 
 = 软件安装 =
 

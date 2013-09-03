@@ -11,9 +11,10 @@
 <script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
 <script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
 
-<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
 <script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
 
 
 <title>Linux基本操作</title>
@@ -26,74 +27,80 @@
 <h1>Linux基本操作</h1>
 <div class="toc">
 <ul>
-<li><a href="#toc_1">软件安装</a>
+<li><a href="#toc_1">系统信息</a>
+<li><a href="#toc_2">软件安装</a>
 <ul>
-<li><a href="#toc_1.1">dpkg包管理工具</a>
+<li><a href="#toc_2.1">dpkg包管理工具</a>
 <ul>
-<li><a href="#toc_1.1.1">查看包信息</a>
-<li><a href="#toc_1.1.2">安装</a>
-<li><a href="#toc_1.1.3">卸载</a>
+<li><a href="#toc_2.1.1">查看包信息</a>
+<li><a href="#toc_2.1.2">安装</a>
+<li><a href="#toc_2.1.3">卸载</a>
 </ul>
-<li><a href="#toc_1.2">APT管理器</a>
+<li><a href="#toc_2.2">APT管理器</a>
 <ul>
-<li><a href="#toc_1.2.1">设置软件源</a>
-<li><a href="#toc_1.2.2">查看包信息</a>
-<li><a href="#toc_1.2.3">安装软件</a>
-<li><a href="#toc_1.2.4">删除软件</a>
-<li><a href="#toc_1.2.5">升级包</a>
+<li><a href="#toc_2.2.1">设置软件源</a>
+<li><a href="#toc_2.2.2">查看包信息</a>
+<li><a href="#toc_2.2.3">安装软件</a>
+<li><a href="#toc_2.2.4">删除软件</a>
+<li><a href="#toc_2.2.5">升级包</a>
 </ul>
-<li><a href="#toc_1.3">aptitude命令行模式</a>
-<li><a href="#toc_1.4">aptitude界面模式</a>
+<li><a href="#toc_2.3">aptitude命令行模式</a>
+<li><a href="#toc_2.4">aptitude界面模式</a>
 <ul>
-<li><a href="#toc_1.4.1">软件包列表</a>
-<li><a href="#toc_1.4.2">底部窗口</a>
-<li><a href="#toc_1.4.3">过滤与查询</a>
-<li><a href="#toc_1.4.4">选择包</a>
-<li><a href="#toc_1.4.5">受损的软件包</a>
-<li><a href="#toc_1.4.6">清洁您的系统</a>
-<li><a href="#toc_1.4.7">虚拟包</a>
-<li><a href="#toc_1.4.8">任务的概念</a>
-<li><a href="#toc_1.4.9">强大的命令行</a>
-<li><a href="#toc_1.4.10">操作日志</a>
+<li><a href="#toc_2.4.1">软件包列表</a>
+<li><a href="#toc_2.4.2">底部窗口</a>
+<li><a href="#toc_2.4.3">过滤与查询</a>
+<li><a href="#toc_2.4.4">选择包</a>
+<li><a href="#toc_2.4.5">受损的软件包</a>
+<li><a href="#toc_2.4.6">清洁您的系统</a>
+<li><a href="#toc_2.4.7">虚拟包</a>
+<li><a href="#toc_2.4.8">任务的概念</a>
+<li><a href="#toc_2.4.9">强大的命令行</a>
+<li><a href="#toc_2.4.10">操作日志</a>
 </ul>
-<li><a href="#toc_1.5">synaptic</a>
-<li><a href="#toc_1.6">以安装Firefox作为例子</a>
+<li><a href="#toc_2.5">synaptic</a>
+<li><a href="#toc_2.6">以安装Firefox作为例子</a>
 <ul>
-<li><a href="#toc_1.6.1">安装</a>
-<li><a href="#toc_1.6.2">安装不完全与安装损坏</a>
-<li><a href="#toc_1.6.3">删除</a>
-<li><a href="#toc_1.6.4">安装Oracle JDK</a>
-<li><a href="#toc_1.6.5">配置默认程序优先级</a>
-</ul>
-</ul>
-<li><a href="#toc_2">任务管理</a>
-<li><a href="#toc_3">文件操作</a>
-<ul>
-<li><a href="#toc_3.1">散列</a>
-<li><a href="#toc_3.2">压缩</a>
-<ul>
-<li><a href="#toc_3.2.1">bzip2</a>
-<li><a href="#toc_3.2.2">zip</a>
+<li><a href="#toc_2.6.1">安装</a>
+<li><a href="#toc_2.6.2">安装不完全与安装损坏</a>
+<li><a href="#toc_2.6.3">删除</a>
+<li><a href="#toc_2.6.4">安装Oracle JDK</a>
+<li><a href="#toc_2.6.5">配置默认程序优先级</a>
 </ul>
 </ul>
-<li><a href="#toc_4">文本文件</a>
+<li><a href="#toc_3">任务管理</a>
+<li><a href="#toc_4">文件操作</a>
 <ul>
-<li><a href="#toc_4.1">查找</a>
-<li><a href="#toc_4.2">编码与格式</a>
+<li><a href="#toc_4.1">散列</a>
+<li><a href="#toc_4.2">压缩</a>
 <ul>
-<li><a href="#toc_4.2.1">字符编码</a>
-<li><a href="#toc_4.2.2">换行</a>
+<li><a href="#toc_4.2.1">bzip2</a>
+<li><a href="#toc_4.2.2">zip</a>
+</ul>
+</ul>
+<li><a href="#toc_5">文本文件</a>
+<ul>
+<li><a href="#toc_5.1">查找</a>
+<li><a href="#toc_5.2">编码与格式</a>
+<ul>
+<li><a href="#toc_5.2.1">字符编码</a>
+<li><a href="#toc_5.2.2">换行</a>
 </ul>
 </ul>
 </ul>
 </div>
 
+<h1 id="toc_1">系统信息</h1>
 
-<h1 id="toc_1">软件安装</h1>
+<p>
+<code>uname -a</code>、<code>cat /etc/issue</code>
+</p>
 
-<h2 id="toc_1.1">dpkg包管理工具</h2>
+<h1 id="toc_2">软件安装</h1>
 
-<h3 id="toc_1.1.1">查看包信息</h3>
+<h2 id="toc_2.1">dpkg包管理工具</h2>
+
+<h3 id="toc_2.1.1">查看包信息</h3>
 
 <ul>
 <li>
@@ -122,7 +129,7 @@
 
 </ul>
 
-<h3 id="toc_1.1.2">安装</h3>
+<h3 id="toc_2.1.2">安装</h3>
 
 <ul>
 <li>
@@ -130,7 +137,7 @@
 
 </ul>
 
-<h3 id="toc_1.1.3">卸载</h3>
+<h3 id="toc_2.1.3">卸载</h3>
 
 <ul>
 <li>
@@ -153,9 +160,9 @@ dpkg -l | grep ^rc|awk '{print $2}' | #xargs dpkg -P
 </pre>
 
 
-<h2 id="toc_1.2">APT管理器</h2>
+<h2 id="toc_2.2">APT管理器</h2>
 
-<h3 id="toc_1.2.1">设置软件源</h3>
+<h3 id="toc_2.2.1">设置软件源</h3>
 
 <p>
 拿安装盘做源，方法如下：
@@ -176,7 +183,7 @@ dpkg -l | grep ^rc|awk '{print $2}' | #xargs dpkg -P
 </p>
 
 
-<h3 id="toc_1.2.2">查看包信息</h3>
+<h3 id="toc_2.2.2">查看包信息</h3>
 
 <p>
 <code>apt-cache</code> 加上不同的子命令和参数的使用可以实现查找、显示软件、包信息及包信赖
@@ -202,7 +209,7 @@ dpkg -l | grep ^rc|awk '{print $2}' | #xargs dpkg -P
 </ul>
 
 
-<h3 id="toc_1.2.3">安装软件</h3>
+<h3 id="toc_2.2.3">安装软件</h3>
 
 <ul>
 <li>
@@ -228,7 +235,7 @@ dpkg -l | grep ^rc|awk '{print $2}' | #xargs dpkg -P
 
 </ul>
 
-<h3 id="toc_1.2.4">删除软件</h3>
+<h3 id="toc_2.2.4">删除软件</h3>
 
 <p>
 在用命令<code>apt-get install</code>之前，是先将软件包下载到<code>/var/cache/apt/archives</code>中，
@@ -254,7 +261,7 @@ dpkg -l | grep ^rc|awk '{print $2}' | #xargs dpkg -P
 
 </ul>
 
-<h3 id="toc_1.2.5">升级包</h3>
+<h3 id="toc_2.2.5">升级包</h3>
 
 <ul>
 <li>
@@ -266,7 +273,7 @@ dpkg -l | grep ^rc|awk '{print $2}' | #xargs dpkg -P
 </ul>
 
 
-<h2 id="toc_1.3">aptitude命令行模式</h2>
+<h2 id="toc_2.3">aptitude命令行模式</h2>
 
 <p>
 命令行APT的前端工具。aptitude在处理依赖问题上更佳一些，在删除一个包时，会同时
@@ -318,9 +325,9 @@ dpkg -l | grep ^rc|awk '{print $2}' | #xargs dpkg -P
 
 </ul>
 
-<h2 id="toc_1.4">aptitude界面模式</h2>
+<h2 id="toc_2.4">aptitude界面模式</h2>
 
-<h3 id="toc_1.4.1">软件包列表</h3>
+<h3 id="toc_2.4.1">软件包列表</h3>
 
 <p>
 软件包分成以下几类列出，在所在的行按回车打开分类。底部会显示当前包的信息，按<code>i</code>
@@ -472,7 +479,7 @@ list为APT配置的资源库中。
 
 </ul>
 
-<h3 id="toc_1.4.2">底部窗口</h3>
+<h3 id="toc_2.4.2">底部窗口</h3>
 
 <p>
 底部窗口给出主窗口当前显示的上下文信息。可以用<code>a</code>和<code>z</code>实现滚屏，<code>i</code>在不同
@@ -531,7 +538,7 @@ list为APT配置的资源库中。
 </ul>
 
 
-<h3 id="toc_1.4.3">过滤与查询</h3>
+<h3 id="toc_2.4.3">过滤与查询</h3>
 
 <p>
 和正则表达式一样，可以用<code>^</code>和<code>$</code>匹配名称的起始字符和结束字符。
@@ -597,7 +604,7 @@ list为APT配置的资源库中。
 </p>
 
 
-<h3 id="toc_1.4.4">选择包</h3>
+<h3 id="toc_2.4.4">选择包</h3>
 
 <ul>
 <li>
@@ -666,7 +673,7 @@ list为APT配置的资源库中。
 浏览相关声明并交互的解决依赖问题。 
 </p>
 
-<h3 id="toc_1.4.5">受损的软件包</h3>
+<h3 id="toc_2.4.5">受损的软件包</h3>
 
 <p>
 当aptitude遇到不能解决依赖问题时，会以红色背景高亮显示有问题的软件包，并显示
@@ -716,7 +723,7 @@ mygray
 短时间内就会修复所有broken的软件包。 
 </p>
 
-<h3 id="toc_1.4.6">清洁您的系统</h3>
+<h3 id="toc_2.4.6">清洁您的系统</h3>
 
 <p>
 当aptitude选择了软件包以解决其它的依赖问题时，它将这个软件包标记为自动安装。
@@ -730,7 +737,7 @@ mygray
 更加灵活。 
 </p>
 
-<h3 id="toc_1.4.7">虚拟包</h3>
+<h3 id="toc_2.4.7">虚拟包</h3>
 
 <p>
 有时候，软件包可能需要其它必需选择的软件包提供一个概念。这种需求的一个典型
@@ -767,7 +774,7 @@ aptitude的Virtual Packages（虚拟包）选项可以用于快速定位提供�
 列表。这样当默认设置不能满足您的需求时，可以使用这一功能快速的完成调整。
 </p>
 
-<h3 id="toc_1.4.8">任务的概念</h3>
+<h3 id="toc_2.4.8">任务的概念</h3>
 
 <p>
 一个Debian系统通常用于完成某些任务。比如，您可能把它作为您的桌面系统，或数据库
@@ -815,7 +822,7 @@ tasksel软件包安装的README文件中提供了有关如何构建任务的文�
 </p>
 
 
-<h3 id="toc_1.4.9">强大的命令行</h3>
+<h3 id="toc_2.4.9">强大的命令行</h3>
 
 <p>
 aptitude提供了一个有趣的命令行模式，可以作为一个基本的嵌入模式来取代<code>apt-get</code>
@@ -857,7 +864,7 @@ aptitude的命令行界面的优越之处在于在统一界面下集成了很多
 将其自动卸载。
 </p>
 
-<h3 id="toc_1.4.10">操作日志</h3>
+<h3 id="toc_2.4.10">操作日志</h3>
 
 <p>
 aptitude将您所有的请求动作写入<code>/var/log/aptitude</code>。这个文件可以方便的用于安装和
@@ -865,16 +872,16 @@ aptitude将您所有的请求动作写入<code>/var/log/aptitude</code>。这个
 就会同步。另外，aptitude只记录请求。如果某一动作失败了，它是不会记录的。 
 </p>
 
-<h2 id="toc_1.5">synaptic</h2>
+<h2 id="toc_2.5">synaptic</h2>
 
 <p>
 GTK图形的APT的前端工具。
 </p>
 
 
-<h2 id="toc_1.6">以安装Firefox作为例子</h2>
+<h2 id="toc_2.6">以安装Firefox作为例子</h2>
 
-<h3 id="toc_1.6.1">安装</h3>
+<h3 id="toc_2.6.1">安装</h3>
 
 <p>
 安装firefox
@@ -922,7 +929,7 @@ sudo apt-get purge iceweasel
 sudo apt-get install firefox-mozilla-build
 </pre>
 
-<h3 id="toc_1.6.2">安装不完全与安装损坏</h3>
+<h3 id="toc_2.6.2">安装不完全与安装损坏</h3>
 
 <p>
 备份配置文件并删除相关的package记录：
@@ -942,7 +949,7 @@ sudo vim /var/lib/dpkg/status
 然后重新安装。 
 </p>
 
-<h3 id="toc_1.6.3">删除</h3>
+<h3 id="toc_2.6.3">删除</h3>
 
 <p>
 包括配置文件完全删除：
@@ -960,7 +967,7 @@ apt-get purge xxx
 apt-get remove --purge xxx
 </pre>
 
-<h3 id="toc_1.6.4">安装Oracle JDK</h3>
+<h3 id="toc_2.6.4">安装Oracle JDK</h3>
 
 <p>
 使用PPA源：
@@ -1015,7 +1022,7 @@ sudo echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true
 sudo apt-get remove oracle-java7-installer
 </pre>
 
-<h3 id="toc_1.6.5">配置默认程序优先级</h3>
+<h3 id="toc_2.6.5">配置默认程序优先级</h3>
 
 <p>
 <code>update-alternatives</code>管理程序的优先级。如<code>x-www-browser</code>对应了多个在图形界面下
@@ -1054,7 +1061,7 @@ update-alternatives --config x-www-browser
 </p>
 
 
-<h1 id="toc_2">任务管理</h1>
+<h1 id="toc_3">任务管理</h1>
 
 <p>
 中断任务：<code>Control + C</code>
@@ -1082,9 +1089,9 @@ bg %8
 fg %8
 </pre>
 
-<h1 id="toc_3">文件操作</h1>
+<h1 id="toc_4">文件操作</h1>
 
-<h2 id="toc_3.1">散列</h2>
+<h2 id="toc_4.1">散列</h2>
 
 <pre class="brush: bash">
 echo "yangpan220" | md5sum
@@ -1099,9 +1106,9 @@ echo -n 'yangpan220' | md5sum
 </pre>
 
 
-<h2 id="toc_3.2">压缩</h2>
+<h2 id="toc_4.2">压缩</h2>
 
-<h3 id="toc_3.2.1">bzip2</h3>
+<h3 id="toc_4.2.1">bzip2</h3>
 
 <pre class="brush: bash">
 $ bzip2 -v log.txt 
@@ -1113,7 +1120,7 @@ log.txt
 $ 
 </pre>
 
-<h3 id="toc_3.2.2">zip</h3>
+<h3 id="toc_4.2.2">zip</h3>
 
 <p>
 zip命令可以用来将文件压缩成为常用的zip格式。unzip命令则用来解压缩zip文件。
@@ -1164,17 +1171,17 @@ unzip -t large.zip
 unzip -j music.zip
 </pre>
 
-<h1 id="toc_4">文本文件</h1>
+<h1 id="toc_5">文本文件</h1>
 
-<h2 id="toc_4.1">查找</h2>
+<h2 id="toc_5.1">查找</h2>
 
 <pre class="brush: bash">
 find / -name "*.conf" | xargs grep "alias" 
 </pre>
 
-<h2 id="toc_4.2">编码与格式</h2>
+<h2 id="toc_5.2">编码与格式</h2>
 
-<h3 id="toc_4.2.1">字符编码</h3>
+<h3 id="toc_5.2.1">字符编码</h3>
 
 <p>
 转换单个文件：
@@ -1200,7 +1207,7 @@ sed -i "s/old/new/g" `grep old -rl ./`
 `enca -L zh_CN -x utf-8 *`
 </pre>
 
-<h3 id="toc_4.2.2">换行</h3>
+<h3 id="toc_5.2.2">换行</h3>
 
 <p>
 Windows文本文件的<code>^M</code>，注意这个<code>^M</code>的输入方式为<code>CTRL v CTRL m</code>。
