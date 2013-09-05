@@ -1629,7 +1629,8 @@ trait是Scala里代码复用的基础单元。特质封装了方法和字段的�
 }}}
 
 没有声明超类，因此和类一样，有个缺省的超类`AnyRef`。一旦特质被定义了，就可以使用
-`extends`或`with`关键字，把它混入到类中：
+`with`关键字，把它混入到类中。如果这个类没有继承基类，可以直接用`extends`关键字
+来混入特质：
 
 {{{class="brush: scala"
   class Frog extends Philosophical {

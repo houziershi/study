@@ -11,9 +11,10 @@
 <script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
 <script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
 
-<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
 <script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
 
 
 <title>Part II</title>
@@ -2123,7 +2124,8 @@ trait是Scala里代码复用的基础单元。特质封装了方法和字段的�
 
 <p>
 没有声明超类，因此和类一样，有个缺省的超类<code>AnyRef</code>。一旦特质被定义了，就可以使用
-<code>extends</code>或<code>with</code>关键字，把它混入到类中：
+<code>with</code>关键字，把它混入到类中。如果这个类没有继承基类，可以直接用<code>extends</code>关键字
+来混入特质：
 </p>
 
 <pre class="brush: scala">

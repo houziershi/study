@@ -384,9 +384,9 @@ Java中的`Iterator<? extends Component>`在Scala中写为：
 
 == actor和消息传递 ==
 
-actor是一个类似线程的实体，它有一个接收消息的邮箱。Scala里实现actor的方法是继承
-`scala.actors.Actor`并实现其`act`方法。下面一个简单的例子都不检查它的邮箱，只是
-把一个消息打印五次然后退出：
+actor是一个类似线程的实体，它有一个接收消息的邮箱。Scala里实现actor的方法是混入
+`scala.actors.Actor`特质并实现其`act`方法。下面一个简单的例子都不检查它的邮箱，
+只是把一个消息打印五次然后退出：
 
 {{{class="brush: scala"
   import scala.actors._
@@ -400,6 +400,8 @@ actor是一个类似线程的实体，它有一个接收消息的邮箱。Scala�
     }
   }
 }}}
+
+注意：如果没有继承任何类，可以用关键字`extends`来混入特质。
 
 启动方法和Java线程类似，也是调用`start`方法：
 
@@ -491,15 +493,10 @@ actor之间的协作方式是通过`!()`方法来发送消息：
   }
 }}}
 
-<<<<<<< HEAD
-当actor发消息时并不会阻塞，收到消息时处理的过程是阻塞的，不会被打断。发送的消息
-在接收的actor的邮箱里等待被处理，直到actor调用`receive`方法：
-=======
 注意这里的使用的偏函数字面量，除了没有`match`关键字外，和match表达式样子很像。
 
-当actor发消息时并不会阻塞，收到消息时也不会被打断。发送的消息在接收的actor的邮箱
-里等待被处理，直到以接收都actor调用`receive()`方法：
->>>>>>> 2ce7949c3c06e7e194630151c2ef859f6d4e5613
+当actor发消息时并不会阻塞，收到消息时处理的过程是阻塞的，不会被打断。发送的消息
+在接收的actor的邮箱里等待被处理，直到actor调用`receive`方法：
 
 {{{class="brush: scala"
   scala> echoActor ! "hi there"
@@ -510,14 +507,16 @@ actor之间的协作方式是通过`!()`方法来发送消息：
   scala> received message: 15
 }}}
 
-这里要解释一下`receive`以偏函数字面量作为参数。注意这里的使用的偏函数字面量，
-除了没有`match`关键字外，和match表达式样子很像。
+这里要解释一下`receive`以偏函数字面量作为参数。除了没有`match`关键字外，和match
+表达式样子很像，而且不像match表达式一样要匹配所有的可能性，的会直接忽略掉没有
+匹配的情况（即偏函数没有定义）。
 
 正如“模式匹配”一章中“模式无处不在”这一节中所说的，偏函数（特质`PartialFunction`
 的实例）并不是完整的函数。所以它不对所有输入值有都定义。除了接受单个`apply`方法
 外，偏函数还提供一个`isDefineAt`方法，同样只接收单个参数。如果偏函数能处理传给
 `isDefineAt`函数的参数，那么`isDefineAt`返回`true`。把这个消息传递给偏函数的
 `apply`方法，`apply`方法就会处理这个消息。
+
 
 例如`echoActor`的`apply`方法会打印`"received message: "`，然后再输出消息对象的
 `toString`结果。如果邮箱里没有让`isDefineAt`返回`true`的消息，则被调用`receive`
@@ -550,21 +549,58 @@ actor之间的协作方式是通过`!()`方法来发送消息：
   Got an Int: 12
 }}}
 
+`exit()`方法会抛出异常，以试图停止当前线程的方式停止actor。它还有一个版本接收
+一个参数作为退出原因：
+
+{{{class="brush: scala; highlight:[8]"
+import scala.actors._
+import Actor._
+
+class MyAct extends Actor {
+    def act() {
+        while (true) {
+            receive {
+                case "quit" => exit
+                case msg    => println(msg)
+            }
+        }
+    }
+}
+
+val myAct = new MyAct
+
+myAct.start()
+
+myAct ! "Hello World!" 
+myAct ! "nice Day!" 
+myAct ! "quit" 
+}}}
+
+如果actor还没有启动，收到的消息也会放在队列里，不是不会马上处理。在`start()`方法
+被调用后也会开始处理：
+
+{{{class="brush: scala"
+myAct ! "before start 1" 
+myAct ! "before start 2" 
+myAct ! "before start 3" 
+myAct ! "before start 4" 
+
+myAct.start()
+
+myAct ! "after start 1" 
+myAct ! "after start 2" 
+myAct ! "after start 3" 
+myAct ! "after start 4" 
+}}}
+
 == 把原生线程当作actor ==
 
 Actor子系统会管理线程，所以定义了actor以后开发人员不用操心actor与线程的对应关系
 是怎么样的。
 
-<<<<<<< HEAD
 Java里可以用`Thread.current`得到当前线程的引用，类似地，Scala里`Actor`对象的
 `Actor.self`方法可以取得用当前线程生成的Actor的引用。这样在交互环境可以少写很多
 代码，如：
-=======
-Actor子系统也有反过来的情形，但不能用`Thread.current`，因为没有必要的方法，应该
-用`scala.actors.Actor`的`self`方法得到一个与当前线程关联的actor：
-
-这在交互环境中调用actor很有用，如：
->>>>>>> 2ce7949c3c06e7e194630151c2ef859f6d4e5613
 
 {{{class="brush: scala"
   scala> import scala.actors.Actor._
@@ -666,6 +702,69 @@ receive { case msg => println(msg) }
 
 在`op1()`和`op2()`执行过程中如果外部有发消息给当前actor，由于还没有调用`receive`
 方法，actor根本就不知道有消息进来，所以`op1()`和`op2()`的执行不会被打断。
+
+
+=== 接收消息阻塞 ===
+
+如果在调用`receive`方法时消息队列里没有消息，那么`receive`方法会阻塞。
+
+=== 使用同步的方式传递消息 ===
+
+虽然异步方式能利用并发，但也有需要用同步的情况存在。这时可以用`!?()`方法，注意
+这样会导致阻塞，所以推荐用带超时参数的版本：`!?(timeout, msg)`。它在正常时返回
+`Option[Any]`；超时时返回`None`，但actor还是会收到这条消息，并把它发给自己。可以
+通过一个特殊的case类`![a](val ch:Channel[a], val msg:a)`表示actor发给自己的消息
+，这样就能得到超时丢失的消息。
+
+`sender`引用的总是最近一个发送消息的actor，用`reply`方法也可以说明把消息发送给
+`sender`。
+
+如果发送消息给一个actor以后不希望它把响应发回给自己，而是希望它发给另外一个actor
+，就可以用`send()`方法。
+
+{{{class="brush: scala; highlight:[8,21,28]"
+import scala.actors._
+import Actor._
+
+val fortuneTeller = actor {
+    for (i <- 1 to 4) {
+        Thread.sleep(1000)
+        receive {
+            case _ => sender ! "your day will rock! " + i
+            // case _ => reply("your day will rock! " + i) // same as above
+        }
+    }
+}
+
+println( fortuneTeller !? (2000, "what's ahead") )
+println( fortuneTeller !? (200,  "what's ahead") )
+
+val aPrinter = actor {
+    receive { case msg => println("Ah, Fortune message for you: " + msg) }
+}
+
+fortuneTeller.send("what's up", aPrinter)
+fortuneTeller ! "How's my future?"
+
+Thread.sleep(3000)
+receive { case msg : String => println("received " + msg) }
+
+println("let's get that message")
+receive { case !(channel, msg) => println("received belated message " + msg) }
+}}}
+
+上面的代码最后一行拿到的是超时丢弃的消息。运行时输出如下：
+
+{{{class="brush: bash"
+└─(1:pts/4:%)=> scala tmp.scala
+Some(your day will rock! 1)
+None
+Ah, Fortune message for you: your day will rock! 3
+received your day will rock! 4
+let's get that message
+received belated message your day will rock! 2
+}}}
+
 
 == 通过重用线程取得更好的性能 ==
 
