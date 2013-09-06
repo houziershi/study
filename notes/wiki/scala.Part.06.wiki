@@ -623,6 +623,8 @@ Java里可以用`Thread.current`得到当前线程的引用，类似地，Scala�
   res7: Any = TIMEOUT
 }}}
 
+可以用`case TIMEOUT`来匹配超时的情况。
+
 == 简单的并行计算例子 ==
 
 要计算从1到n的所有整数累加，可以分成多段并行执行。下面是处理每一段的方法：
@@ -657,15 +659,21 @@ def sumAll(num:Int) = {
 			case sumInRange:Int => { allSum + sumInRange }
 		}
 	}
-
 }
 }}}
+
+
+能够实现并行操作的关键在于：actor发送消息是不阻塞的，打个比方就是每个发送操作都
+在新建的线程中执行。结合上面代码的第9行是在发送的操作中调用的计算局部的方法，
+所以每个局部计算的工作都是在新的线程中进行的。
 
 调用：
 
 {{{class="brush: scala"
 println( sumAll(100) )
 }}}
+
+==== 小结 ====
 
 == 消息传递 ==
 
@@ -768,12 +776,40 @@ received belated message your day will rock! 2
 
 == 通过重用线程取得更好的性能 ==
 
-Acter建立在普通的Java线程上，用之前的方法每actor个都占一个线程。为了重用线程，
-Scala提供了`receive`方法外的另一个方法`react`。它处理消息以后不会返回，返回类型
-是`Nothing`。其实在后台，`react`在完成后会抛出一个异常。
+Acter建立在普通的Java线程上，用之前的方法每actor的`receive`方法个都占一个线程。
+就是说，在没有消息的时候，阻塞着的`receive`方法也会一直占一个线程。为了重用线程，
+Scala提供了`receive`方法外的另一个方法`react`（还有一个带超时的`reactWithin`方法
+）。它处理消息以后不会返回，返回类型是`Nothing`。其实在后台，`react`在完成后会
+抛出一个异常。
 
-因为不返回所以当前线程的调用栈可以被再次使用，所以如果全用`react`的话只要一个
-线程就可以运行所有的actor。实例应用中应该用少用几个`receive`，尽量多用`react`。
+`react`方法执行完毕以后就会放弃对线程的占用，所以在`react`方法后面的代码是执行
+不到的。如果还有其他代码要执行，就一定要放在`react`方法内。
+
+下面同时用了`receive`和`react`两个方法比较：
+
+{{{class="brush: scala; highlight:[4,8,14]"
+
+}}}
+
+从输出可以看到，同一个actor的`receiveWithin`方法总是在同一个线程。如，actor3总是
+在线程`Thread[ForkJoinPool-1-worker-1,5,main]`中；actor4总是在同一个线程
+`Thread[ForkJoinPool-1-worker-3,5,main]`；相对的，`react`方法就不固定了，可能会
+多个actor共用一个线程，也可能会一个actor用多个线程：
+
+{{{class="brush: bash; highlight:[7,11]"
+create actor by Thread[ForkJoinPool-1-worker-3,5,main]
+create actor by Thread[ForkJoinPool-1-worker-3,5,main]
+create actor by Thread[ForkJoinPool-1-worker-1,5,main]
+create actor by Thread[ForkJoinPool-1-worker-5,5,main]
+  react: 1hello by Thread[ForkJoinPool-1-worker-7,5,main]
+  react: 2hello by Thread[ForkJoinPool-1-worker-5,5,main]
+receive: 3hello by Thread[ForkJoinPool-1-worker-1,5,main]
+receive: 4hello by Thread[ForkJoinPool-1-worker-3,5,main]
+  react: 1hello by Thread[ForkJoinPool-1-worker-5,5,main]
+  react: 2hello by Thread[ForkJoinPool-1-worker-5,5,main]
+receive: 3hello by Thread[ForkJoinPool-1-worker-1,5,main]
+receive: 4hello by Thread[ForkJoinPool-1-worker-3,5,main]
+}}}
 
 因为`react`不返回所以接收消息处理器必须同时处理消息并执行actor所有剩下的工作。
 通常做法是用一个顶级的工作方法，比如`act`自身，以供处理器在完成时调用。下面的
@@ -788,13 +824,13 @@ IP地址：
       react {
         case (name: String, actor: Actor) =>
           actor ! getIp(name)
-          act()                         // 再次调用
+          act()                         // 尾递归再次调用
         case "EXIT" =>
           println("Name resolver exiting.")
           // quit
         case msg =>
           println("Unhandled message: "+ msg)
-          act()                         // 再次调用
+          act()                         // 尾递归再次调用
       }
     }
 
@@ -824,6 +860,9 @@ IP地址：
   scala> self.receiveWithin(0) { case x => x }
   res4: Any = None
 }}}
+
+因为不返回所以当前线程的调用栈可以被再次使用，所以如果全用`react`的话只要一个
+线程就可以运行所有的actor。实例应用中应该用少用几个`receive`，尽量多用`react`。
 
 由于通过`react`重用线程的方案非常普遍，所以actor库对此有特别的支持。`actor.loop`
 函数重复执行一个代码块，哪怕代码调用的是`react`。下面用`loop`来重写
@@ -858,6 +897,8 @@ actor的`act`方法。如果`act`调用了`react`，则`react`方法会在actor�
 
 这就是为什么想要`react`在处理第一个消息之外做更多的事，就需要在偏函数中再次调用
 `act`方法，或使用其他手段让`react`再次被调用。
+
+=== reactWithin ===
 
 
 == 良好的actor风格 ==

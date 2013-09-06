@@ -56,6 +56,10 @@
 <li><a href="#toc_2.2">actor和消息传递</a>
 <li><a href="#toc_2.3">把原生线程当作actor</a>
 <li><a href="#toc_2.4">简单的并行计算例子</a>
+<ul>
+<li><a href="#toc_2.4.0.1">小结</a>
+</ul>
+</ul>
 <li><a href="#toc_2.5">消息传递</a>
 <ul>
 <li><a href="#toc_2.5.1">发送不阻塞</a>
@@ -66,6 +70,7 @@
 <li><a href="#toc_2.6">通过重用线程取得更好的性能</a>
 <ul>
 <li><a href="#toc_2.6.1">react工作原理</a>
+<li><a href="#toc_2.6.2">reactWithin</a>
 </ul>
 <li><a href="#toc_2.7">良好的actor风格</a>
 <ul>
@@ -849,6 +854,10 @@ Java里可以用<code>Thread.current</code>得到当前线程的引用，类似�
   res7: Any = TIMEOUT
 </pre>
 
+<p>
+可以用<code>case TIMEOUT</code>来匹配超时的情况。
+</p>
+
 <h2 id="toc_2.4">简单的并行计算例子</h2>
 
 <p>
@@ -887,9 +896,15 @@ def sumAll(num:Int) = {
 			case sumInRange:Int =&gt; { allSum + sumInRange }
 		}
 	}
-
 }
 </pre>
+
+
+<p>
+能够实现并行操作的关键在于：actor发送消息是不阻塞的，打个比方就是每个发送操作都
+在新建的线程中执行。结合上面代码的第9行是在发送的操作中调用的计算局部的方法，
+所以每个局部计算的工作都是在新的线程中进行的。
+</p>
 
 <p>
 调用：
@@ -898,6 +913,8 @@ def sumAll(num:Int) = {
 <pre class="brush: scala">
 println( sumAll(100) )
 </pre>
+
+<h4 id="toc_2.4.0.1">小结</h4>
 
 <h2 id="toc_2.5">消息传递</h2>
 
@@ -1029,15 +1046,47 @@ received belated message your day will rock! 2
 <h2 id="toc_2.6">通过重用线程取得更好的性能</h2>
 
 <p>
-Acter建立在普通的Java线程上，用之前的方法每actor个都占一个线程。为了重用线程，
-Scala提供了<code>receive</code>方法外的另一个方法<code>react</code>。它处理消息以后不会返回，返回类型
-是<code>Nothing</code>。其实在后台，<code>react</code>在完成后会抛出一个异常。
+Acter建立在普通的Java线程上，用之前的方法每actor的<code>receive</code>方法个都占一个线程。
+就是说，在没有消息的时候，阻塞着的<code>receive</code>方法也会一直占一个线程。为了重用线程，
+Scala提供了<code>receive</code>方法外的另一个方法<code>react</code>（还有一个带超时的<code>reactWithin</code>方法
+）。它处理消息以后不会返回，返回类型是<code>Nothing</code>。其实在后台，<code>react</code>在完成后会
+抛出一个异常。
 </p>
 
 <p>
-因为不返回所以当前线程的调用栈可以被再次使用，所以如果全用<code>react</code>的话只要一个
-线程就可以运行所有的actor。实例应用中应该用少用几个<code>receive</code>，尽量多用<code>react</code>。
+<code>react</code>方法执行完毕以后就会放弃对线程的占用，所以在<code>react</code>方法后面的代码是执行
+不到的。如果还有其他代码要执行，就一定要放在<code>react</code>方法内。
 </p>
+
+<p>
+下面同时用了<code>receive</code>和<code>react</code>两个方法比较：
+</p>
+
+<pre class="brush: scala; highlight:[4,8,14]">
+
+</pre>
+
+<p>
+从输出可以看到，同一个actor的<code>receiveWithin</code>方法总是在同一个线程。如，actor3总是
+在线程<code>Thread[ForkJoinPool-1-worker-1,5,main]</code>中；actor4总是在同一个线程
+<code>Thread[ForkJoinPool-1-worker-3,5,main]</code>；相对的，<code>react</code>方法就不固定了，可能会
+多个actor共用一个线程，也可能会一个actor用多个线程：
+</p>
+
+<pre class="brush: bash; highlight:[7,11]">
+create actor by Thread[ForkJoinPool-1-worker-3,5,main]
+create actor by Thread[ForkJoinPool-1-worker-3,5,main]
+create actor by Thread[ForkJoinPool-1-worker-1,5,main]
+create actor by Thread[ForkJoinPool-1-worker-5,5,main]
+  react: 1hello by Thread[ForkJoinPool-1-worker-7,5,main]
+  react: 2hello by Thread[ForkJoinPool-1-worker-5,5,main]
+receive: 3hello by Thread[ForkJoinPool-1-worker-1,5,main]
+receive: 4hello by Thread[ForkJoinPool-1-worker-3,5,main]
+  react: 1hello by Thread[ForkJoinPool-1-worker-5,5,main]
+  react: 2hello by Thread[ForkJoinPool-1-worker-5,5,main]
+receive: 3hello by Thread[ForkJoinPool-1-worker-1,5,main]
+receive: 4hello by Thread[ForkJoinPool-1-worker-3,5,main]
+</pre>
 
 <p>
 因为<code>react</code>不返回所以接收消息处理器必须同时处理消息并执行actor所有剩下的工作。
@@ -1054,13 +1103,13 @@ IP地址：
       react {
         case (name: String, actor: Actor) =&gt;
           actor ! getIp(name)
-          act()                         // 再次调用
+          act()                         // 尾递归再次调用
         case "EXIT" =&gt;
           println("Name resolver exiting.")
           // quit
         case msg =&gt;
           println("Unhandled message: "+ msg)
-          act()                         // 再次调用
+          act()                         // 尾递归再次调用
       }
     }
 
@@ -1092,6 +1141,11 @@ IP地址：
   scala&gt; self.receiveWithin(0) { case x =&gt; x }
   res4: Any = None
 </pre>
+
+<p>
+因为不返回所以当前线程的调用栈可以被再次使用，所以如果全用<code>react</code>的话只要一个
+线程就可以运行所有的actor。实例应用中应该用少用几个<code>receive</code>，尽量多用<code>react</code>。
+</p>
 
 <p>
 由于通过<code>react</code>重用线程的方案非常普遍，所以actor库对此有特别的支持。<code>actor.loop</code>
@@ -1136,6 +1190,8 @@ actor的<code>act</code>方法。如果<code>act</code>调用了<code>react</cod
 这就是为什么想要<code>react</code>在处理第一个消息之外做更多的事，就需要在偏函数中再次调用
 <code>act</code>方法，或使用其他手段让<code>react</code>再次被调用。
 </p>
+
+<h3 id="toc_2.6.2">reactWithin</h3>
 
 
 <h2 id="toc_2.7">良好的actor风格</h2>
