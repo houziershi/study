@@ -8,7 +8,8 @@
 
 == 在Java中使用Scala ==
 
-虽然Scala代码被编译成了Java字节码，但还是要知道编译成了字节码以后长什么样子。
+要保证`classpath`里有`scala-librasy.jar`。虽然Scala代码被编译成了Java字节码，但
+还是要知道编译成了字节码以后长什么样子。
 
 === 一般性原则 ===
 
@@ -778,9 +779,9 @@ received belated message your day will rock! 2
 
 Acter建立在普通的Java线程上，用之前的方法每actor的`receive`方法个都占一个线程。
 就是说，在没有消息的时候，阻塞着的`receive`方法也会一直占一个线程。为了重用线程，
-Scala提供了`receive`方法外的另一个方法`react`（还有一个带超时的`reactWithin`方法
-）。它处理消息以后不会返回，返回类型是`Nothing`。其实在后台，`react`在完成后会
-抛出一个异常。
+Scala提供了`react`方法从线程池里取已经有的线程（还有一个带超时的`reactWithin`）
+。它处理消息以后不会返回，返回类型是`Nothing`。其实在后台，`react`在完成后会抛出
+一个异常。
 
 `react`方法执行完毕以后就会放弃对线程的占用，所以在`react`方法后面的代码是执行
 不到的。如果还有其他代码要执行，就一定要放在`react`方法内。
@@ -864,24 +865,6 @@ IP地址：
 因为不返回所以当前线程的调用栈可以被再次使用，所以如果全用`react`的话只要一个
 线程就可以运行所有的actor。实例应用中应该用少用几个`receive`，尽量多用`react`。
 
-由于通过`react`重用线程的方案非常普遍，所以actor库对此有特别的支持。`actor.loop`
-函数重复执行一个代码块，哪怕代码调用的是`react`。下面用`loop`来重写
-`NameResolver`的`act`方法。下面的例子与前一个例子不同的地方是它并不退出来响应
-`"EXIT"`消息，而是一直循环响应消息：
-
-{{{class="brush: scala"
-  def act() { 
-    loop {
-      react {
-        case (name: String, actor: Actor) =>
-          actor ! getIp(name)
-        case msg =>
-          println("Unhandled message: " + msg)
-      }
-    }
-  }
-}}}
-
 === react工作原理 ===
 
 返回类型`Nothing`表示永远不会正常返回的函数，相反，总是以一个异常方式完成。
@@ -900,6 +883,181 @@ actor的`act`方法。如果`act`调用了`react`，则`react`方法会在actor�
 
 === reactWithin ===
 
+`reactWithin`在超时没有收到消息时会匹配`case TIMEOUT`。下面有一个累加器的实现：
+
+{{{class="brush: scala; highlight:[7,10]"
+import scala.actors._
+import Actor._ 
+
+val caller = self
+
+def accumulate() {
+  var sum = 0
+  reactWithin(500) {
+    case number: Int => sum += number
+    accumulate()
+    case TIMEOUT => 
+      println("Timed out! Will send result now")
+      caller ! sum
+  }
+  println("This will not be called...")
+}
+
+val accumulator = actor { accumulate() }
+accumulator ! 1
+accumulator ! 7
+accumulator ! 8
+
+receiveWithin(10000) { case result => println("Total is " + result) }
+}}}
+
+结果是错误的，没有累加输出：
+
+{{{class="brush: bash"
+Timed out! Will send result now
+Total is 0
+}}}
+
+问题在于再次调用`accumulate`方法时对`sum`产生了新的闭包，可以把`sum`放到外面作为
+全局变量，但这样不够函数式。更加函数式的修改方案是把每次的结果作为参数：
+
+{{{class="brush: scala; highlight:[6,8]"
+import scala.actors._
+import Actor._ 
+
+val caller = self
+
+def accumulate(sum : Int) {
+  reactWithin(500) {
+    case number: Int => accumulate(sum + number)
+    case TIMEOUT => 
+      println("Timed out! Will send result now")
+      caller ! sum
+  }
+  println("This will not be called...")
+}
+
+val accumulator = actor { accumulate(0) }
+accumulator ! 1
+accumulator ! 7
+accumulator ! 8
+
+receiveWithin(10000) { case result => println("Total is " + result) }
+}}}
+
+这次得到了正确的结果：
+
+{{{class="brush: bash"
+Timed out! Will send result now
+Total is 16
+}}}
+
+=== loop与loopWhile ===
+
+由于通过`react`重用线程的方案非常普遍，所以actor库对此有特别的支持。`actor.loop`
+函数重复执行一个代码块，哪怕代码调用的是`react`。下面用`loop`来重写
+`NameResolver`的`act`方法。下面的例子与前一个例子不同的地方是它并不退出来响应
+`"EXIT"`消息，而是一直循环响应消息：
+
+{{{class="brush: scala"
+  def act() { 
+    loop {
+      react {
+        case (name: String, actor: Actor) =>
+          actor ! getIp(name)
+        case msg =>
+          println("Unhandled message: " + msg)
+      }
+    }
+  }
+}}}
+
+还有带循环条件的版本`loopWhile(...)`。
+
+== 控制线程执行 ==
+
+Scala会让单例对象`Scheduler`去运行actor，通过设置`Scheduler.impl`的各种实现，
+可以整个应用的actor的调度策略。
+
+通过下面的例子`SingleThreadedScheduler`可以控制Scala在主线程里运行actor:
+
+{{{class="brush: scala"
+import scala.Actor._
+import scala.actors._
+import scheduler._
+
+if (args.length > 0 && args(0) == "Single") {                      
+  println("Command-line argument Single found")
+  Scheduler.impl = new SingleThreadedScheduler
+}
+println("Main running in " + Thread.currentThread)
+
+actor { println("Actor1 running in " + Thread.currentThread) }                                                   
+actor { println("Actor2 running in " + Thread.currentThread) }
+
+receiveWithin(3000) { case _ => }
+}}}
+
+如果没有参数，两个actor和主线程会分别执行：
+
+{{{class="brush: bash"
+$ scala InMainThread.scala
+Main running in Thread[main,5,main]
+Actor1 running in Thread[ForkJoinPool-1-worker-5,5,main]
+Actor2 running in Thread[ForkJoinPool-1-worker-5,5,main]
+}}}
+
+如果加上参数，会在同一线程中执行：
+
+{{{class="brush: bash"
+$ scala InMainThread.scala Single
+Command-line argument Single found
+Main running in Thread[main,5,main]
+Actor1 running in Thread[main,5,main]
+Actor2 running in Thread[main,5,main]
+}}}
+
+上面是例子配置的两个应用的线程调度。其实通过继承`Actor`特质时改写`scheduler()`
+方法还可以更加细粒度地控制具体actor是在主线程，一部分在新线程中。
+
+{{{class="brush: scala; highlight: [6]"
+import scala.Actor._
+import scala.actors._
+import scheduler._
+
+trait SingleThreadedActor extends Actor {
+  override def scheduler() = new SingleThreadedScheduler
+}
+
+class MyActor1 extends Actor {
+  def act() = println("Actor1 running in " + Thread.currentThread)
+}
+                      
+class MyActor2 extends SingleThreadedActor {                     
+  def act() = println("Actor2 running in " + Thread.currentThread)
+}                                                      
+
+println("Main running in " + Thread.currentThread)
+new MyActor1().start()
+new MyActor2().start()
+actor { println("Actor3 running in " + Thread.currentThread) }
+
+receiveWithin(5000) { case _ => }
+}}}
+
+可以看到主线程与fork出的线程：
+
+{{{class="brush: scala"
+$ scala InMainThreadSelective.scala
+Main running in Thread[main,5,main]
+Actor1 running in Thread[ForkJoinPool-1-worker-5,5,main]
+Actor2 running in Thread[main,5,main]
+Actor 3 running in Thread[ForkJoinPool-2-worker-7,5,main]
+}}}
+
+
+{{{class="brush: scala"
+}}}
 
 == 良好的actor风格 ==
 
