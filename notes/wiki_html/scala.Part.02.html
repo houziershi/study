@@ -92,15 +92,23 @@
 <li><a href="#toc_6.3.4">保护的范围</a>
 <li><a href="#toc_6.3.5">伴生对象的可见度性</a>
 </ul>
+<li><a href="#toc_6.4">断言</a>
 </ul>
-<li><a href="#toc_7">断言和测试</a>
+<li><a href="#toc_7">测试</a>
 <ul>
-<li><a href="#toc_7.1">断言</a>
-<li><a href="#toc_7.2">测试</a>
+<li><a href="#toc_7.1">Junit 4</a>
+<li><a href="#toc_7.2">ScalaTest</a>
 <ul>
-<li><a href="#toc_7.2.1">ScalaTest</a>
-<li><a href="#toc_7.2.2">Junit 4</a>
-<li><a href="#toc_7.2.3">混合ScalaTest与JUnit</a>
+<li><a href="#toc_7.2.1">Runner</a>
+<li><a href="#toc_7.2.2">assert()与expect()方法</a>
+<li><a href="#toc_7.2.3">测试异常</a>
+<li><a href="#toc_7.2.4">在测试间共享代码</a>
+<ul>
+<li><a href="#toc_7.2.4.1">BeforeAndAfter特质</a>
+<li><a href="#toc_7.2.4.2">通过闭包</a>
+</ul>
+<li><a href="#toc_7.2.5">FunSuite</a>
+<li><a href="#toc_7.2.6">混合ScalaTest与JUnit</a>
 </ul>
 </ul>
 </ul>
@@ -3456,9 +3464,7 @@ Scala的访问规则给予了伴生对象和类一些特权。类把它所有的
 
 
 
-<h1 id="toc_7">断言和测试</h1>
-
-<h2 id="toc_7.1">断言</h2>
+<h2 id="toc_6.4">断言</h2>
 
 <p>
 <code>assert</code>是预定义的方法，<code>assert(condition)</code>会在条件不成立时抛出<code>AssertionError</code>。
@@ -3521,20 +3527,301 @@ if-else表达式的<code>Element</code>类结果上的，而不是方法<code>wi
 类型上。
 </p>
 
-<h2 id="toc_7.2">测试</h2>
+
+
+<h1 id="toc_7">测试</h1>
 
 <p>
 受益于和Java之间无缝操作。Java的测试库，像JUnit、TestNG，可以直接用于scala的
-单元测试。ScalaTest是专为scala设计的一个测试框架。ScalaTest提供了一些比较方便的
-功能。
+单元测试。
 </p>
 
+<h2 id="toc_7.1">Junit 4</h2>
+
 <p>
-注意ScalaTest除了自己的版本号外，对应不同的Scala版本还有不同的对应版本。拿错了是
+如果喜欢JUnit4的风格，那么可以写下面这样的单元测试。
+</p>
+
+<pre class="brush: bash">
+import java.util.ArrayList
+import org.junit.Test
+import org.junit.Assert._
+
+class SampleTest {
+
+	@Test
+	def listAdd() {
+		val list = new ArrayList[String]
+		list add "milk"
+		list add "sugar"
+		assertEquals(2, list.size())
+	}
+
+}
+</pre>
+
+<p>
+产生的测试类可以直接在Java中使用：
+</p>
+
+<pre class="brush: bash">
+$ scalac -classpath .:junit-4.10.jar tmp.scala
+
+$ java -classpath .:junit-4.10.jar:scala-library-2.10.2.jar \
+		org.junit.runner.JUnitCore SampleTest
+JUnit version 4.10
+.
+Time: 0.009
+
+OK (1 test)
+</pre>
+
+
+
+<h2 id="toc_7.2">ScalaTest</h2>
+
+<p>
+ScalaTest是专为scala设计的一个测试框架。ScalaTest提供了一些比较方便的功能。注意
+ScalaTest除了自己的版本号外，对应不同的Scala版本还有不同的对应版本。拿错了是
 用不了的。
 </p>
 
-<h3 id="toc_7.2.1">ScalaTest</h3>
+<p>
+先用脚本来测试一下对不对：
+</p>
+
+<pre class="brush: scala">
+class CanaryTest extends org.scalatest.Suite {
+
+	def testOK() {
+		assert(true)
+	}
+
+}
+
+(new CanaryTest).execute()
+</pre>
+
+<p>
+因为使用的是脚本，所以上面最后一行调用<code>execute()</code>方法直接运行。执行：
+</p>
+
+<pre class="brush: scala">
+$ scala -classpath .:scalatest_2.10-1.9.1.jar tmp.scala
+Main$$anon$1$CanaryTest:
+- testOK
+</pre>
+
+<h3 id="toc_7.2.1">Runner</h3>
+
+<p>
+ScalaTest的<code>Runner</code>类来配置运行或不运行哪些套件，配置不同的<code>reporter</code>来指定报表
+。可以在ScalaTest的文档中查看所有的选项。
+</p>
+
+<pre class="brush: scala">
+class CanaryTest extends org.scalatest.Suite {
+
+	def testListEmpty() {
+		val list = new java.util.ArrayList[Integer]
+		assert(0 == list.size)
+	}
+
+	def testListAdd() {
+		val list = new java.util.ArrayList[Integer]
+		list add 1
+		list add 4
+		assert(2 == list.size)
+	}
+
+}
+</pre>
+
+<p>
+通过<code>Runner</code>打开图形界面，在<code>view</code>菜单中可以显示测试过程信息：
+</p>
+
+<pre class="brush: bash">
+$ scalac -classpath .:scalatest_2.10-1.9.1.jar tmp.scala
+
+$ scala -classpath .:scalatest_2.10-1.9.1.jar org.scalatest.tools.Runner -p .
+WARNING: -p has been deprecated and will be reused for a different (but still 
+		very cool) purpose in ScalaTest 2.0. Please change all uses of -p to -R.
+</pre>
+
+<p>
+上面的参数<code>-p</code>指定的查找测试类的路径。
+</p>
+
+<p>
+如果不想要图形界面，可以用<code>-o</code>重定向结果到标准输出：
+</p>
+
+<pre class="brush: bash">
+$ scala -classpath .:scalatest_2.10-1.9.1.jar org.scalatest.tools.Runner -p . -o
+WARNING: -p has been deprecated and will be reused for a different (but still 
+		very cool) purpose in ScalaTest 2.0. Please change all uses of -p to -R.
+Run starting. Expected test count is: 2
+DiscoverySuite:
+CanaryTest:
+- testListAdd
+- testListEmpty
+Run completed in 150 milliseconds.
+Total number of tests run: 2
+Suites: completed 2, aborted 0
+Tests: succeeded 2, failed 0, ignored 0, pending 0
+All tests passed.
+</pre>
+
+<p>
+还有<code>-f</code>参数可以把结果输出到文件。
+</p>
+
+<h3 id="toc_7.2.2">assert()与expect()方法</h3>
+
+<p>
+ScalaTest提供的<code>assert()</code>方法测试条件是否成立。还有一个两个参数版本的，第二个
+参数设置失败时的提示信息。
+</p>
+
+<pre class="brush: scala">
+	assert(2 == list.size(), "Unexpected size of list")
+</pre>
+
+<p>
+还有一个<code>expect()</code>方法作为类似于Junit的<code>assertEquals()</code>方法。注意它的第三个参数
+是一个闭包：
+</p>
+
+<pre class="brush: scala">
+	assert(2, "Unexpected size of list") { list.size() }
+</pre>
+
+<p>
+注意<code>expect()</code>方法已经过期，用<code>expectResult()</code>方法代替。
+</p>
+
+<h3 id="toc_7.2.3">测试异常</h3>
+
+<p>
+有一个比较啰嗦的方案：
+</p>
+
+<pre class="brush: scala">
+try {
+	// .....
+	fail("Expected exception here")
+} catch {
+	case e: IndexOutOfBoundsException =&gt; // success
+}
+</pre>
+
+<p>
+更好的方法是用ScalaTest提供的<code>intercept()</code>方法：
+</p>
+
+<pre class="brush: scala">
+intercept(classOf[IndexOutOfBoundsException], "Expected exception here") {
+	// .....
+}
+</pre>
+
+<p>
+注意上面的格式可能会在ScalaTest的新版本中改变，会是这样的：
+</p>
+
+<pre class="brush: scala">
+intercept[IndexOutOfBoundsException]("Expected exception here") {
+	// .....
+}
+</pre>
+
+<p>
+<code>intercept()</code>方法会把捕获的结果作为返回值，如果需要的话可以对它进行处理。
+</p>
+
+<h3 id="toc_7.2.4">在测试间共享代码</h3>
+
+<h4 id="toc_7.2.4.1">BeforeAndAfter特质</h4>
+
+<p>
+Scala的<code>BeforeAndAfter</code>特质提供了<code>beforeEach()</code>与<code>afterEach()</code>方法会在每个测试
+开始与结束前调用；还有<code>beforeAll()</code>和<code>afterAll()</code>在所有的开始与结束时运行一次。
+</p>
+
+<pre class="brush: scala">
+class ShareCodeImperation extends org.scalatest.Suite 
+	with org.scalatest.BeforeAndAfter
+{
+		var list: java.util.ArrayList[Integer] = _
+
+		override def beforeEach() { list = new java.util.ArrayList[Integer] }
+		override def afterEach()  { list = null }
+
+		def testListEmptyOnCreate() {
+			expect(0, "Expected size to be 0") { list.size() }
+		}
+
+		def testGetOnEmptyList() {
+			intercept[IndexOutOfBoundsException] { list.get(0) }
+		}
+}
+
+(new ShareCodeImperative).execute()
+</pre>
+
+<h4 id="toc_7.2.4.2">通过闭包</h4>
+
+<pre class="brush: scala">
+import org.scalatest.Suite
+import java.util.ArrayList
+
+class ShareCodeFunctional extends Suite {
+
+	def withList(testFunction : (ArrayList[Integer]) =&gt; Unit) {
+		// init list
+		val list = new ArrayList[Integer]
+
+		try {
+			testFunction(list)
+		} finally {
+			// clean up
+		}
+	}
+
+	def testListEmptyOnCreate() {
+		withList {
+			list =&gt; expectResult(0, "Expected size to be 0") {
+				list.size()
+			}
+		}
+	}
+
+	def testGetOnEmptyList() {
+		withList {
+			list =&gt; intercept[IndexOutOfBoundsException] {
+				list.get(0)
+			}
+		}
+	}
+
+}
+
+(new ShareCodeFunctional).execute()
+</pre>
+
+<p>
+运行：
+</p>
+
+<pre class="brush: scala">
+$ scala -deprecation -classpath .:scalatest_2.10-1.9.1.jar tmp.scala
+Main$$anon$1$ShareCodeFunctional:
+- testGetOnEmptyList
+- testListEmptyOnCreate
+</pre>
+
+<h3 id="toc_7.2.5">FunSuite</h3>
 
 <p>
 ScalaTest提供了函数式的<code>FunSuite</code>（Function Suite）。<code>test</code>方法为测试方法，说明
@@ -3581,10 +3868,9 @@ Tests: succeeded 2, failed 0, ignored 0, pending 0
 All tests passed.
 </pre>
 
-<h3 id="toc_7.2.2">Junit 4</h3>
 
 <p>
-如果喜欢JUnit4的风格，那么可以写下面这样的单元测试。
+ScalaTest中也可以写JUnit风格的测试：
 </p>
 
 <pre class="brush: scala">
@@ -3647,7 +3933,7 @@ Time: 0.026
 OK (2 tests)
 </pre>
 
-<h3 id="toc_7.2.3">混合ScalaTest与JUnit</h3>
+<h3 id="toc_7.2.6">混合ScalaTest与JUnit</h3>
 
 <p>
 <code>org.scalatest.junit.JUnitSuite</code>已经混入了特质<code>AssertionsForJUnit</code>，可以同时被

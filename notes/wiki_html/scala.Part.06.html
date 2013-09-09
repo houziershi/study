@@ -33,8 +33,13 @@
 <ul>
 <li><a href="#toc_1.1.1">一般性原则</a>
 <li><a href="#toc_1.1.2">值类型</a>
-<li><a href="#toc_1.1.3">单例对象</a>
-<li><a href="#toc_1.1.4">作为接口的特质</a>
+<li><a href="#toc_1.1.3">高阶函数</a>
+<li><a href="#toc_1.1.4">单例对象与伴生对象</a>
+<ul>
+<li><a href="#toc_1.1.4.1">单例对象</a>
+<li><a href="#toc_1.1.4.2">伴生对象</a>
+</ul>
+<li><a href="#toc_1.1.5">作为接口的特质</a>
 </ul>
 <li><a href="#toc_1.2">注解</a>
 <ul>
@@ -126,7 +131,14 @@ Scala尽可能把Scala特性编译成对等的Java特性，如：类、方法、
 的是哪一种类型，所以会用<code>Interger</code>这样的包装器类。
 </p>
 
-<h3 id="toc_1.1.3">单例对象</h3>
+<h3 id="toc_1.1.3">高阶函数</h3>
+
+<p>
+Java不支持高阶函数与闭包等特性，所以用不了。如果预计以后要给Java用的话，就再定义
+一个不用高阶函数实现的函数给Java代码调用……
+</p>
+
+<h3 id="toc_1.1.4">单例对象与伴生对象</h3>
 
 <p>
 由于在Java里没有对应的特性，所以采用静态和实例方法结合的方式。每个Scala的单例
@@ -163,9 +175,12 @@ Scala尽可能把Scala特性编译成对等的Java特性，如：类、方法、
   }
 </pre>
 
+
+<h4 id="toc_1.1.4.1">单例对象</h4>
+
 <p>
-如果只有单例对象<code>App</code>而没有叫作<code>App</code>的Scala类，那么编译器还要自动创建一个叫<code>App</code>
-的Java类。这个类对于每个Scala单例对象的方法都有一个静态转发方法与之对应：
+编译器还要为单例对象<code>App</code>自动创建一个叫<code>App</code>的Java类。这个类对于每个Scala单例
+对象的方法都有一个静态转发方法与之对应：
 </p>
 
 <pre class="brush: scala">
@@ -178,13 +193,59 @@ Scala尽可能把Scala特性编译成对等的Java特性，如：类、方法、
 </pre>
 
 <p>
+在Java中调用单例对象的例子：
+</p>
+
+<pre class="brush: scala">
+object Single {
+	def greet() { println("hello") }
+}
+</pre>
+
+<p>
+在Java里调用时就像用静态方法一样：
+</p>
+
+<pre class="brush: java">
+public class SingleUser {
+	public static void main(String [] args) {
+		Single.greet()
+	}
+}
+</pre>
+
+<h4 id="toc_1.1.4.2">伴生对象</h4>
+
+<p>
 反之如果已经有一个名为<code>App</code>的类了，Scala会创建一个相对应的Java类<code>App</code>来保存定义
 <code>App</code>类的成员。在这种情况下就不包含任何转发到同名单例对象的方法，Java代码必须
 通过<code>MODULE$</code>字段来访问这个单例。
 </p>
 
+<pre class="brush: scala">
+class Buddy {
+	def greet() { println("this is Buddy class") }
+}
 
-<h3 id="toc_1.1.4">作为接口的特质</h3>
+object Buddy {
+	def greet() { println("this is Buddy object") }
+}
+</pre>
+
+<p>
+在Java里调用伴生对象要通过<code>MODULE$</code>：
+</p>
+
+<pre class="brush: java">
+public class BUddyUser {
+	public static void main(String [] args) {
+		new Buddy().greet();
+		Buddy$.MODULE$.greet();
+	}
+}
+</pre>
+
+<h3 id="toc_1.1.5">作为接口的特质</h3>
 
 <p>
 每个特质都会创建一个同名的Java接口。这个接口可以作为Java类型使用，可以通过这个
@@ -197,6 +258,39 @@ Scala尽可能把Scala特性编译成对等的Java特性，如：类、方法、
 编写Java接口。
 </p>
 
+<p>
+举例来说，如果一个特质没有实现方法，那个Java代码里可以把它作为接口来用：
+</p>
+
+<pre class="brush: scala">
+trait Writable {
+	def wirte(msg: String) : Unit
+}
+</pre>
+
+<p>
+Java代码里可以实现它：
+</p>
+
+<pre class="brush: Java">
+public class AWritableJavaClass implements Writable {
+	public void write(String msg) {}
+}
+</pre>
+
+<p>
+如果特质里有实现：
+</p>
+
+<pre class="brush: scala">
+trait Printable {
+	def print() {}
+}
+</pre>
+
+<p>
+那在Java里就不能实现它了，但可以反它作为一个类型，持有它的一个引用。
+</p>
 
 <h2 id="toc_1.2">注解</h2>
 

@@ -2660,8 +2660,6 @@ Scala的访问规则给予了伴生对象和类一些特权。类把它所有的
 
 
 
-= 断言和测试 =
-
 == 断言 ==
 
 `assert`是预定义的方法，`assert(condition)`会在条件不成立时抛出`AssertionError`。
@@ -2713,16 +2711,261 @@ if-else表达式的`Element`类结果上的，而不是方法`widen`的返回值
 而是被隐式转换成了`Ensuring`对象。由于存在隐式转换，所以`ensuring`可以作用在任何
 类型上。
 
-== 测试 ==
+
+
+= 测试 =
 
 受益于和Java之间无缝操作。Java的测试库，像JUnit、TestNG，可以直接用于scala的
-单元测试。ScalaTest是专为scala设计的一个测试框架。ScalaTest提供了一些比较方便的
-功能。
+单元测试。
 
-注意ScalaTest除了自己的版本号外，对应不同的Scala版本还有不同的对应版本。拿错了是
+== Junit 4 ==
+
+如果喜欢JUnit4的风格，那么可以写下面这样的单元测试。
+
+{{{class="brush: bash" 
+import java.util.ArrayList
+import org.junit.Test
+import org.junit.Assert._
+
+class SampleTest {
+
+	@Test
+	def listAdd() {
+		val list = new ArrayList[String]
+		list add "milk"
+		list add "sugar"
+		assertEquals(2, list.size())
+	}
+
+}
+}}}
+
+产生的测试类可以直接在Java中使用：
+
+{{{class="brush: bash" 
+$ scalac -classpath .:junit-4.10.jar tmp.scala
+
+$ java -classpath .:junit-4.10.jar:scala-library-2.10.2.jar \
+		org.junit.runner.JUnitCore SampleTest
+JUnit version 4.10
+.
+Time: 0.009
+
+OK (1 test)
+}}}
+
+
+
+== ScalaTest ==
+
+ScalaTest是专为scala设计的一个测试框架。ScalaTest提供了一些比较方便的功能。注意
+ScalaTest除了自己的版本号外，对应不同的Scala版本还有不同的对应版本。拿错了是
 用不了的。
 
-=== ScalaTest ===
+先用脚本来测试一下对不对：
+
+{{{class="brush: scala" 
+class CanaryTest extends org.scalatest.Suite {
+
+	def testOK() {
+		assert(true)
+	}
+
+}
+
+(new CanaryTest).execute()
+}}}
+
+因为使用的是脚本，所以上面最后一行调用`execute()`方法直接运行。执行：
+
+{{{class="brush: scala" 
+$ scala -classpath .:scalatest_2.10-1.9.1.jar tmp.scala
+Main$$anon$1$CanaryTest:
+- testOK
+}}}
+
+=== Runner ===
+
+ScalaTest的`Runner`类来配置运行或不运行哪些套件，配置不同的`reporter`来指定报表
+。可以在ScalaTest的文档中查看所有的选项。
+
+{{{class="brush: scala" 
+class CanaryTest extends org.scalatest.Suite {
+
+	def testListEmpty() {
+		val list = new java.util.ArrayList[Integer]
+		assert(0 == list.size)
+	}
+
+	def testListAdd() {
+		val list = new java.util.ArrayList[Integer]
+		list add 1
+		list add 4
+		assert(2 == list.size)
+	}
+
+}
+}}}
+
+通过`Runner`打开图形界面，在`view`菜单中可以显示测试过程信息：
+
+{{{class="brush: bash" 
+$ scalac -classpath .:scalatest_2.10-1.9.1.jar tmp.scala
+
+$ scala -classpath .:scalatest_2.10-1.9.1.jar org.scalatest.tools.Runner -p .
+WARNING: -p has been deprecated and will be reused for a different (but still 
+		very cool) purpose in ScalaTest 2.0. Please change all uses of -p to -R.
+}}}
+
+上面的参数`-p`指定的查找测试类的路径。
+
+如果不想要图形界面，可以用`-o`重定向结果到标准输出：
+
+{{{class="brush: bash" 
+$ scala -classpath .:scalatest_2.10-1.9.1.jar org.scalatest.tools.Runner -p . -o
+WARNING: -p has been deprecated and will be reused for a different (but still 
+		very cool) purpose in ScalaTest 2.0. Please change all uses of -p to -R.
+Run starting. Expected test count is: 2
+DiscoverySuite:
+CanaryTest:
+- testListAdd
+- testListEmpty
+Run completed in 150 milliseconds.
+Total number of tests run: 2
+Suites: completed 2, aborted 0
+Tests: succeeded 2, failed 0, ignored 0, pending 0
+All tests passed.
+}}}
+
+还有`-f`参数可以把结果输出到文件。
+
+=== assert()与expect()方法 ===
+
+ScalaTest提供的`assert()`方法测试条件是否成立。还有一个两个参数版本的，第二个
+参数设置失败时的提示信息。
+
+{{{class="brush: scala" 
+	assert(2 == list.size(), "Unexpected size of list")
+}}}
+
+还有一个`expect()`方法作为类似于Junit的`assertEquals()`方法。注意它的第三个参数
+是一个闭包：
+
+{{{class="brush: scala" 
+	assert(2, "Unexpected size of list") { list.size() }
+}}}
+
+注意`expect()`方法已经过期，用`expectResult()`方法代替。
+
+=== 测试异常 ===
+
+有一个比较啰嗦的方案：
+
+{{{class="brush: scala" 
+try {
+	// .....
+	fail("Expected exception here")
+} catch {
+	case e: IndexOutOfBoundsException => // success
+}
+}}}
+
+更好的方法是用ScalaTest提供的`intercept()`方法：
+
+{{{class="brush: scala" 
+intercept(classOf[IndexOutOfBoundsException], "Expected exception here") {
+	// .....
+}
+}}}
+
+注意上面的格式可能会在ScalaTest的新版本中改变，会是这样的：
+
+{{{class="brush: scala" 
+intercept[IndexOutOfBoundsException]("Expected exception here") {
+	// .....
+}
+}}}
+
+`intercept()`方法会把捕获的结果作为返回值，如果需要的话可以对它进行处理。
+
+=== 在测试间共享代码 ===
+
+==== BeforeAndAfter特质 ====
+
+Scala的`BeforeAndAfter`特质提供了`beforeEach()`与`afterEach()`方法会在每个测试
+开始与结束前调用；还有`beforeAll()`和`afterAll()`在所有的开始与结束时运行一次。
+
+{{{class="brush: scala" 
+class ShareCodeImperation extends org.scalatest.Suite 
+	with org.scalatest.BeforeAndAfter
+{
+		var list: java.util.ArrayList[Integer] = _
+
+		override def beforeEach() { list = new java.util.ArrayList[Integer] }
+		override def afterEach()  { list = null }
+
+		def testListEmptyOnCreate() {
+			expect(0, "Expected size to be 0") { list.size() }
+		}
+
+		def testGetOnEmptyList() {
+			intercept[IndexOutOfBoundsException] { list.get(0) }
+		}
+}
+
+(new ShareCodeImperative).execute()
+}}}
+
+==== 通过闭包 ====
+
+{{{class="brush: scala" 
+import org.scalatest.Suite
+import java.util.ArrayList
+
+class ShareCodeFunctional extends Suite {
+
+	def withList(testFunction : (ArrayList[Integer]) => Unit) {
+		// init list
+		val list = new ArrayList[Integer]
+
+		try {
+			testFunction(list)
+		} finally {
+			// clean up
+		}
+	}
+
+	def testListEmptyOnCreate() {
+		withList {
+			list => expectResult(0, "Expected size to be 0") {
+				list.size()
+			}
+		}
+	}
+
+	def testGetOnEmptyList() {
+		withList {
+			list => intercept[IndexOutOfBoundsException] {
+				list.get(0)
+			}
+		}
+	}
+
+}
+
+(new ShareCodeFunctional).execute()
+}}}
+
+运行：
+
+{{{class="brush: scala" 
+$ scala -deprecation -classpath .:scalatest_2.10-1.9.1.jar tmp.scala
+Main$$anon$1$ShareCodeFunctional:
+- testGetOnEmptyList
+- testListEmptyOnCreate
+}}}
+
+=== FunSuite ===
 
 ScalaTest提供了函数式的`FunSuite`（Function Suite）。`test`方法为测试方法，说明
 字符串的内容会显示在输出信息中：
@@ -2767,9 +3010,8 @@ Tests: succeeded 2, failed 0, ignored 0, pending 0
 All tests passed.
 }}}
 
-=== Junit 4 ===
 
-如果喜欢JUnit4的风格，那么可以写下面这样的单元测试。
+ScalaTest中也可以写JUnit风格的测试：
 
 {{{class="brush: scala" 
 import org.scalatest.junit.AssertionsForJUnit

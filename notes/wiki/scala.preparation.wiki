@@ -113,6 +113,20 @@ fun
 Scala会把脚本放到一个名为`Main`类中的`main()`方法里，可以用`-savecompiled`选项
 来生成Jar文件查看生成的字节码。
 
+如果有多个脚本文件，scala会默认在同一目录中所有的文件中查找需要的类；如果有需要
+的文件在不同的目录里，可以在`sourcepath`参数中指定要查找的目录：
+
+{{{class="brush: bash"
+$ scala -sourcepath .:module1:module2 myApp.scala
+}}}
+
+如果需要的脚本里的内容已经编译过了，可以不编译这些脚本。如果生成的字节码不在当前
+目录下要用`classpath`指定类文件的位置就可以了，`-d`表示字节码存放的位置：
+
+{{{class="brush: bash"
+$ scala -d . -classpath .:module1:module2 myApp.scala
+}}}
+
 === OS可执行脚本 ===
 
 Unix下可执行脚本：

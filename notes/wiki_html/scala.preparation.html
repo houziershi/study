@@ -11,9 +11,10 @@
 <script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
 <script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
 
-<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
 <script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
 
 
 <title>准备工作</title>
@@ -206,6 +207,24 @@ fun
 Scala会把脚本放到一个名为<code>Main</code>类中的<code>main()</code>方法里，可以用<code>-savecompiled</code>选项
 来生成Jar文件查看生成的字节码。
 </p>
+
+<p>
+如果有多个脚本文件，scala会默认在同一目录中所有的文件中查找需要的类；如果有需要
+的文件在不同的目录里，可以在<code>sourcepath</code>参数中指定要查找的目录：
+</p>
+
+<pre class="brush: bash">
+$ scala -sourcepath .:module1:module2 myApp.scala
+</pre>
+
+<p>
+如果需要的脚本里的内容已经编译过了，可以不编译这些脚本。如果生成的字节码不在当前
+目录下要用<code>classpath</code>指定类文件的位置就可以了，<code>-d</code>表示字节码存放的位置：
+</p>
+
+<pre class="brush: bash">
+$ scala -d . -classpath .:module1:module2 myApp.scala
+</pre>
 
 <h3 id="toc_2.2.1">OS可执行脚本</h3>
 

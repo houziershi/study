@@ -27,7 +27,12 @@ Scala尽可能把Scala特性编译成对等的Java特性，如：类、方法、
 `Int`这样的值类型会尽量用Java的`Int`表示。但有些情况下如`List[Any]`时不能确定用
 的是哪一种类型，所以会用`Interger`这样的包装器类。
 
-=== 单例对象 ===
+=== 高阶函数 ===
+
+Java不支持高阶函数与闭包等特性，所以用不了。如果预计以后要给Java用的话，就再定义
+一个不用高阶函数实现的函数给Java代码调用……
+
+=== 单例对象与伴生对象 ===
 
 由于在Java里没有对应的特性，所以采用静态和实例方法结合的方式。每个Scala的单例
 对象编译器都会创建一个名称后加美元符号的Java类。对于名为`App`的单例对象编译器
@@ -58,8 +63,11 @@ Scala尽可能把Scala特性编译成对等的Java特性，如：类、方法、
   }
 }}}
 
-如果只有单例对象`App`而没有叫作`App`的Scala类，那么编译器还要自动创建一个叫`App`
-的Java类。这个类对于每个Scala单例对象的方法都有一个静态转发方法与之对应：
+
+==== 单例对象 ====
+
+编译器还要为单例对象`App`自动创建一个叫`App`的Java类。这个类对于每个Scala单例
+对象的方法都有一个静态转发方法与之对应：
 
 {{{class="brush: scala"
   $ javap App
@@ -70,10 +78,50 @@ Scala尽可能把Scala特性编译成对等的Java特性，如：类、方法、
   }
 }}}
 
+在Java中调用单例对象的例子：
+
+{{{class="brush: scala"
+object Single {
+	def greet() { println("hello") }
+}
+}}}
+
+在Java里调用时就像用静态方法一样：
+
+{{{class="brush: java"
+public class SingleUser {
+	public static void main(String [] args) {
+		Single.greet()
+	}
+}
+}}}
+
+==== 伴生对象 ====
+
 反之如果已经有一个名为`App`的类了，Scala会创建一个相对应的Java类`App`来保存定义
 `App`类的成员。在这种情况下就不包含任何转发到同名单例对象的方法，Java代码必须
 通过`MODULE$`字段来访问这个单例。
 
+{{{class="brush: scala"
+class Buddy {
+	def greet() { println("this is Buddy class") }
+}
+
+object Buddy {
+	def greet() { println("this is Buddy object") }
+}
+}}}
+
+在Java里调用伴生对象要通过`MODULE$`：
+
+{{{class="brush: java"
+public class BUddyUser {
+	public static void main(String [] args) {
+		new Buddy().greet();
+		Buddy$.MODULE$.greet();
+	}
+}
+}}}
 
 === 作为接口的特质 ===
 
@@ -84,6 +132,31 @@ Scala尽可能把Scala特性编译成对等的Java特性，如：类、方法、
 。如果Scala特质只有抽象方法的话就直接翻译成Java接口。所以本质上说能Scala语法来
 编写Java接口。
 
+举例来说，如果一个特质没有实现方法，那个Java代码里可以把它作为接口来用：
+
+{{{class="brush: scala"
+trait Writable {
+	def wirte(msg: String) : Unit
+}
+}}}
+
+Java代码里可以实现它：
+
+{{{class="brush: Java"
+public class AWritableJavaClass implements Writable {
+	public void write(String msg) {}
+}
+}}}
+
+如果特质里有实现：
+
+{{{class="brush: scala"
+trait Printable {
+	def print() {}
+}
+}}}
+
+那在Java里就不能实现它了，但可以反它作为一个类型，持有它的一个引用。
 
 == 注解 ==
 
