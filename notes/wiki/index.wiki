@@ -11,6 +11,8 @@
 
 Scala基础：[[scala]]
 
+Scala样例：[[scala.example]]
+
 === Java ===
 
 语言：[[java]]

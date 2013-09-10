@@ -1,0 +1,74 @@
+%title IO
+
+%toc IO
+
+
+= 终端 =
+
+用户输入：
+
+{{{class="brush: scala"
+val str = Console.readLine
+}}}
+
+= 文件 =
+
+== 写入 ==
+
+{{{class="brush: scala"
+import java.io._
+
+val writer = new PrintWriter(new File("tmp.txt'))
+writer write "test"
+writer.close()
+}}}
+
+== 读取 ==
+
+{{{class="brush: scala"
+import scala.io.Source
+
+Source.fromFile("tmp.txt").foreach { print }
+}}}
+
+`foreach()`每次读一个字符（输入有缓冲，不用担心性能）。用`getLines()`可以读一行
+。`getLine(index)`可以取得指定行，是索引，从0开始。
+
+
+= 读取URL =
+
+{{{class="brush: scala"
+import scala.io.Source
+import java.net.URL
+
+val source = Source.fromURL(new URL("http://ifconfig.me/ip"))
+source.getLines().foreach{ println }
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}

@@ -1890,9 +1890,26 @@ try {
 }
 }}}
 
+如果要匹配所有的异常类型，用`case _`。
+
+还有一点要注意顺序，Java里会提示后面的异常已经被前面捕获，而Scala里不会。
+
+== 方法的throws声明 ==
+
 与Java的一个差别是Scala里不需要你捕获检查异常（checked exception）或把它们声明在
 `throws`子句中。如果你愿意，可以用`@throws`标注声明一个throws子句，但这不是
-必需的（详见“Scala结合Java”一章的“注解”一节）。
+必需的（详见“Scala结合Java”一章的“注解”一节）。`@throws`来说明：
+
+{{{class="brush: scala"
+  import java.io._
+  class Reader(fname: String) {
+    private val in =
+      new BufferedReader(new FileReader(fname))
+ 
+    @throws(classOf[IOException])
+    def read() = in.read()
+  }
+}}}
 
 == finally子句 ==
 

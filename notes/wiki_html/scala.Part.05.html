@@ -95,7 +95,7 @@
 </ul>
 <li><a href="#toc_5">使用XML</a>
 <ul>
-<li><a href="#toc_5.1">半结构分数据</a>
+<li><a href="#toc_5.1">半结构化数据</a>
 <li><a href="#toc_5.2">XML概览</a>
 <li><a href="#toc_5.3">XML字面量</a>
 <li><a href="#toc_5.4">序列化</a>
@@ -1816,7 +1816,11 @@ Scala里用不着这些getter和setter方法，是为了某些框架而需要的
 
 <h1 id="toc_5">使用XML</h1>
 
-<h2 id="toc_5.1">半结构分数据</h2>
+<p>
+<code>scala.xml</code>包中有很多xml处理工具，比如单例对象<code>XML</code>。
+</p>
+
+<h2 id="toc_5.1">半结构化数据</h2>
 
 <p>
 就是像XML这样虽然不是二进制但还是有结构的文本之类的数据结构的特点之类的。
@@ -1927,6 +1931,16 @@ Scala里可以直接给XML写字面量。解释器把从根标签的开始到结
 所以还是用XML字面量比较安全。
 </p>
 
+<p>
+如果要转义花括号的话，只要在一行里写两次花括号就可以了：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; &lt;a&gt; {{{{brace yourself!}}}} &lt;/a&gt;
+  res7: scala.xml.Elem = &lt;a&gt; {{brace yourself!}} &lt;/a&gt;
+</pre>
+
+
 <h2 id="toc_5.4">序列化</h2>
 
 <p>
@@ -2011,15 +2025,6 @@ Scala里可以直接给XML写字面量。解释器把从根标签的开始到结
 实际上是实例化了<code>CCTherm</code>的匿名子类。
 </p>
 
-<p>
-如果要转义花括号的话，只要在一行里写两次花括号就可以了：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; &lt;a&gt; {{{{brace yourself!}}}} &lt;/a&gt;
-  res7: scala.xml.Elem = &lt;a&gt; {{brace yourself!}} &lt;/a&gt;
-</pre>
-
 <h2 id="toc_5.5">拆解XML</h2>
 
 <p>
@@ -2049,7 +2054,7 @@ Scala中可以直接用基于XPath语言的工具处理XML。
 <h3 id="toc_5.5.2">抽取子元素</h3>
 
 <p>
-用XPath的<code>\</code>路径取得子元素：
+用类似XPath的<code>\()</code>方法按路径取得子元素：
 </p>
 
 <pre class="brush: scala">
@@ -2058,7 +2063,7 @@ Scala中可以直接用基于XPath语言的工具处理XML。
 </pre>
 
 <p>
-用<code>\\</code>代替<code>\</code>执行尝试搜索：
+用<code>\\()</code>方法代替<code>\()</code>方法搜索元素：
 </p>
 
 <pre class="brush: scala">
@@ -2291,8 +2296,9 @@ XML的模式很像字面量，差别在于如果加入转义花括号，那么�
 </pre>
 
 <p>
-看起来好像<code>catalog</code>元素有两个节点，实际上有五个。还有前面的、后面的、以及两个
-元素之间的空白！如果没有注意到这些空白，或许会错误地像下面这橛处理温度计的记录：
+看起来好像<code>catalog</code>元素有两个节点，实际上所有的空白字符也是作为节点的。所以还有
+前面的、后面的、以及两个元素之间的空白，实际上有五个！如果没有注意到这些空白，
+或许会错误地像下面这样处理温度计的记录：
 </p>
 
 <pre class="brush: scala">
@@ -2328,6 +2334,15 @@ XML的模式很像字面量，差别在于如果加入转义花括号，那么�
   processing: hot dog #5
   processing: Sprite Boy
 </pre>
+
+<p>
+还有一个统计真实元素个数的方法：
+</p>
+
+<pre class="brush: scala">
+(catalog \\ "cctherm").size
+</pre>
+
 
 
 <h1 id="toc_6">使用对象的模块化编程</h1>

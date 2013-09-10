@@ -1318,7 +1318,9 @@ Scala里用不着这些getter和setter方法，是为了某些框架而需要的
 
 = 使用XML =
 
-== 半结构分数据 ==
+`scala.xml`包中有很多xml处理工具，比如单例对象`XML`。
+
+== 半结构化数据 ==
 
 就是像XML这样虽然不是二进制但还是有结构的文本之类的数据结构的特点之类的。
 
@@ -1399,6 +1401,14 @@ Scala里可以直接给XML写字面量。解释器把从根标签的开始到结
 
 所以还是用XML字面量比较安全。
 
+如果要转义花括号的话，只要在一行里写两次花括号就可以了：
+
+{{{class="brush: scala"
+  scala> <a> {{{{brace yourself!}}}} </a>
+  res7: scala.xml.Elem = <a> {{brace yourself!}} </a>
+}}}
+
+
 == 序列化 ==
 
 从Scala内部结构到XML转换的例子。
@@ -1473,13 +1483,6 @@ Scala里可以直接给XML写字面量。解释器把从根标签的开始到结
 注意，虽然`CCTherm`是抽象类，但是`new CCTherm`还是可以正常工作，因为这样的语法
 实际上是实例化了`CCTherm`的匿名子类。
 
-如果要转义花括号的话，只要在一行里写两次花括号就可以了：
-
-{{{class="brush: scala"
-  scala> <a> {{{{brace yourself!}}}} </a>
-  res7: scala.xml.Elem = <a> {{brace yourself!}} </a>
-}}}
-
 == 拆解XML ==
 
 Scala中可以直接用基于XPath语言的工具处理XML。
@@ -1502,14 +1505,14 @@ Scala中可以直接用基于XPath语言的工具处理XML。
 
 === 抽取子元素 ===
 
-用XPath的`\`路径取得子元素：
+用类似XPath的`\()`方法按路径取得子元素：
 
 {{{class="brush: scala"
   scala> <a><b><c>hello</c></b></a> \ "b"
   res10: scala.xml.NodeSeq = <b><c>hello</c></b>
 }}}
 
-用`\\`代替`\`执行尝试搜索：
+用`\\()`方法代替`\()`方法搜索元素：
 
 {{{class="brush: scala"
   scala>  <a><b><c>hello</c></b></a> \ "c"
@@ -1710,8 +1713,9 @@ XML的模式很像字面量，差别在于如果加入转义花括号，那么�
     </catalog>
 }}}
 
-看起来好像`catalog`元素有两个节点，实际上有五个。还有前面的、后面的、以及两个
-元素之间的空白！如果没有注意到这些空白，或许会错误地像下面这橛处理温度计的记录：
+看起来好像`catalog`元素有两个节点，实际上所有的空白字符也是作为节点的。所以还有
+前面的、后面的、以及两个元素之间的空白，实际上有五个！如果没有注意到这些空白，
+或许会错误地像下面这样处理温度计的记录：
 
 {{{class="brush: scala"
   catalog match {
@@ -1744,6 +1748,13 @@ XML的模式很像字面量，差别在于如果加入转义花括号，那么�
   processing: hot dog #5
   processing: Sprite Boy
 }}}
+
+还有一个统计真实元素个数的方法：
+
+{{{class="brush: scala"
+(catalog \\ "cctherm").size
+}}}
+
 
 
 = 使用对象的模块化编程 =

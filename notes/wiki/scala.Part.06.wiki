@@ -142,7 +142,7 @@ trait Writable {
 
 Java代码里可以实现它：
 
-{{{class="brush: Java"
+{{{class="brush: java"
 public class AWritableJavaClass implements Writable {
 	public void write(String msg) {}
 }

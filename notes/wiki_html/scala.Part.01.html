@@ -11,9 +11,10 @@
 <script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
 <script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
 
-<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
 <script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
 
 
 <title>基础</title>
@@ -129,17 +130,18 @@
 <li><a href="#toc_7.4.1">抛出异常</a>
 <li><a href="#toc_7.4.2">捕获异常</a>
 </ul>
-<li><a href="#toc_7.5">finally子句</a>
+<li><a href="#toc_7.5">方法的throws声明</a>
+<li><a href="#toc_7.6">finally子句</a>
 <ul>
-<li><a href="#toc_7.5.1">try-cache-finally产生的值</a>
+<li><a href="#toc_7.6.1">try-cache-finally产生的值</a>
 </ul>
-<li><a href="#toc_7.6">match表达式</a>
+<li><a href="#toc_7.7">match表达式</a>
 <ul>
-<li><a href="#toc_7.6.1">不要用break和contine</a>
+<li><a href="#toc_7.7.1">不要用break和contine</a>
 </ul>
-<li><a href="#toc_7.7">变量作用域</a>
+<li><a href="#toc_7.8">变量作用域</a>
 <ul>
-<li><a href="#toc_7.7.1">重构指令式风格的代码</a>
+<li><a href="#toc_7.8.1">重构指令式风格的代码</a>
 </ul>
 </ul>
 <li><a href="#toc_8">函数与闭包</a>
@@ -2468,12 +2470,33 @@ try {
 </pre>
 
 <p>
-与Java的一个差别是Scala里不需要你捕获检查异常（checked exception）或把它们声明在
-<code>throws</code>子句中。如果你愿意，可以用<code>@throws</code>标注声明一个throws子句，但这不是
-必需的（详见“Scala结合Java”一章的“注解”一节）。
+如果要匹配所有的异常类型，用<code>case _</code>。
 </p>
 
-<h2 id="toc_7.5">finally子句</h2>
+<p>
+还有一点要注意顺序，Java里会提示后面的异常已经被前面捕获，而Scala里不会。
+</p>
+
+<h2 id="toc_7.5">方法的throws声明</h2>
+
+<p>
+与Java的一个差别是Scala里不需要你捕获检查异常（checked exception）或把它们声明在
+<code>throws</code>子句中。如果你愿意，可以用<code>@throws</code>标注声明一个throws子句，但这不是
+必需的（详见“Scala结合Java”一章的“注解”一节）。<code>@throws</code>来说明：
+</p>
+
+<pre class="brush: scala">
+  import java.io._
+  class Reader(fname: String) {
+    private val in =
+      new BufferedReader(new FileReader(fname))
+ 
+    @throws(classOf[IOException])
+    def read() = in.read()
+  }
+</pre>
+
+<h2 id="toc_7.6">finally子句</h2>
 
 <p>
 没有啥要特别说明的：
@@ -2490,7 +2513,7 @@ try {
 }
 </pre>
 
-<h3 id="toc_7.5.1">try-cache-finally产生的值</h3>
+<h3 id="toc_7.6.1">try-cache-finally产生的值</h3>
 
 <p>
 和其它大多数Scala控制结构一样，try-catch-finally也产生值。
@@ -2544,7 +2567,7 @@ finally中的返回值会覆盖所有的结果，因此通常最好还是避免�
 
 
 
-<h2 id="toc_7.6">match表达式</h2>
+<h2 id="toc_7.7">match表达式</h2>
 
 <p>
 Scala的匹配表达式允许你在许多可选项（alternative）中做选择，就好象其它语言中的
@@ -2600,7 +2623,7 @@ println(friend)
 </pre>
 
 
-<h3 id="toc_7.6.1">不要用break和contine</h3>
+<h3 id="toc_7.7.1">不要用break和contine</h3>
 
 <p>
 break和continue与函数字面量结合得不好，
@@ -2686,7 +2709,7 @@ tail-call位置，编译器会产生出与while循环类似的代码。
 </p>
 
 
-<h2 id="toc_7.7">变量作用域</h2>
+<h2 id="toc_7.8">变量作用域</h2>
 
 <p>
 大括号通常引入了一个新的范围，所以任何定义在打括号里的东西在括号之后就脱离了范围
@@ -2752,7 +2775,7 @@ tail-call位置，编译器会产生出与while循环类似的代码。
 </pre>
 
 
-<h3 id="toc_7.7.1">重构指令式风格的代码</h3>
+<h3 id="toc_7.8.1">重构指令式风格的代码</h3>
 
 <p>
 通过指令式风格输出乘法表：

@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>IO</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+<h1>IO</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">终端</a>
+<li><a href="#toc_2">文件</a>
+<ul>
+<li><a href="#toc_2.1">写入</a>
+<li><a href="#toc_2.2">读取</a>
+</ul>
+<li><a href="#toc_3">读取URL</a>
+</ul>
+</div>
+
+
+<h1 id="toc_1">终端</h1>
+
+<p>
+用户输入：
+</p>
+
+<pre class="brush: scala">
+val str = Console.readLine
+</pre>
+
+<h1 id="toc_2">文件</h1>
+
+<h2 id="toc_2.1">写入</h2>
+
+<pre class="brush: scala">
+import java.io._
+
+val writer = new PrintWriter(new File("tmp.txt'))
+writer write "test"
+writer.close()
+</pre>
+
+<h2 id="toc_2.2">读取</h2>
+
+<pre class="brush: scala">
+import scala.io.Source
+
+Source.fromFile("tmp.txt").foreach { print }
+</pre>
+
+<p>
+<code>foreach()</code>每次读一个字符（输入有缓冲，不用担心性能）。用<code>getLines()</code>可以读一行
+。<code>getLine(index)</code>可以取得指定行，是索引，从0开始。
+</p>
+
+
+<h1 id="toc_3">读取URL</h1>
+
+<pre class="brush: scala">
+import scala.io.Source
+import java.net.URL
+
+val source = Source.fromURL(new URL("http://ifconfig.me/ip"))
+source.getLines().foreach{ println }
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+ </div>
+</body>
+</html>
