@@ -40,6 +40,7 @@
 <li><a href="#toc_1.2.3">安装软件</a>
 <li><a href="#toc_1.2.4">删除软件</a>
 <li><a href="#toc_1.2.5">升级包</a>
+<li><a href="#toc_1.2.6">准备信赖包</a>
 </ul>
 <li><a href="#toc_1.3">aptitude命令行模式</a>
 <li><a href="#toc_1.4">aptitude界面模式</a>
@@ -243,6 +244,21 @@ dpkg -l | grep ^rc|awk '{print $2}' | #xargs dpkg -P
 <code>apt-get dist-upgrade</code> #将系统升级到新版本  
 
 </ul>
+
+<h3 id="toc_1.2.6">准备信赖包</h3>
+
+<p>
+<code>apt-get build-dep 软件名</code>把指定软件需要的包都装上，这样就可以在包齐的情况下自己
+编译这个软件。
+</p>
+
+<p>
+为了防止以后卸载时忘记当时信赖的哪些包，可以先记下来：
+</p>
+
+<pre class="brush: bash">
+sudo apt-get build-dep pidgin | tee pidgin-b-d.log
+</pre>
 
 
 <h2 id="toc_1.3">aptitude命令行模式</h2>

@@ -86,6 +86,17 @@ dpkg -l | grep ^rc|awk '{print $2}' | #xargs dpkg -P
 * `apt-get upgrade` 更新系统中所有的包到最新版。
 * `apt-get dist-upgrade` #将系统升级到新版本  
 
+=== 准备信赖包 ===
+
+`apt-get build-dep 软件名`把指定软件需要的包都装上，这样就可以在包齐的情况下自己
+编译这个软件。
+
+为了防止以后卸载时忘记当时信赖的哪些包，可以先记下来：
+
+{{{class="brush: bash"
+sudo apt-get build-dep pidgin | tee pidgin-b-d.log
+}}}
+
 
 == aptitude命令行模式 ==
 
