@@ -1,0 +1,37 @@
+%title MathJax
+
+%toc MathJax
+
+= 基础 =
+
+The euclidean plane usually has $x$ and $ y $ as standard variables.
+
+{{{class="brush: javascript"
+$x$
+$y$
+}}}
+
+block displaymath: use `{{$` and `}}$` to enclose a displaymath environment. 
+The opening syntax must be on a single line, as the closing one. The contents are to be written on one or more lines in-between, e.g.:
+
+text text
+{{$
+\sum_{i=1}^N a_i^2 = \infty
+}}$
+text text
+
+block environments: other block environments are supported in addition to displaymath. These include gather, align, cases, etc.. To use them, use %% placeholders after {{$ when you open your math block, e.g.:
+
+{{$%equation*%
+bla bla
+}}$
+
+Vimwiki and MathJax are smart enough to allow for whitespaces at the beginning or end of the line. However, their use is discouraged.
+
+Note: block environments are mostly used for writing several lines of math after one another. This can be obtained e.g. via the align LaTeX environment:
+
+{{$%align%
+formula1 &= result1 \\
+formula2 &= result2
+}}$
+

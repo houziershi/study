@@ -33,6 +33,8 @@ AngularJs：[[AngularJs]]
 
 ExtJs：[[ExtJS]]
 
+MathJax：[[MathJax]]
+
 === Python ===
 
 [[python.example]]
