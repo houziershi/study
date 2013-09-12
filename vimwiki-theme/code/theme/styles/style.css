@@ -4,8 +4,11 @@ body {
    line-height: 1.6;
    padding-top: 10px;
    padding-bottom: 10px;
+   background-color: white;
+	 /*
    background-repeat: repeat;
    background-image: url("../images/bg-img.jpg");
+	 */
    padding: 30px; }
 
 body > *:first-child {
@@ -14,6 +17,7 @@ body > *:last-child {
    margin-bottom: 0 !important; }
 
 a {
+   background-color: white;
    color: #4183C4; 
     text-decoration: none;
  }
