@@ -6,14 +6,14 @@
 <script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
 
 <link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
-<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCoreRDark.css"/>
-<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeRDark.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
 <script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
 <script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
 
-<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
 <script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
 
 
 <title>Tomcat权威指南</title>
@@ -380,7 +380,9 @@ $ catalina.sh start
 <h2 id="toc_2.3">自动重新部署Servlet</h2>
 
 <p>
-开发过程中自动重部署修改过的Servlet是个方便的功能，但生产环境这样就太浪费了。修改对应WebApp<code>web.xml</code>文件的<code>Context</code>元素中设定<code>reload-able</code>属性并重启Tomcat。这样也可以在<code>Manager</code>应用程序中手动重载工程。
+开发过程中自动重部署修改过的Servlet是个方便的功能，但生产环境这样就太浪费了。
+修改对应WebApp<code>web.xml</code>文件的<code>Context</code>元素中设定<code>reload-able</code>属性并重启Tomcat。
+这样也可以在<code>Manager</code>应用程序中手动重载工程。
 </p>
 
 <h2 id="toc_2.4">Tomcat Admin webapp</h2>
