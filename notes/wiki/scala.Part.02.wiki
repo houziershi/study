@@ -2480,11 +2480,18 @@ Scala隐式地添加了一些引用到每个程序中。本质上，就好象下
   import Predef._    // everything in the Predef object 
 }}}
 
+=== java.lang ===
+
 `java.lang`包囊括了标准Java类。它永远被隐式包含在Scala的JVM实现中。.NET实现将
 代以引用system包，它是`java.lang`的.NET模拟。
 
+=== scala ===
+
 scala包含有标准的Scala库，包括许多通用的类和对象。因为scala被隐式引用，你可以
-直接用List而不是`scala.List`。
+直接用`List`而不是`scala.List`；`import math._`等同于`import scala.math._`；
+`math.sqrt(2)`等同于`scala.math.sqrt(2)`。
+
+=== Predef ===
 
 Predef对象包含了许多Scala程序中常用到的类型，方法和隐式转换的定义。比如，因为
 `Predef`是隐式引用，你可以直接写`assert`而不是`Predef.assert`。
