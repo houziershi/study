@@ -35,6 +35,8 @@ ExtJs：[[ExtJS]]
 
 MathJax：[[MathJax]]
 
+reveal.js： [[reveal.js]]
+
 === Python ===
 
 [[python.example]]

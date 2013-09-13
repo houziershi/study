@@ -4,8 +4,9 @@ body {
    line-height: 1.6;
    padding-top: 10px;
    padding-bottom: 10px;
-   background-color: #666699;
+   background-color: #FFFFFF;
 	 /*
+   background-color: #666699;
    background-repeat: repeat;
    background-image: url("../images/bg-img.jpg");
 	 */
@@ -165,9 +166,9 @@ code, tt {
    margin: 0 2px;
    padding: 0 5px;
    white-space: nowrap;
-   border: 1px solid #0000FF;
-   background-color: rgba(0, 0, 255, 0.85);
-	 color: #FFFFFF;
+   border: 1px solid #666699;
+   background-color: rgba(42, 42, 63, 0.35);
+	 color: #000000;
    border-radius: 3px; }
 
 pre code {
