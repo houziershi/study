@@ -215,8 +215,11 @@ sup {
 
 /* 主内容区 */
 .note-main { 
-	padding-left: 10px; padding-right: 10px; width: 720px;
-    background: rgba(255, 255, 255, 0.65);
+	width: 720px;
+	padding-left: 10px; padding-right: 10px; 
+	padding-top: 5px; padding-bottom: 5px; 
+	border-radius: 20px;
+  background: rgba(255, 255, 255, 0.65);
 	 /*
    background-repeat: repeat;
    background-image: url("../images/scroll-paper.01.jpg");
