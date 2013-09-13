@@ -4,11 +4,11 @@ body {
    line-height: 1.6;
    padding-top: 10px;
    padding-bottom: 10px;
+   background-color: #666699;
 	 /*
-   background-color: #00FF00;
-	 */
    background-repeat: repeat;
    background-image: url("../images/bg-img.jpg");
+	 */
    padding: 30px;
 }
 
@@ -214,11 +214,11 @@ sup {
 /* 主内容区 */
 .note-main { 
 	padding-left: 10px; padding-right: 10px; width: 720px;
+    background: rgba(255, 255, 255, 0.65);
 	 /*
-   background-color: #00FF00;
-	 */
    background-repeat: repeat;
    background-image: url("../images/scroll-paper.01.jpg");
+	 */
 }
 
 /* 导航条 */
