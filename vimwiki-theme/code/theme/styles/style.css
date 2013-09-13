@@ -4,7 +4,7 @@ body {
    line-height: 1.6;
    padding-top: 10px;
    padding-bottom: 10px;
-   background-color: #FFFFFF;
+   background-color: #B9C9FE;
 	 /*
    background-color: #666699;
    background-repeat: repeat;
@@ -164,11 +164,11 @@ span.float-right > span {
 
 code, tt {
    margin: 0 2px;
-   padding: 0 5px;
+   padding: 0 3px;
    white-space: nowrap;
-   border: 1px solid #666699;
-   background-color: rgba(42, 42, 63, 0.35);
-	 color: #000000;
+   border: 1px solid #003399;
+   background-color: rgba(176, 188, 254, 0.85);
+	 color: #0000FF;
    border-radius: 3px; }
 
 pre code {
@@ -232,7 +232,7 @@ div.toc { height:450px; }
     border: 1px solid #003399;
     border-radius: 0 0 1px 1px;
     color: #000000;
-    background: rgba(179, 201, 153, 0.85);
+    background: rgba(176, 188, 254, 0.85);
     box-shadow: 0 1px 8px #00000;
     -webkit-box-shadow: 0 1px 8px #000;
     -moz-box-shadow: 0 1px 8px #000;
