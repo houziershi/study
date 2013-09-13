@@ -165,8 +165,8 @@ code, tt {
    margin: 0 2px;
    padding: 0 5px;
    white-space: nowrap;
-   border: 1px solid #00ea00;
-   background-color: #f8f8f8;
+   border: 1px solid #00EA00;
+   background-color: #F5DB8E;
    border-radius: 3px; }
 
 pre code {
@@ -213,8 +213,13 @@ sup {
 
 /* 主内容区 */
 .note-main { 
-	padding-left: 10px; padding-right: 10px;
-	width: 720px; background-color: #FFFFFF; }
+	padding-left: 10px; padding-right: 10px; width: 720px;
+	 /*
+   background-color: #00FF00;
+	 */
+   background-repeat: repeat;
+   background-image: url("../images/scroll-paper.01.jpg");
+}
 
 /* 导航条 */
 div.toc { height:450px; }
