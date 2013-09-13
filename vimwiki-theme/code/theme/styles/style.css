@@ -165,8 +165,9 @@ code, tt {
    margin: 0 2px;
    padding: 0 5px;
    white-space: nowrap;
-   border: 1px solid #00EA00;
-   background-color: #F5DB8E;
+   border: 1px solid #0000FF;
+   background-color: rgba(0, 0, 255, 0.85);
+	 color: #FFFFFF;
    border-radius: 3px; }
 
 pre code {
