@@ -1,0 +1,678 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>文件系统</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+<h1>文件系统</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">设备</a>
+<ul>
+<li><a href="#toc_1.1">lsblk命令</a>
+</ul>
+<li><a href="#toc_2">磁盘</a>
+<ul>
+<li><a href="#toc_2.1">df</a>
+<ul>
+<li><a href="#toc_2.1.1">Check File System Disk Space Usage</a>
+<li><a href="#toc_2.1.2">Display Information of all File System Disk Space Usage</a>
+<li><a href="#toc_2.1.3">Show Disk Space Usage in Human Readable Format</a>
+<li><a href="#toc_2.1.4">Display Information of /home File System</a>
+<li><a href="#toc_2.1.5">Display Information of File System in Bytes</a>
+<li><a href="#toc_2.1.6">Display Information of File System in MB</a>
+<li><a href="#toc_2.1.7">Display Information of File System in GB</a>
+<li><a href="#toc_2.1.8">Display File System Inodes</a>
+<li><a href="#toc_2.1.9">Display File System Type</a>
+<li><a href="#toc_2.1.10">Include Certain File System Type</a>
+<li><a href="#toc_2.1.11">Exclude Certain File System Type</a>
+<li><a href="#toc_2.1.12">Display Information of df Command.</a>
+</ul>
+<li><a href="#toc_2.2">du</a>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">设备</h1>
+
+<h2 id="toc_1.1">lsblk命令</h2>
+
+<p>
+<code>lsblk</code>就是列出块设备。除了RAM外，以标准的树状输出格式，整齐地显示块设备。
+</p>
+
+<pre class="brush: bash">
+root@tecmint:~# lsblk
+ 
+NAME   MAJ:MIN RM   SIZE RO TYPE MOUNTPOINT
+sda      8:0    0 232.9G  0 disk
+├─sda1   8:1    0  46.6G  0 part /
+├─sda2   8:2    0     1K  0 part
+├─sda5   8:5    0   190M  0 part /boot
+├─sda6   8:6    0   3.7G  0 part [SWAP]
+├─sda7   8:7    0  93.1G  0 part /data
+└─sda8   8:8    0  89.2G  0 part /personal
+sr0     11:0    1  1024M  0 rom
+</pre>
+
+<p>
+<code>lsblk -l</code>命令以列表格式显示块设备(而不是树状格式)。
+</p>
+
+<pre class="brush: bash">
+root@tecmint:~# lsblk -l
+ 
+NAME MAJ:MIN RM   SIZE RO TYPE MOUNTPOINT
+sda    8:0    0 232.9G  0 disk
+sda1   8:1    0  46.6G  0 part /
+sda2   8:2    0     1K  0 part
+sda5   8:5    0   190M  0 part /boot
+sda6   8:6    0   3.7G  0 part [SWAP]
+sda7   8:7    0  93.1G  0 part /data
+sda8   8:8    0  89.2G  0 part /personal
+sr0   11:0    1  1024M  0 rom
+</pre>
+
+<p>
+注意：lsblk是最有用和最简单的方式来了解新插入的USB设备的名字，特别是当你在终端上
+处理磁盘/块设备时。
+</p>
+
+<h1 id="toc_2">磁盘</h1>
+
+<h2 id="toc_2.1">df</h2>
+
+<p>
+报告系统的磁盘使用情况。在跟踪磁盘使用情况方面对于普通用户和系统管理员都很有用。
+<code>df</code>通过检查目录大小工作，但这一数值仅当文件关闭时才得到更新。
+</p>
+
+<pre class="brush: bash">
+root@tecmint:~# df
+ 
+Filesystem     1K-blocks    Used Available Use% Mounted on
+/dev/sda1       47929224 7811908  37675948  18% /
+none                   4       0         4   0% /sys/fs/cgroup
+udev             1005916       4   1005912   1% /dev
+tmpfs             202824     816    202008   1% /run
+none                5120       0      5120   0% /run/lock
+none             1014120     628   1013492   1% /run/shm
+none              102400      44    102356   1% /run/user
+/dev/sda5         184307   79852     94727  46% /boot
+/dev/sda7       95989516   61104  91045676   1% /data
+/dev/sda8       91953192   57032  87218528   1% /personal
+</pre>
+
+
+<p>
+Using <code>-h</code> parameter with (<code>df -h</code>) will shows the file system disk space 
+statistics in “human readable” format, means it gives the details in bytes, mega
+bytes and gigabyte.
+</p>
+
+
+<h3 id="toc_2.1.1">Check File System Disk Space Usage</h3>
+
+<p>
+The <code>df</code> command displays the information of device name, total blocks, total 
+disk space, used disk space, available disk space and mount points on a file 
+system.
+</p>
+
+<p>
+[root@tecmint ~]# df
+</p>
+
+<p>
+Filesystem           1K-blocks      Used Available Use% Mounted on
+/dev/cciss/c0d0p2     78361192  23185840  51130588  32% /
+/dev/cciss/c0d0p5     24797380  22273432   1243972  95% /home
+/dev/cciss/c0d0p3     29753588  25503792   2713984  91% /data
+/dev/cciss/c0d0p1       295561     21531    258770   8% /boot
+tmpfs                   257476         0    257476   0% /dev/shm
+</p>
+
+<h3 id="toc_2.1.2">Display Information of all File System Disk Space Usage</h3>
+
+<p>
+The same as above, but it also displays information of dummy file systems along 
+with all the file system disk usage and their memory utilization.
+</p>
+
+<p>
+[root@tecmint ~]# df -a
+</p>
+
+<p>
+Filesystem           1K-blocks      Used Available Use% Mounted on
+/dev/cciss/c0d0p2     78361192  23186116  51130312  32% /
+proc                         0         0         0   -  /proc
+sysfs                        0         0         0   -  /sys
+devpts                       0         0         0   -  /dev/pts
+/dev/cciss/c0d0p5     24797380  22273432   1243972  95% /home
+/dev/cciss/c0d0p3     29753588  25503792   2713984  91% /data
+/dev/cciss/c0d0p1       295561     21531    258770   8% /boot
+tmpfs                   257476         0    257476   0% /dev/shm
+none                         0         0         0   -  /proc/sys/fs/binfmt_misc
+sunrpc                       0         0         0   -  /var/lib/nfs/rpc_pipefs
+</p>
+
+<h3 id="toc_2.1.3">Show Disk Space Usage in Human Readable Format</h3>
+
+<p>
+Have you noticed that above commands displays information in bytes, which is not
+readable yet all, because we are in a habit of reading the sizes in megabytes, 
+gigabytes etc. as it makes very easy to understand and remember.
+</p>
+
+<p>
+The df command provides an option to display sizes in Human Readable formats by 
+using <code>-h</code> (prints the results in human readable format (e.g., 1K 2M 3G)).
+</p>
+
+<p>
+[root@tecmint ~]# df -h
+</p>
+
+<p>
+Filesystem            Size  Used Avail Use% Mounted on
+/dev/cciss/c0d0p2      75G   23G   49G  32% /
+/dev/cciss/c0d0p5      24G   22G  1.2G  95% /home
+/dev/cciss/c0d0p3      29G   25G  2.6G  91% /data
+/dev/cciss/c0d0p1     289M   22M  253M   8% /boot
+tmpfs                 252M     0  252M   0% /dev/shm
+</p>
+
+<h3 id="toc_2.1.4">Display Information of /home File System</h3>
+
+<p>
+To see the information of only device /home file system in human readable format
+use the following command.
+</p>
+
+<p>
+[root@tecmint ~]# df -hT /home
+</p>
+
+<p>
+Filesystem		Type    Size  Used Avail Use% Mounted on
+/dev/cciss/c0d0p5	ext3     24G   22G  1.2G  95% /home
+</p>
+
+<h3 id="toc_2.1.5">Display Information of File System in Bytes</h3>
+
+<p>
+To display all file system information and usage in 1024-byte blocks, use the 
+option <code>-k</code> (e.g. <code>–block-size=1K</code>) as follows.
+</p>
+
+<p>
+[root@tecmint ~]# df -k
+</p>
+
+<p>
+Filesystem           1K-blocks      Used Available Use% Mounted on
+/dev/cciss/c0d0p2     78361192  23187212  51129216  32% /
+/dev/cciss/c0d0p5     24797380  22273432   1243972  95% /home
+/dev/cciss/c0d0p3     29753588  25503792   2713984  91% /data
+/dev/cciss/c0d0p1       295561     21531    258770   8% /boot
+tmpfs                   257476         0    257476   0% /dev/shm
+</p>
+
+<h3 id="toc_2.1.6">Display Information of File System in MB</h3>
+
+<p>
+To display information of all file system usage in MB (Mega Byte) use the option
+as <code>-m</code>.
+</p>
+
+<p>
+[root@tecmint ~]# df -m
+</p>
+
+<p>
+Filesystem           1M-blocks      Used Available Use% Mounted on
+/dev/cciss/c0d0p2        76525     22644     49931  32% /
+/dev/cciss/c0d0p5        24217     21752      1215  95% /home
+/dev/cciss/c0d0p3        29057     24907      2651  91% /data
+/dev/cciss/c0d0p1          289        22       253   8% /boot
+tmpfs                      252         0       252   0% /dev/shm
+</p>
+
+<h3 id="toc_2.1.7">Display Information of File System in GB</h3>
+
+<p>
+To display information of all file system statistics in GB (Gigabyte) use the 
+option as <code>df -h</code>.
+</p>
+
+<p>
+[root@tecmint ~]# df -h
+</p>
+
+<p>
+Filesystem            Size  Used Avail Use% Mounted on
+/dev/cciss/c0d0p2      75G   23G   49G  32% /
+/dev/cciss/c0d0p5      24G   22G  1.2G  95% /home
+/dev/cciss/c0d0p3      29G   25G  2.6G  91% /data
+/dev/cciss/c0d0p1     289M   22M  253M   8% /boot
+tmpfs                 252M     0  252M   0% /dev/shm
+</p>
+
+<h3 id="toc_2.1.8">Display File System Inodes</h3>
+
+<p>
+Using <code>-i</code> switch will display the information of number of used inodes and 
+their percentage for the file system.
+</p>
+
+<p>
+[root@tecmint ~]# df -i
+</p>
+
+<p>
+Filesystem            Inodes   IUsed   IFree IUse% Mounted on
+/dev/cciss/c0d0p2    20230848  133143 20097705    1% /
+/dev/cciss/c0d0p5    6403712  798613 5605099   13% /home
+/dev/cciss/c0d0p3    7685440 1388241 6297199   19% /data
+/dev/cciss/c0d0p1      76304      40   76264    1% /boot
+tmpfs                  64369       1   64368    1% /dev/shm
+</p>
+
+<h3 id="toc_2.1.9">Display File System Type</h3>
+
+<p>
+If you notice all the above commands output, you will see there is no file 
+system type mentioned in the results. To check the file system type of your 
+system use the option <code>T</code>. It will display file system type along with other 
+information.
+</p>
+
+<p>
+[root@tecmint ~]# df -T
+</p>
+
+<p>
+Filesystem		Type   1K-blocks  Used      Available Use% Mounted on
+/dev/cciss/c0d0p2	ext3    78361192  23188812  51127616  32%   /
+/dev/cciss/c0d0p5	ext3    24797380  22273432  1243972   95%   /home
+/dev/cciss/c0d0p3	ext3    29753588  25503792  2713984   91%   /data
+/dev/cciss/c0d0p1	ext3    295561     21531    258770    8%    /boot
+tmpfs			tmpfs   257476         0    257476    0%   /dev/shm
+</p>
+
+<h3 id="toc_2.1.10">Include Certain File System Type</h3>
+
+<p>
+If you want to display certain file system type use the <code>-t</code> option. For example
+, the following command will only display ext3 file system.
+</p>
+
+<p>
+[root@tecmint ~]# df -t ext3
+</p>
+
+<p>
+Filesystem           1K-blocks      Used Available Use% Mounted on
+/dev/cciss/c0d0p2     78361192  23190072  51126356  32% /
+/dev/cciss/c0d0p5     24797380  22273432   1243972  95% /home
+/dev/cciss/c0d0p3     29753588  25503792   2713984  91% /data
+/dev/cciss/c0d0p1       295561     21531    258770   8% /boot
+</p>
+
+<h3 id="toc_2.1.11">Exclude Certain File System Type</h3>
+
+<p>
+If you want to display file system type that doesn’t belongs to ext3 type use 
+the option as <code>-x</code>. For example, the following command will only display other 
+file systems types other than ext3.
+</p>
+
+<p>
+[root@tecmint ~]# df -x ext3
+</p>
+
+<p>
+Filesystem           1K-blocks      Used Available Use% Mounted on
+tmpfs                   257476         0    257476   0% /dev/shm
+</p>
+
+<h3 id="toc_2.1.12">Display Information of df Command.</h3>
+
+<p>
+Using <code>–help</code> switch will display a list of available option that are used with
+<code>df</code> command.
+</p>
+
+<p>
+[root@tecmint ~]# df --help
+</p>
+
+<p>
+Usage: df [OPTION]... [FILE]...
+Show information about the file system on which each FILE resides,
+or all file systems by default.
+</p>
+
+<p>
+Mandatory arguments to long options are mandatory for short options too.
+</p>
+
+<ul>
+<li>
+<code>-a</code>, <code>--all</code>             include dummy file systems
+
+<li>
+<code>-B</code>, <code>--block-size=SIZE</code> use SIZE-byte blocks
+
+<li>
+<code>-h</code>, <code>--human-readable</code> print sizes in human readable format (1K 234M 2G)
+
+<li>
+<code>-H</code>, <code>--si</code> likewise, but use powers of 1000 not 1024
+
+<li>
+<code>-i</code>, <code>--inodes</code> list inode information instead of block usage
+
+<li>
+<code>-k</code> like --block-size=1K
+
+<li>
+<code>-l</code>, <code>--local</code> limit listing to local file systems
+
+<li>
+<code>--no-sync</code> do not invoke sync before getting usage info (default)
+
+<li>
+<code>-P</code>, <code>--portability</code> use the POSIX output format
+
+<li>
+<code>  </code>  <code>--sync</code> invoke sync before getting usage info
+
+<li>
+<code>-t</code>, <code>--type=TYPE</code> limit listing to file systems of type TYPE
+
+<li>
+<code>-T</code>, <code>--print-type</code> print file system type
+
+<li>
+<code>-x</code>, <code>--exclude-type=TYPE</code> limit listing to file systems not of type TYPE
+
+<li>
+<code>-v</code> (ignored)
+
+<li>
+<code>--help</code> display this help and exit
+
+<li>
+<code>--version</code> output version information and exit
+
+</ul>
+
+<p>
+SIZE may be (or may be an integer optionally followed by) one of following:
+kB 1000, K 1024, MB 1000*1000, M 1024*1024, and so on for G, T, P, E, Z, Y.
+</p>
+
+
+
+<h2 id="toc_2.2">du</h2>
+
+<p>
+估计文件的空间占用。 逐层统计文件（例如以递归方式）并输出摘要。
+</p>
+
+<p>
+root@tecmint:~# du
+</p>
+ 
+<p>
+8       ./Daily Pics/wp-polls/images/default_gradient
+8       ./Daily Pics/wp-polls/images/default
+32      ./Daily Pics/wp-polls/images
+8       ./Daily Pics/wp-polls/tinymce/plugins/polls/langs
+8       ./Daily Pics/wp-polls/tinymce/plugins/polls/img
+28      ./Daily Pics/wp-polls/tinymce/plugins/polls
+32      ./Daily Pics/wp-polls/tinymce/plugins
+36      ./Daily Pics/wp-polls/tinymce
+580     ./Daily Pics/wp-polls
+1456    ./Daily Pics
+36      ./Plugins/wordpress-author-box
+16180   ./Plugins
+12      ./May Articles 2013/Xtreme Download Manager
+4632    ./May Articles 2013/XCache
+</p>
+
+<p>
+注意: <code>df</code> 只显示文件系统的使用统计，但‘du‘统计目录内容。
+</p>
+
+<p>
+1. To find out the disk usage summary of a /home/tecmint directory tree and each of its sub directories. Enter the command as:
+</p>
+
+<p>
+[root@tecmint]# du  /home/tecmint
+</p>
+
+<p>
+40      /home/tecmint/downloads
+4       /home/tecmint/.mozilla/plugins
+4       /home/tecmint/.mozilla/extensions
+12      /home/tecmint/.mozilla
+12      /home/tecmint/.ssh
+689112  /home/tecmint/Ubuntu-12.10
+689360  /home/tecmint
+</p>
+
+<p>
+The output of the above command displays the number of disk blocks in the /home/tecmint directory along with its sub-directories.
+</p>
+
+<p>
+2. Using “-h” option with “du” command provides results in “Human Readable Format“. Means you can see sizes in Bytes, Kilobytes, Megabytes, Gigabytes etc.
+</p>
+
+<p>
+[root@tecmint]# du -h /home/tecmint
+</p>
+
+<p>
+40K     /home/tecmint/downloads
+4.0K    /home/tecmint/.mozilla/plugins
+4.0K    /home/tecmint/.mozilla/extensions
+12K     /home/tecmint/.mozilla
+12K     /home/tecmint/.ssh
+673M    /home/tecmint/Ubuntu-12.10
+674M    /home/tecmint
+</p>
+
+<p>
+3. To get the summary of a grand total disk usage size of an directory use the option “-s” as follows.
+</p>
+
+<p>
+[root@tecmint]# du -sh /home/tecmint
+</p>
+
+<p>
+674M    /home/tecmint
+</p>
+
+<p>
+4. Using “-a” flag with “du” command displays the disk usage of all the files and directories.
+</p>
+
+<p>
+[root@tecmint]# du -a /home/tecmint
+</p>
+
+<p>
+4       /home/tecmint/.bash_logout
+12      /home/tecmint/downloads/uploadprogress-1.0.3.1.tgz
+24      /home/tecmint/downloads/Phpfiles-org.tar.bz2
+40      /home/tecmint/downloads
+12      /home/tecmint/uploadprogress-1.0.3.1.tgz
+4       /home/tecmint/.mozilla/plugins
+4       /home/tecmint/.mozilla/extensions
+12      /home/tecmint/.mozilla
+4       /home/tecmint/.bashrc
+689108  /home/tecmint/Ubuntu-12.10/ubuntu-12.10-server-i386.iso
+689112  /home/tecmint/Ubuntu-12.10
+689360  /home/tecmint
+</p>
+
+<p>
+5. Using “-a” flag along with “-h” displays disk usage of all files and folders in human readeable format. The below output is more easy to understand as it shows the files in Kilobytes, Megabytes etc.
+</p>
+
+<p>
+[root@tecmint]# du -ah /home/tecmint
+</p>
+
+<p>
+4.0K    /home/tecmint/.bash_logout
+12K     /home/tecmint/downloads/uploadprogress-1.0.3.1.tgz
+24K     /home/tecmint/downloads/Phpfiles-org.tar.bz2
+40K     /home/tecmint/downloads
+12K     /home/tecmint/uploadprogress-1.0.3.1.tgz
+4.0K    /home/tecmint/.mozilla/plugins
+4.0K    /home/tecmint/.mozilla/extensions
+12K     /home/tecmint/.mozilla
+4.0K    /home/tecmint/.bashrc
+673M    /home/tecmint/Ubuntu-12.10/ubuntu-12.10-server-i386.iso
+673M    /home/tecmint/Ubuntu-12.10
+674M    /home/tecmint
+</p>
+
+<p>
+6. Find out the disk usage of a directory tree with its subtress in Kilobyte blcoks. Use the “-k” (displays size in 1024 bytes units).
+</p>
+
+<p>
+[root@tecmint]# du -k /home/tecmint
+40      /home/tecmint/downloads
+4       /home/tecmint/.mozilla/plugins
+4       /home/tecmint/.mozilla/extensions
+12      /home/tecmint/.mozilla
+12      /home/tecmint/.ssh
+689112  /home/tecmint/Ubuntu-12.10
+689360  /home/tecmint
+</p>
+
+<p>
+7. To get the summary of disk usage of directory tree along with its subtrees in Megabytes (MB) only. Use the option “-mh” as follows. The “-m” flag counts the blocks in MB units and “-h” stands for human readable format.
+</p>
+
+<p>
+[root@tecmint]# du -mh /home/tecmint
+</p>
+
+<p>
+40K     /home/tecmint/downloads
+4.0K    /home/tecmint/.mozilla/plugins
+4.0K    /home/tecmint/.mozilla/extensions
+12K     /home/tecmint/.mozilla
+12K     /home/tecmint/.ssh
+673M    /home/tecmint/Ubuntu-12.10
+674M    /home/tecmint
+</p>
+
+<p>
+8. The “-c” flag provides a grand total usage disk space at the last line. If your directory taken 674MB space, then the last last two line of the output would be.
+</p>
+
+<p>
+[root@tecmint]# du -ch /home/tecmint
+</p>
+
+<p>
+40K     /home/tecmint/downloads
+4.0K    /home/tecmint/.mozilla/plugins
+4.0K    /home/tecmint/.mozilla/extensions
+12K     /home/tecmint/.mozilla
+12K     /home/tecmint/.ssh
+673M    /home/tecmint/Ubuntu-12.10
+674M    /home/tecmint
+674M    total
+</p>
+
+<p>
+9. The below command calculates and displays the disk usage of all files and directories, but excludes the files that matches given pattern. The below command excludes the “.txt” files while calculating the total size of diretory. So, this way you can exclude any file formats by using flag “-–exclude“. See the output there is no txt files entry.
+</p>
+
+<p>
+[root@tecmint]# du -ah --exclude="*.txt" /home/tecmint
+</p>
+
+<p>
+4.0K    /home/tecmint/.bash_logout
+12K     /home/tecmint/downloads/uploadprogress-1.0.3.1.tgz
+24K     /home/tecmint/downloads/Phpfiles-org.tar.bz2
+40K     /home/tecmint/downloads
+12K     /home/tecmint/uploadprogress-1.0.3.1.tgz
+4.0K    /home/tecmint/.bash_history
+4.0K    /home/tecmint/.bash_profile
+4.0K    /home/tecmint/.mozilla/plugins
+4.0K    /home/tecmint/.mozilla/extensions
+12K     /home/tecmint/.mozilla
+4.0K    /home/tecmint/.bashrc
+24K     /home/tecmint/Phpfiles-org.tar.bz2
+4.0K    /home/tecmint/geoipupdate.sh
+4.0K    /home/tecmint/.zshrc
+120K    /home/tecmint/goaccess-0.4.2.tar.gz.1
+673M    /home/tecmint/Ubuntu-12.10/ubuntu-12.10-server-i386.iso
+673M    /home/tecmint/Ubuntu-12.10
+674M    /home/tecmint
+</p>
+
+<p>
+10. Display the disk usage based on modification of time, use the flag “–time” as shown below.
+</p>
+
+<p>
+[root@tecmint]# du -ha --time /home/tecmint
+</p>
+
+<p>
+4.0K    2012-10-12 22:32        /home/tecmint/.bash_logout
+12K     2013-01-19 18:48        /home/tecmint/downloads/uploadprogress-1.0.3.1.tgz
+24K     2013-01-19 18:48        /home/tecmint/downloads/Phpfiles-org.tar.bz2
+40K     2013-01-19 18:48        /home/tecmint/downloads
+12K     2013-01-19 18:32        /home/tecmint/uploadprogress-1.0.3.1.tgz
+4.0K    2012-10-13 00:11        /home/tecmint/.bash_history
+4.0K    2012-10-12 22:32        /home/tecmint/.bash_profile
+0       2013-01-19 18:32        /home/tecmint/xyz.txt
+0       2013-01-19 18:32        /home/tecmint/abc.txt
+4.0K    2012-10-12 22:32        /home/tecmint/.mozilla/plugins
+4.0K    2012-10-12 22:32        /home/tecmint/.mozilla/extensions
+12K     2012-10-12 22:32        /home/tecmint/.mozilla
+4.0K    2012-10-12 22:32        /home/tecmint/.bashrc
+24K     2013-01-19 18:32        /home/tecmint/Phpfiles-org.tar.bz2
+4.0K    2013-01-19 18:32        /home/tecmint/geoipupdate.sh
+4.0K    2012-10-12 22:32        /home/tecmint/.zshrc
+120K    2013-01-19 18:32        /home/tecmint/goaccess-0.4.2.tar.gz.1
+673M    2013-01-19 18:51        /home/tecmint/Ubuntu-12.10/ubuntu-12.10-server-i386.iso
+673M    2013-01-19 18:51        /home/tecmint/Ubuntu-12.10
+674M    2013-01-19 18:52        /home/tecmint
+</p>
+ </div>
+</body>
+</html>

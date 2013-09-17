@@ -55,6 +55,9 @@ Vim：[[vim]]
 
 VimWiki：[[vimwiki]]
 
+Emmet-vim：[[Emmet-vim]]
+
+
 == IDE ==
 
 [[eclipse]]
@@ -97,6 +100,8 @@ DB2： [[DB2]]
 
 [[linux.disc]]
 
+[[linux.fun]]
+
 [[raspberry.pi]]
 
 == 桌面环境 ==
@@ -112,6 +117,8 @@ DB2： [[DB2]]
 == 网络 ==
 
 网络配置：[[linux.net]]
+
+网络工具：[[linux.net.tools]]
 
 网络故障：[[linux.net.problem]]
 

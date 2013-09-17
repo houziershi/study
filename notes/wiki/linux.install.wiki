@@ -133,6 +133,10 @@ useradd user001 -g user001 -s /bin/false
 
 == sudo ==
 
+“To err is human, but to really foul up everything, you need root password.”
+
+“人非圣贤孰能无过，但是拥有root密码就真的万劫不复了。”
+
 安装`sudo`：
 
 {{{class="brush: bash"

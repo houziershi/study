@@ -1,0 +1,366 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>Emmet-vim</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+<h1>Emmet-vim</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">安装</a>
+<li><a href="#toc_2">基本操作</a>
+<ul>
+<li><a href="#toc_2.1">生成HTML</a>
+<li><a href="#toc_2.2">扩展缩写</a>
+<li><a href="#toc_2.3">包围缩写</a>
+<li><a href="#toc_2.4">选中整个标签</a>
+<li><a href="#toc_2.5">选中整个标签内容</a>
+<li><a href="#toc_2.6">下一个编辑点</a>
+<li><a href="#toc_2.7">上一个编辑点</a>
+<li><a href="#toc_2.8">更改<img>大小</a>
+<li><a href="#toc_2.9">合并多行</a>
+<li><a href="#toc_2.10">删除标签</a>
+<li><a href="#toc_2.11">Split/Join Tag</a>
+<li><a href="#toc_2.12">切换注释</a>
+<li><a href="#toc_2.13">从URL生成锚点</a>
+<li><a href="#toc_2.14">从URL生成引用文本</a>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">安装</h1>
+
+<p>
+下载： <a href="https://github.com/mattn/emmet-vim">https://github.com/mattn/emmet-vim</a>
+</p>
+
+<p>
+解压到<code>.vim</code>目录即可。
+</p>
+
+<p>
+一般只对html文档起作为，但可以配置对其他的文件也生效：
+</p>
+
+<pre class="brush: bash;">
+  # cat &gt;&gt; ~/.vimrc
+  let g:user_emmet_settings = {
+  \  `php` : {
+  \    `extends` : `html`,
+  \    `filters` : `c`,
+  \  },
+  \  `xml` : {
+  \    `extends` : `html`,
+  \  },
+  \  `haml` : {
+  \    `extends` : `html`,
+  \  },
+  \}
+</pre>
+
+<h1 id="toc_2">基本操作</h1>
+
+<h2 id="toc_2.1">生成HTML</h2>
+
+<pre class="brush: html;">
+html:5
+</pre>
+
+<p>
+插入模式下<code>&lt;c-y&gt;,</code>：
+</p>
+
+<pre class="brush: html;">
+&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+	&lt;meta charset="UTF-8"&gt;
+	&lt;title&gt;&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+	
+&lt;/body&gt;
+&lt;/html&gt;
+</pre>
+
+<h2 id="toc_2.2">扩展缩写</h2>
+
+<ol>
+<li>
+<code>&gt;</code>下级标签
+
+<li>
+<code>#</code>标签属性
+
+<li>
+<code>$</code>重复标识
+
+<li>
+<code>*</code>重复次数
+
+</ol>
+
+<pre class="brush: html;">
+div&gt;p#foo$*3&gt;a
+</pre>
+
+<p>
+插入模式下<code>&lt;c-y&gt;,</code>：
+</p>
+
+<pre class="brush: html;">
+	&lt;div&gt;
+		&lt;p id="foo1"&gt;&lt;a href=""&gt;&lt;/a&gt;&lt;/p&gt;
+		&lt;p id="foo2"&gt;&lt;a href=""&gt;&lt;/a&gt;&lt;/p&gt;
+		&lt;p id="foo3"&gt;&lt;a href=""&gt;&lt;/a&gt;&lt;/p&gt;
+	&lt;/div&gt;
+</pre>
+
+<h2 id="toc_2.3">包围缩写</h2>
+
+<pre class="brush: html;">
+  test1
+  test2
+  test3
+</pre>
+
+<p>
+普通模式<code>&lt;c-v&gt;</code>选中这三行再<code>&lt;c-y&gt;,</code>，回显<code>Tag:</code>提示输入用什么标签包围，输入<code>ul&gt;li*</code>
+：
+</p>
+
+<pre class="brush: html;">
+	&lt;ul&gt;
+		&lt;li&gt;test1&lt;/li&gt;
+		&lt;li&gt;test2&lt;/li&gt;
+		&lt;li&gt;test3&lt;/li&gt;
+	&lt;/ul&gt;
+</pre>
+
+<p>
+如果不用<code>*</code>而是整个包起来的像是<code>blockquote</code>这种标签，就是这样：
+</p>
+
+<pre class="brush: html;">
+	&lt;blockquote&gt;
+		test1
+		test2
+		test3
+	&lt;/blockquote&gt;
+</pre>
+
+<h2 id="toc_2.4">选中整个标签</h2>
+
+<p>
+插入模式下<code>&lt;c-y&gt;d</code>
+</p>
+
+<h2 id="toc_2.5">选中整个标签内容</h2>
+
+<p>
+插入模式下<code>&lt;c-y&gt;D</code>
+</p>
+
+<h2 id="toc_2.6">下一个编辑点</h2>
+
+<p>
+插入模式下<code>&lt;c-y&gt;n</code>
+</p>
+
+<h2 id="toc_2.7">上一个编辑点</h2>
+
+<p>
+插入模式下<code>&lt;c-y&gt;N</code>
+</p>
+
+<h2 id="toc_2.8">更改<img>大小</h2>
+
+<p>
+Move cursor to the img tag.
+</p>
+
+<pre class="brush: html;">
+&lt;img src="foo.png" /&gt;
+</pre>
+
+<p>
+Type <code>&lt;c-y&gt;i</code> on img tag。注意只能取得本地图片的大小：
+</p>
+
+<pre class="brush: html;">
+&lt;img src="foo.png" width="32" height="48" /&gt;
+</pre>
+
+<h2 id="toc_2.9">合并多行</h2>
+
+<p>
+select the lines, which include <code>&lt;li&gt;</code>
+</p>
+
+<pre class="brush: html;">
+&lt;ul&gt;
+	&lt;li class="list1"&gt;&lt;/li&gt;
+	&lt;li class="list2"&gt;&lt;/li&gt;
+	&lt;li class="list3"&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</pre>
+
+<p>
+and then type <code>&lt;c-y&gt;m</code>
+</p>
+
+<pre class="brush: html;">
+&lt;ul&gt;
+	&lt;li class="list1"&gt;&lt;/li&gt;&lt;li class="list2"&gt;&lt;/li&gt;&lt;li class="list3"&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</pre>
+
+<h2 id="toc_2.10">删除标签</h2>
+
+<p>
+Move cursor in block
+</p>
+
+<pre class="brush: html;">
+&lt;div class="foo"&gt;
+	&lt;a&gt;cursor is here&lt;/a&gt;
+&lt;/div&gt;
+</pre>
+
+<p>
+Type <code>&lt;c-y&gt;k</code> in insert mode.
+</p>
+
+<pre class="brush: html;">
+&lt;div class="foo"&gt;
+
+&lt;/div&gt;
+</pre>
+
+<p>
+And type <code>&lt;c-y&gt;k</code> in there again.外部标签也被删除了：
+</p>
+
+<pre class="brush: html;">
+</pre>
+
+<h2 id="toc_2.11">Split/Join Tag</h2>
+
+<p>
+Move the cursor inside block
+</p>
+
+<pre class="brush: html;">
+&lt;div class="foo"&gt;
+	cursor is here
+&lt;/div&gt;
+</pre>
+
+<p>
+Type <code>&lt;c-y&gt;j</code> in insert mode.
+</p>
+
+<pre class="brush: html;">
+&lt;div class="foo"/&gt;
+</pre>
+
+<p>
+And then type <code>&lt;c-y&gt;j</code> in there again.
+</p>
+
+<pre class="brush: html;">
+&lt;div class="foo"&gt;
+&lt;/div&gt;
+</pre>
+
+<h2 id="toc_2.12">切换注释</h2>
+
+<p>
+Move cursor inside the block
+</p>
+
+<pre class="brush: html;">
+&lt;div&gt;
+	hello world
+&lt;/div&gt;
+</pre>
+
+<p>
+Type <code>&lt;c-y&gt;/</code> in insert mode.
+</p>
+
+<pre class="brush: html;">
+&lt;!-- &lt;div&gt;
+	hello world
+&lt;/div&gt; --&gt;
+</pre>
+
+<p>
+Type <code>&lt;c-y&gt;/</code> in there again.
+</p>
+
+<pre class="brush: html;">
+&lt;div&gt;
+	hello world
+&lt;/div&gt;
+</pre>
+
+<h2 id="toc_2.13">从URL生成锚点</h2>
+
+<p>
+Move cursor to URL
+</p>
+
+<pre class="brush: html;">
+http://www.google.com/
+</pre>
+
+<p>
+Type <code>&lt;c-y&gt;a</code>
+</p>
+
+<pre class="brush: html;">
+&lt;a href="http://www.google.com/"&gt;Google&lt;/a&gt;
+</pre>
+
+<h2 id="toc_2.14">从URL生成引用文本</h2>
+
+<p>
+Move cursor to the URL
+</p>
+
+<pre class="brush: html;">
+http://github.com/
+</pre>
+
+<p>
+Type <code>&lt;c-y&gt;A</code>
+</p>
+
+<pre class="brush: html;">
+&lt;blockquote class="quote"&gt;
+	&lt;a href="http://github.com/"&gt;Secure source code hosting and collaborative development - GitHub&lt;/a&gt;&lt;br /&gt;
+	&lt;p&gt;How does it work? Get up and running in seconds by forking a project, pushing an existing repository...&lt;/p&gt;
+	&lt;cite&gt;http://github.com/&lt;/cite&gt;
+&lt;/blockquote&gt;
+</pre>
+ </div>
+</body>
+</html>

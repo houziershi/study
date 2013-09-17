@@ -1,0 +1,369 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>网络工具</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+<h1>网络工具</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">netcat</a>
+<ul>
+<li><a href="#toc_1.1">在服务器-客户端架构上使用Netcat</a>
+<li><a href="#toc_1.2">使用 Netcat 来传输文件</a>
+<li><a href="#toc_1.3">Netcat 支持超时控制</a>
+<li><a href="#toc_1.4">Netcat 支持 IPv6</a>
+<li><a href="#toc_1.5">在Netcat中禁止从标准输入中读取数据</a>
+<li><a href="#toc_1.6">强制 Netcat 服务器端保持启动状态</a>
+<li><a href="#toc_1.7">配置Netcat客户端不会因为EOF而退出</a>
+<li><a href="#toc_1.8">使用 Netcat 来处理 UDP 协议</a>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">netcat</h1>
+
+<p>
+Netcat或者叫<code>nc</code>是Linux下的一个用于调试和检查网络工具包。可用于创建TCP/IP连接，
+最大的用途就是用来处理 TCP/UDP 套接字。
+</p>
+
+<p>
+这里我们将通过一些实例来学习 netcat 命令。
+</p>
+
+<h2 id="toc_1.1">在服务器-客户端架构上使用Netcat</h2>
+
+<p>
+netcat 工具可运行于服务器模式，侦听指定端口：
+</p>
+
+<pre class="brush: bash">
+$ nc -l 2389
+</pre>
+
+<p>
+然后你可以使用客户端模式来连接到 2389 端口：
+</p>
+
+<pre class="brush: bash">
+$ nc localhost 2389
+</pre>
+
+<p>
+现在如果你输入一些文本，它将被发送到服务器端：
+</p>
+
+<pre class="brush: bash">
+$ nc localhost 2389
+HI, oschina
+</pre>
+
+<p>
+在服务器的终端窗口将会显示下面内容：
+</p>
+
+<pre class="brush: bash">
+$ nc -l 2389
+HI, oschina
+</pre>
+
+<h2 id="toc_1.2">使用 Netcat 来传输文件</h2>
+
+<p>
+netcat 工具还可用来传输文件，在客户端，假设我们有一个 testfile 文件：
+</p>
+
+<pre class="brush: bash">
+$ cat testfile
+hello oschina
+</pre>
+
+<p>
+而在服务器端有一个空文件名为 test
+</p>
+
+<p>
+然后我们使用如下命令来启用服务器端：
+</p>
+
+<pre class="brush: bash">
+$ nc -l 2389 &gt; test
+</pre>
+
+<p>
+紧接着运行客户端：
+</p>
+
+<pre class="brush: bash">
+cat testfile | nc localhost 2389
+</pre>
+
+<p>
+然后你停止服务器端，你可以查看 test 内容就是刚才客户端传过来的 testfile 文件的
+内容：
+</p>
+
+<pre class="brush: bash">
+$ cat test
+hello oschina
+</pre>
+
+<h2 id="toc_1.3">Netcat 支持超时控制</h2>
+
+<p>
+多数情况我们不希望连接一直保持，那么我们可以使用<code>-w</code>参数来指定连接的空闲超时时间
+，该参数紧接一个数值，代表秒数，如果连接超过指定时间则连接会被终止。
+</p>
+
+<p>
+服务器:
+</p>
+
+<pre class="brush: bash">
+nc -l 2389
+</pre>
+
+<p>
+客户端:
+</p>
+
+<pre class="brush: bash">
+$ nc -w 10 localhost 2389
+</pre>
+
+<p>
+该连接将在 10 秒后中断。
+</p>
+
+<p>
+注意: 不要在服务器端同时使用<code>-w</code>和<code>-l</code>参数，因为<code>-w</code>参数将在服务器端无效果。
+</p>
+
+<h2 id="toc_1.4">Netcat 支持 IPv6</h2>
+
+<p>
+netcat 的<code>-4</code>和<code>-6</code>参数用来指定IP地址类型，分别是<code>IPv4</code>和<code>IPv6</code>：
+</p>
+
+<p>
+服务器端：
+</p>
+	
+<pre class="brush: bash">
+$ nc -4 -l 2389
+</pre>
+
+<p>
+客户端：
+</p>
+	
+<pre class="brush: bash">
+$ nc -4 localhost 2389
+</pre>
+
+<p>
+然后我们可以使用<code>netstat</code>命令来查看网络的情况：
+</p>
+
+<pre class="brush: bash">
+$ netstat | grep 2389
+tcp        0      0 localhost:2389          localhost:50851         ESTABLISHED
+tcp        0      0 localhost:50851         localhost:2389          ESTABLISHED
+</pre>
+
+<p>
+接下来我们看看IPv6的情况：
+</p>
+
+<p>
+服务器端：
+</p>
+
+<pre class="brush: bash">
+$ nc -6 -l 2389
+</pre>
+
+<p>
+客户端：
+</p>
+	
+<pre class="brush: bash">
+$ nc -6 localhost 2389
+</pre>
+
+<p>
+再次运行<code>netstat</code>命令：
+</p>
+
+<pre class="brush: bash">
+$ netstat | grep 2389
+tcp6       0      0 localhost:2389          localhost:33234         ESTABLISHED
+tcp6       0      0 localhost:33234         localhost:2389          ESTABLISHED
+</pre>
+
+<p>
+前缀是 tcp6 表示使用的是 IPv6 的地址。
+</p>
+
+<h2 id="toc_1.5">在Netcat中禁止从标准输入中读取数据</h2>
+
+<p>
+该功能使用<code>-d</code>参数，请看下面例子：
+</p>
+
+<p>
+服务器端：
+</p>
+
+<pre class="brush: bash">
+$ nc -l 2389
+</pre>
+
+<p>
+客户端：
+</p>
+
+<pre class="brush: bash">
+$ nc -d localhost 2389
+Hi
+</pre>
+
+<p>
+你输入的 Hi 文本并不会送到服务器端。
+</p>
+
+<h2 id="toc_1.6">强制 Netcat 服务器端保持启动状态</h2>
+
+<p>
+如果连接到服务器的客户端断开连接，那么服务器端也会跟着退出。
+</p>
+
+<p>
+服务器端：
+</p>
+
+<pre class="brush: bash">
+$ nc -l 2389
+</pre>
+
+<p>
+客户端：
+</p>
+
+<pre class="brush: bash">
+$ nc localhost 2389
+^C
+</pre>
+
+<p>
+服务器端：
+</p>
+
+<pre class="brush: bash">
+$ nc -l 2389
+$
+</pre>
+
+<p>
+上述例子中，但客户端断开时服务器端也立即退出。
+</p>
+
+<p>
+我们可以通过<code>-k</code>参数来控制让服务器不会因为客户端的断开连接而退出。
+</p>
+
+<p>
+服务器端：
+</p>
+
+<pre class="brush: bash">
+$ nc -k -l 2389
+</pre>
+
+<p>
+客户端：
+</p>
+
+<pre class="brush: bash">
+$ nc localhost 2389
+^C
+</pre>
+
+<p>
+服务器端：
+</p>
+
+<pre class="brush: bash">
+$ nc -k -l 2389
+</pre>
+
+<h2 id="toc_1.7">配置Netcat客户端不会因为EOF而退出</h2>
+
+<p>
+Netcat客户端可以通过<code>-q</code>参数来控制接收到<code>EOF</code>后隔多长时间才退出，该参数的单位是
+秒：
+</p>
+
+<p>
+客户端使用如下方式启动：
+</p>
+
+<pre class="brush: bash">
+nc  -q 5  localhost 2389
+</pre>
+
+<p>
+现在如果客户端接收到<code>EOF</code>，它将等待5秒后退出。
+</p>
+
+<h2 id="toc_1.8">使用 Netcat 来处理 UDP 协议</h2>
+
+<p>
+netcat默认是使用TCP协议，但也支持UDP，可使用<code>-u</code>参数来启用UDP协议通讯。
+</p>
+
+<p>
+服务器端：
+</p>
+
+<pre class="brush: bash">
+$ nc -4 -u -l 2389
+</pre>
+
+<p>
+客户端：
+</p>
+
+<pre class="brush: bash">
+$ nc -4 -u localhost 2389
+</pre>
+
+<p>
+这样客户端和服务器端都使用了UDP协议，可通过netstat命令来查看：
+</p>
+
+<pre class="brush: bash">
+$ netstat | grep 2389
+udp        0      0 localhost:42634         localhost:2389          ESTABLISHED
+</pre>
+ </div>
+</body>
+</html>

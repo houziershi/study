@@ -1,0 +1,254 @@
+%title Emmet-vim
+
+%toc Emmet-vim
+
+= 安装 =
+
+下载： https://github.com/mattn/emmet-vim
+
+解压到`.vim`目录即可。
+
+一般只对html文档起作为，但可以配置对其他的文件也生效：
+
+{{{class="brush: bash;"
+  # cat >> ~/.vimrc
+  let g:user_emmet_settings = {
+  \  `php` : {
+  \    `extends` : `html`,
+  \    `filters` : `c`,
+  \  },
+  \  `xml` : {
+  \    `extends` : `html`,
+  \  },
+  \  `haml` : {
+  \    `extends` : `html`,
+  \  },
+  \}
+}}}
+
+= 基本操作 =
+
+== 生成HTML ==
+
+{{{class="brush: html;"
+html:5
+}}}
+
+插入模式下`<c-y>,`：
+
+{{{class="brush: html;"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title></title>
+</head>
+<body>
+	
+</body>
+</html>
+}}}
+
+== 扩展缩写 ==
+
+# `>`下级标签
+# `#`标签属性
+# `$`重复标识
+# `*`重复次数
+
+{{{class="brush: html;"
+div>p#foo$*3>a
+}}}
+
+插入模式下`<c-y>,`：
+
+{{{class="brush: html;"
+	<div>
+		<p id="foo1"><a href=""></a></p>
+		<p id="foo2"><a href=""></a></p>
+		<p id="foo3"><a href=""></a></p>
+	</div>
+}}}
+
+== 包围缩写 ==
+
+{{{class="brush: html;"
+  test1
+  test2
+  test3
+}}}
+
+普通模式`<c-v>`选中这三行再`<c-y>,`，回显`Tag:`提示输入用什么标签包围，输入`ul>li*`
+：
+
+{{{class="brush: html;"
+	<ul>
+		<li>test1</li>
+		<li>test2</li>
+		<li>test3</li>
+	</ul>
+}}}
+
+如果不用`*`而是整个包起来的像是`blockquote`这种标签，就是这样：
+
+{{{class="brush: html;"
+	<blockquote>
+		test1
+		test2
+		test3
+	</blockquote>
+}}}
+
+== 选中整个标签 ==
+
+插入模式下`<c-y>d`
+
+== 选中整个标签内容 ==
+
+插入模式下`<c-y>D`
+
+== 下一个编辑点 ==
+
+插入模式下`<c-y>n`
+
+== 上一个编辑点 ==
+
+插入模式下`<c-y>N`
+
+== 更改<img>大小 ==
+
+Move cursor to the img tag.
+
+{{{class="brush: html;"
+<img src="foo.png" />
+}}}
+
+Type `<c-y>i` on img tag。注意只能取得本地图片的大小：
+
+{{{class="brush: html;"
+<img src="foo.png" width="32" height="48" />
+}}}
+
+== 合并多行  ==
+
+select the lines, which include `<li>`
+
+{{{class="brush: html;"
+<ul>
+	<li class="list1"></li>
+	<li class="list2"></li>
+	<li class="list3"></li>
+</ul>
+}}}
+
+and then type `<c-y>m`
+
+{{{class="brush: html;"
+<ul>
+	<li class="list1"></li><li class="list2"></li><li class="list3"></li>
+</ul>
+}}}
+
+== 删除标签 ==
+
+Move cursor in block
+
+{{{class="brush: html;"
+<div class="foo">
+	<a>cursor is here</a>
+</div>
+}}}
+
+Type `<c-y>k` in insert mode.
+
+{{{class="brush: html;"
+<div class="foo">
+
+</div>
+}}}
+
+And type `<c-y>k` in there again.外部标签也被删除了：
+
+{{{class="brush: html;"
+}}}
+
+== Split/Join Tag ==
+
+Move the cursor inside block
+
+{{{class="brush: html;"
+<div class="foo">
+	cursor is here
+</div>
+}}}
+
+Type `<c-y>j` in insert mode.
+
+{{{class="brush: html;"
+<div class="foo"/>
+}}}
+
+And then type `<c-y>j` in there again.
+
+{{{class="brush: html;"
+<div class="foo">
+</div>
+}}}
+
+== 切换注释 ==
+
+Move cursor inside the block
+
+{{{class="brush: html;"
+<div>
+	hello world
+</div>
+}}}
+
+Type `<c-y>/` in insert mode.
+
+{{{class="brush: html;"
+<!-- <div>
+	hello world
+</div> -->
+}}}
+
+Type `<c-y>/` in there again.
+
+{{{class="brush: html;"
+<div>
+	hello world
+</div>
+}}}
+
+== 从URL生成锚点 ==
+
+Move cursor to URL
+
+{{{class="brush: html;"
+http://www.google.com/
+}}}
+
+Type `<c-y>a`
+
+{{{class="brush: html;"
+<a href="http://www.google.com/">Google</a>
+}}}
+
+== 从URL生成引用文本 ==
+
+Move cursor to the URL
+
+{{{class="brush: html;"
+http://github.com/
+}}}
+
+Type `<c-y>A`
+
+{{{class="brush: html;"
+<blockquote class="quote">
+	<a href="http://github.com/">Secure source code hosting and collaborative development - GitHub</a><br />
+	<p>How does it work? Get up and running in seconds by forking a project, pushing an existing repository...</p>
+	<cite>http://github.com/</cite>
+</blockquote>
+}}}

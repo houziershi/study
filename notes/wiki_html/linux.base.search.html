@@ -1,0 +1,630 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>查找</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>查找</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">Find</a>
+<ul>
+<li><a href="#toc_1.1">Basic Find Commands for Finding Files with Names</a>
+<ul>
+<li><a href="#toc_1.1.1">Find Files Using Name in Current Directory</a>
+<li><a href="#toc_1.1.2">Find Files Under Home Directory</a>
+<li><a href="#toc_1.1.3">Find Files Using Name and Ignoring Case</a>
+<li><a href="#toc_1.1.4">Find Directories Using Name</a>
+<li><a href="#toc_1.1.5">Find PHP Files Using Name</a>
+<li><a href="#toc_1.1.6">Find all PHP Files in Directory</a>
+</ul>
+<li><a href="#toc_1.2">Find Files Based on their Permissions</a>
+<ul>
+<li><a href="#toc_1.2.1">Find Files With <code>777</code> Permissions</a>
+<li><a href="#toc_1.2.2">Find Files Without 777 Permissions</a>
+<li><a href="#toc_1.2.3">Find SGID Files with 644 Permissions</a>
+<li><a href="#toc_1.2.4">Find Sticky Bit Files with 551 Permissions</a>
+<li><a href="#toc_1.2.5">Find SUID Files</a>
+<li><a href="#toc_1.2.6">Find SGID Files</a>
+<li><a href="#toc_1.2.7">Find Read Only Files</a>
+<li><a href="#toc_1.2.8">Find Executable Files</a>
+<li><a href="#toc_1.2.9">Find Files with 777 Permissions and Chmod to 644</a>
+<li><a href="#toc_1.2.10">Find Directories with 777 Permissions and Chmod to 755</a>
+<li><a href="#toc_1.2.11">Find and remove single File</a>
+<li><a href="#toc_1.2.12">Find and remove Multiple File</a>
+<li><a href="#toc_1.2.13">Find all Empty Files</a>
+<li><a href="#toc_1.2.14">Find all Empty Directories</a>
+<li><a href="#toc_1.2.15">File all Hidden Files</a>
+</ul>
+<li><a href="#toc_1.3">Search Files Based On Owners and Groups</a>
+<ul>
+<li><a href="#toc_1.3.1">Find Single File Based on User</a>
+<li><a href="#toc_1.3.2">Find all Files Based on User</a>
+<li><a href="#toc_1.3.3">Find all Files Based on Group</a>
+<li><a href="#toc_1.3.4">Find Particular Files of User</a>
+</ul>
+<li><a href="#toc_1.4">Find Files and Directories Based on Date and Time</a>
+<ul>
+<li><a href="#toc_1.4.1">Find Last 50 Days Modified Files</a>
+<li><a href="#toc_1.4.2">Find Last 50 Days Accessed Files</a>
+<li><a href="#toc_1.4.3">Find Last 50-100 Days Modified Files</a>
+<li><a href="#toc_1.4.4">Find Changed Files in Last 1 Hour</a>
+<li><a href="#toc_1.4.5">Find Modified Files in Last 1 Hour</a>
+<li><a href="#toc_1.4.6">Find Accessed Files in Last 1 Hour</a>
+</ul>
+<li><a href="#toc_1.5">Find Files and Directories Based on Size</a>
+<ul>
+<li><a href="#toc_1.5.1">Find 50MB Files</a>
+<li><a href="#toc_1.5.2">Find Size between 50MB – 100MB</a>
+<li><a href="#toc_1.5.3">Find and Delete 100MB Files</a>
+<li><a href="#toc_1.5.4">Find Specific Files and Delete</a>
+</ul>
+</ul>
+<li><a href="#toc_2">grep</a>
+</ul>
+</div>
+
+
+
+<h1 id="toc_1">Find</h1>
+
+<p>
+搜索指定目录下的文件，从开始于父目录，然后搜索子目录。
+</p>
+
+<pre class="brush: bash">
+root@tecmint:~# find -name *.sh
+ 
+./Desktop/load.sh
+./Desktop/test.sh
+./Desktop/shutdown.sh
+./Binary/firefox/run-mozilla.sh
+./Downloads/kdewebdev-3.5.8/quanta/scripts/externalpreview.sh
+./Downloads/kdewebdev-3.5.8/admin/doxygen.sh
+./Downloads/kdewebdev-3.5.8/admin/cvs.sh
+./Downloads/kdewebdev-3.5.8/admin/ltmain.sh
+./Downloads/wheezy-nv-install.sh
+</pre>
+
+<p>
+注意： <code>-name</code>选项是搜索大小写敏感。可以使用<code>-iname</code>选项，这样在搜索中可以忽略
+大小写。（<code>*</code>是通配符，可以搜索所有的文件；<code>.sh</code>你可以使用文件名或者文件名的一
+部分来制定输出结果）
+</p>
+
+<pre class="brush: bash">
+root@tecmint:~# find -iname *.SH ( find -iname *.Sh /  find -iname *.sH)
+ 
+./Desktop/load.sh
+./Desktop/test.sh
+./Desktop/shutdown.sh
+./Binary/firefox/run-mozilla.sh
+./Downloads/kdewebdev-3.5.8/quanta/scripts/externalpreview.sh
+./Downloads/kdewebdev-3.5.8/admin/doxygen.sh
+./Downloads/kdewebdev-3.5.8/admin/cvs.sh
+./Downloads/kdewebdev-3.5.8/admin/ltmain.sh
+./Downloads/wheezy-nv-install.sh
+
+root@tecmint:~# find -name *.tar.gz
+ 
+/var/www/modules/update/tests/aaa_update_test.tar.gz
+./var/cache/flashplugin-nonfree/install_flash_player_11_linux.i386.tar.gz
+./home/server/Downloads/drupal-7.22.tar.gz
+./home/server/Downloads/smtp-7.x-1.0.tar.gz
+./home/server/Downloads/noreqnewpass-7.x-1.2.tar.gz
+./usr/share/gettext/archive.git.tar.gz
+./usr/share/doc/apg/php.tar.gz
+./usr/share/doc/festival/examples/speech_pm_1.0.tar.gz
+./usr/share/doc/argyll/examples/spyder2.tar.gz
+./usr/share/usb_modeswitch/configPack.tar.gz
+</pre>
+
+<p>
+注意：以上命令查找根目录下和所有文件夹以及加载的设备的子目录下的所有包含<code>tar.gz</code>
+的文件。
+</p>
+
+<h2 id="toc_1.1">Basic Find Commands for Finding Files with Names</h2>
+
+<h3 id="toc_1.1.1">Find Files Using Name in Current Directory</h3>
+
+<p>
+Find all the files whose name is tecmint.txt in a current working directory.
+</p>
+
+<pre class="brush: bash">
+# find . -name tecmint.txt
+
+./tecmint.txt
+</pre>
+
+<h3 id="toc_1.1.2">Find Files Under Home Directory</h3>
+
+<p>
+Find all the files under <code>/home</code> directory with name <code>tecmint.txt</code>.
+</p>
+
+<pre class="brush: bash">
+# find /home -name tecmint.txt
+
+/home/tecmint.txt
+</pre>
+
+<h3 id="toc_1.1.3">Find Files Using Name and Ignoring Case</h3>
+
+<p>
+Find all the files whose name is <code>tecmint.txt</code> and contains both capital and 
+small letters in <code>/home</code> directory.
+</p>
+
+<pre class="brush: bash">
+# find /home -iname tecmint.txt
+
+./tecmint.txt
+./Tecmint.txt
+</pre>
+
+<h3 id="toc_1.1.4">Find Directories Using Name</h3>
+
+<p>
+Find all directories whose name is <code>Tecmint</code> in <code>/</code> directory.
+</p>
+
+<pre class="brush: bash">
+# find / -type d -name Tecmint
+
+/Tecmint
+</pre>
+
+<h3 id="toc_1.1.5">Find PHP Files Using Name</h3>
+
+<p>
+Find all php files whose name is <code>tecmint.php</code> in a current working directory.
+</p>
+
+<pre class="brush: bash">
+# find . -type f -name tecmint.php
+
+./tecmint.php
+</pre>
+
+<h3 id="toc_1.1.6">Find all PHP Files in Directory</h3>
+
+<p>
+Find all php files in a directory.
+</p>
+
+<pre class="brush: bash">
+# find . -type f -name "*.php"
+
+./tecmint.php
+./login.php
+./index.php
+</pre>
+
+<h2 id="toc_1.2">Find Files Based on their Permissions</h2>
+
+<h3 id="toc_1.2.1">Find Files With <code>777</code> Permissions</h3>
+
+<p>
+Find all the files whose permissions are <code>777</code>.
+</p>
+
+<pre class="brush: bash">
+# find . -type f -perm 0777 -print
+</pre>
+
+<h3 id="toc_1.2.2">Find Files Without 777 Permissions</h3>
+
+<p>
+Find all the files without permission <code>777</code>.
+</p>
+
+<pre class="brush: bash">
+# find / -type f ! -perm 777
+</pre>
+
+<h3 id="toc_1.2.3">Find SGID Files with 644 Permissions</h3>
+
+<p>
+Find all the SGID bit files whose permissions set to <code>644</code>.
+</p>
+
+<pre class="brush: bash">
+# find / -perm 2644
+</pre>
+
+<h3 id="toc_1.2.4">Find Sticky Bit Files with 551 Permissions</h3>
+
+<p>
+Find all the Sticky Bit set files whose permission are <code>551</code>.
+</p>
+
+<pre class="brush: bash">
+# find / -perm 1551
+</pre>
+
+<h3 id="toc_1.2.5">Find SUID Files</h3>
+
+<p>
+Find all SUID set files.
+</p>
+
+<pre class="brush: bash">
+# find / -perm /u=s
+</pre>
+
+<h3 id="toc_1.2.6">Find SGID Files</h3>
+
+<p>
+Find all SGID set files.
+</p>
+
+<pre class="brush: bash">
+# find / -perm /g+s
+</pre>
+
+<h3 id="toc_1.2.7">Find Read Only Files</h3>
+
+<p>
+Find all Read Only files.
+</p>
+
+<pre class="brush: bash">
+# find / -perm /u=r
+</pre>
+
+<h3 id="toc_1.2.8">Find Executable Files</h3>
+
+<p>
+Find all Executable files.
+</p>
+
+<pre class="brush: bash">
+# find / -perm /a=x
+</pre>
+
+<h3 id="toc_1.2.9">Find Files with 777 Permissions and Chmod to 644</h3>
+
+<p>
+Find all <code>777</code> permission files and use chmod command to set permissions to 
+<code>644</code>.
+</p>
+
+<pre class="brush: bash">
+# find / -type f -perm 0777 -print -exec chmod 644 {} \;
+</pre>
+
+<h3 id="toc_1.2.10">Find Directories with 777 Permissions and Chmod to 755</h3>
+
+<p>
+Find all <code>777</code> permission directories and use chmod command to set permissions 
+to <code>755</code>.
+</p>
+
+<pre class="brush: bash">
+# find / -type d -perm 777 -print -exec chmod 755 {} \;
+</pre>
+
+<h3 id="toc_1.2.11">Find and remove single File</h3>
+
+<p>
+To find a single file called <code>tecmint.txt</code> and remove it.
+</p>
+
+<pre class="brush: bash">
+# find . -type f -name "tecmint.txt" -exec rm -f {} \;
+</pre>
+
+<h3 id="toc_1.2.12">Find and remove Multiple File</h3>
+
+<p>
+To find and remove multiple files such as <code>.mp3</code> or <code>.txt</code>, then use.
+</p>
+
+<pre class="brush: bash">
+# find . -type f -name "*.txt" -exec rm -f {} \;
+</pre>
+
+<p>
+OR
+</p>
+
+<pre class="brush: bash">
+# find . -type f -name "*.mp3" -exec rm -f {} \;
+</pre>
+
+<h3 id="toc_1.2.13">Find all Empty Files</h3>
+
+<p>
+To file all empty files under certain path.
+</p>
+
+<pre class="brush: bash">
+# find /tmp -type f -empty
+</pre>
+
+<h3 id="toc_1.2.14">Find all Empty Directories</h3>
+
+<p>
+To file all empty directories under certain path.
+</p>
+
+<pre class="brush: bash">
+# find /tmp -type d -empty
+</pre>
+
+<h3 id="toc_1.2.15">File all Hidden Files</h3>
+
+<p>
+To find all hidden files, use below command.
+</p>
+
+<pre class="brush: bash">
+# find /tmp -type f -name ".*"
+</pre>
+
+<h2 id="toc_1.3">Search Files Based On Owners and Groups</h2>
+
+<h3 id="toc_1.3.1">Find Single File Based on User</h3>
+
+<p>
+To find all or single file called <code>tecmint.txt</code> under <code>/</code> root directory of 
+owner root.
+</p>
+
+<pre class="brush: bash">
+# find / -user root -name tecmint.txt
+</pre>
+
+<h3 id="toc_1.3.2">Find all Files Based on User</h3>
+
+<p>
+To find all files that belongs to user Tecmint under <code>/home</code> directory.
+</p>
+
+<pre class="brush: bash">
+# find /home -user tecmint
+</pre>
+
+<h3 id="toc_1.3.3">Find all Files Based on Group</h3>
+
+<p>
+To find all files that belongs to group Developer under <code>/home</code> directory.
+</p>
+
+<pre class="brush: bash">
+# find /home -group developer
+</pre>
+
+<h3 id="toc_1.3.4">Find Particular Files of User</h3>
+
+<p>
+To find all <code>.txt</code> files of user Tecmint under <code>/home</code> directory.
+</p>
+
+<pre class="brush: bash">
+# find /home -user tecmint -iname "*.txt"
+</pre>
+
+
+<h2 id="toc_1.4">Find Files and Directories Based on Date and Time</h2>
+
+<h3 id="toc_1.4.1">Find Last 50 Days Modified Files</h3>
+
+<p>
+To find all the files which are modified 50 days back.
+</p>
+
+<pre class="brush: bash">
+# find / -mtime 50
+</pre>
+
+<h3 id="toc_1.4.2">Find Last 50 Days Accessed Files</h3>
+
+<p>
+To find all the files which are accessed 50 days back.
+</p>
+
+<pre class="brush: bash">
+# find / -atime 50
+</pre>
+
+<h3 id="toc_1.4.3">Find Last 50-100 Days Modified Files</h3>
+
+<p>
+To find all the files which are modified more than 50 days back and less than 
+100 days.
+</p>
+
+<pre class="brush: bash">
+# find / -mtime +50 –mtime -100
+</pre>
+
+<h3 id="toc_1.4.4">Find Changed Files in Last 1 Hour</h3>
+
+<p>
+To find all the files which are changed in last 1 hour.
+</p>
+
+<pre class="brush: bash">
+# find / -cmin -60
+</pre>
+
+<h3 id="toc_1.4.5">Find Modified Files in Last 1 Hour</h3>
+
+<p>
+To find all the files which are modified in last 1 hour.
+</p>
+
+<pre class="brush: bash">
+# find / -mmin -60
+</pre>
+
+<h3 id="toc_1.4.6">Find Accessed Files in Last 1 Hour</h3>
+
+<p>
+To find all the files which are accessed in last 1 hour.
+</p>
+
+<pre class="brush: bash">
+# find / -amin -60
+</pre>
+
+<h2 id="toc_1.5">Find Files and Directories Based on Size</h2>
+
+<h3 id="toc_1.5.1">Find 50MB Files</h3>
+
+<p>
+To find all 50MB files, use.
+</p>
+
+<pre class="brush: bash">
+# find / -size 50M
+</pre>
+
+<h3 id="toc_1.5.2">Find Size between 50MB – 100MB</h3>
+
+<p>
+To find all the files which are greater than 50MB and less than 100MB.
+</p>
+
+<pre class="brush: bash">
+# find / -size +50M -size -100M
+</pre>
+
+<h3 id="toc_1.5.3">Find and Delete 100MB Files</h3>
+
+<p>
+To find all 100MB files and delete them using one single command.
+</p>
+
+<pre class="brush: bash">
+# find / -size +100M -exec rm -rf {} \;
+</pre>
+
+<h3 id="toc_1.5.4">Find Specific Files and Delete</h3>
+
+<p>
+Find all <code>.mp3</code> files with more than <code>10MB</code> and delete them using one single 
+command.
+</p>
+
+<pre class="brush: bash">
+# find / -type f -name *.mp3 -size +10M -exec ls -l {} \;
+</pre>
+
+
+
+
+<h1 id="toc_2">grep</h1>
+
+<p>
+<code>grep</code>命令搜索指定文件中包含给定字符串或者单词的行。举例搜索<code>/etc/passwd</code>文件中
+的<code>tecmint</code>
+</p>
+
+<pre class="brush: bash">
+root@tecmint:~# grep tecmint /etc/passwd
+ 
+tecmint:x:1000:1000:Tecmint,,,:/home/tecmint:/bin/bash
+</pre>
+
+<p>
+使用<code>-i</code>选项将忽略大小写。
+</p>
+
+<pre class="brush: bash">
+root@tecmint:~# grep -i TECMINT /etc/passwd
+ 
+tecmint:x:1000:1000:Tecmint,,,:/home/tecmint:/bin/bash
+</pre>
+
+<p>
+使用<code>-r</code>选项递归搜索所有自目录下包含字符串<code>127.0.0.1</code>的行。
+</p>
+
+<pre class="brush: bash">
+root@tecmint:~# grep -r "127.0.0.1" /etc/
+ 
+/etc/vlc/lua/http/.hosts:127.0.0.1
+/etc/speech-dispatcher/modules/ivona.conf:#IvonaServerHost "127.0.0.1"
+/etc/mysql/my.cnf:bind-address      = 127.0.0.1
+/etc/apache2/mods-available/status.conf:    Allow from 127.0.0.1 ::1
+/etc/apache2/mods-available/ldap.conf:    Allow from 127.0.0.1 ::1
+/etc/apache2/mods-available/info.conf:    Allow from 127.0.0.1 ::1
+/etc/apache2/mods-available/proxy_balancer.conf:#    Allow from 127.0.0.1 ::1
+/etc/security/access.conf:#+ : root : 127.0.0.1
+/etc/dhcp/dhclient.conf:#prepend domain-name-servers 127.0.0.1;
+/etc/dhcp/dhclient.conf:#  option domain-name-servers 127.0.0.1;
+/etc/init/network-interface.conf:   ifconfig lo 127.0.0.1 up || true
+/etc/java-6-openjdk/net.properties:# localhost &amp; 127.0.0.1).
+/etc/java-6-openjdk/net.properties:# http.nonProxyHosts=localhost|127.0.0.1
+/etc/java-6-openjdk/net.properties:# localhost &amp; 127.0.0.1).
+/etc/java-6-openjdk/net.properties:# ftp.nonProxyHosts=localhost|127.0.0.1
+/etc/hosts:127.0.0.1    localhost
+</pre>
+
+<p>
+注意：您还可以使用以下选项：
+</p>
+
+<ul>
+<li>
+<code>-w</code>搜索单词 (<code>egrep -w ‘word1|word2‘ /path/to/file</code>).
+
+<li>
+<code>-c</code>用于统计满足要求的行 (<code>grep -c ‘word‘ /path/to/file</code>).
+
+<li>
+<code>–color</code>彩色输出 (<code>grep –color server /etc/passwd</code>).
+
+</ul>
+
+<pre class="brush: bash">
+</pre>
+
+
+<pre class="brush: bash">
+</pre>
+
+
+<pre class="brush: bash">
+</pre>
+
+
+<pre class="brush: bash">
+</pre>
+
+
+<pre class="brush: bash">
+</pre>
+
+
+<pre class="brush: bash">
+</pre>
+
+
+<pre class="brush: bash">
+</pre>
+ </div>
+</body>
+</html>
