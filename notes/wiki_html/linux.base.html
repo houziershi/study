@@ -26,38 +26,212 @@
 <h1>Linux基本操作</h1>
 <div class="toc">
 <ul>
-<li><a href="#toc_1">系统信息</a>
-<li><a href="#toc_2">用户管理</a>
-<li><a href="#toc_3">软件安装</a>
-<li><a href="#toc_4">任务管理</a>
-<li><a href="#toc_5">文件操作</a>
+<li><a href="#toc_1">简单工具</a>
 <ul>
-<li><a href="#toc_5.1">散列</a>
-<li><a href="#toc_5.2">压缩</a>
+<li><a href="#toc_1.1">日期时间</a>
 <ul>
-<li><a href="#toc_5.2.1">bzip2</a>
-<li><a href="#toc_5.2.2">zip</a>
+<li><a href="#toc_1.1.1">cal</a>
+<li><a href="#toc_1.1.2">date</a>
+<li><a href="#toc_1.1.3">alias</a>
 </ul>
 </ul>
-<li><a href="#toc_6">文本文件</a>
+<li><a href="#toc_2">系统信息</a>
 <ul>
-<li><a href="#toc_6.1">查找</a>
-<li><a href="#toc_6.2">编码与格式</a>
+<li><a href="#toc_2.1">uname</a>
+<li><a href="#toc_2.2">issue</a>
+<li><a href="#toc_2.3">whereis</a>
+</ul>
+<li><a href="#toc_3">用户管理</a>
+<li><a href="#toc_4">软件安装</a>
+<li><a href="#toc_5">文件系统</a>
+<li><a href="#toc_6">任务管理</a>
 <ul>
-<li><a href="#toc_6.2.1">字符编码</a>
-<li><a href="#toc_6.2.2">换行</a>
+<li><a href="#toc_6.1">jobs</a>
+</ul>
+<li><a href="#toc_7">进程管理</a>
+<ul>
+<li><a href="#toc_7.1">kill</a>
+<li><a href="#toc_7.2">pkill</a>
+</ul>
+<li><a href="#toc_8">服务</a>
+<ul>
+<li><a href="#toc_8.1">service</a>
+</ul>
+<li><a href="#toc_9">文件操作</a>
+<ul>
+<li><a href="#toc_9.1">散列</a>
+<li><a href="#toc_9.2">压缩</a>
+<li><a href="#toc_9.3">查找</a>
+</ul>
+<li><a href="#toc_10">文本文件</a>
+<ul>
+<li><a href="#toc_10.1">查找</a>
+<li><a href="#toc_10.2">编码与格式</a>
+<ul>
+<li><a href="#toc_10.2.1">ASCII</a>
+<li><a href="#toc_10.2.2">生成16f进制</a>
+<li><a href="#toc_10.2.3">字符编码</a>
+<li><a href="#toc_10.2.4">换行</a>
 </ul>
 </ul>
 </ul>
 </div>
 
-<h1 id="toc_1">系统信息</h1>
+<h1 id="toc_1">简单工具</h1>
+
+<h2 id="toc_1.1">日期时间</h2>
+
+<h3 id="toc_1.1.1">cal</h3>
+
+<pre class="brush: bash">
+cal
+cal 02 1995
+</pre>
+
+<h3 id="toc_1.1.2">date</h3>
 
 <p>
-<code>uname -a</code>、<code>cat /etc/issue</code>
+取得时间：
 </p>
 
-<h1 id="toc_2">用户管理</h1>
+<pre class="brush: bash">
+root@tecmint:~# date
+ 
+Fri May 17 14:13:29 IST 2013
+</pre>
+	
+<p>
+设置时间：
+</p>
+
+<pre class="brush: bash">
+root@tecmint:~# date --set='14 may 2013 13:57'
+ 
+Mon May 13 13:57:00 IST 2013
+</pre>
+
+
+<h3 id="toc_1.1.3">alias</h3>
+
+<p>
+<code>alias</code>是一个系统自建的shell命令，允许你为名字比较长的或者经常使用的命令指定别名
+。
+</p>
+
+<p>
+我经常用<code>ls -l</code>命令，它有五个字符（包括空格）。于是我为它创建了一个别名<code>l</code>。
+</p>
+
+<pre class="brush: bash">
+root@tecmint:~# alias l='ls -l'
+</pre>
+
+<p>
+试试它是否能用：
+</p>
+
+<pre class="brush: bash">
+root@tecmint:~# l
+ 
+total 36
+drwxr-xr-x 3 tecmint tecmint 4096 May 10 11:14 Binary
+drwxr-xr-x 3 tecmint tecmint 4096 May 21 11:21 Desktop
+drwxr-xr-x 2 tecmint tecmint 4096 May 21 15:23 Documents
+drwxr-xr-x 8 tecmint tecmint 4096 May 20 14:56 Downloads
+drwxr-xr-x 2 tecmint tecmint 4096 May  7 16:58 Music
+drwxr-xr-x 2 tecmint tecmint 4096 May 20 16:17 Pictures
+drwxr-xr-x 2 tecmint tecmint 4096 May  7 16:58 Public
+drwxr-xr-x 2 tecmint tecmint 4096 May  7 16:58 Templates
+drwxr-xr-x 2 tecmint tecmint 4096 May  7 16:58 Videos
+</pre>
+
+<p>
+去掉<code>l</code>别名，要使用<code>unalias</code>命令：
+</p>
+
+<pre class="brush: bash">
+root@tecmint:~# unalias l
+</pre>
+
+<p>
+再试试：
+</p>
+
+<pre class="brush: bash">
+root@tecmint:~# l
+ 
+bash: l: command not found
+</pre>
+
+
+
+<h1 id="toc_2">系统信息</h1>
+
+<h2 id="toc_2.1">uname</h2>
+
+<p>
+<code>uname</code>命令就是Unix Name的简写。显示机器名，操作系统和内核的详细信息。
+</p>
+
+<pre class="brush: bash">
+root@tecmint:~# uname -a
+ 
+Linux tecmint 3.8.0-19-generic #30-Ubuntu SMP Wed May 1 16:36:13 UTC 2013 i686 i686 i686 GNU/Linux
+</pre>
+
+<p>
+<code>uname</code>显示内核类别， <code>uname -a</code>显示详细信息：
+</p>
+
+<ol>
+<li>
+<code>Linux</code>: 机器的内核名
+
+<li>
+<code>tecmint</code>: 机器的分支名
+
+<li>
+<code>3.8.0-19-generic</code>: 内核发布版本
+
+<li>
+<code>#30-Ubuntu SMP</code>: 内核版本
+
+<li>
+<code>i686</code>: 处理器架构
+
+<li>
+<code>GNU/Linux</code>: 操作系统名
+
+</ol>
+
+<h2 id="toc_2.2">issue</h2>
+
+<p>
+<code>cat /etc/issue</code>
+</p>
+
+<h2 id="toc_2.3">whereis</h2>
+
+<p>
+<code>whereis</code>的作用是用来定位命令的二进制文件\资源\或者帮助页，举例来说，获得<code>ls</code>和
+<code>kill</code>命令的二进制文件/资源以及帮助页：
+</p>
+
+<pre class="brush: bash">
+root@tecmint:~# whereis ls
+ 
+ls: /bin/ls /usr/share/man/man1/ls.1.gz
+
+root@tecmint:~# whereis kill
+ 
+kill: /bin/kill /usr/share/man/man2/kill.2.gz /usr/share/man/man1/kill.1.gz
+</pre>
+
+<p>
+注意:当需要知道二进制文件保存位置时有用.
+</p>
+
+<h1 id="toc_3">用户管理</h1>
 
 <p>
 修改用户配置：
@@ -71,14 +245,21 @@ usermod  [-u uid [-o]] [-g group] [-G group,...]
 
 
 
-<h1 id="toc_3">软件安装</h1>
+<h1 id="toc_4">软件安装</h1>
 
 <p>
 <a href="linux.base.dpkg.html">linux.base.dpkg</a>
 </p>
 
+<h1 id="toc_5">文件系统</h1>
 
-<h1 id="toc_4">任务管理</h1>
+<p>
+<a href="linux.base.filesystem.html">linux.base.filesystem</a>
+</p>
+
+<h1 id="toc_6">任务管理</h1>
+
+<h2 id="toc_6.1">jobs</h2>
 
 <p>
 中断任务：<code>Control + C</code>
@@ -106,9 +287,108 @@ bg %8
 fg %8
 </pre>
 
-<h1 id="toc_5">文件操作</h1>
 
-<h2 id="toc_5.1">散列</h2>
+<h1 id="toc_7">进程管理</h1>
+
+<h2 id="toc_7.1">kill</h2>
+
+<p>
+假设你想杀死已经没有响应的<code>apache2</code>进程,运行如下命令:
+</p>
+
+<pre class="brush: bash">
+root@tecmint:~# ps -A | grep -i apache2
+ 
+1285 ?        00:00:00 apache2
+</pre>
+
+<p>
+搜索<code>apache2</code>进程,找到PID并杀掉它.例如:在本例中<code>apache2</code>进程的PID是1285..
+</p>
+
+<pre class="brush: bash">
+root@tecmint:~# kill 1285
+</pre>
+
+<p>
+注意:每次你重新运行一个进程或者启动系统,每个进程都会生成一个新的PID.你可以使用
+<code>ps</code>命令获得当前运行进程的PID.
+</p>
+
+<h2 id="toc_7.2">pkill</h2>
+
+<p>
+另一个杀死进程的方法是:
+</p>
+	
+<pre class="brush: bash">
+root@tecmint:~# pkill apache2
+</pre>
+
+<p>
+注意:kill需要PID作为参数,pkill可以选择应用的方式,比如指定进程的所有者等.
+</p>
+
+<h1 id="toc_8">服务</h1>
+
+<h2 id="toc_8.1">service</h2>
+
+<p>
+<code>service</code>命令控制服务的启动、停止和重启，它让你能够不重启整个系统就可以让配置
+生效以开启、停止或者重启某个服务。
+</p>
+
+<p>
+在Ubuntu上启动apache2 server：
+</p>
+
+<pre class="brush: bash">
+root@tecmint:~# service apache2 start
+ 
+ * Starting web server apache2                                                                                                                                 apache2: Could not reliably determine the server's fully qualified domain name, using 127.0.1.1 for ServerName
+httpd (pid 1285) already running                        [ OK ]
+</pre>
+
+<p>
+重启apache2 server：
+</p>
+
+<pre class="brush: bash">
+root@tecmint:~# service apache2 restart
+ 
+* Restarting web server apache2                                                                                                                               apache2: Could not reliably determine the server's fully qualified domain name, using 127.0.1.1 for ServerName
+ ... waiting .apache2: Could not reliably determine the server's fully qualified domain name, using 127.0.1.1 for ServerName  [ OK ]
+</pre>
+
+<p>
+停止apache2 server：
+</p>
+
+<pre class="brush: bash">
+root@tecmint:~# service apache2 stop
+ 
+ * Stopping web server apache2                                                                                                                                 apache2: Could not reliably determine the server's fully qualified domain name, using 127.0.1.1 for ServerName
+ ... waiting                                                                [ OK ]
+</pre>
+
+<p>
+注意：要想使用<code>service</code>命令，进程的脚本必须放在<code>/etc/init.d</code>，并且路径必须在指定
+的位置。
+</p>
+
+<p>
+如果要运行<code>service apache2 start</code>实际上实在执行
+</p>
+
+<pre class="brush: bash">
+service /etc/init.d/apache2 start
+</pre>
+
+
+
+<h1 id="toc_9">文件操作</h1>
+
+<h2 id="toc_9.1">散列</h2>
 
 <pre class="brush: bash">
 echo "yangpan220" | md5sum
@@ -123,82 +403,82 @@ echo -n 'yangpan220' | md5sum
 </pre>
 
 
-<h2 id="toc_5.2">压缩</h2>
-
-<h3 id="toc_5.2.1">bzip2</h3>
-
-<pre class="brush: bash">
-$ bzip2 -v log.txt 
-  log.txt:  3.953:1,  2.024 bits/byte, 74.70% saved, 336 in, 85 out.
-$ bunzip2 -v log.txt.bz2 
-  log.txt.bz2: done
-$ ls
-log.txt
-$ 
-</pre>
-
-<h3 id="toc_5.2.2">zip</h3>
+<h2 id="toc_9.2">压缩</h2>
 
 <p>
-zip命令可以用来将文件压缩成为常用的zip格式。unzip命令则用来解压缩zip文件。
+<a href="linux.base.compress.html">linux.base.compress</a>
 </p>
+
+
+<h2 id="toc_9.3">查找</h2>
 
 <p>
-1. 我想把一个文件abc.txt和一个目录dir1压缩成为yasuo.zip：
+<a href="linux.base.search.html">linux.base.search</a>
 </p>
-<pre class="brush: bash">
-zip -r yasuo.zip abc.txt dir1
-</pre>
 
-<p>
-2.我下载了一个yasuo.zip文件，想解压缩：
-</p>
-<pre class="brush: bash">
-unzip yasuo.zip
-</pre>
+<h1 id="toc_10">文本文件</h1>
 
-<p>
-3.我当前目录下有abc1.zip，abc2.zip和abc3.zip，我想一起解压缩它们：
-</p>
-<pre class="brush: bash">
-unzip abc\?.zip
-// ?表示一个字符，如果用*表示任意多个字符。
-</pre>
-
-
-<p>
-4.我有一个很大的压缩文件large.zip，我不想解压缩，只想看看它里面有什么：
-</p>
-<pre class="brush: bash">
-unzip -v large.zip
-</pre>
-
-<p>
-5.我下载了一个压缩文件large.zip，想验证一下这个压缩文件是否下载完全了：
-</p>
-<pre class="brush: bash">
-unzip -t large.zip
-</pre>
-
-<p>
-6.我用-v选项发现music.zip压缩文件里面有很多目录和子目录，并且子目录中其实都是
-歌曲mp3文件，我想把这些文件都下载到第一级目录，而不是一层一层建目录：
-</p>
-<pre class="brush: bash">
-unzip -j music.zip
-</pre>
-
-<h1 id="toc_6">文本文件</h1>
-
-<h2 id="toc_6.1">查找</h2>
+<h2 id="toc_10.1">查找</h2>
 
 <pre class="brush: bash">
 find / -name "*.conf" | xargs grep "alias" 
 </pre>
 
-<h2 id="toc_6.2">编码与格式</h2>
+<h2 id="toc_10.2">编码与格式</h2>
 
-<h3 id="toc_6.2.1">字符编码</h3>
+<h3 id="toc_10.2.1">ASCII</h3>
+
+<p>
+<code>main ascii</code>可以直接查看OCT或HEX的ascii表。
+</p>
+
+<h3 id="toc_10.2.2">生成16f进制</h3>
+
+<p>
+<code>xxd</code>可以生成16进制：
+</p>
+
+<pre class="brush: bash">
+$ xxd vab.txt 
+0000000: 4e61 6d69 6e67 2043 6f6e 7665 6e74 696f  Naming Conventio
+0000010: 6e73 efbc 88e8 a784 e88c 83ef bc8c e58d  ns..............
+0000020: 8fe8 aeae efbc 890d 0a0d 0a64 6973 636f  ...........disco
+0000030: 7572 6167 6564 20e6 b094 e9a6 81ef bc8c  uraged .........
+0000040: e4bd bfe5 8a9d e998 bb0d 0a0d 0a70 656e  .............pen
+0000050: 6461 6e74 20e8 8bb1 205b cb88 7065 6e64  dant ... [..pend
+0000060: c999 6e74 5d20 e7be 8e20 5bcb 8870 c99b  ..nt] ... [..p..
+0000070: 6e64 c999 6e74 5d20 6e2e efbc 88e8 a385  nd..nt] n.......
+0000080: e59c a8e9 a1b9 e993 bee7 ad89 e4b8 8ae7  ................
+0000090: 9a84 efbc 89e5 9e82 e9a5 b0ef bc8c e59d  ................
+00000a0: a0e5 84bf 0d0a                           ......
+</pre>
+
+<p>
+还可以把二六进制还原为二进制。甚至把十六进制拷贝输出成C数组：
+</p>
+
+<pre class="brush: bash">
+$ xxd -i vab.txt  
+unsigned char vab_txt[] = {
+  0x4e, 0x61, 0x6d, 0x69, 0x6e, 0x67, 0x20, 0x43, 0x6f, 0x6e, 0x76, 0x65,
+  0x6e, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0xef, 0xbc, 0x88, 0xe8, 0xa7, 0x84,
+  0xe8, 0x8c, 0x83, 0xef, 0xbc, 0x8c, 0xe5, 0x8d, 0x8f, 0xe8, 0xae, 0xae,
+  0xef, 0xbc, 0x89, 0x0d, 0x0a, 0x0d, 0x0a, 0x64, 0x69, 0x73, 0x63, 0x6f,
+  0x75, 0x72, 0x61, 0x67, 0x65, 0x64, 0x20, 0xe6, 0xb0, 0x94, 0xe9, 0xa6,
+  0x81, 0xef, 0xbc, 0x8c, 0xe4, 0xbd, 0xbf, 0xe5, 0x8a, 0x9d, 0xe9, 0x98,
+  0xbb, 0x0d, 0x0a, 0x0d, 0x0a, 0x70, 0x65, 0x6e, 0x64, 0x61, 0x6e, 0x74,
+  0x20, 0xe8, 0x8b, 0xb1, 0x20, 0x5b, 0xcb, 0x88, 0x70, 0x65, 0x6e, 0x64,
+  0xc9, 0x99, 0x6e, 0x74, 0x5d, 0x20, 0xe7, 0xbe, 0x8e, 0x20, 0x5b, 0xcb,
+  0x88, 0x70, 0xc9, 0x9b, 0x6e, 0x64, 0xc9, 0x99, 0x6e, 0x74, 0x5d, 0x20,
+  0x6e, 0x2e, 0xef, 0xbc, 0x88, 0xe8, 0xa3, 0x85, 0xe5, 0x9c, 0xa8, 0xe9,
+  0xa1, 0xb9, 0xe9, 0x93, 0xbe, 0xe7, 0xad, 0x89, 0xe4, 0xb8, 0x8a, 0xe7,
+  0x9a, 0x84, 0xef, 0xbc, 0x89, 0xe5, 0x9e, 0x82, 0xe9, 0xa5, 0xb0, 0xef,
+  0xbc, 0x8c, 0xe5, 0x9d, 0xa0, 0xe5, 0x84, 0xbf, 0x0d, 0x0a
+};
+unsigned int vab_txt_len = 166;
+</pre>
+
+<h3 id="toc_10.2.3">字符编码</h3>
 
 <p>
 转换单个文件：
@@ -224,7 +504,7 @@ sed -i "s/old/new/g" `grep old -rl ./`
 `enca -L zh_CN -x utf-8 *`
 </pre>
 
-<h3 id="toc_6.2.2">换行</h3>
+<h3 id="toc_10.2.4">换行</h3>
 
 <p>
 Windows文本文件的<code>^M</code>，注意这个<code>^M</code>的输入方式为<code>CTRL v CTRL m</code>。

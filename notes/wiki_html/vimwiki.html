@@ -96,13 +96,15 @@ Windows下应该是：<code>$VIM/vimfiles</code>；Linux下是：<code>~/.vim/</
 如果vimrc没有显式指定，可以加上：
 </p>
 
-<pre class="brush: js;">
+<p>
+{{class="brush: js;"
 if has("win32")
-  let $VIMFILES = $VIM.'/vimfiles'
+  let \(VIMFILES = \)VIM.'/vimfiles'
 else
-  let $VIMFILES = $HOME.'/.vim'
+  let \(VIMFILES = \)HOME.'/.vim'
 endif
-</pre>
+}}}
+</p>
 
 
 
