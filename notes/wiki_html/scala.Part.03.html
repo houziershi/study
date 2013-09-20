@@ -3033,7 +3033,8 @@ Hindley-Mlner更加优雅。由于这些局限性在比较极端的情况下才�
 <h2 id="toc_3.3">数组缓存</h2>
 
 <p>
-<code>ArrayBuffer</code>可以在头尾添加元素：
+<code>ArrayBuffer</code>可以在头尾添加元素，但在尾部的添加移除是高效的。常见的用法是先用
+<code>ArrayBuffer</code>构建然后用它的<code>toArray</code>方法生成不可变的数组：
 </p>
 
 <pre class="brush: scala">
@@ -3085,7 +3086,8 @@ Hindley-Mlner更加优雅。由于这些局限性在比较极端的情况下才�
 </pre>
 
 <p>
-注意上面取后一个出队操作<code>dequeue</code>返回的是一个二元组，包括出来的元素和剩下的队列。
+注意上面取后一个出队操作<code>dequeue</code>返回的是一个二元组，包括出来的元素和剩下的队列
+。
 </p>
 
 <p>

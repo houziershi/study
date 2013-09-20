@@ -2360,7 +2360,8 @@ Hindley-Mlner更加优雅。由于这些局限性在比较极端的情况下才�
 
 == 数组缓存 ==
 
-`ArrayBuffer`可以在头尾添加元素：
+`ArrayBuffer`可以在头尾添加元素，但在尾部的添加移除是高效的。常见的用法是先用
+`ArrayBuffer`构建然后用它的`toArray`方法生成不可变的数组：
 
 {{{class="brush: scala"
   scala> import scala.collection.mutable.ArrayBuffer
@@ -2408,7 +2409,8 @@ Hindley-Mlner更加优雅。由于这些局限性在比较极端的情况下才�
   has23: scala.collection.immutable.Queue[Int] = Queue(2,3)
 }}}
 
-注意上面取后一个出队操作`dequeue`返回的是一个二元组，包括出来的元素和剩下的队列。
+注意上面取后一个出队操作`dequeue`返回的是一个二元组，包括出来的元素和剩下的队列
+。
 
 可变的队列也差不多，就是用`+=`和`++=`添加元素，`dequeue`方法只返回一个出除的元素。
 

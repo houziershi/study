@@ -16,13 +16,13 @@
 <link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
 
 
-<title>基础</title>
+<title>Part I</title>
 </head>
 <body  onresize='changeTocSize()'>
 	<div class="note-main"> 
 
 
-<h1>基础</h1>
+<h1>Part I</h1>
 <div class="toc">
 <ul>
 <li><a href="#toc_1">入门</a>
@@ -46,7 +46,13 @@
 </ul>
 <li><a href="#toc_3">常用工具</a>
 <ul>
-<li><a href="#toc_3.1">类型参数化数组</a>
+<li><a href="#toc_3.1">数组</a>
+<ul>
+<li><a href="#toc_3.1.1">类型参数化数组</a>
+<li><a href="#toc_3.1.2">数组的常用方法</a>
+<li><a href="#toc_3.1.3">多维数组</a>
+<li><a href="#toc_3.1.4">与Java互操作</a>
+</ul>
 <li><a href="#toc_3.2">apply与update方法</a>
 <li><a href="#toc_3.3">列表</a>
 <ul>
@@ -145,20 +151,22 @@
 </ul>
 <li><a href="#toc_8">函数与闭包</a>
 <ul>
-<li><a href="#toc_8.1">方法（method）</a>
-<li><a href="#toc_8.2">本地函数</a>
-<li><a href="#toc_8.3">头等函数与函数字面量（literal）</a>
-<li><a href="#toc_8.4">函数字面量的短格式</a>
-<li><a href="#toc_8.5">占位符语法（Placeholder syntax）</a>
-<li><a href="#toc_8.6">部分应用函数（partially applied function）</a>
-<li><a href="#toc_8.7">闭包（Closures）</a>
-<li><a href="#toc_8.8">重复参数</a>
-<li><a href="#toc_8.9">尾递归（tail recursive）</a>
+<li><a href="#toc_8.1">参数默认值与带名参数</a>
+<li><a href="#toc_8.2">变长参数</a>
+<li><a href="#toc_8.3">方法（method）</a>
+<li><a href="#toc_8.4">本地函数</a>
+<li><a href="#toc_8.5">头等函数与函数字面量（literal）</a>
+<li><a href="#toc_8.6">函数字面量的短格式</a>
+<li><a href="#toc_8.7">占位符语法（Placeholder syntax）</a>
+<li><a href="#toc_8.8">部分应用函数（partially applied function）</a>
+<li><a href="#toc_8.9">闭包（Closures）</a>
+<li><a href="#toc_8.10">重复参数</a>
+<li><a href="#toc_8.11">尾递归（tail recursive）</a>
 <ul>
-<li><a href="#toc_8.9.1">跟踪尾递归函数</a>
-<li><a href="#toc_8.9.2">尾递归的局限</a>
+<li><a href="#toc_8.11.1">跟踪尾递归函数</a>
+<li><a href="#toc_8.11.2">尾递归的局限</a>
 </ul>
-<li><a href="#toc_8.10">Execute Around Method 模式</a>
+<li><a href="#toc_8.12">Execute Around Method 模式</a>
 </ul>
 </ul>
 </div>
@@ -325,8 +333,7 @@ greet: ()Unit
 
 
 <p>
-对于没有等号的方法来说返回类型一定是Unit。Scala可以把任何类型转为<code>Unit</code>，
-以下方法最后的<code>String</code>类结果会转为<code>Unit</code>并丢弃：
+Scala可以把任何类型转为<code>Unit</code>，以下方法最后的<code>String</code>类结果会转为<code>Unit</code>并丢弃：
 </p>
 
 <pre class="brush: scala">
@@ -335,7 +342,7 @@ f: ()Unit
 </pre>
 
 <p>
-有花括号但没有等号的方法默认为Unit，有了等号但没有类型会由编译器自动推导：
+对于没有等号的方法来说返回类型一定是<code>Unit</code>。有了等号但没有类型会由编译器自动推导：
 </p>
 
 <pre class="brush: scala">
@@ -403,7 +410,6 @@ args.foreach( arg =&gt; println(arg) )
 <pre class="brush: scala">
 args.foreach( println )
 </pre>
-
 
 <h2 id="toc_1.5">for循环</h2>
 
@@ -586,7 +592,9 @@ Thread.`yield`()
 
 <h1 id="toc_3">常用工具</h1>
 
-<h2 id="toc_3.1">类型参数化数组</h2>
+<h2 id="toc_3.1">数组</h2>
+
+<h3 id="toc_3.1.1">类型参数化数组</h3>
 
 <p>
 长度为3的数组，存放的元素类型为<code>String</code>：
@@ -613,6 +621,84 @@ ns: Array[java.lang.String] = Array(11, 22, 33)
 scala&gt; ns.foreach(print)
 112233
 </pre>
+
+<h3 id="toc_3.1.2">数组的常用方法</h3>
+
+<pre class="brush: scala">
+Array(1,2,3).sum
+ArrayBuffer("Mary","had","a","little","lamb").max
+
+val l = ArrayBuffer(1,7,2,9)
+val sl = b.sorted(_&lt;_) // 注意是返回新的数组
+</pre>
+
+<p>
+ScalaDoc中的格式初学者可能难以理解，下面给出一些方法的导读：
+</p>
+
+<p>
+<code>def copyToArray[B &gt;: A](xs: Array[B]): Unit</code>：不同类型的数组复制，<code>B</code>类型必须是
+<code>A</code>的超类。
+</p>
+
+<h3 id="toc_3.1.3">多维数组</h3>
+
+<p>
+和Java一样，通过数组的数组来实现多维数组，类型为<code>Array[Array[Double]]</code>，可以用
+<code>ofDim</code>方法来创建：
+</p>
+
+<pre class="brush: scala">
+val matrix = Array.ofDim[Double](3, 4)  // 三行四列
+
+matrix(row)(column) = 42
+</pre>
+
+<p>
+通过指定每行长度不一样的方式来创建不规则数组：
+</p>
+
+<pre class="brush: scala">
+val triangle = new Array[Array[Int]](10)
+for (i &lt;- 0 until triangle.length)
+	triangle(i) = new Array[Int](i + 1)
+</pre>
+
+<h3 id="toc_3.1.4">与Java互操作</h3>
+
+<p>
+Scala的数组是用Java的数组实现的，可以直接传递。
+</p>
+
+<p>
+如果Java方法返回的类型是<code>List</code>，推荐用隐式转换。例如<code>java.lang.ProcessBuilder</code>类
+有一个以<code>List&lt;String&gt;</code>为参数的构造器，Scala里可以这样调用：
+</p>
+
+<pre class="brush: scala">
+import scala.collection.JavaConversions.bufferAsJavaList
+import scala.collection.mutable.ArrayBuffer
+
+val command = ArrayBuffer("ls", "-al", "/home/morgan")
+val pb = new ProcessBuilder(command)
+</pre>
+
+<p>
+这样<code>ArrayBuffer</code>被自动转成了列表。
+</p>
+
+<p>
+下面把返回的<code>java.util.List</code>转成<code>Buffer</code>，注意只能保证是<code>Buffer</code>，不一定是
+<code>ArrayBuffer</code>：
+</p>
+
+<pre class="brush: scala">
+import scala.collection.JavaConversions.asScalaBuffer
+import scala.collection.mutable.Buffer
+
+val cmd: Buffer[String] = pb.command()
+</pre>
+
 
 
 <h2 id="toc_3.2">apply与update方法</h2>
@@ -2100,8 +2186,22 @@ Scala的对象和Java中的对象不是同一回事情，是另一个新的概�
 <h2 id="toc_7.1">if表达式</h2>
 
 <p>
-标题里叫它“表达式”，所以是有返回值的。if表达式返回执行分支的结果：
+标题里叫它“表达式”，所以是有返回值的。对于返回的类型，如果不同条件的类型不一样，
+那么表达式的类型是公共的超类：
 </p>
+
+<pre class="brush: scala">
+if (x &gt; 0) "positive" else -1
+</pre>
+
+<p>
+上面表达式的类型是<code>String</code>和<code>Int</code>的共同超类<code>Any</code>。
+</p>
+
+<p>
+if表达式返回执行分支的结果：
+</p>
+
 
 <pre class="brush: scala">
 var filename = "default.txt"
@@ -2128,6 +2228,21 @@ val filename =
 println(if (!args.isEmpty) args(0) else "default.txt")
 </pre>
 
+<p>
+如果没有<code>else</code>部分，返回的类型可能是<code>Unit</code>（相当于Java中的<code>void</code>），写作<code>()</code>：
+</p>
+
+<pre class="brush: scala">
+if (x &gt; 0) 1
+</pre>
+
+<p>
+相当于：
+</p>
+
+<pre class="brush: scala">
+if (x &gt; 0) 1 else ()
+</pre>
 
 
 <h2 id="toc_7.2">while循环</h2>
@@ -2244,8 +2359,38 @@ while循环是没有返回值的，那就一定要用副作用：不是更新var
 <h2 id="toc_7.3">for表达式</h2>
 
 <p>
-Scale中的for表达式是遍历集合类的强大工具，包括了过滤与构造新集合的功能。
+Scale中的for表达式是遍历集合类的强大工具，包括了过滤与构造新集合的功能。但是在
+Scala提供的for表达式中没有提供<code>break</code>或<code>continue</code>来退出循环，这是为了更加贴合
+函数式风格的需要。如果真的需要要<code>break</code>时，可以有以下几个方案：
 </p>
+
+<ul>
+<li>
+使用<code>Boolean</code>变量控制某块代码是否执行。
+
+<li>
+使用嵌套函数，这样可以从函数当中<code>return</code>。
+
+<li>
+使用<code>Breaks</code>对象中的<code>break</code>方法。
+
+</ul>
+
+<p>
+<code>Breaks</code>对象中的<code>break</code>方法的例子：
+</p>
+
+<pre class="brush: scala">
+import scala.util.control.Breaks_
+
+breakable {
+	for (...) {
+		...
+		if (...) break;
+		...
+	}
+}
+</pre>
 
 <h3 id="toc_7.3.1">生成器（generator）</h3>
 
@@ -2281,6 +2426,14 @@ for (i &lt;-0 to filesList.length -1)
 	println(fileList(i))
 </pre>
 
+<p>
+可以用分号隔开多个生成器：
+</p>
+
+<pre class="brush: scala">
+scala&gt; for (i &lt;-1 to 3; j &lt;- 1 to 3) print(i + "-" + j + ", ")
+1-1, 1-2, 1-3, 2-1, 2-2, 2-3, 3-1, 3-2, 3-3, 
+</pre>
 
 <h3 id="toc_7.3.2">for是表达式</h3>
 
@@ -2886,7 +3039,113 @@ mkString的调用完成这个工作，并且由于我们传递进去"\n"，因�
 
 <h1 id="toc_8">函数与闭包</h1>
 
-<h2 id="toc_8.1">方法（method）</h2>
+<h2 id="toc_8.1">参数默认值与带名参数</h2>
+
+<p>
+定义参数有默认值的参数：
+</p>
+
+<pre class="brush: scala">
+def decorate(str: String, left: String = "[", right: String = "]") = 
+	left + str + right
+</pre>
+
+<p>
+调用时：
+</p>
+
+<pre class="brush: scala">
+scala&gt; decorate("hello")
+res0: String = [hello]
+
+scala&gt; decorate("hello","&lt;","&gt;")
+res1: String = &lt;hello&gt;
+</pre>
+
+<p>
+传入实参不一定要按参数表的顺序，可以指定对应的形参名：
+</p>
+
+<pre class="brush: scala">
+scala&gt; decorate("hello", right = "&gt;")
+res2: String = [hello&gt;
+</pre>
+
+
+<h2 id="toc_8.2">变长参数</h2>
+
+<pre class="brush: scala">
+def sum(args: Int*) = {
+  var res = 0
+  for (arg &lt;- args) res += arg
+  res
+}
+</pre>
+
+<p>
+传入多个参数：
+</p>
+
+<pre class="brush: scala">
+scala&gt; val s = sum (1,4,9,16,25)
+s: Int = 55
+</pre>
+
+<p>
+但是不能把序列传入：
+</p>
+
+<pre class="brush: scala">
+scala&gt; val s = sum (1 to 5)
+&lt;console&gt;:8: error: type mismatch;
+ found   : scala.collection.immutable.Range.Inclusive
+ required: Int
+       val s = sum (1 to 5)
+                      ^
+</pre>
+
+<p>
+可能通过<code>: _*</code>声明类型不是序列而是多个参数：
+</p>
+
+<pre class="brush: scala">
+scala&gt; val s = sum(1 to 5: _*)
+s: Int = 15
+</pre>
+
+<p>
+在递归定义中我们会用到这样的语法：
+</p>
+
+<pre class="brush: scala">
+def recursiveSum(args: Int*): Int = {
+  if (args.length ==0) 0
+  else args.head + recursiveSum(args.tail: _*)
+}
+</pre>
+
+<p>
+注意：如果使用变长参数且参数类型为<code>Object</code>的Java方法，如<code>PrintStream</code>、<code>printf</code>
+或<code>MessageFormat.format</code>时，要手工对基本类型进行转换。如：
+</p>
+
+<pre class="brush: scala">
+import java.text.MessageFormat
+val str = MessageFormat.format("The answer to {0} is {1}", "everything",
+		42.asInstanceOf[AnyRef])
+
+str: String = The answer to everything is 42
+</pre>
+
+
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<h2 id="toc_8.3">方法（method）</h2>
 
 <p>
 方法是被定义为某个对象成员的函数，这是最常用的形式。如下面这个工具检查文件中超过
@@ -2937,7 +3196,7 @@ mkString的调用完成这个工作，并且由于我们传递进去"\n"，因�
   LongLines.scala: def processFile(filename: String, width: Int) {
 </pre>
 
-<h2 id="toc_8.2">本地函数</h2>
+<h2 id="toc_8.4">本地函数</h2>
 
 <p>
 Java里通过定义private方法来限制访问。在Scala里还可以把方法定义在另一个函数里
@@ -2978,7 +3237,9 @@ Java里通过定义private方法来限制访问。在Scala里还可以把方法�
   }
 </pre>
 
-<h2 id="toc_8.3">头等函数与函数字面量（literal）</h2>
+
+
+<h2 id="toc_8.5">头等函数与函数字面量（literal）</h2>
 
 <p>
 Scala拥有头等函数（first-class function），除了定义函数与调用函数外，
@@ -3076,7 +3337,7 @@ Scala拥有头等函数（first-class function），除了定义函数与调用�
 
 
 
-<h2 id="toc_8.4">函数字面量的短格式</h2>
+<h2 id="toc_8.6">函数字面量的短格式</h2>
 
 <p>
 Scala提供了许多方法去除冗余信息并把函数文本写得更简短。
@@ -3109,7 +3370,7 @@ Scala提供了许多方法去除冗余信息并把函数文本写得更简短。
 </pre>
 
 
-<h2 id="toc_8.5">占位符语法（Placeholder syntax）</h2>
+<h2 id="toc_8.7">占位符语法（Placeholder syntax）</h2>
 
 <p>
 如果想让函数文本更简洁，可以把下划线当做一个或更多参数的占位符，只要每个参数在
@@ -3158,7 +3419,7 @@ Scala提供了许多方法去除冗余信息并把函数文本写得更简短。
   res11: Int = 15
 </pre>
 
-<h2 id="toc_8.6">部分应用函数（partially applied function）</h2>
+<h2 id="toc_8.8">部分应用函数（partially applied function）</h2>
 
 <p>
 下划线占位符不仅能代替一个参数，还可以代替整个参数列表：
@@ -3373,7 +3634,7 @@ Scala与指令式语言如Java关系近得多，在这些语言中没有应用�
 </p>
 
 
-<h2 id="toc_8.7">闭包（Closures）</h2>
+<h2 id="toc_8.9">闭包（Closures）</h2>
 
 <p>
 函数不仅可以用到参数：
@@ -3517,7 +3778,7 @@ Scala与指令式语言如Java关系近得多，在这些语言中没有应用�
 </p>
 
 
-<h2 id="toc_8.8">重复参数</h2>
+<h2 id="toc_8.10">重复参数</h2>
 
 <p>
 Scala允许你指明函数的最后一个参数可以是重复的。这可以允许客户向函数传入可变长度
@@ -3585,7 +3846,7 @@ Scala允许你指明函数的最后一个参数可以是重复的。这可以允
 </p>
 
 
-<h2 id="toc_8.9">尾递归（tail recursive）</h2>
+<h2 id="toc_8.11">尾递归（tail recursive）</h2>
 
 <p>
 当函数递归时调用自己这个动作正好是整个函数的最后一个动作时，Scala编译器可以对其
@@ -3603,7 +3864,7 @@ Scala编译器检测到尾递归就用新值更新函数参数，然后把它替
 开销。
 </p>
 
-<h3 id="toc_8.9.1">跟踪尾递归函数</h3>
+<h3 id="toc_8.11.1">跟踪尾递归函数</h3>
 
 <p>
 尾递归函数将不会为每个调用制造新的堆栈框架；所有的调用将在一个框架内执行。所以在
@@ -3680,7 +3941,7 @@ Scala编译器检测到尾递归就用新值更新函数参数，然后把它替
   ... 
 </pre>
 
-<h3 id="toc_8.9.2">尾递归的局限</h3>
+<h3 id="toc_8.11.2">尾递归的局限</h3>
 
 <p>
 Scala里尾递归的使用局限很大，因为JVM指令集使实现更加先进的尾递归形式变得很困难。
@@ -3717,7 +3978,7 @@ Scala仅优化了直接递归调用使其返回同一个函数。如果递归是
 中间函数的情况。
 </p>
 
-<h2 id="toc_8.10">Execute Around Method 模式</h2>
+<h2 id="toc_8.12">Execute Around Method 模式</h2>
 
 <p>
 举个例子，对于资源<code>Resource</code>一定要执行善后工作<code>cleanUp</code>。这里把构造函数做成私有

@@ -1,7 +1,7 @@
 
-%title 基础
+%title Part I
 
-%toc 基础
+%toc Part I
 
 
 = 入门 =
@@ -128,15 +128,14 @@ greet: ()Unit
 }}}
 
 
-对于没有等号的方法来说返回类型一定是Unit。Scala可以把任何类型转为`Unit`，
-以下方法最后的`String`类结果会转为`Unit`并丢弃：
+Scala可以把任何类型转为`Unit`，以下方法最后的`String`类结果会转为`Unit`并丢弃：
 
 {{{class="brush: scala"
 scala> def f(): Unit = "This String is lost!"
 f: ()Unit
 }}}
 
-有花括号但没有等号的方法默认为Unit，有了等号但没有类型会由编译器自动推导：
+对于没有等号的方法来说返回类型一定是`Unit`。有了等号但没有类型会由编译器自动推导：
 
 {{{class="brush: scala"
 scala> def f() {"This String is lost!"}
@@ -191,7 +190,6 @@ args.foreach( arg => println(arg) )
 {{{class="brush: scala"
 args.foreach( println )
 }}}
-
 
 == for循环 ==
 
@@ -324,7 +322,9 @@ Thread.`yield`()
 
 = 常用工具 =
 
-== 类型参数化数组 ==
+== 数组 ==
+
+=== 类型参数化数组 ===
 
 长度为3的数组，存放的元素类型为`String`：
 
@@ -349,6 +349,68 @@ ns: Array[java.lang.String] = Array(11, 22, 33)
 scala> ns.foreach(print)
 112233
 }}}
+
+=== 数组的常用方法 ===
+
+{{{class="brush: scala"
+Array(1,2,3).sum
+ArrayBuffer("Mary","had","a","little","lamb").max
+
+val l = ArrayBuffer(1,7,2,9)
+val sl = b.sorted(_<_) // 注意是返回新的数组
+}}}
+
+ScalaDoc中的格式初学者可能难以理解，下面给出一些方法的导读：
+
+`def copyToArray[B >: A](xs: Array[B]): Unit`：不同类型的数组复制，`B`类型必须是
+`A`的超类。
+
+=== 多维数组 ===
+
+和Java一样，通过数组的数组来实现多维数组，类型为`Array[Array[Double]]`，可以用
+`ofDim`方法来创建：
+
+{{{class="brush: scala"
+val matrix = Array.ofDim[Double](3, 4)  // 三行四列
+
+matrix(row)(column) = 42
+}}}
+
+通过指定每行长度不一样的方式来创建不规则数组：
+
+{{{class="brush: scala"
+val triangle = new Array[Array[Int]](10)
+for (i <- 0 until triangle.length)
+	triangle(i) = new Array[Int](i + 1)
+}}}
+
+=== 与Java互操作 ===
+
+Scala的数组是用Java的数组实现的，可以直接传递。
+
+如果Java方法返回的类型是`List`，推荐用隐式转换。例如`java.lang.ProcessBuilder`类
+有一个以`List<String>`为参数的构造器，Scala里可以这样调用：
+
+{{{class="brush: scala"
+import scala.collection.JavaConversions.bufferAsJavaList
+import scala.collection.mutable.ArrayBuffer
+
+val command = ArrayBuffer("ls", "-al", "/home/morgan")
+val pb = new ProcessBuilder(command)
+}}}
+
+这样`ArrayBuffer`被自动转成了列表。
+
+下面把返回的`java.util.List`转成`Buffer`，注意只能保证是`Buffer`，不一定是
+`ArrayBuffer`：
+
+{{{class="brush: scala"
+import scala.collection.JavaConversions.asScalaBuffer
+import scala.collection.mutable.Buffer
+
+val cmd: Buffer[String] = pb.command()
+}}}
+
 
 
 == apply与update方法 ==
@@ -1585,7 +1647,17 @@ Scala的对象和Java中的对象不是同一回事情，是另一个新的概�
 
 == if表达式 ==
 
-标题里叫它“表达式”，所以是有返回值的。if表达式返回执行分支的结果：
+标题里叫它“表达式”，所以是有返回值的。对于返回的类型，如果不同条件的类型不一样，
+那么表达式的类型是公共的超类：
+
+{{{class="brush: scala"
+if (x > 0) "positive" else -1
+}}}
+
+上面表达式的类型是`String`和`Int`的共同超类`Any`。
+
+if表达式返回执行分支的结果：
+
 
 {{{class="brush: scala"
 var filename = "default.txt"
@@ -1608,6 +1680,17 @@ val filename =
 println(if (!args.isEmpty) args(0) else "default.txt")
 }}}
 
+如果没有`else`部分，返回的类型可能是`Unit`（相当于Java中的`void`），写作`()`：
+
+{{{class="brush: scala"
+if (x > 0) 1
+}}}
+
+相当于：
+
+{{{class="brush: scala"
+if (x > 0) 1 else ()
+}}}
 
 
 == while循环 ==
@@ -1705,7 +1788,27 @@ while循环是没有返回值的，那就一定要用副作用：不是更新var
 
 == for表达式 ==
 
-Scale中的for表达式是遍历集合类的强大工具，包括了过滤与构造新集合的功能。
+Scale中的for表达式是遍历集合类的强大工具，包括了过滤与构造新集合的功能。但是在
+Scala提供的for表达式中没有提供`break`或`continue`来退出循环，这是为了更加贴合
+函数式风格的需要。如果真的需要要`break`时，可以有以下几个方案：
+
+* 使用`Boolean`变量控制某块代码是否执行。
+* 使用嵌套函数，这样可以从函数当中`return`。
+* 使用`Breaks`对象中的`break`方法。
+
+`Breaks`对象中的`break`方法的例子：
+
+{{{class="brush: scala"
+import scala.util.control.Breaks_
+
+breakable {
+	for (...) {
+		...
+		if (...) break;
+		...
+	}
+}
+}}}
 
 === 生成器（generator） ===
 
@@ -1735,6 +1838,12 @@ for (i <-0 to filesList.length -1)
 	println(fileList(i))
 }}}
 
+可以用分号隔开多个生成器：
+
+{{{class="brush: scala"
+scala> for (i <-1 to 3; j <- 1 to 3) print(i + "-" + j + ", ")
+1-1, 1-2, 1-3, 2-1, 2-2, 2-3, 3-1, 3-2, 3-3, 
+}}}
 
 === for是表达式 ===
 
@@ -2234,6 +2343,96 @@ mkString的调用完成这个工作，并且由于我们传递进去"\n"，因�
 
 = 函数与闭包 =
 
+== 参数默认值与带名参数 ==
+
+定义参数有默认值的参数：
+
+{{{class="brush: scala"
+def decorate(str: String, left: String = "[", right: String = "]") = 
+	left + str + right
+}}}
+
+调用时：
+
+{{{class="brush: scala"
+scala> decorate("hello")
+res0: String = [hello]
+
+scala> decorate("hello","<",">")
+res1: String = <hello>
+}}}
+
+传入实参不一定要按参数表的顺序，可以指定对应的形参名：
+
+{{{class="brush: scala"
+scala> decorate("hello", right = ">")
+res2: String = [hello>
+}}}
+
+
+== 变长参数 ==
+
+{{{class="brush: scala"
+def sum(args: Int*) = {
+  var res = 0
+  for (arg <- args) res += arg
+  res
+}
+}}}
+
+传入多个参数：
+
+{{{class="brush: scala"
+scala> val s = sum (1,4,9,16,25)
+s: Int = 55
+}}}
+
+但是不能把序列传入：
+
+{{{class="brush: scala"
+scala> val s = sum (1 to 5)
+<console>:8: error: type mismatch;
+ found   : scala.collection.immutable.Range.Inclusive
+ required: Int
+       val s = sum (1 to 5)
+                      ^
+}}}
+
+可能通过`: _*`声明类型不是序列而是多个参数：
+
+{{{class="brush: scala"
+scala> val s = sum(1 to 5: _*)
+s: Int = 15
+}}}
+
+在递归定义中我们会用到这样的语法：
+
+{{{class="brush: scala"
+def recursiveSum(args: Int*): Int = {
+  if (args.length ==0) 0
+  else args.head + recursiveSum(args.tail: _*)
+}
+}}}
+
+注意：如果使用变长参数且参数类型为`Object`的Java方法，如`PrintStream`、`printf`
+或`MessageFormat.format`时，要手工对基本类型进行转换。如：
+
+{{{class="brush: scala"
+import java.text.MessageFormat
+val str = MessageFormat.format("The answer to {0} is {1}", "everything",
+		42.asInstanceOf[AnyRef])
+
+str: String = The answer to everything is 42
+}}}
+
+
+
+
+
+{{{class="brush: scala"
+}}}
+
+
 == 方法（method） ==
 
 方法是被定义为某个对象成员的函数，这是最常用的形式。如下面这个工具检查文件中超过
@@ -2315,6 +2514,8 @@ Java里通过定义private方法来限制访问。在Scala里还可以把方法�
 
   }
 }}}
+
+
 
 == 头等函数与函数字面量（literal） ==
 

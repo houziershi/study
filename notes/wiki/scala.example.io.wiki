@@ -11,6 +11,15 @@
 val str = Console.readLine
 }}}
 
+`readLine`方法还可以加上一个参数作为给用户的提示：
+
+{{{class="brush: scala"
+val str = Console.readLine("Your name: ")
+}}}
+
+对于其他类型的，还有`readInt`、`readDouble`、`readByte`、`readShort`、`readLong`
+、`readFloat`、`readBoolean`、`readChar`。
+
 = 文件 =
 
 == 写入 ==
