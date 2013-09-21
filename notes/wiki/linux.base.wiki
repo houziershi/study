@@ -6,16 +6,40 @@
 
 = 简单工具 =
 
-== 日期时间 ==
+== mkpasswd ==
 
-=== cal ===
+根据指定的长度，产生一个难猜的随机密码。
+
+{{{class="brush: bash"
+[avishek@tecmint ~]$ mkpasswd -l 10
+ 
+zI4+Ybqfx9
+}}}
+	
+注意：`-l 10`产生一个10个字符的随机密码，而`-l 20`产生20个字符的密码,它可以设置
+为任意长度来取得所希望的结果。这个命令很有用，经常在脚本语言里使用来产生随机的
+密码。你可能需要`yum`或`apt` `expect` 包来使用这个命令。
+
+{{{class="brush: bash"
+[avishek@tecmint ~]$ yum install expect
+}}}
+
+或
+
+{{{class="brush: bash"
+[avishek@tecmint ~]$ apt-get install expect
+}}}
+
+= 日期时间 =
+
+== cal ==
 
 {{{class="brush: bash"
 cal
 cal 02 1995
 }}}
 
-=== date ===
+== date ==
 
 取得时间：
 
@@ -33,8 +57,9 @@ root@tecmint:~# date --set='14 may 2013 13:57'
 Mon May 13 13:57:00 IST 2013
 }}}
 
+= 别名 =
 
-=== alias ===
+== alias ==
 
 `alias`是一个系统自建的shell命令，允许你为名字比较长的或者经常使用的命令指定别名
 。
@@ -76,9 +101,57 @@ root@tecmint:~# l
 bash: l: command not found
 }}}
 
+= 通信 =
+
+== wall ==
+
+对系统管理员来说一个最重要的命令.`wall`发送一条消息到大家登录端将其`mesg`权限
+设置为`yes`。这条信息可以被`wall`作为参数，或者可以将它作为`wall`的标准输入。
+
+{{{class="brush: bash"
+[avishek@tecmint ~]$ wall "we will be going down for maintenance for one hour sharply at 03:30 pm"
+Broadcast message from root@localhost.localdomain (pts/0) (Sat Jun 29 14:44:02 2013):
+we will be going down for maintenance for one hour sharply at 03:30 pm
+}}}
+
+== mesg ==
+
+其他人们可以使用`wtrite`命令,将在在向您发送文本到屏幕上。你可以控制是否显示。
+
+{{{class="brush: bash"
+mesg [<strong>n</strong>|<strong>y</strong>] <strong>n</strong> - prevents the message from others popping up on the screen. <strong>y</strong> – Allows messages to appear on your screen.
+}}}
+
+== write ==
+
+如果`mesg`是`y`，让你的文本直接发送到另一台Linux机器的屏幕。
+
+{{{class="brush: bash"
+[avishek@tecmint ~]$ write ravisaive
+}}}
+
+== talk ==
+
+增强的`write`命令，talk命令可让你与其他登录的用户交谈。
+
+{{{class="brush: bash"
+[avishek@tecmint ~]$ talk ravisaive
+}}}
 
 
 = 系统信息 =
+
+== uptime ==
+
+你连接到你的Linux服务器时发现一些不寻常或恶意的东西，你会做什么？猜测……不，绝不
+！你可以运行`uptime`来验证当服务器无人值守式到底发生了什么事情。
+
+{{{class="brush: bash"
+[avishek@tecmint ~]$ uptime
+ 
+14:37:10 up  4:21,  2 users,  load average: 0.00, 0.00, 0.04
+}}}
+
 
 == uname ==
 
@@ -103,6 +176,21 @@ Linux tecmint 3.8.0-19-generic #30-Ubuntu SMP Wed May 1 16:36:13 UTC 2013 i686 i
 
 `cat /etc/issue`
 
+== w ==
+
+是否觉得命令`w`很滑稽？但是事实上不是的。它是一个命令，尽管只有一个字符长，命令
+`w`是`uptime`和`who`命令，以前后的顺序组合在一起。
+
+{{{class="brush: bash"
+[avishek@tecmint ~]$ w
+ 
+15:05:42 up  4:49,  3 users,  load average: 0.02, 0.01, 0.00
+USER     TTY      FROM              LOGIN@   IDLE   JCPU   PCPU WHAT
+server   tty7     :0               14:06    4:43m  1:42   0.08s pam: gdm-passwo
+server   pts/0    :0.0             14:18    0.00s  0.23s  1.65s gnome-terminal
+server   pts/1    :0.0             14:47    4:43   0.01s  0.01s bash
+}}}
+ 
 == whereis ==
 
 `whereis`的作用是用来定位命令的二进制文件\资源\或者帮助页，举例来说，获得`ls`和
@@ -162,6 +250,142 @@ fg %8
 
 
 = 进程管理 = 
+
+== top ==
+
+=== 排序 ===
+
+Sorting with `-O` (Uppercase Letter `O`).
+
+Press `Shift+O` to Sort field via field letter, for example press `a` letter to 
+sort process with PID (Process ID).
+
+Type any key to return to main top window with sorted PID order as shown in 
+below screen. Press `q` to quit exit the window. Sorting Process ID's
+
+=== Display Specific User Process ===
+
+Use top command with `u` option will display specific User process details.
+
+{{{class="brush: bash"
+# top -u tecmint
+}}}
+
+=== Highlight Running Process in Top ===
+
+Press `z` option in running `top` command will display running process in color 
+which may help you to identified running process easily.
+
+=== Shows Absolute Path of Processes ===
+
+Press `c` option in running `top` command, it will display absolute path of 
+running process.
+
+=== Change Delay or Set ‘Screen Refresh Interval’ in Top ===
+
+By default screen refresh interval is 3.0 seconds, same can be change pressing 
+`d` option in running top command and change it as desired as shown below.
+
+=== Kill running process ===
+
+Kill running process with argument `k`
+
+You can kill a process after finding PID of process by pressing `k` option in 
+running top command without exiting from top window as shown below.
+
+=== Sort by CPU Utilisation ===
+
+Press `Shift+P` to sort processes as per CPU utilization. See screenshot below.
+
+=== Renice a Process ===
+
+You can use `r` option to change the priority of the process also called Renice.
+
+=== Save Top Command Results ===
+
+Press `Shift+W` to save the running top command results under `/root/.toprc`.
+
+
+== free ==
+
+跟踪内存的使用和资源一样重要，就像管理员执行的任何其它任务，可以使用`free`命令
+来在这里救援.当前内存使用状态Current Usage Status of Memory
+
+{{{class="brush: bash"
+[avishek@tecmint ~]$ free
+ 
+             total       used       free     shared    buffers     cached
+Mem:       2028240    1788272     239968          0      69468     363716
+-/+ buffers/cache:    1355088     673152
+Swap:      3905532     157076    3748456
+}}}
+
+设置输出单位为KB，MB或GB
+
+{{{class="brush: bash"
+[avishek@tecmint ~]$ free -b
+ 
+             total       used       free     shared    buffers     cached
+Mem:    2076917760 1838272512  238645248          0   71348224  372670464
+-/+ buffers/cache: 1394253824  682663936
+Swap:   3999264768  160845824 3838418944
+}}}
+
+{{{class="brush: bash"
+[avishek@tecmint ~]$ free -k
+ 
+             total       used       free     shared    buffers     cached
+Mem:       2028240    1801484     226756          0      69948     363704
+-/+ buffers/cache:    1367832     660408
+Swap:      3905532     157076    3748456
+}}}
+
+{{{class="brush: bash"
+[avishek@tecmint ~]$ free -m
+ 
+             total       used       free     shared    buffers     cached
+Mem:          1980       1762        218          0         68        355
+-/+ buffers/cache:       1338        641
+Swap:         3813        153       3660
+}}}
+
+{{{class="brush: bash"
+[avishek@tecmint ~]$ free -g
+ 
+             total       used       free     shared    buffers     cached
+Mem:             1          1          0          0          0          0
+-/+ buffers/cache:          1          0
+Swap:            3          0          3
+}}}
+
+以可读的格式显示，检查当前内存使用
+
+{{{class="brush: bash"
+[avishek@tecmint ~]$ free -h
+ 
+             total       used       free     shared    buffers     cached
+Mem:          1.9G       1.7G       208M         0B        68M       355M
+-/+ buffers/cache:       1.3G       632M
+Swap:         3.7G       153M       3.6G
+}}}
+
+设定时间间隔后，持续检查使用状态
+
+{{{class="brush: bash"
+[avishek@tecmint ~]$ free -s 3
+ 
+             total       used       free     shared    buffers     cached
+Mem:       2028240    1824096     204144          0      70708     364180
+-/+ buffers/cache:    1389208     639032
+Swap:      3905532     157076    3748456
+ 
+             total       used       free     shared    buffers     cached
+Mem:       2028240    1824192     204048          0      70716     364212
+-/+ buffers/cache:    1389264     638976
+Swap:      3905532     157076    3748456
+}}}
+
+
 
 == kill ==
 
@@ -235,6 +459,235 @@ root@tecmint:~# service apache2 stop
 service /etc/init.d/apache2 start
 }}}
 
+= 文件资源 =
+
+
+== lsof ==
+
+`lsof`是"list open files("列表中打开的文件") 的缩写，显示您的系统当前已打开的
+所有文件。
+
+=== List all Open Files with lsof Command ===
+
+In the below example, it will show long listing of open files some of them are 
+extracted for better understanding which displays the columns like Command, PID,
+USER, FD, TYPE etc.
+
+{{{class="brush: bash"
+# lsof
+
+COMMAND    PID      USER   FD      TYPE     DEVICE  SIZE/OFF       NODE NAME
+init         1      root  cwd      DIR      253,0      4096          2 /
+init         1      root  rtd      DIR      253,0      4096          2 /
+init         1      root  txt      REG      253,0    145180     147164 /sbin/init
+init         1      root  mem      REG      253,0   1889704     190149 /lib/libc-2.12.so
+init         1      root   0u      CHR        1,3       0t0       3764 /dev/null
+init         1      root   1u      CHR        1,3       0t0       3764 /dev/null
+init         1      root   2u      CHR        1,3       0t0       3764 /dev/null
+init         1      root   3r     FIFO        0,8       0t0       8449 pipe
+init         1      root   4w     FIFO       0,8       0t0       8449 pipe
+init         1      root   5r      DIR       0,10         0          1 inotify
+init         1      root   6r      DIR       0,10         0          1 inotify
+init         1      root   7u     unix 0xc1513880       0t0       8450 socket
+}}}
+
+Sections and it’s values are self-explanatory. However, we’ll review FD & TYPE 
+columns more precisely.
+
+FD – stands for File descriptor and may seen some of the values as:
+
+* `cwd` current working directory
+* `rtd` root directory
+* `txt` program text (code and data)
+* `mem` memory-mapped file
+
+Also in `FD` column numbers like 1u is actual file descriptor and followed by 
+u,r,w of it’s mode as:
+
+*  `r` for read access.
+*  `w` for write access.
+*  `u` for read and write access.
+
+`TYPE` – of files and it’s identification.
+
+* `DIR` – Directory
+* `REG` – Regular file
+* `CHR` – Character special file.
+* `FIFO` – First In First Out
+
+=== List User Specific Opened Files ===
+
+The below command will display the list of all opened files of user tecmint.
+
+{{{class="brush: bash"
+# lsof -u tecmint
+
+COMMAND  PID    USER   FD   TYPE     DEVICE SIZE/OFF   NODE NAME
+sshd    1838 tecmint  cwd    DIR      253,0     4096      2 /
+sshd    1838 tecmint  rtd    DIR      253,0     4096      2 /
+sshd    1838 tecmint  txt    REG      253,0   532336 188129 /usr/sbin/sshd
+sshd    1838 tecmint  mem    REG      253,0    19784 190237 /lib/libdl-2.12.so
+sshd    1838 tecmint  mem    REG      253,0   122436 190247 /lib/libselinux.so.1
+sshd    1838 tecmint  mem    REG      253,0   255968 190256 /lib/libgssapi_krb5.so.2.2
+sshd    1838 tecmint  mem    REG      253,0   874580 190255 /lib/libkrb5.so.3.3
+}}}
+
+=== Find Processes running on Specific Port ===
+
+To find out all the running process of specific port, just use the following 
+command with option `-i`. The below example will list all running process of 
+port 22.
+
+{{{class="brush: bash"
+# lsof -i TCP:22
+
+COMMAND  PID    USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+sshd    1471    root    3u  IPv4  12683      0t0  TCP *:ssh (LISTEN)
+sshd    1471    root    4u  IPv6  12685      0t0  TCP *:ssh (LISTEN)
+}}}
+
+=== List Only IPv4 & IPv6 Open Files ===
+
+In below example shows only IPv4 and IPv6 network files open with separate 
+commands.
+
+{{{class="brush: bash"
+# lsof -i 4
+
+COMMAND    PID    USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+rpcbind   1203     rpc    6u  IPv4  11326      0t0  UDP *:sunrpc
+rpcbind   1203     rpc    7u  IPv4  11330      0t0  UDP *:954
+rpcbind   1203     rpc    8u  IPv4  11331      0t0  TCP *:sunrpc (LISTEN)
+avahi-dae 1241   avahi   13u  IPv4  11579      0t0  UDP *:mdns
+avahi-dae 1241   avahi   14u  IPv4  11580      0t0  UDP *:58600
+}}}
+
+{{{class="brush: bash"
+# lsof -i 6
+
+COMMAND    PID    USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+rpcbind   1203     rpc    9u  IPv6  11333      0t0  UDP *:sunrpc
+rpcbind   1203     rpc   10u  IPv6  11335      0t0  UDP *:954
+rpcbind   1203     rpc   11u  IPv6  11336      0t0  TCP *:sunrpc (LISTEN)
+rpc.statd 1277 rpcuser   10u  IPv6  11858      0t0  UDP *:55800
+rpc.statd 1277 rpcuser   11u  IPv6  11862      0t0  TCP *:56428 (LISTEN)
+cupsd     1346    root    6u  IPv6  12112      0t0  TCP localhost:ipp (LISTEN)
+}}}
+
+=== List Open Files of TCP Port ranges 1-1024 ===
+
+To list all the running process of open files of TCP Port ranges from 1-1024.
+
+{{{class="brush: bash"
+# lsof -i TCP:1-1024
+
+COMMAND  PID    USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+rpcbind 1203     rpc   11u  IPv6  11336      0t0  TCP *:sunrpc (LISTEN)
+cupsd   1346    root    7u  IPv4  12113      0t0  TCP localhost:ipp (LISTEN)
+sshd    1471    root    4u  IPv6  12685      0t0  TCP *:ssh (LISTEN)
+master  1551    root   13u  IPv6  12898      0t0  TCP localhost:smtp (LISTEN)
+sshd    1834    root    3r  IPv4  15101      0t0  TCP 192.168.0.2:ssh->192.168.0.1:conclave-cpp (ESTABLISHED)
+sshd    1838 tecmint    3u  IPv4  15101      0t0  TCP 192.168.0.2:ssh->192.168.0.1:conclave-cpp (ESTABLISHED)
+sshd    1871    root    3r  IPv4  15842      0t0  TCP 192.168.0.2:ssh->192.168.0.1:groove (ESTABLISHED)
+httpd   1918    root    5u  IPv6  15991      0t0  TCP *:http (LISTEN)
+httpd   1918    root    7u  IPv6  15995      0t0  TCP *:https (LISTEN)
+}}}
+
+=== Exclude User with ‘^’ Character ===
+
+Here, we have excluded root user. You can exclude a particular user using `^` 
+with command as shown above.
+
+{{{class="brush: bash"
+# lsof -i -u^root
+
+COMMAND    PID    USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+rpcbind   1203     rpc    6u  IPv4  11326      0t0  UDP *:sunrpc
+rpcbind   1203     rpc    7u  IPv4  11330      0t0  UDP *:954
+rpcbind   1203     rpc    8u  IPv4  11331      0t0  TCP *:sunrpc (LISTEN)
+rpcbind   1203     rpc    9u  IPv6  11333      0t0  UDP *:sunrpc
+rpcbind   1203     rpc   10u  IPv6  11335      0t0  UDP *:954
+rpcbind   1203     rpc   11u  IPv6  11336      0t0  TCP *:sunrpc (LISTEN)
+avahi-dae 1241   avahi   13u  IPv4  11579      0t0  UDP *:mdns
+avahi-dae 1241   avahi   14u  IPv4  11580      0t0  UDP *:58600
+rpc.statd 1277 rpcuser    5r  IPv4  11836      0t0  UDP *:soap-beep
+rpc.statd 1277 rpcuser    8u  IPv4  11850      0t0  UDP *:55146
+rpc.statd 1277 rpcuser    9u  IPv4  11854      0t0  TCP *:32981 (LISTEN)
+rpc.statd 1277 rpcuser   10u  IPv6  11858      0t0  UDP *:55800
+rpc.statd 1277 rpcuser   11u  IPv6  11862      0t0  TCP *:56428 (LISTEN)
+}}}
+
+=== Find Out who’s Looking What Files and Commands? ===
+
+Below example shows user tecmint is using command like ping and `/etc` 
+directory .
+
+{{{class="brush: bash"
+# lsof -i -u tecmint
+
+COMMAND  PID    USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+bash    1839 tecmint  cwd    DIR  253,0    12288   15 /etc
+ping    2525 tecmint  cwd    DIR  253,0    12288   15 /etc
+}}}
+
+=== List all Network Connections ===
+
+The following command with option `-i` shows the list of all network connections
+‘LISTENING & ESTABLISHED’.
+
+{{{class="brush: bash"
+# lsof -i
+
+COMMAND    PID    USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+rpcbind   1203     rpc    6u  IPv4  11326      0t0  UDP *:sunrpc
+rpcbind   1203     rpc    7u  IPv4  11330      0t0  UDP *:954
+rpcbind   1203     rpc   11u  IPv6  11336      0t0  TCP *:sunrpc (LISTEN)
+avahi-dae 1241   avahi   13u  IPv4  11579      0t0  UDP *:mdns
+avahi-dae 1241   avahi   14u  IPv4  11580      0t0  UDP *:58600
+rpc.statd 1277 rpcuser   11u  IPv6  11862      0t0  TCP *:56428 (LISTEN)
+cupsd     1346    root    6u  IPv6  12112      0t0  TCP localhost:ipp (LISTEN)
+cupsd     1346    root    7u  IPv4  12113      0t0  TCP localhost:ipp (LISTEN)
+sshd      1471    root    3u  IPv4  12683      0t0  TCP *:ssh (LISTEN)
+master    1551    root   12u  IPv4  12896      0t0  TCP localhost:smtp (LISTEN)
+master    1551    root   13u  IPv6  12898      0t0  TCP localhost:smtp (LISTEN)
+sshd      1834    root    3r  IPv4  15101      0t0  TCP 192.168.0.2:ssh->192.168.0.1:conclave-cpp (ESTABLISHED)
+httpd     1918    root    5u  IPv6  15991      0t0  TCP *:http (LISTEN)
+httpd     1918    root    7u  IPv6  15995      0t0  TCP *:https (LISTEN)
+clock-app 2362   narad   21u  IPv4  22591      0t0  TCP 192.168.0.2:45284->www.gov.com:http (CLOSE_WAIT)
+chrome    2377   narad   61u  IPv4  25862      0t0  TCP 192.168.0.2:33358->maa03s04-in-f3.1e100.net:http (ESTABLISHED)
+chrome    2377   narad   80u  IPv4  25866      0t0  TCP 192.168.0.2:36405->bom03s01-in-f15.1e100.net:http (ESTABLISHED)
+}}}
+
+=== Search by PID ===
+
+The below example only shows whose PID is 1 [One].
+
+{{{class="brush: bash"
+# lsof -p 1
+
+COMMAND PID USER   FD   TYPE     DEVICE SIZE/OFF   NODE NAME
+init      1 root  cwd    DIR      253,0     4096      2 /
+init      1 root  rtd    DIR      253,0     4096      2 /
+init      1 root  txt    REG      253,0   145180 147164 /sbin/init
+init      1 root  mem    REG      253,0  1889704 190149 /lib/libc-2.12.so
+init      1 root  mem    REG      253,0   142472 189970 /lib/ld-2.12.so
+}}}
+
+=== Kill all Activity of Particular User ===
+
+{{{class="brush: bash"
+Sometimes you may have to kill all the processes for a specific user. Below 
+command will kills all the processes of tecmint user.
+
+# kill -9 `lsof -t -u tecmint`
+}}}
+
+Note: Here, it’s not possible to give example of all available options, this 
+guide is only to show how lsof command can be use. You may refer man page of 
+`lsof` command to know more about it. Please share it if you find this article 
+is useful through our comment box below.
+
+
 
 
 = 文件操作 =
@@ -263,10 +716,67 @@ echo -n 'yangpan220' | md5sum
 
 = 文本文件 =
 
-== 查找 ==
+== paste ==
+
+合并两个或多个文本文件，按行来进行合并。示例。如果`file1`的内容是：
 
 {{{class="brush: bash"
-find / -name "*.conf" | xargs grep "alias" 
+1
+2
+3
+}}}
+
+`file2`是这样的:
+
+{{{class="brush: bash"
+a
+b
+c
+d
+}}}
+	
+{{{class="brush: bash"
+[avishek@tecmint ~]$ paste file1 file2 > file3
+}}}
+
+结果`file3`将是:
+
+{{{class="brush: bash"
+1    a
+2    b
+3    c
+     d
+}}}
+
+== 比较 ==
+
+`cmp`比较两个任意类型的文件并将结果输出至标准输出。如果两个文件相同， `cmp`默认
+返回`0`；如果不同，将显示不同的字节数和第一处不同的位置。
+
+以下面两个文件为例：
+
+`file1.txt`
+
+{{{class="brush: bash"
+root@tecmint:~# cat file1.txt
+ 
+Hi My name is Tecmint
+}}}
+
+`file2.txt`
+
+{{{class="brush: bash"
+root@tecmint:~# cat file2.txt
+ 
+Hi My name is tecmint [dot] com
+}}}
+
+比较一下这两个文件，看看命令的输出。
+
+{{{class="brush: bash"
+root@tecmint:~# cmp file1.txt file2.txt
+ 
+file1.txt file2.txt differ: byte 15, line 1
 }}}
 
 == 编码与格式 ==

@@ -3,9 +3,26 @@
 
 %toc 查找
 
+= whereis =
 
+`whereis`的作用是用来定位命令的二进制文件、资源或者帮助页。举例来说，获得`ls`和
+`kill`命令的二进制文件/资源以及帮助页：
+	
+{{{class="brush: bash"
+root@tecmint:~# whereis ls
+ls: /bin/ls /usr/share/man/man1/ls.1.gz
 
-= Find =
+root@tecmint:~# whereis kill
+kill: /bin/kill /usr/share/man/man2/kill.2.gz /usr/share/man/man1/kill.1.gz
+}}}
+
+注意：当需要知道二进制文件保存位置时有用。
+
+= find =
+
+{{{class="brush: bash"
+find / -name "*.conf" | xargs grep "alias" 
+}}}
 
 搜索指定目录下的文件，从开始于父目录，然后搜索子目录。
 
