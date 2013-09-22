@@ -80,6 +80,8 @@ Maven：[[maven]]
 
 [[mysql.moniter]]
 
+[[mysql.optimize]]
+
 DB2： [[DB2]]
 
 

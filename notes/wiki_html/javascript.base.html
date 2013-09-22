@@ -16,10 +16,48 @@
 <link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
 
 
-<title>javascript.base</title>
+<title>Javascript 基础</title>
 </head>
 <body  onresize='changeTocSize()'>
 	<div class="note-main"> 
+
+
+<h1>Javascript 基础</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">类型</a>
+<ul>
+<li><a href="#toc_1.1">instanceof运算符</a>
+<ul>
+<li><a href="#toc_1.1.1">instanceof运算符的常规用法</a>
+<li><a href="#toc_1.1.2">详细剖析</a>
+<li><a href="#toc_1.1.3">JavaScript 原型继承机制</a>
+<li><a href="#toc_1.1.4">instanceof运算符深入剖析</a>
+<ul>
+<li><a href="#toc_1.1.4.1">Object instanceof Object</a>
+<li><a href="#toc_1.1.4.2">Function instanceof Function</a>
+<li><a href="#toc_1.1.4.3">Foo instanceof Foo</a>
+</ul>
+<li><a href="#toc_1.1.5">instanceofDojo继承机制</a>
+</ul>
+</ul>
+<li><a href="#toc_2">对象</a>
+<ul>
+<li><a href="#toc_2.1">判断对象是否存在</a>
+<ul>
+<li><a href="#toc_2.1.1">第一种写法</a>
+<li><a href="#toc_2.1.2">第二种写法</a>
+<li><a href="#toc_2.1.3">第三种写法</a>
+<li><a href="#toc_2.1.4">第五种写法</a>
+<li><a href="#toc_2.1.5">第六种写法</a>
+<li><a href="#toc_2.1.6">第七种写法</a>
+<li><a href="#toc_2.1.7">第八种写法</a>
+<li><a href="#toc_2.1.8">第九种写法</a>
+<li><a href="#toc_2.1.9">第十种写法</a>
+</ul>
+</ul>
+</ul>
+</div>
 
 
 <h1 id="toc_1">类型</h1>
@@ -27,7 +65,11 @@
 <h2 id="toc_1.1">instanceof运算符</h2>
 
 <p>
-在 JavaScript 中，判断一个变量的类型尝尝会用<code>typeof</code>运算符，在使用<code>typeof</code>运算符时采用引用类型存储值会出现一个问题，无论引用的是什么类型的对象，它都返回<code>object</code>。ECMAScript 引入了另一个 Java 运算符 <code>instanceof </code>解决这个问题。<code>instanceof</code>运算符与<code>typeof</code>运算符相似，用于识别正在处理的对象的类型。与<code>typeof</code>方法不同的是，<code>instanceof</code>方法要求开发者明确地确认对象为某特定类型。例如：
+在JavaScript中，判断一个变量的类型尝尝会用<code>typeof</code>运算符，在使用<code>typeof</code>运算符时
+采用引用类型存储值会出现一个问题，无论引用的是什么类型的对象，它都返回<code>object</code>。
+ECMAScript 引入了另一个Java运算符 <code>instanceof </code>解决这个问题。<code>instanceof</code>运算符
+与<code>typeof</code>运算符相似，用于识别正在处理的对象的类型。与<code>typeof</code>方法不同的是，
+<code>instanceof</code>方法要求开发者明确地确认对象为某特定类型。例如：
 </p>
 
 <pre class="brush: javascript">
@@ -50,10 +92,10 @@ console.log(foo instanceof Foo)//true
 </pre>
 
 <p>
-另外，更重的一点是 instanceof 可以在继承关系中用来判断一个实例是否属于它的父类型。例如：
+另外，更重的一点是<code>instanceof</code>可以在继承关系中用来判断一个实例是否属于它的父类型
+。例如：
 </p>
 
-		
 <pre class="brush: javascript">
 // 判断 foo 是否是 Foo 类的实例 , 并且是否是其父类型的实例
 function Aoo(){}
@@ -66,15 +108,16 @@ console.log(foo instanceof Aoo)//true
 </pre>
 
 <p>
-上面的代码中是判断了一层继承关系中的父类，在多层继承关系中，instanceof 运算符同样适用。
+上面的代码中是判断了一层继承关系中的父类，在多层继承关系中，<code>instanceof</code>运算符
+同样适用。
 </p>
 
 <p>
-你真的了解 instanceof 操作符吗？
+你真的了解<code>instanceof</code>操作符吗？
 </p>
 
 <p>
-看了上面的代码示例，是不是觉得 instanceof 操作符很简单，下面来看点复杂的用法。
+看了上面的代码示例，是不是觉得<code>instanceof</code>操作符很简单，下面来看点复杂的用法。
 </p>
 
 <pre class="brush: javascript">
@@ -90,17 +133,28 @@ console.log(foo instanceof Aoo)//true
 </pre>
 
 <p>
-看了上面的代码是不是又晕头转向了？为什么 Object 和 Function instanceof 自己等于 true，而其他类 instanceof 自己却又不等于 true 呢？如何解释？要想从根本上了解 instanceof 的奥秘，需要从两个方面着手：1，语言规范中是如何定义这个运算符的。2，JavaScript 原型继承机制。
+看了上面的代码是不是又晕头转向了？为什么<code>Object</code>和<code>Function instanceof</code>自己等于
+<code>true</code>，而其他类<code>instanceof</code>自己却又不等于<code>true</code>呢？如何解释？要想从根本上了解
+<code>instanceof</code>的奥秘，需要从两个方面着手：
 </p>
+
+<ul>
+<li>
+语言规范中是如何定义这个运算符的。
+
+<li>
+JavaScript原型继承机制。
+
+</ul>
 
 <h3 id="toc_1.1.2">详细剖析</h3>
 
 <p>
-详细剖析 ECMAScript-262 edition 3 中 instanceof 运算符的定义
+详细剖析ECMAScript-262 edition 3中<code>instanceof</code>运算符的定义
 </p>
 
 <p>
-语言规范对中 instanceof 运算符的定义如下：
+语言规范对中<code>instanceof</code>运算符的定义如下：
 </p>
 
 <pre class="brush: javascript">
@@ -125,7 +179,7 @@ RelationalExpression instanceof ShiftExpression is evaluated as follows:
 </pre>
 
 <p>
-相关的 HasInstance 方法定义
+相关的<code>HasInstance</code>方法定义
 </p>
 
 <pre class="brush: javascript">
@@ -149,7 +203,8 @@ RelationalExpression instanceof ShiftExpression is evaluated as follows:
 </pre>
 
 <p>
-上面的规范定义很晦涩，而且看起来比较复杂，涉及到很多概念，但把这段规范翻译成 JavaScript 代码却很简单，如下：
+上面的规范定义很晦涩，而且看起来比较复杂，涉及到很多概念，但把这段规范翻译成
+JavaScript代码却很简单，如下：
 </p>
 
 <pre class="brush: javascript">
@@ -168,11 +223,19 @@ function instance_of(L, R) {//L 表示左表达式，R 表示右表达式
 <h3 id="toc_1.1.3">JavaScript 原型继承机制</h3>
 
 <p>
-由于本文主要集中在剖析 JavaScript instanceof 运算符，所以对于 JavaScript 的原型继承机制不再做详细的讲解，下面参考来自 <a href="http://www.mollypages.org/misc/js.mp">http://www.mollypages.org/misc/js.mp</a> 的一张图片，此图片详细的描述了 JavaScript 各种对象的显示和隐式原型链结构。
+由于本文主要集中在剖析JavaScript<code>instanceof</code>运算符，所以对于JavaScript的原型继承
+机制不再做详细的讲解，下面参考来自 <a href="http://www.mollypages.org/misc/js.mp">http://www.mollypages.org/misc/js.mp</a> 的一张
+图片，此图片详细的描述了JavaScript各种对象的显示和隐式原型链结构。
 </p>
 
 <p>
-由其本文涉及显示原型和隐式原型，所以下面对这两个概念作一下简单说明。在 JavaScript 原型继承结构里面，规范中用<code>[[Prototype]]</code>表示对象隐式的原型，在 JavaScript 中用<code>__proto__</code>表示，并且在 Firefox 和 Chrome 浏览器中是可以访问得到这个属性的，但是 IE 下不行。所有 JavaScript 对象都有<code>__proto__</code>属性，但只有<code>Object.prototype.__proto__</code>为 null，前提是没有在 Firefox 或者 Chrome 下修改过这个属性。这个属性指向它的原型对象。 至于显示的原型，在 JavaScript 里用<code>prototype</code>属性表示，这个是 JavaScript 原型继承的基础知识，在这里就不在叙述了。
+由其本文涉及显示原型和隐式原型，所以下面对这两个概念作一下简单说明。在JavaScript
+原型继承结构里面，规范中用<code>[[Prototype]]</code>表示对象隐式的原型，在 JavaScript中用
+<code>__proto__</code>表示，并且在Firefox和Chrome浏览器中是可以访问得到这个属性的，但是IE下
+不行。所有 JavaScript 对象都有<code>__proto__</code>属性，但只有
+<code>Object.prototype.__proto__</code>为<code>null</code>，前提是没有在Firefox或者Chrome下修改过这个
+属性。这个属性指向它的原型对象。 至于显示的原型，在JavaScript里用<code>prototype</code>属性
+表示，这个是JavaScript原型继承的基础知识，在这里就不在叙述了。
 </p>
 
 <p>
@@ -186,16 +249,17 @@ JavaScript 原型链
 <h3 id="toc_1.1.4">instanceof运算符深入剖析</h3>
 
 <p>
-讲解 instanceof 复杂用法
+讲解instanceof复杂用法
 </p>
 
 <p>
-有了上面 instanceof 运算符的 JavaScript 代码和原型继承图，再来理解 instanceof 运算符将易如反掌。下面将详细讲解<code>Object instanceof Object</code>，<code>Function instanceof Function</code>和<code>Foo instanceof Foo</code>三个示例，其它示例读者可自行推演。
+有了上面<code>instanceof</code>运算符的JavaScript代码和原型继承图，再来理解<code>instanceof</code>运算
+符将易如反掌。下面将详细讲解<code>Object instanceof Object</code>，
+<code>Function instanceof Function</code>和<code>Foo instanceof Foo</code>三个示例，其它示例读者可自行
+推演。
 </p>
 
-<p>
-分析`<code>Object instanceof Object</code>：
-</p>
+<h4 id="toc_1.1.4.1">Object instanceof Object</h4>
 
 <pre class="brush: javascript">
 // 为了方便表述，首先区分左侧表达式和右侧表达式
@@ -212,9 +276,7 @@ O == L
 // 返回 true
 </pre>
 
-<p>
-分析`<code>Function instanceof Function</code>：
-</p>
+<h4 id="toc_1.1.4.2">Function instanceof Function</h4>
                 
 <pre class="brush: javascript">
 // 为了方便表述，首先区分左侧表达式和右侧表达式
@@ -227,9 +289,7 @@ O == L
 // 返回 true
 </pre>
 
-<p>
-分析<code>Foo instanceof Foo</code>：
-</p>
+<h4 id="toc_1.1.4.3">Foo instanceof Foo</h4>
  
 <pre class="brush: javascript">
 // 为了方便表述，首先区分左侧表达式和右侧表达式
@@ -253,7 +313,8 @@ L == null
 <h3 id="toc_1.1.5">instanceofDojo继承机制</h3>
 
 <p>
-在 JavaScript 中，是没有多重继承这个概念的，就像 Java 一样。但在 Dojo 中使用<code>declare</code>声明类时，是允许继承自多个类的。下面以 Dojo 1.6.1 为例。
+在JavaScript中，是没有多重继承这个概念的，就像Java一样。但在Dojo中使用<code>declare</code>
+声明类时，是允许继承自多个类的。下面以 Dojo 1.6.1 为例。
 </p>
 
 <p>
@@ -274,8 +335,277 @@ console.log(foo.isInstanceOf(Boo));//true
 </pre>
 
 <p>
-上面的示例中，<code>Foo</code>同时继承自<code>Aoo</code>和<code>Boo</code>，但当使用<code>instanceof</code>运算符来检查<code>foo</code>是否是<code>Boo</code>的实例时，返回的是<code>false</code>。实际上，在 Dojo 的内部，<code>Foo</code>仍然只继承自<code>Aoo</code>，而通过mixin机制把<code>Boo</code>类中的方法和属性拷贝到<code>Foo</code>中，所以当用<code>instanceof</code>运算符来检查是否是<code>Boo</code>的实例时，会返回<code>false</code>。所以 Dojo 为每个类的实例添加了一个新的方法叫<code>isInstanceOf</code>，用这个方法来检查多重继承。
+上面的示例中，<code>Foo</code>同时继承自<code>Aoo</code>和<code>Boo</code>，但当使用<code>instanceof</code>运算符来检查<code>foo</code>
+是否是<code>Boo</code>的实例时，返回的是<code>false</code>。实际上，在 Dojo 的内部，<code>Foo</code>仍然只继承自
+<code>Aoo</code>，而通过mixin机制把<code>Boo</code>类中的方法和属性拷贝到<code>Foo</code>中，所以当用<code>instanceof</code>
+运算符来检查是否是<code>Boo</code>的实例时，会返回<code>false</code>。所以 Dojo 为每个类的实例添加了
+一个新的方法叫<code>isInstanceOf</code>，用这个方法来检查多重继承。
 </p>
+
+<h1 id="toc_2">对象</h1>
+
+<h2 id="toc_2.1">判断对象是否存在</h2>
+
+<p>
+Javascript语言的设计不够严谨，很多地方一不小心就会出错。
+</p>
+
+<p>
+举例来说，请考虑以下情况。
+</p>
+
+<p>
+现在，我们要判断一个全局对象<code>myObj</code>是否存在，如果不存在，就对它进行声明。用自然
+语言描述的算法如下：
+</p>
+
+<pre class="brush: javascript">
+if (myObj不存在){
+	myObj;
+}
+</pre>
+
+<p>
+你可能会觉得，写出这段代码很容易。但是实际上，它涉及的语法问题，远比我们想象的
+复杂。Juriy Zaytsev指出，判断一个Javascript对象是否存在，有超过50种写法。只有对
+Javascript语言的实现细节非常清楚，才可能分得清它们的区别。
+</p>
+
+<h3 id="toc_2.1.1">第一种写法</h3>
+
+<p>
+根据直觉，你可能觉得可以这样写：
+</p>
+
+<pre class="brush: javascript">
+if (!myObj) {
+	myObj = { };
+}
+</pre>
+
+<p>
+但是，运行这段代码，浏览器会直接抛出<code>ReferenceError</code>错误，导致运行中断。请问错在
+哪里？
+</p>
+
+<p>
+对了，if语句判断<code>myObj</code>是否为空时，这个变量还不存在，所以才会报错。改成下面
+这样，就能正确运行了。
+</p>
+
+<pre class="brush: javascript">
+if (!myObj) {
+	var myObj = { };
+}
+</pre>
+
+<p>
+为什么加了一个<code>var</code>以后，就不报错了？难道这种情况下，if语句做判断时，<code>myObj</code>就
+已经存在了吗？
+</p>
+
+<p>
+要回答这个问题，就必须知道Javascript解释器的工作方式。Javascript语言是“先解析，
+后运行”，解析时就已经完成了变量声明，所以上面的代码实际等同于：
+</p>
+
+<pre class="brush: javascript">
+var myObj;
+if (!myObj) {
+	var myObj = { };
+}
+</pre>
+
+<p>
+因此，if语句做判断时，<code>myObj</code>确实已经存在了，所以就不报错了。这就是var命令的
+“代码提升”（hoisting）作用。Javascript解释器，只“提升”var命令定义的变量，
+对不使用var命令、直接赋值的变量不起作用，这就是为什么不加var会报错的原因。
+</p>
+
+<h3 id="toc_2.1.2">第二种写法</h3>
+
+<p>
+除了var命令，还可以有另一种改写，也能得到正确的结果：
+</p>
+
+<pre class="brush: javascript">
+if (!window.myObj) {
+	myObj = { };
+}
+</pre>
+
+<p>
+<code>window</code>是javascript的顶层对象，所有的全局变量都是它的属性。所以，判断<code>myobj</code>
+是否为空，等同于判断<code>window</code>对象是否有<code>myobj</code>属性，这样就可以避免因为<code>myObj</code>没有
+定义而出现<code>ReferenceError</code>错误。不过，从代码的规范性考虑，最好还是对第二行加上
+var：
+</p>
+
+<pre class="brush: javascript">
+if (!window.myObj) {
+	var myObj = { };
+}
+</pre>
+
+<p>
+或者写成这样：
+</p>
+
+<pre class="brush: javascript">
+if (!window.myObj) {
+	window.myObj = { };
+}
+</pre>
+
+<h3 id="toc_2.1.3">第三种写法</h3>
+
+<p>
+上面这种写法的缺点在于，在某些运行环境中（比如V8、Rhino），<code>window</code>未必是顶层
+对象。所以，考虑改写成：
+</p>
+
+<pre class="brush: javascript">
+if (!this.myObj) {
+	this.myObj = { };
+}
+</pre>
+
+<p>
+在全局变量的层面中，<code>this</code>关键字总是指向顶层变量，所以就可以独立于不同的运行环境
+。
+</p>
+
+<p>
+第四种写法
+</p>
+
+<p>
+但是，上面这样写可读性较差，而且<code>this</code>的指向是可变的，容易出错，所以进一步改写：
+</p>
+
+<pre class="brush: javascript">
+var global = this;
+if (!global.myObj) {
+	global.myObj = { };
+}
+</pre>
+
+<p>
+用自定义变量<code>global</code>表示顶层对象，就清楚多了。
+</p>
+
+<h3 id="toc_2.1.4">第五种写法</h3>
+
+<p>
+还可以使用<code>typeof</code>运算符，判断<code>myObj</code>是否有定义。
+</p>
+
+<pre class="brush: javascript">
+if (typeof myObj == "undefined") {
+	var myObj = { };
+}
+</pre>
+
+<p>
+这是目前使用最广泛的判断javascript对象是否存在的方法。
+</p>
+
+<h3 id="toc_2.1.5">第六种写法</h3>
+
+<p>
+由于在已定义、但未赋值的情况下，<code>myObj</code>的值直接等于<code>undefined</code>，所以上面的写法
+可以简化：
+</p>
+
+<pre class="brush: javascript">
+if (myObj == undefined) {
+	var myObj = { };
+}
+</pre>
+
+<p>
+这里有两个地方需要注意，首先第二行的var关键字不能少，否则会出现<code>ReferenceError</code>
+错误，其次<code>undefined</code>不能加单引号或双引号，因为这里比较的是<code>undefined</code>这种数据
+类型，而不是<code>undefined</code>这个字符串。
+</p>
+
+<h3 id="toc_2.1.6">第七种写法</h3>
+
+<p>
+上面的写法在“精确比较”（<code>===</code>）的情况下，依然成立：
+</p>
+
+<pre class="brush: javascript">
+if (myObj === undefined) {
+	var myObj = { };
+}
+</pre>
+
+<h3 id="toc_2.1.7">第八种写法</h3>
+
+<p>
+根据javascript的语言设计，<code>undefined == null</code>，所以比较<code>myObj</code>是否等于<code>null</code>，
+也能得到正确结果：
+</p>
+
+<pre class="brush: javascript">
+if (myObj == null) {
+	var myObj = { };
+}
+</pre>
+
+<p>
+不过，虽然运行结果正确，但是从语义上看，这种判断方法是错的，应该避免。因为<code>null</code>
+指的是已经赋值为<code>null</code>的空对象，即这个对象实际上是有值的，而<code>undefined</code>指的是不
+存在或没有赋值的对象。因此，这里只能使用“比较运算符”（<code>==</code>），如果这里使用
+“精确比较运算符”（<code>===</code>），就会出错。
+</p>
+
+<h3 id="toc_2.1.8">第九种写法</h3>
+
+<p>
+还可以使用<code>in</code>运算符，判断<code>myObj</code>是否为顶层对象的一个属性：
+</p>
+
+<pre class="brush: javascript">
+if (!('myObj' in window)) {
+	window.myObj = { };
+}
+</pre>
+
+<h3 id="toc_2.1.9">第十种写法</h3>
+
+<p>
+最后，使用<code>hasOwnProperty</code>方法，判断<code>myObj</code>是否为顶层对象的一个属性：
+</p>
+
+<pre class="brush: javascript">
+if (!this.hasOwnProperty('myObj')) {
+	this.myObj = { };
+}
+</pre>
+
+<p>
+总结
+</p>
+
+<ul>
+<li>
+如果只判断对象是否存在，推荐使用第五种写法。
+
+<li>
+如果除了对象是否存在，还要判断对象是否有<code>null</code>值，推荐使用第一种写法。
+
+<li>
+除非特殊情况，所有变量都应该使用<code>var</code>命令声明。
+
+<li>
+为了跨平台，建议避免使用<code>window</code>表示顶层对象。
+
+<li>
+<code>null</code>和<code>undefined</code>容易混淆。两者都有时建议使用“精确比较”运算符（<code>===</code>）。
+
+</ul>
  </div>
 </body>
 </html>

@@ -22,6 +22,8 @@
 	<div class="note-main"> 
 <h1 id="toc_1">subversion基本操作</h1>
 
+<h1 id="toc_2">签出</h1>
+
 <p>
 第一次签出代码：
 </p>
@@ -30,13 +32,55 @@
 $ svn checkout http://svn.collab.net/repos/svn/trunk subv 
 </pre>
 
+<h1 id="toc_3">忽略文件与目录 </h1>
+
+<h2 id="toc_3.1">未加入控制的文件夹 </h2>
+
+<pre class="brush: bash">
+svn propset svn:ignore 'test' .
+svn update
+svn commit -m "add a ignore dir"
+</pre>
+
+<h2 id="toc_3.2">已经加入版本控制的文件夹</h2>
+
+<pre class="brush: bash">
+svn export test test_bak
+svn rm test
+svn commit -m "delete test"
+mv test_bak test
+svn propset svn:ignore 'test' .
+svn update
+svn commit -m "add a ignore dir"
+</pre>
+
+<h2 id="toc_3.3">多个文件</h2>
+
 <p>
-更新代码
-：
+如果想要忽略一个目录下多个文件夹的话，需要有一点点技巧，如下
 </p>
+
+<pre class="brush: bash">
+svn propset svn:ignore 'test
+test1
+test2' .
+</pre>
+
+<p>
+即每一个文件夹要单独另起一行
+</p>
+
+<h1 id="toc_4">更新代码</h1>
+
+<p>
+更新代码 ：
+</p>
+
 <pre class="brush: bash">
 svn update 
 </pre>
+
+<h1 id="toc_5">修改</h1>
 
 <p>
 修改代码：
@@ -56,9 +100,9 @@ svn move --parents foo bar # 移动时自动加上中间目录
 svn mkdir blort 
 </pre>
 
-<p>
-检查修改
-</p>
+<h1 id="toc_6">检查修改 </h1>
+
+<h2 id="toc_6.1">概况</h2>
 
 <pre class="brush: bash">
 svn status                 # 浏览所有的修改
@@ -80,9 +124,7 @@ M 已经修改的内容
 
 </ol>
 
-<p>
-更多修改信息
-</p>
+<h2 id="toc_6.2">详细</h2>
 
 <pre class="brush: bash">
 svn status -v   # 在本地显示所有的（包括有修改的和没有修改的）状态
@@ -101,6 +143,8 @@ M                   44     20               harry     bar.c
 # 如果现在运行svn update，README会被更新 
 </pre>
 
+<h2 id="toc_6.3">查看修改文件内容</h2>
+
 <p>
 检查文件修改的内容：
 </p>
@@ -110,6 +154,8 @@ svn diff             # 显示所有被修改的详细信息
 svn diff &gt; patchfile # 生成补丁 
 </pre>
 
+<h1 id="toc_7">取消修改</h1>
+
 <p>
 取消对某文件的修改：
 </p>
@@ -117,6 +163,8 @@ svn diff &gt; patchfile # 生成补丁
 <pre class="brush: bash">
 snv revert README 
 </pre>
+
+<h1 id="toc_8">冲突处理</h1>
 
 <p>
 冲突处理：
@@ -132,7 +180,7 @@ Select: (p) postpone, (df) diff-full, (e) edit,
 </pre>
 
 <p>
-当更新代码时，<code>U</code>表示文件更新，<code>G</code>表示无冲突地合并。但有冲突的情况要用户指定
+当更新代码时，`U<code>表示文件更新，`G</code>表示无冲突地合并。但有冲突的情况要用户指定
 如何处理：
 </p>
 
@@ -147,14 +195,13 @@ launch      # 启动一个外部程序来解决冲突，这需要一点预先准
 help        # 显示帮助 
 </pre>
 
-<p>
-提交修改：
-</p>
+<h1 id="toc_9">提交修改</h1>
 
 <pre class="brush: bash">
 svn commit -m "message" 
 </pre>
  
+<h1 id="toc_10">导出</h1>
 
 <p>
 导出没有版本的代码：
