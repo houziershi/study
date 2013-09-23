@@ -5,6 +5,8 @@
 
 = 基本类型 =
 
+基础：[[java.base]]
+
 基础类型：[[java.baseType]]
 
 = 多线程 =

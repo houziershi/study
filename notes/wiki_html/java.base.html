@@ -16,10 +16,107 @@
 <link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
 
 
-<title>java.base</title>
+<title>基础</title>
 </head>
 <body  onresize='changeTocSize()'>
 	<div class="note-main"> 
+
+
+<h1>基础</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">混淆</a>
+<li><a href="#toc_2">栈和堆</a>
+<li><a href="#toc_3">equals和hashCode</a>
+<li><a href="#toc_4">字符串不变性</a>
+<li><a href="#toc_5">集合</a>
+<li><a href="#toc_6">异常</a>
+</ul>
+</div>
+
+<h1 id="toc_1">混淆</h1>
+
+<p>
+Aliasing指不同类型的多个别名指向同一个位置。
+</p>
+
+<p>
+<img src='images/java.base/00.jpg' />
+</p>
+
+<h1 id="toc_2">栈和堆</h1>
+
+<p>
+方法和对象在运行时内存中的位置：
+</p>
+
+<p>
+<img src='images/java.base/01.png' />
+</p>
+
+<h1 id="toc_3">equals和hashCode</h1>
+
+<p>
+<code>hashCode()</code>方法用来提升性能，它与<code>equals()</code>的关系：
+</p>
+
+<ul>
+<li>
+如果<code>equal</code>，<code>hashCode</code>必须一致。
+
+<li>
+如果<code>hashCode</code>，不一定<code>equal</code>。
+
+</ul>
+
+<p>
+<img src='images/java.base/02.jpg' />
+</p>
+
+<h1 id="toc_4">字符串不变性</h1>
+
+<p>
+String Immutability。对于下面的代码：
+</p>
+
+<pre class="brush: java">
+String s = "abde";
+s = s.concat("ef");
+</pre>
+
+<p>
+<img src='images/java.base/03.jpg' />
+</p>
+
+
+<h1 id="toc_5">集合</h1>
+
+<p>
+集合类型<code>Collection</code>与工具类<code>Collections</code>：
+</p>
+
+<p>
+<img src='images/java.base/04.jpg' />
+</p>
+
+<p>
+集合类型层级：
+</p>
+
+<p>
+<img src='images/java.base/05.jpg' />
+</p>
+
+
+<h1 id="toc_6">异常</h1>
+
+<p>
+红色为<code>Checked Exception</code>，必须被捕获或在方法是声明抛出：
+</p>
+
+<p>
+<img src='images/java.base/06.jpg' />
+</p>
  </div>
 </body>
 </html>

@@ -5,6 +5,8 @@
 
 = 内存区域 =
 
+<img src='images/java.jvm/01.jpg' />
+
 == Java堆（Java Heap） ==
 
 {{{class="brush: bash"

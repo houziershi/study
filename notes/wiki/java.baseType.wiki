@@ -1,4 +1,8 @@
 
+%title 基础类型
+
+%toc 基础类型
+
 = 数组 =
 
 声明时不能指定大小：`type [] var;`或`type var []`
