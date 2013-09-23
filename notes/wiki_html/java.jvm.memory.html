@@ -38,27 +38,60 @@
 </ul>
 <li><a href="#toc_2">GC与内存分配策略</a>
 <ul>
-<li><a href="#toc_2.1">回收算法</a>
+<li><a href="#toc_2.1">Java在内存中的状态</a>
 <ul>
-<li><a href="#toc_2.1.1">新生代</a>
-<li><a href="#toc_2.1.2">老年代</a>
-<li><a href="#toc_2.1.3">空间分配担保</a>
+<li><a href="#toc_2.1.1">Java的内存回收机制</a>
+<li><a href="#toc_2.1.2">Java对对象的4种引用</a>
+<li><a href="#toc_2.1.3">Java垃圾回收机制</a>
+<ul>
+<li><a href="#toc_2.1.3.1">垃圾回收算法</a>
+<ul>
+<li><a href="#toc_2.1.3.1.1">串行回收和并行回收</a>
+<li><a href="#toc_2.1.3.1.2">并发执行和应用程序停止</a>
+<li><a href="#toc_2.1.3.1.3">压缩和不压缩和复制</a>
 </ul>
-<li><a href="#toc_2.2">垃圾收集器种类</a>
+<li><a href="#toc_2.1.3.2">堆内存的分代回收</a>
 <ul>
-<li><a href="#toc_2.2.1">新生代收集器</a>
+<li><a href="#toc_2.1.3.2.1">分代回收的依据</a>
+<li><a href="#toc_2.1.3.2.2">堆内存的分代</a>
 <ul>
-<li><a href="#toc_2.2.1.1">Serial</a>
-<li><a href="#toc_2.2.1.2">ParNew</a>
-<li><a href="#toc_2.2.1.3">Parallel Scavenge</a>
+<li><a href="#toc_2.1.3.2.2.1">Young代</a>
+<li><a href="#toc_2.1.3.2.2.2">Old代</a>
+<li><a href="#toc_2.1.3.2.2.3">Permanent</a>
 </ul>
-<li><a href="#toc_2.2.2">老年代收集器</a>
-<ul>
-<li><a href="#toc_2.2.2.1">Serial Old</a>
-<li><a href="#toc_2.2.2.2">CMS</a>
 </ul>
-<li><a href="#toc_2.2.3">G1收集器</a>
-<li><a href="#toc_2.2.4">收集器参数</a>
+</ul>
+<li><a href="#toc_2.1.4">常见的垃圾回收器</a>
+<ul>
+<li><a href="#toc_2.1.4.1">串行回收器（只使用一个CPU）</a>
+<li><a href="#toc_2.1.4.2">并行回收器</a>
+<li><a href="#toc_2.1.4.3">并行压缩回收器</a>
+<li><a href="#toc_2.1.4.4">并发标识—清理回收（CMS）</a>
+</ul>
+<li><a href="#toc_2.1.5">内存管理小技巧</a>
+</ul>
+<li><a href="#toc_2.2">基本设置</a>
+<li><a href="#toc_2.3">回收算法</a>
+<ul>
+<li><a href="#toc_2.3.1">新生代</a>
+<li><a href="#toc_2.3.2">老年代</a>
+<li><a href="#toc_2.3.3">空间分配担保</a>
+</ul>
+<li><a href="#toc_2.4">垃圾收集器种类</a>
+<ul>
+<li><a href="#toc_2.4.1">新生代收集器</a>
+<ul>
+<li><a href="#toc_2.4.1.1">Serial</a>
+<li><a href="#toc_2.4.1.2">ParNew</a>
+<li><a href="#toc_2.4.1.3">Parallel Scavenge</a>
+</ul>
+<li><a href="#toc_2.4.2">老年代收集器</a>
+<ul>
+<li><a href="#toc_2.4.2.1">Serial Old</a>
+<li><a href="#toc_2.4.2.2">CMS</a>
+</ul>
+<li><a href="#toc_2.4.3">G1收集器</a>
+<li><a href="#toc_2.4.4">收集器参数</a>
 </ul>
 </ul>
 </ul>
@@ -128,6 +161,390 @@ HotSpot模拟机中<code>-Xoss</code>没有用的，栈容量由<code>-Xss</code
 
 <h1 id="toc_2">GC与内存分配策略</h1>
 
+<h2 id="toc_2.1">Java在内存中的状态</h2>
+
+<p>
+首先我们先写一个代码为例子：
+</p>
+
+<pre class="brush: java" title="Person.java">
+package test;
+ 
+import java.io.Serializable;
+ 
+public class Person implements Serializable {
+ 
+    static final long serialVersionUID = 1L;
+ 
+    String name; // 姓名
+     
+    Person friend;    //朋友
+ 
+    public Person() {}
+     
+    public Person(String name) {
+        super();
+        this.name = name;
+    }
+}
+</pre>
+
+<pre class="brush: java" title="Test.java">
+package test;
+
+public class Test{
+ 
+    public static void main(String[] args) {
+        Person p1 = new Person("Kevin");
+        Person p2 = new Person("Rain");
+        Person p3 = new Person("Sunny");
+         
+        p1.friend = p2;
+        p3 = p2;
+        p2 = null;
+    }
+}
+</pre>
+
+
+<p>
+把上面<code>Test.java</code>中<code>main</code>方面里面的对象引用画成一个从<code>main</code>方法开始的对象引用图
+的话就是这样的（顶点是对象和引用，有向边是引用关系）：
+</p>
+
+<p>
+<img src="images/java.jvm/03.png" />
+</p>
+
+<h3 id="toc_2.1.1">Java的内存回收机制</h3>
+
+<p>
+当程序运行起来之后，把它在内存中的状态看成是有向图后，可以分为三种：
+</p>
+
+<p>
+1）可达状态：在一个对象创建后，有一个以上的引用变量引用它。在有向图中可以从起始
+顶点导航到该对象，那它就处于可达状态。
+</p>
+
+<p>
+2）可恢复状态：如果程序中某个对象不再有任何的引用变量引用它，它将先进入可恢复
+状态，此时从有向图的起始顶点不能再导航到该对象。在这个状态下，系统的垃圾回收机制
+准备回收该对象的所占用的内存，在回收之前，系统会调用<code>finalize()</code>方法进行资源清理
+，如果资源整理后重新让一个以上引用变量引用该对象，则这个对象会再次变为可达状态；
+否则就会进入不可达状态。
+</p>
+
+<p>
+3）不可达状态：当对象的所有关联都被切断，且系统调用<code>finalize()</code>方法进行资源清理
+后依旧没有使该对象变为可达状态，则这个对象将永久性失去引用并且变成不可达状态，
+系统才会真正的去回收该对象所占用的资源。
+</p>
+
+<p>
+上述三种状态的转换图如下：
+</p>
+
+<p>
+<img src="images/java.jvm/04.png" />
+</p>
+
+<h3 id="toc_2.1.2">Java对对象的4种引用</h3>
+
+<p>
+1）强引用 ：创建一个对象并把这个对象直接赋给一个变量，eg ：
+<code>Person person = new Person(“sunny”);</code>不管系统资源有么的紧张，强引用的对象都绝对
+不会被回收，即使他以后不会再用到。
+</p>
+
+<p>
+2）软引用 ：通过SoftReference类实现，eg :
+<code>SoftReference&lt;Person&gt; p = new SoftReference&lt;Person&gt;(new Person(“Rain”));</code>内存
+非常紧张的时候会被回收，其他时候不会被回收，所以在使用之前要判断是否为<code>null</code>从而
+判断他是否已经被回收了。
+</p>
+
+<p>
+3）弱引用 ：通过WeakReference类实现，eg : 
+<code>WeakReference&lt;Person&gt; p = new WeakReference&lt;Person&gt;(new Person(“Rain”));</code>不管
+内存是否足够，系统垃圾回收时必定会回收。
+</p>
+
+<p>
+4）虚引用 ：不能单独使用，主要是用于追踪对象被垃圾回收的状态。通过
+<code>PhantomReference</code>类和引用队列<code>ReferenceQueue</code>类联合使用实现，eg ：
+</p>
+
+<pre class="brush: java">
+package test;
+  
+import java.lang.ref.PhantomReference;
+import java.lang.ref.ReferenceQueue;
+ 
+ 
+public class Test{
+ 
+    public static void main(String[] args) {
+        //创建一个对象
+        Person person = new Person("Sunny");   
+        //创建一个引用队列   
+        ReferenceQueue&lt;Person&gt; rq = new ReferenceQueue&lt;Person&gt;();
+        //创建一个虚引用，让此虚引用引用到person对象
+        PhantomReference&lt;Person&gt; pr = new PhantomReference&lt;Person&gt;(person, rq);
+        //切断person引用变量和对象的引用
+        person = null;
+        //试图取出虚引用所引用的对象
+        //发现程序并不能通过虚引用访问被引用对象，所以此处输出为null
+        System.out.println(pr.get());
+        //强制垃圾回收
+        System.gc();
+        System.runFinalization();
+        //因为一旦虚引用中的对象被回收后，该虚引用就会进入引用队列中
+        //所以用队列中最先进入队列中引用与pr进行比较，输出true
+        System.out.println(rq.poll() == pr);
+    }
+}
+</pre>
+
+<p>
+运行结果：
+</p>
+
+<p>
+<img src="images/java.jvm/05.png" />
+</p>
+
+<h3 id="toc_2.1.3">Java垃圾回收机制</h3>
+
+<p>
+其实Java垃圾回收主要做的是两件事：1）内存回收 2）碎片整理
+</p>
+
+<h4 id="toc_2.1.3.1">垃圾回收算法</h4>
+
+<h5 id="toc_2.1.3.1.1">串行回收和并行回收</h5>
+
+<p>
+串行回收是不管系统有多少个CPU，始终只用一个CPU来执行垃圾回收操作，而并行回收就是
+把整个回收工作拆分成多个部分，每个部分由一个CPU负责，从而让多个CPU并行回收。并行
+回收的执行效率很高，但复杂度增加，另外也有一些副作用，如内存随便增加。
+</p>
+
+<h5 id="toc_2.1.3.1.2">并发执行和应用程序停止</h5>
+
+<p>
+应用程序停止（Stop-the-world）顾名思义，其垃圾回收
+方式在执行垃圾回收的同时会导致应用程序的暂停。并发执行的垃圾回收虽然不会导致应用
+程序的暂停，但由于并发执行垃圾需要解决和应用程序的执行冲突（应用程序可能在垃圾
+回收的过程修改对象），因此并发执行垃圾回收的系统开销比Stop-the-world高，而且执行
+时需要更多的堆内存。
+</p>
+
+<h5 id="toc_2.1.3.1.3">压缩和不压缩和复制</h5>
+
+<p>
+支持压缩的垃圾回收器（标记-压缩 = 标记清除+压缩）会把所有的可达对象搬迁到一起，
+然后将之前占用的内存全部回收，减少了内存碎片。
+</p>
+
+<p>
+不压缩的垃圾回收器（标记-清除）要遍历两次，第一次先从跟开始访问所有可达对象，
+并将他们标记为可达状态，第二次便利整个内存区域，对未标记可达状态的对象进行回收
+处理。这种回收方式不压缩，不需要额外内存，但要两次遍历，会产生碎片
+</p>
+
+<p>
+复制式的垃圾回收器：将堆内存分成两个相同空间，从根（类似于前面的有向图起始顶点
+）开始访问每一个关联的可达对象，将空间A的全部可达对象复制到空间B，然后一次性回
+收空间A。对于该算法而言，因为只需访问所有的可达对象，将所有的可达对象复制走之后
+就直接回收整个空间，完全不用理会不可达对象，所以遍历空间的成本较小，但需要巨大的
+复制成本和较多的内存。
+</p>
+
+<p>
+<img src="images/java.jvm/06.png" />
+</p>
+
+
+<h4 id="toc_2.1.3.2">堆内存的分代回收</h4>
+
+<h5 id="toc_2.1.3.2.1">分代回收的依据</h5>
+
+<p>
+对象生存时间的长短：大部分对象在Young期间就被回收
+</p>
+
+<p>
+不同代采取不同的垃圾回收策略：新（生存时间短）老（生存时间长）对象之间很少存在
+引用
+</p>
+
+<h5 id="toc_2.1.3.2.2">堆内存的分代</h5>
+
+<h6 id="toc_2.1.3.2.2.1">Young代</h6>
+
+<p>
+回收机制：因为对象数量少，所以采用复制回收。
+</p>
+
+<p>
+组成区域：由1个<code>Eden</code>区和2个<code>Survivor</code>区构成，同一时间的两个<code>Survivor</code>区，一个
+用来保存对象，另一个是空的；每次进行<code>Young</code>代垃圾回收的时候，就把<code>Eden</code>，<code>From</code>
+中的可达对象复制到<code>To</code>区域中，一些生存时间长的就复制到了老年代，接着清除<code>Eden</code>，
+<code>From</code>空间，最后原来的<code>To</code>空间变为From空间，原来的<code>From</code>空间变为<code>To</code>空间。
+</p>
+
+<p>
+对象来源：绝大多数对象先分配到<code>Eden</code>区，一些大的对象会直接被分配到<code>Old</code>代中。
+</p>
+
+<p>
+回收频率：因为<code>Young</code>代对象大部分很快进入不可达状态，因此回收频率高且回收速度快
+</p>
+
+<p>
+<img src="images/java.jvm/07.png" />
+</p>
+
+<p>
+<img src="images/java.jvm/08.png" />
+</p>
+
+<h6 id="toc_2.1.3.2.2.2">Old代</h6>
+
+<p>
+回收机制：采用标记压缩算法回收。
+</p>
+
+<p>
+对象来源：
+</p>
+
+<ul>
+<li>
+对象大直接进入老年代。
+
+<li>
+Young代中生存时间长的可达对象
+
+</ul>
+
+<p>
+回收频率：因为很少对象会死掉，所以执行频率不高，而且需要较长时间来完成。
+</p>
+
+<h6 id="toc_2.1.3.2.2.3">Permanent</h6>
+
+<p>
+用途：用来装载Class，方法等信息，默认为<code>64M</code>，不会被回收
+</p>
+
+<p>
+对象来源：对于像Hibernate，Spring这类喜欢AOP动态生成类的框架，往往会生成大量的
+动态代理类，因此需要更多的Permanent代内存。所以我们经常在调试Hibernate，Spring的
+时候经常遇到<code>java.lang.OutOfMemoryError:PermGen space</code>的错误，这就是<code>Permanent</code>
+代内存耗尽所导致的错误。
+</p>
+
+<p>
+回收频率：不会被回收
+</p>
+
+
+<h3 id="toc_2.1.4">常见的垃圾回收器</h3>
+
+<h4 id="toc_2.1.4.1">串行回收器（只使用一个CPU）</h4>
+
+<p>
+Young代采用串行复制算法；Old代使用串行标记压缩算法（三个阶段：标记mark、
+清除sweep、压缩compact），回收期间程序会产生暂停，
+</p>
+
+<h4 id="toc_2.1.4.2">并行回收器</h4>
+
+<p>
+对Young代采用的算法和串行回收器一样，只是增加了多CPU并行处理；对Old代的处理和
+串行回收器完全一样，依旧是单线程。
+</p>
+
+<h4 id="toc_2.1.4.3">并行压缩回收器</h4>
+
+<p>
+对Young代处理采用与并行回收器完全一样的算法；只是对Old代采用了不同的算法，其实
+就是划分不同的区域，然后进行标记压缩算法：
+</p>
+
+<p>
+① 将Old代划分成几个固定区域；
+</p>
+
+<p>
+② mark阶段（多线程并行），标记可达对象；
+</p>
+
+<p>
+③ summary阶段（串行执行），从最左边开始检验知道找到某个达到数值（可达对象密度小
+）的区域时，此区域及其右边区域进行压缩回收，其左端为密集区域
+</p>
+
+<p>
+④ compact阶段（多线程并行），识别出需要装填的区域，多线程并行的把数据复制到这些
+区域中。经此过程后，Old代一端密集存在大量活动对象，另一端则存在大块空间。
+</p>
+
+<h4 id="toc_2.1.4.4">并发标识—清理回收（CMS）</h4>
+
+<p>
+对Young代处理采用与并行回收器完全一样的算法；只是对Old代采用了不同的算法，但
+归根结地还是标记清理算法：
+</p>
+
+<p>
+① 初始标识（程序暂停）：标记被直接引用的对象(一级对象)；
+</p>
+
+<p>
+② 并发标识（程序运行）：通过一级对象寻找其他可达对象；
+</p>
+
+<p>
+③ 再标记（程序暂停）：多线程并行的重新标记之前可能因为并发而漏掉的对象（简单的说
+就是防遗漏）
+</p>
+
+<p>
+④ 并发清理（程序运行）
+</p>
+
+<h3 id="toc_2.1.5">内存管理小技巧</h3>
+
+<ol>
+<li>
+尽量使用直接量，eg：<code>String javaStr = “小学徒的成长历程”;</code>
+
+<li>
+使用<code>StringBuilder</code>和<code>StringBuffer</code>进行字符串连接等操作;
+
+<li>
+尽早释放无用对象;
+
+<li>
+尽量少使用静态变量;
+
+<li>
+缓存常用的对象:可以使用开源的开源缓存实现，eg：OSCache，Ehcache;
+
+<li>
+尽量不使用<code>finalize()</code>方法;
+
+<li>
+在必要的时候可以考虑使用软引用<code>SoftReference</code>。
+
+</ol>
+
+
+<h2 id="toc_2.2">基本设置</h2>
+
 <p>
 收集器日志：<code>-XX:+PrintGCDetails</code>
 </p>
@@ -154,9 +571,9 @@ Sun的工程师为这个特殊的人工错误提供一个JVM标志：<code>-XX:+
 </p>
 
 
-<h2 id="toc_2.1">回收算法</h2>
+<h2 id="toc_2.3">回收算法</h2>
 
-<h3 id="toc_2.1.1">新生代</h3>
+<h3 id="toc_2.3.1">新生代</h3>
 
 <p>
 新生代大小：<code>-Xmn10M</code>
@@ -166,7 +583,7 @@ Sun的工程师为这个特殊的人工错误提供一个JVM标志：<code>-XX:+
 新生代中Eden与Survivor比例，默认8比1：<code>-XX:SurvivorRatio=8</code>
 </p>
 
-<h3 id="toc_2.1.2">老年代</h3>
+<h3 id="toc_2.3.2">老年代</h3>
 
 <p>
 设置大对象直接放老年代：<code>-XX:PretenureSizeThreshold=3145728</code>单位是<code>B</code>不能用<code>M</code>。
@@ -178,24 +595,24 @@ Sun的工程师为这个特殊的人工错误提供一个JVM标志：<code>-XX:+
 Survivor的一半，也入老年代。
 </p>
 
-<h3 id="toc_2.1.3">空间分配担保</h3>
+<h3 id="toc_2.3.3">空间分配担保</h3>
 
 <p>
 防止分配担保失败时过多调用Full GC：<code>-XX:+HandlePromotionFailure</code>
 </p>
 
 
-<h2 id="toc_2.2">垃圾收集器种类</h2>
+<h2 id="toc_2.4">垃圾收集器种类</h2>
 
-<h3 id="toc_2.2.1">新生代收集器</h3>
+<h3 id="toc_2.4.1">新生代收集器</h3>
 
-<h4 id="toc_2.2.1.1">Serial</h4>
+<h4 id="toc_2.4.1.1">Serial</h4>
 
 <p>
 Client模式下默认收集器。开关：<code>UseSerialGC</code>
 </p>
 
-<h4 id="toc_2.2.1.2">ParNew</h4>
+<h4 id="toc_2.4.1.2">ParNew</h4>
 
 <p>
 Serial多线程版本<code>-XX:+UseParNewGC</code>。
@@ -211,7 +628,7 @@ CMS收集器（Concurrent Mark Sweep）作为老年代收集器，不能用Paral
 失败后换Serial Old新生代收集器。
 </p>
 
-<h4 id="toc_2.2.1.3">Parallel Scavenge</h4>
+<h4 id="toc_2.4.1.3">Parallel Scavenge</h4>
 
 <p>
 吞吐量优先更加高效。
@@ -230,15 +647,15 @@ CMS收集器（Concurrent Mark Sweep）作为老年代收集器，不能用Paral
 Survivor区的比例<code>-XX:PretenureSizeThreshold</code>等细节。
 </p>
 
-<h3 id="toc_2.2.2">老年代收集器</h3>
+<h3 id="toc_2.4.2">老年代收集器</h3>
 
-<h4 id="toc_2.2.2.1">Serial Old</h4>
+<h4 id="toc_2.4.2.1">Serial Old</h4>
 
 <p>
 单线程，Client模式下使用。
 </p>
 
-<h4 id="toc_2.2.2.2">CMS</h4>
+<h4 id="toc_2.4.2.2">CMS</h4>
 
 <p>
 默认在老年代使用了70%后触发。设置触发百分比： 
@@ -250,9 +667,9 @@ Survivor区的比例<code>-XX:PretenureSizeThreshold</code>等细节。
 后整理碎片。
 </p>
 
-<h3 id="toc_2.2.3">G1收集器</h3>
+<h3 id="toc_2.4.3">G1收集器</h3>
 
-<h3 id="toc_2.2.4">收集器参数</h3>
+<h3 id="toc_2.4.4">收集器参数</h3>
 
 <table>
 <tr>

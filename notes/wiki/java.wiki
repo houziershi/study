@@ -7,6 +7,8 @@
 
 基础：[[java.base]]
 
+对象：[[java.base.object]]
+
 基础类型：[[java.baseType]]
 
 = 多线程 =

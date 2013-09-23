@@ -1,0 +1,78 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>日期与时间</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>日期与时间</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">时区</a>
+</ul>
+</div>
+
+<h1 id="toc_1">时区</h1>
+
+<p>
+设定本地时区，注意本地时间会有混乱。因为历史上的历法变化。如1927年上海时间到
+北京时间切换，中间空出来5分钟：
+</p>
+
+<pre class="brush: java">
+import java.text.SimpleDateFormat;
+import java.text.ParseException;
+import java.util.Date;
+import java.util.TimeZone;
+class time{
+    public static void main(String[] args) throws ParseException {
+        SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        sf.setTimeZone(TimeZone.getTimeZone("Asia/shanghai"));
+        String str3 = "1927-12-31 23:54:07";
+        String str4 = "1927-12-31 23:54:08";
+        Date sDt3 = sf.parse(str3);
+        Date sDt4 = sf.parse(str4);
+        long ld3 = sDt3.getTime() /1000;
+        long ld4 = sDt4.getTime() /1000;
+        System.out.println(ld3);
+        System.out.println(ld4);
+        System.out.println(ld4-ld3);
+    }
+}
+</pre>
+
+<p>
+输出一秒钟本地时间之间差了353秒：
+</p>
+
+<pre class="brush: java">
+-1325491905
+-1325491552
+353
+</pre>
+
+<p>
+Java在的时区实现相当的强大啊。这种细节都能考虑到。本地时间的完全就是一锅，应该
+尽量不用。如果你要开发和时区有关系的程序，你的系统里一定要使用GMT标准时间，仅在
+显示的时候才转成本地时间。
+</p>
+ </div>
+</body>
+</html>

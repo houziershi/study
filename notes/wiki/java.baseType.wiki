@@ -11,6 +11,54 @@
 
 字面量：`{item1, item2, ... }`
 
+
+
+= 容器类初始化 =
+
+== 忘设初始容量 ==
+
+在JAVA中，我们常用`Collection`中的`Map`做Cache,但是我们经常会遗忘设置初始容量：
+
+{{{class="brush: java"
+cache = new LRULinkedHashMap< K, V>(maxCapacity);
+}}}
+
+解决
+
+初始容量的影响有多大？拿`LinkedHashMap`来说，初始容量如果不设置默认是`16`，超过
+`16×LOAD_FACTOR`，会`resize(2 * table.length)`扩大2倍。采用：
+
+{{{class="brush: java"
+Entry[] newTable = new Entry[newCapacity];
+transfer(newTable)
+}}}
+
+即整个数组Copy， 那么对于一个需要做大容量CACHE来说，从16变成一个很大的数量，需要
+做多少次数组复制可想而知。如果初始容量就设置很大，自然会减少`resize`, 不过可能会
+担心，初始容量设置很大时，没有Cache内容仍然会占用过大体积。其实可以参考以下表格
+简单计算下, 初始时还没有cache内容, 每个对象仅仅是4字节引用而已。
+
+* memory for reference fields (4 bytes each);
+* memory for primitive fields
+
+| Java类型 | 占用字节 |
+| boolean  | 1        |
+| byte     |          |
+| char     | 2        |
+| short    |          |
+| int      | 4        |
+| float    |          |
+| long     | 8        |
+| double   |          |
+
+不仅是map, 还有`StringBuffer`等，都有容量`resize`的过程，如果数据量很大，就不能
+忽视初始容量可以考虑设置下，否则不仅有频繁的`resize`还容易浪费容量。
+
+在Java编程中，除了上面枚举的一些容易忽视的问题，日常实践中还存在很多。相信通过
+不断的总结和努力，可以将我们的程序完美呈现给读者。
+
+
+
 = 枚举（enum） =
 
 不能用`ordinal`自增当值时，增加一个`value`表示值：

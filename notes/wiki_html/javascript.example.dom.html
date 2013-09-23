@@ -16,18 +16,69 @@
 <link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
 
 
-<title>javascirpt.example</title>
+<title>Javascript</title>
 </head>
 <body  onresize='changeTocSize()'>
 	<div class="note-main"> 
 
-<p>
-<a href="javascript.example.page.html">javascript.example.page</a>
-</p>
+
+
+<h1>Javascript</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_0.0.1">判断一个元素是否存在</a>
+</ul>
+</ul>
+</ul>
+</div>
+
+
+
+
+<h3 id="toc_0.0.1">判断一个元素是否存在</h3>
 
 <p>
-<a href="javascript.example.dom.html">javascript.example.dom</a>
+使用传统javascript方法，如下：
 </p>
+
+<pre class="brush: javascript">
+if(document.getElementById('div')) {    
+    // 找到到对应元素
+} else {    
+    // 没有找到找到到对应元素
+}
+</pre>
+
+<p>
+使用jQuery则比较简单，只需判断此元素的长度是否为0，如果为0则此元素不存在，
+代码如下：
+</p>
+
+<pre class="brush: javascript">
+if ($("#div").length &gt; 0){
+    // 找到对应id=div的元素，然后执行此块代码
+}
+</pre>
+
+<p>
+甚至能找到组合元素，如下，我们找一个id定义为div的元素里面是否包含img：
+</p>
+
+<pre class="brush: javascript">
+if(document.querySelector("#div img")){
+//found
+}
+</pre>
+
+<p>
+或用jquery： 
+</p>
+
+<pre class="brush: javascript">
+if ($("#div img").length &gt; 0){
+    // 找到对应id=div并且包含img的元素，然后执行此块代码
+}
+</pre>
  </div>
 </body>
 </html>

@@ -1,0 +1,235 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>Javascript</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>Javascript</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">页面动作</a>
+<ul>
+<li><a href="#toc_1.1">页面滚动</a>
+<ul>
+<li><a href="#toc_1.1.1">禁止页面滚动</a>
+<li><a href="#toc_1.1.2">页面滚动到顶部</a>
+</ul>
+</ul>
+<li><a href="#toc_2">提交与跳转</a>
+<ul>
+<li><a href="#toc_2.1">页面跳转</a>
+<ul>
+<li><a href="#toc_2.1.1">地址的跳转</a>
+<li><a href="#toc_2.1.2">jQuery修改表单提交目标</a>
+</ul>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">页面动作</h1>
+
+<h2 id="toc_1.1">页面滚动</h2>
+
+<h3 id="toc_1.1.1">禁止页面滚动</h3>
+
+<p>
+页面滚动失效：
+</p>
+
+<pre class="brush: javascript">
+$("body").css("overflow-y","hidden");
+</pre>
+
+<p>
+恢复页面滚动：
+</p>
+
+<pre class="brush: javascript">
+$("body").css("overflow-y","auto");
+</pre>
+
+<h3 id="toc_1.1.2">页面滚动到顶部</h3>
+
+<pre class="brush: javascript">
+/**
+ * 回到页面顶部
+ * @param acceleration 加速度
+ * @param time 时间间隔 (毫秒)
+ **/
+function goTop(acceleration, time) {
+	acceleration = acceleration || 0.1;
+	time = time || 16;
+ 
+	var x1 = 0;
+	var y1 = 0;
+	var x2 = 0;
+	var y2 = 0;
+	var x3 = 0;
+	var y3 = 0;
+ 
+	if (document.documentElement) {
+		x1 = document.documentElement.scrollLeft || 0;
+		y1 = document.documentElement.scrollTop || 0;
+	}
+	if (document.body) {
+		x2 = document.body.scrollLeft || 0;
+		y2 = document.body.scrollTop || 0;
+	}
+	var x3 = window.scrollX || 0;
+	var y3 = window.scrollY || 0;
+ 
+	// 滚动条到页面顶部的水平距离
+	var x = Math.max(x1, Math.max(x2, x3));
+	// 滚动条到页面顶部的垂直距离
+	var y = Math.max(y1, Math.max(y2, y3));
+ 
+	// 滚动距离 = 目前距离 / 速度, 因为距离原来越小, 速度是大于 1 的数, 所以滚动距离会越来越小
+	var speed = 1 + acceleration;
+	window.scrollTo(Math.floor(x / speed), Math.floor(y / speed));
+ 
+	// 如果距离不为零, 继续调用迭代本函数
+	if(x &gt; 0 || y &gt; 0) {
+		var invokeFunction = "goTop(" + acceleration + ", " + time + ")";
+		window.setTimeout(invokeFunction, time);
+	}
+};
+</pre>
+
+<h1 id="toc_2">提交与跳转</h1>
+
+<h2 id="toc_2.1">页面跳转</h2>
+
+<h3 id="toc_2.1.1">地址的跳转</h3>
+
+<pre class="brush: javascript">
+url = url + "&amp;sendTime=" + (new Date()).getSeconds();
+url = encodeURI(url);
+if( true == $('#toNewWindow').val() ) {
+    window.open(url);
+ } else {
+    window.location = url;
+    // document.location = url; //这样用了N年了
+ }
+</pre>
+
+<h3 id="toc_2.1.2">jQuery修改表单提交目标</h3>
+
+<pre class="brush: javascript">
+$("#myForm").attr('action', url);
+</pre>
+
+<p>
+=== jQuery请求提交 ==
+</p>
+
+<p>
+序列化表单并提交
+</p>
+
+<pre class="brush: javascript">
+var formData = $("#myForm").serialize();
+</pre>
+
+<p>
+可能给已经序列化的表单加上新的内容
+</p>
+
+<pre class="brush: javascript">
+formData = formData + "&amp;id=001&amp;name=Jade";
+</pre>
+
+<p>
+也可以手动建立内容
+</p>
+
+<pre class="brush: javascript">
+formData = {'id':'001' , 'name':'Jade'};
+</pre>
+
+<p>
+提交请求
+</p>
+
+<pre class="brush: javascript">
+$.post(url, formData,
+    function(data, textStatus) {
+        if('success' == textStatus ) {
+            // 得到服务器成功响应
+            // testStatus 为响应内容
+        } else {
+            // 提交失败
+        }
+    }
+);
+</pre>
+
+<p>
+服务器端Java响应
+</p>
+
+<pre class="brush: javascript">
+response.setContentType("text/plain");
+response.setCharacterEncoding("UTF-8");
+response.getWriter().write(responseStr);
+</pre>
+
+<p>
+form中只要有任意<code>&lt;button&gt;</code>或者<code>&lt;input type="submit" /&gt;</code>的按钮都会导致回车提交
+</p>
+
+<p>
+上传的按钮改成这样
+</p>
+
+<p>
+<code>&lt;input type="button" onclick="return ajaxFileUpload();" value="Upload" /&gt;</code>`
+</p>
+
+<p>
+就不会触发自动提交了。
+</p>
+
+<p>
+替换onClick事件：
+</p>
+
+<pre class="brush: javascript">
+$(obj).unbind('click').removeAttr('onclick');
+ 
+$(obj).bind("click",function(){
+    like_old(itemId,obj);
+});
+</pre>
+
+<pre class="brush: javascript">
+
+</pre>
+
+<pre class="brush: javascript">
+
+</pre>
+
+<pre class="brush: javascript">
+
+</pre>
+ </div>
+</body>
+</html>

@@ -1,0 +1,584 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>Java对象</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+<h1>Java对象</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">对象初始化</a>
+<ul>
+<li><a href="#toc_1.1">显式初始化</a>
+<li><a href="#toc_1.2">隐式初始化</a>
+<ul>
+<li><a href="#toc_1.2.1">String字面量</a>
+<li><a href="#toc_1.2.2">自动装箱</a>
+<li><a href="#toc_1.2.3">String连接操作符</a>
+</ul>
+<li><a href="#toc_1.3">Java如何初始化对象</a>
+<ul>
+<li><a href="#toc_1.3.1">Java的构造函数</a>
+<li><a href="#toc_1.3.2">实例变量初始化器与实例初始化器</a>
+<ul>
+<li><a href="#toc_1.3.2.1">初始化过程中的多次赋值</a>
+</ul>
+</ul>
+<li><a href="#toc_1.4">总结</a>
+</ul>
+<li><a href="#toc_2">类的初始化</a>
+</ul>
+</div>
+
+
+
+<h1 id="toc_1">对象初始化</h1>
+
+<p>
+在Java中，一个对象在可以被使用之前必须要被正确地初始化，这一点是Java规范规定的。
+本文试图对Java如何执行对象的初始化做一个详细深入地介绍(与对象初始化相同，类在被
+加载之后也是需要初始化的，本文在最后也会对类的初始化进行介绍，相对于对象初始化
+来说，类的初始化要相对简单一些)。
+</p>
+
+<h2 id="toc_1.1">显式初始化</h2>
+
+<p>
+Java对象在其被创建时初始化，在Java代码中，有两种行为可以引起对象的创建。其中比较
+直观的一种，也就是通常所说的显式对象创建，就是通过<code>new</code>关键字来调用一个类的构造
+函数，通过构造函数来创建一个对象，这种方式在java规范中被称为“由执行类实例创建
+表达式而引起的对象创建”。
+</p>
+
+<h2 id="toc_1.2">隐式初始化</h2>
+
+<p>
+当然，除了显式地创建对象，以下的几种行为也会引起对象的创建，但是并不是通过<code>new</code>
+关键字来完成的，因此被称作隐式对象创建，他们分别是：
+</p>
+
+<h3 id="toc_1.2.1">String字面量</h3>
+
+<p>
+加载一个包含String字面量的类或者接口会引起一个新的<code>String</code>对象被创建，除非包含
+相同字面量的<code>String</code>对象已经存在与虚拟机内了(JVM会在内存中会为所有碰到<code>String</code>
+	字面量维护一份列表，程序中使用的相同字面量都会指向同一个<code>String</code>对象)，比如：
+</p>
+
+<pre class="brush: java">
+class StringLiteral {
+    private String str = "literal";
+    private static String sstr = "s_literal";
+}
+</pre>
+
+<h3 id="toc_1.2.2">自动装箱</h3>
+
+<p>
+自动装箱机制可能会引起一个原子类型的包装类对象被创建，比如：
+</p>
+
+<pre class="brush: java">
+class PrimitiveWrapper {
+    private Integer iWrapper = 1;
+}
+</pre>
+
+<h3 id="toc_1.2.3">String连接操作符</h3>
+
+<p>
+<code>String</code>连接符也可能会引起新的<code>String</code>或者<code>StringBuilder</code>对象被创建，同时还可能
+引起原子类型的包装对象被创建，比如(本人试了下，在mac ox下1.6.0_29版本的<code>javac</code>，
+对待下面的代码会通过<code>StringBuilder</code>来完成字符串的连接，并没有将<code>i</code>包装成
+<code>Integer</code>，因为<code>StringBuilder</code>的<code>append</code>方法有一个重载，其方法参数是<code>int</code>)，
+</p>
+
+<pre class="brush: java">
+public class StringConcatenation {
+    private static int i = 1;
+ 
+    public static void main(String... args) {
+        System.out.println("literal" + i);
+    }
+}
+</pre>
+
+<h2 id="toc_1.3">Java如何初始化对象</h2>
+
+<p>
+当一个对象被创建之后，虚拟机会为其分配内存，主要用来存放对象的实例变量及其从超类
+继承过来的实例变量(即使这些从超类继承过来的实例变量有可能被隐藏也会被分配空间)。
+在为这些实例变量分配内存的同时，这些实例变量也会被赋予默认值。
+</p>
+
+<p>
+关于实例变量隐藏：
+</p>
+
+<pre class="brush: java">
+class Foo {
+    int i = 0;
+}
+ 
+class Bar extends Foo {
+    int i = 1;
+    public static void main(String... args) {
+        Foo foo = new Bar();
+        System.out.println(foo.i);
+    }
+}
+</pre>
+
+<p>
+上面的代码中，<code>Foo</code>和<code>Bar</code>中都定义了变量<code>i</code>，在<code>main</code>方法中，我们用<code>Foo</code>引用一个
+<code>Bar</code>对象，如果实例变量与方法一样，允许被覆盖，那么打印的结果应该是<code>1</code>，但是实际
+的结果确是<code>0</code>。
+</p>
+
+<p>
+但是如果我们在<code>Bar</code>的方法中直接使用<code>i</code>，那么用的会是<code>Bar</code>对象自己定义的实例变量
+<code>i</code>，这就是隐藏，<code>Bar</code>对象中的<code>i</code>把<code>Foo</code>对象中的<code>i</code>给隐藏了，这条规则对于静态
+变量同样适用。
+</p>
+
+<p>
+在内存分配完成之后，java的虚拟机就会开始对新创建的对象执行初始化操作，因为java
+规范要求在一个对象的引用可见之前需要对其进行初始化。在Java中，三种执行对象初始化
+的结构，分别是实例初始化器、实例变量初始化器以及构造函数。
+</p>
+
+<h3 id="toc_1.3.1">Java的构造函数</h3>
+
+<p>
+每一个Java中的对象都至少会有一个构造函数，如果我们没有显式定义构造函数，那么Java
+编译器会为我们自动生成一个构造函数。构造函数与类中定义的其他方法基本一样，除了
+构造函数没有返回值，名字与类名一样之外。在生成的字节码中，这些构造函数会被命名成
+<code>&lt;init&gt;</code>方法，参数列表与Java语言书写的构造函数的参数列表相同(<code>&lt;init&gt;</code>这样的
+方法名在Java语言中是非法的，但是对于JVM来说，是合法的)。另外，构造函数也可以被
+重载。
+</p>
+
+<p>
+Java要求一个对象被初始化之前，其超类也必须被初始化，这一点是在构造函数中保证的。
+Java强制要求<code>Object</code>对象(<code>Object</code>是Java的顶层对象，没有超类)之外的所有对象构造
+函数的第一条语句必须是超类构造函数的调用语句或者是类中定义的其他的构造函数，如果
+我们即没有调用其他的构造函数，也没有显式调用超类的构造函数，那么编译器会为我们
+自动生成一个对超类构造函数的调用指令，比如：
+</p>
+
+<pre class="brush: java">
+public class ConstructorExample {
+ 
+}
+</pre>
+
+<p>
+对于上面代码中定义的类，如果观察编译之后的字节码，我们会发现编译器为我们生成一个
+构造函数，如下：
+</p>
+
+<pre class="brush: java">
+aload_0
+invokespecial    #8; //Method java/lang/Object."&lt;init&gt;":()V
+return
+</pre>
+
+<p>
+上面代码的第二行就是调用<code>Object</code>对象的默认构造函数的指令。
+</p>
+
+<p>
+正因为如此，如果我们显式调用超类的构造函数，那么调用指令必须放在构造函数所有代码
+的最前面，是构造函数的第一条指令。这么做才可以保证一个对象在初始化之前其所有的
+超类都被初始化完成。
+</p>
+
+<p>
+如果我们在一个构造函数中调用另外一个构造函数，如下所示：
+</p>
+
+<pre class="brush: java">
+public class ConstructorExample {
+    private int i;
+ 
+    ConstructorExample() {
+        this(1);
+        ....
+    }
+ 
+    ConstructorExample(int i) {
+        ....
+        this.i = i;
+        ....
+    }
+}
+</pre>
+
+<p>
+对于这种情况，Java只允许在<code>ConstructorExample(int i)</code>内出现调用超类的构造函数，
+也就是说，下面的代码编译是无法通过的，
+</p>
+
+<pre class="brush: java">
+public class ConstructorExample {
+    private int i;
+ 
+    ConstructorExample() {
+        super();
+        this(1);
+        ....
+    }
+ 
+    ConstructorExample(int i) {
+        ....
+        this.i = i;
+        ....
+    }
+}
+</pre>
+
+<p>
+或者：
+</p>
+
+<pre class="brush: java">
+public class ConstructorExample {
+    private int i;
+ 
+    ConstructorExample() {
+        this(1);
+        super();
+        ....
+    }
+ 
+    ConstructorExample(int i) {
+        ....
+        this.i = i;
+        ....
+    }
+}
+</pre>
+
+<p>
+Java对构造函数作出这种限制，目的是为了要保证一个类中的实例变量在被使用之前已经被
+正确地初始化，不会导致程序执行过程中的错误。但是，与C或者C++不同，Java执行构造
+函数的过程与执行其他方法并没有什么区别，因此，如果我们不小心，有可能会导致在对象
+的构建过程中使用了没有被正确初始化的实例变量，如下所示：
+</p>
+
+<pre class="brush: java">
+class Foo {
+    int i;
+ 
+    Foo() {
+        i = 1;
+        int x = getValue();
+        System.out.println(x);
+    }
+ 
+    protected int getValue() {
+        return i;
+    }
+}
+ 
+class Bar extends Foo {
+    int j;
+ 
+    Bar() {
+        j = 2;
+    }
+ 
+    @Override
+    protected int getValue() {
+        return j;
+    }
+}
+ 
+public class ConstructorExample {
+    public static void main(String... args) {
+        Bar bar = new Bar();
+    }
+}
+</pre>
+
+<p>
+如果运行上面这段代码，会发现打印出来的结果既不是<code>1</code>，也不是<code>2</code>，而是<code>0</code>。根本
+原因就是<code>Bar</code>重载了<code>Foo</code>中的<code>getValue</code>方法。在执行<code>Bar</code>的构造函数时，编译器会为
+我们在<code>Bar</code>构造函数开头插入调用<code>Foo</code>的构造函数的代码，而在<code>Foo</code>的构造函数中调用
+了<code>getValue</code>方法。由于Java对构造函数的执行没有做特殊处理，因此这个<code>getValue</code>方法
+是被<code>Bar</code>重载的那个<code>getValue</code>方法，而在调用<code>Bar</code>的<code>getValue</code>方法时，<code>Bar</code>的构造
+数还没有被执行，这个时候<code>j</code>的值还是默认值<code>0</code>，因此我们就看到了打印出来的<code>0</code>。
+</p>
+
+<h3 id="toc_1.3.2">实例变量初始化器与实例初始化器</h3>
+
+<p>
+我们可以在定义实例变量的同时，对实例变量进行赋值，赋值语句就时实例变量初始化器了
+，比如：
+</p>
+
+<pre class="brush: java">
+public class InstanceVariableInitializer {
+    private int i = 1;
+    private int j = i + 1;
+}
+</pre>
+
+<p>
+如果我们以这种方式为实例变量赋值，那么在构造函数执行之前会先完成这些初始化操作。
+</p>
+
+<p>
+我们还可以通过实例初始化器来执行对象的初始化操作，比如：
+</p>
+
+<pre class="brush: java">
+public class InstanceInitializer {
+ 
+    private int i = 1;
+    private int j;
+ 
+    {
+        j = 2;
+    }
+}
+</pre>
+
+<p>
+上面代码中花括号内代码，在Java中就被称作实例初始化器，其中的代码同样会先于构造
+函数被执行。
+</p>
+
+<p>
+如果我们定义了实例变量初始化器与实例初始化器，那么编译器会将其中的代码放到类的
+构造函数中去，这些代码会被放在对超类构造函数的调用语句之后(还记得吗？Java要求
+构造函数的第一条语句必须是超类构造函数的调用语句)，构造函数本身的代码之前。我们
+来看下下面这段Java代码被编译之后的字节码，Java代码如下：
+</p>
+
+<pre class="brush: java">
+public class InstanceInitializer {
+ 
+    private int i = 1;
+    private int j;
+ 
+    {
+        j = 2;
+    }
+ 
+    public InstanceInitializer() {
+        i = 3;
+        j = 4;
+    }
+}
+</pre>
+
+<p>
+编译之后的字节码如下：
+</p>
+
+<pre class="brush: java">
+aload_0
+invokespecial    #11; //Method java/lang/Object."&lt;init&gt;":()V
+aload_0
+iconst_1
+putfield #13; //Field i:I
+aload_0
+iconst_2
+putfield #15; //Field j:I
+aload_0
+iconst_3
+putfield #13; //Field i:I
+aload_0
+iconst_4
+putfield #15; //Field j:I
+return
+</pre>
+
+<p>
+上面的字节码，第4，5行是执行的是源代码中<code>i=1</code>的操作，第6，7行执行的源代码中<code>j=2</code>
+的操作，第8-11行才是构造函数中<code>i=3</code>和<code>j=4</code>的操作。
+</p>
+
+<p>
+Java是按照编程顺序来执行实例变量初始化器和实例初始化器中的代码的，并且不允许顺序
+靠前的实例初始化器或者实例变量初始化器使用在其后被定义和初始化的实例变量，比如：
+</p>
+
+<pre class="brush: java">
+public class InstanceInitializer {
+    {
+        j = i;
+    }
+ 
+    private int i = 1;
+    private int j;
+}
+ 
+public class InstanceInitializer {
+    private int j = i;
+    private int i = 1;
+}
+</pre>
+
+<p>
+上面的这些代码都是无法通过编译的，编译器会抱怨说我们使用了一个未经定义的变量。
+之所以要这么做，是为了保证一个变量在被使用之前已经被正确地初始化。但是我们仍然
+有办法绕过这种检查，比如：
+</p>
+
+<pre class="brush: java">
+public class InstanceInitializer {
+    private int j = getI();
+    private int i = 1;
+ 
+    public InstanceInitializer() {
+        i = 2;
+    }
+ 
+    private int getI() {
+        return i;
+    }
+ 
+    public static void main(String[] args) {
+        InstanceInitializer ii = new InstanceInitializer();
+        System.out.println(ii.j);
+    }
+}
+</pre>
+
+<p>
+如果我们执行上面这段代码，那么会发现打印的结果是<code>0</code>。因此我们可以确信，变量<code>j</code>被
+赋予了<code>i</code>的默认值<code>0</code>，而不是经过实例变量初始化器和构造函数初始化之后的值。
+</p>
+
+<h4 id="toc_1.3.2.1">初始化过程中的多次赋值</h4>
+
+<p>
+一个实例变量在对象初始化的过程中会被赋值几次
+</p>
+
+<p>
+在本文的前面部分，我们提到过，JVM在为一个对象分配完内存之后，会给每一个实例变量
+赋予默认值，这个时候实例变量被第一次赋值，这个赋值过程是没有办法避免的。
+</p>
+
+<p>
+如果我们在实例变量初始化器中对某个实例x变量做了初始化操作，那么这个时候，这个
+实例变量就被第二次赋值了。
+</p>
+
+<p>
+如果我们在实例初始化器中，又对变量<code>x</code>做了初始化操作，那么这个时候，这个实例变量
+就被第三次赋值了。
+</p>
+
+<p>
+如果我们在类的构造函数中，也对变量<code>x</code>做了初始化操作，那么这个时候，变量<code>x</code>就被
+第四次赋值。
+</p>
+
+<p>
+也就是说，一个实例变量，在Java的对象初始化过程中，最多可以被初始化4次。
+</p>
+
+<h2 id="toc_1.4">总结</h2>
+
+<p>
+通过上面的介绍，我们对Java中初始化对象的几种方式以及通过何种方式执行初始化代码
+有了了解，同时也对何种情况下我们可能会使用到未经初始化的变量进行了介绍。在对这些
+问题有了详细的了解之后，就可以在编码中规避一些风险，保证一个对象在可见之前是完全
+被初始化的。
+</p>
+
+
+
+<h1 id="toc_2">类的初始化</h1>
+
+<p>
+Java规范中关于类在何时被初始化有详细的介绍，在3.0规范中的12.4.1节可以找到，这里
+就不再多说了。简单来说，就是当类被第一次使用的时候会被初始化，而且只会被一个线程
+初始化一次。我们可以通过静态初始化器和静态变量初始化器来完成对类变量的初始化工作
+，比如：
+</p>
+
+<pre class="brush: java">
+public class StaticInitializer {
+    static int i = 1;
+ 
+    static {
+        i = 2;
+    }
+}
+</pre>
+
+<p>
+上面通过两种方式对类变量i进行了赋值操作，分别通过静态变量初始化器(代码第2行)以及
+静态初始化器(代码第5-6行)完成。
+</p>
+
+<p>
+静态变量初始化器和静态初始化器基本同实例变量初始化器和实例初始化器相同，也有相同
+的限制(按照编码顺序被执行，不能引用后定义和初始化的类变量)。静态变量初始化器和
+静态初始化器中的代码会被编译器放到一个名为<code>static</code>的方法中(<code>static</code>是Java语言的
+关键字，因此不能被用作方法名，但是JVM却没有这个限制)，在类被第一次使用时，这个
+<code>static</code>方法就会被执行。上面的Java代码编译之后的字节码如下，我们看到其中的
+<code>static</code>方法，
+</p>
+
+<pre class="brush: java">
+static {};
+  Code:
+   Stack=1, Locals=0, Args_size=0
+   iconst_1
+   putstatic    #10; //Field i:I
+   iconst_2
+   putstatic    #10; //Field i:I
+   return
+</pre>
+
+<p>
+在前面介绍了可以通过特殊的方式来使用未经初始化的实例变量，对于类变量也同样适用，
+比如：
+</p>
+
+<pre class="brush: java">
+public class StaticInitializer {
+    static int j = getI();
+    static int i = 1;
+ 
+    static int getI () {
+        return i;
+    }
+ 
+    public static void main(String[] args) {
+        System.out.println(StaticInitializer.j);
+    }
+}
+</pre>
+
+<p>
+上面这段代码的打印结果是<code>0\，类变量的值是</code>i<code>的默认值</code>0`。但是，由于静态方法是
+不能被覆写的，因此“对象初始化”中关于构造函数调用被覆写方法引起的问题不会在此
+出现。
+</p>
+ </div>
+</body>
+</html>

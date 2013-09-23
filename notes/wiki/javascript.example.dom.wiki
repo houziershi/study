@@ -1,0 +1,46 @@
+
+
+%title Javascript
+
+%toc Javascript
+
+
+
+
+=== 判断一个元素是否存在 ===
+
+使用传统javascript方法，如下：
+
+{{{class="brush: javascript"
+if(document.getElementById('div')) {    
+    // 找到到对应元素
+} else {    
+    // 没有找到找到到对应元素
+}
+}}}
+
+使用jQuery则比较简单，只需判断此元素的长度是否为0，如果为0则此元素不存在，
+代码如下：
+
+{{{class="brush: javascript"
+if ($("#div").length > 0){
+    // 找到对应id=div的元素，然后执行此块代码
+}
+}}}
+
+甚至能找到组合元素，如下，我们找一个id定义为div的元素里面是否包含img：
+
+{{{class="brush: javascript"
+if(document.querySelector("#div img")){
+//found
+}
+}}}
+
+或用jquery： 
+
+{{{class="brush: javascript"
+if ($("#div img").length > 0){
+    // 找到对应id=div并且包含img的元素，然后执行此块代码
+}
+}}}
+

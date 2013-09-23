@@ -26,7 +26,11 @@
 <div class="toc">
 <ul>
 <li><a href="#toc_1">数组</a>
-<li><a href="#toc_2">枚举（enum）</a>
+<li><a href="#toc_2">容器类初始化</a>
+<ul>
+<li><a href="#toc_2.1">忘设初始容量</a>
+</ul>
+<li><a href="#toc_3">枚举（enum）</a>
 </ul>
 </div>
 
@@ -44,7 +48,138 @@
 字面量：<code>{item1, item2, ... }</code>
 </p>
 
-<h1 id="toc_2">枚举（enum）</h1>
+
+
+<h1 id="toc_2">容器类初始化</h1>
+
+<h2 id="toc_2.1">忘设初始容量</h2>
+
+<p>
+在JAVA中，我们常用<code>Collection</code>中的<code>Map</code>做Cache,但是我们经常会遗忘设置初始容量：
+</p>
+
+<pre class="brush: java">
+cache = new LRULinkedHashMap&lt; K, V&gt;(maxCapacity);
+</pre>
+
+<p>
+解决
+</p>
+
+<p>
+初始容量的影响有多大？拿<code>LinkedHashMap</code>来说，初始容量如果不设置默认是<code>16</code>，超过
+<code>16×LOAD_FACTOR</code>，会<code>resize(2 * table.length)</code>扩大2倍。采用：
+</p>
+
+<pre class="brush: java">
+Entry[] newTable = new Entry[newCapacity];
+transfer(newTable)
+</pre>
+
+<p>
+即整个数组Copy， 那么对于一个需要做大容量CACHE来说，从16变成一个很大的数量，需要
+做多少次数组复制可想而知。如果初始容量就设置很大，自然会减少<code>resize</code>, 不过可能会
+担心，初始容量设置很大时，没有Cache内容仍然会占用过大体积。其实可以参考以下表格
+简单计算下, 初始时还没有cache内容, 每个对象仅仅是4字节引用而已。
+</p>
+
+<ul>
+<li>
+memory for reference fields (4 bytes each);
+
+<li>
+memory for primitive fields
+
+</ul>
+
+<table>
+<tr>
+<td>
+Java类型
+</td>
+<td>
+占用字节
+</td>
+</tr>
+<tr>
+<td>
+boolean
+</td>
+<td>
+1
+</td>
+</tr>
+<tr>
+<td>
+byte
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+char
+</td>
+<td>
+2
+</td>
+</tr>
+<tr>
+<td>
+short
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+int
+</td>
+<td>
+4
+</td>
+</tr>
+<tr>
+<td>
+float
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+long
+</td>
+<td>
+8
+</td>
+</tr>
+<tr>
+<td>
+double
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+</table>
+
+<p>
+不仅是map, 还有<code>StringBuffer</code>等，都有容量<code>resize</code>的过程，如果数据量很大，就不能
+忽视初始容量可以考虑设置下，否则不仅有频繁的<code>resize</code>还容易浪费容量。
+</p>
+
+<p>
+在Java编程中，除了上面枚举的一些容易忽视的问题，日常实践中还存在很多。相信通过
+不断的总结和努力，可以将我们的程序完美呈现给读者。
+</p>
+
+
+
+<h1 id="toc_3">枚举（enum）</h1>
 
 <p>
 不能用<code>ordinal</code>自增当值时，增加一个<code>value</code>表示值：
