@@ -1,0 +1,5 @@
+scp dsdev15@dev1.hpdev.com:~/server/default/deploy/handpay/merchantService.war
+scp dsdev15@dev1.hpdev.com:~/server/default/deploy/handpay/hpMerchandise4.0-0.0.1-SNAPSHOT.jar .
+scp dsdev15@dev1.hpdev.com:~/server/default/deploy/handpay/hpSupplier-0.0.1-SNAPSHOT.jar
+
+dsdev20@dev1.hpdev.com:~/server/default/deploy/ROOT.war/lmbao/config/hpTrafficWap/hpwap.properties

@@ -94,6 +94,38 @@ hg update
 
 = 编码格式 =
 
+== 字符编码 ==
+
+{{{class="brush: bash"
+" =====================
+" 多语言环境
+" 默认为 UTF-8 编码
+" =====================
+if has("multi_byte")
+    set encoding=utf-8
+    set fileencoding=utf-8
+    set termencoding=utf-8
+    " English messages only
+    "language messages zh_CN.utf-8
+  
+    if has('win32')
+        language english
+        let &termencoding=&encoding
+    endif
+  
+    set fencs=ucs-bom,utf-8,gbk,cp936,latin1
+    set formatoptions+=mM
+    set nobomb " 不使用 Unicode 签名
+  
+    if v:lang =~? '^\(zh\)\|\(ja\)\|\(ko\)'
+        set ambiwidth=double
+    endif
+else
+    echoerr "Sorry, this version of (g)vim was not compiled with +multi_byte"
+endif
+}}}
+
+
 == 换行符 ==
 
 替换`^M`字符

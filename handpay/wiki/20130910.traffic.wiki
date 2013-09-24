@@ -1,0 +1,195 @@
+
+%title 交罚
+
+%toc 交罚
+
+{{{class="brush: scala"
+scp ./*.jar  dsdev15@dev1.hpdev.com:~/server/default/deploy/handpay
+}}}
+
+= 设计 =
+
+== 表结构 ==
+
+=== 查询记录 r ===
+
+traffic_violation_query_record 
+
+| SEQUENCE    | NOT NULL | NUMBER(38)    | 序号         |
+| UserId      |          | NUMBER(38)    | 用户         |
+| QueryDate   |          | VARCHAR2(8)   | 查询日期     |
+| QueryTime   |          | VARCHAR2(6)   | 查询时间     |
+| CarNo       |          | VARCHAR2(20)  | 车牌号       |
+| City        |          | VARCHAR2(200) | 查询城市名   |
+| QueryFee    |          | NUMBER(8,2)   | 每次查询费用 |
+| EngineNo    |          | VARCHAR2(40)  | 发动机号     |
+| CarFrameNo  |          | VARCHAR2(40)  | 车身号       |
+| ViolationSn |          | VARCHAR2(40)  | 罚单号       |
+
+=== 违章记录 v ===
+
+traffic_violation 
+
+| InnerSeq       | NOT NULL | NUMBER(38)    |                            |
+| SupplierCode   |          | VARCHAR2(20)  | 供应商代码                 |
+| TempId         |          | VARCHAR2(40)  | 供应商那边的流水号         |
+| ViolationSn    |          | VARCHAR2(40)  | 罚单号                     |
+| CarNo          |          | VARCHAR2(20)  | 车牌号                     |
+| CarType        |          | VARCHAR2(10)  | 车辆类型                   |
+| ProvinceCode   |          | VARCHAR2(20)  | 省代码                     |
+| ProvinceName   |          | VARCHAR2(40)  | 省名称                     |
+| CityCode       |          | VARCHAR2(20)  | 市代码                     |
+| CityName       |          | VARCHAR2(40)  | 市名称                     |
+| AreaCode       |          | VARCHAR2(20)  | 区代码                     |
+| AreaName       |          | VARCHAR2(40)  | 区名称                     |
+| RegulationId   |          | VARCHAR2(20)  | 违章条例id                 |
+| RegulationCode |          | VARCHAR2(20)  | 违章条例代码               |
+| RegulationName |          | VARCHAR2(500) | 违章条例名称               |
+| FineAmount     |          | NUMBER(8,2)   | 罚款金额                   |
+| Point          |          | NUMBER(38)    | 扣分                       |
+| ViolationRoad  |          | VARCHAR2(500) | 违章路段                   |
+| ViolationTime  |          | VARCHAR2(14)  | 违章时间                   |
+| Authority      |          | VARCHAR2(100) | 执法机关                   |
+| DealAddress    |          | VARCHAR2(100) | 违章办理地址               |
+| IsOnsit        |          | NUMBER(38)    | 是否现场单                 |
+| OverdueFine    |          | NUMBER(8,2)   | 滞纳金                     |
+| DealStatus     |          | VARCHAR2(10)  | 办理状态                   |
+| NeedDays       |          | NUMBER(38)    | 代办周期                   |
+| PayCharge      |          | NUMBER(8,2)   | 代办费                     |
+| EngineNo       |          | VARCHAR2(40)  | 发动机号（后六位）（必填） |
+| CarFrameNo     |          | VARCHAR2(40)  | 车身号（后六位）（必填）   |
+
+罚单状态：
+
+* `0`不可办理
+* `1`可办理
+* `2`处理中
+* `3`已完成
+* `4`待支付
+
+
+=== 订单 o===
+
+traffic_violation_order 
+
+| Id                 | NOT NULL | NUMBER(38)   |                                     |
+| SupplierCode       |          | VARCHAR2(20) | 供应商                              |
+| FineamoUnt         |          | NUMBER(8,2)  | 罚款金额                            |
+| OverdueFine        |          | NUMBER(8,2)  | 滞纳金                              |
+| ServiceFee         |          | NUMBER(8,2)  | 服务费                              |
+| PayCharge          |          | NUMBER(8,2)  | 代办费                              |
+| DealStatus         |          | VARCHAR2(10) | 交易状态                            |
+| MerchantTransSeq   |          | NUMBER(38)   | 瀚银订单号                          |
+| MerchantTransDate  |          | VARCHAR2(14) | 瀚银订单时间                        |
+| MerchantOrderSeq   |          | VARCHAR2(40) | 供应商订单号                        |
+| MerchantOrderDate  |          | VARCHAR2(14) | 供应商订单时间                      |
+| ContactName        |          | VARCHAR2(20) | 交易人姓名                          |
+| ContactMobile      |          | VARCHAR2(20) | 交易人手机                          |
+| UserId             |          | NUMBER(38)   | 用户                                |
+| RealCharge         |          | NUMBER(8,2)  | 供应商那里的实际金额                |
+| ViolationSmlateFee |          | NUMBER(8,2)  | 供应商那边的滞纳金总费用            |
+| TotalAmount        |          | NUMBER(8,2)  | 供应商那边的总计金额                |
+| ZhizunCustomerId   |          | NUMBER(38)   | 至尊那边的会员id 在提前支付接口用到 |
+
+=== 订单详情 d ===
+
+traffic_violation_order_detail 
+
+| Id                | NOT NULL | NUMBER(38)   |                                         |
+| OrderId           |          | NUMBER(38)   | 罚单交纳记录 FK:traffic_violation_order |
+| InnerViolationId  |          | NUMBER(38)   | 罚单内部序号 FK: traffic_violation      |
+| ViolationSn       |          | VARCHAR2(40) |                                         |
+| CarNo             |          | VARCHAR2(20) | 车牌号                                  |
+| IsOnsite          |          | NUMBER(38)   | 是否现场单                              |
+| FineAmount        |          | NUMBER(8,2)  | 罚款金额                                |
+| OverdueFine       |          | NUMBER(8,2)  | 滞纳金                                  |
+| ServiceFee        |          | NUMBER(8,2)  | 服务费                                  |
+| PayCharge         |          | NUMBER(8,2)  | 代办费                                  |
+| DealStatus        |          | VARCHAR2(10) | 交易状态                                |
+| MerchantTransSeq  |          | NUMBER(38)   | 瀚银订单号                              |
+| MerchantTransDate |          | VARCHAR2(14) | 瀚银订单时间                            |
+| MerchantOrderSeq  |          | VARCHAR2(40) | 供应商订单号                            |
+| MerchantOrderDate |          | VARCHAR2(14) | 供应商订单时间                          |
+| ViolationId       |          | VARCHAR2(20) | 应商明细流水ID                          |
+| MLateFee          |          | NUMBER(8,2)  | 应商那边的MlateFee滞纳金                |
+
+=== 瀚银订单 m ===
+
+MERCH_TRANSACTION_LOG
+
+| MerchantTransSeq |   | VARCHAR2(20) |          |
+| DeliveryTime     |   | VARCHAR2(20) | 发货时间 |
+
+
+
+== 主要类 ==
+
+ITrafficService.queryViolationOrder
+
+VposViolationDetailAction.java
+
+vposViolationDetail.jsp
+
+TrafficServiceImpl.queryViolations(..)
+
+= 功能 =
+
+== 交易明细报表 ==
+
+用于和供应商进行清结算核对，报表包含字段如下：
+
+| 序号             |                              | rownum                                     |
+| 订单生成日期     | 用户下单时间                 | m.merchantTransDate                        |
+| 订单支付时间     | 用户支付时间                 | m.paymentTransDate                         |
+| 订单完成时间     | 供应商返回处理状态的时间     | m.deliveryTime                             |
+| 瀚银订单号       | 用户在瀚银下单后生成的订单号 | d.MerchantTransDate                        |
+| 商户订单号       | 商户返回给我们的订单号       | d.MerchantOrderSeq                         |
+| 商户订单明细编号 | 一笔订单中包含的罚单号       | d.InnerViolationId                         |
+| 罚金             | 罚单金额                     | d.FineAmount                               |
+| 代办费           | 显示罚单代办费用             | d.PayCharge                                |
+| 滞纳金           | 罚单需缴纳的滞纳金           | d.OverdueFine                              |
+| 特单费           | 加急处理的费用               | 去掉                                       |
+| 邮寄             | 发票邮寄金额                 | 去掉                                       |
+| 总计             | 用户实际支付金额             | d.FineAmount + d.PayCharge + d.OverdueFine |
+| 返佣金额         | 每笔罚单的返佣金额           | 去掉                                       |
+| 佣金单号         | 每笔罚单对应的订单号         | 去掉                                       |
+
+{{{class="brush: scala"
+select 
+  rownum , m.merchantTransDate , m.paymentTransDate , 
+  m.deliveryTime , d.MerchantTransDate , d.MerchantOrderSeq, 
+  d.InnerViolationId , d.FineAmount , d.PayCharge, 
+  d.OverdueFine, d.FineAmount + d.PayCharge + d.OverdueFine
+from
+	traffic_violation_order_detail d 
+		left join traffic_violation_order o 
+			on d.orderId = o.id
+		left join traffic_violation v 
+			on d.innerviolationid = v.innerseq
+		left join	MERCH_TRANSACTION_LOG m
+			on d.MerchantTransSeq  = m.MerchantTransSeq;
+}}}
+
+
+== 查询费用报表 ==
+
+查询费用报表记录每次发起查询请求的详情，用于和供应商结算查询费用进行核对。报表
+包含字段如下：
+
+| 序号     |                                   | rownum                     |
+| 城市     | 查询时填写的城市名                | r.city                     |
+| 车牌号   | 查询时填写的车牌号                | r.CarNo                    |
+| 查询时间 | 显示查询发起的时间                | r.querydate 接 r.querytime |
+| 查询费用 | 固定为每次0.05元                  | r.QueryFee                 |
+| 车架号   | 显示用户填写的发动机号            | r.CarFrameNo               |
+| 发动机号 | 显示用户填写的发动机号            | r.EngineNo                 |
+| 违章单号 | 显示查询的违章单号---支持多个记录 | r.ViolationSn              |
+
+{{{class="brush: scala"
+select 
+	rownum, r.city, r.CarNo , r.querydate || r.querytime,
+	r.QueryFee, r.CarFrameNo, r.EngineNo, r.ViolationSn 
+from 
+	traffic_violation_query_record r
+}}}
+

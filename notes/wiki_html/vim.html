@@ -31,7 +31,8 @@
 <li><a href="#toc_2">配置</a>
 <li><a href="#toc_3">编码格式</a>
 <ul>
-<li><a href="#toc_3.1">换行符</a>
+<li><a href="#toc_3.1">字符编码</a>
+<li><a href="#toc_3.2">换行符</a>
 </ul>
 <li><a href="#toc_4">保存</a>
 <ul>
@@ -173,7 +174,39 @@ hg update
 
 <h1 id="toc_3">编码格式</h1>
 
-<h2 id="toc_3.1">换行符</h2>
+<h2 id="toc_3.1">字符编码</h2>
+
+<pre class="brush: bash">
+" =====================
+" 多语言环境
+" 默认为 UTF-8 编码
+" =====================
+if has("multi_byte")
+    set encoding=utf-8
+    set fileencoding=utf-8
+    set termencoding=utf-8
+    " English messages only
+    "language messages zh_CN.utf-8
+  
+    if has('win32')
+        language english
+        let &amp;termencoding=&amp;encoding
+    endif
+  
+    set fencs=ucs-bom,utf-8,gbk,cp936,latin1
+    set formatoptions+=mM
+    set nobomb " 不使用 Unicode 签名
+  
+    if v:lang =~? '^\(zh\)\|\(ja\)\|\(ko\)'
+        set ambiwidth=double
+    endif
+else
+    echoerr "Sorry, this version of (g)vim was not compiled with +multi_byte"
+endif
+</pre>
+
+
+<h2 id="toc_3.2">换行符</h2>
 
 <p>
 替换<code>^M</code>字符
