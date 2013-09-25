@@ -134,6 +134,69 @@ TrafficServiceImpl.queryViolations(..)
 
 = 功能 =
 
+== 增加功能菜单与权限 ==
+
+{{{class="brush: scala"
+declare
+  systemID number;
+  funcID number;
+
+begin
+select s.systemid into systemID from auth_func s where s.funccode='SF03';
+select s.funcID into funcID from auth_func s where s.funccode='SF03';
+
+
+-- 增加交罚业务报表二级功能
+insert into auth_func (funcid,parentid,systemid,funccode,funcname,status,displayflag,displayorder) 
+values(Seq_AUTH_FUNC.Nextval,funcID,systemID,'SF0316','交罚业务报表','1',1,16);
+
+
+-- 增加交罚业务查询操作
+insert into auth_action(actionid,systemid,actioncode,actionname,actionmethod,logflag,authflag) 
+values(SEQ_AUTH_ACTION.Nextval,systemID,'SA031601','进入交罚业务报表','/report/trafficReport!index.action',1,1);
+
+insert into auth_action(actionid,systemid,actioncode,actionname,actionmethod,logflag,authflag)
+values(SEQ_AUTH_ACTION.Nextval,systemID,'SA031602','弹出交罚交易明细报表窗口','/report/trafficReport!openTrade.action',1,1);
+
+insert into auth_action(actionid,systemid,actioncode,actionname,actionmethod,logflag,authflag) 
+values(SEQ_AUTH_ACTION.Nextval,systemID,'SA031603','查询交罚交易明细报表','/report/trafficReport!queryTrade.action',1,1);
+
+insert into auth_action(actionid,systemid,actioncode,actionname,actionmethod,logflag,authflag)
+values(SEQ_AUTH_ACTION.Nextval,systemID,'SA031604','弹出交罚查询费用报表窗口','/report/trafficReport!openFee.action',1,1);
+
+insert into auth_action(actionid,systemid,actioncode,actionname,actionmethod,logflag,authflag) 
+values(SEQ_AUTH_ACTION.Nextval,systemID,'SA031605','查询交罚查询费用业务报表','/report/trafficReport!queryFee.action',1,1);
+
+insert into auth_action(actionid,systemid,actioncode,actionname,actionmethod,logflag,authflag) 
+values(SEQ_AUTH_ACTION.Nextval,systemID,'SA031606','交罚业务导出','/report/trafficReport!export.action',1,1);
+
+
+
+-- 建立功能和操作关系
+for func in (select * from auth_func f where f.funccode = 'SF0316' ) loop
+  for action in (select * from auth_action a where substr(a.actioncode,3,4)=substr(func.funccode,3,4) and substr(a.actioncode,1,2)='SA') loop
+    if substr(action.actioncode,7,2) = '01' then
+      --第一个操作默认为功能的入口操作
+      insert into auth_func_action(funcid,actionid,startflag) values(func.funcid,action.actionid,1); 
+    else
+      insert into auth_func_action(funcid,actionid,startflag) values(func.funcid,action.actionid,0); 
+    end if;
+  end loop; 
+end loop; 
+
+-- 建立关系结束
+commit;
+dbms_output.put_line('Is finished');
+exception
+   when others then
+	begin
+		DBMS_OUTPUT.PUT_LINE(SQLCODE||'---'||SQLERRM);
+		rollback;
+	end;
+end;
+-- 结束
+}}}
+
 == 交易明细报表 ==
 
 用于和供应商进行清结算核对，报表包含字段如下：
