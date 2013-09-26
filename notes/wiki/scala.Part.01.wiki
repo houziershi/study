@@ -1540,13 +1540,26 @@ class Currency {}
 object USD extends Currency{ }
 }}}
 
-但是注意单例对象无法初始化，所以不能给主构造器传递参数。
+但是注意单例对象无法初始化，所以不能给主构造器传递参数。对象的主构造器会在对象
+第一次被使用时调用。如果没有使用过对象，那么它的构造函数也不会被执行。例：
+
+{{{class="brush: scala"
+object Account {
+	private var lastNumber = 0
+	
+	def newUniqueNumber() = { lastNumber += 1; lastNumber }
+}}}
+
+如果没用用过，那么`lastNumber`也不会被初始化。
 
 == 伴生对象 ==
 
 如果一个单例对象的名字和类一样，并且必须在同一个文件里。那它就是这个类的伴生对象
-（Companion Object），类是它的伴生类（Companion Class）。它们可以相互访问
-私有成员。
+（Companion Object），类是它的伴生类（Companion Class）。它们可以相互访问私有
+成员。
+
+但是要注意，虽然可以相互访问私有成员，但并不是在同一作用域中。例如：`Account`类
+必须通过`Account.newAccount()`而不是`newAccount()`方式来访问伴生对象的方法。
 
 {{{class="brush: scala" title="ChecksumAccumulator.scala"
 import scala.collection.mutable.Map
@@ -1630,7 +1643,11 @@ val a = Marker("yellow")
 val b = Marker("black")
 }}}
 
+这样的写法的一个优点是对嵌套表达式少写`new`会方便很多：
 
+{{{class="brush: scala"
+Array(Array(1,7), Array(2,9))
+}}}
 
 == 与Java的区别 ==
 

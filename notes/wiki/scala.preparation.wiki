@@ -169,6 +169,8 @@ println("hello," + arg(0) + "!")
 
 == Scala程序 ==
 
+=== main方法 ===
+
 先看一个工具类，它根据字符串来计算出检验和：
 
 {{{class="brush: scala" title="ChecksumAccumulator.scala"
@@ -253,8 +255,52 @@ of -> -213
 love -> -182
 }}}
 
-还有一个加入的`Application`特质的方式实现应用程序，但是有局限：
-不能访问命令行参数、只能在单线程下用。所以不推荐用它。
+
+=== App特质 ===
+
+扩展`App`特质，然后把程序代码放入构造器方法中：
+
+{{{class="brush: scala" title="Hello.scala"
+object Hello extends App {
+	print("Hello World!")
+}
+}}}
+
+通过`args`属性得到命令行参数：
+
+{{{class="brush: scala" title="Hello.scala"
+object Hello extends App {
+
+	if (args.length > 0)
+		println("Hello, " + args(0))
+	else
+		println("Hello, World!")
+
+}
+}}}
+
+在调用程序时设置了参数`scala.time`的话，程序退出时还会显示消耗的时间：
+
+{{{class="brush: bash"
+$ scalac Hello.scala
+$ scala -Dscala.time Hello Fred
+Hello, Fred
+[total 4ms]
+}}}
+
+原理是`App`特质是扩展自`DelayedInit`，它会把初始化方法都挪到`delayedInit()`方法
+中。在那里有显示初始化时间的动作。
+
+
+=== Application特质 ===
+
+还有一个早期版本的方法：`Application`特质的方式实现应用程序，但是有局限：
+
+* 在静态初始化方法中执行程序动作，不被编译器优化；
+* 不能访问命令行参数；
+* 只能在单线程下用。
+
+所以不推荐用它。
 
 形式类似于：
 {{{class="brush: scala" title="myApp.scala"
@@ -262,6 +308,8 @@ object MyApp extends Application {
 	println("Hello")
 }	
 }}}
+
+
 
 
 == 脚本与程序的区别 ==

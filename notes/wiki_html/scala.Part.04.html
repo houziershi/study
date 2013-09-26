@@ -76,7 +76,11 @@
 <ul>
 <li><a href="#toc_3.7.1">与Java内部类的区别</a>
 </ul>
-<li><a href="#toc_3.8">枚举</a>
+<li><a href="#toc_3.8">枚举对象</a>
+<ul>
+<li><a href="#toc_3.8.1">枚举的类型</a>
+<li><a href="#toc_3.8.2">枚举值</a>
+</ul>
 <li><a href="#toc_3.9">案例研究：货币</a>
 </ul>
 <li><a href="#toc_4">隐式转换和参数</a>
@@ -2388,10 +2392,10 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </pre>
 
 
-<h2 id="toc_3.8">枚举</h2>
+<h2 id="toc_3.8">枚举对象</h2>
 
 <p>
-标准库中的类<code>scala.Enumeration</code>用来扩展枚举类：
+Scala没有枚举类，而是用标准库中的工具类<code>scala.Enumeration</code>用来扩展实现枚举对象：
 </p>
 
 <pre class="brush: scala">
@@ -2437,37 +2441,44 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 </pre>
 
 <p>
-上面就定义了一个完全不同的类型，因为路径不同。
+上面就定义了一个完全不同的类型，因为路径不同。<code>Direction</code>与<code>Color</code>的<code>Value</code>也是
+不同的类。
 </p>
 
+<h3 id="toc_3.8.1">枚举的类型</h3>
+
 <p>
-还可以重载<code>Value</code>方法把名称与值对应起来：
+注意枚举的类型是<code>Direction.Value</code>而不是<code>Direction</code>。<code>Direction</code>是持有这些值的
+单例对象。有些人推荐增加一个类型的别名：
 </p>
 
 <pre class="brush: scala">
   object Direction extends Enumeration {
-    val North = Value("North")
-    val East = Value("East")
-    val South = Value("South")
-    val West = Value("West")
+		type Direction = Value
+    val North, East, South, West = Value
   }
 </pre>
 
 <p>
-<code>Direction</code>与<code>Color</code>的<code>Value</code>也是不同的类。
-</p>
-
-<p>
-遍历：
+这样类型就从<code>Direction.Value</code>增加一个别名<code>Direction.Direction</code>。虽然还是又长又
+啰嗦，但是在<code>import Direction._</code>以后可以只写<code>Direction</code>：
 </p>
 
 <pre class="brush: scala">
-  scala&gt; for (d &lt;- Direction) print(d +" ")
-  North East South West 
+import Direction._
+
+def func01(direction: Direction) = {
+	if (direction == West)
+		"stop"
+	else
+		"keep moving"
+}
 </pre>
 
+<h3 id="toc_3.8.2">枚举值</h3>
+
 <p>
-枚举的值从<code>0</code>开始增加，用成员方法<code>id</code>可以取出值：
+枚举的值默认从<code>0</code>开始增加，用成员方法<code>id</code>可以取出值：
 </p>
 
 <pre class="brush: scala">
@@ -2483,6 +2494,51 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
   scala&gt; Direction(1)
   res6: Direction.Value = East
 </pre>
+
+<p>
+当然想指定<code>id</code>也可以：
+</p>
+
+<pre class="brush: scala">
+object Direction extends Enumeration {
+  val North = Value(10)
+  val East = Value(20)
+  val South = Value(30)
+  val West = Value(40)
+}
+</pre>
+
+<p>
+还可以重载<code>Value</code>方法把名称与值对应起来：
+</p>
+
+<pre class="brush: scala">
+object Direction extends Enumeration {
+  val North = Value(10,"North")
+  val East = Value(20,"East")
+  val South = Value(30,"South")
+  val West = Value(40,"West")
+}
+</pre>
+
+<p>
+直接通过<code>toString</code>方法就可以取得枚举的名称：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; for (d &lt;- Direction) print(d +" ")
+  North East South West 
+</pre>
+
+<p>
+也可以通过<code>withName</code>方法通过名称得到枚举：
+</p>
+
+<pre class="brush: scala">
+Direction.withName("West")
+</pre>
+
+
 
 <h2 id="toc_3.9">案例研究：货币</h2>
 

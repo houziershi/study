@@ -1853,9 +1853,9 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
 }}}
 
 
-== 枚举 ==
+== 枚举对象 ==
 
-标准库中的类`scala.Enumeration`用来扩展枚举类：
+Scala没有枚举类，而是用标准库中的工具类`scala.Enumeration`用来扩展实现枚举对象：
 
 {{{class="brush: scala"
   object Color extends Enumeration {
@@ -1891,29 +1891,38 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
   }
 }}}
 
-上面就定义了一个完全不同的类型，因为路径不同。
+上面就定义了一个完全不同的类型，因为路径不同。`Direction`与`Color`的`Value`也是
+不同的类。
 
-还可以重载`Value`方法把名称与值对应起来：
+=== 枚举的类型 ===
+
+注意枚举的类型是`Direction.Value`而不是`Direction`。`Direction`是持有这些值的
+单例对象。有些人推荐增加一个类型的别名：
 
 {{{class="brush: scala"
   object Direction extends Enumeration {
-    val North = Value("North")
-    val East = Value("East")
-    val South = Value("South")
-    val West = Value("West")
+		type Direction = Value
+    val North, East, South, West = Value
   }
 }}}
 
-`Direction`与`Color`的`Value`也是不同的类。
-
-遍历：
+这样类型就从`Direction.Value`增加一个别名`Direction.Direction`。虽然还是又长又
+啰嗦，但是在`import Direction._`以后可以只写`Direction`：
 
 {{{class="brush: scala"
-  scala> for (d <- Direction) print(d +" ")
-  North East South West 
+import Direction._
+
+def func01(direction: Direction) = {
+	if (direction == West)
+		"stop"
+	else
+		"keep moving"
+}
 }}}
 
-枚举的值从`0`开始增加，用成员方法`id`可以取出值：
+=== 枚举值 ===
+
+枚举的值默认从`0`开始增加，用成员方法`id`可以取出值：
 
 {{{class="brush: scala"
   scala> Direction.East.id
@@ -1926,6 +1935,43 @@ val是不可变的，抽象的val指定了类型与变量名，不指定值：
   scala> Direction(1)
   res6: Direction.Value = East
 }}}
+
+当然想指定`id`也可以：
+
+{{{class="brush: scala"
+object Direction extends Enumeration {
+  val North = Value(10)
+  val East = Value(20)
+  val South = Value(30)
+  val West = Value(40)
+}
+}}}
+
+还可以重载`Value`方法把名称与值对应起来：
+
+{{{class="brush: scala"
+object Direction extends Enumeration {
+  val North = Value(10,"North")
+  val East = Value(20,"East")
+  val South = Value(30,"South")
+  val West = Value(40,"West")
+}
+}}}
+
+直接通过`toString`方法就可以取得枚举的名称：
+
+{{{class="brush: scala"
+  scala> for (d <- Direction) print(d +" ")
+  North East South West 
+}}}
+
+也可以通过`withName`方法通过名称得到枚举：
+
+{{{class="brush: scala"
+Direction.withName("West")
+}}}
+
+
 
 == 案例研究：货币 ==
 
