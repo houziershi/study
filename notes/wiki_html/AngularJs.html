@@ -32,6 +32,12 @@
 <li><a href="#toc_2">应用实例</a>
 <ul>
 <li><a href="#toc_2.1">定义模块</a>
+<li><a href="#toc_2.2">Scopes</a>
+<ul>
+<li><a href="#toc_2.2.1">ng-controller</a>
+<li><a href="#toc_2.2.2">结合进myApp</a>
+<li><a href="#toc_2.2.3">音频</a>
+</ul>
 </ul>
 </ul>
 </div>
@@ -105,6 +111,298 @@ var app = angular.module('myApp', []);
 
 <p>
 绑定的地方就是AngularJs运行应用的地方。
+</p>
+
+<h2 id="toc_2.2">Scopes</h2>
+
+<p>
+<code>$scope</code>是一个把view（一个DOM元素）连结到controller上的对象。在我们的MVC结构里，
+这个<code>$scope</code>将成为model，它提供一个绑定到DOM元素（以及其子元素）上的excecution 
+context。
+</p>
+
+<p>
+尽管听起来有点复杂，但<code>$scope</code>实际上就是一个JavaScript对象，controller和view都
+可以访问它，所以我们可以利用它在两者间传递信息。在这个<code>$scope</code>对象里，我们既存储
+数据，又存储将要运行在view上的函数。
+</p>
+
+<p>
+每一个Angular应用都会有一个<code>$rootScope</code>。
+这个<code>$rootScope</code>是最顶级的scope，它对应着含有<code>ng-app</code>指令属性的那个DOM元素。
+</p>
+
+<p>
+如果页面上没有明确设定<code>$scope</code>，Angular就会把数据和函数都绑定到这里，第一部分中
+的例子就是靠这一点成功运行的。
+</p>
+
+<p>
+在这个例子里，我们将使用<code>$rootScope</code>。在<code>main.js</code>文件里，我们给这个<code>scope</code>加一个
+<code>name</code>属性。把这个函数放进<code>app.run</code>函数里执行，我们就保证了它能在应用的其他部分
+之前被执行。你可以把<code>app.run</code>函数看作是Angular应用的<code>main</code>方法。
+</p>
+
+<pre class="brush: javascript"  title="00.startup/js/main.js">
+app.run(function($rootScope) {
+  $rootScope.name = "Ari Lerner";
+});
+</pre>
+
+<p>
+现在，我们可以在<code>view</code>的任何地方访问这个<code>name</code>属性，使用模版表达式<code>{{}}</code>，像这样
+：
+</p>
+
+<pre class="brush: html"  title="00.startup/index.html">
+{{ name }}
+</pre>
+
+<p>
+在这个系列之后的章节里，我们会深入介绍模版表达式的语法。
+</p>
+
+<p>
+页面上显示的结果就是：
+</p>
+
+<pre class="brush: html">
+Ari Lerner
+</pre>
+
+
+<p>
+要真正看到scope的强大功能，让我们给一个DOM元素加上controller，它将创建这个元素的
+<code>$scope</code> ，让我们跟这个元素互动。
+</p>
+
+<h3 id="toc_2.2.1">ng-controller</h3>
+
+<p>
+要明确创建一个<code>$scope</code>对象，我们就要给DOM元素安上一个controller对象，使用的是
+<code>ng-controller</code>指令属性：
+</p>
+
+<pre class="brush: html">
+&lt;div ng-controller="MyController"&gt;
+  {{ person.name }}
+&lt;/div&gt;
+</pre>
+
+<p>
+<code>ng-controller</code>指令给所在的DOM元素创建了一个新的scope对象，并将这个scope对象
+包含进外层DOM元素的scope对象里。在上面的例子里，这个外层DOM元素的<code>$scope</code>对象，
+就是<code>$rootScope</code>对象。这个scope链是这样的：
+</p>
+
+<p>
+<img src="images/AngularJS/01.png" />
+</p>
+
+<p>
+现在，<code>MyController</code>给我们建立了一个可以从DOM元素内部直接访问的scope对象。下面
+我们在的这个scope里创建一个<code>person</code>对象，在<code>main.js</code>中：
+</p>
+
+<pre class="brush: js"  title="00.startup/js/main.js">
+app.controller('MyController', function($scope) {
+  $scope.person = {
+    name: "Ari Lerner"
+  };
+});
+</pre>
+
+<p>
+现在我们可以在有<code>ng-controller=’MyController’</code>属性的DOM元素的任何子元素里访问
+这个<code>person</code>对象，因为它在<code>$scope</code>上。
+</p>
+
+<p>
+页面上显示出：
+</p>
+
+<p>
+Ari Lerner
+</p>
+
+<p>
+除了一个例外，所有scope都遵循原型继承（prototypal inheritance），这意味着它们
+都能访问父scope们。对任何属性和方法，如果AngularJS在当前scope上找不到，就会到父
+scope上去找，如果在父scope上也没找到，就会继续向上回溯，一直到<code>$rootScope</code>上。
+</p>
+
+<p>
+唯一的例外：有些指令属性可以选择性地创建一个独立的scope，让这个scope不继承它的
+父scope们。
+</p>
+
+<p>
+举个例子，假设我们有一个<code>ParentController</code>，含有一个<code>person</code>对象，又有一个
+<code>ChildController</code>想要访问这个对象：
+</p>
+
+<pre class="brush: js">
+app.controller('ParentController', function($scope) {
+  $scope.person = {greeted: false};
+});
+ 
+app.controller('ChildController', function($scope) {
+  $scope.sayHello = function() {
+    $scope.person.greeted = true;
+  }
+});
+</pre>
+
+<p>
+当我们在view里把<code>ChildController</code>绑定到<code>ParentController</code>之下，在子元素里我们
+就能访问<code>ParentController</code>创建的父scope的属性，像访问<code>ChildController</code>自己的
+scope中的属性一样：
+</p>
+
+<pre class="brush: html">
+&lt;div ng-controller="ParentController"&gt;
+  &lt;div ng-controller="ChildController"&gt;
+    &lt;input type="text" ng-model="person.name" placeholder="Name"&gt;&lt;/input&gt;
+    &lt;a ng-click="sayHello()"&gt;Say hello&lt;/a&gt;
+  &lt;/div&gt;
+  {{ person }}
+&lt;/div&gt;
+</pre>
+
+<p>
+<img src="images/AngularJS/02.png" />
+</p>
+
+<p>
+页面效果为：
+</p>
+
+<p>
+<img src="images/AngularJS/ek03.jpg" />
+</p>
+
+<h3 id="toc_2.2.2">结合进myApp</h3>
+
+<p>
+现在，我们把scope用在我们的NPR应用上。在上一篇结尾我们定义了<code>app module</code>，现在
+我们开始深入DOM结构，创建基本功能。
+</p>
+
+<p>
+像在上面的例子里展示过的那样，我们先创建一个root controller，命名为
+<code>PlayerController</code>。还有一个<code>RelatedController</code>，它将负责管理音频DOM元素、和为
+我们取回NPR节目的列表。
+</p>
+
+<p>
+回到<code>main.js</code>，现在我们就来创建这两个controller：
+</p>
+
+<pre class="brush: js"  title="00.startup/js/main.js">
+var app = angular.module('myApp', []);
+ 
+app.controller('PlayerController', ['$scope', function($scope) { }]);
+app.controller('RelatedController', ['$scope', function($scope) { }]);
+</pre>
+
+<h3 id="toc_2.2.3">音频</h3>
+
+<p>
+这两个controller现在还没什么功能，那么，让我们给应用先加上点声音吧。在这个教程里
+我们将使用HTML5的音频DOM元素，所以首先你得有个支持HTML5的浏览器（我们推荐Google 
+Chrome）。
+</p>
+
+<p>
+这个音频DOM元素，我们既可以把它加在HTML里，又可以加在我们的controller里。不过
+鉴于我们主要使用controller跟这个音频DOM元素互动，把它创建在controller里更合适。
+</p>
+
+<p>
+现在我们就在<code>PlayerController</code>里创建一个音频DOM元素。我们要把它储存在scope上，
+然后像你已经学过的那样——通过<code>$scope</code>对象把view和controller连接起来。
+</p>
+
+<pre class="brush: js"  title="00.startup/js/main.js">
+app.controller('PlayerController', ['$scope', function($scope) {
+  $scope.audio = document.createElement('audio');
+}]);
+</pre>
+
+<p>
+这个设定现在可能有点无聊，因为它还不能干什么。我们会在本系列的下一篇介绍取回（
+fetching）数据，现在我们先使用一个指定的<code>.mp4</code>网址。
+</p>
+
+<p>
+还是在这个<code>PlayerController</code>里，指定音频文件的<code>src</code>属性为一个你能访问的<code>.mp4</code>
+网址。方便起见，我们在这里使用一个储存在我们自己服务器上的NPR音频文件，不过其实
+你可以指向任何网址。现在设定你的音频<code>src</code>地址如下：
+</p>
+
+<pre class="brush: js"  title="00.startup/js/main.js">
+app.controller('PlayerController', ['$scope', function($scope) {
+  $scope.playing = false;
+  $scope.audio = document.createElement('audio');
+  $scope.audio.src = '/media/npr.mp4';
+}]);
+</pre>
+
+<p>
+音频不会自己播放，我们必须让它播放。要做到这一点，我们可以简单地使用
+<code>$scope.audio.play()</code>，然后HTML5音频DOM元素就会开始播放mp4媒体流。
+</p>
+
+<p>
+我们可以给用户提供一个互动元素：创建一个按钮，把它绑定到scope里的一个动作上。
+在下一篇里我们会更深入地介绍这一块，不过先看看上面例子里view的HTML：
+</p>
+
+<pre class="brush: html">
+&lt;div ng-controller="PlayerController"&gt;
+  &lt;button ng-click="play()" class="button" ng-show="!playing"&gt;Play&lt;/button&gt;
+  &lt;button ng-click="stop()" class="button alert" ng-show="playing"&gt;Stop&lt;/button&gt;
+  Playing audio: &lt;b&gt;{{ playing }}&lt;/b&gt;
+&lt;/div&gt;
+</pre>
+
+<p>
+注意我们并不需要引用在scope里创建的那个音频DOM元素，因为它是当我们载入controller
+时在controller内部用<code>document.createElement("audio")</code>创建的。在之后的教程里我们
+会重构这个部分，因为在controller里操作DOM元素一般都不是个好主意（感谢Brad Green
+在评论中指出这一点。）然而为了简便，我们在这里还是保持这个controller如此。
+</p>
+
+<p>
+在view里我们已经加入了一些变量，在scope上我们要管理这些变量。这里使用了一些高级
+概念，这些在本系列之后的教程里才会详细介绍，所以如果你不能一下子全看明白也不用
+担心：
+</p>
+
+<pre class="brush: js">
+app.controller('PlayerController', ['$scope', function($scope) {
+  $scope.playing = false;
+  $scope.audio = document.createElement('audio');
+  $scope.audio.src = '/media/npr.mp4';
+  $scope.play = function() {
+    $scope.audio.play();
+    $scope.playing = true;
+  };
+  $scope.stop = function() {
+    $scope.audio.pause();
+    $scope.playing = false;
+  };
+  $scope.audio.addEventListener('ended', function() {
+    $scope.$apply(function() {
+      $scope.stop()
+    });
+  });
+}]);
+</pre>
+
+<p>
+以上就是对Angular.js的<code>$scope</code>功能的介绍。在下一章，我们会介绍Angular.js的双向
+数据绑定。
 </p>
  </div>
 </body>

@@ -3,15 +3,25 @@
 
 %toc 交罚
 
-{{{class="brush: scala"
-scp ./*.jar  dsdev15@dev1.hpdev.com:~/server/default/deploy/handpay
+{{{class="brush: bash"
+scp ./*.*ar  dsdev15@dev1.hpdev.com:~/server/default/deploy/handpay
+
+scp ./*.xls  dsdev15@dev1.hpdev.com:~/handpay/report/template
+
+scp dsdev15@dev1.hpdev.com:~/server/default/deploy/ROOT.war/mall/hpdownload/report .
+
+ssh dsdev15@dev1.hpdev.com                     // handpay
+
+hp stop
+hp start
+tail -f ~/server/default/log/server.log
 }}}
 
 = 设计 =
 
 == 表结构 ==
 
-=== 查询记录 r ===
+=== `r` 查询记录 ===
 
 traffic_violation_query_record 
 
@@ -26,7 +36,7 @@ traffic_violation_query_record
 | CarFrameNo  |          | VARCHAR2(40)  | 车身号       |
 | ViolationSn |          | VARCHAR2(40)  | 罚单号       |
 
-=== 违章记录 v ===
+=== `v` 违章记录 ===
 
 traffic_violation 
 
@@ -68,7 +78,7 @@ traffic_violation
 * `4`待支付
 
 
-=== 订单 o===
+=== `o` 订单 ===
 
 traffic_violation_order 
 
@@ -91,7 +101,7 @@ traffic_violation_order
 | TotalAmount        |          | NUMBER(8,2)  | 供应商那边的总计金额                |
 | ZhizunCustomerId   |          | NUMBER(38)   | 至尊那边的会员id 在提前支付接口用到 |
 
-=== 订单详情 d ===
+=== `d` 订单详情 ===
 
 traffic_violation_order_detail 
 
@@ -113,7 +123,7 @@ traffic_violation_order_detail
 | ViolationId       |          | VARCHAR2(20) | 应商明细流水ID                          |
 | MLateFee          |          | NUMBER(8,2)  | 应商那边的MlateFee滞纳金                |
 
-=== 瀚银订单 m ===
+=== `m` 瀚银订单 ===
 
 MERCH_TRANSACTION_LOG
 
@@ -126,7 +136,7 @@ MERCH_TRANSACTION_LOG
 
 ITrafficService.queryViolationOrder
 
-VposViolationDetailAction.java
+
 
 vposViolationDetail.jsp
 
@@ -134,9 +144,68 @@ TrafficServiceImpl.queryViolations(..)
 
 = 功能 =
 
+== 交罚应用 ==
+
+入口：http://localhost:8080/hpTrafficWap-traffic0910/trafficIndex.do?trafficIndexFlag=vpos
+
+* `hpTrafficWap`
+	- `vposTrafficIndex.jsp`
+* `hpWap4.0`
+	- `VposTrafficIndexAction.java`
+	- `VposViolationDetailAction.java`
+* `hpMerchantInterface4.0`
+	- `ITrafficService.java`
+* `hpMerchantPlantform4.0`
+	- `ZhiZunConnector.java`供应商至尊提供的接口
+	- `TrafficServiceImpl.java`
+
+=== 相关表 ===
+
+{{{class="brush: sql"
+--交罚定时任务
+select * from batch_task where name like '%traffic%';
+--罚单 0不可办理，1可办理 ,2 处理中，3已完成, 4待支付
+select * from traffic_violation;
+--交罚订单 00  撤销  01待支付    10待办理 02未成功办理 11成功办理
+select * from traffic_violation_order;
+--交罚订单明细
+select * from traffic_violation_order_detail;
+--罚单的折扣信息
+select * from Traffic_DiscountActivities;
+--用户查询记录
+select * from traffic_violation_query_record;
+--查询次数配置Z0011
+select * from traffic_violation_query_times;
+--车辆类型
+select * from traffic_car_type;
+
+select * from traffic_area;
+select * from traffic_city;
+select * from traffic_province;
+
+--瀚银订单
+select * from merch_transaction_log;
+--瀚银订单明细。
+select * from merch_transaction_detail;
+}}}
+
+=== 修改付款流程 ===
+
+* 罚单状态`0不可办理、3已完成`：无后续操作
+* 罚单状态可办
+	- 没有订单：新罚单流程
+	- 订单状态`00撤销、02未成功办理`：罚单状态置为`1可办理`，日志记录状态，新罚单
+	- 订单状态`01待支付、10待办理`：继续处理原有订单显示手机号，支付
+	- 订单状态`11办理成功`：无后续操作
+		 
+
+== 报表 ==
+
+入口：http://localhost:8080/hpSupport4.0-traffic0910/index.action
+
 == 增加功能菜单与权限 ==
 
-{{{class="brush: scala"
+{{{class="brush: sql"
 declare
   systemID number;
   funcID number;
@@ -196,8 +265,18 @@ exception
 end;
 -- 结束
 }}}
+=== 相关工程 ===
 
-== 交易明细报表 ==
+* `hpReportInterface`接口与Modle类
+* `hpSupportService`业务逻辑
+	- `TrafficTradeReportBuilderImpl.java`报表导出excel
+* `hpSupport4.0`前端网页
+	- `trafficReport_openTrade.jsp`
+	- `trafficReport_openFee.jsp`
+	- `trafficReport_index.jsp`
+	- `TrafficReportAction.java`
+
+=== 交易明细报表 ===
 
 用于和供应商进行清结算核对，报表包含字段如下：
 
@@ -205,7 +284,7 @@ end;
 | 订单生成日期     | 用户下单时间                 | m.merchantTransDate                        |
 | 订单支付时间     | 用户支付时间                 | m.paymentTransDate                         |
 | 订单完成时间     | 供应商返回处理状态的时间     | m.deliveryTime                             |
-| 瀚银订单号       | 用户在瀚银下单后生成的订单号 | d.MerchantTransDate                        |
+| 瀚银订单号       | 用户在瀚银下单后生成的订单号 | d.MerchantTransSeq                         |
 | 商户订单号       | 商户返回给我们的订单号       | d.MerchantOrderSeq                         |
 | 商户订单明细编号 | 一笔订单中包含的罚单号       | d.InnerViolationId                         |
 | 罚金             | 罚单金额                     | d.FineAmount                               |
@@ -217,10 +296,10 @@ end;
 | 返佣金额         | 每笔罚单的返佣金额           | 去掉                                       |
 | 佣金单号         | 每笔罚单对应的订单号         | 去掉                                       |
 
-{{{class="brush: scala"
+{{{class="brush: sql"
 select 
   rownum , m.merchantTransDate , m.paymentTransDate , 
-  m.deliveryTime , d.MerchantTransDate , d.MerchantOrderSeq, 
+  m.deliveryTime , d.MerchantTransSeq , d.MerchantOrderSeq, 
   d.InnerViolationId , d.FineAmount , d.PayCharge, 
   d.OverdueFine, d.FineAmount + d.PayCharge + d.OverdueFine
 from
@@ -233,8 +312,7 @@ from
 			on d.MerchantTransSeq  = m.MerchantTransSeq;
 }}}
 
-
-== 查询费用报表 ==
+=== 查询费用报表 ===
 
 查询费用报表记录每次发起查询请求的详情，用于和供应商结算查询费用进行核对。报表
 包含字段如下：
@@ -248,7 +326,7 @@ from
 | 发动机号 | 显示用户填写的发动机号            | r.EngineNo                 |
 | 违章单号 | 显示查询的违章单号---支持多个记录 | r.ViolationSn              |
 
-{{{class="brush: scala"
+{{{class="brush: sql"
 select 
 	rownum, r.city, r.CarNo , r.querydate || r.querytime,
 	r.QueryFee, r.CarFrameNo, r.EngineNo, r.ViolationSn 
