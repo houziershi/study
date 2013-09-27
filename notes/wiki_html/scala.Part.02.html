@@ -86,38 +86,45 @@
 </ul>
 <li><a href="#toc_6">包和引用</a>
 <ul>
-<li><a href="#toc_6.1">引用包</a>
-<li><a href="#toc_6.2">隐式引用</a>
+<li><a href="#toc_6.1">定义包</a>
 <ul>
-<li><a href="#toc_6.2.1">java.lang</a>
-<li><a href="#toc_6.2.2">scala</a>
-<li><a href="#toc_6.2.3">Predef</a>
+<li><a href="#toc_6.1.1">package语句</a>
+<li><a href="#toc_6.1.2">嵌套包</a>
+<li><a href="#toc_6.1.3">包路径是相对的</a>
+<li><a href="#toc_6.1.4">包层级的作用域</a>
 </ul>
-<li><a href="#toc_6.3">访问修饰符</a>
+<li><a href="#toc_6.2">引用包</a>
+<li><a href="#toc_6.3">隐式引用</a>
 <ul>
-<li><a href="#toc_6.3.1">public</a>
-<li><a href="#toc_6.3.2">private</a>
-<li><a href="#toc_6.3.3">protected</a>
-<li><a href="#toc_6.3.4">保护的范围</a>
-<li><a href="#toc_6.3.5">伴生对象的可见度性</a>
+<li><a href="#toc_6.3.1">java.lang</a>
+<li><a href="#toc_6.3.2">scala</a>
+<li><a href="#toc_6.3.3">Predef</a>
 </ul>
-<li><a href="#toc_6.4">断言</a>
 </ul>
-<li><a href="#toc_7">测试</a>
+<li><a href="#toc_7">访问修饰符</a>
 <ul>
-<li><a href="#toc_7.1">Junit 4</a>
-<li><a href="#toc_7.2">ScalaTest</a>
-<ul>
-<li><a href="#toc_7.2.1">Runner</a>
-<li><a href="#toc_7.2.2">assert()与expect()方法</a>
-<li><a href="#toc_7.2.3">测试异常</a>
-<li><a href="#toc_7.2.4">在测试间共享代码</a>
-<ul>
-<li><a href="#toc_7.2.4.1">BeforeAndAfter特质</a>
-<li><a href="#toc_7.2.4.2">通过闭包</a>
+<li><a href="#toc_7.1">public</a>
+<li><a href="#toc_7.2">private</a>
+<li><a href="#toc_7.3">protected</a>
+<li><a href="#toc_7.4">保护的范围</a>
+<li><a href="#toc_7.5">伴生对象的可见度性</a>
 </ul>
-<li><a href="#toc_7.2.5">FunSuite</a>
-<li><a href="#toc_7.2.6">混合ScalaTest与JUnit</a>
+<li><a href="#toc_8">断言</a>
+<li><a href="#toc_9">测试</a>
+<ul>
+<li><a href="#toc_9.1">Junit 4</a>
+<li><a href="#toc_9.2">ScalaTest</a>
+<ul>
+<li><a href="#toc_9.2.1">Runner</a>
+<li><a href="#toc_9.2.2">assert()与expect()方法</a>
+<li><a href="#toc_9.2.3">测试异常</a>
+<li><a href="#toc_9.2.4">在测试间共享代码</a>
+<ul>
+<li><a href="#toc_9.2.4.1">BeforeAndAfter特质</a>
+<li><a href="#toc_9.2.4.2">通过闭包</a>
+</ul>
+<li><a href="#toc_9.2.5">FunSuite</a>
+<li><a href="#toc_9.2.6">混合ScalaTest与JUnit</a>
 </ul>
 </ul>
 </ul>
@@ -152,11 +159,23 @@ Scala 思考再三还是加入了 Dynamic Types，这个特性在 Scala 2.9 中�
 通俗点讲动态类型的类必须继承自<code>Dynamic</code>。所有的变化就在下面这四个方法中：
 </p>
 
-<p>
+<ul>
+<li>
 <code>selectDynamic</code>
+
+<li>
 <code>updateDynamic</code>
+
+<li>
 <code>applyDynamic</code>
+
+<li>
 <code>applyDynamicNamed</code>
+
+</ul>
+
+<p>
+说明：
 </p>
 
 <ul>
@@ -2923,6 +2942,10 @@ FourLegged : Any &lt; AnyRef &lt; Animal &lt; HasLegs &lt; FourLegged
 
 <h1 id="toc_6">包和引用</h1>
 
+<h2 id="toc_6.1">定义包</h2>
+
+<h3 id="toc_6.1.1">package语句</h3>
+
 <p>
 通过把<code>package</code>子句放在文件顶端的方式把整个文件内容放进包里：
 </p>
@@ -2931,6 +2954,12 @@ FourLegged : Any &lt; AnyRef &lt; Animal &lt; HasLegs &lt; FourLegged
   package bobsrockets.navigation
   class Navigator 
 </pre>
+
+<p>
+同一个包可以定义在不同的多个文件中。
+</p>
+
+<h3 id="toc_6.1.2">嵌套包</h3>
 
 <p>
 另一种方式很像C#的命名空间。在<code>package</code>子句之后用大括号包起来一段要放到包里去的
@@ -2954,12 +2983,18 @@ FourLegged : Any &lt; AnyRef &lt; Animal &lt; HasLegs &lt; FourLegged
 </pre>
 
 <p>
+这种嵌套方式会把路径上所有的包的内容都相入进来。
+</p>
+
+<p>
 类似于Java的语法实际上只是括号嵌入风格的语法糖。原理是：如果除了签入另一个包之外
 对包不作任何事，你可以下面的方式省去一个缩进：
 </p>
 
 <pre class="brush: scala">
   package bobsrockets.navigation {
+  
+		// 这样就跳过了bobsrockets包，它的内容不会被引入
 
     // In package bobsrockets.navigation
     class Navigator
@@ -2971,6 +3006,8 @@ FourLegged : Any &lt; AnyRef &lt; Animal &lt; HasLegs &lt; FourLegged
     }
   } 
 </pre>
+
+<h3 id="toc_6.1.3">包路径是相对的</h3>
 
 <p>
 Java包尽管是分级的，却不是嵌套的。在Java里，在你命名一个包的时候，你必须从包层级
@@ -2994,6 +3031,18 @@ Scala为了简化，采用包风格类似于是相对路径：
     }
   } 
 </pre>
+
+<p>
+为了避免绝对路径与相对路径之间的歧义，可以用<code>_root_</code>表示顶层包，这样就一定是绝对
+路径：
+</p>
+
+<pre class="brush: scala">
+val aa = new _root_.scala.collection.mutable.ArrayBuffer[Employee] 
+</pre>
+
+
+<h3 id="toc_6.1.4">包层级的作用域</h3>
 
 <p>
 而且内部区域的包可以隐匿被定义在外部区域的同名包。还提供了<code>_root_</code>表示顶层包：
@@ -3034,7 +3083,7 @@ Scala为了简化，采用包风格类似于是相对路径：
 </p>
 
 
-<h2 id="toc_6.1">引用包</h2>
+<h2 id="toc_6.2">引用包</h2>
 
 <p>
 Scala里用<code>import</code>子句来引用包和其成员：
@@ -3196,7 +3245,7 @@ import Fuits.{Pear =&gt; _, _}
 </p>
 
 
-<h2 id="toc_6.2">隐式引用</h2>
+<h2 id="toc_6.3">隐式引用</h2>
 
 <p>
 Scala隐式地添加了一些引用到每个程序中。本质上，就好象下列的三个引用子句已经被
@@ -3209,14 +3258,14 @@ Scala隐式地添加了一些引用到每个程序中。本质上，就好象下
   import Predef._    // everything in the Predef object 
 </pre>
 
-<h3 id="toc_6.2.1">java.lang</h3>
+<h3 id="toc_6.3.1">java.lang</h3>
 
 <p>
 <code>java.lang</code>包囊括了标准Java类。它永远被隐式包含在Scala的JVM实现中。.NET实现将
 代以引用system包，它是<code>java.lang</code>的.NET模拟。
 </p>
 
-<h3 id="toc_6.2.2">scala</h3>
+<h3 id="toc_6.3.2">scala</h3>
 
 <p>
 scala包含有标准的Scala库，包括许多通用的类和对象。因为scala被隐式引用，你可以
@@ -3224,7 +3273,7 @@ scala包含有标准的Scala库，包括许多通用的类和对象。因为scal
 <code>math.sqrt(2)</code>等同于<code>scala.math.sqrt(2)</code>。
 </p>
 
-<h3 id="toc_6.2.3">Predef</h3>
+<h3 id="toc_6.3.3">Predef</h3>
 
 <p>
 Predef对象包含了许多Scala程序中常用到的类型，方法和隐式转换的定义。比如，因为
@@ -3242,13 +3291,13 @@ Predef对象包含了许多Scala程序中常用到的类型，方法和隐式转
 </p>
 
 
-<h2 id="toc_6.3">访问修饰符</h2>
+<h1 id="toc_7">访问修饰符</h1>
 
 <p>
 Scala与Java对访问修饰符的对待方式有一些重要的差异。
 </p>
 
-<h3 id="toc_6.3.1">public</h3>
+<h2 id="toc_7.1">public</h2>
 
 <p>
 没有任何标记就是公开的，可以在任何地方被访问。与Java中默认是<code>protected</code>不同，
@@ -3256,7 +3305,7 @@ Scala中默认是<code>public</code>的。
 </p>
 
 
-<h3 id="toc_6.3.2">private</h3>
+<h2 id="toc_7.2">private</h2>
 
 <p>
 标记为<code>private</code>的成员仅在包含了成员定义的类或对象内部可见。不仅如此，Scala中还
@@ -3289,7 +3338,7 @@ Scala里，<code>(new Inner).f()</code>访问非法，因为<code>f</code>在<co
 这点与Java不同，Java会允许这两种访问因为它允许外部类访问其内部类的私有成员。
 </p>
 
-<h3 id="toc_6.3.3">protected</h3>
+<h2 id="toc_7.3">protected</h2>
 
 <p>
 Java中<code>protected</code>可以被子类或同一个包中的类访问。Scala里，只在定义了成员的类的
@@ -3310,7 +3359,7 @@ Java中<code>protected</code>可以被子类或同一个包中的类访问。Sca
   } 
 </pre>
 
-<h3 id="toc_6.3.4">保护的范围</h3>
+<h2 id="toc_7.4">保护的范围</h2>
 
 <p>
 Scala里的访问修饰符可以通过使用修饰词增加。格式为<code>private[X]</code>或<code>protected[X]</code>的
@@ -3444,7 +3493,7 @@ Scala还具有一种比<code>private</code>更严格的访问修饰符。被<cod
 的变体注释）。
 </p>
 
-<h3 id="toc_6.3.5">伴生对象的可见度性</h3>
+<h2 id="toc_7.5">伴生对象的可见度性</h2>
 
 <p>
 Java里，静态成员和实例成员属于同一个类，因此访问修饰符可以统一地应用在他们之上。
@@ -3490,7 +3539,7 @@ Scala的访问规则给予了伴生对象和类一些特权。类把它所有的
 
 
 
-<h2 id="toc_6.4">断言</h2>
+<h1 id="toc_8">断言</h1>
 
 <p>
 <code>assert</code>是预定义的方法，<code>assert(condition)</code>会在条件不成立时抛出<code>AssertionError</code>。
@@ -3555,14 +3604,14 @@ if-else表达式的<code>Element</code>类结果上的，而不是方法<code>wi
 
 
 
-<h1 id="toc_7">测试</h1>
+<h1 id="toc_9">测试</h1>
 
 <p>
 受益于和Java之间无缝操作。Java的测试库，像JUnit、TestNG，可以直接用于scala的
 单元测试。
 </p>
 
-<h2 id="toc_7.1">Junit 4</h2>
+<h2 id="toc_9.1">Junit 4</h2>
 
 <p>
 如果喜欢JUnit4的风格，那么可以写下面这样的单元测试。
@@ -3604,7 +3653,7 @@ OK (1 test)
 
 
 
-<h2 id="toc_7.2">ScalaTest</h2>
+<h2 id="toc_9.2">ScalaTest</h2>
 
 <p>
 ScalaTest是专为scala设计的一个测试框架。ScalaTest提供了一些比较方便的功能。注意
@@ -3638,7 +3687,7 @@ Main$$anon$1$CanaryTest:
 - testOK
 </pre>
 
-<h3 id="toc_7.2.1">Runner</h3>
+<h3 id="toc_9.2.1">Runner</h3>
 
 <p>
 ScalaTest的<code>Runner</code>类来配置运行或不运行哪些套件，配置不同的<code>reporter</code>来指定报表
@@ -3703,7 +3752,7 @@ All tests passed.
 还有<code>-f</code>参数可以把结果输出到文件。
 </p>
 
-<h3 id="toc_7.2.2">assert()与expect()方法</h3>
+<h3 id="toc_9.2.2">assert()与expect()方法</h3>
 
 <p>
 ScalaTest提供的<code>assert()</code>方法测试条件是否成立。还有一个两个参数版本的，第二个
@@ -3727,7 +3776,7 @@ ScalaTest提供的<code>assert()</code>方法测试条件是否成立。还有�
 注意<code>expect()</code>方法已经过期，用<code>expectResult()</code>方法代替。
 </p>
 
-<h3 id="toc_7.2.3">测试异常</h3>
+<h3 id="toc_9.2.3">测试异常</h3>
 
 <p>
 有一个比较啰嗦的方案：
@@ -3766,9 +3815,9 @@ intercept[IndexOutOfBoundsException]("Expected exception here") {
 <code>intercept()</code>方法会把捕获的结果作为返回值，如果需要的话可以对它进行处理。
 </p>
 
-<h3 id="toc_7.2.4">在测试间共享代码</h3>
+<h3 id="toc_9.2.4">在测试间共享代码</h3>
 
-<h4 id="toc_7.2.4.1">BeforeAndAfter特质</h4>
+<h4 id="toc_9.2.4.1">BeforeAndAfter特质</h4>
 
 <p>
 Scala的<code>BeforeAndAfter</code>特质提供了<code>beforeEach()</code>与<code>afterEach()</code>方法会在每个测试
@@ -3796,7 +3845,7 @@ class ShareCodeImperation extends org.scalatest.Suite
 (new ShareCodeImperative).execute()
 </pre>
 
-<h4 id="toc_7.2.4.2">通过闭包</h4>
+<h4 id="toc_9.2.4.2">通过闭包</h4>
 
 <pre class="brush: scala">
 import org.scalatest.Suite
@@ -3847,7 +3896,7 @@ Main$$anon$1$ShareCodeFunctional:
 - testListEmptyOnCreate
 </pre>
 
-<h3 id="toc_7.2.5">FunSuite</h3>
+<h3 id="toc_9.2.5">FunSuite</h3>
 
 <p>
 ScalaTest提供了函数式的<code>FunSuite</code>（Function Suite）。<code>test</code>方法为测试方法，说明
@@ -3959,7 +4008,7 @@ Time: 0.026
 OK (2 tests)
 </pre>
 
-<h3 id="toc_7.2.6">混合ScalaTest与JUnit</h3>
+<h3 id="toc_9.2.6">混合ScalaTest与JUnit</h3>
 
 <p>
 <code>org.scalatest.junit.JUnitSuite</code>已经混入了特质<code>AssertionsForJUnit</code>，可以同时被

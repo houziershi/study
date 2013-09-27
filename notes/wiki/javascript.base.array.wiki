@@ -1,0 +1,40 @@
+%title 数组
+
+%toc 数组
+
+
+传统的定义数组的方法是这样：
+
+{{{class="brush: javascript"
+var moviesThatNeedBetterWriters = new Array(
+	'Transformers','Transformers2','Avatar','IndianaJones 4'
+);
+}}}
+
+简写版的是这样：
+
+{{{class="brush: javascript"
+var moviesThatNeedBetterWriters = [
+	'Transformers','Transformers2','Avatar','IndianaJones 4'
+];
+}}}
+
+对于数组，这里有个问题，其实没有什么图组功能。但你会经常发现有人这样定义`car` ，
+就像这样
+
+{{{class="brush: javascript"
+var car = new Array();
+car['colour'] = 'red';
+car['wheels'] = 4;
+car['hubcaps'] = 'spinning';
+car['age'] = 4;
+}}}
+
+数组不是万能的；这样写不对，会让人困惑。图组实际上是对象的功能，人们混淆了这两个
+概念
+
+
+
+
+
+

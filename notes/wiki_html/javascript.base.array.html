@@ -16,46 +16,50 @@
 <link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
 
 
-<title>Javascript 基础</title>
+<title>数组</title>
 </head>
 <body  onresize='changeTocSize()'>
 	<div class="note-main"> 
 
+<h1>数组</h1>
 
-<h1>Javascript 基础</h1>
-<div class="toc">
-<ul>
-<li><a href="#toc_1">类型</a>
-<li><a href="#toc_2">对象</a>
-<li><a href="#toc_3">匿名函数和模块化</a>
-</ul>
-</div>
-
-
-<h1 id="toc_1">类型</h1>
 
 <p>
-<a href="javascript.base.type.html">javascript.base.type</a>
+传统的定义数组的方法是这样：
 </p>
 
-
-
-<h1 id="toc_2">对象</h1>
+<pre class="brush: javascript">
+var moviesThatNeedBetterWriters = new Array(
+	'Transformers','Transformers2','Avatar','IndianaJones 4'
+);
+</pre>
 
 <p>
-<a href="javascript.base.object.html">javascript.base.object</a>
+简写版的是这样：
 </p>
 
+<pre class="brush: javascript">
+var moviesThatNeedBetterWriters = [
+	'Transformers','Transformers2','Avatar','IndianaJones 4'
+];
+</pre>
+
 <p>
-<a href="javascript.base.array.html">javascript.base.array</a>
+对于数组，这里有个问题，其实没有什么图组功能。但你会经常发现有人这样定义<code>car</code> ，
+就像这样
 </p>
 
-
-
-<h1 id="toc_3">匿名函数和模块化</h1>
+<pre class="brush: javascript">
+var car = new Array();
+car['colour'] = 'red';
+car['wheels'] = 4;
+car['hubcaps'] = 'spinning';
+car['age'] = 4;
+</pre>
 
 <p>
-<a href="javascript.base.module.html">javascript.base.module</a>
+数组不是万能的；这样写不对，会让人困惑。图组实际上是对象的功能，人们混淆了这两个
+概念
 </p>
  </div>
 </body>

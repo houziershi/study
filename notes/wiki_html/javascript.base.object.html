@@ -1,0 +1,340 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>对象</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>对象</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">创建对象</a>
+<li><a href="#toc_2">判断对象是否存在</a>
+<ul>
+<li><a href="#toc_2.1">第一种写法</a>
+<li><a href="#toc_2.2">第二种写法</a>
+<li><a href="#toc_2.3">第三种写法</a>
+<li><a href="#toc_2.4">第四种写法</a>
+<li><a href="#toc_2.5">第五种写法</a>
+<li><a href="#toc_2.6">第六种写法</a>
+<li><a href="#toc_2.7">第七种写法</a>
+<li><a href="#toc_2.8">第八种写法</a>
+<li><a href="#toc_2.9">第九种写法</a>
+<li><a href="#toc_2.10">第十种写法</a>
+<li><a href="#toc_2.11">总结</a>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">创建对象</h1>
+
+<p>
+建一个对象，你需要这样：
+</p>
+
+<pre class="brush: javascript">
+var car = new Object();
+car.colour = 'red';
+car.wheels = 4;
+car.hubcaps = 'spinning';
+car.age = 4;
+</pre>
+
+<p>
+简写法：
+</p>
+
+<pre class="brush: javascript">
+var car = {
+	colour:'red',
+	wheels:4,
+	hubcaps:'spinning',
+	age:4
+}
+</pre>
+
+<p>
+只有在使用IE时会碰到<code>invalidUserInSession</code>的问题，不要右大括号前面写逗号就行了。
+</p>
+
+
+
+
+<h1 id="toc_2">判断对象是否存在</h1>
+
+<p>
+Javascript语言的设计不够严谨，很多地方一不小心就会出错。
+</p>
+
+<p>
+举例来说，请考虑以下情况。
+</p>
+
+<p>
+现在，我们要判断一个全局对象<code>myObj</code>是否存在，如果不存在，就对它进行声明。用自然
+语言描述的算法如下：
+</p>
+
+<pre class="brush: javascript">
+if (myObj不存在){
+	myObj;
+}
+</pre>
+
+<p>
+你可能会觉得，写出这段代码很容易。但是实际上，它涉及的语法问题，远比我们想象的
+复杂。Juriy Zaytsev指出，判断一个Javascript对象是否存在，有超过50种写法。只有对
+Javascript语言的实现细节非常清楚，才可能分得清它们的区别。
+</p>
+
+<h2 id="toc_2.1">第一种写法</h2>
+
+<p>
+根据直觉，你可能觉得可以这样写：
+</p>
+
+<pre class="brush: javascript">
+if (!myObj) {
+	myObj = { };
+}
+</pre>
+
+<p>
+但是，运行这段代码，浏览器会直接抛出<code>ReferenceError</code>错误，导致运行中断。请问错在
+哪里？
+</p>
+
+<p>
+对了，if语句判断<code>myObj</code>是否为空时，这个变量还不存在，所以才会报错。改成下面
+这样，就能正确运行了。
+</p>
+
+<pre class="brush: javascript">
+if (!myObj) {
+	var myObj = { };
+}
+</pre>
+
+<p>
+为什么加了一个<code>var</code>以后，就不报错了？难道这种情况下，if语句做判断时，<code>myObj</code>就
+已经存在了吗？
+</p>
+
+<p>
+要回答这个问题，就必须知道Javascript解释器的工作方式。Javascript语言是“先解析，
+后运行”，解析时就已经完成了变量声明，所以上面的代码实际等同于：
+</p>
+
+<pre class="brush: javascript">
+var myObj;
+if (!myObj) {
+	var myObj = { };
+}
+</pre>
+
+<p>
+因此，if语句做判断时，<code>myObj</code>确实已经存在了，所以就不报错了。这就是var命令的
+“代码提升”（hoisting）作用。Javascript解释器，只“提升”var命令定义的变量，
+对不使用var命令、直接赋值的变量不起作用，这就是为什么不加var会报错的原因。
+</p>
+
+<h2 id="toc_2.2">第二种写法</h2>
+
+<p>
+除了var命令，还可以有另一种改写，也能得到正确的结果：
+</p>
+
+<pre class="brush: javascript">
+if (!window.myObj) {
+	myObj = { };
+}
+</pre>
+
+<p>
+<code>window</code>是javascript的顶层对象，所有的全局变量都是它的属性。所以，判断<code>myobj</code>
+是否为空，等同于判断<code>window</code>对象是否有<code>myobj</code>属性，这样就可以避免因为<code>myObj</code>没有
+定义而出现<code>ReferenceError</code>错误。不过，从代码的规范性考虑，最好还是对第二行加上
+var：
+</p>
+
+<pre class="brush: javascript">
+if (!window.myObj) {
+	var myObj = { };
+}
+</pre>
+
+<p>
+或者写成这样：
+</p>
+
+<pre class="brush: javascript">
+if (!window.myObj) {
+	window.myObj = { };
+}
+</pre>
+
+<h2 id="toc_2.3">第三种写法</h2>
+
+<p>
+上面这种写法的缺点在于，在某些运行环境中（比如V8、Rhino），<code>window</code>未必是顶层
+对象。所以，考虑改写成：
+</p>
+
+<pre class="brush: javascript">
+if (!this.myObj) {
+	this.myObj = { };
+}
+</pre>
+
+<p>
+在全局变量的层面中，<code>this</code>关键字总是指向顶层变量，所以就可以独立于不同的运行环境
+。
+</p>
+
+<h2 id="toc_2.4">第四种写法</h2>
+
+<p>
+但是，上面这样写可读性较差，而且<code>this</code>的指向是可变的，容易出错，所以进一步改写：
+</p>
+
+<pre class="brush: javascript">
+var global = this;
+if (!global.myObj) {
+	global.myObj = { };
+}
+</pre>
+
+<p>
+用自定义变量<code>global</code>表示顶层对象，就清楚多了。
+</p>
+
+<h2 id="toc_2.5">第五种写法</h2>
+
+<p>
+还可以使用<code>typeof</code>运算符，判断<code>myObj</code>是否有定义。
+</p>
+
+<pre class="brush: javascript">
+if (typeof myObj == "undefined") {
+	var myObj = { };
+}
+</pre>
+
+<p>
+这是目前使用最广泛的判断javascript对象是否存在的方法。
+</p>
+
+<h2 id="toc_2.6">第六种写法</h2>
+
+<p>
+由于在已定义、但未赋值的情况下，<code>myObj</code>的值直接等于<code>undefined</code>，所以上面的写法
+可以简化：
+</p>
+
+<pre class="brush: javascript">
+if (myObj == undefined) {
+	var myObj = { };
+}
+</pre>
+
+<p>
+这里有两个地方需要注意，首先第二行的var关键字不能少，否则会出现<code>ReferenceError</code>
+错误，其次<code>undefined</code>不能加单引号或双引号，因为这里比较的是<code>undefined</code>这种数据
+类型，而不是<code>undefined</code>这个字符串。
+</p>
+
+<h2 id="toc_2.7">第七种写法</h2>
+
+<p>
+上面的写法在“精确比较”（<code>===</code>）的情况下，依然成立：
+</p>
+
+<pre class="brush: javascript">
+if (myObj === undefined) {
+	var myObj = { };
+}
+</pre>
+
+<h2 id="toc_2.8">第八种写法</h2>
+
+<p>
+根据javascript的语言设计，<code>undefined == null</code>，所以比较<code>myObj</code>是否等于<code>null</code>，
+也能得到正确结果：
+</p>
+
+<pre class="brush: javascript">
+if (myObj == null) {
+	var myObj = { };
+}
+</pre>
+
+<p>
+不过，虽然运行结果正确，但是从语义上看，这种判断方法是错的，应该避免。因为<code>null</code>
+指的是已经赋值为<code>null</code>的空对象，即这个对象实际上是有值的，而<code>undefined</code>指的是不
+存在或没有赋值的对象。因此，这里只能使用“比较运算符”（<code>==</code>），如果这里使用
+“精确比较运算符”（<code>===</code>），就会出错。
+</p>
+
+<h2 id="toc_2.9">第九种写法</h2>
+
+<p>
+还可以使用<code>in</code>运算符，判断<code>myObj</code>是否为顶层对象的一个属性：
+</p>
+
+<pre class="brush: javascript">
+if (!('myObj' in window)) {
+	window.myObj = { };
+}
+</pre>
+
+<h2 id="toc_2.10">第十种写法</h2>
+
+<p>
+最后，使用<code>hasOwnProperty</code>方法，判断<code>myObj</code>是否为顶层对象的一个属性：
+</p>
+
+<pre class="brush: javascript">
+if (!this.hasOwnProperty('myObj')) {
+	this.myObj = { };
+}
+</pre>
+
+<h2 id="toc_2.11">总结</h2>
+
+<ul>
+<li>
+如果只判断对象是否存在，推荐使用第五种写法。
+
+<li>
+如果除了对象是否存在，还要判断对象是否有<code>null</code>值，推荐使用第一种写法。
+
+<li>
+除非特殊情况，所有变量都应该使用<code>var</code>命令声明。
+
+<li>
+为了跨平台，建议避免使用<code>window</code>表示顶层对象。
+
+<li>
+<code>null</code>和<code>undefined</code>容易混淆。两者都有时建议使用“精确比较”运算符（<code>===</code>）。
+
+</ul>
+ </div>
+</body>
+</html>
