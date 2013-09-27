@@ -1,0 +1,171 @@
+
+%title 进程
+
+%toc 进程
+
+= top =
+
+== 例子 ==
+
+=== 排序 ===
+
+Sorting with `-O` (Uppercase Letter `O`).
+
+Press `Shift+O` to Sort field via field letter, for example press `a` letter to 
+sort process with PID (Process ID).
+
+Type any key to return to main top window with sorted PID order as shown in 
+below screen. Press `q` to quit exit the window. Sorting Process ID's
+
+=== Display Specific User Process ===
+
+Use top command with `u` option will display specific User process details.
+
+{{{class="brush: bash"
+# top -u tecmint
+}}}
+
+=== Highlight Running Process in Top ===
+
+Press `z` option in running `top` command will display running process in color 
+which may help you to identified running process easily.
+
+=== Shows Absolute Path of Processes ===
+
+Press `c` option in running `top` command, it will display absolute path of 
+running process.
+
+=== Change Delay or Set ‘Screen Refresh Interval’ in Top ===
+
+By default screen refresh interval is 3.0 seconds, same can be change pressing 
+`d` option in running top command and change it as desired as shown below.
+
+=== Kill running process ===
+
+Kill running process with argument `k`
+
+You can kill a process after finding PID of process by pressing `k` option in 
+running top command without exiting from top window as shown below.
+
+=== Sort by CPU Utilisation ===
+
+Press `Shift+P` to sort processes as per CPU utilization. See screenshot below.
+
+=== Renice a Process ===
+
+You can use `r` option to change the priority of the process also called Renice.
+
+=== Save Top Command Results ===
+
+Press `Shift+W` to save the running top command results under `/root/.toprc`.
+
+
+= free =
+
+跟踪内存的使用和资源一样重要，就像管理员执行的任何其它任务，可以使用`free`命令
+来在这里救援.当前内存使用状态Current Usage Status of Memory
+
+{{{class="brush: bash"
+[avishek@tecmint ~]$ free
+ 
+             total       used       free     shared    buffers     cached
+Mem:       2028240    1788272     239968          0      69468     363716
+-/+ buffers/cache:    1355088     673152
+Swap:      3905532     157076    3748456
+}}}
+
+设置输出单位为KB，MB或GB
+
+{{{class="brush: bash"
+[avishek@tecmint ~]$ free -b
+ 
+             total       used       free     shared    buffers     cached
+Mem:    2076917760 1838272512  238645248          0   71348224  372670464
+-/+ buffers/cache: 1394253824  682663936
+Swap:   3999264768  160845824 3838418944
+}}}
+
+{{{class="brush: bash"
+[avishek@tecmint ~]$ free -k
+ 
+             total       used       free     shared    buffers     cached
+Mem:       2028240    1801484     226756          0      69948     363704
+-/+ buffers/cache:    1367832     660408
+Swap:      3905532     157076    3748456
+}}}
+
+{{{class="brush: bash"
+[avishek@tecmint ~]$ free -m
+ 
+             total       used       free     shared    buffers     cached
+Mem:          1980       1762        218          0         68        355
+-/+ buffers/cache:       1338        641
+Swap:         3813        153       3660
+}}}
+
+{{{class="brush: bash"
+[avishek@tecmint ~]$ free -g
+ 
+             total       used       free     shared    buffers     cached
+Mem:             1          1          0          0          0          0
+-/+ buffers/cache:          1          0
+Swap:            3          0          3
+}}}
+
+以可读的格式显示，检查当前内存使用
+
+{{{class="brush: bash"
+[avishek@tecmint ~]$ free -h
+ 
+             total       used       free     shared    buffers     cached
+Mem:          1.9G       1.7G       208M         0B        68M       355M
+-/+ buffers/cache:       1.3G       632M
+Swap:         3.7G       153M       3.6G
+}}}
+
+设定时间间隔后，持续检查使用状态
+
+{{{class="brush: bash"
+[avishek@tecmint ~]$ free -s 3
+ 
+             total       used       free     shared    buffers     cached
+Mem:       2028240    1824096     204144          0      70708     364180
+-/+ buffers/cache:    1389208     639032
+Swap:      3905532     157076    3748456
+ 
+             total       used       free     shared    buffers     cached
+Mem:       2028240    1824192     204048          0      70716     364212
+-/+ buffers/cache:    1389264     638976
+Swap:      3905532     157076    3748456
+}}}
+
+
+
+= kill =
+
+假设你想杀死已经没有响应的`apache2`进程,运行如下命令:
+
+{{{class="brush: bash"
+root@tecmint:~# ps -A | grep -i apache2
+ 
+1285 ?        00:00:00 apache2
+}}}
+
+搜索`apache2`进程,找到`PID`并杀掉它.例如:在本例中`apache2`进程的`PID`是1285..
+
+{{{class="brush: bash"
+root@tecmint:~# kill 1285
+}}}
+
+注意:每次你重新运行一个进程或者启动系统,每个进程都会生成一个新的`PID`.你可以使用
+`ps`命令获得当前运行进程的`PID`.
+
+= pkill =
+
+另一个杀死进程的方法是:
+	
+{{{class="brush: bash"
+root@tecmint:~# pkill apache2
+}}}
+
+注意:`kill`需要`PID`作为参数,`pkill`可以选择应用的方式,比如指定进程的所有者等.

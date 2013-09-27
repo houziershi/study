@@ -1,0 +1,31 @@
+
+
+%title 日期与时间
+
+%toc 日期与时间
+
+
+= cal =
+
+{{{class="brush: bash"
+cal
+cal 02 1995
+}}}
+
+= date =
+
+取得时间：
+
+{{{class="brush: bash"
+root@tecmint:~# date
+ 
+Fri May 17 14:13:29 IST 2013
+}}}
+	
+设置时间：
+
+{{{class="brush: bash"
+root@tecmint:~# date --set='14 may 2013 13:57'
+ 
+Mon May 13 13:57:00 IST 2013
+}}}

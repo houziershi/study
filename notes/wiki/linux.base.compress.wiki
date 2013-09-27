@@ -1,7 +1,18 @@
-%title Linux压缩文件
+%title Linux压缩与散列
 
-%toc Linux压缩文件
+%toc Linux压缩与散列
 
+= 散列 =
+
+{{{class="brush: bash"
+echo "yangpan220" | md5sum
+}}}
+
+注意上面的`echo`会自动加上一个回车。可以用`-n`去掉：
+
+{{{class="brush: bash"
+echo -n 'yangpan220' | md5sum
+}}}
 
 = bzip2 =
 

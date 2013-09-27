@@ -1,0 +1,24 @@
+
+%title 任务
+
+%toc 任务
+
+= jobs =
+
+中断任务：`Control + C`
+
+挂起任务：`Control + Z`
+
+显示当前任务的作业号`q：jobs`
+
+指定任务8在后台执行
+
+{{{class="brush: bash"
+bg %8
+}}}
+
+指定任务8在前台执行
+
+{{{class="brush: bash"
+fg %8
+}}}

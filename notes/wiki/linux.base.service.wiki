@@ -1,0 +1,46 @@
+
+%title 服务
+
+%toc 服务
+
+= service =
+
+`service`命令控制服务的启动、停止和重启，它让你能够不重启整个系统就可以让配置
+生效以开启、停止或者重启某个服务。
+
+在Ubuntu上启动apache2 server：
+
+{{{class="brush: bash"
+root@tecmint:~# service apache2 start
+ 
+ * Starting web server apache2                                                                                                                                 apache2: Could not reliably determine the server's fully qualified domain name, using 127.0.1.1 for ServerName
+httpd (pid 1285) already running                        [ OK ]
+}}}
+
+重启apache2 server：
+
+{{{class="brush: bash"
+root@tecmint:~# service apache2 restart
+ 
+* Restarting web server apache2                                                                                                                               apache2: Could not reliably determine the server's fully qualified domain name, using 127.0.1.1 for ServerName
+ ... waiting .apache2: Could not reliably determine the server's fully qualified domain name, using 127.0.1.1 for ServerName  [ OK ]
+}}}
+
+停止apache2 server：
+
+{{{class="brush: bash"
+root@tecmint:~# service apache2 stop
+ 
+ * Stopping web server apache2                                                                                                                                 apache2: Could not reliably determine the server's fully qualified domain name, using 127.0.1.1 for ServerName
+ ... waiting                                                                [ OK ]
+}}}
+
+注意：要想使用`service`命令，进程的脚本必须放在`/etc/init.d`，并且路径必须在指定
+的位置。
+
+如果要运行`service apache2 start`实际上实在执行
+
+{{{class="brush: bash"
+service /etc/init.d/apache2 start
+}}}
+

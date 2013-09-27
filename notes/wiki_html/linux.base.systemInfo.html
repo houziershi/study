@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>系统信息</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+<h1>系统信息</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">uptime</a>
+<li><a href="#toc_2">uname</a>
+<li><a href="#toc_3">issue</a>
+<li><a href="#toc_4">w</a>
+</ul>
+</div>
+
+<h1 id="toc_1">uptime</h1>
+
+<p>
+你连接到你的Linux服务器时发现一些不寻常或恶意的东西，你会做什么？猜测……不，绝不
+！你可以运行<code>uptime</code>来验证当服务器无人值守式到底发生了什么事情。
+</p>
+
+<pre class="brush: bash">
+[avishek@tecmint ~]$ uptime
+ 
+14:37:10 up  4:21,  2 users,  load average: 0.00, 0.00, 0.04
+</pre>
+
+
+<h1 id="toc_2">uname</h1>
+
+<p>
+<code>uname</code>命令就是Unix Name的简写。显示机器名，操作系统和内核的详细信息。
+</p>
+
+<pre class="brush: bash">
+root@tecmint:~# uname -a
+ 
+Linux tecmint 3.8.0-19-generic #30-Ubuntu SMP Wed May 1 16:36:13 UTC 2013 i686 i686 i686 GNU/Linux
+</pre>
+
+<p>
+<code>uname</code>显示内核类别， <code>uname -a</code>显示详细信息：
+</p>
+
+<ol>
+<li>
+<code>Linux</code>: 机器的内核名
+
+<li>
+<code>tecmint</code>: 机器的分支名
+
+<li>
+<code>3.8.0-19-generic</code>: 内核发布版本
+
+<li>
+<code>#30-Ubuntu SMP</code>: 内核版本
+
+<li>
+<code>i686</code>: 处理器架构
+
+<li>
+<code>GNU/Linux</code>: 操作系统名
+
+</ol>
+
+<h1 id="toc_3">issue</h1>
+
+<p>
+<code>cat /etc/issue</code>
+</p>
+
+<h1 id="toc_4">w</h1>
+
+<p>
+是否觉得命令<code>w</code>很滑稽？但是事实上不是的。它是一个命令，尽管只有一个字符长，命令
+<code>w</code>是<code>uptime</code>和<code>who</code>命令，以前后的顺序组合在一起。
+</p>
+
+<pre class="brush: bash">
+[avishek@tecmint ~]$ w
+ 
+15:05:42 up  4:49,  3 users,  load average: 0.02, 0.01, 0.00
+USER     TTY      FROM              LOGIN@   IDLE   JCPU   PCPU WHAT
+server   tty7     :0               14:06    4:43m  1:42   0.08s pam: gdm-passwo
+server   pts/0    :0.0             14:18    0.00s  0.23s  1.65s gnome-terminal
+server   pts/1    :0.0             14:47    4:43   0.01s  0.01s bash
+</pre>
+ </div>
+</body>
+</html>

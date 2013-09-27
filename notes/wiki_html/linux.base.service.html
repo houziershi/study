@@ -1,0 +1,86 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>服务</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>服务</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">service</a>
+</ul>
+</div>
+
+<h1 id="toc_1">service</h1>
+
+<p>
+<code>service</code>命令控制服务的启动、停止和重启，它让你能够不重启整个系统就可以让配置
+生效以开启、停止或者重启某个服务。
+</p>
+
+<p>
+在Ubuntu上启动apache2 server：
+</p>
+
+<pre class="brush: bash">
+root@tecmint:~# service apache2 start
+ 
+ * Starting web server apache2                                                                                                                                 apache2: Could not reliably determine the server's fully qualified domain name, using 127.0.1.1 for ServerName
+httpd (pid 1285) already running                        [ OK ]
+</pre>
+
+<p>
+重启apache2 server：
+</p>
+
+<pre class="brush: bash">
+root@tecmint:~# service apache2 restart
+ 
+* Restarting web server apache2                                                                                                                               apache2: Could not reliably determine the server's fully qualified domain name, using 127.0.1.1 for ServerName
+ ... waiting .apache2: Could not reliably determine the server's fully qualified domain name, using 127.0.1.1 for ServerName  [ OK ]
+</pre>
+
+<p>
+停止apache2 server：
+</p>
+
+<pre class="brush: bash">
+root@tecmint:~# service apache2 stop
+ 
+ * Stopping web server apache2                                                                                                                                 apache2: Could not reliably determine the server's fully qualified domain name, using 127.0.1.1 for ServerName
+ ... waiting                                                                [ OK ]
+</pre>
+
+<p>
+注意：要想使用<code>service</code>命令，进程的脚本必须放在<code>/etc/init.d</code>，并且路径必须在指定
+的位置。
+</p>
+
+<p>
+如果要运行<code>service apache2 start</code>实际上实在执行
+</p>
+
+<pre class="brush: bash">
+service /etc/init.d/apache2 start
+</pre>
+ </div>
+</body>
+</html>

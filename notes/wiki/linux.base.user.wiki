@@ -1,0 +1,9 @@
+
+修改用户配置：
+
+{{{class="brush: bash"
+usermod  [-u uid [-o]] [-g group] [-G group,...]
+	[-d 主目录 [-m]] [-s shell] [-c 注释] [-l 新名称]
+	[-f 失效日] [-e 过期日] [-p 密码] [-L|-U] 用户名
+}}}
+

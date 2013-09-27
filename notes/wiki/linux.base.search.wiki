@@ -392,7 +392,422 @@ command.
 # find / -type f -name *.mp3 -size +10M -exec ls -l {} \;
 }}}
 
+== 另一套例子 ==
 
+首先，在你的`home`目录下面创建下面的空文件，来测试下面的`find`命令示例：
+
+{{{class="brush: bash" title="create_sample_files.sh"
+touch mycprogram.c
+touch MyCProgram.c
+touch Program.c
+
+mkdir backup
+cd backup
+
+touch MybashProgram.sh
+touch mycprogram.c
+touch MyCProgram.c
+touch Program.c
+}}}
+
+然后执行：
+
+{{{class="brush: bash"
+chmod +x create_sample_files.sh
+./create_sample_files.sh
+}}}
+
+
+=== 用文件名查找文件 ===
+
+用`MyCProgram.c`作为查找名在当前目录及其子目录中查找文件的方法。
+
+{{{class="brush: bash"
+# find -name "MyCProgram.c"
+./backup/MyCProgram.c
+./MyCProgram.c
+}}}
+
+
+=== 用文件名查找文件，忽略大小写 ===
+
+用`MyCProgram.c`作为查找名在当前目录及其子目录中查找文件的方法，忽略了大小写。
+
+{{{class="brush: bash"
+# find -iname "MyCProgram.c"
+./mycprogram.c
+./backup/mycprogram.c
+./backup/MyCProgram.c
+./MyCProgram.c
+}}}
+
+=== 限定搜索指定目录的深度 ===
+
+使用`mindepth`和`maxdepth`限定搜索指定目录的深度。
+
+在`root`目录及其子目录下查找`passwd`文件。
+
+{{{class="brush: bash"
+# find / -name passwd
+./usr/share/doc/nss_ldap-253/pam.d/passwd
+./usr/bin/passwd
+./etc/pam.d/passwd
+./etc/passwd
+}}}
+
+
+在`root`目录及其1层深的子目录中查找`passwd`. (例如root — level 1, and one 
+sub-directory — level 2)
+
+{{{class="brush: bash"
+# find -maxdepth 2 -name passwd
+./etc/passwd
+}}}
+
+在`root`目录下及其最大两层深度的子目录中查找`passwd`文件. (例如 root — level 1, 
+and two sub-directories — level 2 and 3 )
+
+{{{class="brush: bash"
+# find / -maxdepth 3 -name passwd
+./usr/bin/passwd
+./etc/pam.d/passwd
+./etc/passwd
+}}}
+
+在第二层子目录和第四层子目录之间查找`passwd`文件。
+
+{{{class="brush: bash"
+# find / -maxdepth 3 -name passwd
+# find -mindepth 3 -maxdepth 5 -name passwd
+./usr/bin/passwd
+./etc/pam.d/passwd
+}}}
+
+
+=== 在查找到的文件上执行命令 ===
+
+下面的例子展示了`find`命令来计算所有不区分大小写的文件名为`MyCProgram.c`的文件的
+MD5验证和。
+
+* `{}`将会被当前文件名取代。
+* 那个`\`好像是类似转义用的，
+	- 后面加上`;`表示命令会执行多次，每次后面都加上找到的一个文件。
+	- 后面加上`+`，表示只会执行一次命令，执行的时候把所有找到的文件一次性传给它。
+
+{{{class="brush: bash"
+# find -iname "MyCProgram.c" -exec md5sum {} \;
+d41d8cd98f00b204e9800998ecf8427e  ./mycprogram.c
+d41d8cd98f00b204e9800998ecf8427e  ./backup/mycprogram.c
+d41d8cd98f00b204e9800998ecf8427e  ./backup/MyCProgram.c
+d41d8cd98f00b204e9800998ecf8427e  ./MyCProgram.c
+}}}
+
+
+=== 相反匹配 ===
+
+显示所有的名字不是`MyCProgram.c`的文件或者目录。由于`maxdepth`是1，所以只会显示
+当前目录下的文件和目录。
+
+{{{class="brush: bash"
+# find -maxdepth 1 -not -iname "MyCProgram.c"
+.
+./MybashProgram.sh
+./create_sample_files.sh
+./backup
+./Program.c
+}}}
+
+
+=== 使用inode编号查找文件 ===
+
+任何一个文件都有一个独一无二的`inode`编号，借此我们可以区分文件。创建两个名字
+相似的文件，例如一个有空格结尾，一个没有。
+
+{{{class="brush: bash"
+# touch "test-file-name"
+
+# touch "test-file-name "
+[Note: There is a space at the end]
+
+# ls -1 test*
+test-file-name
+test-file-name
+}}}
+
+从`ls`的输出不能区分哪个文件有空格结尾。使用选项`-i`，可以看到文件的`inode`编号
+，借此可以区分这两个文件。
+
+{{{class="brush: bash"
+# ls -i1 test*
+16187429 test-file-name
+16187430 test-file-name
+}}}
+
+你可以如下面所示在`find`命令中指定`inode`编号。在此，`find`命令用`inode`编号
+重命名了一个文件。
+
+{{{class="brush: bash"
+# find -inum 16187430 -exec mv {} new-test-file-name \;
+
+# ls -i1 *test*
+16187430 new-test-file-name
+16187429 test-file-name
+}}}
+
+
+你可以在你想对那些像上面一样的糟糕命名的文件做某些操作时使用这一技术。例如，名为
+`file?.txt`的文件名字中有一个特殊字符。若你想执行`rm file?.txt`，下面所示的所有
+三个文件都会被删除。所以，采用下面的步骤来删除`file?.txt`文件。
+
+{{{class="brush: bash"
+# ls
+file1.txt  file2.txt  file?.txt
+}}}
+
+找到每一个文件的`inode`编号。
+
+{{{class="brush: bash"
+# ls -i1
+804178 file1.txt
+804179 file2.txt
+804180 file?.txt
+}}}
+
+如下所示： 使用`inode`编号来删除那些具有特殊符号的文件名。
+
+{{{class="brush: bash"
+# find -inum 804180 -exec rm {} \;
+
+# ls
+file1.txt  file2.txt
+[Note: The file with name "file?.txt" is now removed]
+}}}
+
+
+=== 根据文件权限查找文件 ===
+
+下面的操作时合理的：
+
+* 找到具有指定权限的文件
+* 忽略其他权限位，检查是否和指定权限匹配
+* 根据给定的八进制/符号表达的权限搜索
+
+此例中，假设目录包含以下文件。注意这些文件的权限不同。
+
+{{{class="brush: bash"
+# ls -l
+total 0
+-rwxrwxrwx 1 root root 0 2009-02-19 20:31 all_for_all
+-rw-r--r-- 1 root root 0 2009-02-19 20:30 everybody_read
+---------- 1 root root 0 2009-02-19 20:31 no_for_all
+-rw------- 1 root root 0 2009-02-19 20:29 ordinary_file
+-rw-r----- 1 root root 0 2009-02-19 20:27 others_can_also_read
+----r----- 1 root root 0 2009-02-19 20:27 others_can_only_read
+}}}
+
+找到具有组读权限的文件。使用下面的命令来找到当前目录下对同组用户具有读权限的文件
+，忽略该文件的其他权限。
+
+{{{class="brush: bash"
+# find . -perm -g=r -type f -exec ls -l {} \;
+-rw-r--r-- 1 root root 0 2009-02-19 20:30 ./everybody_read
+-rwxrwxrwx 1 root root 0 2009-02-19 20:31 ./all_for_all
+----r----- 1 root root 0 2009-02-19 20:27 ./others_can_only_read
+-rw-r----- 1 root root 0 2009-02-19 20:27 ./others_can_also_read
+}}}
+
+找到对组用户具有只读权限的文件。
+
+{{{class="brush: bash"
+# find . -perm g=r -type f -exec ls -l {} \;
+----r----- 1 root root 0 2009-02-19 20:27 ./others_can_only_read
+}}}
+
+找到对组用户具有只读权限的文件(使用八进制权限形式)。
+
+{{{class="brush: bash"
+# find . -perm 040 -type f -exec ls -l {} \;
+----r----- 1 root root 0 2009-02-19 20:27 ./others_can_only_read
+}}}
+
+
+=== 找到目录及子目录下所有空文件 ===
+
+找到`home`目录及子目录下所有的空文件(0字节文件)
+
+下面命令的输出文件绝大多数都是锁定文件盒其他程序创建的place hoders
+
+{{{class="brush: bash"
+# find ~ -empty
+}}}
+
+只列出你`home`目录里的空文件。
+
+{{{class="brush: bash"
+# find . -maxdepth 1 -empty
+}}}
+
+只列出当前目录下的非隐藏空文件。
+
+{{{class="brush: bash"
+# find . -maxdepth 1 -empty -not -name ".*"
+}}}
+
+
+=== 查找最大的文件 ===
+
+查找5个最大的文件
+
+下面的命令列出当前目录及子目录下的5个最大的文件。这会需要一点时间，取决于命令
+需要处理的文件数量。
+
+{{{class="brush: bash"
+# find . -type f -exec ls -s {} \; | sort -n -r | head -5
+}}}
+
+
+=== 查找最小的文件 ===
+
+查找5个最小的文件
+
+方法同查找5个最大的文件类似，区别只是sort的顺序是降序。
+
+{{{class="brush: bash"
+# find . -type f -exec ls -s {} \; | sort -n  | head -5
+}}}
+
+上面的命令中，很可能你看到的只是空文件(0字节文件)。如此，你可以使用下面的命令
+列出最小的文件，而不是0字节文件。
+
+{{{class="brush: bash"
+# find . -not -empty -type f -exec ls -s {} \; | sort -n  | head -5
+}}}
+
+
+=== 查找指定文件类型的文件 ===
+
+使用`-type`查找指定文件类型的文件
+
+只查找socket文件
+
+{{{class="brush: bash"
+# find . -type s
+}}}
+
+查找所有的目录
+
+{{{class="brush: bash"
+# find . -type d
+}}}
+
+查找所有的一般文件
+
+{{{class="brush: bash"
+# find . -type f
+}}}
+
+查找所有的隐藏文件
+
+{{{class="brush: bash"
+# find . -type f -name ".*"
+}}}
+
+查找所有的隐藏目录
+
+{{{class="brush: bash"
+# find -type d -name ".*"
+}}}
+
+
+=== 通过和其他文件比较修改时间查找文件 ===
+
+显示在指定文件之后做出修改的文件。下面的`find`命令将显示所有的在`ordinary_file`
+之后创建修改的文件。
+
+{{{class="brush: bash"
+# ls -lrt
+total 0
+-rw-r----- 1 root root 0 2009-02-19 20:27 others_can_also_read
+----r----- 1 root root 0 2009-02-19 20:27 others_can_only_read
+-rw------- 1 root root 0 2009-02-19 20:29 ordinary_file
+-rw-r--r-- 1 root root 0 2009-02-19 20:30 everybody_read
+-rwxrwxrwx 1 root root 0 2009-02-19 20:31 all_for_all
+---------- 1 root root 0 2009-02-19 20:31 no_for_all
+}}}
+
+{{{class="brush: bash"
+# find -newer ordinary_file
+.
+./everybody_read
+./all_for_all
+./no_for_all
+}}}
+
+=== 通过文件大小查找文件 ===
+
+使用`-size`选项可以通过文件大小查找文件。`– `指比给定尺寸小，`+`指比给定尺寸大。
+没有符号代表和给定尺寸完全一样大。
+
+查找比指定文件大的文件
+
+{{{class="brush: bash"
+# find ~ -size +100M
+}}}
+
+查找比指定文件小的文件
+
+{{{class="brush: bash"
+# find ~ -size -100M
+}}}
+
+查找符合给定大小的文件
+
+{{{class="brush: bash"
+# find ~ -size 100M
+}}}
+
+
+=== 给常用find操作取别名 ===
+
+若你发现有些东西很有用，你可以给他取别名。并且在任何你希望的地方执行。
+
+常用的删除`a.out`文件。
+
+{{{class="brush: bash"
+# alias rmao="find . -iname a.out -exec rm {} \;"
+# rmao
+}}}
+
+删除c程序产生的`core`文件。
+
+{{{class="brush: bash"
+# alias rmc="find . -iname core -exec rm {} \;"
+# rmc
+}}}
+
+
+=== 删除大型打包文件 ===
+
+下面的命令删除大于`100M`的`*.zip`文件。
+
+{{{class="brush: bash"
+# find / -type f -name *.zip -size +100M -exec rm -i {} \;"
+}}}
+
+用别名`rm100m`删除所有大于100M的`*.tar`文件。使用同样的思想可以创建`rm1g`,`rm2g`
+,`rm5g`的一类别名来删除所有大于1G,2G,5G的文件。
+
+{{{class="brush: bash"
+# alias rm100m="find / -type f -name *.tar -size +100M -exec rm -i {} \;"
+# alias rm1g="find / -type f -name *.tar -size +1G -exec rm -i {} \;"
+# alias rm2g="find / -type f -name *.tar -size +2G -exec rm -i {} \;"
+# alias rm5g="find / -type f -name *.tar -size +5G -exec rm -i {} \;"
+
+# rm100m
+# rm1g
+# rm2g
+# rm5g
+}}}
 
 
 = grep =

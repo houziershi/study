@@ -1,0 +1,259 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>进程</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>进程</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">top</a>
+<ul>
+<li><a href="#toc_1.1">例子</a>
+<ul>
+<li><a href="#toc_1.1.1">排序</a>
+<li><a href="#toc_1.1.2">Display Specific User Process</a>
+<li><a href="#toc_1.1.3">Highlight Running Process in Top</a>
+<li><a href="#toc_1.1.4">Shows Absolute Path of Processes</a>
+<li><a href="#toc_1.1.5">Change Delay or Set ‘Screen Refresh Interval’ in Top</a>
+<li><a href="#toc_1.1.6">Kill running process</a>
+<li><a href="#toc_1.1.7">Sort by CPU Utilisation</a>
+<li><a href="#toc_1.1.8">Renice a Process</a>
+<li><a href="#toc_1.1.9">Save Top Command Results</a>
+</ul>
+</ul>
+<li><a href="#toc_2">free</a>
+<li><a href="#toc_3">kill</a>
+<li><a href="#toc_4">pkill</a>
+</ul>
+</div>
+
+<h1 id="toc_1">top</h1>
+
+<h2 id="toc_1.1">例子</h2>
+
+<h3 id="toc_1.1.1">排序</h3>
+
+<p>
+Sorting with <code>-O</code> (Uppercase Letter <code>O</code>).
+</p>
+
+<p>
+Press <code>Shift+O</code> to Sort field via field letter, for example press <code>a</code> letter to 
+sort process with PID (Process ID).
+</p>
+
+<p>
+Type any key to return to main top window with sorted PID order as shown in 
+below screen. Press <code>q</code> to quit exit the window. Sorting Process ID's
+</p>
+
+<h3 id="toc_1.1.2">Display Specific User Process</h3>
+
+<p>
+Use top command with <code>u</code> option will display specific User process details.
+</p>
+
+<pre class="brush: bash">
+# top -u tecmint
+</pre>
+
+<h3 id="toc_1.1.3">Highlight Running Process in Top</h3>
+
+<p>
+Press <code>z</code> option in running <code>top</code> command will display running process in color 
+which may help you to identified running process easily.
+</p>
+
+<h3 id="toc_1.1.4">Shows Absolute Path of Processes</h3>
+
+<p>
+Press <code>c</code> option in running <code>top</code> command, it will display absolute path of 
+running process.
+</p>
+
+<h3 id="toc_1.1.5">Change Delay or Set ‘Screen Refresh Interval’ in Top</h3>
+
+<p>
+By default screen refresh interval is 3.0 seconds, same can be change pressing 
+<code>d</code> option in running top command and change it as desired as shown below.
+</p>
+
+<h3 id="toc_1.1.6">Kill running process</h3>
+
+<p>
+Kill running process with argument <code>k</code>
+</p>
+
+<p>
+You can kill a process after finding PID of process by pressing <code>k</code> option in 
+running top command without exiting from top window as shown below.
+</p>
+
+<h3 id="toc_1.1.7">Sort by CPU Utilisation</h3>
+
+<p>
+Press <code>Shift+P</code> to sort processes as per CPU utilization. See screenshot below.
+</p>
+
+<h3 id="toc_1.1.8">Renice a Process</h3>
+
+<p>
+You can use <code>r</code> option to change the priority of the process also called Renice.
+</p>
+
+<h3 id="toc_1.1.9">Save Top Command Results</h3>
+
+<p>
+Press <code>Shift+W</code> to save the running top command results under <code>/root/.toprc</code>.
+</p>
+
+
+<h1 id="toc_2">free</h1>
+
+<p>
+跟踪内存的使用和资源一样重要，就像管理员执行的任何其它任务，可以使用<code>free</code>命令
+来在这里救援.当前内存使用状态Current Usage Status of Memory
+</p>
+
+<pre class="brush: bash">
+[avishek@tecmint ~]$ free
+ 
+             total       used       free     shared    buffers     cached
+Mem:       2028240    1788272     239968          0      69468     363716
+-/+ buffers/cache:    1355088     673152
+Swap:      3905532     157076    3748456
+</pre>
+
+<p>
+设置输出单位为KB，MB或GB
+</p>
+
+<pre class="brush: bash">
+[avishek@tecmint ~]$ free -b
+ 
+             total       used       free     shared    buffers     cached
+Mem:    2076917760 1838272512  238645248          0   71348224  372670464
+-/+ buffers/cache: 1394253824  682663936
+Swap:   3999264768  160845824 3838418944
+</pre>
+
+<pre class="brush: bash">
+[avishek@tecmint ~]$ free -k
+ 
+             total       used       free     shared    buffers     cached
+Mem:       2028240    1801484     226756          0      69948     363704
+-/+ buffers/cache:    1367832     660408
+Swap:      3905532     157076    3748456
+</pre>
+
+<pre class="brush: bash">
+[avishek@tecmint ~]$ free -m
+ 
+             total       used       free     shared    buffers     cached
+Mem:          1980       1762        218          0         68        355
+-/+ buffers/cache:       1338        641
+Swap:         3813        153       3660
+</pre>
+
+<pre class="brush: bash">
+[avishek@tecmint ~]$ free -g
+ 
+             total       used       free     shared    buffers     cached
+Mem:             1          1          0          0          0          0
+-/+ buffers/cache:          1          0
+Swap:            3          0          3
+</pre>
+
+<p>
+以可读的格式显示，检查当前内存使用
+</p>
+
+<pre class="brush: bash">
+[avishek@tecmint ~]$ free -h
+ 
+             total       used       free     shared    buffers     cached
+Mem:          1.9G       1.7G       208M         0B        68M       355M
+-/+ buffers/cache:       1.3G       632M
+Swap:         3.7G       153M       3.6G
+</pre>
+
+<p>
+设定时间间隔后，持续检查使用状态
+</p>
+
+<pre class="brush: bash">
+[avishek@tecmint ~]$ free -s 3
+ 
+             total       used       free     shared    buffers     cached
+Mem:       2028240    1824096     204144          0      70708     364180
+-/+ buffers/cache:    1389208     639032
+Swap:      3905532     157076    3748456
+ 
+             total       used       free     shared    buffers     cached
+Mem:       2028240    1824192     204048          0      70716     364212
+-/+ buffers/cache:    1389264     638976
+Swap:      3905532     157076    3748456
+</pre>
+
+
+
+<h1 id="toc_3">kill</h1>
+
+<p>
+假设你想杀死已经没有响应的<code>apache2</code>进程,运行如下命令:
+</p>
+
+<pre class="brush: bash">
+root@tecmint:~# ps -A | grep -i apache2
+ 
+1285 ?        00:00:00 apache2
+</pre>
+
+<p>
+搜索<code>apache2</code>进程,找到<code>PID</code>并杀掉它.例如:在本例中<code>apache2</code>进程的<code>PID</code>是1285..
+</p>
+
+<pre class="brush: bash">
+root@tecmint:~# kill 1285
+</pre>
+
+<p>
+注意:每次你重新运行一个进程或者启动系统,每个进程都会生成一个新的<code>PID</code>.你可以使用
+<code>ps</code>命令获得当前运行进程的<code>PID</code>.
+</p>
+
+<h1 id="toc_4">pkill</h1>
+
+<p>
+另一个杀死进程的方法是:
+</p>
+	
+<pre class="brush: bash">
+root@tecmint:~# pkill apache2
+</pre>
+
+<p>
+注意:<code>kill</code>需要<code>PID</code>作为参数,<code>pkill</code>可以选择应用的方式,比如指定进程的所有者等.
+</p>
+ </div>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>Shell工具</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>Shell工具</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">whereis</a>
+<li><a href="#toc_2">alias</a>
+</ul>
+</div>
+ 
+<h1 id="toc_1">whereis</h1>
+
+<p>
+<code>whereis</code>的作用是用来定位命令的二进制文件\资源\或者帮助页，举例来说，获得<code>ls</code>和
+<code>kill</code>命令的二进制文件/资源以及帮助页：
+</p>
+
+<pre class="brush: bash">
+root@tecmint:~# whereis ls
+ 
+ls: /bin/ls /usr/share/man/man1/ls.1.gz
+
+root@tecmint:~# whereis kill
+ 
+kill: /bin/kill /usr/share/man/man2/kill.2.gz /usr/share/man/man1/kill.1.gz
+</pre>
+
+<p>
+注意:当需要知道二进制文件保存位置时有用.
+</p>
+
+<h1 id="toc_2">alias</h1>
+
+<p>
+<code>alias</code>是一个系统自建的shell命令，允许你为名字比较长的或者经常使用的命令指定别名
+。
+</p>
+
+<p>
+我经常用<code>ls -l</code>命令，它有五个字符（包括空格）。于是我为它创建了一个别名<code>l</code>。
+</p>
+
+<pre class="brush: bash">
+root@tecmint:~# alias l='ls -l'
+</pre>
+
+<p>
+试试它是否能用：
+</p>
+
+<pre class="brush: bash">
+root@tecmint:~# l
+ 
+total 36
+drwxr-xr-x 3 tecmint tecmint 4096 May 10 11:14 Binary
+drwxr-xr-x 3 tecmint tecmint 4096 May 21 11:21 Desktop
+drwxr-xr-x 2 tecmint tecmint 4096 May 21 15:23 Documents
+drwxr-xr-x 8 tecmint tecmint 4096 May 20 14:56 Downloads
+drwxr-xr-x 2 tecmint tecmint 4096 May  7 16:58 Music
+drwxr-xr-x 2 tecmint tecmint 4096 May 20 16:17 Pictures
+drwxr-xr-x 2 tecmint tecmint 4096 May  7 16:58 Public
+drwxr-xr-x 2 tecmint tecmint 4096 May  7 16:58 Templates
+drwxr-xr-x 2 tecmint tecmint 4096 May  7 16:58 Videos
+</pre>
+
+<p>
+去掉<code>l</code>别名，要使用<code>unalias</code>命令：
+</p>
+
+<pre class="brush: bash">
+root@tecmint:~# unalias l
+</pre>
+
+<p>
+再试试：
+</p>
+
+<pre class="brush: bash">
+root@tecmint:~# l
+ 
+bash: l: command not found
+</pre>
+ </div>
+</body>
+</html>
