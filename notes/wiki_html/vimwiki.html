@@ -85,26 +85,28 @@
 </pre>
 
 <p>
-其中<code>$VIMFILES</code>就是您的vimfiles目录。这是需要在vimrc中定义的系统变量。
+其中<code>$VIMFILES</code>就是您的vimfiles目录。这是需要在vimrc中定义的系统变量：
 </p>
+<ul>
+<li>
+Windows下应该是：<code>$VIM/vimfiles</code>；
 
-<p>
-Windows下应该是：<code>$VIM/vimfiles</code>；Linux下是：<code>~/.vim/</code>
-</p>
+<li>
+Linux下是：<code>~/.vim/</code>
+
+</ul>
 
 <p>
 如果vimrc没有显式指定，可以加上：
 </p>
 
-<p>
-{{class="brush: js;"
+<pre class="brush: javascript;">
 if has("win32")
-  let \(VIMFILES = \)VIM.'/vimfiles'
+  let $VIMFILES = $VIM.'/vimfiles'
 else
-  let \(VIMFILES = \)HOME.'/.vim'
+  let $VIMFILES = $HOME.'/.vim'
 endif
-}}}
-</p>
+</pre>
 
 
 
@@ -185,29 +187,30 @@ map &lt;S-F5&gt; :VimwikiAll2HTML&lt;cr&gt;
 	\ 'diary_link_count': 5,
 	\ 'auto_export': 1 }
 </pre>
+
 <dl>
 <dt>path </dt>
 <dd>指定wiki路径。是必须的，说明你想要把wiki条目存在哪个目录。</dd>
 <dt>path_html </dt>
-<dd>制定生成的html路径，一些相关调用的css,js也都放在这里。默认是与 path 同目录下的 WIKIFOLDER_html ，其中 WIKIFOLER 是你存放维基条目的文件夹名。</dd>
+<dd>制定生成的html路径，一些相关调用的css,js也都放在这里。默认是与<code>path</code>同目录下的<code>WIKIFOLDER_html</code>，其中<code>WIKIFOLER</code>是你存放维基条目的文件夹名。</dd>
 <dt>template_path </dt>
 <dd>是模板的路径。</dd>
 <dt>template_default </dt>
 <dd>指定默认的模板名称。</dd>
 <dt>template_ext </dt>
-<dd>指定模板的后缀名，建议把模板文件后缀采用 htm ，既和生成的 html 有所区分，又能保证语法高亮和各种 ftplugin 可用。</dd>
+<dd>指定模板的后缀名，建议把模板文件后缀采用<code>htm</code>，既和生成的<code>html</code>有所区分，又能保证语法高亮和各种<code>ftplugin</code>可用。</dd>
 <dt>html_header </dt>
 <dd>头部模板。</dd>
 <dt>html_footer </dt>
 <dd>尾部模板。</dd>
 <dt>diary_link_count </dt>
-<dd>是指diary.wiki里每行放多少个日志链接。 </dd>
+<dd>是指<code>diary.wiki</code>里每行放多少个日志链接。 </dd>
 <dt>auto_export </dt>
 <dd>保存后自动生成html文件。如果文件大的话会比较慢。</dd>
 </dl>
 
 <p>
-综上，template_path/template_default.template_ext就是模板了 
+综上，<code>template_path/template_default.template_ext</code>就是模板了 
 </p>
 
 
@@ -236,25 +239,25 @@ map &lt;S-F5&gt; :VimwikiAll2HTML&lt;cr&gt;
 <h3 id="toc_3.1.1">快捷键</h3>
 <ul>
 <li>
-\ww    打开 wiki首页
+<code>\ww</code> 打开 wiki首页
 
 <li>
-\wt    在标签页中打开wiki首页
-
-<li class="done0">
-\ww 打开第 N 个 Wiki，如果没指定，则打开默认 Wiki
-
-<li class="done0">
-\wt 新标签页打开第 N 个Wiki
+<code>\wt</code> 在标签页中打开wiki首页
 
 <li>
-\ws    打开 Wiki 列表并选择打开
+<code>[n]\ww</code> 打开第 N 个 Wiki，如果没指定，则打开默认 Wiki
 
 <li>
-\wr    重命名wiki文件
+<code>[n]\wt</code> 新标签页打开第 N 个Wiki
 
 <li>
-\wd    删除wiki文件
+<code>\ws</code> 打开 Wiki 列表并选择打开
+
+<li>
+<code>\wr</code> 重命名wiki文件
+
+<li>
+<code>\wd</code> 删除wiki文件
 
 </ul>
 
@@ -263,13 +266,13 @@ map &lt;S-F5&gt; :VimwikiAll2HTML&lt;cr&gt;
 
 <ul>
 <li>
-:VimwikiGoHome
+<code>:VimwikiGoHome</code>
 
 <li>
-:VimwikiTabGoHome
+<code>:VimwikiTabGoHome</code>
 
 <li>
-:VimwikiUISelect
+<code>:VimwikiUISelect</code>
 
 </ul>
 
@@ -277,40 +280,40 @@ map &lt;S-F5&gt; :VimwikiAll2HTML&lt;cr&gt;
 
 <ul>
 <li>
-:Vimwiki2HTML
+<code>:Vimwiki2HTML</code>
 
 <li>
-:VimwikiAll2HTML
+<code>:VimwikiAll2HTML</code>
 
 <li>
-:VimwikiDeleteWord
+<code>:VimwikiDeleteWord</code>
 
 <li>
-:VimwikiDeleteWord
+<code>:VimwikiDeleteWord</code>
 
 <li>
-:VimwikiFollowWord
+<code>:VimwikiFollowWord</code>
 
 <li>
-:VimwikiGoBackWord
+<code>:VimwikiGoBackWord</code>
 
 <li>
-:VimwikiNextWord
+<code>:VimwikiNextWord</code>
 
 <li>
-:VimwikiPrevWord
+<code>:VimwikiPrevWord</code>
 
 <li>
-:VimwikiRenameWord
+<code>:VimwikiRenameWord</code>
 
 <li>
-:VimwikiSplitWord
+<code>:VimwikiSplitWord</code>
 
 <li>
-:VimwikiToggleListItem
+<code>:VimwikiToggleListItem</code>
 
 <li>
-:VimwikiVsplitWord
+<code>:VimwikiVsplitWord</code>
 
 </ul>
    
@@ -327,7 +330,7 @@ map &lt;S-F5&gt; :VimwikiAll2HTML&lt;cr&gt;
 <code>%title</code>  指定HTML文档的title
 
 <li>
-<code>%nohtml</code> 告诉vimwiki不为某条目生成HTML文件。即使你在该条目打开时为它单独执行:Vimwiki2HTML也不会生成
+<code>%nohtml</code> 不为某条目生成HTML。即使单独执行<code>:Vimwiki2HTML</code>
 
 </ul>
 
@@ -358,7 +361,6 @@ WikiItem                      大写开头的驼峰英文会被自动当作一�
 !TextText                     不要链接指定的 !WikiWord
 [[Wiki Item]]                 这是手动建立维基词条的方式
 [[wiki item|description]]     输出HTML时显示description，链到 wiki item
-
 </pre>
 
 <h2 id="toc_3.6">链接操作</h2>
@@ -381,22 +383,22 @@ http://site/pic.jpg      :: 解析为图片
 </p>
 <ul>
 <li>
-shift + enter  水平分割窗口打开wiki链接
+<code>shift + enter</code>  水平分割窗口打开wiki链接
 
 <li>
-ctrl + enter   垂直分割窗口打开wiki链接
+<code>ctrl + enter </code>  垂直分割窗口打开wiki链接
 
 <li>
-tab            到下一个链接
+<code>tab</code>  到下一个链接
 
 <li>
-shift + tab    到上一个链接
+<code>shift + tab  </code>  到上一个链接
 
 <li>
-回车           进入wiki连接（如果是外链则在浏览器打开） 
+<code>Enter</code>  进入wiki连接（如果是外链则在浏览器打开） 
 
 <li>
-退格键         返回上级wiki
+<code>backspace</code>  返回上级wiki
 
 </ul>
 
@@ -487,15 +489,18 @@ _斜体_
 <h2 id="toc_3.11">日记功能</h2>
 
 <p>
-使用快捷键<code>&lt;leader&gt;w&lt;leader&gt;w</code>可以快速编辑当天的日记。还可以配合<a href="http://www.vim.org/scripts/script.php?script_id=52">Calendar插件</a>轻松管理你的日记。
+使用快捷键<code>&lt;leader&gt;w&lt;leader&gt;w</code>可以快速编辑当天的日记。还可以配合
+<a href="http://www.vim.org/scripts/script.php?script_id=52">Calendar插件</a>轻松管理你的
+日记。
 </p>
+
 <pre class="brush: bash">
 " calendar
 map &lt;F8&gt; :Calendar&lt;cr&gt; 
 </pre>
 
 <p>
-按 F8 调出日历窗口，按 q 退出。
+按<code>F8</code>调出日历窗口，按<code>q</code>退出。
 </p>
 
 <p>
@@ -503,7 +508,8 @@ map &lt;F8&gt; :Calendar&lt;cr&gt;
 </p>
 
 <p>
-PS: 按左右键在前后一个月里跳转，按上下键在前后一年跳转。按 t 回到当天。当然，Vim 默认的上下左右 hjkl 也是能用的。 
+PS: 按左右键在前后一个月里跳转，按上下键在前后一年跳转。按 t 回到当天。当然，Vim
+默认的上下左右（hjkl）也是能用的。 
 </p>
  </div>
 </body>

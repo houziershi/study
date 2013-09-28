@@ -28,8 +28,10 @@ Scala 思考再三还是加入了 Dynamic Types，这个特性在 Scala 2.9 中�
 
 说明：
 
-* 当使用`qual.sel`，而`Qual`类未定义`sel`属性或方法时，会调用`selectDynamic(method: String)`方法。
-* 当`qual.name = "Unmi"`时会调用类似`updateDynamic(method: String)(args: Any)`这样的方法。
+* 当使用`qual.sel`，而`Qual`类未定义`sel`属性或方法时，
+会调用`selectDynamic(method: String)`方法。
+* 当`qual.name = "Unmi"`时会调用类似`updateDynamic(method: String)(args: Any)`
+这样的方法。
 * 还有` applyDynamic`，`applyDynamicNamed`这两个方法的自动调用。
 
 看个完整的例子，我不打算把上面四个方法的应用规则分开来演示：
@@ -699,8 +701,8 @@ Scala的任何方法调用，如果你确实只传入一个参数，就能可选
   }
 }}}
 
-两组定义从客户的观点来看是完全相同的。唯一的差别是与的访问或许稍微比方法调用要快
-，因为字段值在类被初始化的时候被预计算，而方法调用在每次调用的时候都要计算。
+两组定义从客户的观点来看是完全相同的。唯一的差别是字段的访问或许稍微比方法调用要
+快，因为字段值在类被初始化的时候被预计算，而方法调用在每次调用的时候都要计算。
 
 换句话说，字段在每个`Element`对象上需要更多的内存空间。因此类的使用概况，属性
 表达成字段还是方法更好，决定了其实现，并且这个概况还可以随时改变。
@@ -2382,6 +2384,34 @@ val aa = new _root_.scala.collection.mutable.ArrayBuffer[Employee]
 因此，`_root_.launch`让你能访问顶层的`launch`包，`_root_.launch.Booster3`指向的
 就是最外面的`booster`类。
 
+== 包对象 ==
+
+由于JVM的局限，包里只能放类、对象、物质，不能把变量、常量与函数放在包里。
+
+解决方案是在上级包是定义一个与子包名称一样的包对象，包对象的成员用起来就像是在
+子包中一样：
+
+{{{class="brush: scala"
+package com.horstmann.impatient
+
+package object people {
+	val defaultName = "John Q. Public"
+}
+
+package people {
+	class Person {
+		var name = defaultName // 从包对象取得常量
+	}
+}
+}}}
+
+因为在同一个包中，所以`defaultName`不需要加限制。在其他的地方访问方式可能为：
+
+`com.horstmann.impatient.people.defaultName`
+
+在幕后包对象被编译成带有静态方法和字段的JVM类，名为`package.class`，位于相应的
+包下。以这个例子来说就是`com.horstmann.impatient.people.package`，它包含一个静态
+字段`defaultName`。
 
 == 引用包 ==
 
@@ -2430,6 +2460,8 @@ Scala里用`import`子句来引用包和其成员：
   } 
 }}}
 
+引用语句的作用范围从引入开始到当前代码块结束。
+
 方法`showFruit`引用了它的参数，`Fruit`类型的`fruit`，的所有成员。之后的
 `println`语句就可以直接使用`name`和`color`了。这两个索引等价于`fruit.name`和
 `fruit.color`。
@@ -2449,12 +2481,14 @@ Scala的引用很灵活的另一个方面是它们可以引用包自身，而不
   } 
 }}}
 
+=== 重命名与隐藏 ===
+
 Scala的引用同样可以重命名或隐藏成员。可以用跟在引用的成员对象之后的包含在括号里
 的引用选择子句（import selector clause）做到：
 
-* 重命名子句的格式是`<原始名> => <新名>``。
+* 重命名子句的格式是`<原始名> => <新命名>`。
 
-* `<原始名> => _`格式的子句从被引用的名字中排除了<原始名>。
+* `<原始名> => _`格式的子句从被引用的名字中排除了`<原始名>`。
 
 {{{class="brush: scala"
 // 只引用了对象Fruits的Apple和Orange成员。 
@@ -2496,7 +2530,8 @@ import Fuits.{Pear => _, _}
 * 简单名`x`。把`x`包含进引用名集。
 * 重命名子句`x => y`。让名为`x`的成员以名称`y`出现。
 * 隐藏子句`x => _`。把`x`排除在引用名集之外。
-* 全包括`_`。引用除了前面子句提到的之外的全体成员。如果存在全包括，那么必须是引用选择的最后一个。
+* 全包括`_`。引用除了前面子句提到的之外的全体成员。如果存在全包括，那么必须是
+引用选择的最后一个。
  
 本节最初展示的比较简单的引用子句可以被视为带有选择子句的简写。
 
