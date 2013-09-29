@@ -450,11 +450,21 @@ Java中的`Iterator<? extends Component>`在Scala中写为：
 
 
 
+
 = Actor和并发 =
 
-== 天堂中的烦恼 ==
+== 多线程 ==
 
-主要介绍Java并发与同步锁的问题，所以略了。
+虽然推荐使用Actor模式，但还是讲一下传统的多线程控制方式吧。
+
+`AnyRef`类追加了来自`Object`类的`wait`与`notify`、`notifyAll`方法。并且提供了带
+参数的`synchronized`方法，等同于Java的`synchronized`块：
+
+{{{class="brush: scala"
+account.synchronized {
+	account.balance += amount
+}
+}}}
 
 == actor和消息传递 ==
 

@@ -29,6 +29,11 @@
 <ul>
 <li><a href="#toc_2.1">写入</a>
 <li><a href="#toc_2.2">读取</a>
+<ul>
+<li><a href="#toc_2.2.1">每个字符</a>
+<li><a href="#toc_2.2.2">迭代行</a>
+<li><a href="#toc_2.2.3">整个文件一起读</a>
+</ul>
 </ul>
 <li><a href="#toc_3">读取URL</a>
 </ul>
@@ -72,6 +77,8 @@ writer.close()
 
 <h2 id="toc_2.2">读取</h2>
 
+<h3 id="toc_2.2.1">每个字符</h3>
+
 <pre class="brush: scala">
 import scala.io.Source
 
@@ -79,8 +86,23 @@ Source.fromFile("tmp.txt").foreach { print }
 </pre>
 
 <p>
-<code>foreach()</code>每次读一个字符（输入有缓冲，不用担心性能）。用<code>getLines()</code>可以读一行
-。<code>getLine(index)</code>可以取得指定行，是索引，从0开始。
+<code>foreach()</code>每次读一个字符（输入有缓冲，不用担心性能）。
+</p>
+
+<h3 id="toc_2.2.2">迭代行</h3>
+
+<p>
+<code>getLine(index)</code>可以取得指定行，是索引，从0开始。
+</p>
+
+<p>
+用<code>getLines()</code>取得行的迭代器。然后用<code>for</code>循环、<code>toArray</code>等方法处理。
+</p>
+
+<h3 id="toc_2.2.3">整个文件一起读</h3>
+
+<p>
+<code>source.mkString</code>把整个文件作为一个字符串。
 </p>
 
 

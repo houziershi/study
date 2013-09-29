@@ -34,14 +34,25 @@ writer.close()
 
 == 读取 ==
 
+=== 每个字符 ===
+
 {{{class="brush: scala"
 import scala.io.Source
 
 Source.fromFile("tmp.txt").foreach { print }
 }}}
 
-`foreach()`每次读一个字符（输入有缓冲，不用担心性能）。用`getLines()`可以读一行
-。`getLine(index)`可以取得指定行，是索引，从0开始。
+`foreach()`每次读一个字符（输入有缓冲，不用担心性能）。
+
+=== 迭代行 ===
+
+`getLine(index)`可以取得指定行，是索引，从0开始。
+
+用`getLines()`取得行的迭代器。然后用`for`循环、`toArray`等方法处理。
+
+=== 整个文件一起读 ===
+
+`source.mkString`把整个文件作为一个字符串。
 
 
 = 读取URL =
