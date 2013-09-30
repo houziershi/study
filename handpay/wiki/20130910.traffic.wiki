@@ -17,6 +17,19 @@ hp start
 tail -f ~/server/default/log/server.log
 }}}
 
+= 提交文档位置 =
+
+
+1.	SQL执行
+https://10.48.196.110:8443/svn/HandpayDocument/Handpay Project/手付通3.0/开发文档/项目提交数据/交通罚款优化/sql/test/交罚业务报表支撑权限脚本.sql 
+https://10.48.196.110:8443/svn/HandpayDocument/Handpay Project/手付通3.0/开发文档/项目提交数据/交通罚款优化/sql/test/交罚业务表结构修改及基础数据.sql 
+
+2.	静态文件
+https://10.48.196.110:8443/svn/HandpayDocument/Handpay Project/手付通3.0/开发文档/项目提交数据/交通罚款优化/mnt/mfs/ static/mall/wap 
+
+3.	报表模板
+https://10.48.196.110:8443/svn/HandpayDocument/Handpay Project/手付通3.0/开发文档/项目提交数据/交通罚款优化/mnt/mfs/handpay
+
 = 设计 =
 
 == 表结构 ==
