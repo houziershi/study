@@ -83,6 +83,11 @@
 </ul>
 <li><a href="#toc_4.2">原始类型是如何实现的</a>
 <li><a href="#toc_4.3">底层类型</a>
+<ul>
+<li><a href="#toc_4.3.1">Null</a>
+<li><a href="#toc_4.3.2">Nothing</a>
+</ul>
+<li><a href="#toc_4.4">Unit</a>
 </ul>
 <li><a href="#toc_5">特质（Traits）</a>
 <ul>
@@ -1276,6 +1281,11 @@ Scala把字段和方法放进同一个命名空间的理由很清楚，因为这
 </pre>
 
 
+<p>
+如果要调试实例的构造顺序，可在编译加上参数<code>-Xcheckinit</code>。这样在方法末初始化字段
+时会抛出异常。
+</p>
+
 <h3 id="toc_3.5.2">使用override修饰符</h3>
 
 <p>
@@ -2381,8 +2391,11 @@ Java里，<code>x</code>与<code>y</code>的比较结果将是<code>false</code>
 某些Scala的面向对象类型系统的“边界情况”的特殊类型。
 </p>
 
+
+<h3 id="toc_4.3.1">Null</h3>
+
 <p>
-类<code>Null</code>是<code>null</code>类型的引用；它是每个引用类（就是说，每个继承自<code>AnyRef</code>的类）的
+类<code>Null</code>唯一的实例是<code>null</code>值；它是每个引用类（就是说，每个继承自<code>AnyRef</code>的类）的
 子类。<code>Null</code>不兼容值类型。比方说，不可把<code>null</code>值赋给整数变量：
 </p>
 
@@ -2392,6 +2405,8 @@ Java里，<code>x</code>与<code>y</code>的比较结果将是<code>false</code>
    found   : Null(null)
    required: Int
 </pre>
+
+<h3 id="toc_4.3.2">Nothing</h3>
 
 <p>
 类型<code>Nothing</code>在<code>Scala</code>的类层级的最底端；它是任何其它类型的子类型。然而，根本没有
@@ -2423,6 +2438,12 @@ Java里，<code>x</code>与<code>y</code>的比较结果将是<code>false</code>
 因为<code>Nothing</code>是<code>Int</code>的子类型，整个状态语句的类型是<code>Int</code>，正如需要的那样。
 </p>
 
+<h2 id="toc_4.4">Unit</h2>
+
+<p>
+<code>Unit</code>类似于Java中的<code>void</code>。<code>Unit</code>只有一个实例<code>()</code>。
+</p>
+
 
 
 <h1 id="toc_5">特质（Traits）</h1>
@@ -2431,7 +2452,6 @@ Java里，<code>x</code>与<code>y</code>的比较结果将是<code>false</code>
 trait是Scala里代码复用的基础单元。特质封装了方法和字段的定义，并可以通过混入到
 类中重用它们。
 </p>
-
 
 <h2 id="toc_5.1">概念</h2>
 
