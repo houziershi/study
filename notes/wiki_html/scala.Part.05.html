@@ -2861,7 +2861,7 @@ Scala中的<code>==</code>不能重写，因为在<code>Any</code>类中被定�
 
 <ul>
 <li>
-定义时方法签名写错了。
+定义时方法签名写错了，参数类型不是<code>Any</code>。
 
 <li>
 只改了<code>equals</code>忘记改了<code>hashCode</code>。
@@ -2875,6 +2875,10 @@ Scala中的<code>==</code>不能重写，因为在<code>Any</code>类中被定�
 </ul>
 
 <h3 id="toc_7.2.1">陷阱1：方法签名错误</h3>
+
+<p>
+<code>equals</code>方法参数的类型一定要是是<code>Any</code>，不能是具体类。
+</p>
 
 <p>
 对于以下的点类，考虑怎么实现<code>equals</code>方法：
@@ -2935,7 +2939,7 @@ Scala中的<code>==</code>不能重写，因为在<code>Any</code>类中被定�
 </p>
 
 <p>
-把<code>p2a</code>作为<code>p2</code>的别名，只不是类型是<code>Any</code>而不是<code>Point</code>，再用<code>p2a</code>而不是<code>p2</code>来比较
+把<code>p2a</code>作为<code>p2</code>的别名，只不过类型是<code>Any</code>而不是<code>Point</code>，再用<code>p2a</code>而不是<code>p2</code>来比较
 ：
 </p>
 

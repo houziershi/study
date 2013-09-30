@@ -56,7 +56,7 @@
 </ul>
 <li><a href="#toc_2">Actor和并发</a>
 <ul>
-<li><a href="#toc_2.1">天堂中的烦恼</a>
+<li><a href="#toc_2.1">多线程</a>
 <li><a href="#toc_2.2">actor和消息传递</a>
 <li><a href="#toc_2.3">把原生线程当作actor</a>
 <li><a href="#toc_2.4">简单的并行计算例子</a>
@@ -653,13 +653,25 @@ Java中的<code>Iterator&lt;? extends Component&gt;</code>在Scala中写为：
 
 
 
+
 <h1 id="toc_2">Actor和并发</h1>
 
-<h2 id="toc_2.1">天堂中的烦恼</h2>
+<h2 id="toc_2.1">多线程</h2>
 
 <p>
-主要介绍Java并发与同步锁的问题，所以略了。
+虽然推荐使用Actor模式，但还是讲一下传统的多线程控制方式吧。
 </p>
+
+<p>
+<code>AnyRef</code>类追加了来自<code>Object</code>类的<code>wait</code>与<code>notify</code>、<code>notifyAll</code>方法。并且提供了带
+参数的<code>synchronized</code>方法，等同于Java的<code>synchronized</code>块：
+</p>
+
+<pre class="brush: scala">
+account.synchronized {
+	account.balance += amount
+}
+</pre>
 
 <h2 id="toc_2.2">actor和消息传递</h2>
 
