@@ -43,19 +43,36 @@
 <ul>
 <li><a href="#toc_3.1">定制一个二维布局库</a>
 <li><a href="#toc_3.2">抽象类</a>
+<ul>
+<li><a href="#toc_3.2.1">abstract声明抽象类</a>
+<li><a href="#toc_3.2.2">抽象方法</a>
+<li><a href="#toc_3.2.3">抽象字段</a>
+</ul>
 <li><a href="#toc_3.3">定义无参数方法</a>
 <li><a href="#toc_3.4">扩展类</a>
 <li><a href="#toc_3.5">重写方法和字段</a>
-<li><a href="#toc_3.6">定义参数化字段</a>
-<li><a href="#toc_3.7">调用超类构造器</a>
-<li><a href="#toc_3.8">使用override修饰符</a>
+<ul>
+<li><a href="#toc_3.5.1">命名空间</a>
+<li><a href="#toc_3.5.2">使用override修饰符</a>
+<li><a href="#toc_3.5.3">不可重写 final</a>
+<li><a href="#toc_3.5.4">重写限制</a>
+</ul>
+<li><a href="#toc_3.6">类型检查和转换</a>
+<li><a href="#toc_3.7">定义参数化字段</a>
+<li><a href="#toc_3.8">调用超类构造器</a>
+<ul>
+<li><a href="#toc_3.8.1">只有主构造器可以调用超类构造器</a>
+<li><a href="#toc_3.8.2">构造顺序</a>
+<ul>
+<li><a href="#toc_3.8.2.1">预初始化</a>
+</ul>
+</ul>
 <li><a href="#toc_3.9">多态和动态绑定</a>
-<li><a href="#toc_3.10">定义final成员</a>
-<li><a href="#toc_3.11">使用组合与继承</a>
-<li><a href="#toc_3.12">实现示例中的功能</a>
-<li><a href="#toc_3.13">定义工厂对象</a>
-<li><a href="#toc_3.14">变高变宽</a>
-<li><a href="#toc_3.15">完整的示例代码</a>
+<li><a href="#toc_3.10">使用组合与继承</a>
+<li><a href="#toc_3.11">实现示例中的功能</a>
+<li><a href="#toc_3.12">定义工厂对象</a>
+<li><a href="#toc_3.13">变高变宽</a>
+<li><a href="#toc_3.14">完整的示例代码</a>
 </ul>
 <li><a href="#toc_4">Scala类的层级</a>
 <ul>
@@ -144,10 +161,18 @@
 </p>
 
 <p>
-Scala 思考再三还是加入了 Dynamic Types，这个特性在 Scala 2.9 中是试验性的，
-必须用<code>-Xexperimental</code>进行开启，到了 Scala 2.10.0 中，只要代码中有
-<code>import scala.language.dynamics</code>就可用了，或是编译时加<code>-language:dynamics</code>选项。
+Scala 思考再三还是加入了 Dynamic Types，这个特性在Scala 2.9中是试验性的，
+必须用<code>-Xexperimental</code>进行开启，到了 Scala 2.10.0 中，开启方式有两种：
 </p>
+
+<ul>
+<li>
+代码中有<code>import scala.language.dynamics</code>
+
+<li>
+代码中不引入，但编译时加<code>-language:dynamics</code>选项。
+
+</ul>
 
 <p>
 虽然Scala 2.10.0加进了Dynamic Types特性，但Scala仍然是静态类型的语言，因为在
@@ -960,6 +985,8 @@ Scala的任何方法调用，如果你确实只传入一个参数，就能可选
 
 <h2 id="toc_3.2">抽象类</h2>
 
+<h3 id="toc_3.2.1">abstract声明抽象类</h3>
+
 <p>
 布局元素名为<code>Element</code>，存放的文本内容类型为<code>Array[String]</code>。提供方法<code>contents</code>
 取得存放的文本内容，但没有定义实现方式，所以这个类是抽象类，要加上<code>abstract</code>
@@ -972,9 +999,11 @@ Scala的任何方法调用，如果你确实只传入一个参数，就能可选
   } 
 </pre>
 
+<h3 id="toc_3.2.2">抽象方法</h3>
+
 <p>
-注意：类<code>Element</code>的<code>contents</code>方法并没带有<code>abstract</code>修饰符。不像Java，方法的
-声明中不需要（也不允许）抽象修饰符。如果方法没有实现，它就是抽象的。
+注意：类<code>Element</code>的<code>contents</code>方法并没带有<code>abstract</code>修饰符。不像Java，方法的声明
+中不需要（也不允许）抽象修饰符。如果方法没有实现，它就是抽象的。
 </p>
 
 <p>
@@ -982,6 +1011,47 @@ Scala的任何方法调用，如果你确实只传入一个参数，就能可选
 抽象方法<code>contents</code>，但当前没有定义具体方法。
 </p>
 
+<h3 id="toc_3.2.3">抽象字段</h3>
+
+<pre class="brush: scala">
+abstract class Person {
+	val id: Int
+	val Name: String
+</pre>
+
+<p>
+这两个字段并没有生成在对应的Java类中，产生的只有对应的方法：
+</p>
+
+<ul>
+<li>
+<code>val</code>只有抽象<code>getter</code>方法。
+
+<li>
+<code>var</code>有抽象的<code>getter</code>与<code>setter</code>方法。
+
+</ul>
+
+<p>
+实现类要提供具体的字段，对于抽象的字段不用加<code>abstract</code>：
+</p>
+
+<pre class="brush: scala">
+class Employee(val: id: Int) extends Person {
+	var name = ""
+}
+</pre>
+
+<p>
+实现类可以是一个匿名类：
+</p>
+
+<pre class="brush: scala">
+val fred = new Person {
+	val id = 1729
+	var name = "Fred"
+}
+</pre>
 
 <h2 id="toc_3.3">定义无参数方法</h2>
 
@@ -1130,10 +1200,35 @@ Scala的任何方法调用，如果你确实只传入一个参数，就能可选
 
 <p>
 如果子类中的字段与超类同名，或是子类的中的方法名称和参数与超类类完全一样，就会
-覆盖（override）超类中的版本。
+覆盖（override）超类中的版本。而且Scala里强制如果覆盖了就一定要加上<code>override</code>
+修饰符。
 </p>
 
 <h2 id="toc_3.5">重写方法和字段</h2>
+
+<h3 id="toc_3.5.1">命名空间</h3>
+
+<p>
+Java为定义准备了四个命名空间：字段，方法，类型和包。
+</p>
+
+<p>
+而Scala仅有两个,与Java的四个命名空间相对：
+</p>
+
+<ul>
+<li>
+值（字段，方法，包还有单例对象）
+
+<li>
+类型（类和特质名）
+
+</ul>
+
+<p>
+Scala把字段和方法放进同一个命名空间的理由很清楚，因为这样你就可以使用<code>val</code>重重写
+无参数的方法，这种你在Java里做不到的事情。
+</p>
 
 <p>
 字段和方法属于相同的命名空间。这使得字段重写无参数方法成为可能。比如说，你可以
@@ -1180,30 +1275,179 @@ Scala的任何方法调用，如果你确实只传入一个参数，就能可选
 
 </pre>
 
+
+<h3 id="toc_3.5.2">使用override修饰符</h3>
+
 <p>
-Java为定义准备了四个命名空间：字段，方法，类型和包。
+考虑一下这样的场景：
 </p>
 
 <p>
-而Scala仅有两个,与Java的四个命名空间相对：
+基类和子类是不同的人维护的。原来基类里没有<code>add</code>方法，所以子类里加上了。后来
+基类里也加上了<code>add</code>方法，但维护子类的人不知道。这样的规定是为了防止“脆基类”问题
+。
+</p>
+
+<p>
+所以Scala里<code>override</code>有强制的规定：
 </p>
 
 <ul>
 <li>
-值（字段，方法，包还有单例对象）
+如果实现了抽象成员，加不加随便。
 
 <li>
-类型（类和特质名）
+如果重载了具体实现，就一定要加。
+
+<li>
+没有重载就绝不能加。
 
 </ul>
 
 <p>
-Scala把字段和方法放进同一个命名空间的理由很清楚，因为这样你就可以使用<code>val</code>重重写
-无参数的方法，这种你在Java里做不到的事情。
+这样起码保证了维护子类的人知道自己会覆盖超类的方法。
 </p>
 
 
-<h2 id="toc_3.6">定义参数化字段</h2>
+<h3 id="toc_3.5.3">不可重写 final</h3>
+
+<p>
+Scala中字段与方法都可以用<code>final</code>修饰为不可重写（因为Scala的字段也是可以重写为
+方法的）。注意这与Java不一样，Java里<code>final</code>字段表示不可改变，而Scala里已经有
+<code>val</code>表示不可改变了。
+</p>
+
+
+<h3 id="toc_3.5.4">重写限制</h3>
+
+<p>
+概括：
+</p>
+
+<ul>
+<li>
+<code>def</code>只能重写另一个<code>def</code>
+
+<li>
+<code>val</code>只能重写另一个<code>val</code>与无参<code>def</code>
+
+<li>
+<code>var</code>只能重写另一个抽象的<code>var</code>
+
+</ul>
+
+<p>
+详述：
+</p>
+
+<ul>
+<li>
+用val
+
+<ul>
+<li>
+重写val：
+
+<ul>
+<li>
+超类同名的私有字段
+
+<li>
+重写超类的getter方法
+
+</ul>
+<li>
+重写def：
+
+<ul>
+<li>
+子类有一个私有字段
+
+<li>
+重写超类的getter方法
+
+</ul>
+<li>
+重写var：错误
+
+</ul>
+<li>
+用def
+
+<ul>
+<li>
+重写val：错误
+
+<li>
+重写def：同Java
+
+<li>
+重写var：错误
+
+</ul>
+<li>
+用var
+
+<ul>
+<li>
+重写val：错误
+
+<li>
+重写def：同时重写getter/setter。只重写getter会报错
+
+<li>
+重写var：重写超类的抽象var
+
+</ul>
+</ul>
+
+<p>
+在当前类中，随时可以对<code>getter</code>与<code>setter</code>重新实现<code>var</code>，但在子类中不能通过
+<code>getter</code>与<code>setter</code>重新实现<code>var</code>，只能接受现有的实现。
+</p>
+
+<h2 id="toc_3.6">类型检查和转换</h2>
+
+<table>
+<tr>
+<td>
+Scala
+</td>
+<td>
+Java
+</td>
+</tr>
+<tr>
+<td>
+obj.isInstanceOf[Clazz]
+</td>
+<td>
+obj instanceof Clazz
+</td>
+</tr>
+<tr>
+<td>
+obj.asInstanceOf[Clazz]
+</td>
+<td>
+(Clazz) obj
+</td>
+</tr>
+<tr>
+<td>
+classOf[Clazz]
+</td>
+<td>
+Clazz.class
+</td>
+</tr>
+</table>
+
+<p>
+相比类型检查与转换，Scala更加推荐模式匹配的方式。
+</p>
+
+<h2 id="toc_3.7">定义参数化字段</h2>
 
 <p>
 <code>ArrayElement</code>类的定义。它有一个参数<code>conts</code>，其唯一目的是被复制到<code>contents</code>字段
@@ -1260,7 +1504,7 @@ Tiger的定义是以下包括重写成员<code>dangerous</code>和<code>private<
 
 
 
-<h2 id="toc_3.7">调用超类构造器</h2>
+<h2 id="toc_3.8">调用超类构造器</h2>
 
 <p>
 如果再要新的子类：
@@ -1279,39 +1523,96 @@ Tiger的定义是以下包括重写成员<code>dangerous</code>和<code>private<
 构造器，只要把你要传递的参数或参数列表放在超类名之后的括号里）即可。
 </p>
 
-
-<h2 id="toc_3.8">使用override修饰符</h2>
+<h3 id="toc_3.8.1">只有主构造器可以调用超类构造器</h3>
 
 <p>
-考虑一下这样的场景：
+Scala中辅助构造器不能调用超类构造器，只有主构造器可以调用超类构造器。
+</p>
+
+<h3 id="toc_3.8.2">构造顺序</h3>
+
+<p>
+Scala与Java有一个共同的问题：超类的构造器会调用被子类覆盖的方法。
 </p>
 
 <p>
-基类和子类是不同的人维护的。原来基类里没有<code>add</code>方法，所以子类里加上了。后来
-基类里也加上了<code>add</code>方法，但维护子类的人不知道。这样的规定是为了防止“脆基类”问题
-。
-</p>
-
-<p>
-所以Scala里<code>override</code>有强制的规定：
+用动物的视力（或感知以距离）来作为例子：
 </p>
 
 <ul>
 <li>
-如果实现了抽象成员，加不加随便。
+默认动物的视力为10
 
 <li>
-如果重载了具体实现，就一定要加。
-
-<li>
-没有重载就绝不能加。
+蚂蚁的视力只有2
 
 </ul>
 
+<pre class="brush: scala">
+class Creature {
+	val range: Int = 10
+	val env: Array[Int] = new array[Int](range)
+}
+
+class Ant extends Creature {
+	override val range = 2
+}
+</pre>
+
 <p>
-这样起码保证了维护子类的人知道自己会覆盖超类的方法。
+如果初始化<code>Ant</code>实例，过程比较复杂：
 </p>
 
+<ol>
+<li>
+调用超类构造器，设置<code>range</code>为10。
+
+<li>
+超类构造器初始化<code>env</code>长度时要用到<code>range</code>，发现<code>range</code>被子类重写。
+
+<li>
+调用子类的<code>range</code>，但是子类还没有初始化，所以<code>range</code>值为<code>0</code>。
+
+<li>
+<code>env</code>被初始化为长度为0的数组。超类构造器执行完毕。
+
+<li>
+子类构造器开始执行，把<code>range</code>设置为2.
+
+</ol>
+
+<p>
+解决的方案：
+</p>
+
+<ul>
+<li>
+<code>final val</code>声明不能覆盖，这样安全但是不灵活。
+
+<li>
+<code>lazy</code>懒加载。安全但是影响性能。
+
+<li>
+预初始化。接下来就讲。
+
+</ul>
+
+<h4 id="toc_3.8.2.1">预初始化</h4>
+
+<p>
+用<code>with</code>代替<code>extends</code>，并给字段定义加上花括号，放在超类的构造器之前：
+</p>
+
+<pre class="brush: scala">
+class Ant {
+	override val range = 2
+} with Creature
+</pre>
+
+<p>
+由于预初始化的字段的超类构造器调用前被初始化，所以不能引用正在被构造的对象。所以
+对于<code>this</code>实际指向的是正被构造的类或对象的对象，而来是被构造的对象本身。
+</p>
 
 <h2 id="toc_3.9">多态和动态绑定</h2>
 
@@ -1424,33 +1725,7 @@ Tiger的定义是以下包括重写成员<code>dangerous</code>和<code>private<
 
 
 
-<h2 id="toc_3.10">定义final成员</h2>
-
-<p>
-要确保成员不被子类重写。Scala里和Java里一样，通过添加<code>final</code>修饰符给成员来做到。
-</p>
-
-<pre class="brush: scala">
-  class ArrayElement extends Element {
-    final override def demo() {
-      println("ArrayElement's implementation invoked")
-    }
-  }
-</pre>
-
-<p>
-在类的声明上添加<code>final</code>修饰符把整个类声明为final：
-</p>
-
-<pre class="brush: scala">
-  final class ArrayElement extends Element {
-    override def demo() {
-      println("ArrayElement's implementation invoked")
-    }
-  }
-</pre>
-
-<h2 id="toc_3.11">使用组合与继承</h2>
+<h2 id="toc_3.10">使用组合与继承</h2>
 
 <p>
 组合与继承是利用其它现存类定义新类的两个方法。
@@ -1468,7 +1743,7 @@ Tiger的定义是以下包括重写成员<code>dangerous</code>和<code>private<
 
 
 
-<h2 id="toc_3.12">实现示例中的功能</h2>
+<h2 id="toc_3.11">实现示例中的功能</h2>
 
 <p>
 把一个元素放在另一个上面是指串连这两个元素的<code>contents</code>值。
@@ -1569,7 +1844,7 @@ Tiger的定义是以下包括重写成员<code>dangerous</code>和<code>private<
 
 
 
-<h2 id="toc_3.13">定义工厂对象</h2>
+<h2 id="toc_3.12">定义工厂对象</h2>
 
 <p>
 最直接的方案是创建类<code>Element</code>的伴生对象并把它做成布局元素的工厂方法。这种方式
@@ -1679,7 +1954,7 @@ Scala里，你可以在类和单例对象中定义其它的类和单例对象。
 
 
 
-<h2 id="toc_3.14">变高变宽</h2>
+<h2 id="toc_3.13">变高变宽</h2>
 
 <p>
 Element的版本并不完全，因为他不允许客户把不同宽度的元素堆叠在一起，或者不同高度
@@ -1750,7 +2025,7 @@ Element的版本并不完全，因为他不允许客户把不同宽度的元素�
   }
 </pre>
 
-<h2 id="toc_3.15">完整的示例代码</h2>
+<h2 id="toc_3.14">完整的示例代码</h2>
 
 <p>
 写一个画给定数量边界的螺旋的程序。

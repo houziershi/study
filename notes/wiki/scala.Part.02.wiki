@@ -9,9 +9,11 @@
 方法（Scala的访问一致性，属性和方法有时候并没有那么大的区别）必须在`qual`的
 类型中声明了的。
 
-Scala 思考再三还是加入了 Dynamic Types，这个特性在 Scala 2.9 中是试验性的，
-必须用`-Xexperimental`进行开启，到了 Scala 2.10.0 中，只要代码中有
-`import scala.language.dynamics`就可用了，或是编译时加`-language:dynamics`选项。
+Scala 思考再三还是加入了 Dynamic Types，这个特性在Scala 2.9中是试验性的，
+必须用`-Xexperimental`进行开启，到了 Scala 2.10.0 中，开启方式有两种：
+
+* 代码中有`import scala.language.dynamics`
+* 代码中不引入，但编译时加`-language:dynamics`选项。
 
 虽然Scala 2.10.0加进了Dynamic Types特性，但Scala仍然是静态类型的语言，因为在
 编译器同样会检查多出来的类型。
@@ -648,6 +650,8 @@ Scala的任何方法调用，如果你确实只传入一个参数，就能可选
 
 == 抽象类 ==
 
+=== abstract声明抽象类 ===
+
 布局元素名为`Element`，存放的文本内容类型为`Array[String]`。提供方法`contents`
 取得存放的文本内容，但没有定义实现方式，所以这个类是抽象类，要加上`abstract`
 关键字：
@@ -658,12 +662,43 @@ Scala的任何方法调用，如果你确实只传入一个参数，就能可选
   } 
 }}}
 
-注意：类`Element`的`contents`方法并没带有`abstract`修饰符。不像Java，方法的
-声明中不需要（也不允许）抽象修饰符。如果方法没有实现，它就是抽象的。
+=== 抽象方法 ===
+
+注意：类`Element`的`contents`方法并没带有`abstract`修饰符。不像Java，方法的声明
+中不需要（也不允许）抽象修饰符。如果方法没有实现，它就是抽象的。
 
 另一个术语用法需要分辨声明（declaration）和定义（definition）。类`Element`声明了
 抽象方法`contents`，但当前没有定义具体方法。
 
+=== 抽象字段 ===
+
+{{{class="brush: scala"
+abstract class Person {
+	val id: Int
+	val Name: String
+}}}
+
+这两个字段并没有生成在对应的Java类中，产生的只有对应的方法：
+
+* `val`只有抽象`getter`方法。
+* `var`有抽象的`getter`与`setter`方法。
+
+实现类要提供具体的字段，对于抽象的字段不用加`abstract`：
+
+{{{class="brush: scala"
+class Employee(val: id: Int) extends Person {
+	var name = ""
+}
+}}}
+
+实现类可以是一个匿名类：
+
+{{{class="brush: scala"
+val fred = new Person {
+	val id = 1729
+	var name = "Fred"
+}
+}}}
 
 == 定义无参数方法 ==
 
@@ -779,9 +814,22 @@ Scala的任何方法调用，如果你确实只传入一个参数，就能可选
 }}}
 
 如果子类中的字段与超类同名，或是子类的中的方法名称和参数与超类类完全一样，就会
-覆盖（override）超类中的版本。
+覆盖（override）超类中的版本。而且Scala里强制如果覆盖了就一定要加上`override`
+修饰符。
 
 == 重写方法和字段 ==
+
+=== 命名空间 ===
+
+Java为定义准备了四个命名空间：字段，方法，类型和包。
+
+而Scala仅有两个,与Java的四个命名空间相对：
+
+* 值（字段，方法，包还有单例对象）
+* 类型（类和特质名）
+
+Scala把字段和方法放进同一个命名空间的理由很清楚，因为这样你就可以使用`val`重重写
+无参数的方法，这种你在Java里做不到的事情。
 
 字段和方法属于相同的命名空间。这使得字段重写无参数方法成为可能。比如说，你可以
 改变类`ArrayElement`中`contents`的实现，从一个方法变为一个字段，而无需修改类
@@ -820,16 +868,69 @@ Scala的任何方法调用，如果你确实只传入一个参数，就能可选
 
 }}}
 
-Java为定义准备了四个命名空间：字段，方法，类型和包。
 
-而Scala仅有两个,与Java的四个命名空间相对：
+=== 使用override修饰符 ===
 
-* 值（字段，方法，包还有单例对象）
-* 类型（类和特质名）
+考虑一下这样的场景：
 
-Scala把字段和方法放进同一个命名空间的理由很清楚，因为这样你就可以使用`val`重重写
-无参数的方法，这种你在Java里做不到的事情。
+基类和子类是不同的人维护的。原来基类里没有`add`方法，所以子类里加上了。后来
+基类里也加上了`add`方法，但维护子类的人不知道。这样的规定是为了防止“脆基类”问题
+。
 
+所以Scala里`override`有强制的规定：
+
+* 如果实现了抽象成员，加不加随便。
+* 如果重载了具体实现，就一定要加。
+* 没有重载就绝不能加。
+
+这样起码保证了维护子类的人知道自己会覆盖超类的方法。
+
+
+=== 不可重写 final ===
+
+Scala中字段与方法都可以用`final`修饰为不可重写（因为Scala的字段也是可以重写为
+方法的）。注意这与Java不一样，Java里`final`字段表示不可改变，而Scala里已经有
+`val`表示不可改变了。
+
+
+=== 重写限制 ===
+
+概括：
+
+* `def`只能重写另一个`def`
+* `val`只能重写另一个`val`与无参`def`
+* `var`只能重写另一个抽象的`var`
+
+详述：
+
+* 用val
+	- 重写val：
+		* 超类同名的私有字段
+		* 重写超类的getter方法
+	- 重写def：
+		* 子类有一个私有字段
+		* 重写超类的getter方法
+	- 重写var：错误
+* 用def
+	- 重写val：错误
+	- 重写def：同Java
+	- 重写var：错误
+* 用var
+	- 重写val：错误
+	- 重写def：同时重写getter/setter。只重写getter会报错
+	- 重写var：重写超类的抽象var
+
+在当前类中，随时可以对`getter`与`setter`重新实现`var`，但在子类中不能通过
+`getter`与`setter`重新实现`var`，只能接受现有的实现。
+
+== 类型检查和转换 ==
+
+| Scala                   | Java                 |
+| obj.isInstanceOf[Clazz] | obj instanceof Clazz |
+| obj.asInstanceOf[Clazz] | (Clazz) obj          |
+| classOf[Clazz]          | Clazz.class          |
+
+相比类型检查与转换，Scala更加推荐模式匹配的方式。
 
 == 定义参数化字段 ==
 
@@ -893,23 +994,56 @@ Tiger的定义是以下包括重写成员`dangerous`和`private`成员`age`的�
 （Array[String]），LineElement需要传递一个参数到它的超类的主构造器。要调用超类
 构造器，只要把你要传递的参数或参数列表放在超类名之后的括号里）即可。
 
+=== 只有主构造器可以调用超类构造器 ===
 
-== 使用override修饰符 ==
+Scala中辅助构造器不能调用超类构造器，只有主构造器可以调用超类构造器。
 
-考虑一下这样的场景：
+=== 构造顺序 ===
 
-基类和子类是不同的人维护的。原来基类里没有`add`方法，所以子类里加上了。后来
-基类里也加上了`add`方法，但维护子类的人不知道。这样的规定是为了防止“脆基类”问题
-。
+Scala与Java有一个共同的问题：超类的构造器会调用被子类覆盖的方法。
 
-所以Scala里`override`有强制的规定：
+用动物的视力（或感知以距离）来作为例子：
 
-* 如果实现了抽象成员，加不加随便。
-* 如果重载了具体实现，就一定要加。
-* 没有重载就绝不能加。
+* 默认动物的视力为10
+* 蚂蚁的视力只有2
 
-这样起码保证了维护子类的人知道自己会覆盖超类的方法。
+{{{class="brush: scala" 
+class Creature {
+	val range: Int = 10
+	val env: Array[Int] = new array[Int](range)
+}
 
+class Ant extends Creature {
+	override val range = 2
+}
+}}}
+
+如果初始化`Ant`实例，过程比较复杂：
+
+# 调用超类构造器，设置`range`为10。
+# 超类构造器初始化`env`长度时要用到`range`，发现`range`被子类重写。
+# 调用子类的`range`，但是子类还没有初始化，所以`range`值为`0`。
+# `env`被初始化为长度为0的数组。超类构造器执行完毕。
+# 子类构造器开始执行，把`range`设置为2.
+
+解决的方案：
+
+* `final val`声明不能覆盖，这样安全但是不灵活。
+* `lazy`懒加载。安全但是影响性能。
+* 预初始化。接下来就讲。
+
+==== 预初始化 ====
+
+用`with`代替`extends`，并给字段定义加上花括号，放在超类的构造器之前：
+
+{{{class="brush: scala" 
+class Ant {
+	override val range = 2
+} with Creature
+}}}
+
+由于预初始化的字段的超类构造器调用前被初始化，所以不能引用正在被构造的对象。所以
+对于`this`实际指向的是正被构造的类或对象的对象，而来是被构造的对象本身。
 
 == 多态和动态绑定 ==
 
@@ -1003,28 +1137,6 @@ Tiger的定义是以下包括重写成员`dangerous`和`private`成员`age`的�
 实现。
 
 
-
-== 定义final成员 ==
-
-要确保成员不被子类重写。Scala里和Java里一样，通过添加`final`修饰符给成员来做到。
-
-{{{class="brush: scala" 
-  class ArrayElement extends Element {
-    final override def demo() {
-      println("ArrayElement's implementation invoked")
-    }
-  }
-}}}
-
-在类的声明上添加`final`修饰符把整个类声明为final：
-
-{{{class="brush: scala" 
-  final class ArrayElement extends Element {
-    override def demo() {
-      println("ArrayElement's implementation invoked")
-    }
-  }
-}}}
 
 == 使用组合与继承 ==
 
