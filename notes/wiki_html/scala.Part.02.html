@@ -93,12 +93,12 @@
 <ul>
 <li><a href="#toc_5.1">概念</a>
 <ul>
-<li><a href="#toc_5.1.1">单例对象也可以扩展物质</a>
+<li><a href="#toc_5.1.1">单例对象也可以扩展特质</a>
 <li><a href="#toc_5.1.2">特质不能有构造参数</a>
 <li><a href="#toc_5.1.3">特质的<code>super</code>引用是动态的</a>
 </ul>
 <li><a href="#toc_5.2">比较瘦接口与胖接口</a>
-<li><a href="#toc_5.3">样例：长方形对象</a>
+<li><a href="#toc_5.3">样例：长方形实例</a>
 <li><a href="#toc_5.4">实现Ordered特质来排序</a>
 <li><a href="#toc_5.5">特质的叠加次序</a>
 <li><a href="#toc_5.6">特质的叠加</a>
@@ -1106,7 +1106,7 @@ val fred = new Person {
 </p>
 
 <p>
-换句话说，字段在每个<code>Element</code>对象上需要更多的内存空间。因此类的使用概况，属性
+换句话说，字段在每个<code>Element</code>实例上需要更多的内存空间。因此类的使用概况，属性
 表达成字段还是方法更好，决定了其实现，并且这个概况还可以随时改变。
 </p>
 
@@ -1138,9 +1138,9 @@ val fred = new Person {
 
 <p>
 原则上Scala的函数调用中可以省略所有的空括号。然而，在调用的方法表达的超过其接收
-调用者对象的属性时，推荐仍然写一对空的括号。例如，如果方法执行了I/O，或写入
+调用者实例的属性时，推荐仍然写一对空的括号。例如，如果方法执行了I/O，或写入
 可重新赋值的变量（var），或读出不是接受调用者的字段的var，无论是直接的还是非直接
-的通过使用可变对象，那么空括号是合适的。这种方式是让参数列表扮演一个可见的线索
+的通过使用可变实例，那么空括号是合适的。这种方式是让参数列表扮演一个可见的线索
 说明某些有趣的计算正通过调用被触发。例如：
 </p>
 
@@ -1620,8 +1620,8 @@ class Ant {
 </pre>
 
 <p>
-由于预初始化的字段的超类构造器调用前被初始化，所以不能引用正在被构造的对象。所以
-对于<code>this</code>实际指向的是正被构造的类或对象的对象，而来是被构造的对象本身。
+由于预初始化的字段的超类构造器调用前被初始化，所以不能引用正在被构造的实例。所以
+对于<code>this</code>实际指向的是正被构造的类或对象的实例，而来是被构造的实例本身。
 </p>
 
 <h2 id="toc_3.9">多态和动态绑定</h2>
@@ -1655,7 +1655,7 @@ class Ant {
 
 <p>
 变量和表达式上的方法调用是动态绑定（dynamically bound）的。这意味着被调用的
-实际方法实现取决于运行期对象其实的类，而不是变量或表达式的类型。
+实际方法实现取决于运行期实例实际的类，而不是变量或表达式的类型。
 </p>
 
 <p>
@@ -1729,7 +1729,7 @@ class Ant {
 
 <p>
 因为<code>UniformElement</code>没有重写<code>demo</code>，它从它的超类<code>Element</code>继承了<code>demo</code>的实现。
-因此，当对象的类是<code>UniformElement</code>时，<code>Element</code>的实现就是要调用的<code>demo</code>的正确
+因此，当实例的类是<code>UniformElement</code>时，<code>Element</code>的实现就是要调用的<code>demo</code>的正确
 实现。
 </p>
 
@@ -1858,7 +1858,7 @@ class Ant {
 
 <p>
 最直接的方案是创建类<code>Element</code>的伴生对象并把它做成布局元素的工厂方法。这种方式
-唯一要暴露给客户的就是<code>Element</code>的类/对象组合，隐藏它的三个实现类<code>ArrayElement</code>，
+唯一要暴露给客户的就是<code>Element</code>的类/实例组合，隐藏它的三个实现类<code>ArrayElement</code>，
 <code>LineElement</code>和<code>UniformElement</code>。
 </p>
 
@@ -2104,7 +2104,7 @@ $ scala Spiral 6    $ scala Spiral 11    $ scala Spiral 17
 
 <p>
 Scala里，每个类都继承自通用的名为<code>Any</code>的超类。因为所有的类都是<code>Any</code>的子类，那么
-定义在<code>Any</code>中的方法就是“普遍”方法：它们可以被任何对象调用。
+定义在<code>Any</code>中的方法就是“普遍”方法：它们可以被任何实例调用。
 </p>
 
 <p>
@@ -2257,7 +2257,7 @@ Scala里这些类的实例都写成字面量，不能使用<code>new</code>创�
 <p>
 Scala类与Java类不同在于它们还继承自一个名为<code>ScalaObject</code>的特别的记号特质。理念是
 <code>ScalaObject</code>包含了Scala编译器定义和实现的方法，目的是让Scala程序的执行更有效。
-到现在为止，Scala对象包含了单个方法，名为<code>$tag</code>，用于内部以提速模式匹配。
+到现在为止，Scala实例包含了单个方法，名为<code>$tag</code>，用于内部以提速模式匹配。
 </p>
 
 
@@ -2298,7 +2298,7 @@ Scala以与Java同样的方式存储整数：把它当作32位的字。这对在
 </pre>
 
 <p>
-却得到了<code>false</code>！原因是数<code>421</code>被装箱了两次，因此参数<code>x</code>和<code>y</code>是两个不同的对象。
+却得到了<code>false</code>！原因是数<code>421</code>被装箱了两次，因此参数<code>x</code>和<code>y</code>是两个不同的实例。
 </p>
 
 <p>
@@ -2411,8 +2411,8 @@ Java里，<code>x</code>与<code>y</code>的比较结果将是<code>false</code>
 <p>
 类型<code>Nothing</code>在<code>Scala</code>的类层级的最底端；它是任何其它类型的子类型。然而，根本没有
 这个类型的任何值。要一个没有值的类型有什么意思呢？在控制结构的try-catch中讨论过
-，<code>Nothing</code>的一个用处是它标明了不正常的终止。例如Scala的标准库中的<code>Predef</code>对象
-有一个<code>error</code>方法，如下定义：
+，<code>Nothing</code>的一个用处是它标明了不正常的终止。例如Scala的标准库中的<code>Predef</code>单例
+对象有一个<code>error</code>方法，如下定义：
 </p>
 
 <pre class="brush: scala">
@@ -2506,7 +2506,7 @@ trait是Scala里代码复用的基础单元。特质封装了方法和字段的�
 
 <p>
 <code>phil</code>的类型是<code>Philosophical</code>，一个特质。因此，变量<code>phil</code>可以被初始化为任何混入
-了<code>Philosophical</code>特质的类的对象。
+了<code>Philosophical</code>特质的类的实例。
 </p>
 
 <p>
@@ -2571,7 +2571,7 @@ trait是Scala里代码复用的基础单元。特质封装了方法和字段的�
 ：比方说，特质可以声明字段和维持状态值。
 </p>
 
-<h3 id="toc_5.1.1">单例对象也可以扩展物质</h3>
+<h3 id="toc_5.1.1">单例对象也可以扩展特质</h3>
 
 <p>
 不止是类，单例对象也可以扩展特质。
@@ -2660,10 +2660,10 @@ Scala中添加具体方法是一次性的劳动。你只要在特质中实现方
 到类中，实现接口的瘦部分，并最终获得具有全部胖接口内容的类。
 </p>
 
-<h2 id="toc_5.3">样例：长方形对象</h2>
+<h2 id="toc_5.3">样例：长方形实例</h2>
 
 <p>
-为了使这些长方形对象便于使用，如果库能够提供诸如<code>width</code>，<code>height</code>，<code>left</code>，
+为了使这些长方形实例便于使用，如果库能够提供诸如<code>width</code>，<code>height</code>，<code>left</code>，
 <code>right</code>，<code>topLeft</code>，等等方法。
 </p>
 
@@ -2705,11 +2705,11 @@ Scala中添加具体方法是一次性的劳动。你只要在特质中实现方
 
 <p>
 注意<code>left</code>，<code>right</code>，和<code>width</code>在两个类中的定义是一模一样。除了少许的变动外，他们
-将在任何其他的长方形对象的类中保持一致。
+将在任何其他的长方形实例的类中保持一致。
 </p>
 
 <p>
-这种重复可以使用特质消除。这个特质应该具有两个抽象方法：一个返回对象的左上角坐标
+这种重复可以使用特质消除。这个特质应该具有两个抽象方法：一个返回实例的左上角坐标
 ，另一个返回右下角的坐标。然后他就可以应用到所有其他的几何查询的具体实现中：
 </p>
 
@@ -2736,7 +2736,7 @@ Scala中添加具体方法是一次性的劳动。你只要在特质中实现方
 </pre>
 
 <p>
-可以创建<code>Rectangle</code>对象并对它调用如<code>width</code>或<code>left</code>的几何方法：
+可以创建<code>Rectangle</code>实例并对它调用如<code>width</code>或<code>left</code>的几何方法：
 </p>
 
 <pre class="brush: scala">
@@ -2786,7 +2786,7 @@ Scala专门提供了<code>Ordered</code>特质来简化比较工作。只要实�
 </pre>
 
 <p>
-上面定义<code>compare</code>方法来比较两个对象，类<code>Rational</code>现在具有了所有4种比较方法：
+上面定义<code>compare</code>方法来比较两个实例，类<code>Rational</code>现在具有了所有4种比较方法：
 </p>
 
 <pre class="brush: scala">
@@ -2918,7 +2918,7 @@ Scala专门提供了<code>Ordered</code>特质来简化比较工作。只要实�
 
 <p>
 还可以更加简化到类名都不用写，直接<code>new BasicIntQueue with Doubling</code>这个父类名加
-上特质就可以把对象拿到了：
+上特质就可以把实例拿到了：
 </p>
 
 <pre class="brush: scala">
@@ -3394,7 +3394,7 @@ val aa = new _root_.scala.collection.mutable.ArrayBuffer[Employee]
 <h2 id="toc_6.2">包对象</h2>
 
 <p>
-由于JVM的局限，包里只能放类、对象、物质，不能把变量、常量与函数放在包里。
+由于JVM的局限，包里只能放类、对象、特质，不能把变量、常量与函数放在包里。
 </p>
 
 <p>
