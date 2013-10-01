@@ -181,8 +181,17 @@ trait Printable {
 版本字段：
 
 {{{class="brush: scala"
-  // Java serial version marker
+@SerialVersionUID(42L) class Person extends Serializable
+}}}
+
+对应的Java：
+
+{{{class="brush: java"
+public class Person implements java.io.Serializable {
   private final static long SerialVersionUID = 1234L
+  
+	// ...
+}
 }}}
 
 `@transient`变量会被加上Java的`transient`修饰符： 
@@ -1864,9 +1873,7 @@ actor和发往该actor的消息：
 
 
 
-= 测试 =
-
-== 测试 ==
+= 连接符解析  =
 
 
 

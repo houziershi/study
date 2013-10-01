@@ -1,0 +1,232 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>进程控制</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>进程控制</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">进程控制</a>
+<ul>
+<li><a href="#toc_1.1">执行命令</a>
+<li><a href="#toc_1.2">返回结果</a>
+<li><a href="#toc_1.3">管道</a>
+<li><a href="#toc_1.4">重定向</a>
+<li><a href="#toc_1.5">结合进程</a>
+<li><a href="#toc_1.6">环境变量</a>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">进程控制</h1>
+
+<h2 id="toc_1.1">执行命令</h2>
+
+<p>
+<code>scala.sys.process</code>包提供了与shell交互的工具：
+</p>
+
+<pre class="brush: scala">
+import sys.process._
+
+"ls -al .." !
+</pre>
+
+<p>
+消息被发送到由字符串隐式转换成<code>sys.process.ProcessBuilder</code>单例对象。成功返回值
+为<code>0</code>，失败为非<code>0</code>的错误码（和shell一样）。
+</p>
+
+<h2 id="toc_1.2">返回结果</h2>
+
+<p>
+用<code>!!</code>取得返回结果（字符串形式）：
+</p>
+
+<pre class="brush: scala">
+val result =  "ls -al .." !!
+</pre>
+
+<h2 id="toc_1.3">管道</h2>
+
+<p>
+<code>#</code>实现管道：
+</p>
+
+<pre class="brush: scala">
+"ls -al .." #! "grep src" !
+</pre>
+
+<h2 id="toc_1.4">重定向</h2>
+
+<p>
+重定向输出<code>#&gt;</code>，追加用<code>#&gt;&gt;</code>：
+</p>
+
+<pre class="brush: scala">
+"ls -al .." #&gt;&gt; new File("output.txt") !
+</pre>
+
+<p>
+重定向输入<code>#&lt;</code>
+</p>
+
+<pre class="brush: scala">
+"grep sec" #&lt; new File("output.txt") !
+
+"grep Scala" #&lt; new URL("http://horstmann.com/index.html") !
+</pre>
+
+<h2 id="toc_1.5">结合进程</h2>
+
+<p>
+如果<code>p</code>成功，执行<code>q</code>：
+</p>
+
+<pre class="brush: scala">
+p #&amp;&amp; q
+</pre>
+
+<p>
+如果<code>p</code>不成功，执行<code>q</code>：
+</p>
+
+<pre class="brush: scala">
+p #|| q
+</pre>
+
+<h2 id="toc_1.6">环境变量</h2>
+
+<p>
+通过<code>Process</code>对象的<code>apply</code>方法来构造<code>ProcessBuilder</code>。具体参数包括：
+</p>
+
+<ul>
+<li>
+命令
+
+<li>
+当前路径
+
+<li>
+键－值对偶
+
+</ul>
+
+<pre class="brush: scala">
+val p = Process(cmd, new File(dirName), ("LANG", "en_US"))
+
+"echo 42" #! p!
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+ </div>
+</body>
+</html>

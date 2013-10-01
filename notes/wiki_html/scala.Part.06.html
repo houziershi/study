@@ -89,10 +89,7 @@
 <li><a href="#toc_2.9.4">把所有内容结合在一起</a>
 </ul>
 </ul>
-<li><a href="#toc_3">测试</a>
-<ul>
-<li><a href="#toc_3.1">测试</a>
-</ul>
+<li><a href="#toc_3">连接符解析</a>
 </ul>
 </div>
 
@@ -322,8 +319,19 @@ trait Printable {
 </p>
 
 <pre class="brush: scala">
-  // Java serial version marker
+@SerialVersionUID(42L) class Person extends Serializable
+</pre>
+
+<p>
+对应的Java：
+</p>
+
+<pre class="brush: java">
+public class Person implements java.io.Serializable {
   private final static long SerialVersionUID = 1234L
+  
+	// ...
+}
 </pre>
 
 <p>
@@ -2343,9 +2351,7 @@ actor和发往该actor的消息：
 
 
 
-<h1 id="toc_3">测试</h1>
-
-<h2 id="toc_3.1">测试</h2>
+<h1 id="toc_3">连接符解析</h1>
  </div>
 </body>
 </html>
