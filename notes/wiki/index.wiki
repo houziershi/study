@@ -51,12 +51,13 @@ reveal.js： [[reveal.js]]
 
 Vim：[[vim]]
 
-[[vim.java]]
+Vim Java：[[vim.java]]
 
 VimWiki：[[vimwiki]]
 
 Emmet-vim：[[Emmet-vim]]
 
+vim csv：[[vim.csv]]
 
 == IDE ==
 

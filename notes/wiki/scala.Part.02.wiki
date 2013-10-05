@@ -1743,7 +1743,46 @@ Java里，`x`与`y`的比较结果将是`false`。程序员在这种情况应该
 trait是Scala里代码复用的基础单元。特质封装了方法和字段的定义，并可以通过混入到
 类中重用它们。
 
-== 概念 ==
+== 抽象与实现 ==
+
+特质中的字段可以是抽象的也可以是抽象的。
+
+=== 实现字段 ===
+
+如果字段有初始值，就是已经实现的字段。
+
+==== 不可被再次继承 ====
+
+因为JVM中不可多重继承，所以特质中的字段只能作为混入类中的一个不能被子类继承的
+成员。
+
+=== 抽象字段 ===
+
+如果字段没有初始值，就是抽象字段。它们必须被实现。
+
+=== 抽象方法 ===
+
+==== 默认抽象 ====
+
+特质中没有实现的方法默认作为抽象方法，不用`abstract`修饰：
+
+{{{class="brush: scala"
+trait Logger {
+	def log(msg: String)
+}
+}}}
+
+==== 不用override ====
+
+实现特质中的抽象方法不用加`override`：
+
+{{{class="brush: scala"
+class ConsoleLogger extends Logger {
+	def log(msg: String) { println(msg) }
+}
+}}}
+
+=== 实现方法 ===
 
 定义，关键字`trait`：
 
@@ -1754,6 +1793,16 @@ trait是Scala里代码复用的基础单元。特质封装了方法和字段的�
     }
   }
 }}}
+
+==== 需要重新编译 ====
+
+如果特质带有具体实现，那么这个物质一旦改变，所有已经混入该特质的类必须重新编译。
+
+== 单例对象也可以扩展特质 ==
+
+不止是类，单例对象也可以扩展特质。
+
+== 类层级 ==
 
 没有声明超类，因此和类一样，有个缺省的超类`AnyRef`。一旦特质被定义了，就可以使用
 `with`关键字，把它混入到类中。如果这个类没有继承基类，可以直接用`extends`关键字
@@ -1838,363 +1887,52 @@ trait是Scala里代码复用的基础单元。特质封装了方法和字段的�
   It ain't easy being green!
 }}}
 
-这时你或许推导出以下哲理：特质就像是带有具体方法的Java接口，不过其实它能做的更多
-：比方说，特质可以声明字段和维持状态值。
+== 特质继承 ==
 
-=== 单例对象也可以扩展特质 ===
+=== 抽象方法延迟绑定 ===
 
-不止是类，单例对象也可以扩展特质。
+如果重写了特质中的抽象方法，要加上`abstract`修饰。
 
-=== 特质不能有构造参数 ===
-
-实际上，你可以用特质定义做任何用类定义做的事，并且语法也是一样的，除了两点：
-
-第一点，特质不能有任何“类”参数，也就是说，传递给类的主构造器的参数。换句话说，
-尽管你可以定义如下的类：
+特质中的方法是抽象的：
 
 {{{class="brush: scala"
-  class Point(x: Int, y: Int)
-}}}
-
-但是下面定义特质的尝试将遭到失败：
-
-{{{class="brush: scala"
-  trait NoPoint(x: Int, y: Int) // Does not compile
-}}}
-
-=== 特质的`super`引用是动态的 ===
-
-类和特质的另一个差别在于：在类中任何地方，`super`调用都是静态绑定的，在特质中
-，它们是动态绑定的。如果你在类中写下`super.toString`，你很明确哪个方法实现将被
-调用。然而如果你在特质中写了同样的东西，在你定义特质的时候`super`调用的方法实现
-尚未被定义。调用的实现将在每一次特质被混入到具体类的时候才被决定。这种处理
-`super`的有趣的行为是使得特质能以可堆叠的改变（stackable modifications）方式
-工作的关键。
-
-== 比较瘦接口与胖接口 ==
-
-瘦接口与胖接口的对阵体现了面向对象设计中常会面临的在实现者与接口用户之间的权衡。
-
-胖接口有更多的方法，对于调用者来说更便捷。客户可以捡一个完全符合他们功能需要的
-方法。另一方面瘦接口有较少的方法，对于实现者来说更简单。然而调用瘦接口的客户因此
-要写更多的代码。由于没有更多可选的方法调用，他们或许不得不选一个不太完美匹配他们
-所需的方法并为了使用它写一些额外的代码。
-
-Java的接口常常是过瘦而非过胖。例如，从Java 1.4开始引入的`CharSequence`接口，是
-对于字串类型的类来说通用的瘦接口，它持有一个字符序列。下面是把它看作Scala特质的
-定义：
-
-{{{class="brush: scala"
-  trait CharSequence {
-    def charAt(index: Int): Char
-    def length: Int
-    def subSequence(start: Int, end: Int): CharSequence
-    def toString(): String
-  }
-}}}
-
-尽管类`String`里现有的成打的方法中的大多数都可以用在任何`CharSequence`上，Java的
-`CharSequence`接口定义仅提供了4个方法。如果`CharSequence`代以包含全部`String`
-接口，那它将为`CharSequence`的实现者压上沉重的负担。任何实现Java`CharSequence`
-接口的程序员将不得不定义一大堆方法。因为Scala特质可以包含具体方法，这使得创建
-胖接口大为便捷。
-
-在特质中添加具体方法使得胖瘦对阵的权衡大大倾向于胖接口。不像在Java里那样，在
-Scala中添加具体方法是一次性的劳动。你只要在特质中实现方法一次，而不再需要在每个
-混入特质的方法中重新实现它。因此，与没有特质的语言相比，Scala里的胖接口没什么
-工作要做。
-
-要使用特质丰满接口，只要简单地定义一个具有少量抽象方法的特质——特质接口的瘦部分——
-和潜在的大量具体方法，所有的都实现在抽象方法之上。然后你就可以把丰满了的特质混入
-到类中，实现接口的瘦部分，并最终获得具有全部胖接口内容的类。
-
-== 样例：长方形实例 ==
-
-为了使这些长方形实例便于使用，如果库能够提供诸如`width`，`height`，`left`，
-`right`，`topLeft`，等等方法。
-
-没有特质的代码的话，首先会有一些基本的集合类如`Point`和`Rectangle`：
-
-{{{class="brush: scala"
-  class Point(val x: Int, val y: Int)
-
-  class Rectangle(val topLeft: Point, val bottomRight: Point) {
-    def left = topLeft.x
-    def right = bottomRight.x
-    def width = right - left
-    // and many more geometric methods...
-  }
-}}}
-
-这个`Rectangle`类在它的主构造器中带两个点，分别是左上角和右下角的坐标。然后它
-通过对这两个点执行简单的计算实现了许多便捷方法诸如`left`，`right`，和`width`。
-
-图库应该有的另一个类是2-D图像工具：
-
-{{{class="brush: scala"
-  abstract class Component {
-    def topLeft: Point
-    def bottomRight: Point
-
-    def left = topLeft.x
-    def right = bottomRight.x
-    def width = right - left
-    // and many more geometric methods...
-  }
-}}}
-
-注意`left`，`right`，和`width`在两个类中的定义是一模一样。除了少许的变动外，他们
-将在任何其他的长方形实例的类中保持一致。
-
-这种重复可以使用特质消除。这个特质应该具有两个抽象方法：一个返回实例的左上角坐标
-，另一个返回右下角的坐标。然后他就可以应用到所有其他的几何查询的具体实现中：
-
-{{{class="brush: scala"
-  trait Rectangular {
-    def topLeft: Point
-    def bottomRight: Point
-
-    def left = topLeft.x
-    def right = bottomRight.x
-    def width = right - left
-    // and many more geometric methods...
-  }
-}}}
-
-类`Component`可以混入这个特质并获得`Rectangular`提供的所有的几何方法：
-
-{{{class="brush: scala"
-  abstract class Component extends Rectangular {
-    // other methods...
-  }
-}}}
-
-可以创建`Rectangle`实例并对它调用如`width`或`left`的几何方法：
-
-{{{class="brush: scala"
-  scala> val rect = new Rectangle(new Point(1, 1),
-       | new Point(10, 10))
-  rect: Rectangle = Rectangle@3536fd
-
-  scala> rect.left
-  res2: Int = 1
-
-  scala> rect.right
-  res3: Int = 10
-
-  scala> rect.width
-  res4: Int = 9
+trait Logger {
+	def log(msg: String)
+}
 }}}
 
 
-== 实现Ordered特质来排序 ==
-
-以前面我们实现的实数类型来说，原来已经有了四个比较大小的方法：
-
-{{{class="brush: scala"
-  class Rational(n: Int, d: Int) {
-    // ...
-    def < (that: Rational) =
-      this.numer * that.denom > that.numer * this.denom
-    def > (that: Rational) = that < this
-    def <= (that: Rational) = (this < that) || (this == that)
-    def >= (that: Rational) = (this > that) || (this == that)
-  }
-}}}
-
-Scala专门提供了`Ordered`特质来简化比较工作。只要实现`Ordered`特质中的`compare`
-方法，就可以自动实现其他的`<`、`>`、`<=`、`>=`功能：
+在实现子类特质的时候，调用的相对父类的方法还是抽象的，所以下而的代码是编译不过
+的：
 
 {{{class="brush: scala"
-  class Rational(n: Int, d: Int) extends Ordered[Rational] {
-    // ...
-    def compare(that: Rational) =
-      (this.numer * that.denom) - (that.numer * this.denom)
-  }
+trait TimestampLogger extends Logger {
+	override def log(msg: String) {
+		super.log(new java.util.Date() + " " + msg) // super.log()还是抽象的，错误
+	}
+}
 }}}
-
-上面定义`compare`方法来比较两个实例，类`Rational`现在具有了所有4种比较方法：
-
-{{{class="brush: scala"
-  scala> val half = new Rational(1, 2)
-  half: Rational = 1/2
-
-  scala> val third = new Rational(1, 3)
-  third: Rational = 1/3
-
-  scala> half < third
-  res5: Boolean = false
-
-  scala> half > third
-  res6: Boolean = true
-}}}
-
-考虑下面的抽象简化了四个比较操作符的实现：
-
-{{{class="brush: scala"
-  trait Ordered[T] {
-    def compare(that: T): Int
-
-    def <(that: T): Boolean = (this compare that) < 0
-    def >(that: T): Boolean = (this compare that) > 0
-    def <=(that: T): Boolean = (this compare that) <= 0
-    def >=(that: T): Boolean = (this compare that) >= 0
-  }
-}}}
-
-== 特质的叠加次序 ==
-
-可以把多个特质加在一个类上，按声明的顺序，它们操作的顺序就像栈一样。
-
-`IntQueue`有一个`put`方法把整数添加到队列中，和一个`get`方法移除并返回它们：
-
-{{{class="brush: scala"
-  abstract class IntQueue {
-    def get(): Int
-    def put(x: Int)
-  }
-}}}
-
-`BasicIntQueue`类根据上面的特质实现了一个队列：
-
-{{{class="brush: scala"
-  import scala.collection.mutable.ArrayBuffer
-
-  class BasicIntQueue extends IntQueue {
-    private val buf = new ArrayBuffer[Int]
-    def get() = buf.remove(0)
-    def put(x: Int) { buf += x }
-  }
-}}}
-
-运行一个队列的效果：
-
-{{{class="brush: scala"
-  scala> val queue = new BasicIntQueue
-  queue: BasicIntQueue = BasicIntQueue@24655f
-
-  scala> queue.put(10)
-
-  scala> queue.put(20)
-
-  scala> queue.get()
-  res9: Int = 10
-
-  scala> queue.get()
-  res10: Int = 20
-}}}
-
-
-`Doubling`特质把整数放入队列的时候对它加倍。
-
-{{{class="brush: scala"
-  trait Doubling extends IntQueue {
-    abstract override def put(x: Int) { super.put(2 * x) }
-  }
-}}}
-
-注意：定义了超类`IntQueue`这个定义意味着特质只能混入到扩展了`IntQueue`的类中。
 
 声明为抽象的方法中有一个`super`调用。这种调用对于普通的类来说是非法的，因为继承
 的超类是个抽象类，所以在执行时将必然失败。然而对于特质来说，这样的调用实际能够
-成功。因为特质里的`super`调用是动态绑定的，特质`Doubling`的`super`调用将直到被
-混入在另一个特质或类之后，有了具体的方法定义时才工作。
+成功。因为特质里的`super`调用是动态绑定的，特质的`super`调用将直到被混入在另一个
+特质或类之后，有了具体的方法定义时才工作。
 
 所以要加上`abstract override`，说明要继承父特质（只有特质，类里是不能这样写的）
 才能实际产生作用。
 
-现在一行代码都不用写，下面只有一个`extends`和一个`with`就把类定义好了：
-
 {{{class="brush: scala"
-  scala> class MyQueue extends BasicIntQueue with Doubling
-  defined class MyQueue
-
-  scala> val queue = new MyQueue
-  queue: MyQueue = MyQueue@91f017
-
-  scala> queue.put(10)
-
-  scala> queue.get()
-  res12: Int = 20
+trait TimestampLogger extends Logger {
+	abstract override def log(msg: String) {
+		super.log(new java.util.Date() + " " + msg)
+	}
+}
 }}}
 
-这个队列即能入队出队，而且数字还是加倍的。
-
-还可以更加简化到类名都不用写，直接`new BasicIntQueue with Doubling`这个父类名加
-上特质就可以把实例拿到了：
-
-{{{class="brush: scala"
-  scala> val queue = new BasicIntQueue with Doubling
-  queue: BasicIntQueue with Doubling = $anon$1@5fa12d
-
-  scala> queue.put(10)
-
-  scala> queue.get()
-  res14: Int = 20
-}}}
-
-
-== 特质的叠加 ==
-
-有两个特质，一个在入队时把值加1；另一个过滤掉负数：
-
-{{{class="brush: scala"
-  trait Incrementing extends IntQueue {
-    abstract override def put(x: Int) { super.put(x + 1) }
-  }
-
-  trait Filtering extends IntQueue {
-    abstract override def put(x: Int) {
-      if (x >= 0) super.put(x)
-    }
-  }
-}}}
-
-队列能够即过滤负数又对每个进队列的数字增量：
-
-{{{class="brush: scala"
-  scala> val queue = (new BasicIntQueue
-       | with Incrementing with Filtering)
-  queue: BasicIntQueue with Incrementing with Filtering...
-
-  scala> queue.put(-1); queue.put(0); queue.put(1)
-
-  scala> queue.get()
-  res15: Int = 1
-
-  scala> queue.get()
-  res16: Int = 2
-}}}
-
-粗略地说，越靠近右侧的特质越先起作用。如果那个方法调用了`super`，它调用其左侧
-特质的方法，以此类推。
-
-前面的例子里，`Filtering`的`put`首先被调用，因此它移除了开始的负整数。
-`Incrementing`的`put`第二个被调用，因此它对剩下的整数增量。
-
-如果你逆转特质的次序，那么整数首先会加1，然后如果仍然是负的才会被抛弃：
-
-{{{class="brush: scala"
-  scala> val queue = (new BasicIntQueue
-       | with Filtering with Incrementing)
-  queue: BasicIntQueue with Filtering with Incrementing...
-
-  scala> queue.put(-1); queue.put(0); queue.put(1)
-
-  scala> queue.get()
-  res17: Int = 0
-
-  scala> queue.get()
-  res18: Int = 1
-
-  scala> queue.get()
-  res19: Int = 2
-}}}
-
-
-== 特质方法的延迟绑定 ==
+再来看一个例子
 
 在基类方法为抽象时情况比较复杂。比如下面这个抽象`Writer`类的抽象方法
+
 `writeMessage()`：
 
 {{{class="brush: scala"
@@ -2253,7 +1991,457 @@ THERE IS NO SIN EXCEPT S-----ITY
 THERE IS NO SIN EXCEPT STUPIDITY
 }}}
 
-== 为什么不是多重继承 ==
+
+=== 特质也可以继承自类 ===
+
+`IntQueue`类有一个`put`方法把整数添加到队列中，和一个`get`方法移除并返回它们：
+
+{{{class="brush: scala"
+  abstract class IntQueue {
+    def get(): [[Int]]
+    def put(x: Int)
+  }
+}}}
+
+`BasicIntQueue`类根据上面的特质实现了一个队列：
+
+{{{class="brush: scala"
+  import scala.collection.mutable.ArrayBuffer
+
+  class BasicIntQueue extends IntQueue {
+    private val buf = new ArrayBuffer[Int]
+    def get() = buf.remove(0)
+    def put(x: Int) { buf += x }
+  }
+}}}
+
+运行一个队列的效果：
+
+{{{class="brush: scala"
+  scala> val queue = new BasicIntQueue
+  queue: BasicIntQueue = BasicIntQueue@24655f
+
+  scala> queue.put(10)
+
+  scala> queue.put(20)
+
+  scala> queue.get()
+  res9: Int = 10
+
+  scala> queue.get()
+  res10: Int = 20
+}}}
+
+`Doubling`特质继承自类`IntQueue`，它把整数放入队列的时候对它加倍。
+
+{{{class="brush: scala"
+  trait Doubling extends IntQueue {
+    abstract override def put(x: Int) { super.put(2 * x) }
+  }
+}}}
+
+=== 特质只能混入基类的子类 ===
+
+定义了超类`IntQueue`这个定义意味着特质只能混入到扩展了`IntQueue`的类中。
+
+还有前面提到的抽象绑定:
+
+声明为抽象的方法中有一个`super`调用。这种调用对于普通的类来说是非法的，因为继承
+的超类是个抽象类，所以在执行时将必然失败。然而对于特质来说，这样的调用实际能够
+成功。因为特质里的`super`调用是动态绑定的，特质`Doubling`的`super`调用将直到被
+混入在另一个特质或类之后，有了具体的方法定义时才工作。
+
+所以要加上`abstract override`，说明要继承父特质（只有特质，类里是不能这样写的）
+才能实际产生作用。
+
+现在一行代码都不用写，下面只有一个`extends`和一个`with`就把类定义好了：
+
+{{{class="brush: scala"
+  scala> class MyQueue extends BasicIntQueue with Doubling
+  defined class MyQueue
+
+  scala> val queue = new MyQueue
+  queue: MyQueue = MyQueue@91f017
+
+  scala> queue.put(10)
+
+  scala> queue.get()
+  res12: Int = 20
+}}}
+
+这个队列即能入队出队，而且数字还是加倍的。
+
+还可以更加简化到类名都不用写，直接`new BasicIntQueue with Doubling`这个父类名加
+上特质就可以把实例拿到了：
+
+{{{class="brush: scala"
+  scala> val queue = new BasicIntQueue with Doubling
+  queue: BasicIntQueue with Doubling = $anon$1@5fa12d
+
+  scala> queue.put(10)
+
+  scala> queue.get()
+  res14: Int = 20
+}}}
+
+
+=== 特质的超类会成为类的超类 ===
+
+之前讨论过特质可以继承自类，那我们就从`Exception`扩展一个特质出来：
+
+{{{class="brush: scala"
+trait LoggedException extends Exception with Logged {
+	def log() { log(getMessage()) }
+}
+}}}
+
+这里的`getMessage`方法是从`Exception`继承下来的。接下来把这个特质混入一个类中：
+
+{{{class="brush: scala"
+class UnhappyException exteds LoggedException {
+	override def getMessage() = "arggh!"
+}
+}}}
+
+现在特质`LoggedException`的超类`Exception`是`UnhappyException`的超类，对于生成的
+Java类来说：
+
+* `UnhappyException`实现了`LoggedException`接口
+* `UnhappyException`继承了`Exception`类
+
+==== 只能有一个超类 ====
+
+因为Java没有多继承，所以类的超类和特质的超类不能关联到不同的类：
+
+{{{class="brush: scala"
+class UnhappyFrame extends JFrame with LoggedException
+}}}
+
+不能同时把`JFrame`和`Exception`作为超类。
+
+但如果类的超类是特质超类的子类就没有问题：
+
+{{{class="brush: scala"
+class UnhappyException extends IOException with LoggedException
+}}}
+
+=== `this`限制混入类 ===
+
+`this: Type =>`限制特质只能被混入指定类型的子类：
+
+{{{class="brush: scala"
+trait LoggedException extends Logged {
+	this: Exception =>
+		def log() { log(getMessage()) }
+}
+}}}
+
+这里不继承自`Exception`类，但限制只能混入`Exception`的子类。而且可以合法地调用
+`getMessage()`方法，因为它只会被混入`Exception`的子类。
+
+通过`this: Type`来限制类型比继承超类的版本更加灵活。可以避免两个彼此需要的特质
+循环依赖。
+
+{{{class="brush: scala"
+trait LoggedException extends Logged {
+	this: { def getMessage(): String }=>
+		def log() { log(getMessage()) }
+}
+}}}
+
+所有拥有`getMessage()`方法的类都可以混入`LoggedException`物质。
+
+==== 结构类型 ====
+
+结构类型（structural type）只给出类必须拥有的方法，而不是类的名称。这种场景下用
+`this: Type`处理更加方便：
+
+== 混入多个特质 ==
+
+如果想混入多个特质，都加在`with`子句里就可以了：
+
+{{{class="brush: scala"
+  class Animal
+  trait HasLegs
+
+  class Frog extends Animal with Philosophical with HasLegs {
+    override def toString = "green"
+  }
+}}}
+
+=== 特质的`super`引用是动态的 ===
+
+类和特质的另一个差别在于：在类中任何地方，`super`调用都是静态绑定的，在特质中
+，它们是动态绑定的。如果你在类中写下`super.toString`，你很明确哪个方法实现将被
+调用。然而如果你在特质中写了同样的东西，在你定义特质的时候`super`调用的方法实现
+尚未被定义。调用的实现将在每一次特质被混入到具体类的时候才被决定。这种处理
+`super`的有趣的行为是使得特质能以可堆叠的改变（stackable modifications）方式
+工作的关键。
+
+
+=== 特质的叠加栈 ===
+
+有两个特质，一个在入队时把值加1；另一个过滤掉负数：
+
+{{{class="brush: scala"
+  trait Incrementing extends IntQueue {
+    abstract override def put(x: Int) { super.put(x + 1) }
+  }
+
+  trait Filtering extends IntQueue {
+    abstract override def put(x: Int) {
+      if (x >= 0) super.put(x)
+    }
+  }
+}}}
+
+队列能够即过滤负数又对每个进队列的数字增量：
+
+{{{class="brush: scala"
+  scala> val queue = (new BasicIntQueue
+       | with Incrementing with Filtering)
+  queue: BasicIntQueue with Incrementing with Filtering...
+
+  scala> queue.put(-1); queue.put(0); queue.put(1)
+
+  scala> queue.get()
+  res15: Int = 1
+
+  scala> queue.get()
+  res16: Int = 2
+}}}
+
+粗略地说，越靠近右侧的特质越先起作用。如果那个方法调用了`super`，它调用其左侧
+特质的方法，以此类推。
+
+前面的例子里，`Filtering`的`put`首先被调用，因此它移除了开始的负整数。
+`Incrementing`的`put`第二个被调用，因此它对剩下的整数增量。
+
+如果你逆转特质的次序，那么整数首先会加1，然后如果仍然是负的才会被抛弃：
+
+{{{class="brush: scala"
+  scala> val queue = (new BasicIntQueue
+       | with Filtering with Incrementing)
+  queue: BasicIntQueue with Filtering with Incrementing...
+
+  scala> queue.put(-1); queue.put(0); queue.put(1)
+
+  scala> queue.get()
+  res17: Int = 0
+
+  scala> queue.get()
+  res18: Int = 1
+
+  scala> queue.get()
+  res19: Int = 2
+}}}
+
+=== 指定调用特质栈 ===
+
+除了用`super.method()`调用下个特质，还可以用`super[traid].method()`来调用指定
+具体特质。注意指定的一定是直接一级，不能使用继承层级中更远的特质类。
+
+
+== 特质的构造过程 ==
+
+=== 特质构造器 ===
+
+特质构造器是由字段初始化和其他特质体中的语句构成的。特质所混入对象被构造时，这些
+语句被执行。顺序为：
+
+* 调用超类的构造器
+* 特质构造器在超类构造器之后，当前类的构造器之前执行
+* 特质从左到右被构造，每个特质的你特质先被构造。
+* 如果多个特质共有一个你特质，而且父特质已经被构造过了，不会再次构造
+* 所有特质构造完毕，当前类构造器被执行
+
+=== 特质不能有构造器参数 ===
+
+特质不能有任何“类”参数，也就是说，传递给类的主构造器的参数。换句话说，
+尽管你可以定义如下的类：
+
+{{{class="brush: scala"
+  class Point(x: Int, y: Int)
+}}}
+
+=== 预初始化字段 ===
+
+由于特质不能有参数，所以要用别的方法在初始化时传入值。
+
+比如，不能有参数，所以用以下的方法指定日志文件是不行的：
+
+{{{class="brush: scala"
+val acct = new SavingAccount with FileLogger("mylog.log")
+}}}
+
+另一个方案：
+
+用抽象字段`filenam`来存文件名，这样混入这个特质的类可以重写这个字段：
+
+{{{class="brush: scala"
+trait FileLogger extends Logger {
+	val filename: String
+	val out = new PrintStream(filename)
+	def long(msg: String) { out.println(msg); out.flush() }
+}}}
+
+但是由于特质的构造器比当前类更先执行，所以特质构造时取得的`filename`还是没有被
+子类初始化，抛出空指针异常。
+
+有效的解决方案有两个：
+
+* 预初始化字段。
+* 懒加载。
+
+==== 应用于实例 ====
+
+把初始化块放在`new`之后：
+
+{{{class="brush: scala"
+val acct = new {
+	val filename = "mylog.log"
+} with SavingAccount whith FileLogger
+}}}
+
+==== 应用于类 ====
+
+初始化块放在`extends`前：
+
+{{{class="brush: scala"
+clas SavingAccount extends {
+	val filename = "mylog.log"
+} with Account with FileLogger {
+	// ...
+}
+}}}
+
+=== 懒加载 ===
+
+除了预初始化外的另一个方案是懒加载：
+
+{{{class="brush: scala"
+trait FileLogger extends Logger {
+	val filename: String
+	lazy val out = new PrintStream(filename)
+	def long(msg: String) { out.println(msg); out.flush() }
+}
+}}}
+
+初始化输出流的操作只有在用到`out`时才执行。
+
+== Scala特质生成Java接口 ==
+
+=== 只有抽象方法 ===
+
+只有抽象方法的特质简单地转为Java接口。
+
+Scala特质：
+
+{{{class="brush: scala"
+trait Logger {
+	def log(msg: String)
+}
+}}}
+
+生成的接口：
+
+{{{class="brush: java"
+public interface Logger {
+	void log(String msg);
+}
+}}}
+
+=== 有方法实现的情况 ===
+
+会创建一个伴生类，它的静态方法里存放特质的方法。
+
+{{{class="brush: scala"
+trait ConsoleLogger exteds Logger {
+	def log(msg: String) { println(msg) }
+}
+}}}
+
+转换成：
+
+{{{class="brush: java"
+public interface ConsoleLogger extends Logger {
+	void log(String msg);
+}
+}}}
+
+伴生类：
+
+{{{class="brush: java"
+public class ConsoleLogger$class {
+	public static void log(ConsoleLogger self, String msg) {
+		println(msg);
+	}
+	
+	// ...
+}
+}}}
+
+=== 特质中的字段 ===
+
+伴生类中不会有字段，字段对应的`getter`和`setter`方法加入到实现了特质的类中：
+
+{{{class="brush: java"
+trait ShortLogger extends Logger {
+	val maxLength = 15
+	// ...
+}
+}}}
+
+被翻译成：
+
+{{{class="brush: java"
+public interface ShortLogger extends Logger {
+	public abstract int maxLength();
+	public abstract void weird_prefix$maxLength_$eq(int);
+	
+	// ...
+}
+}}}
+
+以`weird`开头的`setter`方法是用来初始化字段的。初始化发生在伴生类的一个初始化
+方法内：
+
+{{{class="brush: scala"
+public class ShortLogger$class {
+	public void $init$(ShortLogger self) {
+		self.weired-prefix$maxLength_$eq(15)
+	}
+
+	// ...
+}
+}}}
+
+被混入的类会有带`getter`和`setter`的`maxLength`字段，上面的构造器会被调用以初始
+化字段。
+
+如果物质扩展自某个超类，则伴生类并不继承这个超类。该超类会被任何实现该特质的类
+继承。
+
+== 特质与类的差异 ==
+
+特质就像是带有具体方法的Java接口，不过其实它能做的更多。比方说，特质可以声明字段
+和维持状态值。
+
+实际上，你可以用特质定义做任何用类定义做的事，并且语法也是一样的，除了两点：
+
+* 特质不能有构造器参数。
+* 特质的`super`引用是动态的。
+
+但是下面定义特质的尝试将遭到失败：
+
+{{{class="brush: scala"
+  trait NoPoint(x: Int, y: Int) // Does not compile
+}}}
+
+
+== 应用场景 ==
+
+=== 为什么不是多重继承 ===
 
 特质是一种继承多个类似于类的结构的方式，但是它与许多语言中的多重继承有很重要的
 差别。其中的一个尤为重要：`super`的解释。对于多重继承来说，`super`调用导致的方法
@@ -2361,7 +2549,45 @@ FourLegged : Any < AnyRef < Animal < HasLegs < FourLegged
        Cat : Any < AnyRef < Animal < Furry < HasLegs < FourLegged < Cat
 }}}
 
-== 什么情况下要用特质 ==
+
+=== 比较瘦接口与胖接口 ===
+
+瘦接口与胖接口的对阵体现了面向对象设计中常会面临的在实现者与接口用户之间的权衡。
+
+胖接口有更多的方法，对于调用者来说更便捷。客户可以捡一个完全符合他们功能需要的
+方法。另一方面瘦接口有较少的方法，对于实现者来说更简单。然而调用瘦接口的客户因此
+要写更多的代码。由于没有更多可选的方法调用，他们或许不得不选一个不太完美匹配他们
+所需的方法并为了使用它写一些额外的代码。
+
+Java的接口常常是过瘦而非过胖。例如，从Java 1.4开始引入的`CharSequence`接口，是
+对于字串类型的类来说通用的瘦接口，它持有一个字符序列。下面是把它看作Scala特质的
+定义：
+
+{{{class="brush: scala"
+  trait CharSequence {
+    def charAt(index: Int): Char
+    def length: Int
+    def subSequence(start: Int, end: Int): CharSequence
+    def toString(): String
+  }
+}}}
+
+尽管类`String`里现有的成打的方法中的大多数都可以用在任何`CharSequence`上，Java的
+`CharSequence`接口定义仅提供了4个方法。如果`CharSequence`代以包含全部`String`
+接口，那它将为`CharSequence`的实现者压上沉重的负担。任何实现Java`CharSequence`
+接口的程序员将不得不定义一大堆方法。因为Scala特质可以包含具体方法，这使得创建
+胖接口大为便捷。
+
+在特质中添加具体方法使得胖瘦对阵的权衡大大倾向于胖接口。不像在Java里那样，在
+Scala中添加具体方法是一次性的劳动。你只要在特质中实现方法一次，而不再需要在每个
+混入特质的方法中重新实现它。因此，与没有特质的语言相比，Scala里的胖接口没什么
+工作要做。
+
+要使用特质丰满接口，只要简单地定义一个具有少量抽象方法的特质——特质接口的瘦部分——
+和潜在的大量具体方法，所有的都实现在抽象方法之上。然后你就可以把丰满了的特质混入
+到类中，实现接口的瘦部分，并最终获得具有全部胖接口内容的类。
+
+=== 什么情况下要用特质 ===
 
 没有固定的规律，但是包含了几条可供考虑的导则。
 
@@ -2384,6 +2610,142 @@ FourLegged : Any < AnyRef < Animal < HasLegs < FourLegged
 调用。特质被编译成接口，因此会付出微小的性能代价。然而，仅当你知道那个存疑的特质
 构成了性能瓶颈，并且有证据说明使用类代替能确实解决问题，才做这样的选择。
 
+
+== 例子 ==
+
+=== 样例：长方形实例 ===
+
+为了使这些长方形实例便于使用，如果库能够提供诸如`width`，`height`，`left`，
+`right`，`topLeft`，等等方法。
+
+没有特质的代码的话，首先会有一些基本的集合类如`Point`和`Rectangle`：
+
+{{{class="brush: scala"
+  class Point(val x: Int, val y: Int)
+
+  class Rectangle(val topLeft: Point, val bottomRight: Point) {
+    def left = topLeft.x
+    def right = bottomRight.x
+    def width = right - left
+    // and many more geometric methods...
+  }
+}}}
+
+这个`Rectangle`类在它的主构造器中带两个点，分别是左上角和右下角的坐标。然后它
+通过对这两个点执行简单的计算实现了许多便捷方法诸如`left`，`right`，和`width`。
+
+图库应该有的另一个类是2-D图像工具：
+
+{{{class="brush: scala"
+  abstract class Component {
+    def topLeft: Point
+    def bottomRight: Point
+
+    def left = topLeft.x
+    def right = bottomRight.x
+    def width = right - left
+    // and many more geometric methods...
+  }
+}}}
+
+注意`left`，`right`，和`width`在两个类中的定义是一模一样。除了少许的变动外，他们
+将在任何其他的长方形实例的类中保持一致。
+
+这种重复可以使用特质消除。这个特质应该具有两个抽象方法：一个返回实例的左上角坐标
+，另一个返回右下角的坐标。然后他就可以应用到所有其他的几何查询的具体实现中：
+
+{{{class="brush: scala"
+  trait Rectangular {
+    def topLeft: Point
+    def bottomRight: Point
+
+    def left = topLeft.x
+    def right = bottomRight.x
+    def width = right - left
+    // and many more geometric methods...
+  }
+}}}
+
+类`Component`可以混入这个特质并获得`Rectangular`提供的所有的几何方法：
+
+{{{class="brush: scala"
+  abstract class Component extends Rectangular {
+    // other methods...
+  }
+}}}
+
+可以创建`Rectangle`实例并对它调用如`width`或`left`的几何方法：
+
+{{{class="brush: scala"
+  scala> val rect = new Rectangle(new Point(1, 1),
+       | new Point(10, 10))
+  rect: Rectangle = Rectangle@3536fd
+
+  scala> rect.left
+  res2: Int = 1
+
+  scala> rect.right
+  res3: Int = 10
+
+  scala> rect.width
+  res4: Int = 9
+}}}
+
+
+=== 实现Ordered特质来排序 ===
+
+以前面我们实现的实数类型来说，原来已经有了四个比较大小的方法：
+
+{{{class="brush: scala"
+  class Rational(n: Int, d: Int) {
+    // ...
+    def < (that: Rational) =
+      this.numer * that.denom > that.numer * this.denom
+    def > (that: Rational) = that < this
+    def <= (that: Rational) = (this < that) || (this == that)
+    def >= (that: Rational) = (this > that) || (this == that)
+  }
+}}}
+
+Scala专门提供了`Ordered`特质来简化比较工作。只要实现`Ordered`特质中的`compare`
+方法，就可以自动实现其他的`<`、`>`、`<=`、`>=`功能：
+
+{{{class="brush: scala"
+  class Rational(n: Int, d: Int) extends Ordered[Rational] {
+    // ...
+    def compare(that: Rational) =
+      (this.numer * that.denom) - (that.numer * this.denom)
+  }
+}}}
+
+上面定义`compare`方法来比较两个实例，类`Rational`现在具有了所有4种比较方法：
+
+{{{class="brush: scala"
+  scala> val half = new Rational(1, 2)
+  half: Rational = 1/2
+
+  scala> val third = new Rational(1, 3)
+  third: Rational = 1/3
+
+  scala> half < third
+  res5: Boolean = false
+
+  scala> half > third
+  res6: Boolean = true
+}}}
+
+考虑下面的抽象简化了四个比较操作符的实现：
+
+{{{class="brush: scala"
+  trait Ordered[T] {
+    def compare(that: T): Int
+
+    def <(that: T): Boolean = (this compare that) < 0
+    def >(that: T): Boolean = (this compare that) > 0
+    def <=(that: T): Boolean = (this compare that) <= 0
+    def >=(that: T): Boolean = (this compare that) >= 0
+  }
+}}}
 
 
 

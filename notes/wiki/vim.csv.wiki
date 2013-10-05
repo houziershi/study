@@ -1,0 +1,58 @@
+%title csv.vim
+
+%toc csv.vim
+
+= 安装 =
+
+http://www.vim.org/scripts/script.php?script_id=2830
+
+Open csv.vmb in Vim and source the file: `:so %`
+
+This will install the plugin into your `$HOME/.vim/ftplugin` directory and the 
+documentation into your `$HOME/.vim/doc` directory.
+
+See also the help for installing Vimball-Archives (`:h vimball-intro`)
+
+Take a look at `:h ft-csv.txt` for the documenation and read 
+`:h csv-installation` to have vim automatically detect csv-files.
+
+= 概览 =
+
+<img src="images/vim.csv/csv.gif" />
+
+= 基础 =
+
+This little filetype plugin allows among others:
+
+* Display on which column the cursor is as well as number of columns
+* Search for text within a column using `:SearchInColumn` command
+* Highlight the column on which the cursor is using `:HiColumn` command
+* Visually arrange all columns using `:ArrangeColumn` command
+* Delete a Column using `:DeleteColumn` command
+* Display a vertical or horizontal header line using `:Header` or `:VHeader` command
+* Sort a Column using `:Sort` command
+* Copy Column to register using `:Column` command
+* Move a column behind another column using `:MoveCol` command
+* Sum values within a column using `:SumCol` (you can also define your own)
+* Move through the columns using the normal mode commands
+	- `W` forwards, 
+	- `H` backwards, 
+	- `K` upwards, 
+	- `J` downwards
+* sets up syntax highlighting, concealing the delimiter, if Vim supports it
+* Analyze all values of a column (distribution) using `:Analyze` command
+* Insert new records, using `:NewRecord` command
+* Implement a wizard to setup fixed-width CSV files using `:CSVFixed`
+* Hide certain columns, using `:VertFold`
+* `:Table` to create ascii type tables available as plugin for all filetypes)
+* dynamic filtering：
+	- Press `enter` on a value and all other lines, that don't have this value in this column will be folded away. 
+	- Press `enter` on another value and this value will be ANDed to the filter list. 
+	- Press `Backspace` to delete the last item from the filter list. 
+	- Press `Space` to fold all lines, that have the same value in the current field, 
+	- Press `Enter` to fold all lines, that have a different value in the current field. 
+	- Use `:Filters` to see what filters are actvie
+
+Please read the help on how to use the plugin `:h ft-csv.txt`
+ 
+更多帮助：http://vim.wikia.com/wiki/VimTip667

@@ -56,7 +56,9 @@
 <li><a href="#toc_3.2">apply与update方法</a>
 <li><a href="#toc_3.3">列表</a>
 <ul>
-<li><a href="#toc_3.3.1">List常用方法</a>
+<li><a href="#toc_3.3.1">LinkedList</a>
+<li><a href="#toc_3.3.2">DoubleLinkedList</a>
+<li><a href="#toc_3.3.3">List常用方法</a>
 </ul>
 <li><a href="#toc_3.4">方法关联性</a>
 <li><a href="#toc_3.5">元组（Tuple）</a>
@@ -770,7 +772,20 @@ List只能把元素加在头上，如果要加在后面的话，一个方法是�
 <code>reverse</code>方法；还有一个方案是使用ListBuffer，它有<code>append</code>方法。
 </p>
 
-<h3 id="toc_3.3.1">List常用方法</h3>
+<h3 id="toc_3.3.1">LinkedList</h3>
+
+<p>
+对于可变的链表，不能通过把<code>next</code>引用设置为<code>Nil</code>的方法将其设置为最后结点。应该是
+<code>LinkedList.empty</code>。
+</p>
+
+<h3 id="toc_3.3.2">DoubleLinkedList</h3>
+
+<p>
+双向链表，<code>prev</code>引用指向前一个节点。
+</p>
+
+<h3 id="toc_3.3.3">List常用方法</h3>
 
 <pre class="brush: scala">
 List() 或 Nil                          // 空List

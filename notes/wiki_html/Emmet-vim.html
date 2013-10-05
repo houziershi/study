@@ -60,17 +60,21 @@
 </p>
 
 <pre class="brush: bash;">
-  # cat &gt;&gt; ~/.vimrc
-  let g:user_emmet_settings = {
+# cat &gt;&gt; ~/.vimrc
+let g:user_emmet_settings = {
+  \  'xml' : {
+  \    'extends' : 'html',
+  \  },
+  \  'css' : {
+  \    'filters' : 'fc',
+  \  },
+  \  'jsp' : {
+  \    'extends' : 'html',
+  \    'filters' : 'html,c',
+  \  },
   \  `php` : {
   \    `extends` : `html`,
   \    `filters` : `c`,
-  \  },
-  \  `xml` : {
-  \    `extends` : `html`,
-  \  },
-  \  `haml` : {
-  \    `extends` : `html`,
   \  },
   \}
 </pre>

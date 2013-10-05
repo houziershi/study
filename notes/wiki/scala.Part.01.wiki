@@ -470,6 +470,15 @@ nl: List[Int] = List(1, 2, 3)
 List只能把元素加在头上，如果要加在后面的话，一个方法是在加到头上以后再调用
 `reverse`方法；还有一个方案是使用ListBuffer，它有`append`方法。
 
+=== LinkedList ===
+
+对于可变的链表，不能通过把`next`引用设置为`Nil`的方法将其设置为最后结点。应该是
+`LinkedList.empty`。
+
+=== DoubleLinkedList ===
+
+双向链表，`prev`引用指向前一个节点。
+
 === List常用方法 ===
 
 {{{class="brush: scala"
