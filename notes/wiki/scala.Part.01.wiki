@@ -3128,6 +3128,32 @@ Scala仅优化了直接递归调用使其返回同一个函数。如果递归是
 优化受限于方法或嵌套函数在最后一个操作调用本身，而没有转到某个函数值或什么其它的
 中间函数的情况。
 
+== 蹦床 ==
+
+对于消除递归，有一个比尾递归更加通用的机制叫作“蹦床”。它通过一个循环不断地调用
+函数，每个函数都返回一下要被调用的函数。尾递归其实是蹦床的一个特例：每个函数都
+返回它自己。
+
+Scala的`TailCalls`工具对象帮助实现蹦床。相互递归的函数返回类型为`TailRec[A]`。
+其值为`done(result)`或`tailcall(fun)`二者之一。其中`fun`代表下一个要被调用的函数
+，这个函数不能有额外的参数而且返回类型为`TailRec[A]`的函数。
+
+例子：
+
+{{{class="brush: scala"
+def evenLength(xs: Seq[Int]): TailRec[Boolean] =
+  if (xs.isEmpty) done(true) else tailCall(oddlength(xs.tail))
+def oddLength( xs: Seq[Int]): TailRec[Boolean] =
+  if (xs.isEmpty) done(true) else tailCall(evenlength(xs.tail))
+}}}
+
+调用时，用`result`方法取得结果：
+
+{{{class="brush: scala"
+evenLength(1 to 1000000).result
+}}}
+
+
 == Execute Around Method 模式 ==
 
 举个例子，对于资源`Resource`一定要执行善后工作`cleanUp`。这里把构造函数做成私有

@@ -80,11 +80,27 @@
 </ul>
 <li><a href="#toc_3.3">标准注解</a>
 <ul>
-<li><a href="#toc_3.3.1">标明废弃</a>
-<li><a href="#toc_3.3.2">易变字段</a>
-<li><a href="#toc_3.3.3">二进制序列化</a>
-<li><a href="#toc_3.3.4">自动getter和setter方法</a>
-<li><a href="#toc_3.3.5">不检查</a>
+<li><a href="#toc_3.3.1">废弃</a>
+<li><a href="#toc_3.3.2">自动getter和setter方法</a>
+<li><a href="#toc_3.3.3">标明废弃</a>
+<li><a href="#toc_3.3.4">浮点精度</a>
+<li><a href="#toc_3.3.5">本地方法</a>
+<li><a href="#toc_3.3.6">远程调用</a>
+<li><a href="#toc_3.3.7">克隆对象</a>
+<li><a href="#toc_3.3.8">易变字段</a>
+<li><a href="#toc_3.3.9">二进制序列化</a>
+<li><a href="#toc_3.3.10">不检查</a>
+<li><a href="#toc_3.3.11">变长参数</a>
+<li><a href="#toc_3.3.12">尾递归</a>
+<li><a href="#toc_3.3.13">跳转表</a>
+<li><a href="#toc_3.3.14">内联</a>
+<li><a href="#toc_3.3.15">可省略方法</a>
+<li><a href="#toc_3.3.16">基本类型的包装</a>
+<li><a href="#toc_3.3.17">隐式转换失败提示</a>
+</ul>
+<li><a href="#toc_3.4">实现Scala注解</a>
+<ul>
+<li><a href="#toc_3.4.1">Scala注解扩展作用范围</a>
 </ul>
 </ul>
 <li><a href="#toc_4">使用XML</a>
@@ -92,12 +108,23 @@
 <li><a href="#toc_4.1">半结构化数据</a>
 <li><a href="#toc_4.2">XML概览</a>
 <li><a href="#toc_4.3">XML字面量</a>
+<ul>
+<li><a href="#toc_4.3.1">节点类型</a>
+<li><a href="#toc_4.3.2">NodeBuffer</a>
+<li><a href="#toc_4.3.3">元素属性</a>
+<li><a href="#toc_4.3.4">内嵌Scala表达式</a>
+<li><a href="#toc_4.3.5">属性中使用表达式</a>
+<li><a href="#toc_4.3.6">特殊结点类型</a>
+</ul>
 <li><a href="#toc_4.4">序列化</a>
 <li><a href="#toc_4.5">拆解XML</a>
 <ul>
 <li><a href="#toc_4.5.1">抽取文本</a>
 <li><a href="#toc_4.5.2">抽取子元素</a>
 <li><a href="#toc_4.5.3">抽取属性</a>
+<ul>
+<li><a href="#toc_4.5.3.1">结果是序列</a>
+</ul>
 </ul>
 <li><a href="#toc_4.6">反序列化</a>
 <li><a href="#toc_4.7">读取和保存</a>
@@ -1140,25 +1167,6 @@ Java的注解只是往字节码里增加信息，但Scala的注解可能会影�
 
 <h2 id="toc_3.2">注解语法</h2>
 
-<p>
-以注解<code>@deprecated</code>表示已经被弃用，一希望再被使用的东西：
-</p>
-
-<pre class="brush: scala">
-  @deprecated def bigMistake() = //...
-</pre>
-
-<p>
-这个注解可以被用在任何声明或定义上，如：<code>val</code>、<code>var</code>、<code>def</code>、<code>class</code>、<code>object</code>、
-<code>trait</code>、<code>type</code>上。并用于跟随其后的声明或定义整体：
-</p>
-
-<pre class="brush: scala">
-  @deprecated class QuickAndDirty {
-    //...
-  }
-</pre>
-
 <h3 id="toc_3.2.1">主构造器注解</h3>
 
 <p>
@@ -1279,42 +1287,54 @@ Scala的注解参数可以是任何类型。
 下面介绍Scala里现有的标准注解。
 </p>
 
-<h3 id="toc_3.3.1">标明废弃</h3>
+<h3 id="toc_3.3.1">废弃</h3>
 
 <p>
-警告用户最好不要用某些东西：
+<code>@deprecated</code>表示已经被弃用，一希望再被使用的东西：
 </p>
 
 <pre class="brush: scala">
-  @deprecated def bigMistake() =  //...
+  @deprecated def bigMistake() = //...
 </pre>
 
-
-<h3 id="toc_3.3.2">易变字段</h3>
-
 <p>
-<code>@volatile</code>警告会被多个线程使用，内容会被其他线程改变。
+这个注解可以被用在任何声明或定义上，如：<code>val</code>、<code>var</code>、<code>def</code>、<code>class</code>、<code>object</code>、
+<code>trait</code>、<code>type</code>上。并用于跟随其后的声明或定义整体：
 </p>
 
-<h3 id="toc_3.3.3">二进制序列化</h3>
+<pre class="brush: scala">
+  @deprecated class QuickAndDirty {
+    //...
+  }
+</pre>
 
 <p>
-Scala没有序列化框架，但准备了三个注解：
+两个参数<code>message</code>和<code>since</code>给出提示信息与废弃的版本：
 </p>
 
-<ul>
-<li>
-<code>@serializable</code>标明类是否可以被序列化。
+<pre class="brush: scala">
+  @deprecated(message = "Use factorial(n: BigInt) instead")
+	def factorial(n: Int): Int = //...
+</pre>
 
-<li>
-<code>@SerialVersionUID(version)</code>标明序列化的版本号。<code>version</code>是数字版本号。
+<p>
+<code>@deprecatedName</code>可以被应用到参数上，并给出一个参数之前用过的名字：
+</p>
 
-<li>
-<code>@transient</code>标明类里的某个字段不应该被序列化。
+<pre class="brush: scala">
+def draw(@deprecatedName('sz) size: Int, sytle: Int = NORMAL)
+</pre>
 
-</ul>
+<p>
+注意这里的<code>'sz</code>是一个符号。用户还是可能通过<code>draw(sz = 12)</code>来调用，但是会得到一个
+过期警告。
+</p>
 
-<h3 id="toc_3.3.4">自动getter和setter方法</h3>
+<h3 id="toc_3.3.2">自动getter和setter方法</h3>
+
+<p>
+<code>@BeanProperty</code>
+</p>
 
 <p>
 Scala里不用显式写getter和setter方法，但有些框架上还是要的。为此，Scala已经提供
@@ -1328,10 +1348,397 @@ Scala里用不着这些getter和setter方法，是为了某些框架而需要的
 同一时间又编译框架又编译调用框架的代码。
 </p>
 
-<h3 id="toc_3.3.5">不检查</h3>
+<p>
+<code>@BooleanBeanProperty</code>产带有<code>is</code>前缀的<code>getter</code>方法，用于<code>Boolean</code>类型。
+</p>
+
+<p>
+还有一些不常用的如：<code>@BeanDescription</code>、<code>@BeanDisplayName</code>、<code>@Beaninfo</code>和
+<code>@BeanInfoSkip</code>自己RTFM。
+</p>
+
+<h3 id="toc_3.3.3">标明废弃</h3>
+
+<p>
+警告用户最好不要用某些东西：
+</p>
+
+<pre class="brush: scala">
+  @deprecated def bigMistake() =  //...
+</pre>
+
+<h3 id="toc_3.3.4">浮点精度</h3>
+
+<p>
+<code>@strictfp</code>对就Java中的<code>strictfp</code>修饰符。表示采用IEEE的双精度值进行浮点运算，而
+不是使用Intel处理器默认的80位扩展精度。
+</p>
+
+<pre class="brush: scala">
+@strictfp def calculate(x: Double) = doSth()
+</pre>
+
+<h3 id="toc_3.3.5">本地方法</h3>
+
+<p>
+<code>@native</code>注解对应Java的<code>native</code>修饰符。表示本地调用C或C++的实现的代码：
+</p>
+
+<pre class="brush: scala">
+@native def win32RegKeys(root: Int, path: String): Array[String]
+</pre>
+
+<h3 id="toc_3.3.6">远程调用</h3>
+
+<p>
+<code>@remote</code>注解对应Java的<code>java.rmi.Remote</code>接口。
+</p>
+
+<h3 id="toc_3.3.7">克隆对象</h3>
+
+<p>
+<code>@cloneable</code>注解对应Java的<code>Cloneable</code>接口。
+</p>
+
+<pre class="brush: scala">
+@cloneable class Employee
+</pre>
+
+<h3 id="toc_3.3.8">易变字段</h3>
+
+<p>
+<code>@volatile</code>警告会被多个线程使用，内容会被其他线程改变。
+</p>
+
+<h3 id="toc_3.3.9">二进制序列化</h3>
+
+<p>
+Scala没有序列化框架，但准备了三个注解：
+</p>
+
+<ul>
+<li>
+<code>@serializable</code>表示可序列化（已经过时，应扩展<code>scala.Serializable物质</code>）。
+
+<li>
+<code>@SerialVersionUID(version)</code>标明序列化的版本号。<code>version</code>是数字版本号。
+
+<li>
+<code>@transient</code>标明类里的某个字段不应该被序列化。
+
+</ul>
+
+<pre class="brush: scala">
+@SerialVersionUID(6157032470129384659L)
+class Employee extends Person with Serializable
+</pre>
+
+<h3 id="toc_3.3.10">不检查</h3>
 
 <p>
 <code>@unchecked</code>标明在模式匹配时不用关心被漏掉的可能性。
+</p>
+
+<p>
+<code>@uncheckedVariance</code>忽略与型变相关的错误提示。例如：<code>java.util.Comparator</code>应该是
+逆变的。<code>Student</code>是<code>Person</code>的子类，所以在<code>Comparator[Person]</code>可以用来替代
+<code>Comparator[Student]</code>。但Java的泛型不支持型变，所以需要声明忽略：
+</p>
+
+<pre class="brush: scala">
+trait COmparator[-T] extends java.lang.Comparator[T @uncheckedVariance]
+</pre>
+
+<h3 id="toc_3.3.11">变长参数</h3>
+
+<p>
+<code>@varargs</code>注解让Java调用Scala带有变长参数的方法。默认情况下变长参数被翻译为序列
+：
+</p>
+
+<pre class="brush: scala">
+def process(args: String*)
+
+// 等于：
+def process(args: Seq[String])
+</pre>
+
+<p>
+为了方便Java调用：
+</p>
+
+<pre class="brush: scala">
+@varargs def process(args: String*)
+</pre>
+
+<p>
+产对应的Java方法作为中转：
+</p>
+
+<pre class="brush: java">
+void process(String ... args)
+</pre>
+
+<p>
+该方法把<code>args</code>数组外包装在<code>Seq</code>中，然后调用实际上的<code>Scala</code>方法。
+</p>
+
+<pre class="brush: scala">
+</pre>
+
+<h3 id="toc_3.3.12">尾递归</h3>
+
+<p>
+<code>@tailrec</code>提示编译器进行尾递归优化，如果优化不了会报错：
+</p>
+
+<pre class="brush: scala">
+@tailrec def sum(num: Int) = ....
+</pre>
+
+<h3 id="toc_3.3.13">跳转表</h3>
+
+<p>
+C++与Java中switch语句可编译成跳转表以取得比if-else表达式更好的性能。<code>@switch</code>
+注解让Scala尝试对<code>match</code>语句生成跳转表：
+</p>
+
+<pre class="brush: scala">
+(n: @switch) match {
+	case 0 =&gt; "Zero"
+	case 1 =&gt; "One"
+	case _ =&gt; "?"
+}
+</pre>
+
+<h3 id="toc_3.3.14">内联</h3>
+
+<p>
+内联把方法调用转为外部方法的方法体内容。Scala中通过<code>@inline</code>来建议内联或用
+<code>@noinlie</code>禁止内联。
+</p>
+
+<p>
+通常内联发生在JVM内部，即时编译器自动进行的内联优化的效果已经非常好了。
+</p>
+
+<h3 id="toc_3.3.15">可省略方法</h3>
+
+<p>
+<code>@elidable</code>注解标记可以在生产环境中移除的方法：
+</p>
+
+<pre class="brush: scala">
+@elidable(500) 
+def dump(props: Map[String, String]) { doSth() }
+</pre>
+
+<p>
+编译时加上参数<code>-Xelide-below</code>：
+</p>
+
+<pre class="brush: bash">
+scalac -Xelide-below 800 myprog.scala
+</pre>
+
+<p>
+<code>elidable</code>对象定义了一些常量值：
+</p>
+
+<ul>
+<li>
+<code>MAXIMUM</code>或<code>OFF = Int.MaxValue</code>
+
+<li>
+<code>ASSERTION = 2000</code>
+
+<li>
+<code>SEVERE = 1000</code>
+
+<li>
+<code>WARNING = 900</code>
+
+<li>
+<code>INFO = 800</code>
+
+<li>
+<code>CONFIG = 700</code>
+
+<li>
+<code>FINE = 500</code>
+
+<li>
+<code>FINER = 400</code>
+
+<li>
+<code>FINEST = 300</code>
+
+<li>
+<code>MINIMUM</code>或<code>ALL = Int.MinValue</code>
+
+</ul>
+
+<p>
+注意这里有<code>ALL</code>、<code>OFF</code>有不同的场景：
+</p>
+
+<ul>
+<li>
+加在注解里的，表示方法“总是被省略”和“永远不会被省略”
+
+<li>
+加在编译参数里的表示“打开所有方法”或“省略所有方法”
+
+</ul>
+
+
+<p>
+这些常量可以在注解中使用：
+</p>
+
+<pre class="brush: scala">
+import scala.annotation.elidable._
+
+@elidable(FINE)
+def dump(props: Map[String, String]) { doSth() }
+</pre>
+
+
+<p>
+编译时加上参数中也可以这样用：
+</p>
+
+<pre class="brush: bash">
+scalac -Xelide-below INFO myprog.scala
+</pre>
+
+<p>
+如果没有指定<code>-Xelide-below</code>参数，默认低于1000（也就是低于SEVERE）的方法和断言会
+被去除。
+</p>
+
+<p>
+<code>Predef</code>模块定义了一个可以被忽略的<code>assert</code>方法。例如我们可以这样写：
+</p>
+
+<pre class="brush: scala">
+def makeMap(keys: Seq[String], values: Seq[String]) = {
+	assert(keys.length == values.length, "lengths don't match")
+	// ...
+}
+</pre>
+
+<p>
+默认情况下断言是启用的，<code>-Xelide-below</code>设值<code>2001</code>或<code>MAXIMUM</code>会禁用断言。
+</p>
+
+<h3 id="toc_3.3.16">基本类型的包装</h3>
+
+<p>
+基本类型的打包和解包操作并不是很高效，但在涉及到泛型操作时又常常会用到。比如：
+</p>
+
+<pre class="brush: scala">
+def fun[T](x: T, y:T) = ...
+</pre>
+
+<p>
+<code>@specialized</code>注解让编译器添加自动重载的基本类型版本：
+</p>
+
+<pre class="brush: scala">
+def fun[@specialized T](x: T, y:T) = ...
+</pre>
+
+<p>
+还可以限定类型：
+</p>
+
+<pre class="brush: scala">
+def fun[@specialized(Long, Double) T](x: T, y:T) = ...
+</pre>
+
+<p>
+可以指定的类型有：<code>Unit</code>、<code>Boolean</code>、<code>Byte</code>、<code>Short</code>、<code>Char</code>、<code>Int</code>、<code>Lang</code>、
+<code>Float</code>、<code>Double</code>。
+</p>
+
+<h3 id="toc_3.3.17">隐式转换失败提示</h3>
+
+<p>
+<code>@implicitNotFound</code>注解在找不到时给出更有意义的提示信息。
+</p>
+
+
+<h2 id="toc_3.4">实现Scala注解</h2>
+
+<p>
+必须扩展<code>Annotation</code>特质，如<code>unchecked</code>注解：
+</p>
+
+<pre class="brush: scala">
+class unchecked extends annotationAnnotation
+</pre>
+
+<p>
+注解可以选择扩展自下面两个特质：
+</p>
+
+<ul>
+<li>
+<code>StaticAnnotation</code>：添加Scala元数据到类文件中。
+
+<li>
+<code>ClassfileAnnotation</code>：添加Java元数据到类文件中。（Scala2.9中还没有支持）
+
+</ul>
+
+<h3 id="toc_3.4.1">Scala注解扩展作用范围</h3>
+
+<p>
+一般来说注解的作用范围是所在的位置，但有些元数据注解会扩展范围。如：
+</p>
+
+<ul>
+<li>
+<code>@param</code>
+
+<li>
+<code>@field</code>
+
+<li>
+<code>@getter</code>、<code>@setter</code>
+
+<li>
+<code>@beanGetter</code>、<code>@beanSetter</code>
+
+</ul>
+
+<p>
+比较常见的应用场景是，把注解的目标从字段转为字段的<code>getter</code>、<code>setter</code>方法。例如，
+<code>deprecated</code>注解的定义：
+</p>
+
+<pre class="brush: scala">
+@getter @setter @beanGetter @beanSetter
+class deprecated(message: String = "", since: String = "") 
+	extends annotation.StaticAnnotation
+</pre>
+
+<p>
+除了在定义注解时加入元数据注解，在类中也可以加上元数据注解：
+</p>
+
+<pre class="brush: scala">
+@Entity class Credentials {
+	@(Id @beanGetter)
+	@(BeanProperty)
+	var id = 0
+</pre>
+
+<p>
+因为JPA要求<code>@Id</code>注解要应用的Java的<code>getId()</code>方法，所以这里用<code>@beanGetter</code>注解把
+标签的作用扩展到<code>getId()</code>方法上而不是<code>id</code>属性。
 </p>
 
 
@@ -1362,7 +1769,6 @@ Scala里可以直接给XML写字面量。解释器把从根标签的开始到结
 </p>
 
 <pre class="brush: scala">
-
   scala&gt; &lt;a&gt;
        |   This is some XML.
        |   Here is a tag: &lt;atag/&gt;
@@ -1373,6 +1779,8 @@ Scala里可以直接给XML写字面量。解释器把从根标签的开始到结
            Here is a tag: &lt;atag&gt;&lt;/atag&gt;
          &lt;/a&gt;
 </pre>
+
+<h3 id="toc_4.3.1">节点类型</h3>
 
 <p>
 上面的xml类型<code>Elem</code>类，其他一些与XML相关的重要类有：
@@ -1391,6 +1799,154 @@ Scala里可以直接给XML写字面量。解释器把从根标签的开始到结
 </ul>
 
 <p>
+还有其他的类型：
+</p>
+
+<p>
+<img src="images/scala/xml.node.hir.jpeg" />
+</p>
+
+<p>
+<code>Elem</code>类表示XML元素：
+</p>
+
+<pre class="brush: scala">
+val elem = &lt;a href="http://scala-lang.org"&gt;The &lt;em&gt;Scala&lt;/em&gt; language&lt;/a&gt;
+</pre>
+
+<p>
+这里得到一个<code>label</code>属性为<code>a</code>的元素，它的<code>child</code>是子节点（两个<code>Text</code>和一个<code>ELem</code>
+）
+</p>
+
+<p>
+遍历子节点只要：
+</p>
+
+<pre class="brush: scala">
+for (n &lt;- elem.chile) doSth()
+</pre>
+
+<p>
+对于其他的内容如：注释（<code>&lt;!-- ... --&gt;</code>）、实体引用（<code>&amp;...;</code>）、处理指令（
+<code>&lt;?...?&gt;</code>）也有对应的类型。
+</p>
+
+<h3 id="toc_4.3.2">NodeBuffer</h3>
+
+<p>
+<code>NodeBuffer</code>扩展自<code>ArrayBuffer[Node]</code>，可以用来构建节点序列。
+</p>
+
+<pre class="brush: scala">
+scala&gt; import scala.xml._
+import scala.xml._
+
+scala&gt; val items = new NodeBuffer
+items: scala.xml.NodeBuffer = ArrayBuffer()
+
+scala&gt; items += &lt;li&gt;Fred&lt;/li&gt;
+res0: items.type = ArrayBuffer(&lt;li&gt;Fred&lt;/li&gt;)
+
+scala&gt; items += &lt;li&gt;Willma&lt;/li&gt;
+res1: items.type = ArrayBuffer(&lt;li&gt;Fred&lt;/li&gt;, &lt;li&gt;Willma&lt;/li&gt;)
+</pre>
+
+<p>
+<code>NodeBuffer</code>是一个<code>Seq[Node]</code>可以被隐式转换为<code>NodeSeq</code>。注意转换以了就就别再改了
+。XML节点序列应该是不可变的：
+</p>
+
+<pre class="brush: scala">
+scala&gt; val nodes: NodeSeq = items
+nodes: scala.xml.NodeSeq = NodeSeq(&lt;li&gt;Fred&lt;/li&gt;, &lt;li&gt;Willma&lt;/li&gt;)
+</pre>
+
+<h3 id="toc_4.3.3">元素属性</h3>
+
+<p>
+<code>attributes</code>属性取得某个元素属性的键和值，类型为<code>MetaData</code>。可能通过<code>()</code>操作
+来访问键的值：
+</p>
+
+<pre class="brush: scala">
+scala&gt; val elem = &lt;a href="http://scala-lang.org/"&gt; The Scala Language&lt;/a&gt;
+elem: scala.xml.Elem = &lt;a href="http://scala-lang.org/"&gt; The Scala Language&lt;/a&gt;
+
+scala&gt; val url = elem.attributes("href")
+url: Seq[scala.xml.Node] = http://scala-lang.org/
+</pre>
+
+<p>
+注意得到的结果类型是<code>Seq[Node]</code>，如果内容中有特殊字符的话：
+</p>
+
+<pre class="brush: scala">
+scala&gt; val image = &lt;img alt="San josé state university logo" src="ali.jpg" /&gt;
+image: scala.xml.Elem = &lt;img alt="San josé state university logo" src="ali.jpg"/&gt;
+
+scala&gt; val alt  = image.attributes("alt")
+alt: Seq[scala.xml.Node] = San josé state university logo
+</pre>
+
+<p>
+可以转义特殊字符：
+</p>
+
+<pre class="brush: scala">
+scala&gt; val image = &lt;img alt="San jos&amp;#233; state university logo" src="ali.jpg" /&gt;
+image: scala.xml.Elem = &lt;img alt="San josé state university logo" src="ali.jpg"/&gt;
+
+scala&gt; val alt  = image.attributes("alt")
+alt: Seq[scala.xml.Node] = San josé state university logo
+</pre>
+
+<p>
+如果属性中不存在未被解析的实体，可以用<code>test</code>方法转成字符串：
+</p>
+
+<pre class="brush: scala">
+scala&gt; val alt  = image.attributes("alt").text
+alt: String = San josé state university logo
+</pre>
+
+<p>
+如果属性不存在，<code>()</code>操作返回<code>null</code>；用<code>get</code>方法可以返回<code>Option[Seq[Node]]</code>。
+<code>MetaData</code>类没有<code>getOrElse</code>方法，但可以用<code>get</code>方法对<code>Option</code>类结果应用
+<code>getOrElse</code>：
+</p>
+
+<pre class="brush: scala">
+scala&gt; val url = image.attributes.get("href").getOrElse(Text(""))
+url: Seq[scala.xml.Node] = 
+</pre>
+
+<p>
+遍历所有属性：
+</p>
+
+<pre class="brush: scala">
+for (attr &lt;- elem.attributes)
+	doSth()
+</pre>
+
+<p>
+也可以用<code>asAttrmap</code>方法：
+</p>
+
+<pre class="brush: scala">
+scala&gt; val image = &lt;img alt="TODO" src="hamster.jpg"/&gt;
+image: scala.xml.Elem = &lt;img alt="TODO" src="hamster.jpg"/&gt;
+
+scala&gt; val map = image.attributes.asAttrMap
+map: Map[String,String] = Map(alt -&gt; TODO, src -&gt; hamster.jpg)
+</pre>
+
+
+
+<h3 id="toc_4.3.4">内嵌Scala表达式</h3>
+
+<p>
 不仅有字面量，而且还可以用<code>{}</code>来引入Scala代码，如：
 </p>
 
@@ -1400,7 +1956,16 @@ Scala里可以直接给XML写字面量。解释器把从根标签的开始到结
 </pre>
 
 <p>
-这样可以多层嵌套，在Scala代码与XML字面量中重复切换：
+如果不是要表达式，而就是字面上的花括号，，那连续两个<code>{{}}</code>就可以转义了。
+</p>
+
+<pre class="brush: scala">
+scala&gt; val ms  = &lt;p&gt;{{hello}}&lt;/p&gt;
+ms: scala.xml.Elem = &lt;p&gt;{hello}&lt;/p&gt;
+</pre>
+
+<p>
+表达式可以多层嵌套，在Scala代码与XML字面量中重复切换：
 </p>
 
 <pre class="brush: scala">
@@ -1462,6 +2027,140 @@ Scala里可以直接给XML写字面量。解释器把从根标签的开始到结
   scala&gt; &lt;a&gt; {{{{brace yourself!}}}} &lt;/a&gt;
   res7: scala.xml.Elem = &lt;a&gt; {{brace yourself!}} &lt;/a&gt;
 </pre>
+
+<p>
+如果表达式产的结果是节点序列会直接添加到XML中，其他类型的结果放到一个<code>Atom[T]</code>
+容器中。这样就可以在XML树中放置任何类型的值，并可用<code>Atom</code>节点的<code>data</code>属性取得
+这些值。XML保存时这些<code>Atom</code>类型实例会调用<code>data</code>的<code>toString</code>方法转成字符串。
+</p>
+
+<p>
+内嵌的字符串不会转成<code>Text</code>节点而是作为<code>Atom[String]</code>节点。保存成文本时没有问题，
+但是如果要用<code>Text</code>节点的模式进行模式匹配就匹配不了，因为<code>Text</code>是<code>Atom[String]</code>
+的子类。这种情况下应该加入的是<code>Text</code>节点面不是字符串：
+</p>
+
+<pre class="brush: scala">
+&lt;li&gt;{Text("Another item")}&lt;/li&gt;
+</pre>
+
+<h3 id="toc_4.3.5">属性中使用表达式</h3>
+
+<p>
+函数返回的字符串直接作为属性值：
+</p>
+
+<pre class="brush: scala">
+&lt;img src={makeURL(fileName)} /&gt;
+</pre>
+
+<p>
+注意不能加引号，不然就原文输出了。如下面这样：
+</p>
+
+<pre class="brush: scala">
+&lt;img src="{makeURL(fileName)}" /&gt;
+</pre>
+
+<p>
+如果要在属性中包含实体引用或是原子，可以在表达式中产出一个节点序列：
+</p>
+
+<pre class="brush: scala">
+&lt;a id={new Atom(1)} ... /&gt;
+</pre>
+
+<p>
+在表达式返回<code>null</code>或<code>None</code>的情况下，属性会不被设置：
+</p>
+
+<pre class="brush: scala">
+&lt;img alt={if (description == "TODO") null else description} ... /&gt;
+</pre>
+
+<p>
+用<code>Option[Seq[Node]]</code>也有同样的效果：
+</p>
+
+<pre class="brush: scala">
+&lt;img alt={if (description == "TODO") None else Some(Text(description))} ... /&gt;
+</pre>
+
+<h3 id="toc_4.3.6">特殊结点类型</h3>
+
+<p>
+非XML文本，如XHTML中的JavaScript代码，用CDATA：
+</p>
+
+<pre class="brush: scala">
+scala&gt; val js = &lt;script&gt;&lt;![CDATA[if (temp &lt; 0) alert("Cold!")]]&gt;&lt;/script&gt;
+js: scala.xml.Elem = &lt;script&gt;if (temp &amp;lt; 0) alert(&amp;quot;Cold!&amp;quot;)&lt;/script&gt;
+</pre>
+
+<p>
+但对解析器来说这只是一个<code>Text</code>子节点，不知道它是CDATA。可以用一个<code>PCData</code>节点
+类型：
+</p>
+
+<pre class="brush: scala">
+scala&gt; val code = """if (temp &lt; 0) alert("Cold!")"""
+code: String = if (temp &lt; 0) alert("Cold!")
+
+scala&gt; val js = &lt;script&gt;{PCData(code)}&lt;/script&gt;
+js: scala.xml.Elem = &lt;script&gt;&lt;![CDATA[if (temp &lt; 0) alert("Cold!")]]&gt;&lt;/script&gt;
+</pre>
+
+<p>
+还可以用<code>Unparsed</code>节点包含任意文本，但这样人工输入的XML很容易格式错误，不推荐：
+</p>
+
+<pre class="brush: scala">
+scala&gt; val n1 = &lt;xml:unparsed&gt;&lt;&amp;&gt;&lt;/xml:unparsed&gt;
+n1: scala.xml.Unparsed = &lt;&amp;&gt;
+
+scala&gt; val n2 = Unparsed("&lt;&amp;&gt;")
+n2: scala.xml.Unparsed = &lt;&amp;&gt;
+</pre>
+
+<p>
+还可以对节点进行分组：
+</p>
+
+<pre class="brush: scala">
+scala&gt; val g1 = &lt;xml:group&gt;&lt;li&gt;Item 1&lt;/li&gt;&lt;li&gt;Item 2&lt;/li&gt;&lt;/xml:group&gt;
+g1: scala.xml.Group = &lt;li&gt;Item 1&lt;/li&gt;&lt;li&gt;Item 2&lt;/li&gt;
+
+scala&gt; val g2 = Group(Seq(&lt;li&gt;Item 1&lt;/li&gt;, &lt;li&gt;Item 2&lt;/li&gt;))
+g2: scala.xml.Group = &lt;li&gt;Item 1&lt;/li&gt;&lt;li&gt;Item 2&lt;/li&gt;
+</pre>
+
+<p>
+注意<code>Seq()</code>方法中一定要用逗号与空格分开，不能少。
+</p>
+
+<p>
+组里的元素被作为两个元素：
+</p>
+
+<pre class="brush: scala">
+scala&gt; for (n &lt;- &lt;xml:group&gt;&lt;li&gt;Item 1&lt;/li&gt;&lt;li&gt;Item 2&lt;/li&gt;&lt;/xml:group&gt;) yield n
+res2: scala.xml.NodeSeq = NodeSeq(&lt;li&gt;Item 1&lt;/li&gt;, &lt;li&gt;Item 2&lt;/li&gt;)
+
+</pre>
+
+<p>
+其他情况下：
+</p>
+
+<pre class="brush: scala">
+scala&gt; for (n &lt;- &lt;li&gt;Item 1&lt;/li&gt;&lt;li&gt;Item 2&lt;/li&gt;) yield n
+res0: scala.collection.mutable.ArrayBuffer[scala.xml.Node] = ArrayBuffer(&lt;li&gt;Item 1&lt;/li&gt;, &lt;li&gt;Item 2&lt;/li&gt;)
+
+scala&gt; for (n &lt;- &lt;ol&gt;&lt;li&gt;Item 1&lt;/li&gt;&lt;li&gt;Item 2&lt;/li&gt;&lt;/ol&gt;) yield n
+res1: scala.xml.NodeSeq = NodeSeq(&lt;ol&gt;&lt;li&gt;Item 1&lt;/li&gt;&lt;li&gt;Item 2&lt;/li&gt;&lt;/ol&gt;)
+// 只有一个ol元素
+</pre>
+
 
 
 <h2 id="toc_4.4">序列化</h2>
@@ -1577,7 +2276,7 @@ Scala中可以直接用基于XPath语言的工具处理XML。
 <h3 id="toc_4.5.2">抽取子元素</h3>
 
 <p>
-用类似XPath的<code>\()</code>方法按路径取得子元素：
+用类似XPath的<code>\()</code>方法查找得第一层子节点：
 </p>
 
 <pre class="brush: scala">
@@ -1586,7 +2285,7 @@ Scala中可以直接用基于XPath语言的工具处理XML。
 </pre>
 
 <p>
-用<code>\\()</code>方法代替<code>\()</code>方法搜索元素：
+用<code>\\()</code>方法代替<code>\()</code>方法搜索任意深度的子节点：
 </p>
 
 <pre class="brush: scala">
@@ -1627,6 +2326,65 @@ Scala用<code>\</code>和<code>\\</code>代替了XPath里的<code>/</code>和<co
   scala&gt;  joe \ "@serial"
   res16: scala.xml.NodeSeq = 123
 </pre>
+
+<p>
+属性不能用通配符，如：
+</p>
+
+<pre class="brush: scala">
+img \ "@_"
+</pre>
+
+<p>
+是什么也查不到的。
+</p>
+
+<p>
+与XPath不同，<code>\()</code>方法不能从多个节点里取得属性，下面这样：
+</p>
+
+<pre class="brush: scala">
+doc \\ "img" \ "@src"
+</pre>
+
+<p>
+如果遇到有多个<code>img</code>元素的不行的，要用：
+</p>
+
+<pre class="brush: scala">
+doc \\ "img" \\ "@src"
+</pre>
+
+<h4 id="toc_4.5.3.1">结果是序列</h4>
+
+<p>
+<code>\()</code>与<code>\\()</code>方法得到的结果是序列类型的。所以除非确信只有一个匹配的结果，否则
+应该用遍历的方式来处理返回的结果：
+</p>
+
+<pre class="brush: scala">
+for (n &lt;- doc \\ "img") doSth()
+</pre>
+
+<p>
+如果对结果调用<code>text</code>会把文本串成一起
+</p>
+
+<pre class="brush: scala">
+scala&gt; (&lt;img src="aa.jpg"/&gt;&lt;img src="bb.jpg"/&gt; \\ "@src").text
+res3: String = aa.jpgbb.jpg
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
 
 <h2 id="toc_4.6">反序列化</h2>
 

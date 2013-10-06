@@ -215,8 +215,8 @@ try {
 这样异常没有处理，反而还给代码包了一层`try-catch`。Scala为了代码干净就直接不声明
 抛出异常了。
 
-但是为了和Java程序对接，声明一下会抛出哪些异常还是有必要的。所以通过注解标签
-`@throws`来说明：
+但是为了和Java程序对接，声明一下会抛出哪些异常还是有必要的。不然Java代码就不能
+捕获可能抛出的异常。所以通过注解标签`@throws`来说明：
 
 {{{class="brush: scala"
   import java.io._
@@ -243,6 +243,15 @@ try {
   $
 }}}
 
+这样Java中调用Scala代码时才能捕获异常：
+
+{{{class="brush: java"
+try {
+	reader.read();
+} catch (IOException e) {
+	// ...
+}
+}}}
 
 === Java注解 ===
 

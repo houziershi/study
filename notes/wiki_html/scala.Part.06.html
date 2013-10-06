@@ -362,8 +362,8 @@ try {
 </p>
 
 <p>
-但是为了和Java程序对接，声明一下会抛出哪些异常还是有必要的。所以通过注解标签
-<code>@throws</code>来说明：
+但是为了和Java程序对接，声明一下会抛出哪些异常还是有必要的。不然Java代码就不能
+捕获可能抛出的异常。所以通过注解标签<code>@throws</code>来说明：
 </p>
 
 <pre class="brush: scala">
@@ -393,6 +393,17 @@ try {
   $
 </pre>
 
+<p>
+这样Java中调用Scala代码时才能捕获异常：
+</p>
+
+<pre class="brush: java">
+try {
+	reader.read();
+} catch (IOException e) {
+	// ...
+}
+</pre>
 
 <h3 id="toc_1.2.3">Java注解</h3>
 

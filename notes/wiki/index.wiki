@@ -155,6 +155,8 @@ email：[[email]]
 
 pidgin：[[pidgin]]
 
+远程桌面：remina
+
 == 多媒体 ==
 
 [[SMplayer]]

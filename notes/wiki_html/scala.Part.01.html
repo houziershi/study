@@ -168,7 +168,8 @@
 <li><a href="#toc_8.11.1">跟踪尾递归函数</a>
 <li><a href="#toc_8.11.2">尾递归的局限</a>
 </ul>
-<li><a href="#toc_8.12">Execute Around Method 模式</a>
+<li><a href="#toc_8.12">蹦床</a>
+<li><a href="#toc_8.13">Execute Around Method 模式</a>
 </ul>
 </ul>
 </div>
@@ -4016,7 +4017,41 @@ Scala仅优化了直接递归调用使其返回同一个函数。如果递归是
 中间函数的情况。
 </p>
 
-<h2 id="toc_8.12">Execute Around Method 模式</h2>
+<h2 id="toc_8.12">蹦床</h2>
+
+<p>
+对于消除递归，有一个比尾递归更加通用的机制叫作“蹦床”。它通过一个循环不断地调用
+函数，每个函数都返回一下要被调用的函数。尾递归其实是蹦床的一个特例：每个函数都
+返回它自己。
+</p>
+
+<p>
+Scala的<code>TailCalls</code>工具对象帮助实现蹦床。相互递归的函数返回类型为<code>TailRec[A]</code>。
+其值为<code>done(result)</code>或<code>tailcall(fun)</code>二者之一。其中<code>fun</code>代表下一个要被调用的函数
+，这个函数不能有额外的参数而且返回类型为<code>TailRec[A]</code>的函数。
+</p>
+
+<p>
+例子：
+</p>
+
+<pre class="brush: scala">
+def evenLength(xs: Seq[Int]): TailRec[Boolean] =
+  if (xs.isEmpty) done(true) else tailCall(oddlength(xs.tail))
+def oddLength( xs: Seq[Int]): TailRec[Boolean] =
+  if (xs.isEmpty) done(true) else tailCall(evenlength(xs.tail))
+</pre>
+
+<p>
+调用时，用<code>result</code>方法取得结果：
+</p>
+
+<pre class="brush: scala">
+evenLength(1 to 1000000).result
+</pre>
+
+
+<h2 id="toc_8.13">Execute Around Method 模式</h2>
 
 <p>
 举个例子，对于资源<code>Resource</code>一定要执行善后工作<code>cleanUp</code>。这里把构造函数做成私有
