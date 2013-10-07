@@ -116,19 +116,39 @@
 <li><a href="#toc_4.3.5">属性中使用表达式</a>
 <li><a href="#toc_4.3.6">特殊结点类型</a>
 </ul>
-<li><a href="#toc_4.4">序列化</a>
-<li><a href="#toc_4.5">拆解XML</a>
+<li><a href="#toc_4.4">拆解XML</a>
 <ul>
-<li><a href="#toc_4.5.1">抽取文本</a>
-<li><a href="#toc_4.5.2">抽取子元素</a>
-<li><a href="#toc_4.5.3">抽取属性</a>
+<li><a href="#toc_4.4.1">抽取文本</a>
+<li><a href="#toc_4.4.2">抽取子元素</a>
+<li><a href="#toc_4.4.3">抽取属性</a>
 <ul>
-<li><a href="#toc_4.5.3.1">结果是序列</a>
+<li><a href="#toc_4.4.3.1">结果是序列</a>
 </ul>
 </ul>
-<li><a href="#toc_4.6">反序列化</a>
-<li><a href="#toc_4.7">读取和保存</a>
-<li><a href="#toc_4.8">XML的模式匹配</a>
+<li><a href="#toc_4.5">对象与XML转换</a>
+<li><a href="#toc_4.6">序列化</a>
+<li><a href="#toc_4.7">反序列化</a>
+<li><a href="#toc_4.8">读取和保存</a>
+<ul>
+<li><a href="#toc_4.8.1">保存</a>
+<li><a href="#toc_4.8.2">加载</a>
+<ul>
+<li><a href="#toc_4.8.2.1">解析器</a>
+</ul>
+</ul>
+<li><a href="#toc_4.9">命名空间</a>
+<li><a href="#toc_4.10">XML的模式匹配</a>
+<ul>
+<li><a href="#toc_4.10.1">只能处理单个节点</a>
+<li><a href="#toc_4.10.2">没有子结点</a>
+<li><a href="#toc_4.10.3">只有一个子节点</a>
+<li><a href="#toc_4.10.4">多个子节点</a>
+<li><a href="#toc_4.10.5">绑定变量</a>
+<li><a href="#toc_4.10.6">绑定节点序列到变量</a>
+<li><a href="#toc_4.10.7">匹配属性</a>
+</ul>
+<li><a href="#toc_4.11">修改元素和属性</a>
+<li><a href="#toc_4.12">批量XML变化</a>
 </ul>
 <li><a href="#toc_5">使用对象的模块化编程</a>
 <ul>
@@ -1799,6 +1819,10 @@ Scala里可以直接给XML写字面量。解释器把从根标签的开始到结
 </ul>
 
 <p>
+还有一个<code>scala.xml.Null</code>是一个空属性列表，不是<code>scala.Null</code>类型。
+</p>
+
+<p>
 还有其他的类型：
 </p>
 
@@ -2162,8 +2186,138 @@ res1: scala.xml.NodeSeq = NodeSeq(&lt;ol&gt;&lt;li&gt;Item 1&lt;/li&gt;&lt;li&gt
 </pre>
 
 
+<h2 id="toc_4.4">拆解XML</h2>
 
-<h2 id="toc_4.4">序列化</h2>
+<p>
+Scala中可以直接用基于XPath语言的工具处理XML。
+</p>
+
+<h3 id="toc_4.4.1">抽取文本</h3>
+
+<p>
+取得去掉了标签以后的文本：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; &lt;a&gt;Sounds &lt;tag/&gt; good&lt;/a&gt;.text
+  res8: String = Sounds  good
+</pre>
+
+<p>
+所有的编码字符会自动解码：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; &lt;a&gt; input ---&amp;gt; output &lt;/a&gt;.text
+  res9: String =  input ---&gt; output 
+</pre>
+
+<h3 id="toc_4.4.2">抽取子元素</h3>
+
+<p>
+用类似XPath的<code>\()</code>方法查找得第一层子节点：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; &lt;a&gt;&lt;b&gt;&lt;c&gt;hello&lt;/c&gt;&lt;/b&gt;&lt;/a&gt; \ "b"
+  res10: scala.xml.NodeSeq = &lt;b&gt;&lt;c&gt;hello&lt;/c&gt;&lt;/b&gt;
+</pre>
+
+<p>
+用<code>\\()</code>方法代替<code>\()</code>方法搜索任意深度的子节点：
+</p>
+
+<pre class="brush: scala">
+  scala&gt;  &lt;a&gt;&lt;b&gt;&lt;c&gt;hello&lt;/c&gt;&lt;/b&gt;&lt;/a&gt; \ "c"
+  res11: scala.xml.NodeSeq = 
+
+  scala&gt;  &lt;a&gt;&lt;b&gt;&lt;c&gt;hello&lt;/c&gt;&lt;/b&gt;&lt;/a&gt; \\ "c"
+  res12: scala.xml.NodeSeq = &lt;c&gt;hello&lt;/c&gt;
+
+  scala&gt;  &lt;a&gt;&lt;b&gt;&lt;c&gt;hello&lt;/c&gt;&lt;/b&gt;&lt;/a&gt; \ "a"
+  res13: scala.xml.NodeSeq = 
+
+  scala&gt;  &lt;a&gt;&lt;b&gt;&lt;c&gt;hello&lt;/c&gt;&lt;/b&gt;&lt;/a&gt; \\ "a"
+  res14: scala.xml.NodeSeq = &lt;a&gt;&lt;b&gt;&lt;c&gt;hello&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;
+</pre>
+
+<p>
+Scala用<code>\</code>和<code>\\</code>代替了XPath里的<code>/</code>和<code>//</code>。原因是<code>//</code>会和Scala的注释混淆。
+</p>
+
+<h3 id="toc_4.4.3">抽取属性</h3>
+
+<p>
+也是用<code>\</code>和<code>\\</code>，不过要加上<code>@</code>：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val joe = &lt;employee
+       |    name="Joe"
+       |    rank="code monkey"
+       |    serial="123"/&gt;
+  joe: scala.xml.Elem = &lt;employee rank="code monkey" name="Joe"
+   serial="123"&gt;&lt;/employee&gt;
+
+  scala&gt;  joe \ "@name"
+  res15: scala.xml.NodeSeq = Joe
+
+  scala&gt;  joe \ "@serial"
+  res16: scala.xml.NodeSeq = 123
+</pre>
+
+<p>
+属性不能用通配符，如：
+</p>
+
+<pre class="brush: scala">
+img \ "@_"
+</pre>
+
+<p>
+是什么也查不到的。
+</p>
+
+<p>
+与XPath不同，<code>\()</code>方法不能从多个节点里取得属性，下面这样：
+</p>
+
+<pre class="brush: scala">
+doc \\ "img" \ "@src"
+</pre>
+
+<p>
+如果遇到有多个<code>img</code>元素的不行的，要用：
+</p>
+
+<pre class="brush: scala">
+doc \\ "img" \\ "@src"
+</pre>
+
+<h4 id="toc_4.4.3.1">结果是序列</h4>
+
+<p>
+<code>\()</code>与<code>\\()</code>方法得到的结果是序列类型的。所以除非确信只有一个匹配的结果，否则
+应该用遍历的方式来处理返回的结果：
+</p>
+
+<pre class="brush: scala">
+for (n &lt;- doc \\ "img") doSth()
+</pre>
+
+<p>
+如果对结果调用<code>text</code>会把文本串成一起
+</p>
+
+<pre class="brush: scala">
+scala&gt; (&lt;img src="aa.jpg"/&gt;&lt;img src="bb.jpg"/&gt; \\ "@src").text
+res3: String = aa.jpgbb.jpg
+</pre>
+
+
+<h2 id="toc_4.5">对象与XML转换</h2>
+
+<h2 id="toc_4.6">序列化</h2>
 
 <p>
 从Scala内部结构到XML转换的例子。
@@ -2247,146 +2401,8 @@ res1: scala.xml.NodeSeq = NodeSeq(&lt;ol&gt;&lt;li&gt;Item 1&lt;/li&gt;&lt;li&gt
 实际上是实例化了<code>CCTherm</code>的匿名子类。
 </p>
 
-<h2 id="toc_4.5">拆解XML</h2>
 
-<p>
-Scala中可以直接用基于XPath语言的工具处理XML。
-</p>
-
-<h3 id="toc_4.5.1">抽取文本</h3>
-
-<p>
-取得去掉了标签以后的文本：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; &lt;a&gt;Sounds &lt;tag/&gt; good&lt;/a&gt;.text
-  res8: String = Sounds  good
-</pre>
-
-<p>
-所有的编码字符会自动解码：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; &lt;a&gt; input ---&amp;gt; output &lt;/a&gt;.text
-  res9: String =  input ---&gt; output 
-</pre>
-
-<h3 id="toc_4.5.2">抽取子元素</h3>
-
-<p>
-用类似XPath的<code>\()</code>方法查找得第一层子节点：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; &lt;a&gt;&lt;b&gt;&lt;c&gt;hello&lt;/c&gt;&lt;/b&gt;&lt;/a&gt; \ "b"
-  res10: scala.xml.NodeSeq = &lt;b&gt;&lt;c&gt;hello&lt;/c&gt;&lt;/b&gt;
-</pre>
-
-<p>
-用<code>\\()</code>方法代替<code>\()</code>方法搜索任意深度的子节点：
-</p>
-
-<pre class="brush: scala">
-  scala&gt;  &lt;a&gt;&lt;b&gt;&lt;c&gt;hello&lt;/c&gt;&lt;/b&gt;&lt;/a&gt; \ "c"
-  res11: scala.xml.NodeSeq = 
-
-  scala&gt;  &lt;a&gt;&lt;b&gt;&lt;c&gt;hello&lt;/c&gt;&lt;/b&gt;&lt;/a&gt; \\ "c"
-  res12: scala.xml.NodeSeq = &lt;c&gt;hello&lt;/c&gt;
-
-  scala&gt;  &lt;a&gt;&lt;b&gt;&lt;c&gt;hello&lt;/c&gt;&lt;/b&gt;&lt;/a&gt; \ "a"
-  res13: scala.xml.NodeSeq = 
-
-  scala&gt;  &lt;a&gt;&lt;b&gt;&lt;c&gt;hello&lt;/c&gt;&lt;/b&gt;&lt;/a&gt; \\ "a"
-  res14: scala.xml.NodeSeq = &lt;a&gt;&lt;b&gt;&lt;c&gt;hello&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;
-</pre>
-
-<p>
-Scala用<code>\</code>和<code>\\</code>代替了XPath里的<code>/</code>和<code>//</code>。原因是<code>//</code>会和Scala的注释混淆。
-</p>
-
-<h3 id="toc_4.5.3">抽取属性</h3>
-
-<p>
-也是用<code>\</code>和<code>\\</code>，不过要加上<code>@</code>：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val joe = &lt;employee
-       |    name="Joe"
-       |    rank="code monkey"
-       |    serial="123"/&gt;
-  joe: scala.xml.Elem = &lt;employee rank="code monkey" name="Joe"
-   serial="123"&gt;&lt;/employee&gt;
-
-  scala&gt;  joe \ "@name"
-  res15: scala.xml.NodeSeq = Joe
-
-  scala&gt;  joe \ "@serial"
-  res16: scala.xml.NodeSeq = 123
-</pre>
-
-<p>
-属性不能用通配符，如：
-</p>
-
-<pre class="brush: scala">
-img \ "@_"
-</pre>
-
-<p>
-是什么也查不到的。
-</p>
-
-<p>
-与XPath不同，<code>\()</code>方法不能从多个节点里取得属性，下面这样：
-</p>
-
-<pre class="brush: scala">
-doc \\ "img" \ "@src"
-</pre>
-
-<p>
-如果遇到有多个<code>img</code>元素的不行的，要用：
-</p>
-
-<pre class="brush: scala">
-doc \\ "img" \\ "@src"
-</pre>
-
-<h4 id="toc_4.5.3.1">结果是序列</h4>
-
-<p>
-<code>\()</code>与<code>\\()</code>方法得到的结果是序列类型的。所以除非确信只有一个匹配的结果，否则
-应该用遍历的方式来处理返回的结果：
-</p>
-
-<pre class="brush: scala">
-for (n &lt;- doc \\ "img") doSth()
-</pre>
-
-<p>
-如果对结果调用<code>text</code>会把文本串成一起
-</p>
-
-<pre class="brush: scala">
-scala&gt; (&lt;img src="aa.jpg"/&gt;&lt;img src="bb.jpg"/&gt; \\ "@src").text
-res3: String = aa.jpgbb.jpg
-</pre>
-
-
-
-<pre class="brush: scala">
-</pre>
-
-
-
-<pre class="brush: scala">
-</pre>
-
-
-<h2 id="toc_4.6">反序列化</h2>
+<h2 id="toc_4.7">反序列化</h2>
 
 <p>
 把XML解析回对象：
@@ -2424,16 +2440,38 @@ res3: String = aa.jpgbb.jpg
   res15: CCTherm = hot dog #5
 </pre>
 
-<h2 id="toc_4.7">读取和保存</h2>
+<h2 id="toc_4.8">读取和保存</h2>
+
+<h3 id="toc_4.8.1">保存</h3>
 
 <p>
 把XML转为字符串只要调用<code>toString</code>方法。
 </p>
 
 <p>
-如果要把XML转换为字节文件可以使用<code>XML.saveFull</code>命令。要确定文件名、要保存的节点
-、采用的字符编码、是否在文件头上写上包含字符编码的XML声明、XML的文档类型（可以
-指定为<code>null</code>表示任意类型，这里不深入讨论）。例子：
+如果要把XML转换为字节文件可以使用<code>XML.saveFull</code>命令。参数：
+</p>
+
+<ul>
+<li>
+文件名、
+
+<li>
+要保存的节点、
+
+<li>
+采用的字符编码、
+
+<li>
+是否在文件头上写上包含字符编码的XML声明、
+
+<li>
+XML的文档类型<code>scala.xml.dtd.DocType</code>（<code>null</code>表示任意类型这里不深入讨论）。
+
+</ul>
+
+<p>
+例子：
 </p>
 
 <pre class="brush: scala">
@@ -2457,7 +2495,45 @@ res3: String = aa.jpgbb.jpg
 </pre>
 
 <p>
-读取文件比保存简单，只要调用<code>xml.XML.loadFile</code>并传入文件名：
+如果要保存一个XHTML，典型的例子是：
+</p>
+
+<pre class="brush: scala">
+scala.xml.XML.saveFull("therm1.xml", node, "UTF-8", true, 
+	DocType("html", PublicID( "-//W3C//DTD XHTML 1.0 Strict//EN",
+			"http://www.w3.org/TR/xhtml1/DTD/xhtml11-strict.dtd"), Nil)
+)
+</pre>
+
+<p>
+把空节点写为自结束标签：
+</p>
+
+<pre class="brush: scala">
+scala&gt; val image = &lt;img src="logo.jpg"&gt;&lt;/img&gt;
+image: scala.xml.Elem = &lt;img src="logo.jpg"&gt;&lt;/img&gt;
+
+scala&gt; val str = xml.Utility.toXML(image, minimizeTags = true)
+warning: there were 1 deprecation warning(s); re-run with -deprecation for details
+str: StringBuilder = &lt;img src="logo.jpg"/&gt;
+</pre>
+
+<p>
+<code>PrettyPrinter</code>类可提供更加美观的格式：
+</p>
+
+<pre class="brush: scala">
+scala&gt; val printer = new PrettyPrinter(width = 100, step = 4)
+printer: scala.xml.PrettyPrinter = scala.xml.PrettyPrinter@73aa0439
+
+scala&gt; val str = printer.formatNodes(image)
+str: String = &lt;img src="logo.jpg"&gt;&lt;/img&gt;
+</pre>
+
+<h3 id="toc_4.8.2">加载</h3>
+
+<p>
+读取文件比保存简单，只要调用<code>xml.XML</code>对象的<code>loadFile</code>方法并传入文件名：
 </p>
 
 <pre class="brush: scala">
@@ -2476,8 +2552,117 @@ res3: String = aa.jpgbb.jpg
   res14: CCTherm = hot dog #5
 </pre>
 
+<p>
+也可以从<code>java.io.InputStream</code>、<code>java.io.Reader</code>或<code>URL</code>加载：
+</p>
 
-<h2 id="toc_4.8">XML的模式匹配</h2>
+<pre class="brush: scala">
+val root2 = XML.load(new FileInputStream("myfile.xml"))
+
+val root3 = XML.load(new InputStreamReader(
+			new FileInputStream("myfile.xml"),"UTF-8"))
+			
+val root4 = XML.load(new URL("http;//horstmann.com/index.html"))
+</pre>
+
+<h4 id="toc_4.8.2.1">解析器</h4>
+
+<p>
+默认的加载工具是Java的SAX解析器，它不会从本地编目而是从w3c.org读取DTD。尤其是
+处理XHTML时会这种行为花非常长的时间。
+</p>
+
+<p>
+JDK的<code>com.sun.org.apache.xml.internal.resolver.tools</code>包中的<code>CatelogResolver</code>类或
+Apache Commons Resolver提供的版本：
+</p>
+
+<p>
+<a href="http://xml.apache.org/commons/components/resolver/resolver-article.html">http://xml.apache.org/commons/components/resolver/resolver-article.html</a>
+</p>
+
+<p>
+XML对象没有接口可以用来安装实体解析器，只能通过后门来达到目的：
+</p>
+
+<pre class="brush: scala">
+val res = new CatalogResolver
+
+val doc = new factory.XMLLoader[Elem] {
+	override def adapter = new parsing.NoBindingFactoryAdapter() {
+		override def resolveEntity(publicId: String, systemId: String) = {
+			res.resolveEntry(publicId, systemId)
+		}
+	}
+}.load(new URL("http://horstmann.com/index.html"))
+</pre>
+
+
+<h2 id="toc_4.9">命名空间</h2>
+
+<p>
+和Java或Scala中的包一样，XML通过<code>xmlns</code>属性指定命名空间，其形式类似URI：
+</p>
+
+<pre class="brush: scala">
+&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+	&lt;head&gt;&lt;/head&gt;
+	&lt;body&gt;&lt;/body&gt;
+&lt;/html&gt;
+</pre>
+
+<p>
+<code>html</code>元素和所有的子元素（<code>head</code>、<code>body</code>等）都是在命令空间中的。子元素也可以导入
+自己的命名空间：
+</p>
+
+<pre class="brush: scala">
+&lt;svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"&gt;
+	&lt;rect x="25" y="25" width="50" height="50" fill="#ff000000" /&gt;
+&lt;/svg&gt;
+</pre>
+
+<p>
+混用多个命名空间时，可以用“命令空间前缀”来给长长的命名空间起别名：
+</p>
+
+<pre class="brush: scala">
+&lt;html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg" &gt;
+</pre>
+
+<p>
+用<code>svg</code>来代替<code>http://www.w3.org/2000/svg</code>，所有<code>svg:</code>开关的都代表该命名空间：
+</p>
+
+<pre class="brush: scala">
+&lt;svg:svg width="100" height="100"&gt;
+	&lt;svg:rect x="25" y="25" width="50" height="50" fill="#ff000000" /&gt;
+&lt;/svg:svg&gt;
+</pre>
+
+<p>
+每个<code>Elem</code>对象都有<code>prefix</code>和<code>scope</code>值，解析器会自动设置这些值。然后可以用
+<code>scope.uri</code>得到命名空间。代码创建里的XML元素要手动设置<code>prefix</code>和<code>scope</code>：
+</p>
+
+<pre class="brush: scala">
+scala&gt; val scope = new NamespaceBinding("svg", "http://www.w3.org/2000/svg", 
+     |       TopScope)
+scope: scala.xml.NamespaceBinding =  xmlns:svg="http://www.w3.org/2000/svg"
+
+scala&gt; val attrs = Attribute(null, "width", "100", Attribute( 
+     |       null, "height", "100", Null))
+attrs: scala.xml.Attribute =  width="100" height="100"
+
+scala&gt; val elem = Elem(null, "body", Null, TopScope, Elem(
+     |       "svg", "svg", attrs, scope))
+warning: there were 2 deprecation warning(s); re-run with -deprecation for details
+elem: scala.xml.Elem = &lt;body&gt;&lt;svg:svg width="100" height="100" 
+xmlns:svg="http://www.w3.org/2000/svg"/&gt;&lt;/body&gt;
+</pre>
+
+<h2 id="toc_4.10">XML的模式匹配</h2>
 
 <p>
 XML的模式很像字面量，差别在于如果加入转义花括号，那么花括号里的不是表达式而是
@@ -2548,6 +2733,104 @@ XML的模式很像字面量，差别在于如果加入转义花括号，那么�
   scala&gt; proc(&lt;a/&gt;)
   res22: String = It's an a: Array()
 </pre>
+
+<h3 id="toc_4.10.1">只能处理单个节点</h3>
+
+<p>
+case语句中只能处理一个结点，下面的形式是不可以的：
+</p>
+
+<pre class="brush: scala">
+case &lt;p&gt;{_*}&lt;/p&gt;&lt;br /&gt; =&gt; ...
+</pre>
+
+<h3 id="toc_4.10.2">没有子结点</h3>
+
+<p>
+匹配可能属性，但不能有子节点的标签：
+</p>
+
+<pre class="brush: scala">
+node match {
+	case &lt;img/&gt; =&gt; ...
+	...
+}
+</pre>
+
+<h3 id="toc_4.10.3">只有一个子节点</h3>
+
+<p>
+匹配只有一个子节点：
+</p>
+
+<pre class="brush: scala">
+	case &lt;li&gt;{_}&lt;/li&gt; =&gt; doSth() // 非法
+</pre>
+
+<h3 id="toc_4.10.4">多个子节点</h3>
+
+<p>
+匹配有多个子节点，如：
+</p>
+
+<pre class="brush: xml">
+&lt;li&gt;An &lt;em&gt;important&lt;/em&gt; item&lt;/li&gt;
+</pre>
+
+<p>
+可用：
+</p>
+
+<pre class="brush: scala">
+	case &lt;li&gt;{_*}&lt;/li&gt; =&gt; doSth()
+</pre>
+
+<h3 id="toc_4.10.5">绑定变量</h3>
+
+<p>
+用变量取得匹配的内容：
+</p>
+
+<pre class="brush: scala">
+case &lt;li&gt;{child}&lt;/li&gt; =&gt; child.text
+</pre>
+
+<p>
+匹配一个文本节点：
+</p>
+
+<pre class="brush: scala">
+case &lt;li&gt;{Text(item)}&lt;/li&gt; =&gt; item
+</pre>
+
+<h3 id="toc_4.10.6">绑定节点序列到变量</h3>
+
+<p>
+绑定节点序列到变量：
+</p>
+
+<pre class="brush: scala">
+case &lt;li&gt;{children @ _*}&lt;/li&gt; =&gt; for (c &lt;- children) yield c
+</pre>
+
+<h3 id="toc_4.10.7">匹配属性</h3>
+
+<p>
+XML模式匹配不能有属性：
+</p>
+
+<pre class="brush: scala">
+case &lt;img alt="TODO"/&gt; =&gt; doSth() // 非法
+</pre>
+
+<p>
+匹配属性要结合守卫模式：
+</p>
+
+<pre class="brush: scala">
+case n @ &lt;img/&gt; if (n.attributes("alt").text == "TODO") =&gt; doSth()
+</pre>
+
 
 <p>
 要注意XML模式能很好地与for表达式一起工作，迭代XML结构树的某些部分而忽略其他部分
@@ -2623,6 +2906,150 @@ XML的模式很像字面量，差别在于如果加入转义花括号，那么�
 <pre class="brush: scala">
 (catalog \\ "cctherm").size
 </pre>
+
+<h2 id="toc_4.11">修改元素和属性</h2>
+
+<p>
+Scala中XML节点和节点序列都是不可变的，要<code>copy</code>方法编辑复本。<code>copy</code>方法有五个参数
+：
+</p>
+
+<ul>
+<li>
+lable
+
+<li>
+attributes
+
+<li>
+child
+
+<li>
+prefix
+
+<li>
+scop
+
+</ul>
+
+<p>
+不传值给参数会把原来的元素复制过来，也可以通过传名参数指定参数的值：
+</p>
+
+<pre class="brush: scala">
+scala&gt; val list = &lt;ul&gt;&lt;li&gt;Fred&lt;/li&gt;&lt;li&gt;Wilma&lt;/li&gt;&lt;/ul&gt;
+list: scala.xml.Elem = &lt;ul&gt;&lt;li&gt;Fred&lt;/li&gt;&lt;li&gt;Wilma&lt;/li&gt;&lt;/ul&gt;
+
+scala&gt; val list2 = list.copy()
+list2: scala.xml.Elem = &lt;ul&gt;&lt;li&gt;Fred&lt;/li&gt;&lt;li&gt;Wilma&lt;/li&gt;&lt;/ul&gt;
+
+scala&gt; val list2 = list.copy(label = "ol")
+list2: scala.xml.Elem = &lt;ol&gt;&lt;li&gt;Fred&lt;/li&gt;&lt;li&gt;Wilma&lt;/li&gt;&lt;/ol&gt;
+</pre>
+
+<p>
+添加子节点：
+</p>
+
+<pre class="brush: scala">
+scala&gt; list.copy(child = list.child ++ &lt;li&gt;Another item&lt;/li&gt;)
+res0: scala.xml.Elem = &lt;ul&gt;&lt;li&gt;Fred&lt;/li&gt;&lt;li&gt;Wilma&lt;/li&gt;&lt;li&gt;Another item&lt;/li&gt;&lt;/ul&gt;
+</pre>
+
+<p>
+修改或添加属性用操作符<code>%</code>添加<code>Attribute</code>实例。<code>Attribute</code>的构造方法格式为：
+</p>
+
+<pre class="brush: scala">
+Attribute(命名空间, 属性, 值, 额外的元数据列表)
+</pre>
+
+<pre class="brush: scala">
+scala&gt; import scala.xml._
+import scala.xml._
+
+scala&gt; val image = &lt;img src="hamster.jpg"/&gt;
+image: scala.xml.Elem = &lt;img src="hamster.jpg"/&gt;
+
+scala&gt; val image2 = image % Attribute(null, "alt", "An image of a hamster", Null)
+image2: scala.xml.Elem = &lt;img alt="An image of a hamster" src="hamster.jpg"/&gt;
+</pre>
+
+<p>
+注意：<code>scala.xml.Null</code>是一个空属性列表，不是<code>scala.Null</code>类型
+</p>
+
+<p>
+添加多个属性，放在最后一个参数里：
+</p>
+
+<pre class="brush: scala">
+scala&gt; val image3 = image % Attribute(null, "alt", "An image of a hamster",
+     |    Attribute(null, "alt", "An image of a hamster", Null))
+image3: scala.xml.Elem = &lt;img alt="An image of a hamster" src="hamster.jpg"/&gt;
+</pre>
+
+<p>
+同一个属性只能有一个值，新的值会覆盖前一个值。
+</p>
+
+<h2 id="toc_4.12">批量XML变化</h2>
+
+<p>
+<code>RuleTransformer</code>类批量重写符合指定条件的后代。把一个或多个<code>RewriteRule</code>实例应用
+到某个节点及其子节点。
+</p>
+
+<p>
+例如，把<code>ul</code>节点修改为<code>ol</code>，可以定义一个<code>RewriteRule</code>并重写<code>transform</code>方法：
+</p>
+
+<pre class="brush: scala">
+scala&gt; import scala.xml.transform._
+import scala.xml.transform._
+
+scala&gt; val rule1 = new RewriteRule {
+     |   override def transform(n: Node) = n match {
+     |     case e @ &lt;ul&gt;{_*}&lt;/ul&gt; =&gt; e.asInstanceOf[Elem].copy(label = "ol")
+     |     case _ =&gt; n
+     |   }
+     | }
+rule1: scala.xml.transform.RewriteRule = &lt;function1&gt;
+</pre>
+
+<p>
+应用：
+</p>
+
+<pre class="brush: scala">
+scala&gt; val root = &lt;ul&gt;&lt;li&gt;item 1&lt;/li&gt;&lt;/ul&gt;
+root: scala.xml.Elem = &lt;ul&gt;&lt;li&gt;item 1&lt;/li&gt;&lt;/ul&gt;
+
+scala&gt; val transformed = new RuleTransformer(rule1).transform(root)
+transformed: Seq[scala.xml.Node] = List(&lt;ol&gt;&lt;li&gt;item 1&lt;/li&gt;&lt;/ol&gt;)
+</pre>
+
+<p>
+<code>RuleTransformer</code>的构造器中可以传入多个规则作为参数：
+</p>
+
+<pre class="brush: scala">
+new RuleTransformer(rule1, rule2, rule3)
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
 
 
 

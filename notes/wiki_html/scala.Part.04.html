@@ -41,24 +41,29 @@
 </ul>
 <li><a href="#toc_2">参数类型化</a>
 <ul>
-<li><a href="#toc_2.1">开发纯函数式队列</a>
-<li><a href="#toc_2.2">信息隐藏</a>
+<li><a href="#toc_2.1">泛型必须指定类型</a>
+<li><a href="#toc_2.2">例：开发纯函数式队列</a>
+<li><a href="#toc_2.3">信息隐藏</a>
 <ul>
-<li><a href="#toc_2.2.1">私有构造器及工厂方法</a>
-<li><a href="#toc_2.2.2">可选方案：私有类</a>
+<li><a href="#toc_2.3.1">私有构造器及工厂方法</a>
+<li><a href="#toc_2.3.2">可选方案：私有类</a>
 </ul>
-<li><a href="#toc_2.3">变化型注解</a>
+<li><a href="#toc_2.4">类型变化：协变与逆变</a>
 <ul>
-<li><a href="#toc_2.3.1">变化型和数组</a>
+<li><a href="#toc_2.4.1">协变的问题</a>
+<li><a href="#toc_2.4.2">Java数组是协变的</a>
+<li><a href="#toc_2.4.3">Scala数组是非协变的</a>
 </ul>
-<li><a href="#toc_2.4">检查变化型注解</a>
+<li><a href="#toc_2.5">检查变化类型注解</a>
 <ul>
-<li><a href="#toc_2.4.1">变化型注解的验证方式</a>
+<li><a href="#toc_2.5.1">禁止协变类型作为方法参数</a>
+<li><a href="#toc_2.5.2">禁止协变可变的字段</a>
+<li><a href="#toc_2.5.3">变化型注解的验证方式</a>
 </ul>
-<li><a href="#toc_2.5">下界</a>
-<li><a href="#toc_2.6">逆变</a>
-<li><a href="#toc_2.7">对象私有数据</a>
-<li><a href="#toc_2.8">上界</a>
+<li><a href="#toc_2.6">下界</a>
+<li><a href="#toc_2.7">逆变</a>
+<li><a href="#toc_2.8">对象私有数据</a>
+<li><a href="#toc_2.9">上界</a>
 </ul>
 <li><a href="#toc_3">抽象成员</a>
 <ul>
@@ -919,14 +924,21 @@ abstract class CircuitSimulation
 }
 </pre>
 
+
+
+
+
+
 <h1 id="toc_2">参数类型化</h1>
 
+<h2 id="toc_2.1">泛型必须指定类型</h2>
+
 <p>
-类型化参数能实现编写泛型类和特质。Scala中的泛型实例都应该写明具体类型（如：Set[Int]，Set[Int]
-），而不像Java中可以不带泛型类型。
+类型化参数能实现编写泛型类和特质。Scala中的泛型实例都应该写明具体类型（如：
+<code>Set[Int]</code>，<code>Set[Int]</code>） ，而不像Java中可以不带泛型类型。
 </p>
 
-<h2 id="toc_2.1">开发纯函数式队列</h2>
+<h2 id="toc_2.2">例：开发纯函数式队列</h2>
 
 <p>
 函数式的队列是不可变的，添加元素操作会返回一个新的队列。三个基本方法：
@@ -949,8 +961,8 @@ abstract class CircuitSimulation
 </p>
 
 <p>
-一个实现方案是以<code>List</code>作为功能表达类型，可以用现成的<code>head</code>和<code>tail</code>方法。<code>append</code>方法调用连接
-操作：
+一个实现方案是以<code>List</code>作为功能表达类型，可以用现成的<code>head</code>和<code>tail</code>方法。<code>append</code>
+方法调用连接操作：
 </p>
 
 <pre class="brush: scala">
@@ -962,8 +974,8 @@ abstract class CircuitSimulation
 </pre>
 
 <p>
-但这样<code>append</code>操作的时间会按元素的数量而增加，那换一种思路，把列表倒过来排序，这样会让原来最后
-加进来的元素出现在列表的最前面：
+但这样<code>append</code>操作的时间会按元素的数量而增加，那换一种思路，把列表倒过来排序，
+这样会让原来最后加进来的元素出现在列表的最前面：
 </p>
 
 <pre class="brush: scala">
@@ -976,16 +988,17 @@ abstract class CircuitSimulation
 </pre>
 
 <p>
-现在表现也倒过来了：<code>append</code>操作时间为常量，但<code>head</code>和<code>tail</code>耗时与元素数量成正比了。
+现在表现也倒过来了：<code>append</code>操作时间为常量，但<code>head</code>和<code>tail</code>耗时与元素数量
+成正比了。
 </p>
 
 <p>
 试一下结合两种列表的方案：
 </p>
 
-
 <p>
-用两个列表<code>leading</code>放前面一半；<code>trailing</code>放后一半反向排的元素。这样全部内容就是：
+用两个列表<code>leading</code>放前面一半；<code>trailing</code>放后一半反向排的元素。这样全部内容就是
+：
 </p>
 
 <pre class="brush: scala">
@@ -1001,11 +1014,16 @@ i :: trailing
 </pre>
 
 <p>
-这样常量时间就可以完成。但这样前一半的<code>leading</code>就不放进内容了，所以在对空的<code>leading</code>进行第一次<code>head</code>或<code>tail</code>操作前都要把<code>trailing</code>反转并复制给<code>leading</code>。这个操作被定义为<code>mirror</code>。
+这样常量时间就可以完成。但这样前一半的<code>leading</code>就不放进内容了，所以在对空的
+<code>leading</code>进行第一次<code>head</code>或<code>tail</code>操作前都要把<code>trailing</code>反转并复制给<code>leading</code>。
+这个操作被定义为<code>mirror</code>。
 </p>
 
 <p>
-虽然<code>mirror</code>操作与队列长度成正比，但是这只发生在<code>leading</code>为空时才会被调用。因为如果<code>leading</code>不为空它将直接返回。<code>head</code>与<code>tail</code>操作会调用到<code>mirror</code>，所以这两个方法的复杂度与队列长度呈线性关系。然而队列越长，<code>mirror</code>被调用的次数就越以级数方式递减。
+虽然<code>mirror</code>操作与队列长度成正比，但是这只发生在<code>leading</code>为空时才会被调用。因为
+如果<code>leading</code>不为空它将直接返回。<code>head</code>与<code>tail</code>操作会调用到<code>mirror</code>，所以这两个
+方法的复杂度与队列长度呈线性关系。然而队列越长，<code>mirror</code>被调用的次数就越以级数
+方式递减。
 </p>
 
 <pre class="brush: scala">
@@ -1031,13 +1049,17 @@ i :: trailing
   }
 </pre>
 
-<h2 id="toc_2.2">信息隐藏</h2>
+<h2 id="toc_2.3">信息隐藏</h2>
 
 <p>
 前面的<code>Queue</code>实现暴露了太多实现细节，比如构造器的两个参数还有一个是反转的。
 </p>
 
-<h3 id="toc_2.2.1">私有构造器及工厂方法</h3>
+<h3 id="toc_2.3.1">私有构造器及工厂方法</h3>
+
+<p>
+为了不让外部了解构造器的实现，可以把构造器作为隐藏的：
+</p>
 
 <pre class="brush: scala">
   class Queue[T] private (
@@ -1089,7 +1111,7 @@ i :: trailing
   }
 </pre>
 
-<h3 id="toc_2.2.2">可选方案：私有类</h3>
+<h3 id="toc_2.3.2">可选方案：私有类</h3>
 
 <p>
 除了私有构造器和私有成员，还可以直接隐藏掉类本身，只提供暴露类公共接口的特质：
@@ -1132,7 +1154,7 @@ i :: trailing
 </pre>
 
 
-<h2 id="toc_2.3">变化型注解</h2>
+<h2 id="toc_2.4">类型变化：协变与逆变</h2>
 
 <p>
 对于容器类来说，成员的类型很重要：
@@ -1199,6 +1221,28 @@ Scala的泛型在默认情况下是非协变的（nonvariant），即<code>Queue
 
 <p>
 协变、逆变与非协变都被称为参数变化类型。
+</p>
+
+<h3 id="toc_2.4.1">协变的问题</h3>
+
+<p>
+假设<code>MyClass</code>有多个子类<code>Sub1</code>、<code>Sub2</code>到<code>SubN</code>。在允许协变的情况下，就可以把子类
+的容器赋值给父类：
+</p>
+
+<pre class="brush: scala">
+val list: List[MyClass] = new List[Sub1]
+</pre>
+
+<p>
+这里引起的矛盾是，<code>list</code>从声明上来看是父类<code>MyClass</code>的列表，所有<code>MyClass</code>的子类，
+从<code>Sub1</code>、<code>Sub2</code>到<code>SubN</code>全部都可以放到容器里；但实际上赋值给它的是一个<code>Sub1</code>类型
+的容器，只能放入支持<code>Sub1</code>类型与超类<code>MyClass</code>操作的成员，虽然可以存放其他从
+<code>Sub2</code>到<code>SubN</code>类型的成员，但不能支持在他们上的操作。
+</p>
+
+<p>
+例子：
 </p>
 
 <p>
@@ -1272,7 +1316,7 @@ Scala的泛型在默认情况下是非协变的（nonvariant），即<code>Queue
 <code>Cell[Any]</code>和<code>Cell[String]</code>的类型的协变引起了错误。
 </p>
 
-<h3 id="toc_2.3.1">变化型和数组</h3>
+<h3 id="toc_2.4.2">Java数组是协变的</h3>
 
 <p>
 以前面的<code>Cell</code>类为例与Java中的数组比较，Java中的数组是协变的：
@@ -1311,6 +1355,8 @@ Scala的泛型在默认情况下是非协变的（nonvariant），即<code>Queue
 不再有用了，为了向以前老版本兼容才留着。
 </p>
 
+<h3 id="toc_2.4.3">Scala数组是非协变的</h3>
+
 <p>
 Scala中数组是不可协变的：
 </p>
@@ -1329,7 +1375,7 @@ Scala中数组是不可协变的：
 
 <p>
 但有时还是要数组能泛型手段与Java遗留方法进行交互。所以Scala允许把<code>T</code>类型的数组
-造型为任意<code>T</code>的超类的数组：
+转型为任意<code>T</code>的超类的数组：
 </p>
 
 <pre class="brush: scala">
@@ -1338,10 +1384,24 @@ Scala中数组是不可协变的：
   a2: Array[java.lang.Object] = Array(abc)
 </pre>
 
-<h2 id="toc_2.4">检查变化型注解</h2>
+<h2 id="toc_2.5">检查变化类型注解</h2>
+
+<h3 id="toc_2.5.1">禁止协变类型作为方法参数</h3>
 
 <p>
-再看几个不合适的协变例子：
+只要把泛型类型作为方法参数类型，包含它的类或特质就有可能不能与这个类型参数一起
+协变。如形式：
+</p>
+
+<pre class="brush: scala">
+  class Queue[+T] {
+    def append(x: T) = 
+     ...
+  }
+</pre>
+
+<p>
+例子：
 </p>
 
 <p>
@@ -1368,12 +1428,11 @@ Scala中数组是不可协变的：
 </pre>
 
 <p>
-上面的因为协变所以第一行是有效的，但第二行就有问题了……对字符串求平方根……
+上面的因为协变所以第一行是有效的，但第二行就有问题了，因为不能对字符串求平方根。
 </p>
 
 <p>
-在更加广泛的情况下，只要把泛型类型作为方法参数类型，包含它的类或特质就有可能不能
-与这个类型参数一直协变，对于队列来说，<code>append</code>方法违反了以下情况：
+所以说这个<code>append</code>方法违反了不能把协变的类型作为参数的类型：
 </p>
 
 <pre class="brush: scala">
@@ -1394,52 +1453,95 @@ Scala中数组是不可协变的：
                ^
 </pre>
 
+<h3 id="toc_2.5.2">禁止协变可变的字段</h3>
+
 <p>
 不要对可重新赋值的字段使用<code>+</code>的协变参数类型。如<code>var x:T</code>在Scala里被看作自带
 <code>getter</code>方法<code>def x:T</code>、<code>def x_= (y:T)</code>，所以将不是协变的。
 </p>
 
 
-<h3 id="toc_2.4.1">变化型注解的验证方式</h3>
+<h3 id="toc_2.5.3">变化型注解的验证方式</h3>
 
 <p>
-深入讲述一些概念前，首选，我们把类和特质都简单称为“类”。然后对于这些类可能会用
-到类型参数的地方被分为正、负、中立。编译器检查类的类型参数的每一个用法。
+类型声明中可能会用到类型参数的地方被分为正、负、中立。编译器检查类的类型参数的
+每一个用法。
 </p>
 
-<p>
-<code>+</code>的类型参数只能被用在正的位置上，<code>-</code>的类型参数只能用在负的位置上。没有
-变化型注解的类型可以用于任何位置，所以它是唯一能被用在类结构体的中性位置上的
-类型参数。
-</p>
+<ul>
+<li>
+<code>+</code>的类型参数只能被用在正的位置上，
+
+<li>
+<code>-</code>的类型参数只能用在负的位置上。
+
+<li>
+没有变化的类型可以用于任何位置，所以它是唯一能有在中性位置上的类型参数。
+
+</ul>
 
 <p>
 <img src='images/scala/19.02.png' />
 </p>
 
 <p>
-编译器对位置分类是从类型声明开始进入更深的内嵌层。处于声明类最顶层被划为正的位置
-。默认情况下内层位置的分类会和外层一致。
+编译器对位置分类是从类型声明开始进入更深的内嵌层。
 </p>
 
 <p>
-但总有例外：方法值参数位置是方法外部的位置的翻转类别，这里正位置传为负，负转为正
-，而中性位置仍然保持中性。
+处于声明类最顶层（位置１）被划为正的位置。默认情况下内层位置（位置２）的分类会和
+外层一致。
 </p>
 
 <p>
-除了方法值参数位置外，方法的类型参数的当前类别也会被翻转。而类型参数的位置，如
-<code>C[Arg]</code>中的<code>Arg</code>也有可以被翻转，这取决于对应类型参数的变化型：
+<img src='images/scala/19.01.01.png' />
 </p>
 
 <p>
+但总有例外：
+</p>
+
+<p>
+方法参数位置（位置３）是方法外部的位置的翻转类别，这里正位置传为负，负转为正，
+而中性位置仍然保持中性。
+</p>
+
+<p>
+<img src='images/scala/19.01.02.png' />
+</p>
+
+<p>
+方法的类型参数（位置４）的当前类别也会被翻转。
+</p>
+
+<p>
+<img src='images/scala/19.01.03.png' />
+</p>
+
+<p>
+而类型参数的位置，如<code>C[Arg]</code>中的<code>Arg</code>也有可能被翻转，这取决于对应类型参数的
+变化型：
+</p>
+
+<ul>
+<li>
 如果<code>C</code>的类型参数标了<code>+</code>号，那么类别不变；如果标了<code>-</code>号，则当前类别被翻转；
-如果<code>C</code>的类型参数没有变化型注解，那么当前类型将改为中性。
-</p>
 
+<li>
+如果<code>C</code>的类型参数没有变化型注解，那么当前类型将改为中性。
+
+</ul>
 
 <p>
-下面的例子比较生编硬造，下面类型定义中的若干位置变化弄被标了正<code>+</code>或<code>-</code>负：
+<img src='images/scala/19.01.04.png' />
+</p>
+
+<p>
+<img src='images/scala/19.01.05.png' />
+</p>
+
+<p>
+上面的例子比较生编硬造，类型定义中的若干位置变化弄被标了正<code>+</code>或<code>-</code>负：
 </p>
 
 <p>
@@ -1451,9 +1553,9 @@ Scala中数组是不可协变的：
 </p>
 
 <p>
-注意<code>meow</code>的结果类型，第一个<code>Cat[U, T]</code>参数的位置是负的。因为<code>Cat</code>的第一个
-类型参数<code>[T]</code>被标了<code>-</code>。这个参数中的类型<code>U</code>重新转为正的位置（两次翻转），而
-参数中的类型<code>T</code>仍然是负位置。
+注意<code>meow</code>的结果类型<code>Cat[Cat[U, T], U]</code>，第一个<code>Cat[U, T]</code>参数的位置是负的。因为
+<code>Cat</code>的第一个类型参数<code>[T]</code>被标了<code>-</code>。这个参数中的类型<code>U</code>重新转为正的位置（两次
+翻转），而参数中的类型<code>T</code>仍然是负位置。
 </p>
 
 <p>
@@ -1462,12 +1564,12 @@ Scala中数组是不可协变的：
 </p>
 
 <p>
-就上面的例子来说，<code>T</code>仅用在负位置上，而<code>U</code>仅用于正的位置上。所以这个<code>Cat</code>类
-是正确的。
+就上面的例子来说，<code>T</code>仅用在负位置上，而<code>U</code>仅用于正的位置上。所以这个<code>Cat</code>类是
+正确的。
 </p>
 
 
-<h2 id="toc_2.5">下界</h2>
+<h2 id="toc_2.6">下界</h2>
 
 <p>
 在之前的“可选方案：私有类”这一节中展示的是没有办法协变的实现<code>Queue[T]</code>。因为类型
@@ -1512,7 +1614,7 @@ Scala中数组是不可协变的：
 </p>
 
 
-<h2 id="toc_2.6">逆变</h2>
+<h2 id="toc_2.7">逆变</h2>
 
 <p>
 前面所有的例子不是协变的就是非协变的。还有一些情况下会有逆变：
@@ -1595,6 +1697,10 @@ object Customer extends Application {
 </pre>
 
 <p>
+<img src="images/scala/19.03.png" />
+</p>
+
+<p>
 关键是<code>printBookList</code>的形参是<code>Book =&gt; AnyRef</code>，但实参是<code>Publication =&gt; String</code>。参数
 是父类（<code>Book</code>的父类<code>Publication</code>）而结果是子类（<code>AnyRef</code>的子类<code>String</code>）。
 </p>
@@ -1604,7 +1710,7 @@ object Customer extends Application {
 ，这里用到了函数结果类型的协变。
 </p>
 
-<h2 id="toc_2.7">对象私有数据</h2>
+<h2 id="toc_2.8">对象私有数据</h2>
 
 <p>
 之前的<code>Queue</code>类待改进内容：当<code>leading</code>列表为空时如果重复调用<code>head</code>，那么<code>mirror</code>
@@ -1683,7 +1789,7 @@ object Customer extends Application {
 </p>
 
 
-<h2 id="toc_2.8">上界</h2>
+<h2 id="toc_2.9">上界</h2>
 
 <p>
 之前在“使用列表”章的第一节“列表字面量”中实现一个归并排序的方法。它的第一个参数

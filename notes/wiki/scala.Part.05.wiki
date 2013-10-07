@@ -1218,6 +1218,8 @@ Scala里可以直接给XML写字面量。解释器把从根标签的开始到结
 * `Text`类，只有文本的节点。
 * `NodeSeq`类，就是多个节点的序列。你可以把`Node`想象成只有一个成员的`NodeSeq`。
 
+还有一个`scala.xml.Null`是一个空属性列表，不是`scala.Null`类型。
+
 还有其他的类型：
 
 <img src="images/scala/xml.node.hir.jpeg" />
@@ -1506,81 +1508,6 @@ res1: scala.xml.NodeSeq = NodeSeq(<ol><li>Item 1</li><li>Item 2</li></ol>)
 }}}
 
 
-
-== 序列化 ==
-
-从Scala内部结构到XML转换的例子。
-
-以一个收集古董可口可乐温度计的数据库为例子。下面的内部类以目录形式保存条目。记录
-了生产时间，购入时间，购买费用：
-
-{{{class="brush: scala"
-  abstract class CCTherm {
-    val description: String
-    val yearMade: Int
-    val dateObtained: String
-    val bookPrice: Int      // in US cents
-    val purchasePrice: Int  // in US cents
-    val condition: Int      // 1 to 10
-
-    override def toString = description
-  }
-}}}
-
-只要添加了`toXML`方法就可以把实例转为XML：
-
-{{{class="brush: scala"
-  abstract class CCTherm {
-    ...
-    def toXML =
-      <cctherm>
-        <description>{description}</description>
-        <yearMade>{yearMade}</yearMade>
-        <dateObtained>{dateObtained}</dateObtained>
-        <bookPrice>{bookPrice}</bookPrice>
-        <purchasePrice>{purchasePrice}</purchasePrice>
-        <condition>{condition}</condition>
-      </cctherm>
-  }
-}}}
-
-实际操作中的执行效果如下：
-
-{{{class="brush: scala"
-  val therm = new CCTherm {
-    val description = "hot dog #5"
-    val yearMade = 1952
-    val dateObtained = "March 14, 2006"
-    val bookPrice = 2199
-    val purchasePrice = 500
-    val condition = 9
-  }
-
-  scala> val therm = new CCTherm {
-       |   val description = "hot dog #5"
-       |   val yearMade = 1952
-       |   val dateObtained = "March 14, 2006"
-       |   val bookPrice = 2199
-       |   val purchasePrice = 500
-       |   val condition = 9
-       | }
-  therm: CCTherm = hot dog #5
-
-  scala> therm.toXML
-  res6: scala.xml.Elem = 
-  <cctherm> 
-         <description>hot dog #5</description> 
-         <yearMade>1952</yearMade> 
-         <dateObtained>March 14, 2006</dateObtained> 
-         <bookPrice>2199</bookPrice> 
-         <purchasePrice>500</purchasePrice> 
-         <condition>9</condition> 
-         </cctherm>
-}}}
-
-注意，虽然`CCTherm`是抽象类，但是`new CCTherm`还是可以正常工作，因为这样的语法
-实际上是实例化了`CCTherm`的匿名子类。
-
 == 拆解XML ==
 
 Scala中可以直接用基于XPath语言的工具处理XML。
@@ -1684,14 +1611,81 @@ res3: String = aa.jpgbb.jpg
 }}}
 
 
+== 对象与XML转换 ==
+
+== 序列化 ==
+
+从Scala内部结构到XML转换的例子。
+
+以一个收集古董可口可乐温度计的数据库为例子。下面的内部类以目录形式保存条目。记录
+了生产时间，购入时间，购买费用：
 
 {{{class="brush: scala"
+  abstract class CCTherm {
+    val description: String
+    val yearMade: Int
+    val dateObtained: String
+    val bookPrice: Int      // in US cents
+    val purchasePrice: Int  // in US cents
+    val condition: Int      // 1 to 10
+
+    override def toString = description
+  }
 }}}
 
-
+只要添加了`toXML`方法就可以把实例转为XML：
 
 {{{class="brush: scala"
+  abstract class CCTherm {
+    ...
+    def toXML =
+      <cctherm>
+        <description>{description}</description>
+        <yearMade>{yearMade}</yearMade>
+        <dateObtained>{dateObtained}</dateObtained>
+        <bookPrice>{bookPrice}</bookPrice>
+        <purchasePrice>{purchasePrice}</purchasePrice>
+        <condition>{condition}</condition>
+      </cctherm>
+  }
 }}}
+
+实际操作中的执行效果如下：
+
+{{{class="brush: scala"
+  val therm = new CCTherm {
+    val description = "hot dog #5"
+    val yearMade = 1952
+    val dateObtained = "March 14, 2006"
+    val bookPrice = 2199
+    val purchasePrice = 500
+    val condition = 9
+  }
+
+  scala> val therm = new CCTherm {
+       |   val description = "hot dog #5"
+       |   val yearMade = 1952
+       |   val dateObtained = "March 14, 2006"
+       |   val bookPrice = 2199
+       |   val purchasePrice = 500
+       |   val condition = 9
+       | }
+  therm: CCTherm = hot dog #5
+
+  scala> therm.toXML
+  res6: scala.xml.Elem = 
+  <cctherm> 
+         <description>hot dog #5</description> 
+         <yearMade>1952</yearMade> 
+         <dateObtained>March 14, 2006</dateObtained> 
+         <bookPrice>2199</bookPrice> 
+         <purchasePrice>500</purchasePrice> 
+         <condition>9</condition> 
+         </cctherm>
+}}}
+
+注意，虽然`CCTherm`是抽象类，但是`new CCTherm`还是可以正常工作，因为这样的语法
+实际上是实例化了`CCTherm`的匿名子类。
 
 
 == 反序列化 ==
@@ -1730,11 +1724,19 @@ res3: String = aa.jpgbb.jpg
 
 == 读取和保存 ==
 
+=== 保存 ===
+
 把XML转为字符串只要调用`toString`方法。
 
-如果要把XML转换为字节文件可以使用`XML.saveFull`命令。要确定文件名、要保存的节点
-、采用的字符编码、是否在文件头上写上包含字符编码的XML声明、XML的文档类型（可以
-指定为`null`表示任意类型，这里不深入讨论）。例子：
+如果要把XML转换为字节文件可以使用`XML.saveFull`命令。参数：
+
+* 文件名、
+* 要保存的节点、
+* 采用的字符编码、
+* 是否在文件头上写上包含字符编码的XML声明、
+* XML的文档类型`scala.xml.dtd.DocType`（`null`表示任意类型这里不深入讨论）。
+
+例子：
 
 {{{class="brush: scala"
   scala.xml.XML.saveFull("therm1.xml", node, "UTF-8", true, null)
@@ -1754,7 +1756,39 @@ res3: String = aa.jpgbb.jpg
            </cctherm>
 }}}
 
-读取文件比保存简单，只要调用`xml.XML.loadFile`并传入文件名：
+如果要保存一个XHTML，典型的例子是：
+
+{{{class="brush: scala"
+scala.xml.XML.saveFull("therm1.xml", node, "UTF-8", true, 
+	DocType("html", PublicID( "-//W3C//DTD XHTML 1.0 Strict//EN",
+			"http://www.w3.org/TR/xhtml1/DTD/xhtml11-strict.dtd"), Nil)
+)
+}}}
+
+把空节点写为自结束标签：
+
+{{{class="brush: scala"
+scala> val image = <img src="logo.jpg"></img>
+image: scala.xml.Elem = <img src="logo.jpg"></img>
+
+scala> val str = xml.Utility.toXML(image, minimizeTags = true)
+warning: there were 1 deprecation warning(s); re-run with -deprecation for details
+str: StringBuilder = <img src="logo.jpg"/>
+}}}
+
+`PrettyPrinter`类可提供更加美观的格式：
+
+{{{class="brush: scala"
+scala> val printer = new PrettyPrinter(width = 100, step = 4)
+printer: scala.xml.PrettyPrinter = scala.xml.PrettyPrinter@73aa0439
+
+scala> val str = printer.formatNodes(image)
+str: String = <img src="logo.jpg"></img>
+}}}
+
+=== 加载 ===
+
+读取文件比保存简单，只要调用`xml.XML`对象的`loadFile`方法并传入文件名：
 
 {{{class="brush: scala"
   scala> val loadnode = xml.XML.loadFile("therm1.xml")
@@ -1772,6 +1806,95 @@ res3: String = aa.jpgbb.jpg
   res14: CCTherm = hot dog #5
 }}}
 
+也可以从`java.io.InputStream`、`java.io.Reader`或`URL`加载：
+
+{{{class="brush: scala"
+val root2 = XML.load(new FileInputStream("myfile.xml"))
+
+val root3 = XML.load(new InputStreamReader(
+			new FileInputStream("myfile.xml"),"UTF-8"))
+			
+val root4 = XML.load(new URL("http;//horstmann.com/index.html"))
+}}}
+
+==== 解析器 ====
+
+默认的加载工具是Java的SAX解析器，它不会从本地编目而是从w3c.org读取DTD。尤其是
+处理XHTML时会这种行为花非常长的时间。
+
+JDK的`com.sun.org.apache.xml.internal.resolver.tools`包中的`CatelogResolver`类或
+Apache Commons Resolver提供的版本：
+
+http://xml.apache.org/commons/components/resolver/resolver-article.html
+
+XML对象没有接口可以用来安装实体解析器，只能通过后门来达到目的：
+
+{{{class="brush: scala"
+val res = new CatalogResolver
+
+val doc = new factory.XMLLoader[Elem] {
+	override def adapter = new parsing.NoBindingFactoryAdapter() {
+		override def resolveEntity(publicId: String, systemId: String) = {
+			res.resolveEntry(publicId, systemId)
+		}
+	}
+}.load(new URL("http://horstmann.com/index.html"))
+}}}
+
+
+== 命名空间 ==
+
+和Java或Scala中的包一样，XML通过`xmlns`属性指定命名空间，其形式类似URI：
+
+{{{class="brush: scala"
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head></head>
+	<body></body>
+</html>
+}}}
+
+`html`元素和所有的子元素（`head`、`body`等）都是在命令空间中的。子元素也可以导入
+自己的命名空间：
+
+{{{class="brush: scala"
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+	<rect x="25" y="25" width="50" height="50" fill="#ff000000" />
+</svg>
+}}}
+
+混用多个命名空间时，可以用“命令空间前缀”来给长长的命名空间起别名：
+
+{{{class="brush: scala"
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg" >
+}}}
+
+用`svg`来代替`http://www.w3.org/2000/svg`，所有`svg:`开关的都代表该命名空间：
+
+{{{class="brush: scala"
+<svg:svg width="100" height="100">
+	<svg:rect x="25" y="25" width="50" height="50" fill="#ff000000" />
+</svg:svg>
+}}}
+
+每个`Elem`对象都有`prefix`和`scope`值，解析器会自动设置这些值。然后可以用
+`scope.uri`得到命名空间。代码创建里的XML元素要手动设置`prefix`和`scope`：
+
+{{{class="brush: scala"
+scala> val scope = new NamespaceBinding("svg", "http://www.w3.org/2000/svg", 
+     |       TopScope)
+scope: scala.xml.NamespaceBinding =  xmlns:svg="http://www.w3.org/2000/svg"
+
+scala> val attrs = Attribute(null, "width", "100", Attribute( 
+     |       null, "height", "100", Null))
+attrs: scala.xml.Attribute =  width="100" height="100"
+
+scala> val elem = Elem(null, "body", Null, TopScope, Elem(
+     |       "svg", "svg", attrs, scope))
+warning: there were 2 deprecation warning(s); re-run with -deprecation for details
+elem: scala.xml.Elem = <body><svg:svg width="100" height="100" 
+xmlns:svg="http://www.w3.org/2000/svg"/></body>
+}}}
 
 == XML的模式匹配 ==
 
@@ -1832,6 +1955,84 @@ XML的模式很像字面量，差别在于如果加入转义花括号，那么�
   scala> proc(<a/>)
   res22: String = It's an a: Array()
 }}}
+
+=== 只能处理单个节点 ===
+
+case语句中只能处理一个结点，下面的形式是不可以的：
+
+{{{class="brush: scala"
+case <p>{_*}</p><br /> => ...
+}}}
+
+=== 没有子结点 ===
+
+匹配可能属性，但不能有子节点的标签：
+
+{{{class="brush: scala"
+node match {
+	case <img/> => ...
+	...
+}
+}}}
+
+=== 只有一个子节点 ===
+
+匹配只有一个子节点：
+
+{{{class="brush: scala"
+	case <li>{_}</li> => doSth() // 非法
+}}}
+
+=== 多个子节点 ===
+
+匹配有多个子节点，如：
+
+{{{class="brush: xml"
+<li>An <em>important</em> item</li>
+}}}
+
+可用：
+
+{{{class="brush: scala"
+	case <li>{_*}</li> => doSth()
+}}}
+
+=== 绑定变量 ===
+
+用变量取得匹配的内容：
+
+{{{class="brush: scala"
+case <li>{child}</li> => child.text
+}}}
+
+匹配一个文本节点：
+
+{{{class="brush: scala"
+case <li>{Text(item)}</li> => item
+}}}
+
+=== 绑定节点序列到变量 ===
+
+绑定节点序列到变量：
+
+{{{class="brush: scala"
+case <li>{children @ _*}</li> => for (c <- children) yield c
+}}}
+
+=== 匹配属性 ===
+
+XML模式匹配不能有属性：
+
+{{{class="brush: scala"
+case <img alt="TODO"/> => doSth() // 非法
+}}}
+
+匹配属性要结合守卫模式：
+
+{{{class="brush: scala"
+case n @ <img/> if (n.attributes("alt").text == "TODO") => doSth()
+}}}
+
 
 要注意XML模式能很好地与for表达式一起工作，迭代XML结构树的某些部分而忽略其他部分
 。例如希望在下面的XML结构中路过记录之间的空白：
@@ -1899,6 +2100,116 @@ XML的模式很像字面量，差别在于如果加入转义花括号，那么�
 {{{class="brush: scala"
 (catalog \\ "cctherm").size
 }}}
+
+== 修改元素和属性 ==
+
+Scala中XML节点和节点序列都是不可变的，要`copy`方法编辑复本。`copy`方法有五个参数
+：
+
+* lable
+* attributes
+* child
+* prefix
+* scop
+
+不传值给参数会把原来的元素复制过来，也可以通过传名参数指定参数的值：
+
+{{{class="brush: scala"
+scala> val list = <ul><li>Fred</li><li>Wilma</li></ul>
+list: scala.xml.Elem = <ul><li>Fred</li><li>Wilma</li></ul>
+
+scala> val list2 = list.copy()
+list2: scala.xml.Elem = <ul><li>Fred</li><li>Wilma</li></ul>
+
+scala> val list2 = list.copy(label = "ol")
+list2: scala.xml.Elem = <ol><li>Fred</li><li>Wilma</li></ol>
+}}}
+
+添加子节点：
+
+{{{class="brush: scala"
+scala> list.copy(child = list.child ++ <li>Another item</li>)
+res0: scala.xml.Elem = <ul><li>Fred</li><li>Wilma</li><li>Another item</li></ul>
+}}}
+
+修改或添加属性用操作符`%`添加`Attribute`实例。`Attribute`的构造方法格式为：
+
+{{{class="brush: scala"
+Attribute(命名空间, 属性, 值, 额外的元数据列表)
+}}}
+
+{{{class="brush: scala"
+scala> import scala.xml._
+import scala.xml._
+
+scala> val image = <img src="hamster.jpg"/>
+image: scala.xml.Elem = <img src="hamster.jpg"/>
+
+scala> val image2 = image % Attribute(null, "alt", "An image of a hamster", Null)
+image2: scala.xml.Elem = <img alt="An image of a hamster" src="hamster.jpg"/>
+}}}
+
+注意：`scala.xml.Null`是一个空属性列表，不是`scala.Null`类型
+
+添加多个属性，放在最后一个参数里：
+
+{{{class="brush: scala"
+scala> val image3 = image % Attribute(null, "alt", "An image of a hamster",
+     |    Attribute(null, "alt", "An image of a hamster", Null))
+image3: scala.xml.Elem = <img alt="An image of a hamster" src="hamster.jpg"/>
+}}}
+
+同一个属性只能有一个值，新的值会覆盖前一个值。
+
+== 批量XML变化 ==
+
+`RuleTransformer`类批量重写符合指定条件的后代。把一个或多个`RewriteRule`实例应用
+到某个节点及其子节点。
+
+例如，把`ul`节点修改为`ol`，可以定义一个`RewriteRule`并重写`transform`方法：
+
+{{{class="brush: scala"
+scala> import scala.xml.transform._
+import scala.xml.transform._
+
+scala> val rule1 = new RewriteRule {
+     |   override def transform(n: Node) = n match {
+     |     case e @ <ul>{_*}</ul> => e.asInstanceOf[Elem].copy(label = "ol")
+     |     case _ => n
+     |   }
+     | }
+rule1: scala.xml.transform.RewriteRule = <function1>
+}}}
+
+应用：
+
+{{{class="brush: scala"
+scala> val root = <ul><li>item 1</li></ul>
+root: scala.xml.Elem = <ul><li>item 1</li></ul>
+
+scala> val transformed = new RuleTransformer(rule1).transform(root)
+transformed: Seq[scala.xml.Node] = List(<ol><li>item 1</li></ol>)
+}}}
+
+`RuleTransformer`的构造器中可以传入多个规则作为参数：
+
+{{{class="brush: scala"
+new RuleTransformer(rule1, rule2, rule3)
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
 
 
 
