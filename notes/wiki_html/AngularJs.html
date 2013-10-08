@@ -34,9 +34,19 @@
 <li><a href="#toc_2.1">定义模块</a>
 <li><a href="#toc_2.2">Scopes</a>
 <ul>
-<li><a href="#toc_2.2.1">ng-controller</a>
-<li><a href="#toc_2.2.2">结合进myApp</a>
-<li><a href="#toc_2.2.3">音频</a>
+<li><a href="#toc_2.2.1">rootScope</a>
+<li><a href="#toc_2.2.2">Controller连接Scope</a>
+<li><a href="#toc_2.2.3">scope继承层级</a>
+<li><a href="#toc_2.2.4">独立的scop</a>
+<li><a href="#toc_2.2.5">结合进myApp</a>
+<li><a href="#toc_2.2.6">音频</a>
+</ul>
+<li><a href="#toc_2.3">数据绑定</a>
+<ul>
+<li><a href="#toc_2.3.1">双向绑定</a>
+<li><a href="#toc_2.3.2">视图与后端代码绑定</a>
+<li><a href="#toc_2.3.3">绑定函数</a>
+<li><a href="#toc_2.3.4">Ajax</a>
 </ul>
 </ul>
 </ul>
@@ -97,7 +107,7 @@ var app = angular.module('myApp', []);
 这样在页面上可以声明把模块绑定到指定的DOM中：
 </p>
 
-<pre class="brush: html; highlight:[2,4,8,9]"  title="00.startup/index.html">
+<pre class="brush: html; highlight:[2]"  title="00.startup/index.html">
 &lt;!doctype html&gt;
 &lt;html ng-app="myApp"&gt;
   &lt;head&gt;
@@ -126,6 +136,8 @@ context。
 可以访问它，所以我们可以利用它在两者间传递信息。在这个<code>$scope</code>对象里，我们既存储
 数据，又存储将要运行在view上的函数。
 </p>
+
+<h3 id="toc_2.2.1">rootScope</h3>
 
 <p>
 每一个Angular应用都会有一个<code>$rootScope</code>。
@@ -159,10 +171,6 @@ app.run(function($rootScope) {
 </pre>
 
 <p>
-在这个系列之后的章节里，我们会深入介绍模版表达式的语法。
-</p>
-
-<p>
 页面上显示的结果就是：
 </p>
 
@@ -171,12 +179,12 @@ Ari Lerner
 </pre>
 
 
+<h3 id="toc_2.2.2">Controller连接Scope</h3>
+
 <p>
 要真正看到scope的强大功能，让我们给一个DOM元素加上controller，它将创建这个元素的
 <code>$scope</code> ，让我们跟这个元素互动。
 </p>
-
-<h3 id="toc_2.2.1">ng-controller</h3>
 
 <p>
 要明确创建一个<code>$scope</code>对象，我们就要给DOM元素安上一个controller对象，使用的是
@@ -225,11 +233,15 @@ app.controller('MyController', function($scope) {
 Ari Lerner
 </p>
 
+<h3 id="toc_2.2.3">scope继承层级</h3>
+
 <p>
-除了一个例外，所有scope都遵循原型继承（prototypal inheritance），这意味着它们
+所有scope都遵循原型继承（prototypal inheritance），这意味着它们
 都能访问父scope们。对任何属性和方法，如果AngularJS在当前scope上找不到，就会到父
 scope上去找，如果在父scope上也没找到，就会继续向上回溯，一直到<code>$rootScope</code>上。
 </p>
+
+<h3 id="toc_2.2.4">独立的scop</h3>
 
 <p>
 唯一的例外：有些指令属性可以选择性地创建一个独立的scope，让这个scope不继承它的
@@ -281,7 +293,7 @@ scope中的属性一样：
 <img src="images/AngularJS/ek03.jpg" />
 </p>
 
-<h3 id="toc_2.2.2">结合进myApp</h3>
+<h3 id="toc_2.2.5">结合进myApp</h3>
 
 <p>
 现在，我们把scope用在我们的NPR应用上。在上一篇结尾我们定义了<code>app module</code>，现在
@@ -305,7 +317,7 @@ app.controller('PlayerController', ['$scope', function($scope) { }]);
 app.controller('RelatedController', ['$scope', function($scope) { }]);
 </pre>
 
-<h3 id="toc_2.2.3">音频</h3>
+<h3 id="toc_2.2.6">音频</h3>
 
 <p>
 这两个controller现在还没什么功能，那么，让我们给应用先加上点声音吧。在这个教程里
@@ -404,6 +416,191 @@ app.controller('PlayerController', ['$scope', function($scope) {
 以上就是对Angular.js的<code>$scope</code>功能的介绍。在下一章，我们会介绍Angular.js的双向
 数据绑定。
 </p>
+
+<h2 id="toc_2.3">数据绑定</h2>
+
+<h3 id="toc_2.3.1">双向绑定</h3>
+
+<p>
+view与model双向绑定的意思是：view变了，model的内容也会变；model变了，view也跟着
+变。
+</p>
+
+<p>
+<img src="images/AngularJS/04.png" />
+</p>
+
+<p>
+通过<code>ng-model</code>指令把一个文本框绑定到<code>person.name</code>属性上：
+</p>
+
+<pre class="brush: js">
+&lt;div ng-controller="MyController"&gt;
+  &lt;input type="text" ng-model="person.name" placeholder="Enter your name" /&gt;
+  &lt;h5&gt;Hello {{ person.name }}&lt;/h5&gt;
+&lt;/div&gt;
+</pre>
+
+<h3 id="toc_2.3.2">视图与后端代码绑定</h3>
+
+<p>
+现在我们把model的值放在后端的js文件里，每秒刷新：
+</p>
+
+<pre class="brush: js" title="js/bind.js">
+var app = angular.module('myApp', []);
+ 
+app.controller('MyController', function($scope) {
+	$scope.person = { name: "Ari Lerner" };
+	var updateClock = function() { $scope.clock = new Date(); };
+	var timer = setInterval(function() { $scope.$apply(updateClock); }, 1000);  
+	updateClock();}
+);
+</pre>
+
+<p>
+显示的view在页面上：
+</p>
+
+<pre class="brush: html" title="bind.html">
+&lt;!doctype html&gt;
+&lt;html ng-app="myApp"&gt;
+&lt;head&gt;
+&lt;script src="../angular.min.js"&gt;&lt;/script&gt;
+&lt;script src="js/bind.js"&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div ng-controller="MyController"&gt;
+	&lt;h5&gt;{{ clock }}&lt;/h5&gt;
+&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</pre>
+
+<h3 id="toc_2.3.3">绑定函数</h3>
+
+<p>
+不光是把数据绑定到用于显示的view上，还可以把函数绑定到DOM元素上。不仅是按钮，
+链接等，任何DOM元素都可以通过<code>ng-click</code>绑定鼠标点击事件调用的函数（即浏览器通用
+的<code>mousedown</code>事件）。
+</p>
+
+<p>
+方法被绑定到controller所有的<code>$scope</code>对象上。注意要将方法名写进带引号的字符串里：
+</p>
+
+<pre class="brush: html; highlight=[3,4]" title="bind.html">
+&lt;div ng-controller="DemoController"&gt;
+  &lt;h4&gt;The simplest adding machine ever&lt;/h4&gt;
+  &lt;button ng-click="add(1)" class="button"&gt;Add&lt;/button&gt;
+  &lt;button ng-click="subtract(1)" class="button"&gt;Subtract&lt;/button&gt;
+  &lt;h4&gt;Current count: {{ counter }}&lt;/h4&gt;
+&lt;/div&gt;
+</pre>
+
+<p>
+调用的方法：
+</p>
+
+<pre class="brush: js" title="js/bind.js">
+app.controller('DemoController', function($scope) {
+  $scope.counter = 0;
+  $scope.add = function(amount) { $scope.counter += amount; };
+  $scope.subtract = function(amount) { $scope.counter -= amount; };
+});
+</pre>
+
+<h3 id="toc_2.3.4">Ajax</h3>
+
+<p>
+Angular.js通过一个<code>$http</code>服务提供了多种方式来调用AJAX。
+所有Angular.js的核心服务都用<code>$</code>前缀。
+</p>
+
+<pre class="brush: js" title="js/bind.js">
+app.controller('PlayerController', function($scope, $http) {
+	$http({ method: 'JSONP',  
+		url: 'http://api.openbeerdatabase.com/v1/beers.json?callback=JSON_CALLBACK'
+	}).success(function(data, status, headers, config) {  
+		// data contains the response  
+		// status is the HTTP status  
+		// headers is the header getter function  
+		// config is the object that was used to create the HTTP request
+		$scope.programs = data;
+	}).error(function(data, status, headers, config) {});
+}
+</pre>
+
+<p>
+注意， 像上面例子中那样，原封不动加上以下字符串<code>callback=JSON_CALLBACK</code>，
+Angular.js就会负责为你处理JSONP请求，将<code>JSON_CALLBACK</code>替换成一个合适的回调函数。
+</p>
+
+<p>
+页面上显示结果：
+</p>
+
+<pre class="brush: html" title="bind.html">
+&lt;div ng-controller="PlayerController"&gt;
+{{ programs }}
+&lt;/div&gt;
+</pre>
+
+
+<pre class="brush: html" title="">
+</pre>
+
+
+<pre class="brush: html" title="">
+</pre>
+
+
+<pre class="brush: html" title="">
+</pre>
+
+
+<pre class="brush: html" title="">
+</pre>
+
+
+<pre class="brush: html" title="">
+</pre>
+
+
+<pre class="brush: html" title="">
+</pre>
+
+
+<pre class="brush: html" title="">
+</pre>
+
+
+<pre class="brush: html" title="">
+</pre>
+
+
+<pre class="brush: html" title="">
+</pre>
+
+
+<pre class="brush: html" title="">
+</pre>
+
+
+<pre class="brush: html" title="">
+</pre>
+
+
+<pre class="brush: html" title="">
+</pre>
+
+
+<pre class="brush: html" title="">
+</pre>
+
+
+<pre class="brush: html" title="">
+</pre>
  </div>
 </body>
 </html>
