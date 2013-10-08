@@ -684,12 +684,95 @@ abstract class CircuitSimulation
 
 
 
-= 参数类型化 =
+= 类型参数 =
 
-== 泛型必须指定类型 ==
+=== 泛型类 ===
+
+Scala通过`[]`指定类型参数：
+
+{{{class="brush: scala"
+scala> class Pair[T, S](val first: T, val second: S)
+defined class Pair
+}}}
+
+通过传入构造器的参数类型可以推导出生成的实例类型：
+
+{{{class="brush: scala"
+scala> val p = new Pair(42, "String")
+p: Pair[Int,String] = Pair@2f63e9a1
+}}}
+
+也可以手动指定实例类型：
+
+{{{class="brush: scala"
+scala> val p2 = new Pair[Any, Any](42, "String")
+p2: Pair[Any,Any] = Pair@7ffccfe3
+}}}
+
+=== 泛型方法 ===
+
+方法的类型参数加了方法名后：
+
+{{{class="brush: scala"
+scala> def getMiddle[T](a: Array[T]) = a(a.length /2)
+getMiddle: [T](a: Array[T])T
+}}}
+
+也能按参数类型可以推导出生成的实例类型：
+
+{{{class="brush: scala"
+scala> getMiddle(Array("Marry","had","a","little","lamb"))
+res0: String = a
+}}}
+
+或显式指定类型：
+
+{{{class="brush: scala"
+scala> val f = getMiddle[String] _
+f: Array[String] => String = <function1>
+
+scala> f(Array("Marry","had","a","little","lamb"))
+res1: String = a
+}}}
+
+=== 泛型必须指定类型 ===
 
 类型化参数能实现编写泛型类和特质。Scala中的泛型实例都应该写明具体类型（如：
 `Set[Int]`，`Set[Int]`） ，而不像Java中可以不带泛型类型。
+
+例如：对于容器类来说，成员的类型很重要：
+
+{{{class="brush: scala"
+scala> import java.util._
+import java.util._
+
+scala> var la = new ArrayList[Any]
+la: java.util.ArrayList[Any] = []
+
+scala> var lb = new ArrayList[String]
+lb: java.util.ArrayList[String] = []
+
+scala> var ln = new ArrayList
+ln: java.util.ArrayList[Nothing] = []
+}}}
+
+注意没有类型参数的类型被定为了`ArrayList[Nothing]`。而`Nothing`是所有类的子类，
+
+所以`Queue`特质创建实例时一定要加类型参数：
+
+{{{class="brush: scala"
+  scala> def doesNotCompile(q: Queue) {}
+  <console>:5: error: trait Queue takes type parameters
+         def doesNotCompile(q: Queue) {}
+}}}
+
+当然`AnyRef`也是一种类型：
+
+{{{class="brush: scala"
+  scala> def doesCompile(q: Queue[AnyRef]) {}
+  doesCompile: (Queue[AnyRef])Unit
+}}}
+
 
 == 例：开发纯函数式队列 ==
 
@@ -774,11 +857,11 @@ i :: trailing
   }
 }}}
 
-== 信息隐藏 ==
+=== 信息隐藏 ===
 
 前面的`Queue`实现暴露了太多实现细节，比如构造器的两个参数还有一个是反转的。
 
-=== 私有构造器及工厂方法 ===
+==== 私有构造器及工厂方法 ====
 
 为了不让外部了解构造器的实现，可以把构造器作为隐藏的：
 
@@ -822,7 +905,7 @@ i :: trailing
   }
 }}}
 
-=== 可选方案：私有类 ===
+==== 可选方案：私有类 ====
 
 除了私有构造器和私有成员，还可以直接隐藏掉类本身，只提供暴露类公共接口的特质：
 
@@ -863,74 +946,23 @@ i :: trailing
 }}}
 
 
-== 类型变化：协变与逆变 ==
+== 类型变化 ==
 
-对于容器类来说，成员的类型很重要：
+=== 协变 ===
 
-{{{class="brush: scala"
-scala> import java.util._
-import java.util._
+Scala的泛型在默认情况下是非协变的（nonvariant），即：对于泛型`Queue[T]`来说，
+`Queue[String]`不是`Queue[AnyRef]`的子类。
 
-scala> var la = new ArrayList[Any]
-la: java.util.ArrayList[Any] = []
-
-scala> var lb = new ArrayList[String]
-lb: java.util.ArrayList[String] = []
-
-scala> var ln = new ArrayList
-ln: java.util.ArrayList[Nothing] = []
-}}}
-
-注意没有类型参数的类型被定为了`ArrayList[Nothing]`。而`Nothing`是所有类的子类，
-
-所以`Queue`特质创建实例时一定要加类型参数：
-
-{{{class="brush: scala"
-  scala> def doesNotCompile(q: Queue) {}
-  <console>:5: error: trait Queue takes type parameters
-         def doesNotCompile(q: Queue) {}
-}}}
-
-当然`AnyRef`也是一种类型：
-
-{{{class="brush: scala"
-  scala> def doesCompile(q: Queue[AnyRef]) {}
-  doesCompile: (Queue[AnyRef])Unit
-}}}
-
-Scala的泛型在默认情况下是非协变的（nonvariant），即`Queue[String]`不是
-`Queue[AnyRef]`的子类。但还是可以设置为协变（covariant）的。
-
-用`+`表明子类型化协变，即`Queue[String]`是`Queue[AnyRef]`的子类：
+但还是可以设置为协变（covariant）的。用`+`表明子类型化协变，即`Queue[String]`是
+`Queue[AnyRef]`的子类：
 
 {{{class="brush: scala"
   trait Queue[+T] { ... }
 }}}
 
-用`-`表示逆变（contravariant）子类型化，如果`T`类型是`S`的子类型，将隐含
-`Queue[S]`是`Queue[T]`的子类型：
+==== 协变的问题 ====
 
-{{{class="brush: scala"
-  trait Queue[-T] { ... }
-}}}
-
-协变、逆变与非协变都被称为参数变化类型。
-
-=== 协变的问题 ===
-
-假设`MyClass`有多个子类`Sub1`、`Sub2`到`SubN`。在允许协变的情况下，就可以把子类
-的容器赋值给父类：
-
-{{{class="brush: scala"
-val list: List[MyClass] = new List[Sub1]
-}}}
-
-这里引起的矛盾是，`list`从声明上来看是父类`MyClass`的列表，所有`MyClass`的子类，
-从`Sub1`、`Sub2`到`SubN`全部都可以放到容器里；但实际上赋值给它的是一个`Sub1`类型
-的容器，只能放入支持`Sub1`类型与超类`MyClass`操作的成员，虽然可以存放其他从
-`Sub2`到`SubN`类型的成员，但不能支持在他们上的操作。
-
-例子：
+Scala默认禁止协变是因为协变会产生问题：
 
 在纯函数式中，许多类型都是自然协变的。然而一旦引入了可变数据，情况就改变了。假设
 一个简单的只能读写一个元素的单元格（Cell）类型：
@@ -987,7 +1019,7 @@ val list: List[MyClass] = new List[Sub1]
 这四行代码是要把整数`1`赋值给字符串`s`，这样破坏了类型声明。问题出在第二行，
 `Cell[Any]`和`Cell[String]`的类型的协变引起了错误。
 
-=== Java数组是协变的 ===
+==== Java数组是协变的 ====
 
 以前面的`Cell`类为例与Java中的数组比较，Java中的数组是协变的：
 
@@ -1015,10 +1047,10 @@ val list: List[MyClass] = new List[Sub1]
   void sort(Object[] a, Comparator cmp) { ... }
 }}}
 
-这样确保任意参数类型的数组都可以传入排序方法。当然后来Java有了泛型以后数组的协变
+这样确保任意类型参数的数组都可以传入排序方法。当然后来Java有了泛型以后数组的协变
 不再有用了，为了向以前老版本兼容才留着。
 
-=== Scala数组是非协变的 ===
+==== Scala数组是非协变的 ====
 
 Scala中数组是不可协变的：
 
@@ -1043,11 +1075,82 @@ Scala中数组是不可协变的：
   a2: Array[java.lang.Object] = Array(abc)
 }}}
 
-== 检查变化类型注解 ==
 
-=== 禁止协变类型作为方法参数 ===
+=== 逆变 ===
 
-只要把泛型类型作为方法参数类型，包含它的类或特质就有可能不能与这个类型参数一起
+对于两个类`U`和`T`。如果可以用`T`可以提供`U`要用到的功能，并且用起来限制更少，
+就可以假设`T`是`U`的子类（里氏原则：Liskov Substitution Principle，LSP）。例如：
+
+{{{class="brush: scala"
+  trait OutputChannel[-T] {
+    def write(x: T)
+  }
+}}}
+
+这种情况下`OutputChannel[AnyRef]`作为`OutputChannel[String]`的子类型。因为它们都
+支持`write`操作。而且`OutputChannel[AnyRef]`参数仅要`AnyRef`就可以，但
+`OutputChannel[String]`的参数一定要是`String`才行。
+
+所以把一个`OutputChannel[AnyRef]`赋给`OutputChannel[String]`是安全的，反过来把一个
+`OutputChannel[String]`赋给`OutputChannel[AnyRef]`却是不安全的。
+
+Scala函数特质中协变与逆变混在一起用的情况会比较多。对于`S => T`类型的函数会定义
+`Function[S, T]`，这时对参数`S`逆变而对结果`T`协变就是一种有用的策略：
+
+{{{class="brush: scala"
+  trait Function1[-S, +T] {
+    def apply(x: S): T
+  }
+}}}
+
+应用的例子：
+
+父类出版物的构造函数有一个标题参数，子类书的构造函数会调用父类的构造函数。
+
+{{{class="brush: scala"
+class Publication(val title: String)
+class Book(title: String) extends Publication(title)
+}}}
+
+单例对象`Library`定义了书的集，以及打印书单的方法`printBookList`的唯一参数是以
+`Book => AnyRef`类型的方法为参数。
+
+{{{class="brush: scala"
+object Library {
+ val books: Set[Book] =
+   Set(
+     new Book("Programming in Scala"),
+     new Book("Walden")
+   )
+ def printBookList(info: Book => AnyRef) {
+   for (book <- books) println(info(book))
+ }
+}
+}}}
+
+单例对象`Customer`定义了方法`getTitle`根据出版物取得标题。最后一行调用`Library`
+的打印书单方法：
+
+{{{class="brush: scala"
+object Customer extends Application {
+ def getTitle(p: Publication): String = p.title
+ Library.printBookList(getTitle)
+}
+}}}
+
+<img src="images/scala/19.03.png" />
+
+关键是`printBookList`的形参是`Book => AnyRef`，但实参是`Publication => String`。参数
+是父类（`Book`的父类`Publication`）而结果是子类（`AnyRef`的子类`String`）。
+
+`printBookList`中的`println`方法会用到`toString`，这对所有`String`及`AnyRef`子类都有用
+，这里用到了函数结果类型的协变。
+
+=== 检查变化类型注解 ===
+
+==== 禁止协变类型作为方法参数 ====
+
+只要把泛型类型作为方法类型参数，包含它的类或特质就有可能不能与这个类型参数一起
 协变。如形式：
 
 {{{class="brush: scala"
@@ -1098,13 +1201,13 @@ Scala中数组是不可协变的：
                ^
 }}}
 
-=== 禁止协变可变的字段 ===
+==== 禁止协变可变的字段 ====
 
-不要对可重新赋值的字段使用`+`的协变参数类型。如`var x:T`在Scala里被看作自带
+不要对可重新赋值的字段使用`+`的协变类型参数。如`var x:T`在Scala里被看作自带
 `getter`方法`def x:T`、`def x_= (y:T)`，所以将不是协变的。
 
 
-=== 变化型注解的验证方式 ===
+==== 类型变化的验证方法 ====
 
 类型声明中可能会用到类型参数的地方被分为正、负、中立。编译器检查类的类型参数的
 每一个用法。
@@ -1191,78 +1294,6 @@ Scala中数组是不可协变的：
 下界`>: T`处于正的位置（两次翻转）。
 
 
-== 逆变 ==
-
-前面所有的例子不是协变的就是非协变的。还有一些情况下会有逆变：
-
-对于两个类`U`和`T`。如果可以用`T`可以提供`U`要用到的功能，并且用起来限制更少，
-就可以假设`T`是`U`的子类（里氏原则：Liskov Substitution Principle，LSP）。例如：
-
-{{{class="brush: scala"
-  trait OutputChannel[-T] {
-    def write(x: T)
-  }
-}}}
-
-这种情况下`OutputChannel[AnyRef]`作为`OutputChannel[String]`的子类型。因为它们都
-支持`write`操作。而且`OutputChannel[AnyRef]`参数仅要`AnyRef`就可以，但
-`OutputChannel[String]`的参数一定要是`String`才行。
-
-所以把一个`OutputChannel[AnyRef]`赋给`OutputChannel[String]`是安全的，反过来把一个
-`OutputChannel[String]`赋给`OutputChannel[AnyRef]`却是不安全的。
-
-Scala函数特质中协变与逆变混在一起用的情况会比较多。对于`S => T`类型的函数会定义
-`Function[S, T]`，这时对参数`S`逆变而对结果`T`协变就是一种有用的策略：
-
-{{{class="brush: scala"
-  trait Function1[-S, +T] {
-    def apply(x: S): T
-  }
-}}}
-
-应用的例子：
-
-父类出版物的构造函数有一个标题参数，子类书的构造函数会调用父类的构造函数。
-
-{{{class="brush: scala"
-class Publication(val title: String)
-class Book(title: String) extends Publication(title)
-}}}
-
-单例对象`Library`定义了书的集，以及打印书单的方法`printBookList`的唯一参数是以
-`Book => AnyRef`类型的方法为参数。
-
-{{{class="brush: scala"
-object Library {
- val books: Set[Book] =
-   Set(
-     new Book("Programming in Scala"),
-     new Book("Walden")
-   )
- def printBookList(info: Book => AnyRef) {
-   for (book <- books) println(info(book))
- }
-}
-}}}
-
-单例对象`Customer`定义了方法`getTitle`根据出版物取得标题。最后一行调用`Library`
-的打印书单方法：
-
-{{{class="brush: scala"
-object Customer extends Application {
- def getTitle(p: Publication): String = p.title
- Library.printBookList(getTitle)
-}
-}}}
-
-<img src="images/scala/19.03.png" />
-
-关键是`printBookList`的形参是`Book => AnyRef`，但实参是`Publication => String`。参数
-是父类（`Book`的父类`Publication`）而结果是子类（`AnyRef`的子类`String`）。
-
-`printBookList`中的`println`方法会用到`toString`，这对所有`String`及`AnyRef`子类都有用
-，这里用到了函数结果类型的协变。
-
 == 对象私有数据 ==
 
 之前的`Queue`类待改进内容：当`leading`列表为空时如果重复调用`head`，那么`mirror`
@@ -1323,8 +1354,8 @@ object Customer extends Application {
                                        ^
 }}}
 
-上面分别报错的原因是：协变类型`T`出现在setter函数`leading_=`参数类型`List[T]`的
-逆变位置上；协变类型`T`出现在setter函数`trailing_=`参数类型`List[T]`的逆变位置
+上面分别报错的原因是：协变类型`T`出现在setter函数`leading_=`类型参数`List[T]`的
+逆变位置上；协变类型`T`出现在setter函数`trailing_=`类型参数`List[T]`的逆变位置
 上。
 
 
@@ -2752,7 +2783,7 @@ button.addActionListener((event: ActionEvent) => counter += 1)
     }
 }}}
 
-注意参数类型已经被限制为`T <: Ordered[T]`，就是说列表的元素`T`要实现`Ordered[T]`
+注意类型参数已经被限制为`T <: Ordered[T]`，就是说列表的元素`T`要实现`Ordered[T]`
 特质。所以列表是可排序元素的列表。但是缺点是`Int`列表不行，因为`Int`没有实现特质
 `Ordered`，所以不是`Ordered[T]`的子类。
 
@@ -2806,7 +2837,7 @@ button.addActionListener((event: ActionEvent) => counter += 1)
 
 这样`(T,T) => Boolean`的类型太常见了，很容易被匹配到到不希望匹配到的方法上去。
 
-所以简单地说：至少用一个确定的名称为隐式参数类型命名。
+所以简单地说：至少用一个确定的名称为隐式类型参数命名。
 
 
 == 视界 ==
