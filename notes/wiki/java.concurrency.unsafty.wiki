@@ -93,7 +93,7 @@ public class ListHelper<E> {
 为了避免同步与锁，尽量把对象封闭在当前线程里不共享出去。常用方法有“栈封闭”和
 本地线程变量。
 
-=== 栈封闭 ===
+== 栈封闭 ==
 
 把操作的对象封闭在一个栈里（如方法），作为一个局部变量。这样其他线程就访问不到：
 
@@ -115,7 +115,7 @@ public int doCount(Collection<Employee> company) {
 不会被外部线程访问到。
 
 
-=== 本地线程变量（ThreadLocal） ===
+== 本地线程变量（ThreadLocal） ==
 
 `ThreadLocal`类把内部成员封闭为仅本线程可见。静态的`ThreadLocal`对象可以作为
 一种在当前线程里共享对象的方式。例如把数据缓存起来，让本线程里的其他模块可以
@@ -197,7 +197,9 @@ public class SafeListener {
 
 == 实现单例 ==
 
-提前初始化：
+=== 提前初始化 ===
+
+Eager Initialization：
 
 {{{class="brush: java"
 Class ConnectionFactory {
@@ -209,7 +211,164 @@ Class ConnectionFactory {
 }	
 }}}
 
-嫌提前消耗了资源，那用私有内部类实现延迟初始化：
+=== 延迟初始化 ===
+
+嫌提前消耗了资源，那用延迟初始化（lazy initialization）：
+
+{{{class="brush: java"
+public class Singleton {
+	private static final Singleton instance;
+
+	private Singleton() {
+	}
+
+	public static synchronized Singleton getInstance() {
+		if (instance ==null) {
+			instance = new Singleton();
+		}
+		return instance;
+	}
+}
+}}}
+
+==== 错误的方式 ====
+
+功能上OK了，但是同步代码性能开销大。有些优化方案是有线程安全隐患的：
+
+{{{class="brush: java; highlight:[11]"
+public class Singleton {
+	private static final Singleton instance;
+
+	private Singleton() {
+	}
+
+	public static Singleton getInstance() {
+		if (instance == null) {           // 第一次检查
+			synchronized(Singleton.class) { // 加锁
+				if (instance ==null) {        // 第二次检查
+					instance = new Singleton(); // 问题的根源在这里
+				}
+			}
+		}
+		return instance;
+	}
+}
+}}}
+
+问题在于在线程执行到读取到`instance`不为`null`时，`instance`有可能还没有完成
+初始化。`instance = new Singleton();`创建一个单例对象。这一行代码可以分解为如下
+的三行伪代码：
+
+{{{class="brush: java"
+memory = allocate();     // 分配单例对象的内存空间
+ctorSingleton(instance); // 初始化单例对象
+instance = memory;       // 设置instance指向刚放分配的内存地址
+}}}
+
+java语言规范允2和3重排序，而且在一些JIT编译器上，这种重排序是真实发生的。重排序
+之后的伪代码如下：
+
+{{{class="brush: java"
+memory = allocate();     // 分配单例对象的内存空间
+instance = memory;       // 设置instance指向刚放分配的内存地址
+ctorSingleton(instance); // 初始化单例对象
+}}}
+
+在计算机中，编译器和处理器都要遵守as-if-serial语义。as-if-serial语义的本质是保证
+重排序不能改变单线程/单处理器内的程序执行结果。假设一个线程A在构造单例对象后，
+立即访问这个单例对象。下面是对应的示意图：
+
+<img src="images/java.currency/singleton/01.png" />
+
+如上图所示，只要保证4排在2的前面，即使2和3之间重排序了，也不会改变单线程内的执行
+语义。这里2和3的重排序即没有改变程序的执行结果，又可以提高程序的执行性能。
+
+下面，让我们看看多线程并发执行的时候的情况。请看下面的示意图：
+
+<img src="images/java.currency/singleton/02.png" />
+
+虽然因为编译器和处理器都要遵守as-if-serial语义，从而能保证A线程的执行语义不会被
+改变。但是当线程A和B按上图的时序执行时，B线程将看到一个还没有被初始化的对象。
+
+回到本文的主题`instance = new Singleton();`如果发生重排序，另一个并发执行的
+线程B就有可能在判断中返回`false`。线程B接下来将访问单例对象，但此时这个对象还
+没有被A线程初始化！
+
+在知晓了问题发生的根源之后，我们可以发现解决这个问题的办法由两个：
+
+* 不允许2和3重排序；
+* 允许2和3重排序，但不允许其他线程“看到”这个重排序。
+
+两个解决方案分别对应于上面两点。
+
+==== 基于volatile修正方案 ====
+
+{{{class="brush: java"
+public class Singleton {
+	private volatile static final Singleton instance;
+
+	private Singleton() {
+	}
+
+	public static Singleton getInstance() {
+		if (instance == null) {           // 第一次检查
+			synchronized(Singleton.class) { // 加锁
+				if (instance ==null) {        // 第二次检查
+					instance = new Singleton(); // 现在没问题了
+				}
+			}
+		}
+		return instance;
+	}
+}
+}}}
+
+如上面示例代码所示，我们只需要把单例对象的引用设置为`volatile`，就可以解决问题。
+从JDK5开始的JSR-133内存模型规范增强了`volatile`的语义：JDK5之前，允许`volatile`
+变量与普通变量重排序；从JDK5开始，不允许`volatile`变量与普通变量重排序。
+
+当声明单例对象的引用为`volatile`后，三行伪代码中的2和3之间的重排序，在多线程环境
+中将会被禁止。上面示例代码将按如下时序执行：
+
+<img src="images/java.currency/singleton/03.png" />
+
+事实上，这里线程A初始化单例对象，和线程B初次访问这个单例对象，这两个操作之间存在
+happens-before关系。
+
+这个解决方案本质上是通过禁止2和3中的重排序，来保证多线程正确并发执行。
+
+==== 基于静态初始化 ====
+
+JVM在类的初始化阶段（即在Class被加载后，被线程使用之前），会执行静态初始化。在
+执行静态初始化期间，JVM会去获取一个锁。这个锁可以同步多个线程同时对一个类的
+初始化。
+
+基于这个特性，可以实现另一种延迟初始化单例对象的方案：
+
+{{{class="brush: java"
+public class Singleton {
+private static class LazyHolder{
+    public static Singleton instance = new Singleton ();
+}
+
+private Singleton() {
+}
+
+public static synchronized Singleton getInstance() {
+    return LazyHolder. Instance;
+}
+}}}
+
+假设两个线程并发执行`getInstance()`，下面是示意图：
+
+<img src="images/java.currency/singleton/04.png" />
+
+这个方案的本质是：允许2和3重排序，但不允许非构造线程（这里指线程B）看到这个
+重排序。
+
+==== 基于私有内部类静态初始化 ====
+
+同理也可以用私有内部类实现延迟初始化
 
 {{{class="brush: java"
 Class ConnectionFactory {

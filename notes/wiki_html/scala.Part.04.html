@@ -39,31 +39,39 @@
 <li><a href="#toc_1.4.5">运行模拟器</a>
 </ul>
 </ul>
-<li><a href="#toc_2">参数类型化</a>
+<li><a href="#toc_2">类型参数</a>
 <ul>
-<li><a href="#toc_2.1">泛型必须指定类型</a>
-<li><a href="#toc_2.2">例：开发纯函数式队列</a>
-<li><a href="#toc_2.3">信息隐藏</a>
-<ul>
-<li><a href="#toc_2.3.1">私有构造器及工厂方法</a>
-<li><a href="#toc_2.3.2">可选方案：私有类</a>
+<li><a href="#toc_2.0.1">泛型类</a>
+<li><a href="#toc_2.0.2">泛型方法</a>
+<li><a href="#toc_2.0.3">泛型必须指定类型</a>
 </ul>
-<li><a href="#toc_2.4">类型变化：协变与逆变</a>
+<li><a href="#toc_2.1">例：开发纯函数式队列</a>
 <ul>
-<li><a href="#toc_2.4.1">协变的问题</a>
-<li><a href="#toc_2.4.2">Java数组是协变的</a>
-<li><a href="#toc_2.4.3">Scala数组是非协变的</a>
-</ul>
-<li><a href="#toc_2.5">检查变化类型注解</a>
+<li><a href="#toc_2.1.1">信息隐藏</a>
 <ul>
-<li><a href="#toc_2.5.1">禁止协变类型作为方法参数</a>
-<li><a href="#toc_2.5.2">禁止协变可变的字段</a>
-<li><a href="#toc_2.5.3">变化型注解的验证方式</a>
+<li><a href="#toc_2.1.1.1">私有构造器及工厂方法</a>
+<li><a href="#toc_2.1.1.2">可选方案：私有类</a>
 </ul>
-<li><a href="#toc_2.6">下界</a>
-<li><a href="#toc_2.7">逆变</a>
-<li><a href="#toc_2.8">对象私有数据</a>
-<li><a href="#toc_2.9">上界</a>
+</ul>
+<li><a href="#toc_2.2">类型变化</a>
+<ul>
+<li><a href="#toc_2.2.1">协变</a>
+<ul>
+<li><a href="#toc_2.2.1.1">协变的问题</a>
+<li><a href="#toc_2.2.1.2">Java数组是协变的</a>
+<li><a href="#toc_2.2.1.3">Scala数组是非协变的</a>
+</ul>
+<li><a href="#toc_2.2.2">逆变</a>
+<li><a href="#toc_2.2.3">检查变化类型注解</a>
+<ul>
+<li><a href="#toc_2.2.3.1">禁止协变类型作为方法参数</a>
+<li><a href="#toc_2.2.3.2">禁止协变可变的字段</a>
+<li><a href="#toc_2.2.3.3">类型变化的验证方法</a>
+</ul>
+</ul>
+<li><a href="#toc_2.3">下界</a>
+<li><a href="#toc_2.4">对象私有数据</a>
+<li><a href="#toc_2.5">上界</a>
 </ul>
 <li><a href="#toc_3">抽象成员</a>
 <ul>
@@ -929,16 +937,119 @@ abstract class CircuitSimulation
 
 
 
-<h1 id="toc_2">参数类型化</h1>
+<h1 id="toc_2">类型参数</h1>
 
-<h2 id="toc_2.1">泛型必须指定类型</h2>
+<h3 id="toc_2.0.1">泛型类</h3>
+
+<p>
+Scala通过<code>[]</code>指定类型参数：
+</p>
+
+<pre class="brush: scala">
+scala&gt; class Pair[T, S](val first: T, val second: S)
+defined class Pair
+</pre>
+
+<p>
+通过传入构造器的参数类型可以推导出生成的实例类型：
+</p>
+
+<pre class="brush: scala">
+scala&gt; val p = new Pair(42, "String")
+p: Pair[Int,String] = Pair@2f63e9a1
+</pre>
+
+<p>
+也可以手动指定实例类型：
+</p>
+
+<pre class="brush: scala">
+scala&gt; val p2 = new Pair[Any, Any](42, "String")
+p2: Pair[Any,Any] = Pair@7ffccfe3
+</pre>
+
+<h3 id="toc_2.0.2">泛型方法</h3>
+
+<p>
+方法的类型参数加了方法名后：
+</p>
+
+<pre class="brush: scala">
+scala&gt; def getMiddle[T](a: Array[T]) = a(a.length /2)
+getMiddle: [T](a: Array[T])T
+</pre>
+
+<p>
+也能按参数类型可以推导出生成的实例类型：
+</p>
+
+<pre class="brush: scala">
+scala&gt; getMiddle(Array("Marry","had","a","little","lamb"))
+res0: String = a
+</pre>
+
+<p>
+或显式指定类型：
+</p>
+
+<pre class="brush: scala">
+scala&gt; val f = getMiddle[String] _
+f: Array[String] =&gt; String = &lt;function1&gt;
+
+scala&gt; f(Array("Marry","had","a","little","lamb"))
+res1: String = a
+</pre>
+
+<h3 id="toc_2.0.3">泛型必须指定类型</h3>
 
 <p>
 类型化参数能实现编写泛型类和特质。Scala中的泛型实例都应该写明具体类型（如：
 <code>Set[Int]</code>，<code>Set[Int]</code>） ，而不像Java中可以不带泛型类型。
 </p>
 
-<h2 id="toc_2.2">例：开发纯函数式队列</h2>
+<p>
+例如：对于容器类来说，成员的类型很重要：
+</p>
+
+<pre class="brush: scala">
+scala&gt; import java.util._
+import java.util._
+
+scala&gt; var la = new ArrayList[Any]
+la: java.util.ArrayList[Any] = []
+
+scala&gt; var lb = new ArrayList[String]
+lb: java.util.ArrayList[String] = []
+
+scala&gt; var ln = new ArrayList
+ln: java.util.ArrayList[Nothing] = []
+</pre>
+
+<p>
+注意没有类型参数的类型被定为了<code>ArrayList[Nothing]</code>。而<code>Nothing</code>是所有类的子类，
+</p>
+
+<p>
+所以<code>Queue</code>特质创建实例时一定要加类型参数：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; def doesNotCompile(q: Queue) {}
+  &lt;console&gt;:5: error: trait Queue takes type parameters
+         def doesNotCompile(q: Queue) {}
+</pre>
+
+<p>
+当然<code>AnyRef</code>也是一种类型：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; def doesCompile(q: Queue[AnyRef]) {}
+  doesCompile: (Queue[AnyRef])Unit
+</pre>
+
+
+<h2 id="toc_2.1">例：开发纯函数式队列</h2>
 
 <p>
 函数式的队列是不可变的，添加元素操作会返回一个新的队列。三个基本方法：
@@ -1049,13 +1160,13 @@ i :: trailing
   }
 </pre>
 
-<h2 id="toc_2.3">信息隐藏</h2>
+<h3 id="toc_2.1.1">信息隐藏</h3>
 
 <p>
 前面的<code>Queue</code>实现暴露了太多实现细节，比如构造器的两个参数还有一个是反转的。
 </p>
 
-<h3 id="toc_2.3.1">私有构造器及工厂方法</h3>
+<h4 id="toc_2.1.1.1">私有构造器及工厂方法</h4>
 
 <p>
 为了不让外部了解构造器的实现，可以把构造器作为隐藏的：
@@ -1111,7 +1222,7 @@ i :: trailing
   }
 </pre>
 
-<h3 id="toc_2.3.2">可选方案：私有类</h3>
+<h4 id="toc_2.1.1.2">可选方案：私有类</h4>
 
 <p>
 除了私有构造器和私有成员，还可以直接隐藏掉类本身，只提供暴露类公共接口的特质：
@@ -1154,95 +1265,28 @@ i :: trailing
 </pre>
 
 
-<h2 id="toc_2.4">类型变化：协变与逆变</h2>
+<h2 id="toc_2.2">类型变化</h2>
+
+<h3 id="toc_2.2.1">协变</h3>
 
 <p>
-对于容器类来说，成员的类型很重要：
-</p>
-
-<pre class="brush: scala">
-scala&gt; import java.util._
-import java.util._
-
-scala&gt; var la = new ArrayList[Any]
-la: java.util.ArrayList[Any] = []
-
-scala&gt; var lb = new ArrayList[String]
-lb: java.util.ArrayList[String] = []
-
-scala&gt; var ln = new ArrayList
-ln: java.util.ArrayList[Nothing] = []
-</pre>
-
-<p>
-注意没有类型参数的类型被定为了<code>ArrayList[Nothing]</code>。而<code>Nothing</code>是所有类的子类，
+Scala的泛型在默认情况下是非协变的（nonvariant），即：对于泛型<code>Queue[T]</code>来说，
+<code>Queue[String]</code>不是<code>Queue[AnyRef]</code>的子类。
 </p>
 
 <p>
-所以<code>Queue</code>特质创建实例时一定要加类型参数：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; def doesNotCompile(q: Queue) {}
-  &lt;console&gt;:5: error: trait Queue takes type parameters
-         def doesNotCompile(q: Queue) {}
-</pre>
-
-<p>
-当然<code>AnyRef</code>也是一种类型：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; def doesCompile(q: Queue[AnyRef]) {}
-  doesCompile: (Queue[AnyRef])Unit
-</pre>
-
-<p>
-Scala的泛型在默认情况下是非协变的（nonvariant），即<code>Queue[String]</code>不是
-<code>Queue[AnyRef]</code>的子类。但还是可以设置为协变（covariant）的。
-</p>
-
-<p>
-用<code>+</code>表明子类型化协变，即<code>Queue[String]</code>是<code>Queue[AnyRef]</code>的子类：
+但还是可以设置为协变（covariant）的。用<code>+</code>表明子类型化协变，即<code>Queue[String]</code>是
+<code>Queue[AnyRef]</code>的子类：
 </p>
 
 <pre class="brush: scala">
   trait Queue[+T] { ... }
 </pre>
 
-<p>
-用<code>-</code>表示逆变（contravariant）子类型化，如果<code>T</code>类型是<code>S</code>的子类型，将隐含
-<code>Queue[S]</code>是<code>Queue[T]</code>的子类型：
-</p>
-
-<pre class="brush: scala">
-  trait Queue[-T] { ... }
-</pre>
+<h4 id="toc_2.2.1.1">协变的问题</h4>
 
 <p>
-协变、逆变与非协变都被称为参数变化类型。
-</p>
-
-<h3 id="toc_2.4.1">协变的问题</h3>
-
-<p>
-假设<code>MyClass</code>有多个子类<code>Sub1</code>、<code>Sub2</code>到<code>SubN</code>。在允许协变的情况下，就可以把子类
-的容器赋值给父类：
-</p>
-
-<pre class="brush: scala">
-val list: List[MyClass] = new List[Sub1]
-</pre>
-
-<p>
-这里引起的矛盾是，<code>list</code>从声明上来看是父类<code>MyClass</code>的列表，所有<code>MyClass</code>的子类，
-从<code>Sub1</code>、<code>Sub2</code>到<code>SubN</code>全部都可以放到容器里；但实际上赋值给它的是一个<code>Sub1</code>类型
-的容器，只能放入支持<code>Sub1</code>类型与超类<code>MyClass</code>操作的成员，虽然可以存放其他从
-<code>Sub2</code>到<code>SubN</code>类型的成员，但不能支持在他们上的操作。
-</p>
-
-<p>
-例子：
+Scala默认禁止协变是因为协变会产生问题：
 </p>
 
 <p>
@@ -1316,7 +1360,7 @@ val list: List[MyClass] = new List[Sub1]
 <code>Cell[Any]</code>和<code>Cell[String]</code>的类型的协变引起了错误。
 </p>
 
-<h3 id="toc_2.4.2">Java数组是协变的</h3>
+<h4 id="toc_2.2.1.2">Java数组是协变的</h4>
 
 <p>
 以前面的<code>Cell</code>类为例与Java中的数组比较，Java中的数组是协变的：
@@ -1351,11 +1395,11 @@ val list: List[MyClass] = new List[Sub1]
 </pre>
 
 <p>
-这样确保任意参数类型的数组都可以传入排序方法。当然后来Java有了泛型以后数组的协变
+这样确保任意类型参数的数组都可以传入排序方法。当然后来Java有了泛型以后数组的协变
 不再有用了，为了向以前老版本兼容才留着。
 </p>
 
-<h3 id="toc_2.4.3">Scala数组是非协变的</h3>
+<h4 id="toc_2.2.1.3">Scala数组是非协变的</h4>
 
 <p>
 Scala中数组是不可协变的：
@@ -1384,12 +1428,105 @@ Scala中数组是不可协变的：
   a2: Array[java.lang.Object] = Array(abc)
 </pre>
 
-<h2 id="toc_2.5">检查变化类型注解</h2>
 
-<h3 id="toc_2.5.1">禁止协变类型作为方法参数</h3>
+<h3 id="toc_2.2.2">逆变</h3>
 
 <p>
-只要把泛型类型作为方法参数类型，包含它的类或特质就有可能不能与这个类型参数一起
+对于两个类<code>U</code>和<code>T</code>。如果可以用<code>T</code>可以提供<code>U</code>要用到的功能，并且用起来限制更少，
+就可以假设<code>T</code>是<code>U</code>的子类（里氏原则：Liskov Substitution Principle，LSP）。例如：
+</p>
+
+<pre class="brush: scala">
+  trait OutputChannel[-T] {
+    def write(x: T)
+  }
+</pre>
+
+<p>
+这种情况下<code>OutputChannel[AnyRef]</code>作为<code>OutputChannel[String]</code>的子类型。因为它们都
+支持<code>write</code>操作。而且<code>OutputChannel[AnyRef]</code>参数仅要<code>AnyRef</code>就可以，但
+<code>OutputChannel[String]</code>的参数一定要是<code>String</code>才行。
+</p>
+
+<p>
+所以把一个<code>OutputChannel[AnyRef]</code>赋给<code>OutputChannel[String]</code>是安全的，反过来把一个
+<code>OutputChannel[String]</code>赋给<code>OutputChannel[AnyRef]</code>却是不安全的。
+</p>
+
+<p>
+Scala函数特质中协变与逆变混在一起用的情况会比较多。对于<code>S =&gt; T</code>类型的函数会定义
+<code>Function[S, T]</code>，这时对参数<code>S</code>逆变而对结果<code>T</code>协变就是一种有用的策略：
+</p>
+
+<pre class="brush: scala">
+  trait Function1[-S, +T] {
+    def apply(x: S): T
+  }
+</pre>
+
+<p>
+应用的例子：
+</p>
+
+<p>
+父类出版物的构造函数有一个标题参数，子类书的构造函数会调用父类的构造函数。
+</p>
+
+<pre class="brush: scala">
+class Publication(val title: String)
+class Book(title: String) extends Publication(title)
+</pre>
+
+<p>
+单例对象<code>Library</code>定义了书的集，以及打印书单的方法<code>printBookList</code>的唯一参数是以
+<code>Book =&gt; AnyRef</code>类型的方法为参数。
+</p>
+
+<pre class="brush: scala">
+object Library {
+ val books: Set[Book] =
+   Set(
+     new Book("Programming in Scala"),
+     new Book("Walden")
+   )
+ def printBookList(info: Book =&gt; AnyRef) {
+   for (book &lt;- books) println(info(book))
+ }
+}
+</pre>
+
+<p>
+单例对象<code>Customer</code>定义了方法<code>getTitle</code>根据出版物取得标题。最后一行调用<code>Library</code>
+的打印书单方法：
+</p>
+
+<pre class="brush: scala">
+object Customer extends Application {
+ def getTitle(p: Publication): String = p.title
+ Library.printBookList(getTitle)
+}
+</pre>
+
+<p>
+<img src="images/scala/19.03.png" />
+</p>
+
+<p>
+关键是<code>printBookList</code>的形参是<code>Book =&gt; AnyRef</code>，但实参是<code>Publication =&gt; String</code>。参数
+是父类（<code>Book</code>的父类<code>Publication</code>）而结果是子类（<code>AnyRef</code>的子类<code>String</code>）。
+</p>
+
+<p>
+<code>printBookList</code>中的<code>println</code>方法会用到<code>toString</code>，这对所有<code>String</code>及<code>AnyRef</code>子类都有用
+，这里用到了函数结果类型的协变。
+</p>
+
+<h3 id="toc_2.2.3">检查变化类型注解</h3>
+
+<h4 id="toc_2.2.3.1">禁止协变类型作为方法参数</h4>
+
+<p>
+只要把泛型类型作为方法类型参数，包含它的类或特质就有可能不能与这个类型参数一起
 协变。如形式：
 </p>
 
@@ -1453,15 +1590,15 @@ Scala中数组是不可协变的：
                ^
 </pre>
 
-<h3 id="toc_2.5.2">禁止协变可变的字段</h3>
+<h4 id="toc_2.2.3.2">禁止协变可变的字段</h4>
 
 <p>
-不要对可重新赋值的字段使用<code>+</code>的协变参数类型。如<code>var x:T</code>在Scala里被看作自带
+不要对可重新赋值的字段使用<code>+</code>的协变类型参数。如<code>var x:T</code>在Scala里被看作自带
 <code>getter</code>方法<code>def x:T</code>、<code>def x_= (y:T)</code>，所以将不是协变的。
 </p>
 
 
-<h3 id="toc_2.5.3">变化型注解的验证方式</h3>
+<h4 id="toc_2.2.3.3">类型变化的验证方法</h4>
 
 <p>
 类型声明中可能会用到类型参数的地方被分为正、负、中立。编译器检查类的类型参数的
@@ -1569,7 +1706,7 @@ Scala中数组是不可协变的：
 </p>
 
 
-<h2 id="toc_2.6">下界</h2>
+<h2 id="toc_2.3">下界</h2>
 
 <p>
 在之前的“可选方案：私有类”这一节中展示的是没有办法协变的实现<code>Queue[T]</code>。因为类型
@@ -1614,103 +1751,7 @@ Scala中数组是不可协变的：
 </p>
 
 
-<h2 id="toc_2.7">逆变</h2>
-
-<p>
-前面所有的例子不是协变的就是非协变的。还有一些情况下会有逆变：
-</p>
-
-<p>
-对于两个类<code>U</code>和<code>T</code>。如果可以用<code>T</code>可以提供<code>U</code>要用到的功能，并且用起来限制更少，
-就可以假设<code>T</code>是<code>U</code>的子类（里氏原则：Liskov Substitution Principle，LSP）。例如：
-</p>
-
-<pre class="brush: scala">
-  trait OutputChannel[-T] {
-    def write(x: T)
-  }
-</pre>
-
-<p>
-这种情况下<code>OutputChannel[AnyRef]</code>作为<code>OutputChannel[String]</code>的子类型。因为它们都
-支持<code>write</code>操作。而且<code>OutputChannel[AnyRef]</code>参数仅要<code>AnyRef</code>就可以，但
-<code>OutputChannel[String]</code>的参数一定要是<code>String</code>才行。
-</p>
-
-<p>
-所以把一个<code>OutputChannel[AnyRef]</code>赋给<code>OutputChannel[String]</code>是安全的，反过来把一个
-<code>OutputChannel[String]</code>赋给<code>OutputChannel[AnyRef]</code>却是不安全的。
-</p>
-
-<p>
-Scala函数特质中协变与逆变混在一起用的情况会比较多。对于<code>S =&gt; T</code>类型的函数会定义
-<code>Function[S, T]</code>，这时对参数<code>S</code>逆变而对结果<code>T</code>协变就是一种有用的策略：
-</p>
-
-<pre class="brush: scala">
-  trait Function1[-S, +T] {
-    def apply(x: S): T
-  }
-</pre>
-
-<p>
-应用的例子：
-</p>
-
-<p>
-父类出版物的构造函数有一个标题参数，子类书的构造函数会调用父类的构造函数。
-</p>
-
-<pre class="brush: scala">
-class Publication(val title: String)
-class Book(title: String) extends Publication(title)
-</pre>
-
-<p>
-单例对象<code>Library</code>定义了书的集，以及打印书单的方法<code>printBookList</code>的唯一参数是以
-<code>Book =&gt; AnyRef</code>类型的方法为参数。
-</p>
-
-<pre class="brush: scala">
-object Library {
- val books: Set[Book] =
-   Set(
-     new Book("Programming in Scala"),
-     new Book("Walden")
-   )
- def printBookList(info: Book =&gt; AnyRef) {
-   for (book &lt;- books) println(info(book))
- }
-}
-</pre>
-
-<p>
-单例对象<code>Customer</code>定义了方法<code>getTitle</code>根据出版物取得标题。最后一行调用<code>Library</code>
-的打印书单方法：
-</p>
-
-<pre class="brush: scala">
-object Customer extends Application {
- def getTitle(p: Publication): String = p.title
- Library.printBookList(getTitle)
-}
-</pre>
-
-<p>
-<img src="images/scala/19.03.png" />
-</p>
-
-<p>
-关键是<code>printBookList</code>的形参是<code>Book =&gt; AnyRef</code>，但实参是<code>Publication =&gt; String</code>。参数
-是父类（<code>Book</code>的父类<code>Publication</code>）而结果是子类（<code>AnyRef</code>的子类<code>String</code>）。
-</p>
-
-<p>
-<code>printBookList</code>中的<code>println</code>方法会用到<code>toString</code>，这对所有<code>String</code>及<code>AnyRef</code>子类都有用
-，这里用到了函数结果类型的协变。
-</p>
-
-<h2 id="toc_2.8">对象私有数据</h2>
+<h2 id="toc_2.4">对象私有数据</h2>
 
 <p>
 之前的<code>Queue</code>类待改进内容：当<code>leading</code>列表为空时如果重复调用<code>head</code>，那么<code>mirror</code>
@@ -1783,13 +1824,13 @@ object Customer extends Application {
 </pre>
 
 <p>
-上面分别报错的原因是：协变类型<code>T</code>出现在setter函数<code>leading_=</code>参数类型<code>List[T]</code>的
-逆变位置上；协变类型<code>T</code>出现在setter函数<code>trailing_=</code>参数类型<code>List[T]</code>的逆变位置
+上面分别报错的原因是：协变类型<code>T</code>出现在setter函数<code>leading_=</code>类型参数<code>List[T]</code>的
+逆变位置上；协变类型<code>T</code>出现在setter函数<code>trailing_=</code>类型参数<code>List[T]</code>的逆变位置
 上。
 </p>
 
 
-<h2 id="toc_2.9">上界</h2>
+<h2 id="toc_2.5">上界</h2>
 
 <p>
 之前在“使用列表”章的第一节“列表字面量”中实现一个归并排序的方法。它的第一个参数
@@ -3518,7 +3559,7 @@ button.addActionListener((event: ActionEvent) =&gt; counter += 1)
 </pre>
 
 <p>
-注意参数类型已经被限制为<code>T &lt;: Ordered[T]</code>，就是说列表的元素<code>T</code>要实现<code>Ordered[T]</code>
+注意类型参数已经被限制为<code>T &lt;: Ordered[T]</code>，就是说列表的元素<code>T</code>要实现<code>Ordered[T]</code>
 特质。所以列表是可排序元素的列表。但是缺点是<code>Int</code>列表不行，因为<code>Int</code>没有实现特质
 <code>Ordered</code>，所以不是<code>Ordered[T]</code>的子类。
 </p>
@@ -3586,7 +3627,7 @@ button.addActionListener((event: ActionEvent) =&gt; counter += 1)
 </p>
 
 <p>
-所以简单地说：至少用一个确定的名称为隐式参数类型命名。
+所以简单地说：至少用一个确定的名称为隐式类型参数命名。
 </p>
 
 
