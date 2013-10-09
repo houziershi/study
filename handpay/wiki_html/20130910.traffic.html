@@ -61,7 +61,7 @@ scp ./*.*ar  dsdev15@dev1.hpdev.com:~/server/default/deploy/handpay
 
 scp ./*.xls  dsdev15@dev1.hpdev.com:~/handpay/report/template
 
-scp dsdev15@dev1.hpdev.com:~/server/default/deploy/ROOT.war/mall/hpdownload/report .
+scp -r dsdev15@dev1.hpdev.com:~/server/default/deploy/ROOT.war/mall/hpdownload/report .
 
 ssh dsdev15@dev1.hpdev.com                     // handpay
 
@@ -1338,6 +1338,10 @@ select * from merch_transaction_detail;
 
 <p>
 入口：<a href="http://localhost:8080/hpSupport4.0-traffic0910/index.action">http://localhost:8080/hpSupport4.0-traffic0910/index.action</a>
+</p>
+
+<p>
+用户名：hp5/123456
 </p>
 
 <h2 id="toc_3.3">增加功能菜单与权限</h2>

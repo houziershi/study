@@ -686,6 +686,8 @@ abstract class CircuitSimulation
 
 = 类型参数 =
 
+== 泛型 ==
+
 === 泛型类 ===
 
 Scala通过`[]`指定类型参数：
@@ -771,178 +773,6 @@ ln: java.util.ArrayList[Nothing] = []
 {{{class="brush: scala"
   scala> def doesCompile(q: Queue[AnyRef]) {}
   doesCompile: (Queue[AnyRef])Unit
-}}}
-
-
-== 例：开发纯函数式队列 ==
-
-函数式的队列是不可变的，添加元素操作会返回一个新的队列。三个基本方法：
-
-* `head`返回队列的第一个元素。
-* `tail`返回第一个元素以外的队列。
-* `append`返回在尾部添加指定元素的列队。
-
-理想情况下，希望三种基本操作都可以在常量时间中完成。
-
-一个实现方案是以`List`作为功能表达类型，可以用现成的`head`和`tail`方法。`append`
-方法调用连接操作：
-
-{{{class="brush: scala"
-  class SlowAppendQueue[T](elems: List[T]) { // Not efficient
-    def head = elems.head
-    def tail = new SlowAppendQueue(elems.tail)
-    def append(x: T) = new SlowAppendQueue(elems ::: List(x))
-  }
-}}}
-
-但这样`append`操作的时间会按元素的数量而增加，那换一种思路，把列表倒过来排序，
-这样会让原来最后加进来的元素出现在列表的最前面：
-
-{{{class="brush: scala"
-  class SlowHeadQueue[T](smele: List[T]) { // Not efficient
-    // smele is elems reversed
-    def head = smele.last
-    def tail = new SlowHeadQueue(smele.init)
-    def append(x: T) = new SlowHeadQueue(x :: smele)
-  }
-}}}
-
-现在表现也倒过来了：`append`操作时间为常量，但`head`和`tail`耗时与元素数量
-成正比了。
-
-试一下结合两种列表的方案：
-
-用两个列表`leading`放前面一半；`trailing`放后一半反向排的元素。这样全部内容就是
-：
-
-{{{class="brush: scala"
-leading ::: trailing.reverse
-}}}
-
-添加新元素：
-
-{{{class="brush: scala"
-i :: trailing
-}}}
-
-这样常量时间就可以完成。但这样前一半的`leading`就不放进内容了，所以在对空的
-`leading`进行第一次`head`或`tail`操作前都要把`trailing`反转并复制给`leading`。
-这个操作被定义为`mirror`。
-
-虽然`mirror`操作与队列长度成正比，但是这只发生在`leading`为空时才会被调用。因为
-如果`leading`不为空它将直接返回。`head`与`tail`操作会调用到`mirror`，所以这两个
-方法的复杂度与队列长度呈线性关系。然而队列越长，`mirror`被调用的次数就越以级数
-方式递减。
-
-{{{class="brush: scala"
-  class Queue[T](
-    private val leading: List[T],
-    private val trailing: List[T]
-  ) {
-    private def mirror =
-      if (leading.isEmpty)
-        new Queue(trailing.reverse, Nil)
-      else
-        this
-
-    def head = mirror.leading.head
-
-    def tail = {
-      val q = mirror
-      new Queue(q.leading.tail, q.trailing)
-    }
-
-    def append(x: T) =
-      new Queue(leading, x :: trailing)
-  }
-}}}
-
-=== 信息隐藏 ===
-
-前面的`Queue`实现暴露了太多实现细节，比如构造器的两个参数还有一个是反转的。
-
-==== 私有构造器及工厂方法 ====
-
-为了不让外部了解构造器的实现，可以把构造器作为隐藏的：
-
-{{{class="brush: scala"
-  class Queue[T] private (
-    private val leading: List[T],
-    private val trailing: List[T]
-  )
-}}}
-
-这样防止外部调用主构造器：
-
-{{{class="brush: scala"
-  scala> new Queue(List(1, 2), List(3))
-  <console>:6: error: constructor Queue cannot be accessed in
-    object $iw
-         new Queue(List(1, 2), List(3))
-         ^
-}}}
-
-客户代码只能调用辅助构造器：
-
-{{{class="brush: scala"
-  def this() = this(Nil, Nil)
-}}}
-
-改良一下，让它可以带上初始队列元素列表：
-
-{{{class="brush: scala"
-  def this(elems: T*) = this(elems.toList, Nil)
-}}}
-
-其中的`T*`是重复参数标记，在前面“函数与闭包”一章中已经介绍。
-
-还有一种让客户代码构造的方法是在类定义同一个文件内建立伴生类的工厂方法：
-
-{{{class="brush: scala"
-  object Queue {
-    // constructs a queue with initial elements `xs'
-    def apply[T](xs: T*) = new Queue[T](xs.toList, Nil)
-  }
-}}}
-
-==== 可选方案：私有类 ====
-
-除了私有构造器和私有成员，还可以直接隐藏掉类本身，只提供暴露类公共接口的特质：
-
-{{{class="brush: scala"
-  trait Queue[T] {
-    def head: T
-    def tail: Queue[T]
-    def append(x: T): Queue[T]
-  }
-
-  object Queue {
-
-    def apply[T](xs: T*): Queue[T] =
-      new QueueImpl[T](xs.toList, Nil)
-
-    private class QueueImpl[T](
-      private val leading: List[T],
-      private val trailing: List[T]
-    ) extends Queue[T] {
-
-      def mirror =
-        if (leading.isEmpty)
-          new QueueImpl(trailing.reverse, Nil)
-        else
-          this
-
-      def head: T = mirror.leading.head
-
-      def tail: QueueImpl[T] = {
-        val q = mirror
-        new QueueImpl(q.leading.tail, q.trailing)
-      }
-
-      def append(x: T) =
-        new QueueImpl(leading, x :: trailing)
-    }
-  }
 }}}
 
 
@@ -1148,7 +978,7 @@ object Customer extends Application {
 
 === 检查变化类型注解 ===
 
-==== 禁止协变类型作为方法参数 ====
+==== 禁止方法参数协变 ====
 
 只要把泛型类型作为方法类型参数，包含它的类或特质就有可能不能与这个类型参数一起
 协变。如形式：
@@ -1201,7 +1031,7 @@ object Customer extends Application {
                ^
 }}}
 
-==== 禁止协变可变的字段 ====
+==== 禁止可变的字段协变 ====
 
 不要对可重新赋值的字段使用`+`的协变类型参数。如`var x:T`在Scala里被看作自带
 `getter`方法`def x:T`、`def x_= (y:T)`，所以将不是协变的。
@@ -1262,19 +1092,131 @@ object Customer extends Application {
 就上面的例子来说，`T`仅用在负位置上，而`U`仅用于正的位置上。所以这个`Cat`类是
 正确的。
 
+== 类型变量的界定 ==
 
-== 下界 ==
+=== 上界 ===
 
-在之前的“可选方案：私有类”这一节中展示的是没有办法协变的实现`Queue[T]`。因为类型
-`T`作为参数出现在`append`方法中，而这个位置是负的。
+上界把类型变化的范围限制为某一个类的子类，这样保证具体绑定的类有基本的功能。格式
+为：`T <: U`
 
-所幸有一个办法：可能通过把`append`变为多态以使其泛型化并使用它的类型参数的下界：
+比如，`Ordered`特质实现排序的功能，那么以`Ordered`特质为上界保证得到的类是可以
+排序的。通过把`Ordered`特质混入到类中并实现抽象比较方法`Compare`就可以对实例进行
+比较：
 
 {{{class="brush: scala"
-  class Queue[+T] (private val leading: List[T],
-      private val trailing: List[T] ) {
-    def append[U >: T](x: U) = 
-      new Queue[U](leading, x :: trailing) // ...
+  class Person(val firstName: String, val lastName: String)
+      extends Ordered[Person] {
+
+    def compare(that: Person) = {
+      val lastNameComparison =
+        lastName.compareToIgnoreCase(that.lastName)
+      if (lastNameComparison != 0)
+        lastNameComparison
+      else
+        firstName.compareToIgnoreCase(that.firstName)
+    }
+
+    override def toString = firstName +" "+ lastName
+  }
+}}}
+
+这样`Person`就具有了比较的功能：
+
+{{{class="brush: scala"
+  scala> val robert = new Person("Robert", "Jones")
+  robert: Person = Robert Jones
+
+  scala> val sally = new Person("Sally", "Smith")
+  sally: Person = Sally Smith
+
+  scala> robert < sally
+  res0: Boolean = true
+}}}
+
+为了让列表类型混入到`Ordered`中，需要使用上界`T <:  Ordered[T]`。表明类型必须是
+`Ordered`的子类型。比如`Person`，因为`Person`混入了`Ordered`特质：
+
+{{{class="brush: scala"
+  def orderedMergeSort[T <: Ordered[T]](xs: List[T]): List[T] = {
+    def merge(xs: List[T], ys: List[T]): List[T] =
+      (xs, ys) match {
+        case (Nil, _) => ys
+        case (_, Nil) => xs
+        case (x :: xs1, y :: ys1) =>
+          if (x < y) x :: merge(xs1, ys)
+          else y :: merge(xs, ys1)
+      }
+    val n = xs.length / 2
+    if (n == 0) xs
+    else {
+      val (ys, zs) = xs splitAt n
+      merge(orderedMergeSort(ys), orderedMergeSort(zs))
+    }
+  }
+}}}
+
+使用：
+
+{{{class="brush: scala"
+  scala> val people = List(
+       |   new Person("Larry", "Wall"),
+       |   new Person("Anders", "Hejlsberg"),
+       |   new Person("Guido", "van Rossum"),
+       |   new Person("Alan", "Kay"),
+       |   new Person("Yukihiro", "Matsumoto")
+       | )
+  people: List[Person] = List(Larry Wall, Anders Hejlsberg,
+    Guido van Rossum, Alan Kay, Yukihiro Matsumoto)
+
+
+  scala> val sortedPeople = orderedMergeSort(people)
+  sortedPeople: List[Person] = List(Anders Hejlsberg, Alan Kay,
+    Yukihiro Matsumoto, Guido van Rossum, Larry Wall)
+}}}
+
+以上的解决方案还是有限制，比如不能适应整数列表。因为`Int`不是`Ordered[Int]`的
+子类：
+
+{{{class="brush: scala"
+  scala> val wontCompile = orderedMergeSort(List(3, 2, 1))
+  <console>:5: error: inferred type arguments [Int] do
+     not conform to method orderedMergeSort's type
+       parameter bounds [T <: Ordered[T]]
+         val wontCompile = orderedMergeSort(List(3, 2, 1))
+                           ^
+}}}
+
+在以后的“隐式类型转换和参数”的“视图界定”一节中介绍通过采用隐式参数与检查约束来实现
+更加通用的方案。
+
+=== 下界 ===
+
+下界限制协变的类型必须为指定类型的超类，格式：`U >: T`。
+
+因为在成员方法的参数是不能协变的（位置负），所以不能用`T+`类型的参数，只能用超类
+`U`。方法的返回类型也成了`U`。形式为：
+
+{{{class="brush: scala"
+  class MyClass[+T] {
+
+    def func01[U >: T](x: U): U = { ... }
+
+  }
+}}}
+
+要注意对于同一个类来说，即是超类也是子类。所以`T`是`U`下界，用`T`传入也是可以的。
+
+例：
+
+要实现一个队列类型`Queue[T]`，添加队列成员`append(T)`方法的参数是不能协变的，
+所以为了实现协变的`Queue[+T]`要在`appen`方法中使用下界：
+
+{{{class="brush: scala"
+  class Queue[+T] (
+			private val leading: List[T], 
+			private val trailing: List[T] 
+	) {
+    def append[U >: T](x: U) = new Queue[U](leading, x :: trailing) // ...
   }
 }}}
 
@@ -1285,16 +1227,226 @@ object Customer extends Application {
 对于`append`方法来说，它不知道自己处理的是某一个子类。只知道处理的是超类`U`。
 所以不会有类型错误。
 
-要注意对于同一个类来说，即是超类也是子类。所以`T`是`U`下界，用`T`传入也是可以的。
+其实上面的方法体中：
 
-例子：对于`Fruit`和两个子类`Orange`和`Apple`，可以把`Orange`对象传入
+{{{class="brush: scala"
+def append[U >: T](x: U) = new Queue[U](leading, x :: trailing)
+}}}
+
+可以简写为：
+
+{{{class="brush: scala"
+def append[U >: T](x: U) = new Queue(leading, x :: trailing)
+}}}
+
+编译器会自动推断方法的返回类型`Queue`为`Queue[U]`。
+
+
+又一个例子：
+
+对于`Fruit`和两个子类`Orange`和`Apple`，可以把`Orange`对象传入
 `Queue[Apple]`而返回`Queue[Fruit]`。
 
 从技术角度来看，这里的情况发生了下界的翻转：类型参数`U`处于负位置（1次翻转），而
 下界`>: T`处于正的位置（两次翻转）。
 
+=== Manifest上下文界定 ===
 
-== 对象私有数据 ==
+实例化一个`Array[T]`就需要一个`manifest[T]`对象。`Array`只是Scala提供的
+一个类库，虚拟机中泛型相关的信息是被抹除的。
+
+如果要实现一个泛型的方法来返回一个泛型的数组，就要转入一个`Manifest`对象来。由于
+它是隐式参数，可以用上下文界定：
+
+{{{class="brush: scala"
+def makePair[T: Manifest](first: T, second: T) {
+	val r = new Array[T](2); 
+	r(0) = first; 
+	r(1) = second; 
+	r
+}
+}}}
+
+对于调用`makePair(4, 9)`，编译器会定位到隐式的`Manifest[Int]`并实际上调用的是
+`makePair(4, 9)(intmanifest)`。
+
+这样在方法内创建数组的调用是`new Array(2)(intManifest)`，返回基本类型的数组
+`int[2]`
+
+
+== 例：开发纯函数式队列 ==
+
+函数式的队列是不可变的，添加元素操作会返回一个新的队列。三个基本方法：
+
+* `head`返回队列的第一个元素。
+* `tail`返回第一个元素以外的队列。
+* `append`返回在尾部添加指定元素的列队。
+
+理想情况下，希望三种基本操作都可以在常量时间中完成。
+
+一个实现方案是以`List`作为功能表达类型，可以用现成的`head`和`tail`方法。`append`
+方法调用连接操作：
+
+{{{class="brush: scala"
+  class SlowAppendQueue[T](elems: List[T]) { // Not efficient
+    def head = elems.head
+    def tail = new SlowAppendQueue(elems.tail)
+    def append(x: T) = new SlowAppendQueue(elems ::: List(x))
+  }
+}}}
+
+但这样`append`操作的时间会按元素的数量而增加，那换一种思路，把列表倒过来排序，
+这样会让原来最后加进来的元素出现在列表的最前面：
+
+{{{class="brush: scala"
+  class SlowHeadQueue[T](smele: List[T]) { // Not efficient
+    // smele is elems reversed
+    def head = smele.last
+    def tail = new SlowHeadQueue(smele.init)
+    def append(x: T) = new SlowHeadQueue(x :: smele)
+  }
+}}}
+
+现在表现也倒过来了：`append`操作时间为常量，但`head`和`tail`耗时与元素数量
+成正比了。
+
+试一下结合两种列表的方案：
+
+用两个列表`leading`放前面一半；`trailing`放后一半反向排的元素。这样全部内容就是
+：
+
+{{{class="brush: scala"
+leading ::: trailing.reverse
+}}}
+
+添加新元素：
+
+{{{class="brush: scala"
+i :: trailing
+}}}
+
+这样常量时间就可以完成。但这样前一半的`leading`就不放进内容了，所以在对空的
+`leading`进行第一次`head`或`tail`操作前都要把`trailing`反转并复制给`leading`。
+这个操作被定义为`mirror`。
+
+虽然`mirror`操作与队列长度成正比，但是这只发生在`leading`为空时才会被调用。因为
+如果`leading`不为空它将直接返回。`head`与`tail`操作会调用到`mirror`，所以这两个
+方法的复杂度与队列长度呈线性关系。然而队列越长，`mirror`被调用的次数就越以级数
+方式递减。
+
+{{{class="brush: scala"
+  class Queue[T](
+    private val leading: List[T],
+    private val trailing: List[T]
+  ) {
+    private def mirror =
+      if (leading.isEmpty)
+        new Queue(trailing.reverse, Nil)
+      else
+        this
+
+    def head = mirror.leading.head
+
+    def tail = {
+      val q = mirror
+      new Queue(q.leading.tail, q.trailing)
+    }
+
+    def append(x: T) =
+      new Queue(leading, x :: trailing)
+  }
+}}}
+
+=== 信息隐藏 ===
+
+前面的`Queue`实现暴露了太多实现细节，比如构造器的两个参数还有一个是反转的。
+
+==== 私有构造器及工厂方法 ====
+
+为了不让外部了解构造器的实现，可以把构造器作为隐藏的：
+
+{{{class="brush: scala"
+  class Queue[T] private (
+    private val leading: List[T],
+    private val trailing: List[T]
+  )
+}}}
+
+这样防止外部调用主构造器：
+
+{{{class="brush: scala"
+  scala> new Queue(List(1, 2), List(3))
+  <console>:6: error: constructor Queue cannot be accessed in
+    object $iw
+         new Queue(List(1, 2), List(3))
+         ^
+}}}
+
+客户代码只能调用辅助构造器：
+
+{{{class="brush: scala"
+  def this() = this(Nil, Nil)
+}}}
+
+改良一下，让它可以带上初始队列元素列表：
+
+{{{class="brush: scala"
+  def this(elems: T*) = this(elems.toList, Nil)
+}}}
+
+其中的`T*`是重复参数标记，在前面“函数与闭包”一章中已经介绍。
+
+还有一种让客户代码构造的方法是在类定义同一个文件内建立伴生类的工厂方法：
+
+{{{class="brush: scala"
+  object Queue {
+    // constructs a queue with initial elements `xs'
+    def apply[T](xs: T*) = new Queue[T](xs.toList, Nil)
+  }
+}}}
+
+==== 可选方案：私有类 ====
+
+除了私有构造器和私有成员，还可以直接隐藏掉类本身，只提供暴露类公共接口的特质：
+
+{{{class="brush: scala"
+  trait Queue[T] {
+    def head: T
+    def tail: Queue[T]
+    def append(x: T): Queue[T]
+  }
+
+  object Queue {
+
+    def apply[T](xs: T*): Queue[T] =
+      new QueueImpl[T](xs.toList, Nil)
+
+    private class QueueImpl[T](
+      private val leading: List[T],
+      private val trailing: List[T]
+    ) extends Queue[T] {
+
+      def mirror =
+        if (leading.isEmpty)
+          new QueueImpl(trailing.reverse, Nil)
+        else
+          this
+
+      def head: T = mirror.leading.head
+
+      def tail: QueueImpl[T] = {
+        val q = mirror
+        new QueueImpl(q.leading.tail, q.trailing)
+      }
+
+      def append(x: T) =
+        new QueueImpl(leading, x :: trailing)
+    }
+  }
+}}}
+
+
+=== 对象私有数据 ===
 
 之前的`Queue`类待改进内容：当`leading`列表为空时如果重复调用`head`，那么`mirror`
 操作会重复地把`trailing`复制到`leading`列表。
@@ -1359,99 +1511,6 @@ object Customer extends Application {
 上。
 
 
-== 上界 ==
-
-之前在“使用列表”章的第一节“列表字面量”中实现一个归并排序的方法。它的第一个参数
-是比较函数，第二个柯里化的参数是要排序的列表。对这个函数的另一种组织方法大概就是
-把列表类型混入到`ordered`特质中。
-
-通过把`Ordered`特质混入到类中并实现抽象比较方法`Compare`就可以对实例进行比较：
-
-{{{class="brush: scala"
-  class Person(val firstName: String, val lastName: String)
-      extends Ordered[Person] {
-
-    def compare(that: Person) = {
-      val lastNameComparison =
-        lastName.compareToIgnoreCase(that.lastName)
-      if (lastNameComparison != 0)
-        lastNameComparison
-      else
-        firstName.compareToIgnoreCase(that.firstName)
-    }
-
-    override def toString = firstName +" "+ lastName
-  }
-}}}
-
-{{{class="brush: scala"
-  scala> val robert = new Person("Robert", "Jones")
-  robert: Person = Robert Jones
-
-  scala> val sally = new Person("Sally", "Smith")
-  sally: Person = Sally Smith
-
-  scala> robert < sally
-  res0: Boolean = true
-}}}
-
-为了让列表类型混入到`Ordered`中，需要使用上界，符号`<:`。
-
-`T <:  Ordered[T]`表明类型必须是`Ordered`的子类型。比如`Person`，因为`Person`
-混入了`Ordered`特质：
-
-{{{class="brush: scala"
-  def orderedMergeSort[T <: Ordered[T]](xs: List[T]): List[T] = {
-    def merge(xs: List[T], ys: List[T]): List[T] =
-      (xs, ys) match {
-        case (Nil, _) => ys
-        case (_, Nil) => xs
-        case (x :: xs1, y :: ys1) =>
-          if (x < y) x :: merge(xs1, ys)
-          else y :: merge(xs, ys1)
-      }
-    val n = xs.length / 2
-    if (n == 0) xs
-    else {
-      val (ys, zs) = xs splitAt n
-      merge(orderedMergeSort(ys), orderedMergeSort(zs))
-    }
-  }
-}}}
-
-使用：
-
-{{{class="brush: scala"
-  scala> val people = List(
-       |   new Person("Larry", "Wall"),
-       |   new Person("Anders", "Hejlsberg"),
-       |   new Person("Guido", "van Rossum"),
-       |   new Person("Alan", "Kay"),
-       |   new Person("Yukihiro", "Matsumoto")
-       | )
-  people: List[Person] = List(Larry Wall, Anders Hejlsberg,
-    Guido van Rossum, Alan Kay, Yukihiro Matsumoto)
-
-
-  scala> val sortedPeople = orderedMergeSort(people)
-  sortedPeople: List[Person] = List(Anders Hejlsberg, Alan Kay,
-    Yukihiro Matsumoto, Guido van Rossum, Larry Wall)
-}}}
-
-以上的解决方案还是有限制，比如不能适应整数列表。因为`Int`不是`Ordered[Int]`的
-子类：
-
-{{{class="brush: scala"
-  scala> val wontCompile = orderedMergeSort(List(3, 2, 1))
-  <console>:5: error: inferred type arguments [Int] do
-     not conform to method orderedMergeSort's type
-       parameter bounds [T <: Ordered[T]]
-         val wontCompile = orderedMergeSort(List(3, 2, 1))
-                           ^
-}}}
-
-在以后的“隐式类型转换和参数”的“视界”一节中介绍通过采用隐式参数与检查约束来实现
-更加通用的方案。
 
 
 
@@ -2840,7 +2899,7 @@ button.addActionListener((event: ActionEvent) => counter += 1)
 所以简单地说：至少用一个确定的名称为隐式类型参数命名。
 
 
-== 视界 ==
+== 视图界定 ==
 
 前面的例子还可以再用隐式操作强化。如果把`implicit`用在参数上，编译器不仅会尝试用
 隐式值补足这个参数，还会把这个参数当作可用的隐式操作而使用于方法体中。因此方法体
@@ -2890,7 +2949,7 @@ button.addActionListener((event: ActionEvent) => counter += 1)
     // same body...
 }}}
 
-因为这样的方法非常常用，所以Scala可以让代码省略这个参数的名称并使用视界缩短
+因为这样的方法非常常用，所以Scala可以让代码省略这个参数的名称并使用视图界定缩短
 方法头。`maxList`方法签名可以是这样：
 
 {{{class="brush: scala"
@@ -2916,12 +2975,30 @@ implicit def identity[A](x: A): A = x
 如果传入的类型正好就是`Ordered[T]`，那上面的转换什么也不做，只是简单地把传入的
 参数再返回出来。
 
-=== 视界与上界 ===
+=== 视图界定与上界 ===
 
 注意这不同于上界表达的意思，上界`T <: Ordered[T]`的意思是：“`T`是`Ordered[T]`”。
 
-相比之前用到的上界版本的`maxListUpBound`方法，唯一的区别就是上界符号与视界符号的
-不同，但是我们的视界版本可以支持更多类型。
+相比之前用到的上界版本的`maxListUpBound`方法，唯一的区别就是上界符号与视图界定符号的
+不同，但是我们的视图界定版本可以支持更多类型。
+
+== 上下文界定 ==
+
+上下文界定意思是对于一个泛形类`M`，要存在一个从类型`T`到`M[T]`的隐式值，如：
+
+{{{class="brush: scala"
+class Pair[T : Ordering]
+}}}
+
+这样的上下文定义要有一个类型为`Ordering[T]`的隐式值。
+
+当声明一个隐式方法时，要添加一个隐式参数，例如：
+
+{{{class="brush: scala"
+class Pair[T : Ordering](val first: T, val second: T) {
+	def smaller(implicit ord: Ordering[T]) =
+		if (ord.compare(first, second) < 0) first else second
+}}}
 
 
 == 隐式操作的调试 ==
