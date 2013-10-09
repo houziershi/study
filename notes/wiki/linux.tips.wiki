@@ -1,0 +1,46 @@
+
+
+显示主机IP：
+
+{{{class="brush: bash"
+hostname -I
+}}}
+
+{{{class="brush: bash"
+df -h --total                    // 列出SD卡的总容量、已用及可用容量
+free -th                         // 列出系统内存使用情况
+top                              // 列出CPU使用情况及当前内存活动情况。退出键入q
+ping -c 3 http://www.google.com  // 检查树莓派是否连接到网络
+cd ~                             // 使你进入用户主文件夹
+ls                               // 列出当前文件夹里面的文件及子文件夹
+ls -l                            // 详细列出文件及子文件夹的信息
+ls -l -color                     // 用不同颜色标志列出文件及子文件夹信息
+reboot                           // 重启树莓派
+shutdown -hP 0                   // 关闭并断开树莓派电源。注意数字0
+clear                            // 清屏
+}}}
+
+
+{{{class="brush: bash"
+}}}
+
+
+{{{class="brush: bash"
+}}}
+
+
+{{{class="brush: bash"
+}}}
+
+
+{{{class="brush: bash"
+}}}
+
+
+{{{class="brush: bash"
+}}}
+
+
+{{{class="brush: bash"
+}}}
+

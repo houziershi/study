@@ -105,6 +105,8 @@ DB2： [[DB2]]
 
 [[linux.fun]]
 
+[[linux.tips]]
+
 [[raspberry.pi]]
 
 == 桌面环境 ==
@@ -168,3 +170,7 @@ pidgin：[[pidgin]]
 = 标准 =
 
 网络标准：[[stand.net]]
+
+= 吐槽 =
+
+[[Joke]]
