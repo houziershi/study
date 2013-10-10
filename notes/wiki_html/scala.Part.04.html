@@ -109,6 +109,9 @@
 <li><a href="#toc_4">隐式转换和参数</a>
 <ul>
 <li><a href="#toc_4.1">隐式转换</a>
+<ul>
+<li><a href="#toc_4.1.1">隐式转换会引起类型变化</a>
+</ul>
 <li><a href="#toc_4.2">隐式操作规则</a>
 <ul>
 <li><a href="#toc_4.2.1">标记规则</a>
@@ -116,28 +119,35 @@
 <li><a href="#toc_4.2.3">无歧义规则</a>
 <li><a href="#toc_4.2.4">单一调用原则</a>
 <li><a href="#toc_4.2.5">显式操作先行规则</a>
-<li><a href="#toc_4.2.6">命名隐式转换</a>
+<li><a href="#toc_4.2.6">隐式转换的命名</a>
 </ul>
-<li><a href="#toc_4.3">隐式转换为期望的类型</a>
-<li><a href="#toc_4.4">转换方法调用的接收者</a>
+<li><a href="#toc_4.3">隐式转换的应用场景</a>
 <ul>
-<li><a href="#toc_4.4.1">与新类型的交互操作</a>
-<li><a href="#toc_4.4.2">模拟新的语法</a>
+<li><a href="#toc_4.3.1">隐式转换为期望的类型</a>
+<li><a href="#toc_4.3.2">转换方法调用的接收者</a>
+<ul>
+<li><a href="#toc_4.3.2.1">与新类型的交互操作</a>
+<li><a href="#toc_4.3.2.2">模拟新的语法</a>
 </ul>
-<li><a href="#toc_4.5">SAM（单个抽象方法）</a>
-<li><a href="#toc_4.6">隐式参数</a>
+<li><a href="#toc_4.3.3">隐式参数</a>
 <ul>
-<li><a href="#toc_4.6.1">隐式参数样式规则</a>
+<li><a href="#toc_4.3.3.1">声明参数列表为隐式</a>
+<li><a href="#toc_4.3.3.2">定义传入的实参</a>
+<li><a href="#toc_4.3.3.3">implicit会作用于整个参数列表</a>
+<li><a href="#toc_4.3.3.4">用隐式转换代替变化类型参数</a>
+<li><a href="#toc_4.3.3.5">隐式参数样式规则</a>
 </ul>
-<li><a href="#toc_4.7">视图界定</a>
-<ul>
-<li><a href="#toc_4.7.1">视图界定与上界</a>
 </ul>
-<li><a href="#toc_4.8">上下文界定</a>
-<li><a href="#toc_4.9">隐式操作的调试</a>
+<li><a href="#toc_4.4">SAM（单个抽象方法）</a>
+<li><a href="#toc_4.5">视图界定</a>
 <ul>
-<li><a href="#toc_4.9.1">没有对应的转换规则</a>
-<li><a href="#toc_4.9.2">被其他转换规则干扰</a>
+<li><a href="#toc_4.5.1">视图界定与上界</a>
+</ul>
+<li><a href="#toc_4.6">上下文界定</a>
+<li><a href="#toc_4.7">隐式操作的调试</a>
+<ul>
+<li><a href="#toc_4.7.1">没有对应的转换规则</a>
+<li><a href="#toc_4.7.2">被其他转换规则干扰</a>
 </ul>
 </ul>
 </ul>
@@ -3126,22 +3136,6 @@ Direction.withName("West")
 
 <h1 id="toc_4">隐式转换和参数</h1>
 
-<p>
-隐式转换很有用，但有时要注意隐式转换相引起的类型变化：
-</p>
-
-<pre class="brush: scala">
-"mon".reverse == "mon" // false
-</pre>
-
-<p>
-因为类型已经变为<code>RichString</code>，这样就是相等的了：
-</p>
-
-<pre class="brush: scala">
-"mon".reverse.toString == "mon" // false
-</pre>
-
 <h2 id="toc_4.1">隐式转换</h2>
 
 <p>
@@ -3189,6 +3183,24 @@ Scala里有一个很有用的特质<code>RandomAccessSeq[T]</code>提供了可�
 顺便提一下：<code>Predef</code>对象已经用类似的方式定义了<code>stringWrapper</code>转换，所以其实不用
 定义也可以隐匿转换了。
 </p>
+
+<h3 id="toc_4.1.1">隐式转换会引起类型变化</h3>
+
+<p>
+隐式转换很有用，但有时要注意隐式转换相引起的类型变化：
+</p>
+
+<pre class="brush: scala">
+"mon".reverse == "mon" // false
+</pre>
+
+<p>
+不相等的原因是因为类型已经变为<code>RichString</code>，这样就是相等的了：
+</p>
+
+<pre class="brush: scala">
+"mon".reverse.toString == "mon" // false
+</pre>
 
 
 <h2 id="toc_4.2">隐式操作规则</h2>
@@ -3251,12 +3263,20 @@ Scala里有一个很有用的特质<code>RandomAccessSeq[T]</code>提供了可�
 太简单不明确，用显式的转换来减少歧义和二义性。
 </p>
 
-<h3 id="toc_4.2.6">命名隐式转换</h3>
+<h3 id="toc_4.2.6">隐式转换的命名</h3>
 
 <p>
-转换方法的命名可以随意，但要考虑到两个情况：是不是需要在方法应用中明确写明，以及
-决定在哪个隐式转换在程序的任何地方都有效。
+转换方法的命名可以随意，但要考虑到两个情况：
 </p>
+
+<ul>
+<li>
+是不是需要在方法应用中明确写明
+
+<li>
+决定在哪个隐式转换在程序的任何地方都有效。
+
+</ul>
 
 <p>
 拿第二点来说，设一个对象带两个隐式转换：
@@ -3283,13 +3303,15 @@ Scala里有一个很有用的特质<code>RandomAccessSeq[T]</code>提供了可�
 这样的情况下会用到转换方法的名字。
 </p>
 
+<h2 id="toc_4.3">隐式转换的应用场景</h2>
+
 <p>
-Scala中有三个地方会用到隐式转换：转换为需要的类型、指定（方法）调用者的转换、
+Scala会在三种情况下触发隐式转换：转换为需要的类型、指定（方法）调用者的转换、
 隐式参数。接下来的三节分别讨论这三种情况。
 </p>
 
 
-<h2 id="toc_4.3">隐式转换为期望的类型</h2>
+<h3 id="toc_4.3.1">隐式转换为期望的类型</h3>
 
 <p>
 有一个双精度数，但是表达式要用到整数，所以就要隐式转换：
@@ -3334,13 +3356,14 @@ Scala中有三个地方会用到隐式转换：转换为需要的类型、指定
 </pre>
 
 
-<h2 id="toc_4.4">转换方法调用的接收者</h2>
+<h3 id="toc_4.3.2">转换方法调用的接收者</h3>
 
 <p>
-如果<code>obj</code>没有<code>doIt</code>方法，但程序里有这一行，就试着转成有<code>doIt</code>的类型。
+如果<code>Obj</code>类型没有<code>doIt()</code>方法，但程序里有写<code>Obj.doIt()</code>，就试着把<code>Obj</code>类型转成有
+<code>doIt</code>的类型。
 </p>
 
-<h3 id="toc_4.4.1">与新类型的交互操作</h3>
+<h4 id="toc_4.3.2.1">与新类型的交互操作</h4>
 
 <p>
 给新类型加上它没有实现的功能。以实数类为例：
@@ -3355,7 +3378,7 @@ Scala中有三个地方会用到隐式转换：转换为需要的类型、指定
 </pre>
 
 <p>
-加法可以处理<code>Rational</code>和<code>Int</code>：
+加法可以用<code>Rational</code>和<code>Int</code>类型作为参数：
 </p>
 
 <pre class="brush: scala">
@@ -3370,7 +3393,7 @@ Scala中有三个地方会用到隐式转换：转换为需要的类型、指定
 </pre>
 
 <p>
-但是一个<code>Int</code>没有办法加上<code>Rational</code>：
+但是一个<code>Int</code>类型的加法没有办法以<code>Rational</code>类型为参数：
 </p>
 
 <pre class="brush: scala">
@@ -3403,7 +3426,7 @@ Scala中有三个地方会用到隐式转换：转换为需要的类型、指定
   intToRational(1) + oneHalf
 </pre>
 
-<h3 id="toc_4.4.2">模拟新的语法</h3>
+<h4 id="toc_4.3.2.2">模拟新的语法</h4>
 
 <p>
 隐式转换还可以用来模拟新的语法。以我们熟悉的<code>Map</code>构建为例：
@@ -3423,60 +3446,22 @@ Scala中有三个地方会用到隐式转换：转换为需要的类型、指定
 </p>
 
 <pre class="brush: scala">
-  package scala
-  object Predef {
-    class ArrowAssoc[A](x: A) {
-      def -&gt; [B](y: B): Tuple2[A, B] = Tuple2(x, y)
-    }
-    implicit def any2ArrowAssoc[A](x: A): ArrowAssoc[A] = 
-      new ArrowAssoc(x)
-    ...
+package scala
+object Predef {
+
+  class ArrowAssoc[A](x: A) {
+    def -&gt; [B](y: B): Tuple2[A, B] = Tuple2(x, y)
   }
-</pre>
 
+  implicit def any2ArrowAssoc[A](x: A): ArrowAssoc[A] = 
+    new ArrowAssoc(x)
+  ...
 
-<h2 id="toc_4.5">SAM（单个抽象方法）</h2>
-
-<p>
-Java中这种情况比Scala多：就是一个接口里只有一个抽象方法。
-</p>
-
-<p>
-Scala里虽然可以把函数作为值，但是还是会有SAM的情况出现。比如说，GUI按钮的监听器
-：
-</p>
-
-<pre class="brush: scala">
-var counter = 0
-
-val button = new JButton("Increment") // 记录按次数的按钮 
-button.addActionListener(new ActionListener {
-	override def actionPerformed(event: ActionEvent) {
-		counter += 1
-	}
-})
-</pre>
-
-<p>
-Scala里明明可以用函数值作为参数，但为了兼容Java只能写一个SAM接口。解决方案是用
-隐式转换把一个函数转为<code>ActionListener</code>实例：
-</p>
-
-<pre class="brush: scala">
-implicit def makeAction(action: (ActionEvent) =&gt; Unit) = new ActionListener {
-	override def actionPerformed(event: ActionEvent) { action(event) }
 }
 </pre>
 
-<p>
-现在调用时只要传入函数，接口实现类由隐式函数来实现：
-</p>
 
-<pre class="brush: scala">
-button.addActionListener((event: ActionEvent) =&gt; counter += 1)
-</pre>
-
-<h2 id="toc_4.6">隐式参数</h2>
+<h3 id="toc_4.3.3">隐式参数</h3>
 
 <p>
 省略柯里化后的参数列表。编译器会用<code>someCall(a)(b,c,d)</code>代替<code>someCall(a)</code>。能这样
@@ -3491,6 +3476,8 @@ button.addActionListener((event: ActionEvent) =&gt; counter += 1)
 <pre class="brush: scala">
   class PreferredPrompt(val preference: String)
 </pre>
+
+<h4 id="toc_4.3.3.1">声明参数列表为隐式</h4>
 
 <p>
 还有一个<code>Greeter</code>类的方法<code>greet</code>有两个参数列表。分别是用户名和前面的命令行
@@ -3518,6 +3505,8 @@ button.addActionListener((event: ActionEvent) =&gt; counter += 1)
   Welcome, Bob. The system is ready.
   relax&gt; 
 </pre>
+
+<h4 id="toc_4.3.3.2">定义传入的实参</h4>
 
 <p>
 为了隐式提供参数，要定义<code>implicit</code>修饰期望类型的变量：
@@ -3554,6 +3543,8 @@ button.addActionListener((event: ActionEvent) =&gt; counter += 1)
   Welcome, Joe. The system is ready.
   Yes, master&gt; 
 </pre>
+
+<h4 id="toc_4.3.3.3">implicit会作用于整个参数列表</h4>
 
 <p>
 注意<code>implicit</code>关键字作用于全体参数列表而不是单独参数。下面的例子中<code>Greeter</code>的
@@ -3626,6 +3617,8 @@ button.addActionListener((event: ActionEvent) =&gt; counter += 1)
 防止被过多地匹配到隐式转换。
 </p>
 
+<h4 id="toc_4.3.3.4">用隐式转换代替变化类型参数</h4>
+
 <p>
 隐式类型转换常见用法是为了提供显式标明的参数列表信息。考虑下面的代码，它返回传入
 的列表参数中的最大元素：
@@ -3696,7 +3689,7 @@ button.addActionListener((event: ActionEvent) =&gt; counter += 1)
   res12: java.lang.String = two
 </pre>
 
-<h3 id="toc_4.6.1">隐式参数样式规则</h3>
+<h4 id="toc_4.3.3.5">隐式参数样式规则</h4>
 
 <p>
 就是在要用到隐式转换的地方最好是从自定义的类型开始转而不是从<code>String</code>这样的很常见
@@ -3717,7 +3710,48 @@ button.addActionListener((event: ActionEvent) =&gt; counter += 1)
 </p>
 
 
-<h2 id="toc_4.7">视图界定</h2>
+<h2 id="toc_4.4">SAM（单个抽象方法）</h2>
+
+<p>
+Java中这种情况比Scala多：就是一个接口里只有一个抽象方法。
+</p>
+
+<p>
+Scala里虽然可以把函数作为值，但是还是会有SAM的情况出现。比如说，Scala里明明可以
+用函数值作为参数，但在实现一个GUI按钮的监听器为了兼容Java只能写一个SAM接口：
+</p>
+
+<pre class="brush: scala">
+var counter = 0
+
+val button = new JButton("Increment") // 记录按次数的按钮 
+button.addActionListener(new ActionListener {
+	override def actionPerformed(event: ActionEvent) {
+		counter += 1
+	}
+})
+</pre>
+
+<p>
+解决方案是用隐式转换把一个函数转为<code>ActionListener</code>实例：
+</p>
+
+<pre class="brush: scala">
+implicit def makeAction(action: (ActionEvent) =&gt; Unit) = new ActionListener {
+	override def actionPerformed(event: ActionEvent) { action(event) }
+}
+</pre>
+
+<p>
+现在调用时只要传入函数，接口实现类由隐式函数来实现：
+</p>
+
+<pre class="brush: scala">
+button.addActionListener((event: ActionEvent) =&gt; counter += 1)
+</pre>
+
+
+<h2 id="toc_4.5">视图界定</h2>
 
 <p>
 前面的例子还可以再用隐式操作强化。如果把<code>implicit</code>用在参数上，编译器不仅会尝试用
@@ -3813,7 +3847,7 @@ implicit def identity[A](x: A): A = x
 参数再返回出来。
 </p>
 
-<h3 id="toc_4.7.1">视图界定与上界</h3>
+<h3 id="toc_4.5.1">视图界定与上界</h3>
 
 <p>
 注意这不同于上界表达的意思，上界<code>T &lt;: Ordered[T]</code>的意思是：“<code>T</code>是<code>Ordered[T]</code>”。
@@ -3824,7 +3858,7 @@ implicit def identity[A](x: A): A = x
 不同，但是我们的视图界定版本可以支持更多类型。
 </p>
 
-<h2 id="toc_4.8">上下文界定</h2>
+<h2 id="toc_4.6">上下文界定</h2>
 
 <p>
 上下文界定意思是对于一个泛形类<code>M</code>，要存在一个从类型<code>T</code>到<code>M[T]</code>的隐式值，如：
@@ -3849,13 +3883,13 @@ class Pair[T : Ordering](val first: T, val second: T) {
 </pre>
 
 
-<h2 id="toc_4.9">隐式操作的调试</h2>
+<h2 id="toc_4.7">隐式操作的调试</h2>
 
 <p>
 隐式操作很强大，但也很难调试。这一节包含了一些技巧。
 </p>
 
-<h3 id="toc_4.9.1">没有对应的转换规则</h3>
+<h3 id="toc_4.7.1">没有对应的转换规则</h3>
 
 <p>
 在程序员认为应该隐式转换但编译器没有转换时，手动把转换调用写出来。这样如果有报错
@@ -3872,7 +3906,7 @@ scala&gt; val chars: List[Char] = "xyz"
                                ^
 </pre>
 
-<h3 id="toc_4.9.2">被其他转换规则干扰</h3>
+<h3 id="toc_4.7.2">被其他转换规则干扰</h3>
 
 <p>
 如果手动指定转换以后错误消失，那就很有可以是其他的转换规则覆盖了你想要的替换规则
