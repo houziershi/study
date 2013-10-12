@@ -61,6 +61,8 @@ scp ./*.*ar  dsdev15@dev1.hpdev.com:~/server/default/deploy/handpay
 
 scp ./*.xls  dsdev15@dev1.hpdev.com:~/handpay/report/template
 
+scp -r dsdev15@dev1.hpdev.com:~/handpay/report/template/ .
+
 scp -r dsdev15@dev1.hpdev.com:~/server/default/deploy/ROOT.war/mall/hpdownload/report .
 
 ssh dsdev15@dev1.hpdev.com                     // handpay
@@ -1234,12 +1236,52 @@ TrafficServiceImpl.queryViolations(..)
 <h2 id="toc_3.1">交罚应用</h2>
 
 <p>
-入口：<a href="http://localhost:8080/hpTrafficWap-traffic0910/trafficIndex.do?trafficIndexFlag=vpos">http://localhost:8080/hpTrafficWap-traffic0910/trafficIndex.do?trafficIndexFlag=vpos</a>
+调试代码：
 </p>
+
+<p>
+写死登录的用户：
+</p>
+
+<pre class="brush: java" title="VposTrafficIndexAction.java">
+		UserBean u = new UserBean();
+		u.setUserID(101009);
+		request.getSession().setAttribute("user", u);
+</pre>
+
+<p>
+Js中去掉iPhone的特殊代码：
+</p>
+
+<pre class="brush: java" title="vposViolationDetail.jsp">
+	function myOnloadInit() {
+		// document.location='vpos://getUserLocation';
+	}
+	function getUserLocationCallback(location){
+		// document.getElementById("location").value=location;
+	}
+</pre>
+
+
+<p>
+入口： <a href="http://localhost:8080/hpWapService-traffic0910/trafficIndex.do?trafficIndexFlag=vpos">http://localhost:8080/hpWapService-traffic0910/trafficIndex.do?trafficIndexFlag=vpos</a>
+</p>
+
+<p>
+测试入口： <a href="http://trafficklb.99wuxian.com/wap">http://trafficklb.99wuxian.com/wap</a>
+</p>
+
+<p>
+改dns：
+</p>
+
+<pre class="brush: bash">
+10.48.196.251	trafficklb.99wuxian.com pic9.99wuxian.com
+</pre>
 
 <ul>
 <li>
-<code>hpTrafficWap</code>
+<code>hpWapService</code>
 
 <ul>
 <li>
@@ -1325,10 +1367,10 @@ select * from merch_transaction_detail;
 订单状态<code>00撤销、02未成功办理</code>：罚单状态置为<code>1可办理</code>，日志记录状态，新罚单
 
 <li>
-订单状态<code>01待支付、10待办理</code>：继续处理原有订单显示手机号，支付
+订单状态<code>01待支付</code>：继续处理原有订单显示手机号，支付
 
 <li>
-订单状态<code>11办理成功</code>：无后续操作
+订单状态<code>10待办理、11办理成功</code>：无后续操作
 
 </ul>
 </ul>

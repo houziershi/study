@@ -8,6 +8,8 @@ scp ./*.*ar  dsdev15@dev1.hpdev.com:~/server/default/deploy/handpay
 
 scp ./*.xls  dsdev15@dev1.hpdev.com:~/handpay/report/template
 
+scp -r dsdev15@dev1.hpdev.com:~/handpay/report/template/ .
+
 scp -r dsdev15@dev1.hpdev.com:~/server/default/deploy/ROOT.war/mall/hpdownload/report .
 
 ssh dsdev15@dev1.hpdev.com                     // handpay
@@ -159,9 +161,39 @@ TrafficServiceImpl.queryViolations(..)
 
 == 交罚应用 ==
 
-入口：http://localhost:8080/hpTrafficWap-traffic0910/trafficIndex.do?trafficIndexFlag=vpos
+调试代码：
 
-* `hpTrafficWap`
+写死登录的用户：
+
+{{{class="brush: java" title="VposTrafficIndexAction.java"
+		UserBean u = new UserBean();
+		u.setUserID(101009);
+		request.getSession().setAttribute("user", u);
+}}}
+
+Js中去掉iPhone的特殊代码：
+
+{{{class="brush: java" title="vposViolationDetail.jsp"
+	function myOnloadInit() {
+		// document.location='vpos://getUserLocation';
+	}
+	function getUserLocationCallback(location){
+		// document.getElementById("location").value=location;
+	}
+}}}
+
+
+入口： http://localhost:8080/hpWapService-traffic0910/trafficIndex.do?trafficIndexFlag=vpos
+
+测试入口： http://trafficklb.99wuxian.com/wap
+
+改dns：
+
+{{{class="brush: bash"
+10.48.196.251	trafficklb.99wuxian.com pic9.99wuxian.com
+}}}
+
+* `hpWapService`
 	- `vposTrafficIndex.jsp`
 * `hpWap4.0`
 	- `VposTrafficIndexAction.java`
@@ -208,8 +240,8 @@ select * from merch_transaction_detail;
 * 罚单状态可办
 	- 没有订单：新罚单流程
 	- 订单状态`00撤销、02未成功办理`：罚单状态置为`1可办理`，日志记录状态，新罚单
-	- 订单状态`01待支付、10待办理`：继续处理原有订单显示手机号，支付
-	- 订单状态`11办理成功`：无后续操作
+	- 订单状态`01待支付`：继续处理原有订单显示手机号，支付
+	- 订单状态`10待办理、11办理成功`：无后续操作
 		 
 
 == 报表 ==

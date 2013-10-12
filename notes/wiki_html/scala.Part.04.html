@@ -3146,7 +3146,7 @@ Scala里有一个很有用的特质<code>RandomAccessSeq[T]</code>提供了可�
 
 <p>
 隐式转换可以让<code>String</code>表现得像<code>RandomAccessSeq</code>的子类。为了达到这一目的，需要
-定义从<code>String</code>到<code>RandomAccessSeq</code>的隐匿转换。
+定义从<code>String</code>到<code>RandomAccessSeq</code>的隐式转换。
 </p>
 
 <pre class="brush: scala">
@@ -3224,7 +3224,7 @@ Scala里有一个很有用的特质<code>RandomAccessSeq[T]</code>提供了可�
 
 <p>
 “单一标识符”规则有个例外。转换的“目标”与“源”的类型的“伴生对象”中的隐式转换定义
-会被编译器找到。如从<code>Dollar</code>转为<code>Euro</code>，可以把隐匿转换放在这两者之一的的伴生对象
+会被编译器找到。如从<code>Dollar</code>转为<code>Euro</code>，可以把隐式转换放在这两者之一的的伴生对象
 中：
 </p>
 
@@ -3438,11 +3438,7 @@ Scala会在三种情况下触发隐式转换：转换为需要的类型、指定
 
 <p>
 其实<code>Map</code>对象里的<code>-&gt;</code>根本就不是内建语法。实际上是定义在<code>scala.Predef</code>中的类
-<code>ArrowAssoc</code>的方法。还有定义了从<code>Any</code>到<code>ArrowAssoc</code>的隐式转换。
-</p>
-
-<p>
-拿上面的<code>1 -&gt; "one"</code>来说。这其实是从<code>1</code>到<code>ArrowAssoc</code>的转换。相差定义如下：
+<code>ArrowAssoc</code>的方法。还有定义了从<code>Any</code>到<code>ArrowAssoc</code>的隐式转换。定义是：
 </p>
 
 <pre class="brush: scala">
@@ -3459,6 +3455,19 @@ object Predef {
 
 }
 </pre>
+
+<p>
+拿上面的<code>1 -&gt; "one"</code>来说。
+</p>
+
+<ul>
+<li>
+其实是从先从<code>1</code>到<code>ArrowAssoc[Int]</code>隐式转换。
+
+<li>
+再调用<code>ArrowAssoc[Int]</code>类型的<code>-&gt;</code>方法，返回了一个<code>Touble2</code>。
+
+</ul>
 
 
 <h3 id="toc_4.3.3">隐式参数</h3>
@@ -3754,6 +3763,20 @@ button.addActionListener((event: ActionEvent) =&gt; counter += 1)
 <h2 id="toc_4.5">视图界定</h2>
 
 <p>
+可以把<code>T &lt;% Ordered[T]</code>理解为：“T是能被当作<code>Ordered[T]</code>的任何类型”。编译器将
+调用声明在<code>Predef</code>中的隐式鉴别函数：
+</p>
+
+<pre class="brush: scala">
+implicit def identity[A](x: A): A = x
+</pre>
+
+<p>
+如果传入的类型正好就是<code>Ordered[T]</code>，那上面的转换什么也不做，只是简单地把传入的
+参数再返回出来。
+</p>
+
+<p>
 前面的例子还可以再用隐式操作强化。如果把<code>implicit</code>用在参数上，编译器不仅会尝试用
 隐式值补足这个参数，还会把这个参数当作可用的隐式操作而使用于方法体中。因此方法体
 中<code>orderer</code>的两处应用都可以被省略。
@@ -3832,20 +3855,6 @@ button.addActionListener((event: ActionEvent) =&gt; counter += 1)
         else maxRest
     }
 </pre>
-
-<p>
-可以把<code>T &lt;% Ordered[T]</code>理解为：“T是能被当作<code>Ordered[T]</code>的任何类型”。编译器将调用
-声明在<code>Predef</code>中的隐式鉴别函数：
-</p>
-
-<pre class="brush: scala">
-implicit def identity[A](x: A): A = x
-</pre>
-
-<p>
-如果传入的类型正好就是<code>Ordered[T]</code>，那上面的转换什么也不做，只是简单地把传入的
-参数再返回出来。
-</p>
 
 <h3 id="toc_4.5.1">视图界定与上界</h3>
 
