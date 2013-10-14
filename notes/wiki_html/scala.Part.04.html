@@ -106,9 +106,9 @@
 </ul>
 <li><a href="#toc_3.9">案例研究：货币</a>
 </ul>
-<li><a href="#toc_4">隐式转换和参数</a>
+<li><a href="#toc_4">隐式转换</a>
 <ul>
-<li><a href="#toc_4.1">隐式转换</a>
+<li><a href="#toc_4.1">隐式转换函数</a>
 <ul>
 <li><a href="#toc_4.1.1">隐式转换会引起类型变化</a>
 </ul>
@@ -132,8 +132,11 @@
 <li><a href="#toc_4.3.3">隐式参数</a>
 <ul>
 <li><a href="#toc_4.3.3.1">声明参数列表为隐式</a>
-<li><a href="#toc_4.3.3.2">定义传入的实参</a>
+<li><a href="#toc_4.3.3.2">定义传入的实参的默认值</a>
 <li><a href="#toc_4.3.3.3">implicit会作用于整个参数列表</a>
+<ul>
+<li><a href="#toc_4.3.3.3.1">参数类型不能相同</a>
+</ul>
 <li><a href="#toc_4.3.3.4">用隐式转换代替变化类型参数</a>
 <li><a href="#toc_4.3.3.5">隐式参数样式规则</a>
 </ul>
@@ -3134,9 +3137,9 @@ Direction.withName("West")
 
 
 
-<h1 id="toc_4">隐式转换和参数</h1>
+<h1 id="toc_4">隐式转换</h1>
 
-<h2 id="toc_4.1">隐式转换</h2>
+<h2 id="toc_4.1">隐式转换函数</h2>
 
 <p>
 Scala里有一个很有用的特质<code>RandomAccessSeq[T]</code>提供了可以随机访问的序列。它有很多
@@ -3146,7 +3149,8 @@ Scala里有一个很有用的特质<code>RandomAccessSeq[T]</code>提供了可�
 
 <p>
 隐式转换可以让<code>String</code>表现得像<code>RandomAccessSeq</code>的子类。为了达到这一目的，需要
-定义从<code>String</code>到<code>RandomAccessSeq</code>的隐式转换。
+定义从<code>String</code>到<code>RandomAccessSeq</code>的隐式转换函数（implicit conversion function）
+。
 </p>
 
 <pre class="brush: scala">
@@ -3239,6 +3243,15 @@ Scala里有一个很有用的特质<code>RandomAccessSeq[T]</code>提供了可�
 这样就不用手动引入了。
 </p>
 
+<p>
+还可以排除某个给你带来麻烦的隐式转换函数。如不希望把整数转为双精度浮点：
+</p>
+
+<pre class="brush: scala">
+import aa.TransTools.{int2Double}
+</pre>
+
+
 <h3 id="toc_4.2.3">无歧义规则</h3>
 
 <p>
@@ -3303,6 +3316,11 @@ Scala里有一个很有用的特质<code>RandomAccessSeq[T]</code>提供了可�
 这样的情况下会用到转换方法的名字。
 </p>
 
+
+<p>
+一般约定俗成的习惯是<code>A2B</code>这样的形式。如<code>int2String</code>。
+</p>
+
 <h2 id="toc_4.3">隐式转换的应用场景</h2>
 
 <p>
@@ -3359,9 +3377,38 @@ Scala会在三种情况下触发隐式转换：转换为需要的类型、指定
 <h3 id="toc_4.3.2">转换方法调用的接收者</h3>
 
 <p>
-如果<code>Obj</code>类型没有<code>doIt()</code>方法，但程序里有写<code>Obj.doIt()</code>，就试着把<code>Obj</code>类型转成有
-<code>doIt</code>的类型。
+例如，<code>java.io.File</code>类是没有<code>read()</code>方法来读取整个文件的：
 </p>
+
+<pre class="brush: scala">
+val contents = new File("Readme.txt").read
+</pre>
+
+<p>
+在Scala中可以定义一个支持<code>read()</code>方法的强化类：
+</p>
+
+<pre class="brush: scala">
+class RichFile(val from: File) {
+	def read = Source.fromFile(from.getPath).mkstring
+}
+</pre>
+
+<p>
+然后定义一个从<code>File</code>到<code>RichFile</code>的隐式转换：
+</p>
+
+<pre class="brush: scala">
+implicit def file2RichFile(from: File) = new RichFile(from)
+</pre>
+
+<p>
+这样就可以在<code>File</code>类上调用<code>read</code>方法了：
+</p>
+
+<pre class="brush: scala">
+val contents = new File("Readme.txt").read
+</pre>
 
 <h4 id="toc_4.3.2.1">与新类型的交互操作</h4>
 
@@ -3473,9 +3520,8 @@ object Predef {
 <h3 id="toc_4.3.3">隐式参数</h3>
 
 <p>
-省略柯里化后的参数列表。编译器会用<code>someCall(a)(b,c,d)</code>代替<code>someCall(a)</code>。能这样
-做的前题是不仅<code>b</code><code>c</code><code>d</code>三个要定义<code>implicit</code>，连<code>someCall</code>或<code>someCall</code>定义的最后
-一个参数列表都必须被标记为<code>implicit</code>。
+方法参数列表用<code>implict</code>修饰后，编译器会查找参数的默认值。因为<code>implict</code>会把整个
+参数列表都作为可隐式参数，一般与柯里化结合把参数列表分成多个参数列表。
 </p>
 
 <p>
@@ -3515,10 +3561,10 @@ object Predef {
   relax&gt; 
 </pre>
 
-<h4 id="toc_4.3.3.2">定义传入的实参</h4>
+<h4 id="toc_4.3.3.2">定义传入的实参的默认值</h4>
 
 <p>
-为了隐式提供参数，要定义<code>implicit</code>修饰期望类型的变量：
+<code>implicit</code>修饰期隐式参数的默认值：
 </p>
 
 <pre class="brush: scala">
@@ -3626,11 +3672,119 @@ object Predef {
 防止被过多地匹配到隐式转换。
 </p>
 
+<h5 id="toc_4.3.3.3.1">参数类型不能相同</h5>
+
+<p>
+隐式参数的默认值是按类型来区分的，所以每种类型只能有一个参数：
+</p>
+
+<pre class="brush: scala">
+def myFunc(value: Int)(implicit left: String, right: String)  // error
+</pre>
+
+<p>
+这样是不行的，<code>left</code>和<code>right</code>两个参数类型相同。
+</p>
+
 <h4 id="toc_4.3.3.4">用隐式转换代替变化类型参数</h4>
 
 <p>
-隐式类型转换常见用法是为了提供显式标明的参数列表信息。考虑下面的代码，它返回传入
-的列表参数中的最大元素：
+以实现排序功能为例，类型参数与隐式类型转换代表了两种不同的思路：
+</p>
+
+<ul>
+<li>
+类型参数的上界限制：规定得到的类型必须是具有排序功能的类的子类。
+
+<li>
+隐式类型转换：任何类都可以，但要提供一个从得到类转为具有排序功能的类的方法。
+
+</ul>
+
+<p>
+从上面可以看出，隐式转换可以应用的范围更广。
+</p>
+
+<p>
+例子：
+</p>
+
+<p>
+下面的方法返回两个数中较小的一个：
+</p>
+
+<pre class="brush: scala">
+def smaller[T](a: T, b: T) = if (a &lt; b) a else b  // Error
+</pre>
+
+<p>
+上面的代码有错，因为对于任意类型<code>T</code>，不能保证都支持<code>&lt;()</code>方法。解决方法可以通过
+变化类型的限制（泛型这一部分已经讲过），也可通过提供一个隐式转换函数来把类型<code>T</code>
+转为支持<code>&lt;()</code>操作的类型，比如实现了<code>Ordered</code>特质：
+</p>
+
+<pre class="brush: scala">
+def smaller[T](a: T, b: T)(implicit order: T =&gt; Ordered[T]) = 
+	if (order(a) &lt; b) a else b
+</pre>
+
+<p>
+类型<code>Ordered[T]</code>表示操作方法支持类型<code>T</code>。在这种情况下，<code>Predef</code>对象对很多常见
+类型都已经定义的<code>T =&gt; Ordered[T]</code>的转换，包括已经实现<code>Order[T]</code>或<code>Comparable[T]</code>
+的类型。所以很多情况下已经有默认的转换实现了，下面的代码直接就可以用：
+</p>
+
+<pre class="brush: scala">
+smaller(40,2)
+smaller("Hello", "world")
+</pre>
+
+<p>
+如果有一个自定义的类，比如学生类：
+</p>
+
+<pre class="brush: scala">
+class Student(val name: String, val age: Int) {
+  override def toString = "{name: " + name + ", age: " + age + "}"
+}
+
+val a  = new Student("morgan", 10)
+val b  = new Student("jade", 9)
+val c  = new Student("wendy", 7)
+val d  = new Student("Teo", 12)
+</pre>
+
+<p>
+我们要按年龄比较：
+</p>
+
+<pre class="brush: scala">
+class StudentAgeOrdered(s: Student) extends Ordered[Student] {
+  def compare(that: Student) = s.age - that.age
+}
+</pre>
+
+<p>
+再实现隐式转换：
+</p>
+
+<pre class="brush: scala">
+implicit def Student2StudentAgeOrdered(s: Student) = new StudentAgeOrdered(s)
+</pre>
+
+<p>
+这样就实现了比较的功能：
+</p>
+
+<pre class="brush: scala">
+scala&gt; maxListImpParm(a :: b :: c :: d :: Nil)
+res11: Student = {name: Teo, age: 12}
+</pre>
+
+
+<p>
+再来看一个例子，它返回传入的列表参数中的最大元素。先看一个通过类型参数限制的
+实现版本：
 </p>
 
 <pre class="brush: scala">
@@ -3653,8 +3807,7 @@ object Predef {
 </p>
 
 <p>
-更加泛用的方法是不限制类型，但是再加一个参数，这个参数是把<code>T</code>转为<code>Ordered[T]</code>的
-函数。
+更加泛用的隐式转换版本，添加一个把<code>T</code>转为<code>Ordered[T]</code>的函数作为参数：
 </p>
 
 <p>
@@ -3896,6 +4049,31 @@ class Pair[T : Ordering](val first: T, val second: T) {
 
 <p>
 隐式操作很强大，但也很难调试。这一节包含了一些技巧。
+</p>
+
+<p>
+在REPL环境中：
+</p>
+
+<ul>
+<li>
+<code>:implicits</code>查看<code>Predef</code>以外被引入的隐式成员。
+
+<li>
+<code>:implicits -v</code>查看全部。
+
+</ul>
+
+<p>
+对于编译器，可以检查指定的源代码文件使用了哪些隐式转换：
+</p>
+
+<pre class="brush: scala">
+scalac -Xprint:typer MyProg.scala
+</pre>
+
+<p>
+这样会显示加入了隐式转换后的源代码。
 </p>
 
 <h3 id="toc_4.7.1">没有对应的转换规则</h3>

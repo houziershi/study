@@ -2426,16 +2426,17 @@ Direction.withName("West")
 
 
 
-= 隐式转换和参数 =
+= 隐式转换 =
 
-== 隐式转换 ==
+== 隐式转换函数 ==
 
 Scala里有一个很有用的特质`RandomAccessSeq[T]`提供了可以随机访问的序列。它有很多
 功能，所以它的子类都自动继承这些功能。现在有个问题，我们要用到`String`没有混入
 `RandomAccessSeq`特质，所以用不到那些方便的功能。
 
 隐式转换可以让`String`表现得像`RandomAccessSeq`的子类。为了达到这一目的，需要
-定义从`String`到`RandomAccessSeq`的隐式转换。
+定义从`String`到`RandomAccessSeq`的隐式转换函数（implicit conversion function）
+。
 
 {{{class="brush: scala"
   implicit def stringWrapper(s: String) = 
@@ -2505,6 +2506,13 @@ Scala里有一个很有用的特质`RandomAccessSeq[T]`提供了可以随机访�
 
 这样就不用手动引入了。
 
+还可以排除某个给你带来麻烦的隐式转换函数。如不希望把整数转为双精度浮点：
+
+{{{class="brush: scala"
+import aa.TransTools.{int2Double}
+}}}
+
+
 === 无歧义规则 ===
 
 不能有其他转换，如果有两个可用的从类A到类B的转换，会报错。可以移除一个转换函数，
@@ -2546,6 +2554,9 @@ Scala里有一个很有用的特质`RandomAccessSeq[T]`提供了可以随机访�
 }}}
 
 这样的情况下会用到转换方法的名字。
+
+
+一般约定俗成的习惯是`A2B`这样的形式。如`int2String`。
 
 == 隐式转换的应用场景 ==
 
@@ -2592,8 +2603,31 @@ Scala会在三种情况下触发隐式转换：转换为需要的类型、指定
 
 === 转换方法调用的接收者 ===
 
-如果`Obj`类型没有`doIt()`方法，但程序里有写`Obj.doIt()`，就试着把`Obj`类型转成有
-`doIt`的类型。
+例如，`java.io.File`类是没有`read()`方法来读取整个文件的：
+
+{{{class="brush: scala"
+val contents = new File("Readme.txt").read
+}}}
+
+在Scala中可以定义一个支持`read()`方法的强化类：
+
+{{{class="brush: scala"
+class RichFile(val from: File) {
+	def read = Source.fromFile(from.getPath).mkstring
+}
+}}}
+
+然后定义一个从`File`到`RichFile`的隐式转换：
+
+{{{class="brush: scala"
+implicit def file2RichFile(from: File) = new RichFile(from)
+}}}
+
+这样就可以在`File`类上调用`read`方法了：
+
+{{{class="brush: scala"
+val contents = new File("Readme.txt").read
+}}}
 
 ==== 与新类型的交互操作 ====
 
@@ -2682,9 +2716,8 @@ object Predef {
 
 === 隐式参数 ===
 
-省略柯里化后的参数列表。编译器会用`someCall(a)(b,c,d)`代替`someCall(a)`。能这样
-做的前题是不仅`b``c``d`三个要定义`implicit`，连`someCall`或`someCall`定义的最后
-一个参数列表都必须被标记为`implicit`。
+方法参数列表用`implict`修饰后，编译器会查找参数的默认值。因为`implict`会把整个
+参数列表都作为可隐式参数，一般与柯里化结合把参数列表分成多个参数列表。
 
 举例有一个类实现了命令行提示符：
 
@@ -2717,9 +2750,9 @@ object Predef {
   relax> 
 }}}
 
-==== 定义传入的实参 ====
+==== 定义传入的实参的默认值 ====
 
-为了隐式提供参数，要定义`implicit`修饰期望类型的变量：
+`implicit`修饰期隐式参数的默认值：
 
 {{{class="brush: scala"
   object JoesPrefs {
@@ -2812,10 +2845,88 @@ object Predef {
 注意这里的没有用`String`这样的常用类型来作为`prompt`或`drink`的类型。就是为了
 防止被过多地匹配到隐式转换。
 
+===== 参数类型不能相同 =====
+
+隐式参数的默认值是按类型来区分的，所以每种类型只能有一个参数：
+
+{{{class="brush: scala"
+def myFunc(value: Int)(implicit left: String, right: String)  // error
+}}}
+
+这样是不行的，`left`和`right`两个参数类型相同。
+
 ==== 用隐式转换代替变化类型参数 ====
 
-隐式类型转换常见用法是为了提供显式标明的参数列表信息。考虑下面的代码，它返回传入
-的列表参数中的最大元素：
+以实现排序功能为例，类型参数与隐式类型转换代表了两种不同的思路：
+
+* 类型参数的上界限制：规定得到的类型必须是具有排序功能的类的子类。
+* 隐式类型转换：任何类都可以，但要提供一个从得到类转为具有排序功能的类的方法。
+
+从上面可以看出，隐式转换可以应用的范围更广。
+
+例子：
+
+下面的方法返回两个数中较小的一个：
+
+{{{class="brush: scala"
+def smaller[T](a: T, b: T) = if (a < b) a else b  // Error
+}}}
+
+上面的代码有错，因为对于任意类型`T`，不能保证都支持`<()`方法。解决方法可以通过
+变化类型的限制（泛型这一部分已经讲过），也可通过提供一个隐式转换函数来把类型`T`
+转为支持`<()`操作的类型，比如实现了`Ordered`特质：
+
+{{{class="brush: scala"
+def smaller[T](a: T, b: T)(implicit order: T => Ordered[T]) = 
+	if (order(a) < b) a else b
+}}}
+
+类型`Ordered[T]`表示操作方法支持类型`T`。在这种情况下，`Predef`对象对很多常见
+类型都已经定义的`T => Ordered[T]`的转换，包括已经实现`Order[T]`或`Comparable[T]`
+的类型。所以很多情况下已经有默认的转换实现了，下面的代码直接就可以用：
+
+{{{class="brush: scala"
+smaller(40,2)
+smaller("Hello", "world")
+}}}
+
+如果有一个自定义的类，比如学生类：
+
+{{{class="brush: scala"
+class Student(val name: String, val age: Int) {
+  override def toString = "{name: " + name + ", age: " + age + "}"
+}
+
+val a  = new Student("morgan", 10)
+val b  = new Student("jade", 9)
+val c  = new Student("wendy", 7)
+val d  = new Student("Teo", 12)
+}}}
+
+我们要按年龄比较：
+
+{{{class="brush: scala"
+class StudentAgeOrdered(s: Student) extends Ordered[Student] {
+  def compare(that: Student) = s.age - that.age
+}
+}}}
+
+再实现隐式转换：
+
+{{{class="brush: scala"
+implicit def Student2StudentAgeOrdered(s: Student) = new StudentAgeOrdered(s)
+}}}
+
+这样就实现了比较的功能：
+
+{{{class="brush: scala"
+scala> maxListImpParm(a :: b :: c :: d :: Nil)
+res11: Student = {name: Teo, age: 12}
+}}}
+
+
+再来看一个例子，它返回传入的列表参数中的最大元素。先看一个通过类型参数限制的
+实现版本：
 
 {{{class="brush: scala"
   def maxListUpBound[T <: Ordered[T]](elements: List[T]): T = 
@@ -2834,8 +2945,7 @@ object Predef {
 特质。所以列表是可排序元素的列表。但是缺点是`Int`列表不行，因为`Int`没有实现特质
 `Ordered`，所以不是`Ordered[T]`的子类。
 
-更加泛用的方法是不限制类型，但是再加一个参数，这个参数是把`T`转为`Ordered[T]`的
-函数。
+更加泛用的隐式转换版本，添加一个把`T`转为`Ordered[T]`的函数作为参数：
 
 下面的例子中第二个参数被标记为`implicit`。
 
@@ -3025,6 +3135,19 @@ class Pair[T : Ordering](val first: T, val second: T) {
 == 隐式操作的调试 ==
 
 隐式操作很强大，但也很难调试。这一节包含了一些技巧。
+
+在REPL环境中：
+
+* `:implicits`查看`Predef`以外被引入的隐式成员。
+* `:implicits -v`查看全部。
+
+对于编译器，可以检查指定的源代码文件使用了哪些隐式转换：
+
+{{{class="brush: scala"
+scalac -Xprint:typer MyProg.scala
+}}}
+
+这样会显示加入了隐式转换后的源代码。
 
 === 没有对应的转换规则 ===
 
