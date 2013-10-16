@@ -32,6 +32,16 @@ https://10.48.196.110:8443/svn/HandpayDocument/Handpay Project/手付通3.0/开�
 3.	报表模板
 https://10.48.196.110:8443/svn/HandpayDocument/Handpay Project/手付通3.0/开发文档/项目提交数据/交通罚款优化/mnt/mfs/handpay
 
+== 测试数据库 ==
+
+
+{{{class="brush: bash"
+10.48.196.3:1521/hpdb05
+appl/test
+dev/dev
+}}}
+
+
 = 设计 =
 
 == 表结构 ==
