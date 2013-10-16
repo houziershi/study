@@ -1,0 +1,42 @@
+
+%title grub
+
+%toc grub
+
+= 快速修复 =
+
+在系统没有损坏，但是grub被覆盖的情况下快速修复的方法：
+
+== 启动系统 ==
+
+Ubuntu可用光盘启动，挂载各分区：
+
+{{{class="brush: bash"
+# Let’s say you have mounted root partition at /media/xx..xx.
+$ sudo mount /dev/sdax /mnt/myroot (where sdax is your root partition)
+$ sudo mount ‐‐bind /dev /media/xx..xx/dev
+$ sudo mount ‐‐bind /proc /media/xx..xx/proc
+$ sudo mount ‐‐bind /sys /media/xx..xx/sys
+
+# 如果还有其他的分区
+}}}
+
+然后再切根分区到磁盘上的root分区：
+
+{{{class="brush: bash"
+$ sudo chroot /media/xx..xx
+}}}
+
+如果是debian系统，启动盘里菜单找到resure菜单，进入以后设置一下键盘布局语言时区
+等，向导会引导你设定根分区，并运行bash。然后再挂载其他的分区就可以了。
+
+== 更新安装Grub ==
+
+{{{class="brush: bash"
+$ sudo update-grub
+$ sudo grub-install /dev/sda
+}}}
+
+重启应该就OK了。
+
+

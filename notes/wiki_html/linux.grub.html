@@ -16,61 +16,68 @@
 <link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
 
 
-<title>rsync</title>
+<title>grub</title>
 </head>
 <body  onresize='changeTocSize()'>
 	<div class="note-main"> 
-<h1 id="toc_1">rsync配置</h1>
+
+
+<h1>grub</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">快速修复</a>
+<ul>
+<li><a href="#toc_1.1">启动系统</a>
+<li><a href="#toc_1.2">更新安装Grub</a>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">快速修复</h1>
 
 <p>
-密码文件，权限必须是600：<code>/etc/rsyncd.secrets</code>
+在系统没有损坏，但是grub被覆盖的情况下快速修复的方法：
 </p>
+
+<h2 id="toc_1.1">启动系统</h2>
+
+<p>
+Ubuntu可用光盘启动，挂载各分区：
+</p>
+
 <pre class="brush: bash">
-user01:123456 
+# Let’s say you have mounted root partition at /media/xx..xx.
+$ sudo mount /dev/sdax /mnt/myroot (where sdax is your root partition)
+$ sudo mount ‐‐bind /dev /media/xx..xx/dev
+$ sudo mount ‐‐bind /proc /media/xx..xx/proc
+$ sudo mount ‐‐bind /sys /media/xx..xx/sys
+
+# 如果还有其他的分区
 </pre>
 
 <p>
-欢迎信息文本：<code>/etc/motd</code>
+然后再切根分区到磁盘上的root分区：
 </p>
+
 <pre class="brush: bash">
-Welcome to Ubuntu 12.04.1 LTS (GNU/Linux 3.2.0-34-generic x86_64)
- * Documentation:  https://help.ubuntu.com/ 
+$ sudo chroot /media/xx..xx
 </pre>
 
 <p>
-/etc/rsyncd.conf。主要配置文件：
+如果是debian系统，启动盘里菜单找到resure菜单，进入以后设置一下键盘布局语言时区
+等，向导会引导你设定根分区，并运行bash。然后再挂载其他的分区就可以了。
 </p>
+
+<h2 id="toc_1.2">更新安装Grub</h2>
+
 <pre class="brush: bash">
-motd file=/etc/motd
-log file=/var/log/rsyncd
-pid file=/var/run/rsyncd.pid
-port=873
- 
-[jade-archived]
-comment = jade's archived file
-path = /media/file_data/archived
-secrets file = /etc/rsyncd.secrets
-auth users = user01
-gid = user01
-uid = user01
-use chroot = yes
-read only = yes
-list = yes 
+$ sudo update-grub
+$ sudo grub-install /dev/sda
 </pre>
 
 <p>
-启动服务器
+重启应该就OK了。
 </p>
-<pre class="brush: bash">
-sudo rsync --daemon --config=/etc/rsyncd.conf 
-</pre>
-
-<p>
-客户端同步：
-</p>
-<pre class="brush: bash">
-rsync -vzrtopg --delete --progress user01@127.0.0.1::jade-archived /mnt/backup 
-</pre>
  </div>
 </body>
 </html>

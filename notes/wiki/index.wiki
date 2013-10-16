@@ -101,7 +101,7 @@ DB2： [[DB2]]
 
 [[linux.install]]
 
-[[linux.disc]]
+[[linux.grub]]
 
 [[linux.fun]]
 
