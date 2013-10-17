@@ -88,16 +88,14 @@
 <li><a href="#toc_2.3.2.1">与新类型的交互操作</a>
 <li><a href="#toc_2.3.2.2">模拟新的语法</a>
 </ul>
-<li><a href="#toc_2.3.3">隐式参数</a>
+<li><a href="#toc_2.3.3">隐式参数与隐式值</a>
 <ul>
 <li><a href="#toc_2.3.3.1">声明参数列表为隐式</a>
-<li><a href="#toc_2.3.3.2">定义传入的实参的默认值</a>
+<li><a href="#toc_2.3.3.2">定义隐式值（实参的默认值）</a>
 <li><a href="#toc_2.3.3.3">implicit会作用于整个参数列表</a>
-<ul>
-<li><a href="#toc_2.3.3.3.1">参数类型不能相同</a>
-</ul>
-<li><a href="#toc_2.3.3.4">用隐式转换代替变化类型参数</a>
-<li><a href="#toc_2.3.3.5">隐式参数样式规则</a>
+<li><a href="#toc_2.3.3.4">参数类型不能相同</a>
+<li><a href="#toc_2.3.3.5">用隐式转换代替变化类型参数</a>
+<li><a href="#toc_2.3.3.6">隐式参数样式规则</a>
 </ul>
 </ul>
 <li><a href="#toc_2.4">SAM（单个抽象方法）</a>
@@ -1347,11 +1345,12 @@ Scala里有一个很有用的特质<code>RandomAccessSeq[T]</code>提供了可�
 </p>
 
 <p>
-还可以排除某个给你带来麻烦的隐式转换函数。如不希望把整数转为双精度浮点：
+还可以排除某个给你带来麻烦的隐式转换函数。如不希望把整数转为双精度浮点，可以
+排除一个隐式转换：
 </p>
 
 <pre class="brush: scala">
-import aa.TransTools.{int2Double}
+import aa.TransTools.{int2Double =&gt; _,_}
 </pre>
 
 
@@ -1620,11 +1619,12 @@ object Predef {
 </ul>
 
 
-<h3 id="toc_2.3.3">隐式参数</h3>
+<h3 id="toc_2.3.3">隐式参数与隐式值</h3>
 
 <p>
-方法参数列表用<code>implict</code>修饰后，编译器会查找参数的默认值。因为<code>implict</code>会把整个
-参数列表都作为可隐式参数，一般与柯里化结合把参数列表分成多个参数列表。
+方法参数列表用<code>implict</code>修饰后，编译器会查找隐式值（即参数的默认值）。因为
+<code>implict</code>会把整个参数列表都作为可隐式参数，一般与柯里化结合把参数列表分成多个
+参数列表。
 </p>
 
 <p>
@@ -1664,10 +1664,10 @@ object Predef {
   relax&gt; 
 </pre>
 
-<h4 id="toc_2.3.3.2">定义传入的实参的默认值</h4>
+<h4 id="toc_2.3.3.2">定义隐式值（实参的默认值）</h4>
 
 <p>
-<code>implicit</code>修饰期隐式参数的默认值：
+<code>implicit</code>修饰隐式值，即实参的默认值：
 </p>
 
 <pre class="brush: scala">
@@ -1775,7 +1775,7 @@ object Predef {
 防止被过多地匹配到隐式转换。
 </p>
 
-<h5 id="toc_2.3.3.3.1">参数类型不能相同</h5>
+<h4 id="toc_2.3.3.4">参数类型不能相同</h4>
 
 <p>
 隐式参数的默认值是按类型来区分的，所以每种类型只能有一个参数：
@@ -1789,7 +1789,7 @@ def myFunc(value: Int)(implicit left: String, right: String)  // error
 这样是不行的，<code>left</code>和<code>right</code>两个参数类型相同。
 </p>
 
-<h4 id="toc_2.3.3.4">用隐式转换代替变化类型参数</h4>
+<h4 id="toc_2.3.3.5">用隐式转换代替变化类型参数</h4>
 
 <p>
 以实现排序功能为例，类型参数与隐式类型转换代表了两种不同的思路：
@@ -1954,7 +1954,7 @@ res11: Student = {name: Teo, age: 12}
   res12: java.lang.String = two
 </pre>
 
-<h4 id="toc_2.3.3.5">隐式参数样式规则</h4>
+<h4 id="toc_2.3.3.6">隐式参数样式规则</h4>
 
 <p>
 就是在要用到隐式转换的地方最好是从自定义的类型开始转而不是从<code>String</code>这样的很常见
