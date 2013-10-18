@@ -100,12 +100,12 @@
 <li><a href="#toc_2.3.3.5">隐式参数样式规则</a>
 </ul>
 </ul>
-<li><a href="#toc_2.4">SAM（单个抽象方法）</a>
-<li><a href="#toc_2.5">视图界定</a>
+<li><a href="#toc_2.4">视图界定</a>
 <ul>
-<li><a href="#toc_2.5.1">视图界定与上界</a>
+<li><a href="#toc_2.4.1">视图界定与上界</a>
 </ul>
-<li><a href="#toc_2.6">上下文界定</a>
+<li><a href="#toc_2.5">上下文界定</a>
+<li><a href="#toc_2.6">SAM（单个抽象方法）</a>
 <li><a href="#toc_2.7">隐式操作的调试</a>
 <ul>
 <li><a href="#toc_2.7.1">没有对应的转换规则</a>
@@ -1246,14 +1246,13 @@ i :: trailing
 
 <p>
 Scala里有一个很有用的特质<code>RandomAccessSeq[T]</code>提供了可以随机访问的序列。它有很多
-功能，所以它的子类都自动继承这些功能。现在有个问题，我们要用到<code>String</code>没有混入
-<code>RandomAccessSeq</code>特质，所以用不到那些方便的功能。
+功能，所以它的子类都自动继承这些功能。但是没有混入这个特质的类，比如<code>String</code>
+就用不到那些方便的功能。
 </p>
 
 <p>
-隐式转换可以让<code>String</code>表现得像<code>RandomAccessSeq</code>的子类。为了达到这一目的，需要
-定义从<code>String</code>到<code>RandomAccessSeq</code>的隐式转换函数（implicit conversion function）
-。
+隐式转换函数（implicit conversion function）可以理解为是一个以<code>String</code>类实例为
+参数来构造一个对应的<code>RandomAccessSeq</code>实例的函数。格式以<code>implicit</code>开头：
 </p>
 
 <pre class="brush: scala">
@@ -1274,7 +1273,7 @@ Scala里有一个很有用的特质<code>RandomAccessSeq[T]</code>提供了可�
 </pre>
 
 <p>
-也可以省略转换直接当作<code>RandomAccessSeq</code>来用：
+之所以称为隐式转换，就是可以在需要的时候自动地转换为可用的类型：
 </p>
 
 <pre class="brush: scala">
@@ -1283,12 +1282,8 @@ Scala里有一个很有用的特质<code>RandomAccessSeq[T]</code>提供了可�
 </pre>
 
 <p>
-隐式转换的优点是可以在某个点转成需要的类型。
-</p>
-
-<p>
 顺便提一下：<code>Predef</code>对象已经用类似的方式定义了<code>stringWrapper</code>转换，所以其实不用
-定义也可以隐匿转换了。
+定义前面的<code>stringWrapper</code>函数也可以隐式转换了。
 </p>
 
 <h3 id="toc_2.1.1">隐式转换会引起类型变化</h3>
@@ -1975,51 +1970,10 @@ res11: Student = {name: Teo, age: 12}
 </p>
 
 
-<h2 id="toc_2.4">SAM（单个抽象方法）</h2>
+<h2 id="toc_2.4">视图界定</h2>
 
 <p>
-Java中这种情况比Scala多：就是一个接口里只有一个抽象方法。
-</p>
-
-<p>
-Scala里虽然可以把函数作为值，但是还是会有SAM的情况出现。比如说，Scala里明明可以
-用函数值作为参数，但在实现一个GUI按钮的监听器为了兼容Java只能写一个SAM接口：
-</p>
-
-<pre class="brush: scala">
-var counter = 0
-
-val button = new JButton("Increment") // 记录按次数的按钮 
-button.addActionListener(new ActionListener {
-	override def actionPerformed(event: ActionEvent) {
-		counter += 1
-	}
-})
-</pre>
-
-<p>
-解决方案是用隐式转换把一个函数转为<code>ActionListener</code>实例：
-</p>
-
-<pre class="brush: scala">
-implicit def makeAction(action: (ActionEvent) =&gt; Unit) = new ActionListener {
-	override def actionPerformed(event: ActionEvent) { action(event) }
-}
-</pre>
-
-<p>
-现在调用时只要传入函数，接口实现类由隐式函数来实现：
-</p>
-
-<pre class="brush: scala">
-button.addActionListener((event: ActionEvent) =&gt; counter += 1)
-</pre>
-
-
-<h2 id="toc_2.5">视图界定</h2>
-
-<p>
-可以把<code>T &lt;% Ordered[T]</code>理解为：“T是能被当作<code>Ordered[T]</code>的任何类型”。编译器将
+可以把<code>T &lt;% Ordered[T]</code>理解为：T是能被当作<code>Ordered[T]</code>的任何类型。编译器将
 调用声明在<code>Predef</code>中的隐式鉴别函数：
 </p>
 
@@ -2112,21 +2066,26 @@ implicit def identity[A](x: A): A = x
     }
 </pre>
 
-<h3 id="toc_2.5.1">视图界定与上界</h3>
+<h3 id="toc_2.4.1">视图界定与上界</h3>
 
 <p>
-注意这不同于上界表达的意思，上界<code>T &lt;: Ordered[T]</code>的意思是：“<code>T</code>是<code>Ordered[T]</code>”。
+注意这不同于上界表达的意思，上界<code>T &lt;: Ordered[T]</code>的意思是：<code>T</code>是<code>Ordered[T]</code>。
 </p>
 
 <p>
-相比之前用到的上界版本的<code>maxListUpBound</code>方法，唯一的区别就是上界符号与视图界定符号的
-不同，但是我们的视图界定版本可以支持更多类型。
+相比之前用到的上界版本的<code>maxListUpBound</code>方法，唯一的区别就是上界符号与视图界定
+符号的不同，但是我们的视图界定版本可以支持更多类型。
 </p>
 
-<h2 id="toc_2.6">上下文界定</h2>
+<h2 id="toc_2.5">上下文界定</h2>
 
 <p>
-上下文界定意思是对于一个泛形类<code>M</code>，要存在一个从类型<code>T</code>到<code>M[T]</code>的隐式值，如：
+上下文界定的形式为<code>T:M</code>。意思是对于一个泛形类<code>M</code>，要存在一个从类型<code>T</code>到<code>M[T]</code>的
+隐式值。
+</p>
+
+<p>
+如对于上下文界定：
 </p>
 
 <pre class="brush: scala">
@@ -2134,17 +2093,117 @@ class Pair[T : Ordering]
 </pre>
 
 <p>
-这样的上下文定义要有一个类型为<code>Ordering[T]</code>的隐式值。
-</p>
-
-<p>
-当声明一个隐式方法时，要添加一个隐式参数，例如：
+要有一个类型为<code>Ordering[T]</code>的隐式值，该隐式值可以被用在该类的方法中。因为在
+<code>Predef</code>中已经有一个类型为<code>Ordering[Int]</code>的隐式值，所以可以这样定义<code>Pair</code>类：
 </p>
 
 <pre class="brush: scala">
 class Pair[T : Ordering](val first: T, val second: T) {
+
 	def smaller(implicit ord: Ordering[T]) =
 		if (ord.compare(first, second) &lt; 0) first else second
+
+}
+</pre>
+
+<p>
+在进行<code>new Pair(40, 2)</code>操作时，编译器推断出类型为<code>Pair[Int]</code>。会把<code>Predef</code>中定义
+的<code>Ordering[Int]</code>隐式值作为该类的一个字段传入到需要它的方法中。
+</p>
+
+<p>
+也可以用<code>Predef</code>类的<code>implicitly</code>方法取得该值：
+</p>
+
+<pre class="brush: scala">
+class Pair[T : Ordering](val first: T, val second: T) {
+
+	def smaller = 
+		if (implicitly[Ordering[T]].compare(first, second) &lt; 0) first else second
+
+}
+</pre>
+
+<p>
+这个<code>implicitly</code>函数在<code>Predef.scala</code>中是这样定义的：
+</p>
+
+
+<pre class="brush: scala">
+def implicitly[T](implict e: T) = e
+</pre>
+
+<p>
+还有一个方法是利用<code>Ordered</code>特质中定义的从<code>Ordering</code>到<code>Ordered</code>的隐式转换。在引入
+了这个转换以后就可以使用关系操作符：
+</p>
+
+<pre class="brush: scala">
+class Pair[T : Ordering](val first: T, val second: T) {
+
+	def smaller = 
+		import Ordered._;
+		if (first &lt; secone) first else second
+
+}
+</pre>
+
+<p>
+重点是，只能有满足存在类型为<code>Ordering[T]</code>的隐式值条件，就可以随时实例化<code>Pair[T]</code>
+。比如要实例化一个<code>Pair[Point]</code>，就可以组织一个隐式的<code>Ordering[Point]</code>值：
+</p>
+
+<pre class="brush: scala">
+implict object PointOrdering extends Ordering[Point] {
+	def compare(a: Point, b: point) = ....
+}
+</pre>
+
+
+
+
+
+
+
+
+<h2 id="toc_2.6">SAM（单个抽象方法）</h2>
+
+<p>
+Java中这种情况比Scala多：就是一个接口里只有一个抽象方法。
+</p>
+
+<p>
+Scala里虽然可以把函数作为值，但是还是会有SAM的情况出现。比如说，Scala里明明可以
+用函数值作为参数，但在实现一个GUI按钮的监听器为了兼容Java只能写一个SAM接口：
+</p>
+
+<pre class="brush: scala">
+var counter = 0
+
+val button = new JButton("Increment") // 记录按次数的按钮 
+button.addActionListener(new ActionListener {
+	override def actionPerformed(event: ActionEvent) {
+		counter += 1
+	}
+})
+</pre>
+
+<p>
+解决方案是用隐式转换把一个函数转为<code>ActionListener</code>实例：
+</p>
+
+<pre class="brush: scala">
+implicit def makeAction(action: (ActionEvent) =&gt; Unit) = new ActionListener {
+	override def actionPerformed(event: ActionEvent) { action(event) }
+}
+</pre>
+
+<p>
+现在调用时只要传入函数，接口实现类由隐式函数来实现：
+</p>
+
+<pre class="brush: scala">
+button.addActionListener((event: ActionEvent) =&gt; counter += 1)
 </pre>
 
 
