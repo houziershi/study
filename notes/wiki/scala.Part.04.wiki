@@ -228,8 +228,64 @@ Scala中数组是不可协变的：
 
 === 逆变 ===
 
+与协变相反的`[-T]`表示逆变。这样`MyClass[AnyRef]`可以作为`MyClass[String]`的子类
+。
+
+先看一个例子，出版物为父类类型，图书为子类。方法`getTitle`根据出版物取得它的标题
+：
+
+{{{class="brush: scala"
+class Publication(val title: String)
+class Book(title: String) extends Publication(title)
+
+def getTitle(p: Publication): String = p.title
+}}}
+
+现在用一个单例对象`Library`来模拟图书馆，里面用一个`Set`来存放许多图。还有方法
+`printBookList()`输出所有图书的信息，这个方法需要有一个取得书名的函数作为参数，
+类型为`Book => AnyRef`：
+
+{{{class="brush: scala,highlight:[9]"
+object Library {
+
+	val books: Set[Book] = Set(
+		new Book("Programming in Scala"),
+		new Book("Walden")
+	)
+
+	def printBookList(info: Book => AnyRef) {
+		for (book <- books) println(info(book))
+	}
+}
+}}}
+
+`println()`方法会用到`toString()`方法，所以`info()`方法的返回类型只要是`AnyRef`
+的子类都可以。
+
+把之前的`getTitle()`方法作为实参传递给`printBookList()`打印出所有书的书名：
+
+{{{class="brush: scala"
+scala> Library.printBookList(getTitle)
+Programming in Scala
+Walden
+}}}
+
+从赋值的过程来说，每次赋值操作都是把子类赋值给超类：
+
+<img src="images/scala/19.03.png" />
+
+从函数参数的角度来看是把`Publication => String`赋值给`Book => AnyRef`。在这里：
+
+* 参数必须是`Book`的父类；
+* 结果必须是`AnyRef`的子类；
+
+|          | 参数        | 结果   |
+| 实参     | Publication | String |
+| 类型变化 | 逆变        | 协变   |
+| 形参     | Book        | AnyRef |
+
 对于两个类`U`和`T`。如果可以用`T`可以提供`U`要用到的功能，并且用起来限制更少，
-就可以假设`T`是`U`的子类（里氏原则：Liskov Substitution Principle，LSP）。例如：
+就可以假设`T`是`U`的子类（里氏原则：Liskov Substitution Principle，LSP）。
 
 {{{class="brush: scala"
   trait OutputChannel[-T] {
@@ -253,48 +309,8 @@ Scala函数特质中协变与逆变混在一起用的情况会比较多。对于
   }
 }}}
 
-应用的例子：
 
-父类出版物的构造函数有一个标题参数，子类书的构造函数会调用父类的构造函数。
 
-{{{class="brush: scala"
-class Publication(val title: String)
-class Book(title: String) extends Publication(title)
-}}}
-
-单例对象`Library`定义了书的集，以及打印书单的方法`printBookList`的唯一参数是以
-`Book => AnyRef`类型的方法为参数。
-
-{{{class="brush: scala"
-object Library {
- val books: Set[Book] =
-   Set(
-     new Book("Programming in Scala"),
-     new Book("Walden")
-   )
- def printBookList(info: Book => AnyRef) {
-   for (book <- books) println(info(book))
- }
-}
-}}}
-
-单例对象`Customer`定义了方法`getTitle`根据出版物取得标题。最后一行调用`Library`
-的打印书单方法：
-
-{{{class="brush: scala"
-object Customer extends Application {
- def getTitle(p: Publication): String = p.title
- Library.printBookList(getTitle)
-}
-}}}
-
-<img src="images/scala/19.03.png" />
-
-关键是`printBookList`的形参是`Book => AnyRef`，但实参是`Publication => String`。参数
-是父类（`Book`的父类`Publication`）而结果是子类（`AnyRef`的子类`String`）。
-
-`printBookList`中的`println`方法会用到`toString`，这对所有`String`及`AnyRef`子类都有用
-，这里用到了函数结果类型的协变。
 
 === 检查变化类型注解 ===
 
@@ -569,29 +585,6 @@ def append[U >: T](x: U) = new Queue(leading, x :: trailing)
 
 从技术角度来看，这里的情况发生了下界的翻转：类型参数`U`处于负位置（1次翻转），而
 下界`>: T`处于正的位置（两次翻转）。
-
-=== Manifest上下文界定 ===
-
-实例化一个`Array[T]`就需要一个`manifest[T]`对象。`Array`只是Scala提供的
-一个类库，虚拟机中泛型相关的信息是被抹除的。
-
-如果要实现一个泛型的方法来返回一个泛型的数组，就要转入一个`Manifest`对象来。由于
-它是隐式参数，可以用上下文界定：
-
-{{{class="brush: scala"
-def makePair[T: Manifest](first: T, second: T) {
-	val r = new Array[T](2); 
-	r(0) = first; 
-	r(1) = second; 
-	r
-}
-}}}
-
-对于调用`makePair(4, 9)`，编译器会定位到隐式的`Manifest[Int]`并实际上调用的是
-`makePair(4, 9)(intmanifest)`。
-
-这样在方法内创建数组的调用是`new Array(2)(intManifest)`，返回基本类型的数组
-`int[2]`
 
 
 == 例：开发纯函数式队列 ==
@@ -1390,6 +1383,7 @@ res11: Student = {name: Teo, age: 12}
   res12: java.lang.String = two
 }}}
 
+
 ==== 隐式参数样式规则 ====
 
 就是在要用到隐式转换的地方最好是从自定义的类型开始转而不是从`String`这样的很常见
@@ -1554,6 +1548,30 @@ implict object PointOrdering extends Ordering[Point] {
 }
 }}}
 
+
+
+=== Manifest上下文界定 ===
+
+实例化一个`Array[T]`就需要一个`manifest[T]`对象。`Array`只是Scala提供的
+一个类库，虚拟机中泛型相关的信息是被抹除的。
+
+如果要实现一个泛型的方法来返回一个泛型的数组，就要转入一个`Manifest`对象来。由于
+它是隐式参数，可以用上下文界定：
+
+{{{class="brush: scala"
+def makePair[T: Manifest](first: T, second: T) {
+	val r = new Array[T](2); 
+	r(0) = first; 
+	r(1) = second; 
+	r
+}
+}}}
+
+对于调用`makePair(4, 9)`，编译器会定位到隐式的`Manifest[Int]`并实际上调用的是
+`makePair(4, 9)(intmanifest)`。
+
+这样在方法内创建数组的调用是`new Array(2)(intManifest)`，返回基本类型的数组
+`int[2]`
 
 
 

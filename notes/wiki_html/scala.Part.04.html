@@ -53,7 +53,6 @@
 <ul>
 <li><a href="#toc_1.3.1">上界</a>
 <li><a href="#toc_1.3.2">下界</a>
-<li><a href="#toc_1.3.3">Manifest上下文界定</a>
 </ul>
 <li><a href="#toc_1.4">例：开发纯函数式队列</a>
 <ul>
@@ -103,6 +102,9 @@
 <li><a href="#toc_2.4.1">视图界定与上界</a>
 </ul>
 <li><a href="#toc_2.5">上下文界定</a>
+<ul>
+<li><a href="#toc_2.5.1">Manifest上下文界定</a>
+</ul>
 <li><a href="#toc_2.6">SAM（单个抽象方法）</a>
 <li><a href="#toc_2.7">隐式操作的调试</a>
 <ul>
@@ -436,8 +438,128 @@ Scala中数组是不可协变的：
 <h3 id="toc_1.2.2">逆变</h3>
 
 <p>
+与协变相反的<code>[-T]</code>表示逆变。这样<code>MyClass[AnyRef]</code>可以作为<code>MyClass[String]</code>的子类
+。
+</p>
+
+<p>
+先看一个例子，出版物为父类类型，图书为子类。方法<code>getTitle</code>根据出版物取得它的标题
+：
+</p>
+
+<pre class="brush: scala">
+class Publication(val title: String)
+class Book(title: String) extends Publication(title)
+
+def getTitle(p: Publication): String = p.title
+</pre>
+
+<p>
+现在用一个单例对象<code>Library</code>来模拟图书馆，里面用一个<code>Set</code>来存放许多图。还有方法
+<code>printBookList()</code>输出所有图书的信息，这个方法需要有一个取得书名的函数作为参数，
+类型为<code>Book =&gt; AnyRef</code>：
+</p>
+
+<pre class="brush: scala,highlight:[9]">
+object Library {
+
+	val books: Set[Book] = Set(
+		new Book("Programming in Scala"),
+		new Book("Walden")
+	)
+
+	def printBookList(info: Book =&gt; AnyRef) {
+		for (book &lt;- books) println(info(book))
+	}
+}
+</pre>
+
+<p>
+<code>println()</code>方法会用到<code>toString()</code>方法，所以<code>info()</code>方法的返回类型只要是<code>AnyRef</code>
+的子类都可以。
+</p>
+
+<p>
+把之前的<code>getTitle()</code>方法作为实参传递给<code>printBookList()</code>打印出所有书的书名：
+</p>
+
+<pre class="brush: scala">
+scala&gt; Library.printBookList(getTitle)
+Programming in Scala
+Walden
+</pre>
+
+<p>
+从赋值的过程来说，每次赋值操作都是把子类赋值给超类：
+</p>
+
+<p>
+<img src="images/scala/19.03.png" />
+</p>
+
+<p>
+从函数参数的角度来看是把<code>Publication =&gt; String</code>赋值给<code>Book =&gt; AnyRef</code>。在这里：
+</p>
+
+<ul>
+<li>
+参数必须是<code>Book</code>的父类；
+
+<li>
+结果必须是<code>AnyRef</code>的子类；
+
+</ul>
+
+<table>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+参数
+</td>
+<td>
+结果
+</td>
+</tr>
+<tr>
+<td>
+实参
+</td>
+<td>
+Publication
+</td>
+<td>
+String
+</td>
+</tr>
+<tr>
+<td>
+类型变化
+</td>
+<td>
+逆变
+</td>
+<td>
+协变
+</td>
+</tr>
+<tr>
+<td>
+形参
+</td>
+<td>
+Book
+</td>
+<td>
+AnyRef
+</td>
+</tr>
+</table>
+
+<p>
 对于两个类<code>U</code>和<code>T</code>。如果可以用<code>T</code>可以提供<code>U</code>要用到的功能，并且用起来限制更少，
-就可以假设<code>T</code>是<code>U</code>的子类（里氏原则：Liskov Substitution Principle，LSP）。例如：
+就可以假设<code>T</code>是<code>U</code>的子类（里氏原则：Liskov Substitution Principle，LSP）。
 </p>
 
 <pre class="brush: scala">
@@ -468,62 +590,8 @@ Scala函数特质中协变与逆变混在一起用的情况会比较多。对于
   }
 </pre>
 
-<p>
-应用的例子：
-</p>
 
-<p>
-父类出版物的构造函数有一个标题参数，子类书的构造函数会调用父类的构造函数。
-</p>
 
-<pre class="brush: scala">
-class Publication(val title: String)
-class Book(title: String) extends Publication(title)
-</pre>
-
-<p>
-单例对象<code>Library</code>定义了书的集，以及打印书单的方法<code>printBookList</code>的唯一参数是以
-<code>Book =&gt; AnyRef</code>类型的方法为参数。
-</p>
-
-<pre class="brush: scala">
-object Library {
- val books: Set[Book] =
-   Set(
-     new Book("Programming in Scala"),
-     new Book("Walden")
-   )
- def printBookList(info: Book =&gt; AnyRef) {
-   for (book &lt;- books) println(info(book))
- }
-}
-</pre>
-
-<p>
-单例对象<code>Customer</code>定义了方法<code>getTitle</code>根据出版物取得标题。最后一行调用<code>Library</code>
-的打印书单方法：
-</p>
-
-<pre class="brush: scala">
-object Customer extends Application {
- def getTitle(p: Publication): String = p.title
- Library.printBookList(getTitle)
-}
-</pre>
-
-<p>
-<img src="images/scala/19.03.png" />
-</p>
-
-<p>
-关键是<code>printBookList</code>的形参是<code>Book =&gt; AnyRef</code>，但实参是<code>Publication =&gt; String</code>。参数
-是父类（<code>Book</code>的父类<code>Publication</code>）而结果是子类（<code>AnyRef</code>的子类<code>String</code>）。
-</p>
-
-<p>
-<code>printBookList</code>中的<code>println</code>方法会用到<code>toString</code>，这对所有<code>String</code>及<code>AnyRef</code>子类都有用
-，这里用到了函数结果类型的协变。
-</p>
 
 <h3 id="toc_1.2.3">检查变化类型注解</h3>
 
@@ -905,37 +973,6 @@ def append[U &gt;: T](x: U) = new Queue(leading, x :: trailing)
 <p>
 从技术角度来看，这里的情况发生了下界的翻转：类型参数<code>U</code>处于负位置（1次翻转），而
 下界<code>&gt;: T</code>处于正的位置（两次翻转）。
-</p>
-
-<h3 id="toc_1.3.3">Manifest上下文界定</h3>
-
-<p>
-实例化一个<code>Array[T]</code>就需要一个<code>manifest[T]</code>对象。<code>Array</code>只是Scala提供的
-一个类库，虚拟机中泛型相关的信息是被抹除的。
-</p>
-
-<p>
-如果要实现一个泛型的方法来返回一个泛型的数组，就要转入一个<code>Manifest</code>对象来。由于
-它是隐式参数，可以用上下文界定：
-</p>
-
-<pre class="brush: scala">
-def makePair[T: Manifest](first: T, second: T) {
-	val r = new Array[T](2); 
-	r(0) = first; 
-	r(1) = second; 
-	r
-}
-</pre>
-
-<p>
-对于调用<code>makePair(4, 9)</code>，编译器会定位到隐式的<code>Manifest[Int]</code>并实际上调用的是
-<code>makePair(4, 9)(intmanifest)</code>。
-</p>
-
-<p>
-这样在方法内创建数组的调用是<code>new Array(2)(intManifest)</code>，返回基本类型的数组
-<code>int[2]</code>
 </p>
 
 
@@ -1949,6 +1986,7 @@ res11: Student = {name: Teo, age: 12}
   res12: java.lang.String = two
 </pre>
 
+
 <h4 id="toc_2.3.3.6">隐式参数样式规则</h4>
 
 <p>
@@ -2159,6 +2197,38 @@ implict object PointOrdering extends Ordering[Point] {
 }
 </pre>
 
+
+
+<h3 id="toc_2.5.1">Manifest上下文界定</h3>
+
+<p>
+实例化一个<code>Array[T]</code>就需要一个<code>manifest[T]</code>对象。<code>Array</code>只是Scala提供的
+一个类库，虚拟机中泛型相关的信息是被抹除的。
+</p>
+
+<p>
+如果要实现一个泛型的方法来返回一个泛型的数组，就要转入一个<code>Manifest</code>对象来。由于
+它是隐式参数，可以用上下文界定：
+</p>
+
+<pre class="brush: scala">
+def makePair[T: Manifest](first: T, second: T) {
+	val r = new Array[T](2); 
+	r(0) = first; 
+	r(1) = second; 
+	r
+}
+</pre>
+
+<p>
+对于调用<code>makePair(4, 9)</code>，编译器会定位到隐式的<code>Manifest[Int]</code>并实际上调用的是
+<code>makePair(4, 9)(intmanifest)</code>。
+</p>
+
+<p>
+这样在方法内创建数组的调用是<code>new Array(2)(intManifest)</code>，返回基本类型的数组
+<code>int[2]</code>
+</p>
 
 
 
