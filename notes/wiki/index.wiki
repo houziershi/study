@@ -55,6 +55,8 @@ Vim Java：[[vim.java]]
 
 VimWiki：[[vimwiki]]
 
+vim.markdown：[[vim.markdown]]
+
 Emmet-vim：[[Emmet-vim]]
 
 vim csv：[[vim.csv]]

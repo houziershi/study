@@ -47,7 +47,8 @@
 <ul>
 <li><a href="#toc_1.3.1">禁止方法参数协变</a>
 <li><a href="#toc_1.3.2">禁止可变的字段协变</a>
-<li><a href="#toc_1.3.3">类型变化的验证方法</a>
+<li><a href="#toc_1.3.3">型变类型反转</a>
+<li><a href="#toc_1.3.4">类型变化的验证规则</a>
 </ul>
 <li><a href="#toc_1.4">类型变量的界定</a>
 <ul>
@@ -617,8 +618,16 @@ Scala函数特质中对于<code>S =&gt; T</code>类型的函数会定义<code>tr
 </pre>
 
 <p>
-例子：
+编译器会报错提示不能放在逆变位置：
 </p>
+
+<pre class="brush: scala">
+  Queues.scala:11: error: covariant type T occurs in
+  contravariant position in type T of value x
+    def append(x: T) = 
+               ^
+</pre>
+
 
 <p>
 把前面的队列改成协变的，然后创建指定元素类型为<code>Int</code>的队列。并重载<code>append</code>方法
@@ -647,28 +656,6 @@ Scala函数特质中对于<code>S =&gt; T</code>类型的函数会定义<code>tr
 上面的因为协变所以第一行是有效的，但第二行就有问题了，因为不能对字符串求平方根。
 </p>
 
-<p>
-所以说这个<code>append</code>方法违反了不能把协变的类型作为参数的类型：
-</p>
-
-<pre class="brush: scala">
-  class Queue[+T] {
-    def append(x: T) = 
-     ...
-  }
-</pre>
-
-<p>
-所以编译器会报错：
-</p>
-
-<pre class="brush: scala">
-  Queues.scala:11: error: covariant type T occurs in
-  contravariant position in type T of value x
-    def append(x: T) = 
-               ^
-</pre>
-
 <h3 id="toc_1.3.2">禁止可变的字段协变</h3>
 
 <p>
@@ -676,20 +663,43 @@ Scala函数特质中对于<code>S =&gt; T</code>类型的函数会定义<code>tr
 <code>getter</code>方法<code>def x:T</code>、<code>def x_= (y:T)</code>，所以将不是协变的。
 </p>
 
-
-<h3 id="toc_1.3.3">类型变化的验证方法</h3>
+<pre class="brush: scala">
+class UserName[+T](var first: T, var second: T) // error
+</pre>
 
 <p>
-类型声明中可能会用到类型参数的地方被分为正、负、中立。编译器检查类的类型参数的
-每一个用法。
+因为<code>first</code>与<code>second</code>会生成setter方法，而前面已经说过函数的参数处于逆变点：
+</p>
+
+<pre class="brush: scala">
+first_=(value: T)
+</pre>
+
+<h3 id="toc_1.3.3">型变类型反转</h3>
+
+<p>
+如果函数的参数是函数，这个作为参数的函数型变是反转过来的：参数是协变面结果是
+逆变的。例如<code>Iterable[+A]</code>的<code>foldLeft</code>方法：
+</p>
+
+<pre class="brush: scala">
+foldLeft[B](z: B)(op: (B, A) =&gt; B): B
+               -       +  +     -   +
+</pre>
+
+<h3 id="toc_1.3.4">类型变化的验证规则</h3>
+
+<p>
+类型声明中可能会用到类型参数的地方被分为协变点、逆变点、中立。编译器检查类的类型
+参数的每一个用法。
 </p>
 
 <ul>
 <li>
-<code>+</code>的类型参数只能被用在正的位置上，
+<code>+</code>的类型参数只能被用在协变点上，
 
 <li>
-<code>-</code>的类型参数只能用在负的位置上。
+<code>-</code>的类型参数只能用在逆变点上。
 
 <li>
 没有变化的类型可以用于任何位置，所以它是唯一能有在中性位置上的类型参数。
@@ -705,8 +715,8 @@ Scala函数特质中对于<code>S =&gt; T</code>类型的函数会定义<code>tr
 </p>
 
 <p>
-处于声明类最顶层（位置１）被划为正的位置。默认情况下内层位置（位置２）的分类会和
-外层一致。
+处于声明类最顶层（位置１）被划为协变点的位置。默认情况下内层位置（位置２）的分类
+会和外层一致。
 </p>
 
 <p>
@@ -718,8 +728,8 @@ Scala函数特质中对于<code>S =&gt; T</code>类型的函数会定义<code>tr
 </p>
 
 <p>
-方法参数位置（位置３）是方法外部的位置的翻转类别，这里正位置传为负，负转为正，
-而中性位置仍然保持中性。
+方法参数位置（位置３）是方法外部的位置的翻转类别，这里协变点转为逆变点，逆变点转
+为协变点，而中性位置仍然保持中性。
 </p>
 
 <p>
@@ -735,13 +745,13 @@ Scala函数特质中对于<code>S =&gt; T</code>类型的函数会定义<code>tr
 </p>
 
 <p>
-而类型参数的位置，如<code>C[Arg]</code>中的<code>Arg</code>也有可能被翻转，这取决于对应类型参数的
-变化型：
+而类型参数的位置，如<code>C[Arg]</code>中的<code>Arg</code>也有可能被翻转，这取决于对应类型参数的变化
+类型：
 </p>
 
 <ul>
 <li>
-如果<code>C</code>的类型参数标了<code>+</code>号，那么类别不变；如果标了<code>-</code>号，则当前类别被翻转；
+如果<code>C</code>的类型参数标了<code>+</code>，那么类别不变；如果标了<code>-</code>，则当前类别被翻转；
 
 <li>
 如果<code>C</code>的类型参数没有变化型注解，那么当前类型将改为中性。
@@ -757,11 +767,11 @@ Scala函数特质中对于<code>S =&gt; T</code>类型的函数会定义<code>tr
 </p>
 
 <p>
-上面的例子比较生编硬造，类型定义中的若干位置变化弄被标了正<code>+</code>或<code>-</code>负：
+上面的类型定义中的若干位置变化弄被标了<code>+</code>或<code>-</code>：
 </p>
 
 <p>
-类型参数<code>W</code>与两个值参数<code>volume</code>和<code>listener</code>的位置都是负的。
+类型参数<code>W</code>与两个值参数<code>volume</code>和<code>listener</code>的位置都是逆变点。
 </p>
 
 <p>
@@ -769,19 +779,19 @@ Scala函数特质中对于<code>S =&gt; T</code>类型的函数会定义<code>tr
 </p>
 
 <p>
-注意<code>meow</code>的结果类型<code>Cat[Cat[U, T], U]</code>，第一个<code>Cat[U, T]</code>参数的位置是负的。因为
-<code>Cat</code>的第一个类型参数<code>[T]</code>被标了<code>-</code>。这个参数中的类型<code>U</code>重新转为正的位置（两次
-翻转），而参数中的类型<code>T</code>仍然是负位置。
+注意<code>meow</code>的结果类型<code>Cat[Cat[U, T], U]</code>，第一个<code>Cat[U, T]</code>参数的位置是逆变点。
+因为<code>Cat</code>的第一个类型参数<code>[T]</code>被标了<code>-</code>。这个参数中的类型<code>U</code>重新转为协变点（两次
+翻转），而参数中的类型<code>T</code>仍然是逆变点。
 </p>
 
 <p>
 总的来说：人脑想跟上变化型位置的变化是很困难的，所以Scala编译器自动来完成这项
-工作。计算机变化型过程中，编译器检查每个类型参数是否仅用于分类正确的位置上。
+工作。计算机变化型过程中，编译器检查每个类型参数是否仅用于分类协变点确的位置上。
 </p>
 
 <p>
-就上面的例子来说，<code>T</code>仅用在负位置上，而<code>U</code>仅用于正的位置上。所以这个<code>Cat</code>类是
-正确的。
+就上面的例子来说，<code>T</code>仅用在逆变点位置上，而<code>U</code>仅用于协变点的位置上。所以这个
+<code>Cat</code>类是协变的。
 </p>
 
 <h2 id="toc_1.4">类型变量的界定</h2>
@@ -891,18 +901,55 @@ Scala函数特质中对于<code>S =&gt; T</code>类型的函数会定义<code>tr
 </pre>
 
 <p>
-在以后的“隐式类型转换和参数”的“视图界定”一节中介绍通过采用隐式参数与检查约束来实现
-更加通用的方案。
+在以后的“隐式类型转换和参数”的“视图界定”一节中介绍通过采用隐式参数与检查约束来
+实现更加通用的方案。
 </p>
 
 <h3 id="toc_1.4.2">下界</h3>
 
 <p>
-下界限制协变的类型必须为指定类型的超类，格式：<code>U &gt;: T</code>。
+下界限制协变的类型必须为指定类型的超类，格式：<code>U &gt;: T</code>。作为是为了在参数位置实现
+协变。例如：
 </p>
 
 <p>
-因为在成员方法的参数是不能协变的（位置负），所以不能用<code>T+</code>类型的参数，只能用超类
+<code>Pair</code>类型是一个对偶，因为两个成员是不可变的，所以可以协变:
+</p>
+
+<pre class="brush: scala">
+class Pair[+T](val first: T, val second: T)
+</pre>
+
+<p>
+添加一个替换第一个元素的方法：
+</p>
+
+<pre class="brush: scala">
+class Pair[+T](val first: T, val second: T) {
+	def replaceFirst(newFirst: T) = new Pair[T](newFirst, second) // error
+}
+</pre>
+
+<p>
+报错是因为协变类型<code>T</code>出现在了逆变点上。但实际上这个方法不会修改原来的对偶，因为
+它返回的是一个新的实例。解决方案是给方法加上一个新的类型参数：
+</p>
+
+<pre class="brush: scala">
+	def replaceFirst[R &gt;: T](newFirst: R) = new Pair[R](newFirst, second) // error
+</pre>
+
+<p>
+这样就把该方法的类型参数变成了另一个类型<code>R</code>的泛型。因为<code>R</code>没有类型变化，所以可以
+放置在逆变点。
+</p>
+
+<p>
+结论：
+</p>
+
+<p>
+因为在成员方法的参数是不能协变的（逆变点），所以不能用<code>T+</code>类型的参数，只能用超类
 <code>U</code>。方法的返回类型也成了<code>U</code>。形式为：
 </p>
 
@@ -978,8 +1025,8 @@ def append[U &gt;: T](x: U) = new Queue(leading, x :: trailing)
 </p>
 
 <p>
-从技术角度来看，这里的情况发生了下界的翻转：类型参数<code>U</code>处于负位置（1次翻转），而
-下界<code>&gt;: T</code>处于正的位置（两次翻转）。
+从技术角度来看，这里的情况发生了下界的翻转：类型参数<code>U</code>处于逆变点位置（1次翻转）
+，而下界<code>U &gt;: T</code>处于协变点的位置（两次翻转）。
 </p>
 
 

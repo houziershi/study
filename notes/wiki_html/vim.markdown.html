@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>Vim与Markdown</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>Vim与Markdown</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">makrdown转html</a>
+<ul>
+<li><a href="#toc_1.1">markdown.pl</a>
+<li><a href="#toc_1.2">showdown.js</a>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">makrdown转html</h1>
+
+<h2 id="toc_1.1">markdown.pl</h2>
+
+<p>
+perl官方提供了使用
+<a href="http://daringfireball.net/projects/downloads/Markdown_1.0.1.zip">Markdown.pl</a>
+文件进行转换。
+</p>
+
+<pre class="brush: bash">
+$ unzip Markdown_1.0.1.zip
+$ sudo cp Markdown_1.0.1/Markdown.pl /usr/local/bin/
+</pre>
+
+<p>
+将<code>markdown.text</code>文本转成<code>markdown.html</code>文件：
+</p>
+
+<pre class="brush: bash">
+/path/to/Markdown.pl --html4tags markdown.text &gt; markdown.html
+</pre>
+
+<p>
+结合了vim修改<code>.vimrc</code>：
+</p>
+
+<pre class="brush: bash">
+let mapleader = ","
+nnoremap &lt;leader&gt;md :%!/usr/local/bin/Markdown.pl --html4tags &lt;CR&gt;
+</pre>
+
+<p>
+此时在VIM普通模式下输入<code>,md</code>就可以将markdown文本转换为html格式。如果不想通过VIM
+。
+</p>
+
+
+
+<h2 id="toc_1.2">showdown.js</h2>
+
+<p>
+<a href="https://github.com/coreyti/showdown">showdown.js</a>源码中提供了例子：
+</p>
+
+<pre class="brush: javascript">
+var Showdown = require('showdown');
+var converter = new Showdown.converter();
+
+converter.makeHtml('#hello markdown!');
+
+// &lt;h1 id="hellomarkdown"&gt;hello, markdown&lt;/h1&gt;
+</pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<p>
+下载安装文件<a href="http://www.vim.org/scripts/script.php?script_id=2226">vimwiki-N-N.vba.gz</a>
+</p>
+
+<p>
+直接在vim中打开该文件，执行以下命令安装：
+</p>
+<pre class="brush: bash">
+</pre>
+ </div>
+</body>
+</html>
