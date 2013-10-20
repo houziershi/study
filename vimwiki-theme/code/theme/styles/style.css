@@ -258,7 +258,7 @@ th {
 	background: #b9c9fe;
 }
 td {
-	padding: 8px; background: #e8edff; border-top: 1px solid #fff; color: #669;
+	padding: 8px; background: #e8edff; border-top: 1px solid #FFFFFF; color: #669;
 }
 tfoot td.rounded-foot-left {
 	background: #e8edff url('table-images/botleft.png') left bottom no-repeat;
