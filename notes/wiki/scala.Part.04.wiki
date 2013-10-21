@@ -625,6 +625,50 @@ def append[U >: T](x: U) = new Queue(leading, x :: trailing)
 从技术角度来看，这里的情况发生了下界的翻转：类型参数`U`处于逆变点位置（1次翻转）
 ，而下界`U >: T`处于协变点的位置（两次翻转）。
 
+== 单例对象不能泛型 ==
+
+单例对象不能添加类型参数。
+
+以一个列表的实现为例子：
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
 
 == 例：开发纯函数式队列 ==
 

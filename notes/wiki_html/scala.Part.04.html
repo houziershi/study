@@ -55,14 +55,15 @@
 <li><a href="#toc_1.4.1">上界</a>
 <li><a href="#toc_1.4.2">下界</a>
 </ul>
-<li><a href="#toc_1.5">例：开发纯函数式队列</a>
+<li><a href="#toc_1.5">单例对象不能泛型</a>
+<li><a href="#toc_1.6">例：开发纯函数式队列</a>
 <ul>
-<li><a href="#toc_1.5.1">信息隐藏</a>
+<li><a href="#toc_1.6.1">信息隐藏</a>
 <ul>
-<li><a href="#toc_1.5.1.1">私有构造器及工厂方法</a>
-<li><a href="#toc_1.5.1.2">可选方案：私有类</a>
+<li><a href="#toc_1.6.1.1">私有构造器及工厂方法</a>
+<li><a href="#toc_1.6.1.2">可选方案：私有类</a>
 </ul>
-<li><a href="#toc_1.5.2">对象私有数据</a>
+<li><a href="#toc_1.6.2">对象私有数据</a>
 </ul>
 </ul>
 <li><a href="#toc_2">隐式转换</a>
@@ -1029,8 +1030,56 @@ def append[U &gt;: T](x: U) = new Queue(leading, x :: trailing)
 ，而下界<code>U &gt;: T</code>处于协变点的位置（两次翻转）。
 </p>
 
+<h2 id="toc_1.5">单例对象不能泛型</h2>
 
-<h2 id="toc_1.5">例：开发纯函数式队列</h2>
+<p>
+单例对象不能添加类型参数。
+</p>
+
+<p>
+以一个列表的实现为例子：
+</p>
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<h2 id="toc_1.6">例：开发纯函数式队列</h2>
 
 <p>
 函数式的队列是不可变的，添加元素操作会返回一个新的队列。三个基本方法：
@@ -1141,13 +1190,13 @@ i :: trailing
   }
 </pre>
 
-<h3 id="toc_1.5.1">信息隐藏</h3>
+<h3 id="toc_1.6.1">信息隐藏</h3>
 
 <p>
 前面的<code>Queue</code>实现暴露了太多实现细节，比如构造器的两个参数还有一个是反转的。
 </p>
 
-<h4 id="toc_1.5.1.1">私有构造器及工厂方法</h4>
+<h4 id="toc_1.6.1.1">私有构造器及工厂方法</h4>
 
 <p>
 为了不让外部了解构造器的实现，可以把构造器作为隐藏的：
@@ -1203,7 +1252,7 @@ i :: trailing
   }
 </pre>
 
-<h4 id="toc_1.5.1.2">可选方案：私有类</h4>
+<h4 id="toc_1.6.1.2">可选方案：私有类</h4>
 
 <p>
 除了私有构造器和私有成员，还可以直接隐藏掉类本身，只提供暴露类公共接口的特质：
@@ -1246,7 +1295,7 @@ i :: trailing
 </pre>
 
 
-<h3 id="toc_1.5.2">对象私有数据</h3>
+<h3 id="toc_1.6.2">对象私有数据</h3>
 
 <p>
 之前的<code>Queue</code>类待改进内容：当<code>leading</code>列表为空时如果重复调用<code>head</code>，那么<code>mirror</code>

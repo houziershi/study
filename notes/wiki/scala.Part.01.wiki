@@ -3141,18 +3141,20 @@ Scala的`TailCalls`工具对象帮助实现蹦床。相互递归的函数返回�
 例子：
 
 {{{class="brush: scala"
-def evenLength(xs: Seq[Int]): TailRec[Boolean] =
-  if (xs.isEmpty) done(true) else tailCall(oddlength(xs.tail))
-def oddLength( xs: Seq[Int]): TailRec[Boolean] =
-  if (xs.isEmpty) done(true) else tailCall(evenlength(xs.tail))
+import scala.util.control.TailCalls._
+
+object TailCallDemo extends App {
+  def evenLength(xs: Seq[Int]): TailRec[Boolean] =
+    if (xs.isEmpty) done(true) else tailcall(oddLength(xs.tail))
+
+  def oddLength(xs: Seq[Int]): TailRec[Boolean] =
+    if (xs.isEmpty) done(false) else tailcall(evenLength(xs.tail))
+
+  println(evenLength(1 to 1000000).result)
+}
 }}}
 
 调用时，用`result`方法取得结果：
-
-{{{class="brush: scala"
-evenLength(1 to 1000000).result
-}}}
-
 
 == Execute Around Method 模式 ==
 
