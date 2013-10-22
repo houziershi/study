@@ -194,6 +194,7 @@ Js中去掉iPhone的特殊代码：
 
 
 入口： http://localhost:8080/hpWapService-traffic0910/trafficIndex.do?trafficIndexFlag=vpos
+入口： http://localhost:8080/wap/trafficIndex.do?trafficIndexFlag=vpos
 
 测试入口： http://trafficklb.99wuxian.com/wap
 
