@@ -632,42 +632,214 @@ def append[U >: T](x: U) = new Queue(leading, x :: trailing)
 以一个列表的实现为例子：
 
 {{{class="brush: scala"
+abstract class List[+T] {
+  def isEmpty: Boolean
+  def head: T
+  def tail: List[T]
+}
 }}}
 
-
+这个是结点类，头部是一个元素，其他的元素是尾问列表。其实就相当于Scala已经有的
+`::`：
 
 {{{class="brush: scala"
+class Node[T](val head: T, val tail: List[T]) extends List[T] {
+  def isEmpty = false
+}
 }}}
 
-
+这是列表结束符，可以理解为一个不能放元素的空列表。其实就相当于Scala里已经有的
+`Nil`：
 
 {{{class="brush: scala"
+object Empty extends List[Nothing] {
+	// It can't be object Empty[T] extends List[T] 
+	// OK to be class Empty[T] extends List[T] 
+  def isEmpty = true
+  def head = throw new UnsupportedOperationException
+  def tail = throw new UnsupportedOperationException
+}
 }}}
 
+注意上面的`Empty`是一个单例对象，而单例对象是不能用泛型的。所以在这里它只能继承
+`List[Nothing]`而不能继承`List[T]`。
 
+因为`Nothing`是所有类型的子类，所以可以这样：
 
 {{{class="brush: scala"
+val lst = new Node(42, Empty)
 }}}
 
+因为根据协变规则`List[Nothing]`可以被转为`List[Int]`。
 
+再定义一个查看刚刚构造的列表的方法：
 
 {{{class="brush: scala"
+scala> def show[T](lst: List[T]) {
+     |   if (!lst.isEmpty) { println(lst.head); show(lst.tail) }
+     | }
+show: [T](lst: List[T])Unit
+
+scala> show(new Node(1729, lst))
+1729
+42
 }}}
 
+== 类型通配符 ==
 
+Java中类型类不可变，但提供了通配符。以对偶为例：
+
+{{{class="brush: java"
+void func01(Pair<? extends Person> people) {} // Person的子类
+void func02(Pair<? super   Person> people) {} // Person的父类
+}}}
+
+=== 模拟协变 ===
+
+在Scala中的协变类型用不着通配符，但是如果`Queue`类型是不可变的：
 
 {{{class="brush: scala"
+scala> class Pair[T](var first: T, var second: T) {
+     |   override def toString = "(" + first + "," + second + ")"
+     | }
+defined class Pair
 }}}
 
-
+对于父类`Person`和子类`Studeng`：
 
 {{{class="brush: scala"
+scala> class Person(val name: String) {
+     |   override def toString = getClass.getName + " " + name
+     | }
+defined class Person
+
+scala> class Student(name: String) extends Person(name)
+defined class Student
+
+scala> val fred = new Student("Fred")
+fred: Student = Student Fred
+
+scala> val wilma = new Student("Wilma")
+wilma: Student = Student Wilma
+
+scala> val studentPair = new Pair(fred, wilma)
+studentPair: Pair[Student] = (Student Fred,Student Wilma)
 }}}
 
-
+可以定义像协变一样的方法：
 
 {{{class="brush: scala"
+scala> def makeFriends(p: Pair[_ <: Person]) =
+     |   p.first.name + " and " + p.second.name + " are now friends."
+makeFriends: (p: Pair[_ <: Person])String
+
+scala> makeFriends(studentPair) // OK
+res2: String = Fred and Wilma are now friends.
 }}}
+
+=== 模拟逆变 ===
+
+结合`Comparator`特质与逆变，实现一个取对偶中较小元素的方法：
+
+{{{class="brush: scala"
+scala> import java.util.Comparator
+import java.util.Comparator
+
+scala> def min[T](p: Pair[T])(comp: Comparator[_ >: T]) =
+     |   if (comp.compare(p.first, p.second) < 0) p.first else p.second
+min: [T](p: Pair[T])(comp: java.util.Comparator[_ >: T])T
+}}}
+
+注意`min`方法有要两个柯里化的参数列表，分别是：
+
+* 要进行比较的对偶`p: Pair[T]`
+* 判断大小的方法`comp: Comparator[_ >: T]`。
+
+先来看第一个参数，它的类型`Pair[T]`，那我们给它一个`Pair[String]`。泛型`T`就具体
+化为`String`：
+
+{{{class="brush: scala"
+scala> val p = new Pair("Fred", "Wilma")
+p: Pair[String] = (Fred,Wilma)
+}}}
+
+再来看第二个参数类型`Comparator[_ >: T]`，这里`_`代表的类必须是`T`的超类（但也
+可以就是`T`）。因为前面`T`已经确定为是`String`，那么这里选用`Object`。实现
+`Comparator[Object]`：
+
+{{{class="brush: scala"
+scala> val sillyHashComp = new Comparator[Object] {
+     |   def compare(a: Object, b: Object) = a.hashCode() - b.hashCode()
+     | }
+sillyHashComp: java.util.Comparator[Object] = $anon$1@1af37801
+}}}
+
+这样就可以通过类型检查，调用`min()`方法比较大小了：
+
+{{{class="brush: scala"
+scala> min(p)(sillyHashComp)
+res5: String = Fred
+}}}
+
+=== 缺陷 ===
+
+Scala的类型通配符还不是很完善，下面的声明在Scala 2.10以前都不行：
+
+{{{class="brush: scala"
+scala> def min[T <: Comparable[_ >: T]](p: Pair[T]) =
+     |   if (p.first.compareTo(p.second) < 0) p.first else p.second
+<console>:12: error: illegal cyclic reference involving type T
+       def min[T <: Comparable[_ >: T]](p: Pair[T]) =
+                               ^
+<console>:13: error: type mismatch;
+ found   : T
+ required: _$1
+         if (p.first.compareTo(p.second) < 0) p.first else p.second
+}}}
+
+解决方案是分成两步定义：
+
+{{{class="brush: scala"
+scala> type SuperComparable[T] = Comparable[_ >: T]
+defined type alias SuperComparable
+
+scala> def min[T <: SuperComparable[T]](p: Pair[T]) =
+     |   if (p.first.compareTo(p.second) < 0) p.first else p.second
+min: [T <: SuperComparable[T]](p: Pair[T])T
+}}}
+
+举例来说，如果`Student <: Comparable[Person]`：
+
+{{{class="brush: scala"
+scala> class Person(val name: String) extends Comparable[Person] {
+     |   override def toString = getClass.getName + " " + name
+     |   def compareTo(other: Person) = name.compareTo(other.name)
+     | }
+defined class Person
+
+scala> class Student(name: String) extends Person(name)
+defined class Student
+}}}
+
+就实现了从`Person`到`Student`的协变：
+
+{{{class="brush: scala"
+scala> val fred = new Student("Fred")
+fred: Student = Student Fred
+
+scala> val wilma = new Student("Wilma")
+wilma: Student = Student Wilma
+
+scala> val studentPair = new Pair(fred, wilma)
+studentPair: Pair[Student] = (Student Fred,Student Wilma)
+
+scala> min(studentPair)
+res6: Student = Student Fred
+}}}
+
+=== 存在类型 ===
+
+这里的类型通配符其实是“存在类型”的语法糖，其他章节具体讨论存在类型。
 
 
 == 例：开发纯函数式队列 ==

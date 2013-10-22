@@ -56,14 +56,21 @@
 <li><a href="#toc_1.4.2">下界</a>
 </ul>
 <li><a href="#toc_1.5">单例对象不能泛型</a>
-<li><a href="#toc_1.6">例：开发纯函数式队列</a>
+<li><a href="#toc_1.6">类型通配符</a>
 <ul>
-<li><a href="#toc_1.6.1">信息隐藏</a>
-<ul>
-<li><a href="#toc_1.6.1.1">私有构造器及工厂方法</a>
-<li><a href="#toc_1.6.1.2">可选方案：私有类</a>
+<li><a href="#toc_1.6.1">模拟协变</a>
+<li><a href="#toc_1.6.2">模拟逆变</a>
+<li><a href="#toc_1.6.3">缺陷</a>
+<li><a href="#toc_1.6.4">存在类型</a>
 </ul>
-<li><a href="#toc_1.6.2">对象私有数据</a>
+<li><a href="#toc_1.7">例：开发纯函数式队列</a>
+<ul>
+<li><a href="#toc_1.7.1">信息隐藏</a>
+<ul>
+<li><a href="#toc_1.7.1.1">私有构造器及工厂方法</a>
+<li><a href="#toc_1.7.1.2">可选方案：私有类</a>
+</ul>
+<li><a href="#toc_1.7.2">对象私有数据</a>
 </ul>
 </ul>
 <li><a href="#toc_2">隐式转换</a>
@@ -1041,45 +1048,263 @@ def append[U &gt;: T](x: U) = new Queue(leading, x :: trailing)
 </p>
 
 <pre class="brush: scala">
+abstract class List[+T] {
+  def isEmpty: Boolean
+  def head: T
+  def tail: List[T]
+}
 </pre>
 
-
+<p>
+这个是结点类，头部是一个元素，其他的元素是尾问列表。其实就相当于Scala已经有的
+<code>::</code>：
+</p>
 
 <pre class="brush: scala">
+class Node[T](val head: T, val tail: List[T]) extends List[T] {
+  def isEmpty = false
+}
 </pre>
 
-
+<p>
+这是列表结束符，可以理解为一个不能放元素的空列表。其实就相当于Scala里已经有的
+<code>Nil</code>：
+</p>
 
 <pre class="brush: scala">
+object Empty extends List[Nothing] {
+	// It can't be object Empty[T] extends List[T] 
+	// OK to be class Empty[T] extends List[T] 
+  def isEmpty = true
+  def head = throw new UnsupportedOperationException
+  def tail = throw new UnsupportedOperationException
+}
 </pre>
 
+<p>
+注意上面的<code>Empty</code>是一个单例对象，而单例对象是不能用泛型的。所以在这里它只能继承
+<code>List[Nothing]</code>而不能继承<code>List[T]</code>。
+</p>
 
+<p>
+因为<code>Nothing</code>是所有类型的子类，所以可以这样：
+</p>
 
 <pre class="brush: scala">
+val lst = new Node(42, Empty)
 </pre>
 
+<p>
+因为根据协变规则<code>List[Nothing]</code>可以被转为<code>List[Int]</code>。
+</p>
 
+<p>
+再定义一个查看刚刚构造的列表的方法：
+</p>
 
 <pre class="brush: scala">
+scala&gt; def show[T](lst: List[T]) {
+     |   if (!lst.isEmpty) { println(lst.head); show(lst.tail) }
+     | }
+show: [T](lst: List[T])Unit
+
+scala&gt; show(new Node(1729, lst))
+1729
+42
 </pre>
 
+<h2 id="toc_1.6">类型通配符</h2>
 
+<p>
+Java中类型类不可变，但提供了通配符。以对偶为例：
+</p>
+
+<pre class="brush: java">
+void func01(Pair&lt;? extends Person&gt; people) {} // Person的子类
+void func02(Pair&lt;? super   Person&gt; people) {} // Person的父类
+</pre>
+
+<h3 id="toc_1.6.1">模拟协变</h3>
+
+<p>
+在Scala中的协变类型用不着通配符，但是如果<code>Queue</code>类型是不可变的：
+</p>
 
 <pre class="brush: scala">
+scala&gt; class Pair[T](var first: T, var second: T) {
+     |   override def toString = "(" + first + "," + second + ")"
+     | }
+defined class Pair
 </pre>
 
-
+<p>
+对于父类<code>Person</code>和子类<code>Studeng</code>：
+</p>
 
 <pre class="brush: scala">
+scala&gt; class Person(val name: String) {
+     |   override def toString = getClass.getName + " " + name
+     | }
+defined class Person
+
+scala&gt; class Student(name: String) extends Person(name)
+defined class Student
+
+scala&gt; val fred = new Student("Fred")
+fred: Student = Student Fred
+
+scala&gt; val wilma = new Student("Wilma")
+wilma: Student = Student Wilma
+
+scala&gt; val studentPair = new Pair(fred, wilma)
+studentPair: Pair[Student] = (Student Fred,Student Wilma)
 </pre>
 
-
+<p>
+可以定义像协变一样的方法：
+</p>
 
 <pre class="brush: scala">
+scala&gt; def makeFriends(p: Pair[_ &lt;: Person]) =
+     |   p.first.name + " and " + p.second.name + " are now friends."
+makeFriends: (p: Pair[_ &lt;: Person])String
+
+scala&gt; makeFriends(studentPair) // OK
+res2: String = Fred and Wilma are now friends.
 </pre>
 
+<h3 id="toc_1.6.2">模拟逆变</h3>
 
-<h2 id="toc_1.6">例：开发纯函数式队列</h2>
+<p>
+结合<code>Comparator</code>特质与逆变，实现一个取对偶中较小元素的方法：
+</p>
+
+<pre class="brush: scala">
+scala&gt; import java.util.Comparator
+import java.util.Comparator
+
+scala&gt; def min[T](p: Pair[T])(comp: Comparator[_ &gt;: T]) =
+     |   if (comp.compare(p.first, p.second) &lt; 0) p.first else p.second
+min: [T](p: Pair[T])(comp: java.util.Comparator[_ &gt;: T])T
+</pre>
+
+<p>
+注意<code>min</code>方法有要两个柯里化的参数列表，分别是：
+</p>
+
+<ul>
+<li>
+要进行比较的对偶<code>p: Pair[T]</code>
+
+<li>
+判断大小的方法<code>comp: Comparator[_ &gt;: T]</code>。
+
+</ul>
+
+<p>
+先来看第一个参数，它的类型<code>Pair[T]</code>，那我们给它一个<code>Pair[String]</code>。泛型<code>T</code>就具体
+化为<code>String</code>：
+</p>
+
+<pre class="brush: scala">
+scala&gt; val p = new Pair("Fred", "Wilma")
+p: Pair[String] = (Fred,Wilma)
+</pre>
+
+<p>
+再来看第二个参数类型<code>Comparator[_ &gt;: T]</code>，这里<code>_</code>代表的类必须是<code>T</code>的超类（但也
+可以就是<code>T</code>）。因为前面<code>T</code>已经确定为是<code>String</code>，那么这里选用<code>Object</code>。实现
+<code>Comparator[Object]</code>：
+</p>
+
+<pre class="brush: scala">
+scala&gt; val sillyHashComp = new Comparator[Object] {
+     |   def compare(a: Object, b: Object) = a.hashCode() - b.hashCode()
+     | }
+sillyHashComp: java.util.Comparator[Object] = $anon$1@1af37801
+</pre>
+
+<p>
+这样就可以通过类型检查，调用<code>min()</code>方法比较大小了：
+</p>
+
+<pre class="brush: scala">
+scala&gt; min(p)(sillyHashComp)
+res5: String = Fred
+</pre>
+
+<h3 id="toc_1.6.3">缺陷</h3>
+
+<p>
+Scala的类型通配符还不是很完善，下面的声明在Scala 2.10以前都不行：
+</p>
+
+<pre class="brush: scala">
+scala&gt; def min[T &lt;: Comparable[_ &gt;: T]](p: Pair[T]) =
+     |   if (p.first.compareTo(p.second) &lt; 0) p.first else p.second
+&lt;console&gt;:12: error: illegal cyclic reference involving type T
+       def min[T &lt;: Comparable[_ &gt;: T]](p: Pair[T]) =
+                               ^
+&lt;console&gt;:13: error: type mismatch;
+ found   : T
+ required: _$1
+         if (p.first.compareTo(p.second) &lt; 0) p.first else p.second
+</pre>
+
+<p>
+解决方案是分成两步定义：
+</p>
+
+<pre class="brush: scala">
+scala&gt; type SuperComparable[T] = Comparable[_ &gt;: T]
+defined type alias SuperComparable
+
+scala&gt; def min[T &lt;: SuperComparable[T]](p: Pair[T]) =
+     |   if (p.first.compareTo(p.second) &lt; 0) p.first else p.second
+min: [T &lt;: SuperComparable[T]](p: Pair[T])T
+</pre>
+
+<p>
+举例来说，如果<code>Student &lt;: Comparable[Person]</code>：
+</p>
+
+<pre class="brush: scala">
+scala&gt; class Person(val name: String) extends Comparable[Person] {
+     |   override def toString = getClass.getName + " " + name
+     |   def compareTo(other: Person) = name.compareTo(other.name)
+     | }
+defined class Person
+
+scala&gt; class Student(name: String) extends Person(name)
+defined class Student
+</pre>
+
+<p>
+就实现了从<code>Person</code>到<code>Student</code>的协变：
+</p>
+
+<pre class="brush: scala">
+scala&gt; val fred = new Student("Fred")
+fred: Student = Student Fred
+
+scala&gt; val wilma = new Student("Wilma")
+wilma: Student = Student Wilma
+
+scala&gt; val studentPair = new Pair(fred, wilma)
+studentPair: Pair[Student] = (Student Fred,Student Wilma)
+
+scala&gt; min(studentPair)
+res6: Student = Student Fred
+</pre>
+
+<h3 id="toc_1.6.4">存在类型</h3>
+
+<p>
+这里的类型通配符其实是“存在类型”的语法糖，其他章节具体讨论存在类型。
+</p>
+
+
+<h2 id="toc_1.7">例：开发纯函数式队列</h2>
 
 <p>
 函数式的队列是不可变的，添加元素操作会返回一个新的队列。三个基本方法：
@@ -1190,13 +1415,13 @@ i :: trailing
   }
 </pre>
 
-<h3 id="toc_1.6.1">信息隐藏</h3>
+<h3 id="toc_1.7.1">信息隐藏</h3>
 
 <p>
 前面的<code>Queue</code>实现暴露了太多实现细节，比如构造器的两个参数还有一个是反转的。
 </p>
 
-<h4 id="toc_1.6.1.1">私有构造器及工厂方法</h4>
+<h4 id="toc_1.7.1.1">私有构造器及工厂方法</h4>
 
 <p>
 为了不让外部了解构造器的实现，可以把构造器作为隐藏的：
@@ -1252,7 +1477,7 @@ i :: trailing
   }
 </pre>
 
-<h4 id="toc_1.6.1.2">可选方案：私有类</h4>
+<h4 id="toc_1.7.1.2">可选方案：私有类</h4>
 
 <p>
 除了私有构造器和私有成员，还可以直接隐藏掉类本身，只提供暴露类公共接口的特质：
@@ -1295,7 +1520,7 @@ i :: trailing
 </pre>
 
 
-<h3 id="toc_1.6.2">对象私有数据</h3>
+<h3 id="toc_1.7.2">对象私有数据</h3>
 
 <p>
 之前的<code>Queue</code>类待改进内容：当<code>leading</code>列表为空时如果重复调用<code>head</code>，那么<code>mirror</code>

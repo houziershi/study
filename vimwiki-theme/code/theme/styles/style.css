@@ -9,8 +9,8 @@ body {
    background-color: #666699;
    background-repeat: repeat;
    background-image: url("../images/bg-img.jpg");
-	 */
    padding: 30px;
+	 */
 }
 
 body > *:first-child { margin-top: 0 !important; }
@@ -191,7 +191,10 @@ sup {
 }
 * { -webkit-print-color-adjust: exact; }
 @media screen and (min-width: 914px) {
-   body { width: 854px; margin:0 auto; }
+   body {
+		 width: 854px;
+		/* margin:0 auto; */
+	 }
 }
 @media print {
 	 table, pre { page-break-inside: avoid; }
