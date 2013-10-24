@@ -2016,6 +2016,148 @@ T : Ordering : Manifest
 类型约束让程序员定义只有在特定条件下使用的方法。例：
 
 {{{class="brush: scala"
+scala> class Pair[T](val first: T, val second: T) {
+     |   def smaller(implicit ev: T <:< Ordered[T]) =
+     |     if (first < second) first else second
+     | }
+defined class Pair
+}}}
+
+
+可以虽然`File`没有混入`Ordered[T]`，但因为`smaller`声明了隐式参数，所以还是可以
+构造出`Pair[File]`：
+
+{{{class="brush: scala"
+scala> import java.io.File
+import java.io.File
+
+scala> val p = new Pair(new File("."), new File(".."))
+p: Pair[java.io.File] = Pair@be1fcc
+}}}
+
+但是如果调用`smaller()`方法，那就出错了：
+
+{{{class="brush: scala"
+scala> p.smaller // Error
+<console>:11: error: Cannot prove that java.io.File <:< Ordered[java.io.File].
+              p.smaller // Error
+                ^
+}}}
+
+另一个例子：
+
+`Option`有一个`orNull`方法：
+
+{{{class="brush: scala"
+scala> val friends = Map("Fred" -> "Barney")
+friends: scala.collection.immutable.Map[String,String] = Map(Fred -> Barney)
+
+scala> val friendOpt = friends.get("Wilma") // An Option[String]
+friendOpt: Option[String] = None
+
+scala> val friendOrNull = friendOpt.orNull // A String or null
+friendOrNull: String = null
+}}}
+
+Java类对象如果为`null`表示没有值，但基本类型没有办法用`null`表示。
+
+因为`orNull`的实现带有约束`Null <:< A`，所以可能实例化`Option[Int]`，只要别对
+这些实例使用`orNull`就可以了：
+
+{{{class="brush: scala"
+scala> val scores = Map("Fred" -> 42)
+scores: scala.collection.immutable.Map[String,Int] = Map(Fred -> 42)
+
+scala> val scoreOpt = scores.get("Fred") // An Option[Int]
+scoreOpt: Option[Int] = Some(42)
+
+scala> val scoreOrNull = scoreOpt.orNull // Error
+<console>:9: error: Cannot prove that Null <:< Int.
+       val scoreOrNull = scoreOpt.orNull // Error
+}}}
+
+
+=== 改进类型推断 ===
+
+
+`<:<`能增加类型推断，比如对于参数的下界声明：
+
+{{{class="brush: scala"
+scala> def firstLast[A, C <: Iterable[A]](it: C) = (it.head, it.last)
+firstLast: [A, C <: Iterable[A]](it: C)(A, A)
+}}}
+
+调用时不能直接传入整数列表，因为实参类型`[Nothing, List[Int]]`不符合形参类型
+`[A, C <: Iterable[A]]`：
+
+{{{class="brush: scala"
+scala> firstLast(List(1, 2, 3)) // Error
+<console>:9: error: inferred type arguments [Nothing,List[Int]] do not conform 
+							to method firstLast's type parameter bounds [A,C <: Iterable[A]]
+              firstLast(List(1, 2, 3)) // Error
+              ^
+<console>:9: error: type mismatch;
+ found   : List[Int]
+ required: C
+              firstLast(List(1, 2, 3)) // Error
+}}}
+
+因为要在同一步中匹配类型`A`与类型`C`，仅根据`List(1,2,3)`无法判断出`A`的类型。
+解决方案可以通过柯里化的方式先匹配`C`再匹配`A`：
+
+{{{class="brush: scala"
+scala> def firstLast[A, C](it: C)(implicit ev: C <:< Iterable[A]) =
+     |   (it.head, it.last)
+firstLast: [A, C](it: C)(implicit ev: <:<[C,Iterable[A]])(A, A)
+
+scala> firstLast(List(1, 2, 3)) // OK
+res3: (Int, Int) = (1,3)
+}}}
+
+再看一个类似的例子，`corresponds`方法检查两个序列的成员是否一一对应：
+
+{{{class="brush: scala"
+scala> val a = Array("Hello", "Fred")
+a: Array[String] = Array(Hello, Fred)
+
+scala> val b = Array(5, 4)
+b: Array[Int] = Array(5, 4)
+
+scala> a.corresponds(b)(_.length == _)
+res7: Boolean = true
+}}}
+
+`corresponds`方法的声明其实是这样：
+
+{{{class="brush: scala"
+def corresponds[B](that: Seq[B])(p: (A, B) => Boolean): Boolean
+}}}
+
+对于柯里化后的两个参数列表，要推断类型`B`：
+
+{{{class="brush: scala"
+scala> a.corresponds(b)(_.length == _)
+}}}
+
+就相当于是：
+
+{{{class="brush: scala"
+Array("Hello", "Fred").corresponds(Array(5, 4))(_.length == _)
+}}}
+
+* `Array[A]`对应前实例`Array("Hello","Fred")`，那类型`A`就是`String`。
+* 形参`Seq[B]`得到的实参是`Array(5, 4)`，那类型`B`就是`Int`。
+* 确认了`A`与`B`，那`(A, B) => Boolean`就是`(String, Int) => Boolean`。
+
+
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
 }}}
 
 
