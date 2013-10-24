@@ -1,0 +1,169 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>csv.vim</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+<h1>csv.vim</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">安装</a>
+<li><a href="#toc_2">概览</a>
+<li><a href="#toc_3">基础</a>
+</ul>
+</div>
+
+<h1 id="toc_1">安装</h1>
+
+<p>
+<a href="http://www.vim.org/scripts/script.php?script_id=2830">http://www.vim.org/scripts/script.php?script_id=2830</a>
+</p>
+
+<p>
+Open csv.vmb in Vim and source the file: <code>:so %</code>
+</p>
+
+<p>
+This will install the plugin into your <code>$HOME/.vim/ftplugin</code> directory and the 
+documentation into your <code>$HOME/.vim/doc</code> directory.
+</p>
+
+<p>
+See also the help for installing Vimball-Archives (<code>:h vimball-intro</code>)
+</p>
+
+<p>
+Take a look at <code>:h ft-csv.txt</code> for the documenation and read 
+<code>:h csv-installation</code> to have vim automatically detect csv-files.
+</p>
+
+<h1 id="toc_2">概览</h1>
+
+<p>
+<img src="images/vim.csv/csv.gif" />
+</p>
+
+<h1 id="toc_3">基础</h1>
+
+<p>
+This little filetype plugin allows among others:
+</p>
+
+<ul>
+<li>
+Display on which column the cursor is as well as number of columns
+
+<li>
+Search for text within a column using <code>:SearchInColumn</code> command
+
+<li>
+Highlight the column on which the cursor is using <code>:HiColumn</code> command
+
+<li>
+Visually arrange all columns using <code>:ArrangeColumn</code> command
+
+<li>
+Delete a Column using <code>:DeleteColumn</code> command
+
+<li>
+Display a vertical or horizontal header line using <code>:Header</code> or <code>:VHeader</code> command
+
+<li>
+Sort a Column using <code>:Sort</code> command
+
+<li>
+Copy Column to register using <code>:Column</code> command
+
+<li>
+Move a column behind another column using <code>:MoveCol</code> command
+
+<li>
+Sum values within a column using <code>:SumCol</code> (you can also define your own)
+
+<li>
+Move through the columns using the normal mode commands
+
+<ul>
+<li>
+<code>W</code> forwards, 
+
+<li>
+<code>H</code> backwards, 
+
+<li>
+<code>K</code> upwards, 
+
+<li>
+<code>J</code> downwards
+
+</ul>
+<li>
+sets up syntax highlighting, concealing the delimiter, if Vim supports it
+
+<li>
+Analyze all values of a column (distribution) using <code>:Analyze</code> command
+
+<li>
+Insert new records, using <code>:NewRecord</code> command
+
+<li>
+Implement a wizard to setup fixed-width CSV files using <code>:CSVFixed</code>
+
+<li>
+Hide certain columns, using <code>:VertFold</code>
+
+<li>
+<code>:Table</code> to create ascii type tables available as plugin for all filetypes)
+
+<li>
+dynamic filtering：
+
+<ul>
+<li>
+Press <code>enter</code> on a value and all other lines, that don't have this value in this column will be folded away. 
+
+<li>
+Press <code>enter</code> on another value and this value will be ANDed to the filter list. 
+
+<li>
+Press <code>Backspace</code> to delete the last item from the filter list. 
+
+<li>
+Press <code>Space</code> to fold all lines, that have the same value in the current field, 
+
+<li>
+Press <code>Enter</code> to fold all lines, that have a different value in the current field. 
+
+<li>
+Use <code>:Filters</code> to see what filters are actvie
+
+</ul>
+</ul>
+
+<p>
+Please read the help on how to use the plugin <code>:h ft-csv.txt</code>
+</p>
+ 
+<p>
+更多帮助：<a href="http://vim.wikia.com/wiki/VimTip667">http://vim.wikia.com/wiki/VimTip667</a>
+</p>
+ </div>
+</body>
+</html>

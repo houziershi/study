@@ -1,0 +1,30 @@
+
+%title 其他
+
+%toc 其他
+ 
+
+= mkpasswd =
+
+根据指定的长度，产生一个难猜的随机密码。
+
+{{{class="brush: bash"
+[avishek@tecmint ~]$ mkpasswd -l 10
+ 
+zI4+Ybqfx9
+}}}
+	
+注意：`-l 10`产生一个10个字符的随机密码，而`-l 20`产生20个字符的密码,它可以设置
+为任意长度来取得所希望的结果。这个命令很有用，经常在脚本语言里使用来产生随机的
+密码。你可能需要`yum`或`apt` `expect` 包来使用这个命令。
+
+{{{class="brush: bash"
+[avishek@tecmint ~]$ yum install expect
+}}}
+
+或
+
+{{{class="brush: bash"
+[avishek@tecmint ~]$ apt-get install expect
+}}}
+

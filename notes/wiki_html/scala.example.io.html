@@ -25,17 +25,36 @@
 <div class="toc">
 <ul>
 <li><a href="#toc_1">终端</a>
-<li><a href="#toc_2">文件</a>
+<ul>
+<li><a href="#toc_1.1">读取</a>
+<li><a href="#toc_1.2">写入</a>
+</ul>
+<li><a href="#toc_2">文本文件</a>
 <ul>
 <li><a href="#toc_2.1">写入</a>
 <li><a href="#toc_2.2">读取</a>
+<ul>
+<li><a href="#toc_2.2.1">每个字符</a>
+<li><a href="#toc_2.2.2">迭代行</a>
+<li><a href="#toc_2.2.3">整个文件一起读</a>
 </ul>
-<li><a href="#toc_3">读取URL</a>
+</ul>
+<li><a href="#toc_3">二进制文件</a>
+<ul>
+<li><a href="#toc_3.1">读取</a>
+</ul>
+<li><a href="#toc_4">目录访问</a>
+<ul>
+<li><a href="#toc_4.1">递归遍历目录下的子目录</a>
+</ul>
+<li><a href="#toc_5">读取URL</a>
 </ul>
 </div>
 
 
 <h1 id="toc_1">终端</h1>
+
+<h2 id="toc_1.1">读取</h2>
 
 <p>
 用户输入：
@@ -58,7 +77,13 @@ val str = Console.readLine("Your name: ")
 、<code>readFloat</code>、<code>readBoolean</code>、<code>readChar</code>。
 </p>
 
-<h1 id="toc_2">文件</h1>
+<h2 id="toc_1.2">写入</h2>
+
+<pre class="brush: scala">
+printf("%6d %10.2f", quantity, price)
+</pre>
+
+<h1 id="toc_2">文本文件</h1>
 
 <h2 id="toc_2.1">写入</h2>
 
@@ -72,6 +97,8 @@ writer.close()
 
 <h2 id="toc_2.2">读取</h2>
 
+<h3 id="toc_2.2.1">每个字符</h3>
+
 <pre class="brush: scala">
 import scala.io.Source
 
@@ -79,12 +106,94 @@ Source.fromFile("tmp.txt").foreach { print }
 </pre>
 
 <p>
-<code>foreach()</code>每次读一个字符（输入有缓冲，不用担心性能）。用<code>getLines()</code>可以读一行
-。<code>getLine(index)</code>可以取得指定行，是索引，从0开始。
+<code>foreach()</code>每次读一个字符（输入有缓冲，不用担心性能）。
 </p>
 
+<h3 id="toc_2.2.2">迭代行</h3>
 
-<h1 id="toc_3">读取URL</h1>
+<p>
+<code>getLine(index)</code>可以取得指定行，是索引，从0开始。
+</p>
+
+<p>
+用<code>getLines()</code>取得行的迭代器。然后用<code>for</code>循环、<code>toArray</code>等方法处理。
+</p>
+
+<h3 id="toc_2.2.3">整个文件一起读</h3>
+
+<p>
+<code>source.mkString</code>把整个文件作为一个字符串。
+</p>
+
+<h1 id="toc_3">二进制文件</h1>
+
+<h2 id="toc_3.1">读取</h2>
+
+<p>
+Scala没有提供，用Java类库：
+</p>
+
+<pre class="brush: scala">
+val file = new File(filename)
+val in = new FileInputStream(file)
+val bytes = new Array[Byte](file.length.toInt)
+in.read(bytes)
+in.close()
+</pre>
+
+<h1 id="toc_4">目录访问</h1>
+
+<p>
+之前有<code>File</code>和<code>Directory</code>，现在已经不用了，但还是可以在<code>scala-compiler.jar</code>文件
+的<code>scala.tools.nsc.io</code>包中找到。
+</p>
+
+<h2 id="toc_4.1">递归遍历目录下的子目录</h2>
+
+<pre class="brush: scala">
+import java.io.File
+
+def subdirs(dir: File): Iterator[File] = {
+	val children = dir.listFiles.filter(_.isDirectory)
+	children.toIterator ++ children.toIterator.flatMap(subdirs _)
+}
+</pre>
+
+<p>
+调用时只要：
+</p>
+
+<pre class="brush: scala">
+for (d &lt;- subdirs(dir)) {
+	// 处理 d 
+}
+</pre>
+
+<p>
+如果是用Java 7中<code>java.nio.file.Files</code>类的<code>walkFileTree</code>方法（<code>FileVisitor</code>）接口
+。可以更加方便地用隐式转换：
+</p>
+
+<pre class="brush: scala">
+import java.nio.file._
+
+implicit def makeFileVisitor(f: (Path) =&gt; Unit) = new SimpleFileVisitor(Path) {
+	override def visitFile(p: Path, attrs: attribute.BasicFileAttributes) = {
+		f(p)
+		FileVisitResult.CONTINUE
+	}
+}
+</pre>
+
+<p>
+调用（以打印为例子）：
+</p>
+
+<pre class="brush: scala">
+Files.walkFileTree(dir.toPath, (f: Path) =&gt; println(f))
+</pre>
+
+<h1 id="toc_5">读取URL</h1>
 
 <pre class="brush: scala">
 import scala.io.Source
@@ -92,22 +201,6 @@ import java.net.URL
 
 val source = Source.fromURL(new URL("http://ifconfig.me/ip"))
 source.getLines().foreach{ println }
-</pre>
-
-
-<pre class="brush: scala">
-</pre>
-
-
-<pre class="brush: scala">
-</pre>
-
-
-<pre class="brush: scala">
-</pre>
-
-
-<pre class="brush: scala">
 </pre>
 
 

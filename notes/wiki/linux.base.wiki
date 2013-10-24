@@ -1,222 +1,35 @@
 
-
 %title Linux基本操作
 
 %toc Linux基本操作
 
 = 简单工具 =
 
-== mkpasswd ==
+== 日期时间 ==
 
-根据指定的长度，产生一个难猜的随机密码。
+[[linux.base.datetime]]
 
-{{{class="brush: bash"
-[avishek@tecmint ~]$ mkpasswd -l 10
- 
-zI4+Ybqfx9
-}}}
-	
-注意：`-l 10`产生一个10个字符的随机密码，而`-l 20`产生20个字符的密码,它可以设置
-为任意长度来取得所希望的结果。这个命令很有用，经常在脚本语言里使用来产生随机的
-密码。你可能需要`yum`或`apt` `expect` 包来使用这个命令。
+== 系统信息 ==
 
-{{{class="brush: bash"
-[avishek@tecmint ~]$ yum install expect
-}}}
+[[linux.base.systemInfo]]
 
-或
+== Shell工具 ==
 
-{{{class="brush: bash"
-[avishek@tecmint ~]$ apt-get install expect
-}}}
+[[linux.base.shell]]
 
-= 日期时间 =
+== 通信 ==
 
-== cal ==
+[[linux.base.communication]]
 
-{{{class="brush: bash"
-cal
-cal 02 1995
-}}}
+== 其他 ==
 
-== date ==
-
-取得时间：
-
-{{{class="brush: bash"
-root@tecmint:~# date
- 
-Fri May 17 14:13:29 IST 2013
-}}}
-	
-设置时间：
-
-{{{class="brush: bash"
-root@tecmint:~# date --set='14 may 2013 13:57'
- 
-Mon May 13 13:57:00 IST 2013
-}}}
-
-= 别名 =
-
-== alias ==
-
-`alias`是一个系统自建的shell命令，允许你为名字比较长的或者经常使用的命令指定别名
-。
-
-我经常用`ls -l`命令，它有五个字符（包括空格）。于是我为它创建了一个别名`l`。
-
-{{{class="brush: bash"
-root@tecmint:~# alias l='ls -l'
-}}}
-
-试试它是否能用：
-
-{{{class="brush: bash"
-root@tecmint:~# l
- 
-total 36
-drwxr-xr-x 3 tecmint tecmint 4096 May 10 11:14 Binary
-drwxr-xr-x 3 tecmint tecmint 4096 May 21 11:21 Desktop
-drwxr-xr-x 2 tecmint tecmint 4096 May 21 15:23 Documents
-drwxr-xr-x 8 tecmint tecmint 4096 May 20 14:56 Downloads
-drwxr-xr-x 2 tecmint tecmint 4096 May  7 16:58 Music
-drwxr-xr-x 2 tecmint tecmint 4096 May 20 16:17 Pictures
-drwxr-xr-x 2 tecmint tecmint 4096 May  7 16:58 Public
-drwxr-xr-x 2 tecmint tecmint 4096 May  7 16:58 Templates
-drwxr-xr-x 2 tecmint tecmint 4096 May  7 16:58 Videos
-}}}
-
-去掉`l`别名，要使用`unalias`命令：
-
-{{{class="brush: bash"
-root@tecmint:~# unalias l
-}}}
-
-再试试：
-
-{{{class="brush: bash"
-root@tecmint:~# l
- 
-bash: l: command not found
-}}}
-
-= 通信 =
-
-== wall ==
-
-对系统管理员来说一个最重要的命令.`wall`发送一条消息到大家登录端将其`mesg`权限
-设置为`yes`。这条信息可以被`wall`作为参数，或者可以将它作为`wall`的标准输入。
-
-{{{class="brush: bash"
-[avishek@tecmint ~]$ wall "we will be going down for maintenance for one hour sharply at 03:30 pm"
-Broadcast message from root@localhost.localdomain (pts/0) (Sat Jun 29 14:44:02 2013):
-we will be going down for maintenance for one hour sharply at 03:30 pm
-}}}
-
-== mesg ==
-
-其他人们可以使用`wtrite`命令,将在在向您发送文本到屏幕上。你可以控制是否显示。
-
-{{{class="brush: bash"
-mesg [<strong>n</strong>|<strong>y</strong>] <strong>n</strong> - prevents the message from others popping up on the screen. <strong>y</strong> – Allows messages to appear on your screen.
-}}}
-
-== write ==
-
-如果`mesg`是`y`，让你的文本直接发送到另一台Linux机器的屏幕。
-
-{{{class="brush: bash"
-[avishek@tecmint ~]$ write ravisaive
-}}}
-
-== talk ==
-
-增强的`write`命令，talk命令可让你与其他登录的用户交谈。
-
-{{{class="brush: bash"
-[avishek@tecmint ~]$ talk ravisaive
-}}}
+[[linux.base.misc]]
 
 
-= 系统信息 =
-
-== uptime ==
-
-你连接到你的Linux服务器时发现一些不寻常或恶意的东西，你会做什么？猜测……不，绝不
-！你可以运行`uptime`来验证当服务器无人值守式到底发生了什么事情。
-
-{{{class="brush: bash"
-[avishek@tecmint ~]$ uptime
- 
-14:37:10 up  4:21,  2 users,  load average: 0.00, 0.00, 0.04
-}}}
-
-
-== uname ==
-
-`uname`命令就是Unix Name的简写。显示机器名，操作系统和内核的详细信息。
-
-{{{class="brush: bash"
-root@tecmint:~# uname -a
- 
-Linux tecmint 3.8.0-19-generic #30-Ubuntu SMP Wed May 1 16:36:13 UTC 2013 i686 i686 i686 GNU/Linux
-}}}
-
-`uname`显示内核类别， `uname -a`显示详细信息：
-
-# `Linux`: 机器的内核名
-# `tecmint`: 机器的分支名
-# `3.8.0-19-generic`: 内核发布版本
-# `#30-Ubuntu SMP`: 内核版本
-# `i686`: 处理器架构
-# `GNU/Linux`: 操作系统名
-
-== issue ==
-
-`cat /etc/issue`
-
-== w ==
-
-是否觉得命令`w`很滑稽？但是事实上不是的。它是一个命令，尽管只有一个字符长，命令
-`w`是`uptime`和`who`命令，以前后的顺序组合在一起。
-
-{{{class="brush: bash"
-[avishek@tecmint ~]$ w
- 
-15:05:42 up  4:49,  3 users,  load average: 0.02, 0.01, 0.00
-USER     TTY      FROM              LOGIN@   IDLE   JCPU   PCPU WHAT
-server   tty7     :0               14:06    4:43m  1:42   0.08s pam: gdm-passwo
-server   pts/0    :0.0             14:18    0.00s  0.23s  1.65s gnome-terminal
-server   pts/1    :0.0             14:47    4:43   0.01s  0.01s bash
-}}}
- 
-== whereis ==
-
-`whereis`的作用是用来定位命令的二进制文件\资源\或者帮助页，举例来说，获得`ls`和
-`kill`命令的二进制文件/资源以及帮助页：
-
-{{{class="brush: bash"
-root@tecmint:~# whereis ls
- 
-ls: /bin/ls /usr/share/man/man1/ls.1.gz
-
-root@tecmint:~# whereis kill
- 
-kill: /bin/kill /usr/share/man/man2/kill.2.gz /usr/share/man/man1/kill.1.gz
-}}}
-
-注意:当需要知道二进制文件保存位置时有用.
 
 = 用户管理 =
 
-修改用户配置：
-
-{{{class="brush: bash"
-usermod  [-u uid [-o]] [-g group] [-G group,...]
-	[-d 主目录 [-m]] [-s shell] [-c 注释] [-l 新名称]
-	[-f 失效日] [-e 过期日] [-p 密码] [-L|-U] 用户名
-}}}
+[[linux.base.user]]
 
 
 
@@ -224,641 +37,57 @@ usermod  [-u uid [-o]] [-g group] [-G group,...]
 
 [[linux.base.dpkg]]
 
+
+
 = 文件系统 =
 
 [[linux.base.filesystem]]
 
-= 任务管理 = 
 
-== jobs ==
 
-中断任务：`Control + C`
+= 任务管理 =
 
-挂起任务：`Control + Z`
+== 作业 ==
 
-显示当前任务的作业号`q：jobs`
+[[linux.base.jobs]]
 
-指定任务８在后台执行
-{{{class="brush: bash"
-bg %8
-}}}
+== 进程 ==
 
-指定任务８在前台执行
-{{{class="brush: bash"
-fg %8
-}}}
+[[linux.base.process]]
 
+== 服务 ==
 
-= 进程管理 = 
+[[linux.base.service]]
 
-== top ==
 
-=== 排序 ===
 
-Sorting with `-O` (Uppercase Letter `O`).
+= 资源 =
 
-Press `Shift+O` to Sort field via field letter, for example press `a` letter to 
-sort process with PID (Process ID).
+== 文件资源 ==
 
-Type any key to return to main top window with sorted PID order as shown in 
-below screen. Press `q` to quit exit the window. Sorting Process ID's
-
-=== Display Specific User Process ===
-
-Use top command with `u` option will display specific User process details.
-
-{{{class="brush: bash"
-# top -u tecmint
-}}}
-
-=== Highlight Running Process in Top ===
-
-Press `z` option in running `top` command will display running process in color 
-which may help you to identified running process easily.
-
-=== Shows Absolute Path of Processes ===
-
-Press `c` option in running `top` command, it will display absolute path of 
-running process.
-
-=== Change Delay or Set ‘Screen Refresh Interval’ in Top ===
-
-By default screen refresh interval is 3.0 seconds, same can be change pressing 
-`d` option in running top command and change it as desired as shown below.
-
-=== Kill running process ===
-
-Kill running process with argument `k`
-
-You can kill a process after finding PID of process by pressing `k` option in 
-running top command without exiting from top window as shown below.
-
-=== Sort by CPU Utilisation ===
-
-Press `Shift+P` to sort processes as per CPU utilization. See screenshot below.
-
-=== Renice a Process ===
-
-You can use `r` option to change the priority of the process also called Renice.
-
-=== Save Top Command Results ===
-
-Press `Shift+W` to save the running top command results under `/root/.toprc`.
-
-
-== free ==
-
-跟踪内存的使用和资源一样重要，就像管理员执行的任何其它任务，可以使用`free`命令
-来在这里救援.当前内存使用状态Current Usage Status of Memory
-
-{{{class="brush: bash"
-[avishek@tecmint ~]$ free
- 
-             total       used       free     shared    buffers     cached
-Mem:       2028240    1788272     239968          0      69468     363716
--/+ buffers/cache:    1355088     673152
-Swap:      3905532     157076    3748456
-}}}
-
-设置输出单位为KB，MB或GB
-
-{{{class="brush: bash"
-[avishek@tecmint ~]$ free -b
- 
-             total       used       free     shared    buffers     cached
-Mem:    2076917760 1838272512  238645248          0   71348224  372670464
--/+ buffers/cache: 1394253824  682663936
-Swap:   3999264768  160845824 3838418944
-}}}
-
-{{{class="brush: bash"
-[avishek@tecmint ~]$ free -k
- 
-             total       used       free     shared    buffers     cached
-Mem:       2028240    1801484     226756          0      69948     363704
--/+ buffers/cache:    1367832     660408
-Swap:      3905532     157076    3748456
-}}}
-
-{{{class="brush: bash"
-[avishek@tecmint ~]$ free -m
- 
-             total       used       free     shared    buffers     cached
-Mem:          1980       1762        218          0         68        355
--/+ buffers/cache:       1338        641
-Swap:         3813        153       3660
-}}}
-
-{{{class="brush: bash"
-[avishek@tecmint ~]$ free -g
- 
-             total       used       free     shared    buffers     cached
-Mem:             1          1          0          0          0          0
--/+ buffers/cache:          1          0
-Swap:            3          0          3
-}}}
-
-以可读的格式显示，检查当前内存使用
-
-{{{class="brush: bash"
-[avishek@tecmint ~]$ free -h
- 
-             total       used       free     shared    buffers     cached
-Mem:          1.9G       1.7G       208M         0B        68M       355M
--/+ buffers/cache:       1.3G       632M
-Swap:         3.7G       153M       3.6G
-}}}
-
-设定时间间隔后，持续检查使用状态
-
-{{{class="brush: bash"
-[avishek@tecmint ~]$ free -s 3
- 
-             total       used       free     shared    buffers     cached
-Mem:       2028240    1824096     204144          0      70708     364180
--/+ buffers/cache:    1389208     639032
-Swap:      3905532     157076    3748456
- 
-             total       used       free     shared    buffers     cached
-Mem:       2028240    1824192     204048          0      70716     364212
--/+ buffers/cache:    1389264     638976
-Swap:      3905532     157076    3748456
-}}}
-
-
-
-== kill ==
-
-假设你想杀死已经没有响应的`apache2`进程,运行如下命令:
-
-{{{class="brush: bash"
-root@tecmint:~# ps -A | grep -i apache2
- 
-1285 ?        00:00:00 apache2
-}}}
-
-搜索`apache2`进程,找到PID并杀掉它.例如:在本例中`apache2`进程的PID是1285..
-
-{{{class="brush: bash"
-root@tecmint:~# kill 1285
-}}}
-
-注意:每次你重新运行一个进程或者启动系统,每个进程都会生成一个新的PID.你可以使用
-`ps`命令获得当前运行进程的PID.
-
-== pkill ==
-
-另一个杀死进程的方法是:
-	
-{{{class="brush: bash"
-root@tecmint:~# pkill apache2
-}}}
-
-注意:kill需要PID作为参数,pkill可以选择应用的方式,比如指定进程的所有者等.
-
-= 服务 =
-
-== service ==
-
-`service`命令控制服务的启动、停止和重启，它让你能够不重启整个系统就可以让配置
-生效以开启、停止或者重启某个服务。
-
-在Ubuntu上启动apache2 server：
-
-{{{class="brush: bash"
-root@tecmint:~# service apache2 start
- 
- * Starting web server apache2                                                                                                                                 apache2: Could not reliably determine the server's fully qualified domain name, using 127.0.1.1 for ServerName
-httpd (pid 1285) already running                        [ OK ]
-}}}
-
-重启apache2 server：
-
-{{{class="brush: bash"
-root@tecmint:~# service apache2 restart
- 
-* Restarting web server apache2                                                                                                                               apache2: Could not reliably determine the server's fully qualified domain name, using 127.0.1.1 for ServerName
- ... waiting .apache2: Could not reliably determine the server's fully qualified domain name, using 127.0.1.1 for ServerName  [ OK ]
-}}}
-
-停止apache2 server：
-
-{{{class="brush: bash"
-root@tecmint:~# service apache2 stop
- 
- * Stopping web server apache2                                                                                                                                 apache2: Could not reliably determine the server's fully qualified domain name, using 127.0.1.1 for ServerName
- ... waiting                                                                [ OK ]
-}}}
-
-注意：要想使用`service`命令，进程的脚本必须放在`/etc/init.d`，并且路径必须在指定
-的位置。
-
-如果要运行`service apache2 start`实际上实在执行
-
-{{{class="brush: bash"
-service /etc/init.d/apache2 start
-}}}
-
-= 文件资源 =
-
-
-== lsof ==
-
-`lsof`是"list open files("列表中打开的文件") 的缩写，显示您的系统当前已打开的
-所有文件。
-
-=== List all Open Files with lsof Command ===
-
-In the below example, it will show long listing of open files some of them are 
-extracted for better understanding which displays the columns like Command, PID,
-USER, FD, TYPE etc.
-
-{{{class="brush: bash"
-# lsof
-
-COMMAND    PID      USER   FD      TYPE     DEVICE  SIZE/OFF       NODE NAME
-init         1      root  cwd      DIR      253,0      4096          2 /
-init         1      root  rtd      DIR      253,0      4096          2 /
-init         1      root  txt      REG      253,0    145180     147164 /sbin/init
-init         1      root  mem      REG      253,0   1889704     190149 /lib/libc-2.12.so
-init         1      root   0u      CHR        1,3       0t0       3764 /dev/null
-init         1      root   1u      CHR        1,3       0t0       3764 /dev/null
-init         1      root   2u      CHR        1,3       0t0       3764 /dev/null
-init         1      root   3r     FIFO        0,8       0t0       8449 pipe
-init         1      root   4w     FIFO       0,8       0t0       8449 pipe
-init         1      root   5r      DIR       0,10         0          1 inotify
-init         1      root   6r      DIR       0,10         0          1 inotify
-init         1      root   7u     unix 0xc1513880       0t0       8450 socket
-}}}
-
-Sections and it’s values are self-explanatory. However, we’ll review FD & TYPE 
-columns more precisely.
-
-FD – stands for File descriptor and may seen some of the values as:
-
-* `cwd` current working directory
-* `rtd` root directory
-* `txt` program text (code and data)
-* `mem` memory-mapped file
-
-Also in `FD` column numbers like 1u is actual file descriptor and followed by 
-u,r,w of it’s mode as:
-
-*  `r` for read access.
-*  `w` for write access.
-*  `u` for read and write access.
-
-`TYPE` – of files and it’s identification.
-
-* `DIR` – Directory
-* `REG` – Regular file
-* `CHR` – Character special file.
-* `FIFO` – First In First Out
-
-=== List User Specific Opened Files ===
-
-The below command will display the list of all opened files of user tecmint.
-
-{{{class="brush: bash"
-# lsof -u tecmint
-
-COMMAND  PID    USER   FD   TYPE     DEVICE SIZE/OFF   NODE NAME
-sshd    1838 tecmint  cwd    DIR      253,0     4096      2 /
-sshd    1838 tecmint  rtd    DIR      253,0     4096      2 /
-sshd    1838 tecmint  txt    REG      253,0   532336 188129 /usr/sbin/sshd
-sshd    1838 tecmint  mem    REG      253,0    19784 190237 /lib/libdl-2.12.so
-sshd    1838 tecmint  mem    REG      253,0   122436 190247 /lib/libselinux.so.1
-sshd    1838 tecmint  mem    REG      253,0   255968 190256 /lib/libgssapi_krb5.so.2.2
-sshd    1838 tecmint  mem    REG      253,0   874580 190255 /lib/libkrb5.so.3.3
-}}}
-
-=== Find Processes running on Specific Port ===
-
-To find out all the running process of specific port, just use the following 
-command with option `-i`. The below example will list all running process of 
-port 22.
-
-{{{class="brush: bash"
-# lsof -i TCP:22
-
-COMMAND  PID    USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
-sshd    1471    root    3u  IPv4  12683      0t0  TCP *:ssh (LISTEN)
-sshd    1471    root    4u  IPv6  12685      0t0  TCP *:ssh (LISTEN)
-}}}
-
-=== List Only IPv4 & IPv6 Open Files ===
-
-In below example shows only IPv4 and IPv6 network files open with separate 
-commands.
-
-{{{class="brush: bash"
-# lsof -i 4
-
-COMMAND    PID    USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
-rpcbind   1203     rpc    6u  IPv4  11326      0t0  UDP *:sunrpc
-rpcbind   1203     rpc    7u  IPv4  11330      0t0  UDP *:954
-rpcbind   1203     rpc    8u  IPv4  11331      0t0  TCP *:sunrpc (LISTEN)
-avahi-dae 1241   avahi   13u  IPv4  11579      0t0  UDP *:mdns
-avahi-dae 1241   avahi   14u  IPv4  11580      0t0  UDP *:58600
-}}}
-
-{{{class="brush: bash"
-# lsof -i 6
-
-COMMAND    PID    USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
-rpcbind   1203     rpc    9u  IPv6  11333      0t0  UDP *:sunrpc
-rpcbind   1203     rpc   10u  IPv6  11335      0t0  UDP *:954
-rpcbind   1203     rpc   11u  IPv6  11336      0t0  TCP *:sunrpc (LISTEN)
-rpc.statd 1277 rpcuser   10u  IPv6  11858      0t0  UDP *:55800
-rpc.statd 1277 rpcuser   11u  IPv6  11862      0t0  TCP *:56428 (LISTEN)
-cupsd     1346    root    6u  IPv6  12112      0t0  TCP localhost:ipp (LISTEN)
-}}}
-
-=== List Open Files of TCP Port ranges 1-1024 ===
-
-To list all the running process of open files of TCP Port ranges from 1-1024.
-
-{{{class="brush: bash"
-# lsof -i TCP:1-1024
-
-COMMAND  PID    USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
-rpcbind 1203     rpc   11u  IPv6  11336      0t0  TCP *:sunrpc (LISTEN)
-cupsd   1346    root    7u  IPv4  12113      0t0  TCP localhost:ipp (LISTEN)
-sshd    1471    root    4u  IPv6  12685      0t0  TCP *:ssh (LISTEN)
-master  1551    root   13u  IPv6  12898      0t0  TCP localhost:smtp (LISTEN)
-sshd    1834    root    3r  IPv4  15101      0t0  TCP 192.168.0.2:ssh->192.168.0.1:conclave-cpp (ESTABLISHED)
-sshd    1838 tecmint    3u  IPv4  15101      0t0  TCP 192.168.0.2:ssh->192.168.0.1:conclave-cpp (ESTABLISHED)
-sshd    1871    root    3r  IPv4  15842      0t0  TCP 192.168.0.2:ssh->192.168.0.1:groove (ESTABLISHED)
-httpd   1918    root    5u  IPv6  15991      0t0  TCP *:http (LISTEN)
-httpd   1918    root    7u  IPv6  15995      0t0  TCP *:https (LISTEN)
-}}}
-
-=== Exclude User with ‘^’ Character ===
-
-Here, we have excluded root user. You can exclude a particular user using `^` 
-with command as shown above.
-
-{{{class="brush: bash"
-# lsof -i -u^root
-
-COMMAND    PID    USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
-rpcbind   1203     rpc    6u  IPv4  11326      0t0  UDP *:sunrpc
-rpcbind   1203     rpc    7u  IPv4  11330      0t0  UDP *:954
-rpcbind   1203     rpc    8u  IPv4  11331      0t0  TCP *:sunrpc (LISTEN)
-rpcbind   1203     rpc    9u  IPv6  11333      0t0  UDP *:sunrpc
-rpcbind   1203     rpc   10u  IPv6  11335      0t0  UDP *:954
-rpcbind   1203     rpc   11u  IPv6  11336      0t0  TCP *:sunrpc (LISTEN)
-avahi-dae 1241   avahi   13u  IPv4  11579      0t0  UDP *:mdns
-avahi-dae 1241   avahi   14u  IPv4  11580      0t0  UDP *:58600
-rpc.statd 1277 rpcuser    5r  IPv4  11836      0t0  UDP *:soap-beep
-rpc.statd 1277 rpcuser    8u  IPv4  11850      0t0  UDP *:55146
-rpc.statd 1277 rpcuser    9u  IPv4  11854      0t0  TCP *:32981 (LISTEN)
-rpc.statd 1277 rpcuser   10u  IPv6  11858      0t0  UDP *:55800
-rpc.statd 1277 rpcuser   11u  IPv6  11862      0t0  TCP *:56428 (LISTEN)
-}}}
-
-=== Find Out who’s Looking What Files and Commands? ===
-
-Below example shows user tecmint is using command like ping and `/etc` 
-directory .
-
-{{{class="brush: bash"
-# lsof -i -u tecmint
-
-COMMAND  PID    USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
-bash    1839 tecmint  cwd    DIR  253,0    12288   15 /etc
-ping    2525 tecmint  cwd    DIR  253,0    12288   15 /etc
-}}}
-
-=== List all Network Connections ===
-
-The following command with option `-i` shows the list of all network connections
-‘LISTENING & ESTABLISHED’.
-
-{{{class="brush: bash"
-# lsof -i
-
-COMMAND    PID    USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
-rpcbind   1203     rpc    6u  IPv4  11326      0t0  UDP *:sunrpc
-rpcbind   1203     rpc    7u  IPv4  11330      0t0  UDP *:954
-rpcbind   1203     rpc   11u  IPv6  11336      0t0  TCP *:sunrpc (LISTEN)
-avahi-dae 1241   avahi   13u  IPv4  11579      0t0  UDP *:mdns
-avahi-dae 1241   avahi   14u  IPv4  11580      0t0  UDP *:58600
-rpc.statd 1277 rpcuser   11u  IPv6  11862      0t0  TCP *:56428 (LISTEN)
-cupsd     1346    root    6u  IPv6  12112      0t0  TCP localhost:ipp (LISTEN)
-cupsd     1346    root    7u  IPv4  12113      0t0  TCP localhost:ipp (LISTEN)
-sshd      1471    root    3u  IPv4  12683      0t0  TCP *:ssh (LISTEN)
-master    1551    root   12u  IPv4  12896      0t0  TCP localhost:smtp (LISTEN)
-master    1551    root   13u  IPv6  12898      0t0  TCP localhost:smtp (LISTEN)
-sshd      1834    root    3r  IPv4  15101      0t0  TCP 192.168.0.2:ssh->192.168.0.1:conclave-cpp (ESTABLISHED)
-httpd     1918    root    5u  IPv6  15991      0t0  TCP *:http (LISTEN)
-httpd     1918    root    7u  IPv6  15995      0t0  TCP *:https (LISTEN)
-clock-app 2362   narad   21u  IPv4  22591      0t0  TCP 192.168.0.2:45284->www.gov.com:http (CLOSE_WAIT)
-chrome    2377   narad   61u  IPv4  25862      0t0  TCP 192.168.0.2:33358->maa03s04-in-f3.1e100.net:http (ESTABLISHED)
-chrome    2377   narad   80u  IPv4  25866      0t0  TCP 192.168.0.2:36405->bom03s01-in-f15.1e100.net:http (ESTABLISHED)
-}}}
-
-=== Search by PID ===
-
-The below example only shows whose PID is 1 [One].
-
-{{{class="brush: bash"
-# lsof -p 1
-
-COMMAND PID USER   FD   TYPE     DEVICE SIZE/OFF   NODE NAME
-init      1 root  cwd    DIR      253,0     4096      2 /
-init      1 root  rtd    DIR      253,0     4096      2 /
-init      1 root  txt    REG      253,0   145180 147164 /sbin/init
-init      1 root  mem    REG      253,0  1889704 190149 /lib/libc-2.12.so
-init      1 root  mem    REG      253,0   142472 189970 /lib/ld-2.12.so
-}}}
-
-=== Kill all Activity of Particular User ===
-
-{{{class="brush: bash"
-Sometimes you may have to kill all the processes for a specific user. Below 
-command will kills all the processes of tecmint user.
-
-# kill -9 `lsof -t -u tecmint`
-}}}
-
-Note: Here, it’s not possible to give example of all available options, this 
-guide is only to show how lsof command can be use. You may refer man page of 
-`lsof` command to know more about it. Please share it if you find this article 
-is useful through our comment box below.
-
+[[linux.base.resource]]
 
 
 
 = 文件操作 =
 
-== 散列 ==
-
-{{{class="brush: bash"
-echo "yangpan220" | md5sum
-}}}
-
-注意上面的echo会自动加上一个回车。可以用-n去掉：
-
-{{{class="brush: bash"
-echo -n 'yangpan220' | md5sum
-}}}
-
-
-== 压缩 ==
+== 散列与压缩 ==
 
 [[linux.base.compress]]
-
 
 == 查找 ==
 
 [[linux.base.search]]
 
+
+
 = 文本文件 =
 
-== paste ==
+== 合并与比较 ==
 
-合并两个或多个文本文件，按行来进行合并。示例。如果`file1`的内容是：
-
-{{{class="brush: bash"
-1
-2
-3
-}}}
-
-`file2`是这样的:
-
-{{{class="brush: bash"
-a
-b
-c
-d
-}}}
-	
-{{{class="brush: bash"
-[avishek@tecmint ~]$ paste file1 file2 > file3
-}}}
-
-结果`file3`将是:
-
-{{{class="brush: bash"
-1    a
-2    b
-3    c
-     d
-}}}
-
-== 比较 ==
-
-`cmp`比较两个任意类型的文件并将结果输出至标准输出。如果两个文件相同， `cmp`默认
-返回`0`；如果不同，将显示不同的字节数和第一处不同的位置。
-
-以下面两个文件为例：
-
-`file1.txt`
-
-{{{class="brush: bash"
-root@tecmint:~# cat file1.txt
- 
-Hi My name is Tecmint
-}}}
-
-`file2.txt`
-
-{{{class="brush: bash"
-root@tecmint:~# cat file2.txt
- 
-Hi My name is tecmint [dot] com
-}}}
-
-比较一下这两个文件，看看命令的输出。
-
-{{{class="brush: bash"
-root@tecmint:~# cmp file1.txt file2.txt
- 
-file1.txt file2.txt differ: byte 15, line 1
-}}}
+[[linux.base.text]]
 
 == 编码与格式 ==
 
-=== ASCII ===
+[[linux.base.encoding]]
 
-`main ascii`可以直接查看OCT或HEX的ascii表。
-
-=== 生成16f进制 ===
-
-`xxd`可以生成16进制：
-
-{{{class="brush: bash"
-$ xxd vab.txt 
-0000000: 4e61 6d69 6e67 2043 6f6e 7665 6e74 696f  Naming Conventio
-0000010: 6e73 efbc 88e8 a784 e88c 83ef bc8c e58d  ns..............
-0000020: 8fe8 aeae efbc 890d 0a0d 0a64 6973 636f  ...........disco
-0000030: 7572 6167 6564 20e6 b094 e9a6 81ef bc8c  uraged .........
-0000040: e4bd bfe5 8a9d e998 bb0d 0a0d 0a70 656e  .............pen
-0000050: 6461 6e74 20e8 8bb1 205b cb88 7065 6e64  dant ... [..pend
-0000060: c999 6e74 5d20 e7be 8e20 5bcb 8870 c99b  ..nt] ... [..p..
-0000070: 6e64 c999 6e74 5d20 6e2e efbc 88e8 a385  nd..nt] n.......
-0000080: e59c a8e9 a1b9 e993 bee7 ad89 e4b8 8ae7  ................
-0000090: 9a84 efbc 89e5 9e82 e9a5 b0ef bc8c e59d  ................
-00000a0: a0e5 84bf 0d0a                           ......
-}}}
-
-还可以把二六进制还原为二进制。甚至把十六进制拷贝输出成C数组：
-
-{{{class="brush: bash"
-$ xxd -i vab.txt  
-unsigned char vab_txt[] = {
-  0x4e, 0x61, 0x6d, 0x69, 0x6e, 0x67, 0x20, 0x43, 0x6f, 0x6e, 0x76, 0x65,
-  0x6e, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0xef, 0xbc, 0x88, 0xe8, 0xa7, 0x84,
-  0xe8, 0x8c, 0x83, 0xef, 0xbc, 0x8c, 0xe5, 0x8d, 0x8f, 0xe8, 0xae, 0xae,
-  0xef, 0xbc, 0x89, 0x0d, 0x0a, 0x0d, 0x0a, 0x64, 0x69, 0x73, 0x63, 0x6f,
-  0x75, 0x72, 0x61, 0x67, 0x65, 0x64, 0x20, 0xe6, 0xb0, 0x94, 0xe9, 0xa6,
-  0x81, 0xef, 0xbc, 0x8c, 0xe4, 0xbd, 0xbf, 0xe5, 0x8a, 0x9d, 0xe9, 0x98,
-  0xbb, 0x0d, 0x0a, 0x0d, 0x0a, 0x70, 0x65, 0x6e, 0x64, 0x61, 0x6e, 0x74,
-  0x20, 0xe8, 0x8b, 0xb1, 0x20, 0x5b, 0xcb, 0x88, 0x70, 0x65, 0x6e, 0x64,
-  0xc9, 0x99, 0x6e, 0x74, 0x5d, 0x20, 0xe7, 0xbe, 0x8e, 0x20, 0x5b, 0xcb,
-  0x88, 0x70, 0xc9, 0x9b, 0x6e, 0x64, 0xc9, 0x99, 0x6e, 0x74, 0x5d, 0x20,
-  0x6e, 0x2e, 0xef, 0xbc, 0x88, 0xe8, 0xa3, 0x85, 0xe5, 0x9c, 0xa8, 0xe9,
-  0xa1, 0xb9, 0xe9, 0x93, 0xbe, 0xe7, 0xad, 0x89, 0xe4, 0xb8, 0x8a, 0xe7,
-  0x9a, 0x84, 0xef, 0xbc, 0x89, 0xe5, 0x9e, 0x82, 0xe9, 0xa5, 0xb0, 0xef,
-  0xbc, 0x8c, 0xe5, 0x9d, 0xa0, 0xe5, 0x84, 0xbf, 0x0d, 0x0a
-};
-unsigned int vab_txt_len = 166;
-}}}
-
-=== 字符编码 ===
-
-转换单个文件：
-
-{{{class="brush: bash"
-iconv -f GBK -t UTF-8 tt.json > tt.json
-}}}
-
-把当前目录下的文件转换编码：
-
-{{{class="brush: bash"
-sed -i "s/old/new/g" `grep old -rl ./`
-}}}
-
-或是：
-
-{{{class="brush: bash"
-`enca -L zh_CN -x utf-8 *`
-}}}
-
-=== 换行 ===
-
-Windows文本文件的`^M`，注意这个`^M`的输入方式为`CTRL v CTRL m`。
-
-使用`dos2unix`命令:
-
-{{{class="brush: bash"
-$ dos2unix myfile.txt
-}}}
-
-使用sed命令：
-
-{{{class="brush: bash"
-$ sed -e ‘s/^M/\n/g’ myfile.txt
-}}}

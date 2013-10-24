@@ -20,13 +20,13 @@
 :helptags $VIMFILES/doc
 }}}
 
-其中`$VIMFILES`就是您的vimfiles目录。这是需要在vimrc中定义的系统变量。
-
-Windows下应该是：`$VIM/vimfiles`；Linux下是：`~/.vim/`
+其中`$VIMFILES`就是您的vimfiles目录。这是需要在vimrc中定义的系统变量：
+* Windows下应该是：`$VIM/vimfiles`；
+* Linux下是：`~/.vim/`
 
 如果vimrc没有显式指定，可以加上：
 
-{{class="brush: js;"
+{{{class="brush: javascript;"
 if has("win32")
   let $VIMFILES = $VIM.'/vimfiles'
 else
@@ -113,17 +113,18 @@ map <S-F5> :VimwikiAll2HTML<cr>
 	\ 'diary_link_count': 5,
 	\ 'auto_export': 1 }
 }}}
+
 path :: 指定wiki路径。是必须的，说明你想要把wiki条目存在哪个目录。
-path_html :: 制定生成的html路径，一些相关调用的css,js也都放在这里。默认是与 path 同目录下的 WIKIFOLDER_html ，其中 WIKIFOLER 是你存放维基条目的文件夹名。
+path_html :: 制定生成的html路径，一些相关调用的css,js也都放在这里。默认是与`path`同目录下的`WIKIFOLDER_html`，其中`WIKIFOLER`是你存放维基条目的文件夹名。
 template_path :: 是模板的路径。
 template_default :: 指定默认的模板名称。
-template_ext :: 指定模板的后缀名，建议把模板文件后缀采用 htm ，既和生成的 html 有所区分，又能保证语法高亮和各种 ftplugin 可用。
+template_ext :: 指定模板的后缀名，建议把模板文件后缀采用`htm`，既和生成的`html`有所区分，又能保证语法高亮和各种`ftplugin`可用。
 html_header :: 头部模板。
 html_footer :: 尾部模板。
-diary_link_count :: 是指diary.wiki里每行放多少个日志链接。 
+diary_link_count :: 是指`diary.wiki`里每行放多少个日志链接。 
 auto_export :: 保存后自动生成html文件。如果文件大的话会比较慢。
 
-综上，template_path/template_default.template_ext就是模板了 
+综上，`template_path/template_default.template_ext`就是模板了 
 
 
 
@@ -141,35 +142,35 @@ auto_export :: 保存后自动生成html文件。如果文件大的话会比较�
 == 项目操作 ==
 
 === 快捷键 ===
-* \ww    打开 wiki首页
-* \wt    在标签页中打开wiki首页
-* [n]\ww 打开第 N 个 Wiki，如果没指定，则打开默认 Wiki
-* [n]\wt 新标签页打开第 N 个Wiki
-* \ws    打开 Wiki 列表并选择打开
-* \wr    重命名wiki文件
-* \wd    删除wiki文件
+* `\ww` 打开 wiki首页
+* `\wt` 在标签页中打开wiki首页
+* `[n]\ww` 打开第 N 个 Wiki，如果没指定，则打开默认 Wiki
+* `[n]\wt` 新标签页打开第 N 个Wiki
+* `\ws` 打开 Wiki 列表并选择打开
+* `\wr` 重命名wiki文件
+* `\wd` 删除wiki文件
 
 
 == Golbal 命令 == 
 
-* :VimwikiGoHome
-* :VimwikiTabGoHome
-* :VimwikiUISelect
+* `:VimwikiGoHome`
+* `:VimwikiTabGoHome`
+* `:VimwikiUISelect`
 
 == Buffer 命令 == 
 
-* :Vimwiki2HTML
-* :VimwikiAll2HTML
-* :VimwikiDeleteWord
-* :VimwikiDeleteWord
-* :VimwikiFollowWord
-* :VimwikiGoBackWord
-* :VimwikiNextWord
-* :VimwikiPrevWord
-* :VimwikiRenameWord
-* :VimwikiSplitWord
-* :VimwikiToggleListItem
-* :VimwikiVsplitWord
+* `:Vimwiki2HTML`
+* `:VimwikiAll2HTML`
+* `:VimwikiDeleteWord`
+* `:VimwikiDeleteWord`
+* `:VimwikiFollowWord`
+* `:VimwikiGoBackWord`
+* `:VimwikiNextWord`
+* `:VimwikiPrevWord`
+* `:VimwikiRenameWord`
+* `:VimwikiSplitWord`
+* `:VimwikiToggleListItem`
+* `:VimwikiVsplitWord`
    
 
 
@@ -178,7 +179,7 @@ auto_export :: 保存后自动生成html文件。如果文件大的话会比较�
 === 代码 ===
 * `%toc`    自动生成的目录
 * `%title`  指定HTML文档的title
-* `%nohtml` 告诉vimwiki不为某条目生成HTML文件。即使你在该条目打开时为它单独执行:Vimwiki2HTML也不会生成
+* `%nohtml` 不为某条目生成HTML。即使单独执行`:Vimwiki2HTML`
 
 {{{class="brush: bash"
      = 标题一 =
@@ -201,7 +202,6 @@ WikiItem                      大写开头的驼峰英文会被自动当作一�
 !TextText                     不要链接指定的 !WikiWord
 [[Wiki Item]]                 这是手动建立维基词条的方式
 [[wiki item|description]]     输出HTML时显示description，链到 wiki item
-
 }}}
 
 == 链接操作 ==
@@ -220,12 +220,12 @@ http://site/pic.jpg      :: 解析为图片
 
 === 快捷键 ===
 打开链接时，如果目标页面不存在，会自动新建
-* shift + enter  水平分割窗口打开wiki链接
-* ctrl + enter   垂直分割窗口打开wiki链接
-* tab            到下一个链接
-* shift + tab    到上一个链接
-* 回车           进入wiki连接（如果是外链则在浏览器打开） 
-* 退格键         返回上级wiki
+* `shift + enter`  水平分割窗口打开wiki链接
+* `ctrl + enter `  垂直分割窗口打开wiki链接
+* `tab`  到下一个链接
+* `shift + tab  `  到上一个链接
+* `Enter`  进入wiki连接（如果是外链则在浏览器打开） 
+* `backspace`  返回上级wiki
 
 
 
@@ -301,14 +301,22 @@ _斜体_
 
 == 日记功能 ==
 
-使用快捷键`<leader>w<leader>w`可以快速编辑当天的日记。还可以配合[[http://www.vim.org/scripts/script.php?script_id=52|Calendar插件]]轻松管理你的日记。
+使用快捷键`<leader>w<leader>w`可以快速编辑当天的日记。还可以配合
+[[http://www.vim.org/scripts/script.php?script_id=52|Calendar插件]]轻松管理你的
+日记。
+
 {{{class="brush: bash"
 " calendar
 map <F8> :Calendar<cr> 
 }}}
 
-按 F8 调出日历窗口，按 q 退出。
+按`F8`调出日历窗口，按`q`退出。
 
 在日期上点回车，就可以编辑当天的日记了！
 
-PS: 按左右键在前后一个月里跳转，按上下键在前后一年跳转。按 t 回到当天。当然，Vim 默认的上下左右 hjkl 也是能用的。 
+PS: 按左右键在前后一个月里跳转，按上下键在前后一年跳转。按 t 回到当天。当然，Vim
+默认的上下左右（hjkl）也是能用的。 
+
+
+
+

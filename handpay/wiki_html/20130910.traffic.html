@@ -25,36 +25,90 @@
 <h1>交罚</h1>
 <div class="toc">
 <ul>
-<li><a href="#toc_1">设计</a>
+<li><a href="#toc_1">提交文档位置</a>
 <ul>
-<li><a href="#toc_1.1">表结构</a>
-<ul>
-<li><a href="#toc_1.1.1">查询记录 r</a>
-<li><a href="#toc_1.1.2">违章记录 v</a>
-<li><a href="#toc_1.1.3">订单 o</a>
-<li><a href="#toc_1.1.4">订单详情 d</a>
-<li><a href="#toc_1.1.5">瀚银订单 m</a>
+<li><a href="#toc_1.1">测试数据库</a>
 </ul>
-<li><a href="#toc_1.2">主要类</a>
-</ul>
-<li><a href="#toc_2">功能</a>
+<li><a href="#toc_2">设计</a>
 <ul>
-<li><a href="#toc_2.1">增加功能菜单与权限</a>
-<li><a href="#toc_2.2">交易明细报表</a>
-<li><a href="#toc_2.3">查询费用报表</a>
+<li><a href="#toc_2.1">表结构</a>
+<ul>
+<li><a href="#toc_2.1.1"><code>r</code> 查询记录</a>
+<li><a href="#toc_2.1.2"><code>v</code> 违章记录</a>
+<li><a href="#toc_2.1.3"><code>o</code> 订单</a>
+<li><a href="#toc_2.1.4"><code>d</code> 订单详情</a>
+<li><a href="#toc_2.1.5"><code>m</code> 瀚银订单</a>
+</ul>
+<li><a href="#toc_2.2">主要类</a>
+</ul>
+<li><a href="#toc_3">功能</a>
+<ul>
+<li><a href="#toc_3.1">交罚应用</a>
+<ul>
+<li><a href="#toc_3.1.1">相关表</a>
+<li><a href="#toc_3.1.2">修改付款流程</a>
+</ul>
+<li><a href="#toc_3.2">报表</a>
+<li><a href="#toc_3.3">增加功能菜单与权限</a>
+<ul>
+<li><a href="#toc_3.3.1">相关工程</a>
+<li><a href="#toc_3.3.2">交易明细报表</a>
+<li><a href="#toc_3.3.3">查询费用报表</a>
+</ul>
 </ul>
 </ul>
 </div>
 
-<pre class="brush: scala">
-scp ./*.jar  dsdev15@dev1.hpdev.com:~/server/default/deploy/handpay
+<pre class="brush: bash">
+scp ./*.*ar  dsdev15@dev1.hpdev.com:~/server/default/deploy/handpay
+
+scp ./*.xls  dsdev15@dev1.hpdev.com:~/handpay/report/template
+
+scp -r dsdev15@dev1.hpdev.com:~/handpay/report/template/ .
+
+scp -r dsdev15@dev1.hpdev.com:~/server/default/deploy/ROOT.war/mall/hpdownload/report .
+
+ssh dsdev15@dev1.hpdev.com                     // handpay
+
+hp stop
+hp start
+tail -f ~/server/default/log/server.log
 </pre>
 
-<h1 id="toc_1">设计</h1>
+<h1 id="toc_1">提交文档位置</h1>
 
-<h2 id="toc_1.1">表结构</h2>
 
-<h3 id="toc_1.1.1">查询记录 r</h3>
+<p>
+1.	SQL执行
+<a href="https://10.48.196.110:8443/svn/HandpayDocument/Handpay">https://10.48.196.110:8443/svn/HandpayDocument/Handpay</a> Project/手付通3.0/开发文档/项目提交数据/交通罚款优化/sql/test/交罚业务报表支撑权限脚本.sql 
+<a href="https://10.48.196.110:8443/svn/HandpayDocument/Handpay">https://10.48.196.110:8443/svn/HandpayDocument/Handpay</a> Project/手付通3.0/开发文档/项目提交数据/交通罚款优化/sql/test/交罚业务表结构修改及基础数据.sql 
+</p>
+
+<p>
+2.	静态文件
+<a href="https://10.48.196.110:8443/svn/HandpayDocument/Handpay">https://10.48.196.110:8443/svn/HandpayDocument/Handpay</a> Project/手付通3.0/开发文档/项目提交数据/交通罚款优化/mnt/mfs/ static/mall/wap 
+</p>
+
+<p>
+3.	报表模板
+<a href="https://10.48.196.110:8443/svn/HandpayDocument/Handpay">https://10.48.196.110:8443/svn/HandpayDocument/Handpay</a> Project/手付通3.0/开发文档/项目提交数据/交通罚款优化/mnt/mfs/handpay
+</p>
+
+<h2 id="toc_1.1">测试数据库</h2>
+
+
+<pre class="brush: bash">
+10.48.196.3:1521/hpdb05
+appl/test
+dev/dev
+</pre>
+
+
+<h1 id="toc_2">设计</h1>
+
+<h2 id="toc_2.1">表结构</h2>
+
+<h3 id="toc_2.1.1"><code>r</code> 查询记录</h3>
 
 <p>
 traffic_violation_query_record 
@@ -203,7 +257,7 @@ VARCHAR2(40)
 </tr>
 </table>
 
-<h3 id="toc_1.1.2">违章记录 v</h3>
+<h3 id="toc_2.1.2"><code>v</code> 违章记录</h3>
 
 <p>
 traffic_violation 
@@ -627,7 +681,7 @@ VARCHAR2(40)
 </ul>
 
 
-<h3 id="toc_1.1.3">订单 o</h3>
+<h3 id="toc_2.1.3"><code>o</code> 订单</h3>
 
 <p>
 traffic_violation_order 
@@ -888,7 +942,7 @@ NUMBER(38)
 </tr>
 </table>
 
-<h3 id="toc_1.1.4">订单详情 d</h3>
+<h3 id="toc_2.1.4"><code>d</code> 订单详情</h3>
 
 <p>
 traffic_violation_order_detail 
@@ -1135,7 +1189,7 @@ NUMBER(8,2)
 </tr>
 </table>
 
-<h3 id="toc_1.1.5">瀚银订单 m</h3>
+<h3 id="toc_2.1.5"><code>m</code> 瀚银订单</h3>
 
 <p>
 MERCH_TRANSACTION_LOG
@@ -1174,15 +1228,13 @@ VARCHAR2(20)
 
 
 
-<h2 id="toc_1.2">主要类</h2>
+<h2 id="toc_2.2">主要类</h2>
 
 <p>
 ITrafficService.queryViolationOrder
 </p>
 
-<p>
-VposViolationDetailAction.java
-</p>
+
 
 <p>
 vposViolationDetail.jsp
@@ -1192,11 +1244,165 @@ vposViolationDetail.jsp
 TrafficServiceImpl.queryViolations(..)
 </p>
 
-<h1 id="toc_2">功能</h1>
+<h1 id="toc_3">功能</h1>
 
-<h2 id="toc_2.1">增加功能菜单与权限</h2>
+<h2 id="toc_3.1">交罚应用</h2>
 
-<pre class="brush: scala">
+<p>
+调试代码：
+</p>
+
+<p>
+写死登录的用户：
+</p>
+
+<pre class="brush: java" title="VposTrafficIndexAction.java">
+		UserBean u = new UserBean();
+		u.setUserID(101009);
+		request.getSession().setAttribute("user", u);
+</pre>
+
+<p>
+Js中去掉iPhone的特殊代码：
+</p>
+
+<pre class="brush: java" title="vposViolationDetail.jsp">
+	function myOnloadInit() {
+		// document.location='vpos://getUserLocation';
+	}
+	function getUserLocationCallback(location){
+		// document.getElementById("location").value=location;
+	}
+</pre>
+
+
+<p>
+入口： <a href="http://localhost:8080/hpWapService-traffic0910/trafficIndex.do?trafficIndexFlag=vpos">http://localhost:8080/hpWapService-traffic0910/trafficIndex.do?trafficIndexFlag=vpos</a>
+入口： <a href="http://localhost:8080/wap/trafficIndex.do?trafficIndexFlag=vpos">http://localhost:8080/wap/trafficIndex.do?trafficIndexFlag=vpos</a>
+</p>
+
+<p>
+测试入口： <a href="http://trafficklb.99wuxian.com/wap">http://trafficklb.99wuxian.com/wap</a>
+</p>
+
+<p>
+改dns：
+</p>
+
+<pre class="brush: bash">
+10.48.196.251	trafficklb.99wuxian.com pic9.99wuxian.com
+</pre>
+
+<ul>
+<li>
+<code>hpWapService</code>
+
+<ul>
+<li>
+<code>vposTrafficIndex.jsp</code>
+
+</ul>
+<li>
+<code>hpWap4.0</code>
+
+<ul>
+<li>
+<code>VposTrafficIndexAction.java</code>
+
+<li>
+<code>VposViolationDetailAction.java</code>
+
+</ul>
+<li>
+<code>hpMerchantInterface4.0</code>
+
+<ul>
+<li>
+<code>ITrafficService.java</code>
+
+</ul>
+<li>
+<code>hpMerchantPlantform4.0</code>
+
+<ul>
+<li>
+<code>ZhiZunConnector.java</code>供应商至尊提供的接口
+
+<li>
+<code>TrafficServiceImpl.java</code>
+
+</ul>
+</ul>
+
+<h3 id="toc_3.1.1">相关表</h3>
+
+<pre class="brush: sql">
+--交罚定时任务
+select * from batch_task where name like '%traffic%';
+--罚单 0不可办理，1可办理 ,2 处理中，3已完成, 4待支付
+select * from traffic_violation;
+--交罚订单 00  撤销  01待支付    10待办理 02未成功办理 11成功办理
+select * from traffic_violation_order;
+--交罚订单明细
+select * from traffic_violation_order_detail;
+--罚单的折扣信息
+select * from Traffic_DiscountActivities;
+--用户查询记录
+select * from traffic_violation_query_record;
+--查询次数配置Z0011
+select * from traffic_violation_query_times;
+--车辆类型
+select * from traffic_car_type;
+
+select * from traffic_area;
+select * from traffic_city;
+select * from traffic_province;
+
+--瀚银订单
+select * from merch_transaction_log;
+--瀚银订单明细。
+select * from merch_transaction_detail;
+</pre>
+
+<h3 id="toc_3.1.2">修改付款流程</h3>
+
+<ul>
+<li>
+罚单状态<code>0不可办理、3已完成</code>：无后续操作
+
+<li>
+罚单状态可办
+
+<ul>
+<li>
+没有订单：新罚单流程
+
+<li>
+订单状态<code>00撤销、02未成功办理</code>：罚单状态置为<code>1可办理</code>，日志记录状态，新罚单
+
+<li>
+订单状态<code>01待支付</code>：继续处理原有订单显示手机号，支付
+
+<li>
+订单状态<code>10待办理、11办理成功</code>：无后续操作
+
+</ul>
+</ul>
+		 
+
+<h2 id="toc_3.2">报表</h2>
+
+<p>
+入口：<a href="http://localhost:8080/hpSupport4.0-traffic0910/index.action">http://localhost:8080/hpSupport4.0-traffic0910/index.action</a>
+</p>
+
+<p>
+用户名：hp5/123456
+</p>
+
+<h2 id="toc_3.3">增加功能菜单与权限</h2>
+
+<pre class="brush: sql">
 declare
   systemID number;
   funcID number;
@@ -1256,8 +1462,40 @@ exception
 end;
 -- 结束
 </pre>
+<h3 id="toc_3.3.1">相关工程</h3>
 
-<h2 id="toc_2.2">交易明细报表</h2>
+<ul>
+<li>
+<code>hpReportInterface</code>接口与Modle类
+
+<li>
+<code>hpSupportService</code>业务逻辑
+
+<ul>
+<li>
+<code>TrafficTradeReportBuilderImpl.java</code>报表导出excel
+
+</ul>
+<li>
+<code>hpSupport4.0</code>前端网页
+
+<ul>
+<li>
+<code>trafficReport_openTrade.jsp</code>
+
+<li>
+<code>trafficReport_openFee.jsp</code>
+
+<li>
+<code>trafficReport_index.jsp</code>
+
+<li>
+<code>TrafficReportAction.java</code>
+
+</ul>
+</ul>
+
+<h3 id="toc_3.3.2">交易明细报表</h3>
 
 <p>
 用于和供应商进行清结算核对，报表包含字段如下：
@@ -1316,7 +1554,7 @@ m.deliveryTime
 用户在瀚银下单后生成的订单号
 </td>
 <td>
-d.MerchantTransDate
+d.MerchantTransSeq
 </td>
 </tr>
 <tr>
@@ -1431,10 +1669,10 @@ d.FineAmount + d.PayCharge + d.OverdueFine
 </tr>
 </table>
 
-<pre class="brush: scala">
+<pre class="brush: sql">
 select 
   rownum , m.merchantTransDate , m.paymentTransDate , 
-  m.deliveryTime , d.MerchantTransDate , d.MerchantOrderSeq, 
+  m.deliveryTime , d.MerchantTransSeq , d.MerchantOrderSeq, 
   d.InnerViolationId , d.FineAmount , d.PayCharge, 
   d.OverdueFine, d.FineAmount + d.PayCharge + d.OverdueFine
 from
@@ -1447,8 +1685,7 @@ from
 			on d.MerchantTransSeq  = m.MerchantTransSeq;
 </pre>
 
-
-<h2 id="toc_2.3">查询费用报表</h2>
+<h3 id="toc_3.3.3">查询费用报表</h3>
 
 <p>
 查询费用报表记录每次发起查询请求的详情，用于和供应商结算查询费用进行核对。报表
@@ -1546,7 +1783,7 @@ r.ViolationSn
 </tr>
 </table>
 
-<pre class="brush: scala">
+<pre class="brush: sql">
 select 
 	rownum, r.city, r.CarNo , r.querydate || r.querytime,
 	r.QueryFee, r.CarFrameNo, r.EngineNo, r.ViolationSn 

@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>文本文件</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>文本文件</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">paste</a>
+<li><a href="#toc_2">比较</a>
+</ul>
+</div>
+
+<h1 id="toc_1">paste</h1>
+
+<p>
+合并两个或多个文本文件，按行来进行合并。示例。如果<code>file1</code>的内容是：
+</p>
+
+<pre class="brush: bash">
+1
+2
+3
+</pre>
+
+<p>
+<code>file2</code>是这样的:
+</p>
+
+<pre class="brush: bash">
+a
+b
+c
+d
+</pre>
+	
+<pre class="brush: bash">
+[avishek@tecmint ~]$ paste file1 file2 &gt; file3
+</pre>
+
+<p>
+结果<code>file3</code>将是:
+</p>
+
+<pre class="brush: bash">
+1    a
+2    b
+3    c
+     d
+</pre>
+
+<h1 id="toc_2">比较</h1>
+
+<p>
+<code>cmp</code>比较两个任意类型的文件并将结果输出至标准输出。如果两个文件相同， <code>cmp</code>默认
+返回<code>0</code>；如果不同，将显示不同的字节数和第一处不同的位置。
+</p>
+
+<p>
+以下面两个文件为例：
+</p>
+
+<p>
+<code>file1.txt</code>
+</p>
+
+<pre class="brush: bash">
+root@tecmint:~# cat file1.txt
+ 
+Hi My name is Tecmint
+</pre>
+
+<p>
+<code>file2.txt</code>
+</p>
+
+<pre class="brush: bash">
+root@tecmint:~# cat file2.txt
+ 
+Hi My name is tecmint [dot] com
+</pre>
+
+<p>
+比较一下这两个文件，看看命令的输出。
+</p>
+
+<pre class="brush: bash">
+root@tecmint:~# cmp file1.txt file2.txt
+ 
+file1.txt file2.txt differ: byte 15, line 1
+</pre>
+ </div>
+</body>
+</html>

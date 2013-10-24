@@ -1,0 +1,53 @@
+%title 系统信息
+
+%toc 系统信息
+
+= uptime =
+
+你连接到你的Linux服务器时发现一些不寻常或恶意的东西，你会做什么？猜测……不，绝不
+！你可以运行`uptime`来验证当服务器无人值守式到底发生了什么事情。
+
+{{{class="brush: bash"
+[avishek@tecmint ~]$ uptime
+ 
+14:37:10 up  4:21,  2 users,  load average: 0.00, 0.00, 0.04
+}}}
+
+
+= uname =
+
+`uname`命令就是Unix Name的简写。显示机器名，操作系统和内核的详细信息。
+
+{{{class="brush: bash"
+root@tecmint:~# uname -a
+ 
+Linux tecmint 3.8.0-19-generic #30-Ubuntu SMP Wed May 1 16:36:13 UTC 2013 i686 i686 i686 GNU/Linux
+}}}
+
+`uname`显示内核类别， `uname -a`显示详细信息：
+
+# `Linux`: 机器的内核名
+# `tecmint`: 机器的分支名
+# `3.8.0-19-generic`: 内核发布版本
+# `#30-Ubuntu SMP`: 内核版本
+# `i686`: 处理器架构
+# `GNU/Linux`: 操作系统名
+
+= issue =
+
+`cat /etc/issue`
+
+= w =
+
+是否觉得命令`w`很滑稽？但是事实上不是的。它是一个命令，尽管只有一个字符长，命令
+`w`是`uptime`和`who`命令，以前后的顺序组合在一起。
+
+{{{class="brush: bash"
+[avishek@tecmint ~]$ w
+ 
+15:05:42 up  4:49,  3 users,  load average: 0.02, 0.01, 0.00
+USER     TTY      FROM              LOGIN@   IDLE   JCPU   PCPU WHAT
+server   tty7     :0               14:06    4:43m  1:42   0.08s pam: gdm-passwo
+server   pts/0    :0.0             14:18    0.00s  0.23s  1.65s gnome-terminal
+server   pts/1    :0.0             14:47    4:43   0.01s  0.01s bash
+}}}

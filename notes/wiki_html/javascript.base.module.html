@@ -1,0 +1,149 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>匿名函数与模块化</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>匿名函数与模块化</h1>
+
+
+
+<p>
+在JavaScript里最令人懊恼的事情是变量没有使用范围。任何变量，函数，数组，对象，
+只要不在函数内部，都被认为是全局的，这就是说，这个页面上的其它脚本也可以访问它，
+而且可以覆盖重写它。解决办法是，把你的变量放在一个匿名函数内部，定义完之后立即
+调用它。
+</p>
+
+<p>
+例如，下面的写法将会产生三个全局变量和两个全局函数：
+</p>
+
+<pre class="brush: javascript">
+var name = 'Chris';
+var age = '34';
+var status = 'single';
+function createMember(){
+	// [...]
+}
+function getMemberDetails(){
+	// [...]
+}
+</pre>
+
+<p>
+如果这个页面上的其它脚本里也存在一个叫<code>status</code>的变量，麻烦就会出现。如果我们把
+它们封装在一个<code>myApplication</code>里，这个问题就迎刃而解了：
+</p>
+
+<pre class="brush: javascript">
+var myApplication = function(){
+	var name = 'Chris';
+	var age = '34';
+	var status = 'single';
+	function createMember(){
+		// [...]
+	}
+	function getMemberDetails(){
+		// [...]
+	}
+}();
+</pre>
+
+<p>
+但是，这样一来，在函数外面就没有什么功能了。如果这是你需要的，那就可以了。你还
+可以省去函数的名称：
+</p>
+
+<pre class="brush: javascript">
+(function(){
+	var name = 'Chris';
+	var age = '34';
+	var status = 'single';
+	function createMember(){
+		// [...]
+	}
+	function getMemberDetails(){
+		// [...]
+	}
+})();
+</pre>
+
+<p>
+如果你想在函数外面也能使用里面的东西，那就要做些修改。
+</p>
+
+<p>
+为了能访问<code>createMember()</code>或<code>getMemberDetails()</code>，需要把它们变成<code>myApplication</code>
+的属性，从而把它们暴露于外部的世界:
+</p>
+
+<pre class="brush: javascript">
+var myApplication = function(){
+	var name = 'Chris';
+	var age = '34';
+	var status = 'single';
+	return{
+	 	createMember:function(){
+			// [...]
+		},
+		getMemberDetails:function(){
+			// [...]
+		}
+	}
+}();
+//myApplication.createMember() 和
+//myApplication.getMemberDetails() 就可以使用了。
+</pre>
+
+<p>
+这被称作<code>module</code>模式或<code>singleton</code>。Douglas Crockford 多次谈到过这些，YUI（Yahoo 
+User Interface Library）里对此有大量的使用。但这样一来让我感到不便的是，我需要
+改变句式来使函数和变量能被外界访问。更甚者，调用时我还需要加上<code>myApplication</code>
+这个前缀。我更愿意简单的把需要能被外界访问的元素的指针导出来。这样做后，反倒简化
+了外界调用的写法：
+</p>
+
+<pre class="brush: javascript">
+var myApplication = function(){
+	var name = 'Chris';
+	var age = '34';
+	var status = 'single';
+	function createMember(){
+		// [...]
+	}
+	function getMemberDetails(){
+		// [...]
+	}
+	return{
+		create:createMember,
+		get:getMemberDetails
+	}
+}();
+//现在写成 myApplication.get()和 myApplication.create() 就行了。
+</pre>
+
+<p>
+我把这个称作revealing module pattern
+</p>
+ </div>
+</body>
+</html>

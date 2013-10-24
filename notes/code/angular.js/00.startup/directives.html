@@ -1,0 +1,74 @@
+<!doctype html>
+<html ng-app="myApp">
+<head>
+<script src="../angular.min.js"></script>
+<script src="js/directives.js"></script>
+</head>
+<body>
+
+	<div ng-controller="MyController">
+		<input ng-model="name" name="Name" placeholder="Enter your name"/>
+		<h4>Your name: {{ name }}</h4>
+
+			<br/>	{{ 8 + 1 }}
+			<br/>	{{ person }}
+			<br/>	{{ 10 * 3.3 | currency }}
+
+		<br/><br/>
+
+		<b ng-init='name = "Ari Lerner"'>Hello, {{ name }}</b>
+
+		<br/><br/>
+
+		<button ng-click="counter = counter + 1">Add one</button>
+		Current counter: {{ counter }}
+
+		<br/><br/>
+
+		<button ng-click="sayHello()">Say hello</button>
+
+		<br/><br/>
+
+		<button ng-init="shouldShow = true" ng-click="shouldShow = !shouldShow">
+			Flip the shouldShow variable
+		</button>
+
+		<div ng-show="shouldShow">
+			<h3>Showing {{ shouldShow }}</h3>
+		</div> <div ng-hide="shouldShow">
+			<h3>Hiding {{ shouldShow }}</h3>
+		</div>
+
+		<br/><br/>
+
+		<ul>
+			<li ng-repeat="person in roommates">{{ person.name }}</li>
+		</ul>
+
+		<br/><br/>
+
+		<ul>
+			<li ng-repeat="(name, color) in people">
+				{{ name }}'s favorite color is {{ color }}
+			</li>
+		</ul>
+
+		<br/><br/>
+
+
+		<br/><br/>
+
+
+		<br/><br/>
+
+
+		<br/><br/>
+
+
+		<br/><br/>
+
+
+	</div>
+
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>通信</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>通信</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">wall</a>
+<li><a href="#toc_2">mesg</a>
+<li><a href="#toc_3">write</a>
+<li><a href="#toc_4">talk</a>
+</ul>
+</div>
+ 
+
+<h1 id="toc_1">wall</h1>
+
+<p>
+对系统管理员来说一个最重要的命令.<code>wall</code>发送一条消息到大家登录端将其<code>mesg</code>权限
+设置为<code>yes</code>。这条信息可以被<code>wall</code>作为参数，或者可以将它作为<code>wall</code>的标准输入。
+</p>
+
+<pre class="brush: bash">
+[avishek@tecmint ~]$ wall "we will be going down for maintenance for one hour sharply at 03:30 pm"
+Broadcast message from root@localhost.localdomain (pts/0) (Sat Jun 29 14:44:02 2013):
+we will be going down for maintenance for one hour sharply at 03:30 pm
+</pre>
+
+<h1 id="toc_2">mesg</h1>
+
+<p>
+其他人们可以使用<code>wtrite</code>命令,将在在向您发送文本到屏幕上。你可以控制是否显示。
+</p>
+
+<pre class="brush: bash">
+mesg [&lt;strong&gt;n&lt;/strong&gt;|&lt;strong&gt;y&lt;/strong&gt;] &lt;strong&gt;n&lt;/strong&gt; - prevents the message from others popping up on the screen. &lt;strong&gt;y&lt;/strong&gt; – Allows messages to appear on your screen.
+</pre>
+
+<h1 id="toc_3">write</h1>
+
+<p>
+如果<code>mesg</code>是<code>y</code>，让你的文本直接发送到另一台Linux机器的屏幕。
+</p>
+
+<pre class="brush: bash">
+[avishek@tecmint ~]$ write ravisaive
+</pre>
+
+<h1 id="toc_4">talk</h1>
+
+<p>
+增强的<code>write</code>命令，talk命令可让你与其他登录的用户交谈。
+</p>
+
+<pre class="brush: bash">
+[avishek@tecmint ~]$ talk ravisaive
+</pre>
+ </div>
+</body>
+</html>

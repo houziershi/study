@@ -470,6 +470,15 @@ nl: List[Int] = List(1, 2, 3)
 List只能把元素加在头上，如果要加在后面的话，一个方法是在加到头上以后再调用
 `reverse`方法；还有一个方案是使用ListBuffer，它有`append`方法。
 
+=== LinkedList ===
+
+对于可变的链表，不能通过把`next`引用设置为`Nil`的方法将其设置为最后结点。应该是
+`LinkedList.empty`。
+
+=== DoubleLinkedList ===
+
+双向链表，`prev`引用指向前一个节点。
+
 === List常用方法 ===
 
 {{{class="brush: scala"
@@ -1540,13 +1549,26 @@ class Currency {}
 object USD extends Currency{ }
 }}}
 
-但是注意单例对象无法初始化，所以不能给主构造器传递参数。
+但是注意单例对象无法初始化，所以不能给主构造器传递参数。对象的主构造器会在对象
+第一次被使用时调用。如果没有使用过对象，那么它的构造函数也不会被执行。例：
+
+{{{class="brush: scala"
+object Account {
+	private var lastNumber = 0
+	
+	def newUniqueNumber() = { lastNumber += 1; lastNumber }
+}}}
+
+如果没用用过，那么`lastNumber`也不会被初始化。
 
 == 伴生对象 ==
 
 如果一个单例对象的名字和类一样，并且必须在同一个文件里。那它就是这个类的伴生对象
-（Companion Object），类是它的伴生类（Companion Class）。它们可以相互访问
-私有成员。
+（Companion Object），类是它的伴生类（Companion Class）。它们可以相互访问私有
+成员。
+
+但是要注意，虽然可以相互访问私有成员，但并不是在同一作用域中。例如：`Account`类
+必须通过`Account.newAccount()`而不是`newAccount()`方式来访问伴生对象的方法。
 
 {{{class="brush: scala" title="ChecksumAccumulator.scala"
 import scala.collection.mutable.Map
@@ -1630,7 +1652,11 @@ val a = Marker("yellow")
 val b = Marker("black")
 }}}
 
+这样的写法的一个优点是对嵌套表达式少写`new`会方便很多：
 
+{{{class="brush: scala"
+Array(Array(1,7), Array(2,9))
+}}}
 
 == 与Java的区别 ==
 
@@ -3101,6 +3127,34 @@ Scala仅优化了直接递归调用使其返回同一个函数。如果递归是
 因此你或许希望Scala编译器能执行尾调用优化，但在这个例子里做不到。因此，尾调用
 优化受限于方法或嵌套函数在最后一个操作调用本身，而没有转到某个函数值或什么其它的
 中间函数的情况。
+
+== 蹦床 ==
+
+对于消除递归，有一个比尾递归更加通用的机制叫作“蹦床”。它通过一个循环不断地调用
+函数，每个函数都返回一下要被调用的函数。尾递归其实是蹦床的一个特例：每个函数都
+返回它自己。
+
+Scala的`TailCalls`工具对象帮助实现蹦床。相互递归的函数返回类型为`TailRec[A]`。
+其值为`done(result)`或`tailcall(fun)`二者之一。其中`fun`代表下一个要被调用的函数
+，这个函数不能有额外的参数而且返回类型为`TailRec[A]`的函数。
+
+例子：
+
+{{{class="brush: scala"
+import scala.util.control.TailCalls._
+
+object TailCallDemo extends App {
+  def evenLength(xs: Seq[Int]): TailRec[Boolean] =
+    if (xs.isEmpty) done(true) else tailcall(oddLength(xs.tail))
+
+  def oddLength(xs: Seq[Int]): TailRec[Boolean] =
+    if (xs.isEmpty) done(false) else tailcall(evenLength(xs.tail))
+
+  println(evenLength(1 to 1000000).result)
+}
+}}}
+
+调用时，用`result`方法取得结果：
 
 == Execute Around Method 模式 ==
 

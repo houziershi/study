@@ -1,0 +1,151 @@
+
+
+%title Google and Android
+
+%toc Google and Android
+
+= 可望不可及的开源：Google是如何逐步牢牢控制开源系统Android的？ =
+
+    导语：一无所有无所谓失去，Android一开始就是如此，而当独占鳌头时，保持开放、兼容就没那么容易了。 Android已然从昔日Google的保护伞长成了亟需Google保护的移动财产。移动是互联网的未来，控制世界最大的移动平台好处自不消说。 可“开源”就如一只妖精，一旦放出来让它回到水晶瓶里可没那么容易，问题终于来了:Google将如何控制一个开源平台呢？
+
+6 年前，2007 年 11 月，Android Open Source Project (AOSP) 初问世。而就这之前 6 个月，第一部iPhone刚刚在众人瞩目中诞生，智能手机迎来了一个新时代。虽然 Google 当时仅是 iPhone app 层面上的合作伙伴，它很清楚 iPhone 独霸智能手机世界是什么局面。就 Vic Gundotra 回忆，Andy Rubin 曾这样说过：
+
+如果 Google 无动于衷的话，我们将不得不接受一个十分可怕的未来，一个没有选择的世界：同一个人，一个公司，一部手机，一个运营商。
+
+Google 恐怕苹果会最终统治整个移动世界。因此，当 Google 在移动世界一名不文的时候，Android 作为开源项目面世实为其对抗苹果的权宜之计。
+
+那时候，Google 分得任何一小块市场份额都觉得欣慰。于是 Google 决定将 Android 贡献出来，并将之作为四处安插 Google 服务的特洛伊木马。之所以这样做 Google 的出发点在于：如果有朝一日苹果封锁了 Google Search，用户也将在桌面的战场上失去其搜索业务。Android 其实是横亘于 Google Search“城堡”前的一道防卫壕沟，以确保 Google 线上财产在移动端的保值增值。
+
+然而，今非昔比。Android 的全球市场份额已从零窜至近 80%。Android 或许已经赢了智能手机的战争, 但“Android 的胜利“并不等同于“Google 的胜利”。由于 Android 是开源的，因此它并不属于 Google，每个人只要有能力都可以开发出一个新版本来。
+
+Windows Phone 和 Blackberry 10 系统在移动市场的挣扎告诉我们，占有 app 才是王道。Android 装机量的优势意味着它是一个海量 app 平台。如果另一玩家基于 Android 开发出一套新操作系统的话，它天然地就会兼容数以百万计的 app；这个公司只须自建一个应用商店就行了。如果另有一家公司能够开发出一款比现有 Android 更出色的版本的话，它无疑会对 Google 目前的智能手机老大地位造成威胁。Google 面临的最大危险就是，半路杀出一个表现卓越的替代版 Android 来。
+
+一些公司正在试图将 Google 的印迹从 Android 中抹掉，其中最显眼的要数亚马逊 Kindle Fire 采用的 Android（Mojito）了。亚马逊撇掉了其中所有 Google 附件，搭建了自家的应用商店、内容商店、浏览器、云存储和 e-mail。整个中国市场也过滤掉了 Android 中的 Google 部分，本来大部分的 Google 服务在中国大陆也是失效的。不管怎么说， 这两种情况下 Google 的 Android 没有得到任何报偿。
+
+一无所有无所谓失去，Android 一开始就是如此，而当独占鳌头时，保持开放、兼容就没那么容易了。 Android 已然从昔日 Google 的保护伞长成了亟需 Google 保护的移动财产。移动是互联网的未来，控制世界最大的移动平台好处自不消说。 可“开源”就如一只妖精，一旦放出来让它回到水晶瓶里可没那么容易，问题终于来了: 你将如何控制一个开源项目呢？
+
+Google 一直都对诸多 Android 替代版本保有防范措失。其实人们所认识的 Android 包括两部分，其一是 AOSP 的开源组件，是为 Android 的基础，其二为闭源组件 Google 系 app 群。虽然 Google 既不会走向完全开源也不会完全封闭，但它正在竭尽所能在加大对整个开源项目的控制力。该公司的主要方略就是将越来越多的 app 整合在闭源的“Google”保护伞之下。
+
+== 闭源是一场无声的运动 ==
+
+闭源的 Google app 一直都在。起初它们主要是指 Google 线上服务移动客户端，如 Gmail、Maps、Talk 和 YouTube。当 Android 没有任何市场份额时，在这些客户端基础上，Google 开放了 Android 的剩余组件。而现在的 Android 犹如一个移动发电场，它觉得自己应该加强对其开源代码的控制了。
+
+对一些 app 而言，Google 仍会以开源组件待之，而一旦专有版发布后，AOSP 版本上的 app 也将停止运行。更少的开源代码意味着 Google 的竞争对手们要做更多的补充工作。虽然你不能灭掉一个开源 app, 但你可以通过升级版本的闭源化使其前任形同虚设。但凡 Google 在 Play Store 中升级或新发一款 app，就意味着又有相应开源版本的终结。
+
+我们从 Search 应用说起，这个例子恰到好处地说明了当 Google 复制 AOSP 功能时的后果。
+
+2010 年 8 月份，Google 推出了Voice Actions服务。与此同时，它将“Google Search”引入了 Android Market，当时流行的版本是 Froyo(Android 2.2）。上图可见，最近版本的 AOSP Search、以及运行在 Android 4.3 版本上的 Google Search。没错，AOSP Search 仍停留在 Android 2.2 的水平上，而 Google Search 早已整合了语音、音频搜索及文字语音切换功能，而且它还整合了私人助手服务 Google Now。AOSP 版本则永远在 Web 和本地搜索功能上被迫裹足不前了，如此如此。
+
+在 2010 年 Google I/O 大会时，Google 首次展示了其云音乐服务，无独有偶，这也恰是 AOSP 版音乐应用被冻结的时刻。时至今日，它还是一款 Froyo 应用。除了音乐商店和订阅选项，Play Music 早已接入了 Google 的云音乐服务，目前已经历过多次用户界面改版，且支持 Equalizer 和 Chromecast。很难想象它们竟曾是同一个东西。
+
+Google Calendar 是近来一款进入闭源之列的 Google 应用。Google 对 Android 社区的说辞则饶有兴味：新版日历即将在 Play Store 开放下载了！将会有更多功能！（哦，闭源又来也）
+
+连键盘都难逃此劫。几个月前，Google 为其虚拟键盘增加了滑行输入功能。猜猜它的源代码在哪儿？反正不在 AOSP 中。上图可见两种键盘的不同设置选项。Google Keyboard 具备滑动输入选项，而 AOSP 则不然——Google Keyboard 刚发布，AOSP 版本就被抛弃了。
+
+Camera 和 Gallery 实际上是一个 APK。AOSP 版本称“Gallery2.apk”，而 Google 版本叫做“ GalleryGoogle.apk”。如图，Photospheres 实为 Google 版本的专属功能——这个创新的相机模式 AOSP 也是无缘染指，Google+ 相册也是如此。正常情况下， 云端 Google+ 相册应该置于本地相册的旁边。
+
+这里我们应该表扬下 Google。虽然 AOSP 没有纳入这些新功能，但 Android 4.3 的最新设计元素却被纳入了 Android 源代码之中。
+
+虽然还未发布，SMS 会是下一个出局的应用。虽然大家普遍欢迎Google Hangouts整合短信发送功能并与 iMessage 呈竞争之势，这也就意味着将 Android 的 SMS 应用搬至闭源 app 中去。一旦 Google 作了 SMS 的整合，很可能 Android 一到两个版本更新后，SMS 应用就不是默认成员了，这与它为 Chrome 而干掉之前的浏览器是一个道理（虽然 Chrome 还保持开源）。
+
+当 Hangouts 真正整合 SMS 时，AOSP 版的短信应用就会被完全抛弃了，而且短信应用也快要退休了。（自 Android 4.0 版本后它就没有重大更新）所以这意味着：开源的短信应用也就此终结。
+
+下一块砧板上的肉应该是开源的 Gallery 了。在KitKat的曝光图片中，有一个叫做“Google Photos”的新图标。之前我们虽未见过 Google Photos，但其图标酷似现在的 "G+ Photos." 看来 AOSP Gallery 又是难逃一死，只能承受被一个 Google+ 配套闭源应用替代的命运。这就是 Google 新的独立王国的终极阐释了。
+
+= 限制OEM =
+
+    导语： “开源”就如一只妖精，一旦放出来让它回到水晶瓶里可没那么容易，Google究竟如何控制一个开源平台呢？虽然 Google已经在千方百计地削弱开源代码库的价值，但通过升级app并使其闭源化并非Google赢得这场博弈的唯一法门。
+
+    对绝大多数OEM品牌商、第三方应用开发者而言，选择闭源的Google Andoid已是一个“无法拒绝的邀约”，Google极为优质的API资源已然让OEM们和开发者在相互牵制中无以自拔地“团结”在Google周围，任何衍生版的Android（Android Forker）都难于突围，任何违法Google禁令的依附者都不可避免地受到惩罚。
+
+== 锁定OEM制造商 ==
+
+虽然 Google 已经在千方百计地削弱开源代码库的价值，但通过升级 app 并使其闭源化并非 Google 赢得这场博弈的唯一法门。即使半路突然杀出一个更具威力的 Android 来，它也很难博取广大制造商的支持。在一个充分竞争的市场中，谈妥一个 OEM 厂商并不是难事，但 Google 正让这变得越来越难。
+
+Google 在移动端的控制力主要源于 app 群—— Gmail、Maps、Google Now、Hangouts、YouTube 和 Play Store。这些都 是 Android 的杀手级应用，大大小小的制造商们都希望它们出现在自家的设备上。可这些 app 并非开源的，因此它们须得到 Google 的授权。这让人自然而然联想到电影《教父》中的场面，因为“这是一个无法拒绝的邀约”。
+
+虽然这不能算是硬性条款，但加入 Open Handset Alliance（OHA) 而获得 Google 授权会让日子好过得多。OHA 是一个与 Android——Google 的 Android 达成协议的公司联盟，按照协定，未经 Google 允许各公司皆不得生产相关 Android 设备。一个公司加入 OHA 就等同于签署了卖身契，其设备也就不能运行其它版本的 Android 系统了。
+
+Acer 就是因为采用了阿里巴巴的阿里云系统（一个 Android 衍生版本）而受到了惩罚。Google 获悉后马上就切断了它的 Google apps 接入权。为此 Google 甚至发了篇官博来解释：
+
+“虽然 Android 面向所有人开放，但只有兼容 Android 的设备才能从完整的 Android 生态中受益。任何加入 Open Handset Alliance 的成员都应致力于建设一体化的 Android 平台——而非一系列不兼容版本。”
+
+这让西方世界唯一一个坚挺抗争的“异端”Android 设备品牌亚马逊日子很难过。因为 Kindle OS 属非兼容版本，任何主要的 OEM 厂商都不得为亚马逊生产 Kindle Fire 。所以亚马逊寻找其下一个平板生产商时，它不得不自觉地绕过 Acer、Asus、Dell、Foxconn、Fujitsu、HTC、Huawei、Kyocera、Lenovo、LG、Motorola、NEC、Samsung、Sharp、Sony、Toshiba 和 ZTE 这一长串名单。目前，亚马逊将其 Kindle 设备的订单一股脑地承包给了 Quanta Computer, 一个笔记本电脑生产商。这或许是亚马逊的无奈选择吧。
+
+这意味着任何“移情别恋”的 OEM 都会招致死神之吻，被踢出 Android 阵营。跟 Google 一刀两断对任何一家 OEM 来说都很可怕，选择 Google Android 就是一条骑虎难下的不归路。
+
+任何希望获得 Google Apps 授权的 OEM 都要接受 Google 所谓“兼容性测试”。兼容保证的是 Play Store 里的应用都能在特定品牌的设备上运行。“兼容性”对 Google 别有深意，在 Google 内部，工程师们把它称之为 " 让 OEM 言听计从的一把锁 "。虽然 Google 已经推出了一套自动化工具来检测设备的“兼容性”，而获取 Google apps 的接入权 OEM 仍然需要私下里与 Google 邮件交流。这些协议大抵都是在幕后达成的。
+
+此外，凡获取 Google apps 授权的 OEM 须对其照单全收，如果看上了 Gmail 和 Maps，你也得一并收了 Google Play Services、Google+ 和 Google 认为应该放在套餐里的东西。基于位置的 WiFi 服务商 Skyhook 在为 Android 平台开发一款位置服务时就遇到了重重阻力。如果 OEM 设备内置了 Skyhook 的服务，那么 Google 就无从收集用户的地理位置数据了。这显然对 Goolge 不利，所以 Skyhook 就被判为“不兼容”。Skyhook 也因此把 Goolge 告上了法庭，案件至今还没有说法。
+
+== 影子软件 ==
+
+对大部分 OEM 而言，脱离 Google 生态系统谋生无异于痴人说梦。一个保持独立而又不得罪 Google 这个老大的办法就是额外提供一系列全套的 Google apps 衍生版本，虽然这常被诟病为“冗余软件”。
+
+三星就是一个典型的例子，它有一套自成体系的帐户系统、云端同步和应用商店，以及全套的 Google apps 替代品，比如 Internet、E-mail 和日历等。这些应用仍基于 AOSP，只是三星长期以来一直为用户提供自家的升级服务。
+
+一台设备上同时预装两个日历应用似乎又傻气又累赘，但很多 OEM 却视之为防范 Goolge app 的 Plan B——万一遇不测好歹有个后路。如果 Google 不按常理出牌致使自己受迫出局的话，公司至少还有拿给潜在消费者看的东西，顺便也能收集一些有价值的反馈。何乐不为呢？
+
+虽然这让用户感到负担和困惑，但就某些核心应用而言，也许少数用户会喜欢 OEM 提供的版本。三星这么做似乎有随时跳槽的可能性，但搞出一套影子 app 出来其挣脱 Google 生态系统很有限的动作，Android 真正为 OEM 所看重的部门其实是大量可供选择的第三方应用。Google 清楚这是自己最大的弱点，因此该公司已经在设法提高整个 app 生态对自己的依附性了。
+
+== 锁定第三方应用 ==
+
+Play Service 实为 Google 对抗衍生版本 Android 的一大利器。作为 Goolge 的闭源 app，它随 Google Apps 套餐包一道被授权给 OEM。任何功能由“正常版”Android 移植到 Google Play Services 都意味着由开源走向闭源。这一招不仅想靠独家垄断的功能吊用户的胃口，目的还在于通过 API 的授权牢牢控制住第三方应用开发者。
+
+脱离 Google 的应用生态系统似乎很容易：搭建自己的应用商店，说服开发者在上面投放 app, 然后你就可以独立发展了。可 Google 正在想方设法加大第三方应用对自身平台的依赖性，一方面，选择在所谓“兼容”设备上开发 app 的开发者生存状态越来越好了，同时在 Google Android 体系外的开发者状况越来越糟糕了，其战略其实是把“Android App Ecosystem”变成了“Google Play Ecosystem”。
+
+如果你使用了任何 Google API 接口，又试图在 Kindle 或其它 AOSP 版本上运行这个 app：surprise! 你只能眼看着它崩溃了。Google Android 占据了全球 80% 的市场份额，开发者真正关心的是 app 开发流程的简化，运行的流畅以及能否到达更多用户。而这些需求 Google API 都能轻松解决，美中不足在于你的 app 不得不依赖于 Google Apps 授权的设备。
+
+== Google Maps API ==
+
+接入 Google Maps 便可获得 Google 地图数据的使用权，它为天气或旅行应用开发提供了很大的便利。唯一的问题在于，这部分 Google 服务并非开源的 Android 服务。选择 Maps API 内在地意味着选择 Google 兼容设备作为开发平台。
+
+为此，亚马逊不得以只好使用诺基亚的授权地图数据并克隆了一套 Google Maps API ，该公司甚至还专门提供了一张页面告诉开发者如何将 app 从 Google Maps 迁移出来。Google 确实擅长优化自身的生态环境，这无形中就加大了外生态的生存难度系数。要在 Kindle 流畅运行你就得兼容两个不同的地图 API。
+
+这让 Android 衍生版本的处境很尴尬，这里亚马逊要么选择常年向诺基亚支服务付许可费用，要么就得自立门户重新开发一套地图出来。更甚之，亚马逊还得时时紧跟 Google 的步调调整节奏：亚马逊的 Maps API 支持的是 Google Maps API v1, 但如果某开发者需要用到 Maps v2 API 中的新功能，亚马逊就有的忙了。
+
+=== Google Cloud Messaging ===
+
+Google Cloud Messaging (GCM) 是 Android 平台通知推送最简单易用的方式，但它永远也不会出现在 AOSP 版本上。2013 年 I/O 大会时，它被引入至 Play Services。GCM 的作用主要在于帮开发者跨平台同步推送即时消息。
+
+=== Location APIs ===
+
+Google Maps API 或许仅适用一批小众应用，但不管出于什么原因，越来越多的应用都需要嵌入消息推送功能。这也是不甘落后的亚马逊不得不复制过来的新功能。其衍生版本叫做“Amazon Device Messaging”，仅支持亚马逊设备。跟 Maps API 的情况一样，亚马逊仍需追加苦工，但又不得不接受极小规模用户群体这一现实。而 GCM 的全部功能在 Amazon 版本可能属于集体缺位的状态，所以亚马逊的工作量很大。
+
+2013 年 Google I/O 大会时，Google 改版了 Android Location API 并将其纳入了 Google Play Services 服务项目。换句话说，Android 最新的位置服务已属闭源之列了。如果上述例证足以参考的话，之前的开源地理位置服务只好自生自灭了。新增功能除 Fused Location Provider（据说采用了全新的位置算法）外，还有 Geofencing 和 Activity recognition，前者为用户提供基于地理位置的活动推荐服务，后者则结合加速计数据和精妙的算法判断用户的运动状态，如步行、骑自行车或才开车——皆无需开启 GPS。
+
+由于 Maps API 和 GCM 皆依托 Google 服务器运行，独立的 app 完全有理由将其整合进来。但综观整个地理位置服务有一种 Goolgle 的大手无处不在的感觉。目前获得地理位置信息服务有两种方案，一是从 Google 获得节能而优质的闭源服务；二是选择蹩脚的、费电的开源服务。
+
+=== app内购买 ===
+
+Android 上最有效的应用内购买无疑是发生在 Google Play Store。如果某开发者选择了 Kindle 或在中国做应用开发，他们只好另谋高就了。这又一次证明，如果想要脱离 Google 的 Android，就得不断复制它的服务，亚马逊就推出了 Amazon In-App Purchasing API。就连三星也在抗争，它在两年前就有了类似的举动。
+
+=== Play Games ===
+
+Play Games 是另一个能够为移动开发者解决一系列难题的专属 API，它允许开发者能简便地引入用户帐户，排行榜、积分管理、云端存档和多人游戏机制等模块。它最大的优点在于跨平台运行，当然，除了 AOSP 的一切平台。这又是一个第三方应用赖以生存和衍生版 Android 平台不得不复制的 API。亚马逊有一套叫做“GameCircle”的 API，但它在功能上并不与 Play Games 重合，因此选择亚马逊的游戏开发者还得额外开发一个完全独立的多人游戏模块。
+
+== 通过iOS锁定开发者 ==
+
+Google 颇为诡黠的一点在于其 90% 以上的 API 都支持 iOS 平台。从开发者的角度思量下你是否会用 Google 的 API：Google 的解决方案往往在可用性、功能性和易用性上都是一流的；它支持两大主流平台，这意味着选择 Google 的 API 就能覆盖到绝大多数的潜在用户。它唯一的缺陷就在于不兼容衍生版 Android，但任何衍生版的 Andoid 背后都一小波你在乎的目标设备。
+
+也许大部分开发者都会拥抱 Google API，可也须回答这个问题：他们将如何区处 Kindle 和其他版本的 Android 呢？开发者们完全有自主权选择其它替代性 API 解决方案，但这个替代品可能会有过期、不兼容、以及功能残缺等缺陷，专注于产品设计的开发者这时大都会果断地抛弃这些小众衍生版 Android，从而也省去了许多无谓的工作量。
+
+== 三星不成大气候 ==
+
+让我们解释下为什么亚马逊能够脱离 Google 独立生存而三星却做不到。亚马逊虽是一个 Google API 复制机器，但三星在这方面却比它还不如。关于三星脱离 Google 生态的任何猜测都是不成熟的，除非你看到它对外授权了地图数据或开发出了一套云端消息推送 API。
+
+亚马逊的确算得上上进，但这家公司本就出生于互联网。服务器和软件服务是它的看家本领，因此发展出一批云服务算不得什么突破。三星则是一家电子产品公司——它并没有云端基础设施和 API 开发的基因。因此亚马逊能够在短短几年内依托其云端平台做好 Google 的跟班儿，但三星却还是步履维艰。
+
+三星也算有一点进步，如刚才所说，它推出了自家的应用内购买 SDK 包。有趣的是，它还有一套广告 SDK 包，但就没怎么赚过钱。相反，Google 则支持所括 Android、iOS、衍生版 Android 甚至 Windows Phone 上的所有广告。
+
+== 可望不可及的开源 ==
+
+任何有心挑战 Google Android 的公司都得把本文中提到的服务复制一遍。即便如此也不过是貌似与 Google Android 打了个平手。你仍须给用户一个放弃 Google Android 而投奔你的充分理由。
+
+Google 俨然已经自成体系，它的基础云服务和 Maps 皆免费提供。任何有需求的公司都难免会用到 Google 的服务。亚马逊或是个例外，但比较下：Google 可依托 Maps 销售广告挣钱，而亚马逊却须替你用户常年向诺基亚值钱。这就是任何一个衍生版 Android 所面临的宭境。
+
+即便哪家公司能拿出一款牛 B 闪闪的衍生版 Andoid 来，它也得面对几乎所有的 OEM 都与 Google 签了卖身契这个事实。对 OEM 来讲，脱离 Google 投身另一衍生版 Android 风险要远大于收益。
+
+虽说 Android 是开源的，不过它是一种”可望而不可及“的开源。所到之处，但凡没有 Google 的庇护，想要利用 Andoid 都会连连受阻。违反了 Google 的禁令，就只能看着眼前的世界坍塌下来。
+
+

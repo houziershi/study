@@ -38,6 +38,11 @@
 <li><a href="#toc_2.2.1">OS可执行脚本</a>
 </ul>
 <li><a href="#toc_2.3">Scala程序</a>
+<ul>
+<li><a href="#toc_2.3.1">main方法</a>
+<li><a href="#toc_2.3.2">App特质</a>
+<li><a href="#toc_2.3.3">Application特质</a>
+</ul>
 <li><a href="#toc_2.4">脚本与程序的区别</a>
 </ul>
 <li><a href="#toc_3">构建工具</a>
@@ -275,6 +280,8 @@ println("hello," + arg(0) + "!")
 
 <h2 id="toc_2.3">Scala程序</h2>
 
+<h3 id="toc_2.3.1">main方法</h3>
+
 <p>
 先看一个工具类，它根据字符串来计算出检验和：
 </p>
@@ -373,9 +380,71 @@ of -&gt; -213
 love -&gt; -182
 </pre>
 
+
+<h3 id="toc_2.3.2">App特质</h3>
+
 <p>
-还有一个加入的<code>Application</code>特质的方式实现应用程序，但是有局限：
-不能访问命令行参数、只能在单线程下用。所以不推荐用它。
+扩展<code>App</code>特质，然后把程序代码放入构造器方法中：
+</p>
+
+<pre class="brush: scala" title="Hello.scala">
+object Hello extends App {
+	print("Hello World!")
+}
+</pre>
+
+<p>
+通过<code>args</code>属性得到命令行参数：
+</p>
+
+<pre class="brush: scala" title="Hello.scala">
+object Hello extends App {
+
+	if (args.length &gt; 0)
+		println("Hello, " + args(0))
+	else
+		println("Hello, World!")
+
+}
+</pre>
+
+<p>
+在调用程序时设置了参数<code>scala.time</code>的话，程序退出时还会显示消耗的时间：
+</p>
+
+<pre class="brush: bash">
+$ scalac Hello.scala
+$ scala -Dscala.time Hello Fred
+Hello, Fred
+[total 4ms]
+</pre>
+
+<p>
+原理是<code>App</code>特质是扩展自<code>DelayedInit</code>，它会把初始化方法都挪到<code>delayedInit()</code>方法
+中。在那里有显示初始化时间的动作。
+</p>
+
+
+<h3 id="toc_2.3.3">Application特质</h3>
+
+<p>
+还有一个早期版本的方法：<code>Application</code>特质的方式实现应用程序，但是有局限：
+</p>
+
+<ul>
+<li>
+在静态初始化方法中执行程序动作，不被编译器优化；
+
+<li>
+不能访问命令行参数；
+
+<li>
+只能在单线程下用。
+
+</ul>
+
+<p>
+所以不推荐用它。
 </p>
 
 <p>
@@ -386,6 +455,8 @@ object MyApp extends Application {
 	println("Hello")
 }	
 </pre>
+
+
 
 
 <h2 id="toc_2.4">脚本与程序的区别</h2>

@@ -51,12 +51,15 @@ reveal.js： [[reveal.js]]
 
 Vim：[[vim]]
 
-[[vim.java]]
+Vim Java：[[vim.java]]
 
 VimWiki：[[vimwiki]]
 
+vim.markdown：[[vim.markdown]]
+
 Emmet-vim：[[Emmet-vim]]
 
+vim csv：[[vim.csv]]
 
 == IDE ==
 
@@ -66,7 +69,7 @@ Emmet-vim：[[Emmet-vim]]
 
 Git：[[git]]
 
-[[Subversion]]
+SVN：[[Subversion]]
 
 == 构建工具 ==
 
@@ -100,9 +103,11 @@ DB2： [[DB2]]
 
 [[linux.install]]
 
-[[linux.disc]]
+[[linux.grub]]
 
 [[linux.fun]]
+
+[[linux.tips]]
 
 [[raspberry.pi]]
 
@@ -154,6 +159,8 @@ email：[[email]]
 
 pidgin：[[pidgin]]
 
+远程桌面：remina
+
 == 多媒体 ==
 
 [[SMplayer]]
@@ -165,3 +172,11 @@ pidgin：[[pidgin]]
 = 标准 =
 
 网络标准：[[stand.net]]
+
+= 吐槽 =
+
+[[Joke]]
+
+[[linus.said]]
+
+[[google.android]]

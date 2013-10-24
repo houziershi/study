@@ -11,17 +11,21 @@
 一般只对html文档起作为，但可以配置对其他的文件也生效：
 
 {{{class="brush: bash;"
-  # cat >> ~/.vimrc
-  let g:user_emmet_settings = {
+# cat >> ~/.vimrc
+let g:user_emmet_settings = {
+  \  'xml' : {
+  \    'extends' : 'html',
+  \  },
+  \  'css' : {
+  \    'filters' : 'fc',
+  \  },
+  \  'jsp' : {
+  \    'extends' : 'html',
+  \    'filters' : 'html,c',
+  \  },
   \  `php` : {
   \    `extends` : `html`,
   \    `filters` : `c`,
-  \  },
-  \  `xml` : {
-  \    `extends` : `html`,
-  \  },
-  \  `haml` : {
-  \    `extends` : `html`,
   \  },
   \}
 }}}

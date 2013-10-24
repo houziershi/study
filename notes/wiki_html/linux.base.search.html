@@ -78,6 +78,48 @@
 <li><a href="#toc_2.5.3">Find and Delete 100MB Files</a>
 <li><a href="#toc_2.5.4">Find Specific Files and Delete</a>
 </ul>
+<li><a href="#toc_2.6">另一套例子</a>
+<ul>
+<li><a href="#toc_2.6.1">用文件名查找文件</a>
+<li><a href="#toc_2.6.2">用文件名查找文件，忽略大小写</a>
+<li><a href="#toc_2.6.3">限定搜索指定目录的深度</a>
+<li><a href="#toc_2.6.4">在查找到的文件上执行命令</a>
+<li><a href="#toc_2.6.5">相反匹配</a>
+<li><a href="#toc_2.6.6">使用inode编号查找文件</a>
+<li><a href="#toc_2.6.7">根据文件权限查找文件</a>
+<li><a href="#toc_2.6.8">找到目录及子目录下所有空文件</a>
+<li><a href="#toc_2.6.9">查找最大的文件</a>
+<li><a href="#toc_2.6.10">查找最小的文件</a>
+<li><a href="#toc_2.6.11">查找指定文件类型的文件</a>
+<li><a href="#toc_2.6.12">通过和其他文件比较修改时间查找文件</a>
+<li><a href="#toc_2.6.13">通过文件大小查找文件</a>
+<li><a href="#toc_2.6.14">给常用find操作取别名</a>
+<li><a href="#toc_2.6.15">删除大型打包文件</a>
+</ul>
+<li><a href="#toc_2.7">基于访问/修改/更改时间查找文件</a>
+<ul>
+<li><a href="#toc_2.7.1">找到在1个小时内被更改的文件</a>
+<li><a href="#toc_2.7.2">找到1个小时内被访问过的文件</a>
+<li><a href="#toc_2.7.3">查找一个小时内状态被改变的文件</a>
+<li><a href="#toc_2.7.4">搜索仅仅限定于文件，不显示文件夹</a>
+<li><a href="#toc_2.7.5">仅仅查找非隐藏的文件（不显示隐藏文件）</a>
+</ul>
+<li><a href="#toc_2.8">基于文件比较的查找命令</a>
+<ul>
+<li><a href="#toc_2.8.1">查找文件修改时间在某一文件修改后的文件</a>
+<li><a href="#toc_2.8.2">查找文件访问时间在某一文件的修改时间之后的文件</a>
+<li><a href="#toc_2.8.3">查找状态改变时间在某个文件修改时间之后的文件</a>
+</ul>
+<li><a href="#toc_2.9">在查找到的文件列表结果上直接执行命令</a>
+<ul>
+<li><a href="#toc_2.9.1">查看结果</a>
+<li><a href="#toc_2.9.2">仅仅在当前文件系统中搜索</a>
+<li><a href="#toc_2.9.3">在同一个命令中使用多个<code>{}</code></a>
+<li><a href="#toc_2.9.4">使用多个<code>{}</code>实例</a>
+<li><a href="#toc_2.9.5">将错误重定向到<code>/dev/nul</code></a>
+<li><a href="#toc_2.9.6">将文件名中的空格换成下划线</a>
+<li><a href="#toc_2.9.7">在find结果中同时执行两条命令</a>
+</ul>
 </ul>
 <li><a href="#toc_3">grep</a>
 </ul>
@@ -554,6 +596,989 @@ command.
 # find / -type f -name *.mp3 -size +10M -exec ls -l {} \;
 </pre>
 
+<h2 id="toc_2.6">另一套例子</h2>
+
+<p>
+首先，在你的<code>home</code>目录下面创建下面的空文件，来测试下面的<code>find</code>命令示例：
+</p>
+
+<pre class="brush: bash" title="create_sample_files.sh">
+touch mycprogram.c
+touch MyCProgram.c
+touch Program.c
+
+mkdir backup
+cd backup
+
+touch MybashProgram.sh
+touch mycprogram.c
+touch MyCProgram.c
+touch Program.c
+</pre>
+
+<p>
+然后执行：
+</p>
+
+<pre class="brush: bash">
+chmod +x create_sample_files.sh
+./create_sample_files.sh
+</pre>
+
+
+<h3 id="toc_2.6.1">用文件名查找文件</h3>
+
+<p>
+用<code>MyCProgram.c</code>作为查找名在当前目录及其子目录中查找文件的方法。
+</p>
+
+<pre class="brush: bash">
+# find -name "MyCProgram.c"
+./backup/MyCProgram.c
+./MyCProgram.c
+</pre>
+
+
+<h3 id="toc_2.6.2">用文件名查找文件，忽略大小写</h3>
+
+<p>
+用<code>MyCProgram.c</code>作为查找名在当前目录及其子目录中查找文件的方法，忽略了大小写。
+</p>
+
+<pre class="brush: bash">
+# find -iname "MyCProgram.c"
+./mycprogram.c
+./backup/mycprogram.c
+./backup/MyCProgram.c
+./MyCProgram.c
+</pre>
+
+<h3 id="toc_2.6.3">限定搜索指定目录的深度</h3>
+
+<p>
+使用<code>mindepth</code>和<code>maxdepth</code>限定搜索指定目录的深度。
+</p>
+
+<p>
+在<code>root</code>目录及其子目录下查找<code>passwd</code>文件。
+</p>
+
+<pre class="brush: bash">
+# find / -name passwd
+./usr/share/doc/nss_ldap-253/pam.d/passwd
+./usr/bin/passwd
+./etc/pam.d/passwd
+./etc/passwd
+</pre>
+
+
+<p>
+在<code>root</code>目录及其1层深的子目录中查找<code>passwd</code>. (例如root — level 1, and one 
+sub-directory — level 2)
+</p>
+
+<pre class="brush: bash">
+# find -maxdepth 2 -name passwd
+./etc/passwd
+</pre>
+
+<p>
+在<code>root</code>目录下及其最大两层深度的子目录中查找<code>passwd</code>文件. (例如 root — level 1, 
+and two sub-directories — level 2 and 3 )
+</p>
+
+<pre class="brush: bash">
+# find / -maxdepth 3 -name passwd
+./usr/bin/passwd
+./etc/pam.d/passwd
+./etc/passwd
+</pre>
+
+<p>
+在第二层子目录和第四层子目录之间查找<code>passwd</code>文件。
+</p>
+
+<pre class="brush: bash">
+# find / -maxdepth 3 -name passwd
+# find -mindepth 3 -maxdepth 5 -name passwd
+./usr/bin/passwd
+./etc/pam.d/passwd
+</pre>
+
+
+<h3 id="toc_2.6.4">在查找到的文件上执行命令</h3>
+
+<p>
+下面的例子展示了<code>find</code>命令来计算所有不区分大小写的文件名为<code>MyCProgram.c</code>的文件的
+MD5验证和。
+</p>
+
+<ul>
+<li>
+<code>{}</code>将会被当前文件名取代。
+
+<li>
+那个<code>\</code>好像是类似转义用的，
+
+<ul>
+<li>
+后面加上<code>;</code>表示命令会执行多次，每次后面都加上找到的一个文件。
+
+<li>
+后面加上<code>+</code>，表示只会执行一次命令，执行的时候把所有找到的文件一次性传给它。
+
+</ul>
+</ul>
+
+<pre class="brush: bash">
+# find -iname "MyCProgram.c" -exec md5sum {} \;
+d41d8cd98f00b204e9800998ecf8427e  ./mycprogram.c
+d41d8cd98f00b204e9800998ecf8427e  ./backup/mycprogram.c
+d41d8cd98f00b204e9800998ecf8427e  ./backup/MyCProgram.c
+d41d8cd98f00b204e9800998ecf8427e  ./MyCProgram.c
+</pre>
+
+
+<h3 id="toc_2.6.5">相反匹配</h3>
+
+<p>
+显示所有的名字不是<code>MyCProgram.c</code>的文件或者目录。由于<code>maxdepth</code>是1，所以只会显示
+当前目录下的文件和目录。
+</p>
+
+<pre class="brush: bash">
+# find -maxdepth 1 -not -iname "MyCProgram.c"
+.
+./MybashProgram.sh
+./create_sample_files.sh
+./backup
+./Program.c
+</pre>
+
+
+<h3 id="toc_2.6.6">使用inode编号查找文件</h3>
+
+<p>
+任何一个文件都有一个独一无二的<code>inode</code>编号，借此我们可以区分文件。创建两个名字
+相似的文件，例如一个有空格结尾，一个没有。
+</p>
+
+<pre class="brush: bash">
+# touch "test-file-name"
+
+# touch "test-file-name "
+[Note: There is a space at the end]
+
+# ls -1 test*
+test-file-name
+test-file-name
+</pre>
+
+<p>
+从<code>ls</code>的输出不能区分哪个文件有空格结尾。使用选项<code>-i</code>，可以看到文件的<code>inode</code>编号
+，借此可以区分这两个文件。
+</p>
+
+<pre class="brush: bash">
+# ls -i1 test*
+16187429 test-file-name
+16187430 test-file-name
+</pre>
+
+<p>
+你可以如下面所示在<code>find</code>命令中指定<code>inode</code>编号。在此，<code>find</code>命令用<code>inode</code>编号
+重命名了一个文件。
+</p>
+
+<pre class="brush: bash">
+# find -inum 16187430 -exec mv {} new-test-file-name \;
+
+# ls -i1 *test*
+16187430 new-test-file-name
+16187429 test-file-name
+</pre>
+
+
+<p>
+你可以在你想对那些像上面一样的糟糕命名的文件做某些操作时使用这一技术。例如，名为
+<code>file?.txt</code>的文件名字中有一个特殊字符。若你想执行<code>rm file?.txt</code>，下面所示的所有
+三个文件都会被删除。所以，采用下面的步骤来删除<code>file?.txt</code>文件。
+</p>
+
+<pre class="brush: bash">
+# ls
+file1.txt  file2.txt  file?.txt
+</pre>
+
+<p>
+找到每一个文件的<code>inode</code>编号。
+</p>
+
+<pre class="brush: bash">
+# ls -i1
+804178 file1.txt
+804179 file2.txt
+804180 file?.txt
+</pre>
+
+<p>
+如下所示： 使用<code>inode</code>编号来删除那些具有特殊符号的文件名。
+</p>
+
+<pre class="brush: bash">
+# find -inum 804180 -exec rm {} \;
+
+# ls
+file1.txt  file2.txt
+[Note: The file with name "file?.txt" is now removed]
+</pre>
+
+
+<h3 id="toc_2.6.7">根据文件权限查找文件</h3>
+
+<p>
+下面的操作时合理的：
+</p>
+
+<ul>
+<li>
+找到具有指定权限的文件
+
+<li>
+忽略其他权限位，检查是否和指定权限匹配
+
+<li>
+根据给定的八进制/符号表达的权限搜索
+
+</ul>
+
+<p>
+此例中，假设目录包含以下文件。注意这些文件的权限不同。
+</p>
+
+<pre class="brush: bash">
+# ls -l
+total 0
+-rwxrwxrwx 1 root root 0 2009-02-19 20:31 all_for_all
+-rw-r--r-- 1 root root 0 2009-02-19 20:30 everybody_read
+---------- 1 root root 0 2009-02-19 20:31 no_for_all
+-rw------- 1 root root 0 2009-02-19 20:29 ordinary_file
+-rw-r----- 1 root root 0 2009-02-19 20:27 others_can_also_read
+----r----- 1 root root 0 2009-02-19 20:27 others_can_only_read
+</pre>
+
+<p>
+找到具有组读权限的文件。使用下面的命令来找到当前目录下对同组用户具有读权限的文件
+，忽略该文件的其他权限。
+</p>
+
+<pre class="brush: bash">
+# find . -perm -g=r -type f -exec ls -l {} \;
+-rw-r--r-- 1 root root 0 2009-02-19 20:30 ./everybody_read
+-rwxrwxrwx 1 root root 0 2009-02-19 20:31 ./all_for_all
+----r----- 1 root root 0 2009-02-19 20:27 ./others_can_only_read
+-rw-r----- 1 root root 0 2009-02-19 20:27 ./others_can_also_read
+</pre>
+
+<p>
+找到对组用户具有只读权限的文件。
+</p>
+
+<pre class="brush: bash">
+# find . -perm g=r -type f -exec ls -l {} \;
+----r----- 1 root root 0 2009-02-19 20:27 ./others_can_only_read
+</pre>
+
+<p>
+找到对组用户具有只读权限的文件(使用八进制权限形式)。
+</p>
+
+<pre class="brush: bash">
+# find . -perm 040 -type f -exec ls -l {} \;
+----r----- 1 root root 0 2009-02-19 20:27 ./others_can_only_read
+</pre>
+
+
+<h3 id="toc_2.6.8">找到目录及子目录下所有空文件</h3>
+
+<p>
+找到<code>home</code>目录及子目录下所有的空文件(0字节文件)
+</p>
+
+<p>
+下面命令的输出文件绝大多数都是锁定文件盒其他程序创建的place hoders
+</p>
+
+<pre class="brush: bash">
+# find ~ -empty
+</pre>
+
+<p>
+只列出你<code>home</code>目录里的空文件。
+</p>
+
+<pre class="brush: bash">
+# find . -maxdepth 1 -empty
+</pre>
+
+<p>
+只列出当前目录下的非隐藏空文件。
+</p>
+
+<pre class="brush: bash">
+# find . -maxdepth 1 -empty -not -name ".*"
+</pre>
+
+
+<h3 id="toc_2.6.9">查找最大的文件</h3>
+
+<p>
+查找5个最大的文件
+</p>
+
+<p>
+下面的命令列出当前目录及子目录下的5个最大的文件。这会需要一点时间，取决于命令
+需要处理的文件数量。
+</p>
+
+<pre class="brush: bash">
+# find . -type f -exec ls -s {} \; | sort -n -r | head -5
+</pre>
+
+
+<h3 id="toc_2.6.10">查找最小的文件</h3>
+
+<p>
+查找5个最小的文件
+</p>
+
+<p>
+方法同查找5个最大的文件类似，区别只是sort的顺序是降序。
+</p>
+
+<pre class="brush: bash">
+# find . -type f -exec ls -s {} \; | sort -n  | head -5
+</pre>
+
+<p>
+上面的命令中，很可能你看到的只是空文件(0字节文件)。如此，你可以使用下面的命令
+列出最小的文件，而不是0字节文件。
+</p>
+
+<pre class="brush: bash">
+# find . -not -empty -type f -exec ls -s {} \; | sort -n  | head -5
+</pre>
+
+
+<h3 id="toc_2.6.11">查找指定文件类型的文件</h3>
+
+<p>
+使用<code>-type</code>查找指定文件类型的文件
+</p>
+
+<p>
+只查找socket文件
+</p>
+
+<pre class="brush: bash">
+# find . -type s
+</pre>
+
+<p>
+查找所有的目录
+</p>
+
+<pre class="brush: bash">
+# find . -type d
+</pre>
+
+<p>
+查找所有的一般文件
+</p>
+
+<pre class="brush: bash">
+# find . -type f
+</pre>
+
+<p>
+查找所有的隐藏文件
+</p>
+
+<pre class="brush: bash">
+# find . -type f -name ".*"
+</pre>
+
+<p>
+查找所有的隐藏目录
+</p>
+
+<pre class="brush: bash">
+# find -type d -name ".*"
+</pre>
+
+
+<h3 id="toc_2.6.12">通过和其他文件比较修改时间查找文件</h3>
+
+<p>
+显示在指定文件之后做出修改的文件。下面的<code>find</code>命令将显示所有的在<code>ordinary_file</code>
+之后创建修改的文件。
+</p>
+
+<pre class="brush: bash">
+# ls -lrt
+total 0
+-rw-r----- 1 root root 0 2009-02-19 20:27 others_can_also_read
+----r----- 1 root root 0 2009-02-19 20:27 others_can_only_read
+-rw------- 1 root root 0 2009-02-19 20:29 ordinary_file
+-rw-r--r-- 1 root root 0 2009-02-19 20:30 everybody_read
+-rwxrwxrwx 1 root root 0 2009-02-19 20:31 all_for_all
+---------- 1 root root 0 2009-02-19 20:31 no_for_all
+</pre>
+
+<pre class="brush: bash">
+# find -newer ordinary_file
+.
+./everybody_read
+./all_for_all
+./no_for_all
+</pre>
+
+<h3 id="toc_2.6.13">通过文件大小查找文件</h3>
+
+<p>
+使用<code>-size</code>选项可以通过文件大小查找文件。<code>– </code>指比给定尺寸小，<code>+</code>指比给定尺寸大。
+没有符号代表和给定尺寸完全一样大。
+</p>
+
+<p>
+查找比指定文件大的文件
+</p>
+
+<pre class="brush: bash">
+# find ~ -size +100M
+</pre>
+
+<p>
+查找比指定文件小的文件
+</p>
+
+<pre class="brush: bash">
+# find ~ -size -100M
+</pre>
+
+<p>
+查找符合给定大小的文件
+</p>
+
+<pre class="brush: bash">
+# find ~ -size 100M
+</pre>
+
+
+<h3 id="toc_2.6.14">给常用find操作取别名</h3>
+
+<p>
+若你发现有些东西很有用，你可以给他取别名。并且在任何你希望的地方执行。
+</p>
+
+<p>
+常用的删除<code>a.out</code>文件。
+</p>
+
+<pre class="brush: bash">
+# alias rmao="find . -iname a.out -exec rm {} \;"
+# rmao
+</pre>
+
+<p>
+删除c程序产生的<code>core</code>文件。
+</p>
+
+<pre class="brush: bash">
+# alias rmc="find . -iname core -exec rm {} \;"
+# rmc
+</pre>
+
+
+<h3 id="toc_2.6.15">删除大型打包文件</h3>
+
+<p>
+下面的命令删除大于<code>100M</code>的<code>*.zip</code>文件。
+</p>
+
+<pre class="brush: bash">
+# find / -type f -name *.zip -size +100M -exec rm -i {} \;"
+</pre>
+
+<p>
+用别名<code>rm100m</code>删除所有大于100M的<code>*.tar</code>文件。使用同样的思想可以创建<code>rm1g</code>,<code>rm2g</code>
+,<code>rm5g</code>的一类别名来删除所有大于1G,2G,5G的文件。
+</p>
+
+<pre class="brush: bash">
+# alias rm100m="find / -type f -name *.tar -size +100M -exec rm -i {} \;"
+# alias rm1g="find / -type f -name *.tar -size +1G -exec rm -i {} \;"
+# alias rm2g="find / -type f -name *.tar -size +2G -exec rm -i {} \;"
+# alias rm5g="find / -type f -name *.tar -size +5G -exec rm -i {} \;"
+
+# rm100m
+# rm1g
+# rm2g
+# rm5g
+</pre>
+
+
+<h2 id="toc_2.7">基于访问/修改/更改时间查找文件</h2>
+
+<p>
+你可以找到基于以下三个文件的时间属性的文件。
+</p>
+
+<ul>
+<li>
+访问时间的文件。文件访问时，访问时间得到更新。
+
+<li>
+的文件的修改时间。文件内容修改时，修改时间得到更新。
+
+<li>
+更改文件的时间。更改时间时，被更新的inode数据的变化。
+
+</ul>
+
+<p>
+在下面的例子中，<code>min</code>选项之间的差异和时间选项是参数。
+</p>
+
+<p>
+分论点将它的参数为分钟。例如，60分钟（1小时）= 60分钟。
+</p>
+
+<p>
+时间参数，将它的参数为24小时。例如，时间2 = 2 * 24小时（2天）。
+</p>
+
+<p>
+虽然这样做的24个小时计算，小数部分都将被忽略，所以25小时为24小时，和47小时取为24
+小时，仅48小时为48小时。要获得更清晰的参考<code>atime</code>的部分<code>find</code>命令的手册页。
+</p>
+
+<h3 id="toc_2.7.1">找到在1个小时内被更改的文件</h3>
+
+<p>
+想要通过文件修改时间找出文件，可以使用参数<code>-mmin</code>与<code>-mtime</code>。下面是man手册中有关
+定义：
+</p>
+
+<ul>
+<li>
+<code>-mmin n</code>文件最后一次修改是在<code>n</code>分钟之内
+
+<li>
+<code>-mtime n</code>文件最后一次修改是在<code>n * 24</code>小时之内（译者注：也就是n天了呗）
+
+</ul>
+
+<p>
+执行下面例子中的命令，将会找到当前目录以及其子目录下，最近一次修改时间在1个小时
+（60分钟）之内的文件或目录：
+</p>
+
+<pre class="brush: bash">
+# find . -mmin -60
+</pre>
+
+<p>
+同样的方式，执行下面例子中的命令，将会找到24小时（1天）内修改了的文件（文件系统
+根目录<code>/</code>下）：
+</p>
+
+<pre class="brush: bash">
+# find / -mtime -1
+</pre>
+
+<h3 id="toc_2.7.2">找到1个小时内被访问过的文件</h3>
+
+<p>
+想要通过文件访问时间找出文件，可以使用参数<code>-amin</code>与<code>-atime</code>。下面是man手册中有关
+定义：
+</p>
+
+<ul>
+<li>
+<code>-amin n</code>文件最后一次访问是在n分钟之内
+
+<li>
+<code>-atime n</code>文件最后一次访问是在 n*24小时之内
+
+</ul>
+
+<p>
+执行下面例子中的命令，将会找到当前目录以及其子目录下，最近一次访问时间在1个小时
+（60分钟）之内的文件或目录：
+</p>
+
+<pre class="brush: bash">
+# find . -amin -60
+</pre>
+
+<p>
+同样的方式，执行下面例子中的命令，将会找到24小时（1天）内被访问了的文件（文件
+系统根目录 / 下）：
+</p>
+
+<pre class="brush: bash">
+# find / -atime -1
+</pre>
+
+<h3 id="toc_2.7.3">查找一个小时内状态被改变的文件</h3>
+
+<p>
+（译者注：这里的改变更第1个例子的更改文件内容时间是不同概念，这里是更改的是文件
+<code>inode</code>的数据，比如文件的权限，所属人等等信息）
+</p>
+
+<p>
+要查找文件的<code>inode</code>的更改时间，使用<code>-cmin</code>和<code>-ctime</code>选项：
+</p>
+
+<ul>
+<li>
+<code>-cmin n</code> 文件的状态在n分钟内被改变
+
+<li>
+<code>-ctime n</code>  文件状态在n*24小时内（也就是n天内）被改变
+
+</ul>
+
+<p>
+（译者注：如果上面的n为-n形式，则表示n分钟/天之内，n为+n则表示n分钟/天之前）
+</p>
+
+<p>
+下面的例子在当前目录和其子目录下面查找一个小时内文件状态改变的文件（也就是60分钟
+内）：
+</p>
+
+<pre class="brush: bash">
+# find . -cmin -60
+</pre>
+
+<p>
+同样的道理，下面的例子在根目录/及其子目录下一天内（24小时内）文件状态被改变的
+文件列表：
+</p>
+
+<pre class="brush: bash">
+# find / -ctime -1
+</pre>
+
+<h3 id="toc_2.7.4">搜索仅仅限定于文件，不显示文件夹</h3>
+
+<p>
+上面的例子搜索出来不仅仅有文件，还会显示文件夹。因为当一个文件被访问的时候，它
+所处的文件夹也会被访问，如果你对文件夹不感兴趣，那么可以使用<code>-type f</code>选项：
+</p>
+
+
+<p>
+输出包含了文件和文件夹：
+</p>
+
+<pre class="brush: bash">
+# find /etc/sysconfig -amin -30
+.
+./console
+./network-scripts
+./i18n
+./rhn
+./rhn/clientCaps.d
+./networking
+./networking/profiles
+./networking/profiles/default
+./networking/profiles/default/resolv.conf
+./networking/profiles/default/hosts
+./networking/devices
+./apm-scripts
+</pre>
+
+<p>
+下面的例子会显示30分钟内被修改过的文件，文件夹不显示：
+</p>
+ 
+<pre class="brush: bash">
+# find /etc/sysconfig -amin -30 -type f
+./i18n
+./networking/profiles/default/resolv.conf
+./networking/profiles/default/hosts
+</pre>
+
+
+<h3 id="toc_2.7.5">仅仅查找非隐藏的文件（不显示隐藏文件）</h3>
+
+<p>
+如果我们查找的时候不想隐藏文件也显示出来，可以使用下面的正则式查找：
+</p>
+
+<p>
+下面的命令会显示当前目录及其子目录下15分钟内文件内容被修改过的文件，并且只列出
+非隐藏文件。也就是说，以.开头的文件时不会显示出来的
+</p>
+
+<pre class="brush: bash">
+# find . -mmin -15 \( ! -regex ".*/\..*" \)
+</pre>
+
+<h2 id="toc_2.8">基于文件比较的查找命令</h2>
+
+<p>
+我们平时通过更别的东西进行比较，会更容易记住一些事情。比如说我想找出在我编辑
+<code>test</code>文件之后编辑过的文件。你可以通过<code>test</code>这个文件的编辑时间作为比较基准去查找
+之后编辑过的文件：
+</p>
+
+<h3 id="toc_2.8.1">查找文件修改时间在某一文件修改后的文件</h3>
+
+<pre class="brush: bash">
+find -newer FILE
+</pre>
+
+<p>
+下面的例子显示在<code>/etc/passwd</code>修改之后被修改过的文件。对于系统管理员，想知道你
+新增了一个用户后去跟踪系统的活动状态是很有帮助的（万一那新用户不老实，一上来就
+乱搞，你很快就知道了）：
+</p>
+
+<pre class="brush: bash">
+# find -newer /etc/passwd
+</pre>
+
+<h3 id="toc_2.8.2">查找文件访问时间在某一文件的修改时间之后的文件</h3>
+
+<pre class="brush: bash">
+# find -newer /etc/passwd
+</pre>
+
+<p>
+下面的例子显示所有在<code>/etc/hosts</code>文件被修改后被访问到的文件。如果你新增了一个主机
+/端口记录在<code>/etc/hosts</code>文件中，你很可能很想知道在那之后有什么文件被访问到了，
+下面是这个命令：
+</p>
+
+<pre class="brush: bash">
+# find -anewer /etc/hosts
+</pre>
+
+<h3 id="toc_2.8.3">查找状态改变时间在某个文件修改时间之后的文件</h3>
+
+<pre class="brush: bash">
+find -cnewer FILE
+</pre>
+
+<p>
+下面的例子显示在修改文件<code>/etc/fstab</code>之后所有文件状态改变过的文件。如果你在
+<code>/etc/fstab</code>新增了一个挂载点，你很可能像知道那之后那些文件的状态发生了改变，这
+时候你可以使用如下命令：
+</p>
+
+<pre class="brush: bash">
+# find -cnewer /etc/fstab
+</pre>
+
+<h2 id="toc_2.9">在查找到的文件列表结果上直接执行命令</h2>
+
+<p>
+这之前你已经看到了如果通过<code>find</code>命令去查找各种条件的文件列表。如果你对这些<code>find</code>
+命令还不熟悉，我建议你看完上面的第一部分。
+</p>
+
+<p>
+接下来这部分我们向你介绍如果在<code>find</code>命令上执行各种不同的命令，也就是说如何去操作
+<code>find</code>命令查找出来的文件列表。
+</p>
+
+<p>
+我们能在<code>find</code>命令查找出来的文件名列表上指定任意的操作：
+</p>
+
+<pre class="brush: bash">
+# find &lt;CONDITION to Find files&gt; -exec &lt;OPERATION&gt; \;
+</pre>
+
+<p>
+其中的<code>OPERATION</code>可以是任意的命令，下面列举一下比较常用的：
+</p>
+
+<ul>
+<li>
+<code>rm</code>命令，用于删除find查找出来的文件
+
+<li>
+<code>mv</code>命令，用于重命名查找出的文件
+
+<li>
+<code>ls-l</code>命令，显示查找出的文件的详细信息
+
+<li>
+<code>md5sum</code>， 对查找出的文件进行md5sum
+
+<li>
+<code>wc</code>命令，用于统计计算文件的单词数量，文件大小等待
+
+<li>
+执行任何Unix的shell命令
+
+<li>
+执行你自己写的shell脚本，参数就是每个查找出来的文件名
+
+</ul>
+
+<h3 id="toc_2.9.1">查看结果</h3>
+
+<p>
+在find命令输出上使用<code>ls -l</code>， 列举出1小时内被编辑过的文件的详细信息
+</p>
+
+<pre class="brush: bash">
+# find -mmin -60
+./cron
+./secure
+ 
+# find -mmin -60 -exec ls -l {} \;
+-rw-------  1 root root 1028 Jun 21 15:01 ./cron
+-rw-------  1 root root 831752 Jun 21 15:42 ./secure
+</pre>
+
+<h3 id="toc_2.9.2">仅仅在当前文件系统中搜索</h3>
+
+<p>
+系统管理员有时候仅仅想在<code>/</code>挂载的文件系统分区上搜索，而不想去搜索其他的挂载分区
+，比如<code>/home/</code>挂载分区。如果你有多个分区被挂载了，你想在<code>/</code>下搜索，一般可以按
+下面的这样做
+</p>
+
+<p>
+下面这个命令会搜索根目录<code>/</code>及其子目录下所有<code>.log</code>结尾的文件名。如果你有多个分区
+在<code>/</code>下面，那么这个搜索会去搜索所有的被挂载的分区：
+</p>
+
+<pre class="brush: bash">
+# find / -name "*.log"
+</pre>
+
+<p>
+如果我们使用<code>-xdev</code>选项，那么仅仅会在在当前文件系统中搜索。
+</p>
+
+<p>
+下面的命令会在<code>/</code>目录及其子目录下搜索当前文件系统(也就是<code>/</code>挂载的文件系统)中所有
+以<code>.log</code>结尾的文件，也就是说如果你有多个分区挂载在<code>/</code>下面，下面的搜索不会去搜索
+其他的分区的（比如<code>/home/</code>）
+</p>
+
+<pre class="brush: bash">
+# find / -xdev -name "*.log"
+</pre>
+
+<h3 id="toc_2.9.3">在同一个命令中使用多个<code>{}</code></h3>
+
+<p>
+linux手册说命令中只能使用一个<code>{}</code>，不过你可以像下面这样在同一个命令中使用多个：
+</p>
+
+<pre class="brush: bash">
+# find -name "*.txt" cp {} {}.bkup \;
+</pre>
+
+<p>
+注意，在同一个命令中使用这个<code>{}</code>是可以的，但是在不同的命令里就不行了，也就是说，
+如果你想象下面这样重命名文件是行不通的：
+</p>
+
+<pre class="brush: bash">
+# find -name "*.txt" -exec mv {} `basename {} .htm`.html \;
+</pre>
+
+<h3 id="toc_2.9.4">使用多个<code>{}</code>实例</h3>
+
+<p>
+你可以像下面这样写一个shell脚本去模拟上面那个重命名的例子
+</p>
+
+<pre class="brush: bash">
+# mv "$1" "`basename "$1" .htm`.html"
+</pre>
+
+<p>
+上面的双引号是为了防止文件名中出现的空格，不加的话会有问题。然后你把这个shell
+脚本保存为<code>mv.sh</code>，你可以像下面这样使用<code>find</code>命令了：
+</p>
+
+<pre class="brush: bash">
+# find -name "*.html" -exec ./mv.sh '{}' \;
+</pre>
+
+<p>
+所以，任何情况下你在find命令执行中想使用同一个文件名多次的话，先写一个脚本，然后
+在find中通过<code>-exec</code>执行这个脚本，把文件名参数传递进去就行，这是最简单的办法
+</p>
+
+
+<h3 id="toc_2.9.5">将错误重定向到<code>/dev/nul</code></h3>
+
+<p>
+重定向错误输出一般不是什么好的想法。一个有经验的程序员懂得在终端显示错误并及时
+修正它是很重要的。
+</p>
+
+<p>
+尤其是在find命令中重定向错误不是个好的实践。 但是如果你确实不想看到那些烦人的
+错误，想把错误都重定向到null设备中（也就是linux上的黑洞装置，任何丢进去的东西
+消失的无影无踪了）。你可以像下面这样做
+</p>
+
+<pre class="brush: bash">
+# find -name "*.txt" 2&gt;&gt;/dev/null
+</pre>
+
+<p>
+有时候这是很有用的。比如，如果你想通过你自己的账号在<code>/</code>目录下查找所有的<code>*.conf</code>
+文件，你会得到很多很多的"Permission denied"的错误消息
+</p>
+
+<pre class="brush: bash">
+$ find / -name "*.conf" 2&gt;&gt;/dev/null
+/sbin/generate-modprobe.conf
+/boot/grub/grub.conf
+</pre>
+
+<h3 id="toc_2.9.6">将文件名中的空格换成下划线</h3>
+
+<p>
+你从网上下载下来的音频文件的文件名很多都带有空格。但是带有空格的文件名在linux
+(类Unix)系统里面是很不好的。你可以使用find然后后面加上<code>rename</code>命令的替换功能去
+重命名这些文件，将空格转换成下划线<code>_</code>：
+</p>
+
+<pre class="brush: bash">
+$ find . -type f -iname “*.mp3″ -exec rename “s/ /_/g” {} \;
+</pre>
+
+<h3 id="toc_2.9.7">在find结果中同时执行两条命令</h3>
+
+<p>
+在find的man page页面中，下面是一次文件查找遍历中使用两条命令的语法举例
+</p>
+
+<p>
+下面的find命令的例子，遍历文件系统一次，列出拥有<code>setuid</code>属性的文件和目录，写入
+<code>/root/suid.txt</code>文件， 如果文件大小超过100M，将其记录到<code>/root/big.txt</code>中：
+</p>
+
+<pre class="brush: bash">
+# find / \( -perm -4000 -fprintf /root/suid.txt '%#m %u %p\n' \) , \
+ \( -size +100M -fprintf /root/big.txt '%-10s %p\n' \)
+</pre>
 
 
 

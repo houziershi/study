@@ -1,0 +1,457 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>自定义注解</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+<h1>自定义注解</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">自定义语法</a>
+<ul>
+<li><a href="#toc_1.1">定义</a>
+<li><a href="#toc_1.2">使用</a>
+<li><a href="#toc_1.3">注解的属性</a>
+<ul>
+<li><a href="#toc_1.3.1">属性的默认值</a>
+<li><a href="#toc_1.3.2">属性值可以是枚举</a>
+<li><a href="#toc_1.3.3">属性可以是数组</a>
+</ul>
+</ul>
+<li><a href="#toc_2">Retention与ReteentionPolicy</a>
+<li><a href="#toc_3">反射与注解</a>
+<ul>
+<li><a href="#toc_3.1">取得全部注解</a>
+<li><a href="#toc_3.2">设定自定义注解为运行时</a>
+</ul>
+<li><a href="#toc_4">注解描述</a>
+<ul>
+<li><a href="#toc_4.1">Target</a>
+<li><a href="#toc_4.2">Codumented注释</a>
+<li><a href="#toc_4.3">Inherited</a>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">自定义语法</h1>
+
+<p>
+任何一个自定义的注解都继承了<code>java.lang.annotation.Annoation</code>接口。
+</p>
+
+<h2 id="toc_1.1">定义</h2>
+
+<pre class="brush: java">
+public @interface AnnotationName { }
+</pre>
+
+<p>
+例，定义简单注解<code>MyAnnotation</code>：
+</p>
+
+<pre class="brush: java">
+package test;
+
+public @interface MyAnnotation {
+}
+</pre>
+
+<h2 id="toc_1.2">使用</h2>
+
+<pre class="brush: java">
+package test;
+
+@MyAnnotation
+public class Info {
+}
+</pre>
+
+<h2 id="toc_1.3">注解的属性</h2>
+
+<pre class="brush: java">
+package test;
+
+public @interface MyAnnotation {
+	public String key();
+	public String value();
+}
+</pre>
+
+<p>
+定义了两个变量，使用时就要明确给出具体的值：
+</p>
+
+<pre class="brush: java">
+package test;
+
+@MyAnnotation(key="site", value="www.google.com")
+public class Info {
+}
+</pre>
+
+<h3 id="toc_1.3.1">属性的默认值</h3>
+
+<pre class="brush: java">
+package test;
+
+public @interface MyAnnotation {
+	public String key() default "site";
+	public String value() default "www.google.com";
+}
+</pre>
+
+<h3 id="toc_1.3.2">属性值可以是枚举</h3>
+
+<pre class="brush: java">
+package test;
+
+public enum Color {
+	RED, GREEN, BLUE;
+}
+</pre>
+
+
+<pre class="brush: java">
+package test;
+
+public @interface MyAnnotation {
+	public String key() default "site";
+	public String value() default "www.google.com";
+	public Color color() default Color.RED;
+}
+</pre>
+
+<h3 id="toc_1.3.3">属性可以是数组</h3>
+
+<pre class="brush: java">
+package test;
+
+public @interface MyAnnotation {
+	public String key() default "site";
+	public String value() default "www.google.com";
+	public Color color() default Color.RED;
+	public String [] url();
+}
+</pre>
+
+<p>
+用时必须是数组：
+</p>
+
+<pre class="brush: java">
+package test;
+
+@MyAnnotation(url = {"www.google.com","www.youtube.com"})
+public class Info {
+}
+</pre>
+
+<h1 id="toc_2">Retention与ReteentionPolicy</h1>
+
+<p>
+<code>java.lang.annotation.Retention</code>的值在<code>RetentionPolicy</code>枚举类型的：
+</p>
+
+<ul>
+<li>
+源码：<code>SOURCE</code>
+
+<li>
+class类：<code>CLASS</code>
+
+<li>
+运行时：<code>RUNTIME</code>
+
+</ul>
+
+<h1 id="toc_3">反射与注解</h1>
+
+<p>
+注解要依靠反射才能起作用，通过反射取得一个方法上声明的注解的全部内容。
+</p>
+
+<p>
+在<code>Field</code>、<code>Method</code>、<code>Constructor</code>的父类上定义了以下与注解想法的方法：
+</p>
+
+<p>
+取得全部注解：
+</p>
+
+<pre class="brush: java">
+public Annotation [] getAnnotations()
+</pre>
+
+<p>
+检查注解的类型是否是指定的类型：
+</p>
+
+<pre class="brush: java">
+public boolean isAnnotationPresent(Class&lt;? extends Annotation&gt; clazz)
+</pre>
+
+<h2 id="toc_3.1">取得全部注解</h2>
+
+<pre class="brush: java">
+package test;
+
+public class Info {
+
+	@Override
+	@Deprecated
+	@SuppressWarnings(value="")
+	public String toString() {
+		return "hello";
+	}
+
+}
+</pre>
+
+<p>
+上面三个注解中只有<code>@Deprecated</code>是<code>RUNTIME</code>类型的，可以在程序运行时被
+<code>getAnnotations</code>方法得到：
+</p>
+
+<pre class="brush: java; highlight: [11]">
+package test;
+
+import java.lang.annotation.Annotation;
+import java .lang.reflect.Method;
+
+public class Demo {
+	
+	public static void main(String [] args) throws Exception {
+		Class&lt;?&gt; cls = Class.forName("test.Info");
+		Method toStringMethod = cls.getMethod("toString");
+		Annotation ans[] = toStringMethod.getAnnotations(); // 取得全部注解
+		
+		for (int i=0; i &lt; ans.length; i++) {
+			System.out.println(ans[i]);
+		}
+	}
+
+}
+</pre>
+
+<h2 id="toc_3.2">设定自定义注解为运行时</h2>
+
+<pre class="brush: java">
+package test;
+
+import java.lang.annotation.*;
+
+@Retention(value = RetentionPolicy.RUNTIME)
+public @interface MyAnnotation {
+	public String key() default "site";
+	public String value();
+}
+</pre>
+
+
+<pre class="brush: java">
+package test;
+
+public class Info {
+
+	@Override
+	@Deprecated
+	@SuppressWarnings(value="")
+	@MyAnnotation(key="site", value="www.google.com")
+	public String toString() {
+		return "hello";
+	}
+
+}
+</pre>
+
+<p>
+取得自定义注解：
+</p>
+
+<pre class="brush: java; highlight: [14]">
+package test;
+
+import java.lang.annotation.Annotation;
+import java .lang.reflect.Method;
+
+public class Demo {
+	
+	public static void main(String [] args) throws Exception {
+		Class&lt;?&gt; cls = Class.forName("test.Info");
+		Method toStringMethod = cls.getMethod("toString");
+		Annotation ans[] = toStringMethod.getAnnotations(); // 取得全部注解
+		
+		for (int i=0; i &lt; ans.length; i++) {
+			if (toStringMethod.isAnnotationPresent(MyAnnotation.class)) {
+				MyAnnotation my = toStringMethod.getAnnotation(MyAnnotation.class);
+				String key = my.key();
+				String value = my.value();
+				System.out.println(key + ": " + value);
+			}
+		}
+	}
+
+}
+</pre>
+
+<h1 id="toc_4">注解描述</h1>
+
+<ul>
+<li>
+<code>Target</code>：说明注解可以放置的位置。
+
+<li>
+<code>Documended</code>：文档注释。
+
+<li>
+<code>Inherited</code>：注解能否被继承。
+
+</ul>
+
+<h2 id="toc_4.1">Target</h2>
+
+<p>
+<code>Target</code>限制放置的位置，自定义的注解默认可以放在任何位置。<code>ElementType</code>类型变量
+定义了7个放置的位置：；
+</p>
+
+<ul>
+<li>
+<code>ANNOTATION_TYPE</code>：只能在注解中出现。
+
+<li>
+<code>CONSTRUCTOR</code>：构造器。
+
+<li>
+<code>LOCAL_VARIABLE</code>：本地变量。
+
+<li>
+<code>METHOD</code>：方法。
+
+<li>
+<code>PARAMETER</code>：参数声明位置。
+
+<li>
+<code>PACKAGE</code>：包声明。
+
+<li>
+<code>TYPE</code>：类或接口。
+
+</ul>
+
+<p>
+例：使用位置：
+</p>
+
+<pre class="brush: java; highlight: [5]">
+package test;
+
+import java.lang.annotation.*;
+
+@Target(value = ElementType.METHOD)
+@Retention(value = RetentionPolicy.RUNTIME)
+public @interface MyAnnotation {
+	public String key() default "site";
+	public String value();
+}
+</pre>
+
+<p>
+可以定义多个位置使用：
+</p>
+
+<pre class="brush: java; highlight: [5]">
+package test;
+
+import java.lang.annotation.*;
+
+@Target(value = {ElementType.METHOD, ElementType.TYPE})
+@Retention(value = RetentionPolicy.RUNTIME)
+public @interface MyAnnotation {
+	public String key() default "site";
+	public String value();
+}
+</pre>
+
+
+<h2 id="toc_4.2">Codumented注释</h2>
+
+<pre class="brush: java; highlight: [5]">
+package test;
+
+import java.lang.annotation.*;
+
+@Documented
+@Target(value = {ElementType.METHOD, ElementType.TYPE})
+@Retention(value = RetentionPolicy.RUNTIME)
+public @interface MyAnnotation {
+	public String key() default "site";
+	public String value() default "www.google.com";
+}
+</pre>
+
+<p>
+在使用类中可以加入文档注释：
+</p>
+
+<pre class="brush: java">
+package test;
+
+@MyAnnotation
+public class Info {
+
+		private String name;
+
+		/**
+		 * 本方法是覆盖Object类中的toString()方法
+		 */
+		@MyAnnotation
+		public String toString() { return "hello"; }
+
+}
+</pre>
+
+<p>
+在doc文档中可以出现加入的文档注释。
+</p>
+
+<h2 id="toc_4.3">Inherited</h2>
+
+<p>
+<code>Inherited</code>设置能否被继续，如果不加上表示本注解不能被继承，加上表示可继承：
+</p>
+
+<pre class="brush: java">
+package test;
+
+import java.lang.annotation.*;
+
+@Inherited
+@Documented
+@Target(value = {ElementType.METHOD, ElementType.TYPE})
+@Retention(value = RetentionPolicy.RUNTIME)
+public @interface MyAnnotation {
+	public String key() default "site";
+	public String value() default "www.google.com";
+}
+</pre>
+ </div>
+</body>
+</html>

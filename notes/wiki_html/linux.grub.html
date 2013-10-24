@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>grub</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>grub</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">快速修复</a>
+<ul>
+<li><a href="#toc_1.1">启动系统</a>
+<li><a href="#toc_1.2">更新安装Grub</a>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">快速修复</h1>
+
+<p>
+在系统没有损坏，但是grub被覆盖的情况下快速修复的方法：
+</p>
+
+<h2 id="toc_1.1">启动系统</h2>
+
+<p>
+Ubuntu可用光盘启动，挂载各分区：
+</p>
+
+<pre class="brush: bash">
+# Let’s say you have mounted root partition at /media/xx..xx.
+$ sudo mount /dev/sdax /mnt/myroot (where sdax is your root partition)
+$ sudo mount ‐‐bind /dev /media/xx..xx/dev
+$ sudo mount ‐‐bind /proc /media/xx..xx/proc
+$ sudo mount ‐‐bind /sys /media/xx..xx/sys
+
+# 如果还有其他的分区
+</pre>
+
+<p>
+然后再切根分区到磁盘上的root分区：
+</p>
+
+<pre class="brush: bash">
+$ sudo chroot /media/xx..xx
+</pre>
+
+<p>
+如果是debian系统，启动盘里菜单找到resure菜单，进入以后设置一下键盘布局语言时区
+等，向导会引导你设定根分区，并运行bash。然后再挂载其他的分区就可以了。
+</p>
+
+<h2 id="toc_1.2">更新安装Grub</h2>
+
+<pre class="brush: bash">
+$ sudo update-grub
+$ sudo grub-install /dev/sda
+</pre>
+
+<p>
+重启应该就OK了。
+</p>
+ </div>
+</body>
+</html>

@@ -1,8 +1,8 @@
 
-
 %title Part VI
 
 %toc Part VI
+
 
 = 结合Scala与Java =
 
@@ -181,8 +181,17 @@ trait Printable {
 版本字段：
 
 {{{class="brush: scala"
-  // Java serial version marker
+@SerialVersionUID(42L) class Person extends Serializable
+}}}
+
+对应的Java：
+
+{{{class="brush: java"
+public class Person implements java.io.Serializable {
   private final static long SerialVersionUID = 1234L
+  
+	// ...
+}
 }}}
 
 `@transient`变量会被加上Java的`transient`修饰符： 
@@ -206,8 +215,8 @@ try {
 这样异常没有处理，反而还给代码包了一层`try-catch`。Scala为了代码干净就直接不声明
 抛出异常了。
 
-但是为了和Java程序对接，声明一下会抛出哪些异常还是有必要的。所以通过注解标签
-`@throws`来说明：
+但是为了和Java程序对接，声明一下会抛出哪些异常还是有必要的。不然Java代码就不能
+捕获可能抛出的异常。所以通过注解标签`@throws`来说明：
 
 {{{class="brush: scala"
   import java.io._
@@ -234,6 +243,15 @@ try {
   $
 }}}
 
+这样Java中调用Scala代码时才能捕获异常：
+
+{{{class="brush: java"
+try {
+	reader.read();
+} catch (IOException e) {
+	// ...
+}
+}}}
 
 === Java注解 ===
 
@@ -450,11 +468,22 @@ Java中的`Iterator<? extends Component>`在Scala中写为：
 
 
 
+
+
 = Actor和并发 =
 
-== 天堂中的烦恼 ==
+== 多线程 ==
 
-主要介绍Java并发与同步锁的问题，所以略了。
+虽然推荐使用Actor模式，但还是讲一下传统的多线程控制方式吧。
+
+`AnyRef`类追加了来自`Object`类的`wait`与`notify`、`notifyAll`方法。并且提供了带
+参数的`synchronized`方法，等同于Java的`synchronized`块：
+
+{{{class="brush: scala"
+account.synchronized {
+	account.balance += amount
+}
+}}}
 
 == actor和消息传递 ==
 
@@ -747,9 +776,10 @@ def sumAll(num:Int) = {
 println( sumAll(100) )
 }}}
 
-==== 小结 ====
 
-== 消息传递 ==
+== 小结 ==
+
+=== 消息传递 ===
 
 每个actor都有自己的消息队列：
 
@@ -757,6 +787,8 @@ println( sumAll(100) )
 * `OutputChannel[Any]`发送队列。
 
 注意actor传递消息有两个重要的特性：
+
+
 
 === 发送不阻塞 ===
 
@@ -1059,13 +1091,13 @@ import scala.Actor._
 import scala.actors._
 import scheduler._
 
-if (args.length > 0 && args(0) == "Single") {                      
+if (args.length > 0 && args(0) == "Single") {
   println("Command-line argument Single found")
   Scheduler.impl = new SingleThreadedScheduler
 }
 println("Main running in " + Thread.currentThread)
 
-actor { println("Actor1 running in " + Thread.currentThread) }                                                   
+actor { println("Actor1 running in " + Thread.currentThread) }
 actor { println("Actor2 running in " + Thread.currentThread) }
 
 receiveWithin(3000) { case _ => }
@@ -1150,6 +1182,7 @@ Actor 3 running in Thread[ForkJoinPool-2-worker-7,5,main]
 
 这个助手actor虽然阻塞了，但是由于它不会收到消息，所以这是OK的。主actor可以继续
 响应新的请求。
+
 
 下面的`emoteLater`方法展示了这种处理方式的用法。它创建了一个新的actor来执行
 `sleep`以便主actor不阻塞。以确保它向正确的actor发送`"Emote"`消息，我们必须小心地
@@ -1847,42 +1880,11 @@ actor和发往该actor的消息：
 对于输入`1,0,1`输出进位`1`和为`0`。
 
 
-= 连接符解析 =
 
 
-{{{class="brush: scala"
-}}}
-{{{class="brush: scala"
-}}}
-{{{class="brush: scala"
-}}}
-{{{class="brush: scala"
-}}}
-{{{class="brush: scala"
-}}}
-{{{class="brush: scala"
-}}}
-{{{class="brush: scala"
-}}}
-{{{class="brush: scala"
-}}}
-{{{class="brush: scala"
-}}}
-{{{class="brush: scala"
-}}}
-{{{class="brush: scala"
-}}}
-{{{class="brush: scala"
-}}}
-{{{class="brush: scala"
-}}}
-{{{class="brush: scala"
-}}}
-{{{class="brush: scala"
-}}}
-{{{class="brush: scala"
-}}}
-{{{class="brush: scala"
-}}}
-{{{class="brush: scala"
-}}}
+= 连接符解析  =
+
+
+
+
+

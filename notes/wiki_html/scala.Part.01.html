@@ -56,7 +56,9 @@
 <li><a href="#toc_3.2">apply与update方法</a>
 <li><a href="#toc_3.3">列表</a>
 <ul>
-<li><a href="#toc_3.3.1">List常用方法</a>
+<li><a href="#toc_3.3.1">LinkedList</a>
+<li><a href="#toc_3.3.2">DoubleLinkedList</a>
+<li><a href="#toc_3.3.3">List常用方法</a>
 </ul>
 <li><a href="#toc_3.4">方法关联性</a>
 <li><a href="#toc_3.5">元组（Tuple）</a>
@@ -166,7 +168,8 @@
 <li><a href="#toc_8.11.1">跟踪尾递归函数</a>
 <li><a href="#toc_8.11.2">尾递归的局限</a>
 </ul>
-<li><a href="#toc_8.12">Execute Around Method 模式</a>
+<li><a href="#toc_8.12">蹦床</a>
+<li><a href="#toc_8.13">Execute Around Method 模式</a>
 </ul>
 </ul>
 </div>
@@ -770,7 +773,20 @@ List只能把元素加在头上，如果要加在后面的话，一个方法是�
 <code>reverse</code>方法；还有一个方案是使用ListBuffer，它有<code>append</code>方法。
 </p>
 
-<h3 id="toc_3.3.1">List常用方法</h3>
+<h3 id="toc_3.3.1">LinkedList</h3>
+
+<p>
+对于可变的链表，不能通过把<code>next</code>引用设置为<code>Nil</code>的方法将其设置为最后结点。应该是
+<code>LinkedList.empty</code>。
+</p>
+
+<h3 id="toc_3.3.2">DoubleLinkedList</h3>
+
+<p>
+双向链表，<code>prev</code>引用指向前一个节点。
+</p>
+
+<h3 id="toc_3.3.3">List常用方法</h3>
 
 <pre class="brush: scala">
 List() 或 Nil                          // 空List
@@ -2063,15 +2079,32 @@ object USD extends Currency{ }
 </pre>
 
 <p>
-但是注意单例对象无法初始化，所以不能给主构造器传递参数。
+但是注意单例对象无法初始化，所以不能给主构造器传递参数。对象的主构造器会在对象
+第一次被使用时调用。如果没有使用过对象，那么它的构造函数也不会被执行。例：
+</p>
+
+<pre class="brush: scala">
+object Account {
+	private var lastNumber = 0
+	
+	def newUniqueNumber() = { lastNumber += 1; lastNumber }
+</pre>
+
+<p>
+如果没用用过，那么<code>lastNumber</code>也不会被初始化。
 </p>
 
 <h2 id="toc_6.2">伴生对象</h2>
 
 <p>
 如果一个单例对象的名字和类一样，并且必须在同一个文件里。那它就是这个类的伴生对象
-（Companion Object），类是它的伴生类（Companion Class）。它们可以相互访问
-私有成员。
+（Companion Object），类是它的伴生类（Companion Class）。它们可以相互访问私有
+成员。
+</p>
+
+<p>
+但是要注意，虽然可以相互访问私有成员，但并不是在同一作用域中。例如：<code>Account</code>类
+必须通过<code>Account.newAccount()</code>而不是<code>newAccount()</code>方式来访问伴生对象的方法。
 </p>
 
 <pre class="brush: scala" title="ChecksumAccumulator.scala">
@@ -2162,7 +2195,13 @@ val a = Marker("yellow")
 val b = Marker("black")
 </pre>
 
+<p>
+这样的写法的一个优点是对嵌套表达式少写<code>new</code>会方便很多：
+</p>
 
+<pre class="brush: scala">
+Array(Array(1,7), Array(2,9))
+</pre>
 
 <h2 id="toc_6.3">与Java的区别</h2>
 
@@ -3978,7 +4017,43 @@ Scala仅优化了直接递归调用使其返回同一个函数。如果递归是
 中间函数的情况。
 </p>
 
-<h2 id="toc_8.12">Execute Around Method 模式</h2>
+<h2 id="toc_8.12">蹦床</h2>
+
+<p>
+对于消除递归，有一个比尾递归更加通用的机制叫作“蹦床”。它通过一个循环不断地调用
+函数，每个函数都返回一下要被调用的函数。尾递归其实是蹦床的一个特例：每个函数都
+返回它自己。
+</p>
+
+<p>
+Scala的<code>TailCalls</code>工具对象帮助实现蹦床。相互递归的函数返回类型为<code>TailRec[A]</code>。
+其值为<code>done(result)</code>或<code>tailcall(fun)</code>二者之一。其中<code>fun</code>代表下一个要被调用的函数
+，这个函数不能有额外的参数而且返回类型为<code>TailRec[A]</code>的函数。
+</p>
+
+<p>
+例子：
+</p>
+
+<pre class="brush: scala">
+import scala.util.control.TailCalls._
+
+object TailCallDemo extends App {
+  def evenLength(xs: Seq[Int]): TailRec[Boolean] =
+    if (xs.isEmpty) done(true) else tailcall(oddLength(xs.tail))
+
+  def oddLength(xs: Seq[Int]): TailRec[Boolean] =
+    if (xs.isEmpty) done(false) else tailcall(evenLength(xs.tail))
+
+  println(evenLength(1 to 1000000).result)
+}
+</pre>
+
+<p>
+调用时，用<code>result</code>方法取得结果：
+</p>
+
+<h2 id="toc_8.13">Execute Around Method 模式</h2>
 
 <p>
 举个例子，对于资源<code>Resource</code>一定要执行善后工作<code>cleanUp</code>。这里把构造函数做成私有

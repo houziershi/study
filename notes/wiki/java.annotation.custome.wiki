@@ -1,0 +1,340 @@
+%title 自定义注解
+
+%toc 自定义注解
+
+= 自定义语法 =
+
+任何一个自定义的注解都继承了`java.lang.annotation.Annoation`接口。
+
+== 定义 ==
+
+{{{class="brush: java"
+public @interface AnnotationName { }
+}}}
+
+例，定义简单注解`MyAnnotation`：
+
+{{{class="brush: java"
+package test;
+
+public @interface MyAnnotation {
+}
+}}}
+
+== 使用 ==
+
+{{{class="brush: java"
+package test;
+
+@MyAnnotation
+public class Info {
+}
+}}}
+
+== 注解的属性 ==
+
+{{{class="brush: java"
+package test;
+
+public @interface MyAnnotation {
+	public String key();
+	public String value();
+}
+}}}
+
+定义了两个变量，使用时就要明确给出具体的值：
+
+{{{class="brush: java"
+package test;
+
+@MyAnnotation(key="site", value="www.google.com")
+public class Info {
+}
+}}}
+
+=== 属性的默认值 ===
+
+{{{class="brush: java"
+package test;
+
+public @interface MyAnnotation {
+	public String key() default "site";
+	public String value() default "www.google.com";
+}
+}}}
+
+=== 属性值可以是枚举 ===
+
+{{{class="brush: java"
+package test;
+
+public enum Color {
+	RED, GREEN, BLUE;
+}
+}}}
+
+
+{{{class="brush: java"
+package test;
+
+public @interface MyAnnotation {
+	public String key() default "site";
+	public String value() default "www.google.com";
+	public Color color() default Color.RED;
+}
+}}}
+
+=== 属性可以是数组 ===
+
+{{{class="brush: java"
+package test;
+
+public @interface MyAnnotation {
+	public String key() default "site";
+	public String value() default "www.google.com";
+	public Color color() default Color.RED;
+	public String [] url();
+}
+}}}
+
+用时必须是数组：
+
+{{{class="brush: java"
+package test;
+
+@MyAnnotation(url = {"www.google.com","www.youtube.com"})
+public class Info {
+}
+}}}
+
+= Retention与ReteentionPolicy =
+
+`java.lang.annotation.Retention`的值在`RetentionPolicy`枚举类型的：
+
+* 源码：`SOURCE`
+* class类：`CLASS`
+* 运行时：`RUNTIME`
+
+= 反射与注解 =
+
+注解要依靠反射才能起作用，通过反射取得一个方法上声明的注解的全部内容。
+
+在`Field`、`Method`、`Constructor`的父类上定义了以下与注解想法的方法：
+
+取得全部注解：
+
+{{{class="brush: java"
+public Annotation [] getAnnotations()
+}}}
+
+检查注解的类型是否是指定的类型：
+
+{{{class="brush: java"
+public boolean isAnnotationPresent(Class<? extends Annotation> clazz)
+}}}
+
+== 取得全部注解 ==
+
+{{{class="brush: java"
+package test;
+
+public class Info {
+
+	@Override
+	@Deprecated
+	@SuppressWarnings(value="")
+	public String toString() {
+		return "hello";
+	}
+
+}
+}}}
+
+上面三个注解中只有`@Deprecated`是`RUNTIME`类型的，可以在程序运行时被
+`getAnnotations`方法得到：
+
+{{{class="brush: java; highlight: [11]"
+package test;
+
+import java.lang.annotation.Annotation;
+import java .lang.reflect.Method;
+
+public class Demo {
+	
+	public static void main(String [] args) throws Exception {
+		Class<?> cls = Class.forName("test.Info");
+		Method toStringMethod = cls.getMethod("toString");
+		Annotation ans[] = toStringMethod.getAnnotations(); // 取得全部注解
+		
+		for (int i=0; i < ans.length; i++) {
+			System.out.println(ans[i]);
+		}
+	}
+
+}
+}}}
+
+== 设定自定义注解为运行时 ==
+
+{{{class="brush: java"
+package test;
+
+import java.lang.annotation.*;
+
+@Retention(value = RetentionPolicy.RUNTIME)
+public @interface MyAnnotation {
+	public String key() default "site";
+	public String value();
+}
+}}}
+
+
+{{{class="brush: java"
+package test;
+
+public class Info {
+
+	@Override
+	@Deprecated
+	@SuppressWarnings(value="")
+	@MyAnnotation(key="site", value="www.google.com")
+	public String toString() {
+		return "hello";
+	}
+
+}
+}}}
+
+取得自定义注解：
+
+{{{class="brush: java; highlight: [14]"
+package test;
+
+import java.lang.annotation.Annotation;
+import java .lang.reflect.Method;
+
+public class Demo {
+	
+	public static void main(String [] args) throws Exception {
+		Class<?> cls = Class.forName("test.Info");
+		Method toStringMethod = cls.getMethod("toString");
+		Annotation ans[] = toStringMethod.getAnnotations(); // 取得全部注解
+		
+		for (int i=0; i < ans.length; i++) {
+			if (toStringMethod.isAnnotationPresent(MyAnnotation.class)) {
+				MyAnnotation my = toStringMethod.getAnnotation(MyAnnotation.class);
+				String key = my.key();
+				String value = my.value();
+				System.out.println(key + ": " + value);
+			}
+		}
+	}
+
+}
+}}}
+
+= 注解描述 =
+
+* `Target`：说明注解可以放置的位置。
+* `Documended`：文档注释。
+* `Inherited`：注解能否被继承。
+
+== Target ==
+
+`Target`限制放置的位置，自定义的注解默认可以放在任何位置。`ElementType`类型变量
+定义了7个放置的位置：；
+
+* `ANNOTATION_TYPE`：只能在注解中出现。
+* `CONSTRUCTOR`：构造器。
+* `LOCAL_VARIABLE`：本地变量。
+* `METHOD`：方法。
+* `PARAMETER`：参数声明位置。
+* `PACKAGE`：包声明。
+* `TYPE`：类或接口。
+
+例：使用位置：
+
+{{{class="brush: java; highlight: [5]"
+package test;
+
+import java.lang.annotation.*;
+
+@Target(value = ElementType.METHOD)
+@Retention(value = RetentionPolicy.RUNTIME)
+public @interface MyAnnotation {
+	public String key() default "site";
+	public String value();
+}
+}}}
+
+可以定义多个位置使用：
+
+{{{class="brush: java; highlight: [5]"
+package test;
+
+import java.lang.annotation.*;
+
+@Target(value = {ElementType.METHOD, ElementType.TYPE})
+@Retention(value = RetentionPolicy.RUNTIME)
+public @interface MyAnnotation {
+	public String key() default "site";
+	public String value();
+}
+}}}
+
+
+== Codumented注释 ==
+
+{{{class="brush: java; highlight: [5]"
+package test;
+
+import java.lang.annotation.*;
+
+@Documented
+@Target(value = {ElementType.METHOD, ElementType.TYPE})
+@Retention(value = RetentionPolicy.RUNTIME)
+public @interface MyAnnotation {
+	public String key() default "site";
+	public String value() default "www.google.com";
+}
+}}}
+
+在使用类中可以加入文档注释：
+
+{{{class="brush: java"
+package test;
+
+@MyAnnotation
+public class Info {
+
+		private String name;
+
+		/**
+		 * 本方法是覆盖Object类中的toString()方法
+		 */
+		@MyAnnotation
+		public String toString() { return "hello"; }
+
+}
+}}}
+
+在doc文档中可以出现加入的文档注释。
+
+== Inherited ==
+
+`Inherited`设置能否被继续，如果不加上表示本注解不能被继承，加上表示可继承：
+
+{{{class="brush: java"
+package test;
+
+import java.lang.annotation.*;
+
+@Inherited
+@Documented
+@Target(value = {ElementType.METHOD, ElementType.TYPE})
+@Retention(value = RetentionPolicy.RUNTIME)
+public @interface MyAnnotation {
+	public String key() default "site";
+	public String value() default "www.google.com";
+}
+}}}

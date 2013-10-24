@@ -43,19 +43,36 @@
 <ul>
 <li><a href="#toc_3.1">定制一个二维布局库</a>
 <li><a href="#toc_3.2">抽象类</a>
+<ul>
+<li><a href="#toc_3.2.1">abstract声明抽象类</a>
+<li><a href="#toc_3.2.2">抽象方法</a>
+<li><a href="#toc_3.2.3">抽象字段</a>
+</ul>
 <li><a href="#toc_3.3">定义无参数方法</a>
 <li><a href="#toc_3.4">扩展类</a>
 <li><a href="#toc_3.5">重写方法和字段</a>
-<li><a href="#toc_3.6">定义参数化字段</a>
-<li><a href="#toc_3.7">调用超类构造器</a>
-<li><a href="#toc_3.8">使用override修饰符</a>
+<ul>
+<li><a href="#toc_3.5.1">命名空间</a>
+<li><a href="#toc_3.5.2">使用override修饰符</a>
+<li><a href="#toc_3.5.3">不可重写 final</a>
+<li><a href="#toc_3.5.4">重写限制</a>
+</ul>
+<li><a href="#toc_3.6">类型检查和转换</a>
+<li><a href="#toc_3.7">定义参数化字段</a>
+<li><a href="#toc_3.8">调用超类构造器</a>
+<ul>
+<li><a href="#toc_3.8.1">只有主构造器可以调用超类构造器</a>
+<li><a href="#toc_3.8.2">构造顺序</a>
+<ul>
+<li><a href="#toc_3.8.2.1">预初始化</a>
+</ul>
+</ul>
 <li><a href="#toc_3.9">多态和动态绑定</a>
-<li><a href="#toc_3.10">定义final成员</a>
-<li><a href="#toc_3.11">使用组合与继承</a>
-<li><a href="#toc_3.12">实现示例中的功能</a>
-<li><a href="#toc_3.13">定义工厂对象</a>
-<li><a href="#toc_3.14">变高变宽</a>
-<li><a href="#toc_3.15">完整的示例代码</a>
+<li><a href="#toc_3.10">使用组合与继承</a>
+<li><a href="#toc_3.11">实现示例中的功能</a>
+<li><a href="#toc_3.12">定义工厂对象</a>
+<li><a href="#toc_3.13">变高变宽</a>
+<li><a href="#toc_3.14">完整的示例代码</a>
 </ul>
 <li><a href="#toc_4">Scala类的层级</a>
 <ul>
@@ -66,53 +83,128 @@
 </ul>
 <li><a href="#toc_4.2">原始类型是如何实现的</a>
 <li><a href="#toc_4.3">底层类型</a>
+<ul>
+<li><a href="#toc_4.3.1">Null</a>
+<li><a href="#toc_4.3.2">Nothing</a>
+</ul>
+<li><a href="#toc_4.4">Unit</a>
 </ul>
 <li><a href="#toc_5">特质（Traits）</a>
 <ul>
-<li><a href="#toc_5.1">概念</a>
-<li><a href="#toc_5.2">比较瘦接口与胖接口</a>
-<li><a href="#toc_5.3">样例：长方形对象</a>
-<li><a href="#toc_5.4">实现Ordered特质来排序</a>
-<li><a href="#toc_5.5">特质的叠加次序</a>
-<li><a href="#toc_5.6">特质的叠加</a>
-<li><a href="#toc_5.7">特质方法的延迟绑定</a>
-<li><a href="#toc_5.8">为什么不是多重继承</a>
-<li><a href="#toc_5.9">什么情况下要用特质</a>
+<li><a href="#toc_5.1">抽象与实现</a>
+<ul>
+<li><a href="#toc_5.1.1">实现字段</a>
+<ul>
+<li><a href="#toc_5.1.1.1">不可被再次继承</a>
+</ul>
+<li><a href="#toc_5.1.2">抽象字段</a>
+<li><a href="#toc_5.1.3">抽象方法</a>
+<ul>
+<li><a href="#toc_5.1.3.1">默认抽象</a>
+<li><a href="#toc_5.1.3.2">不用override</a>
+</ul>
+<li><a href="#toc_5.1.4">实现方法</a>
+<ul>
+<li><a href="#toc_5.1.4.1">需要重新编译</a>
+</ul>
+</ul>
+<li><a href="#toc_5.2">单例对象也可以扩展特质</a>
+<li><a href="#toc_5.3">类层级</a>
+<li><a href="#toc_5.4">特质继承</a>
+<ul>
+<li><a href="#toc_5.4.1">抽象方法延迟绑定</a>
+<li><a href="#toc_5.4.2">特质也可以继承自类</a>
+<li><a href="#toc_5.4.3">特质只能混入基类的子类</a>
+<li><a href="#toc_5.4.4">特质的超类会成为类的超类</a>
+<ul>
+<li><a href="#toc_5.4.4.1">只能有一个超类</a>
+</ul>
+<li><a href="#toc_5.4.5"><code>this</code>限制混入类</a>
+<ul>
+<li><a href="#toc_5.4.5.1">结构类型</a>
+</ul>
+</ul>
+<li><a href="#toc_5.5">混入多个特质</a>
+<ul>
+<li><a href="#toc_5.5.1">特质的<code>super</code>引用是动态的</a>
+<li><a href="#toc_5.5.2">特质的叠加栈</a>
+<li><a href="#toc_5.5.3">指定调用特质栈</a>
+</ul>
+<li><a href="#toc_5.6">特质的构造过程</a>
+<ul>
+<li><a href="#toc_5.6.1">特质构造器</a>
+<li><a href="#toc_5.6.2">特质不能有构造器参数</a>
+<li><a href="#toc_5.6.3">预初始化字段</a>
+<ul>
+<li><a href="#toc_5.6.3.1">应用于实例</a>
+<li><a href="#toc_5.6.3.2">应用于类</a>
+</ul>
+<li><a href="#toc_5.6.4">懒加载</a>
+</ul>
+<li><a href="#toc_5.7">Scala特质生成Java接口</a>
+<ul>
+<li><a href="#toc_5.7.1">只有抽象方法</a>
+<li><a href="#toc_5.7.2">有方法实现的情况</a>
+<li><a href="#toc_5.7.3">特质中的字段</a>
+</ul>
+<li><a href="#toc_5.8">特质与类的差异</a>
+<li><a href="#toc_5.9">应用场景</a>
+<ul>
+<li><a href="#toc_5.9.1">为什么不是多重继承</a>
+<li><a href="#toc_5.9.2">比较瘦接口与胖接口</a>
+<li><a href="#toc_5.9.3">什么情况下要用特质</a>
+</ul>
+<li><a href="#toc_5.10">例子</a>
+<ul>
+<li><a href="#toc_5.10.1">样例：长方形实例</a>
+<li><a href="#toc_5.10.2">实现Ordered特质来排序</a>
+</ul>
 </ul>
 <li><a href="#toc_6">包和引用</a>
 <ul>
-<li><a href="#toc_6.1">引用包</a>
-<li><a href="#toc_6.2">隐式引用</a>
+<li><a href="#toc_6.1">定义包</a>
 <ul>
-<li><a href="#toc_6.2.1">java.lang</a>
-<li><a href="#toc_6.2.2">scala</a>
-<li><a href="#toc_6.2.3">Predef</a>
+<li><a href="#toc_6.1.1">package语句</a>
+<li><a href="#toc_6.1.2">嵌套包</a>
+<li><a href="#toc_6.1.3">包路径是相对的</a>
+<li><a href="#toc_6.1.4">包层级的作用域</a>
 </ul>
-<li><a href="#toc_6.3">访问修饰符</a>
+<li><a href="#toc_6.2">包对象</a>
+<li><a href="#toc_6.3">引用包</a>
 <ul>
-<li><a href="#toc_6.3.1">public</a>
-<li><a href="#toc_6.3.2">private</a>
-<li><a href="#toc_6.3.3">protected</a>
-<li><a href="#toc_6.3.4">保护的范围</a>
-<li><a href="#toc_6.3.5">伴生对象的可见度性</a>
+<li><a href="#toc_6.3.1">重命名与隐藏</a>
 </ul>
-<li><a href="#toc_6.4">断言</a>
+<li><a href="#toc_6.4">隐式引用</a>
+<ul>
+<li><a href="#toc_6.4.1">java.lang</a>
+<li><a href="#toc_6.4.2">scala</a>
+<li><a href="#toc_6.4.3">Predef</a>
 </ul>
-<li><a href="#toc_7">测试</a>
-<ul>
-<li><a href="#toc_7.1">Junit 4</a>
-<li><a href="#toc_7.2">ScalaTest</a>
-<ul>
-<li><a href="#toc_7.2.1">Runner</a>
-<li><a href="#toc_7.2.2">assert()与expect()方法</a>
-<li><a href="#toc_7.2.3">测试异常</a>
-<li><a href="#toc_7.2.4">在测试间共享代码</a>
-<ul>
-<li><a href="#toc_7.2.4.1">BeforeAndAfter特质</a>
-<li><a href="#toc_7.2.4.2">通过闭包</a>
 </ul>
-<li><a href="#toc_7.2.5">FunSuite</a>
-<li><a href="#toc_7.2.6">混合ScalaTest与JUnit</a>
+<li><a href="#toc_7">访问修饰符</a>
+<ul>
+<li><a href="#toc_7.1">public</a>
+<li><a href="#toc_7.2">private</a>
+<li><a href="#toc_7.3">protected</a>
+<li><a href="#toc_7.4">保护的范围</a>
+<li><a href="#toc_7.5">伴生对象的可见度性</a>
+</ul>
+<li><a href="#toc_8">断言</a>
+<li><a href="#toc_9">测试</a>
+<ul>
+<li><a href="#toc_9.1">Junit 4</a>
+<li><a href="#toc_9.2">ScalaTest</a>
+<ul>
+<li><a href="#toc_9.2.1">Runner</a>
+<li><a href="#toc_9.2.2">assert()与expect()方法</a>
+<li><a href="#toc_9.2.3">测试异常</a>
+<li><a href="#toc_9.2.4">在测试间共享代码</a>
+<ul>
+<li><a href="#toc_9.2.4.1">BeforeAndAfter特质</a>
+<li><a href="#toc_9.2.4.2">通过闭包</a>
+</ul>
+<li><a href="#toc_9.2.5">FunSuite</a>
+<li><a href="#toc_9.2.6">混合ScalaTest与JUnit</a>
 </ul>
 </ul>
 </ul>
@@ -128,10 +220,18 @@
 </p>
 
 <p>
-Scala 思考再三还是加入了 Dynamic Types，这个特性在 Scala 2.9 中是试验性的，
-必须用<code>-Xexperimental</code>进行开启，到了 Scala 2.10.0 中，只要代码中有
-<code>import scala.language.dynamics</code>就可用了，或是编译时加<code>-language:dynamics</code>选项。
+Scala 思考再三还是加入了 Dynamic Types，这个特性在Scala 2.9中是试验性的，
+必须用<code>-Xexperimental</code>进行开启，到了 Scala 2.10.0 中，开启方式有两种：
 </p>
+
+<ul>
+<li>
+代码中有<code>import scala.language.dynamics</code>
+
+<li>
+代码中不引入，但编译时加<code>-language:dynamics</code>选项。
+
+</ul>
 
 <p>
 虽然Scala 2.10.0加进了Dynamic Types特性，但Scala仍然是静态类型的语言，因为在
@@ -147,20 +247,42 @@ Scala 思考再三还是加入了 Dynamic Types，这个特性在 Scala 2.9 中�
 通俗点讲动态类型的类必须继承自<code>Dynamic</code>。所有的变化就在下面这四个方法中：
 </p>
 
-<p>
+<ul>
+<li>
 <code>selectDynamic</code>
+
+<li>
 <code>updateDynamic</code>
+
+<li>
 <code>applyDynamic</code>
+
+<li>
 <code>applyDynamicNamed</code>
+
+</ul>
+
+<p>
+说明：
 </p>
 
 <ul>
 <li>
-当使用<code>qual.sel</code>，而<code>Qual</code>类未定义<code>sel</code>属性或方法时，会调用<code>selectDynamic(method: String)</code>方法。
+当使用<code>qual.sel</code>，而<code>Qual</code>类未定义<code>sel</code>属性或方法时，
 
+</ul>
+<p>
+会调用<code>selectDynamic(method: String)</code>方法。
+</p>
+<ul>
 <li>
-当<code>qual.name = "Unmi"</code>时会调用类似<code>updateDynamic(method: String)(args: Any)</code>这样的方法。
+当<code>qual.name = "Unmi"</code>时会调用类似<code>updateDynamic(method: String)(args: Any)</code>
 
+</ul>
+<p>
+这样的方法。
+</p>
+<ul>
 <li>
 还有<code> applyDynamic</code>，<code>applyDynamicNamed</code>这两个方法的自动调用。
 
@@ -922,6 +1044,8 @@ Scala的任何方法调用，如果你确实只传入一个参数，就能可选
 
 <h2 id="toc_3.2">抽象类</h2>
 
+<h3 id="toc_3.2.1">abstract声明抽象类</h3>
+
 <p>
 布局元素名为<code>Element</code>，存放的文本内容类型为<code>Array[String]</code>。提供方法<code>contents</code>
 取得存放的文本内容，但没有定义实现方式，所以这个类是抽象类，要加上<code>abstract</code>
@@ -934,9 +1058,11 @@ Scala的任何方法调用，如果你确实只传入一个参数，就能可选
   } 
 </pre>
 
+<h3 id="toc_3.2.2">抽象方法</h3>
+
 <p>
-注意：类<code>Element</code>的<code>contents</code>方法并没带有<code>abstract</code>修饰符。不像Java，方法的
-声明中不需要（也不允许）抽象修饰符。如果方法没有实现，它就是抽象的。
+注意：类<code>Element</code>的<code>contents</code>方法并没带有<code>abstract</code>修饰符。不像Java，方法的声明
+中不需要（也不允许）抽象修饰符。如果方法没有实现，它就是抽象的。
 </p>
 
 <p>
@@ -944,6 +1070,47 @@ Scala的任何方法调用，如果你确实只传入一个参数，就能可选
 抽象方法<code>contents</code>，但当前没有定义具体方法。
 </p>
 
+<h3 id="toc_3.2.3">抽象字段</h3>
+
+<pre class="brush: scala">
+abstract class Person {
+	val id: Int
+	val Name: String
+</pre>
+
+<p>
+这两个字段并没有生成在对应的Java类中，产生的只有对应的方法：
+</p>
+
+<ul>
+<li>
+<code>val</code>只有抽象<code>getter</code>方法。
+
+<li>
+<code>var</code>有抽象的<code>getter</code>与<code>setter</code>方法。
+
+</ul>
+
+<p>
+实现类要提供具体的字段，对于抽象的字段不用加<code>abstract</code>：
+</p>
+
+<pre class="brush: scala">
+class Employee(val: id: Int) extends Person {
+	var name = ""
+}
+</pre>
+
+<p>
+实现类可以是一个匿名类：
+</p>
+
+<pre class="brush: scala">
+val fred = new Person {
+	val id = 1729
+	var name = "Fred"
+}
+</pre>
 
 <h2 id="toc_3.3">定义无参数方法</h2>
 
@@ -988,12 +1155,12 @@ Scala的任何方法调用，如果你确实只传入一个参数，就能可选
 </pre>
 
 <p>
-两组定义从客户的观点来看是完全相同的。唯一的差别是与的访问或许稍微比方法调用要快
-，因为字段值在类被初始化的时候被预计算，而方法调用在每次调用的时候都要计算。
+两组定义从客户的观点来看是完全相同的。唯一的差别是字段的访问或许稍微比方法调用要
+快，因为字段值在类被初始化的时候被预计算，而方法调用在每次调用的时候都要计算。
 </p>
 
 <p>
-换句话说，字段在每个<code>Element</code>对象上需要更多的内存空间。因此类的使用概况，属性
+换句话说，字段在每个<code>Element</code>实例上需要更多的内存空间。因此类的使用概况，属性
 表达成字段还是方法更好，决定了其实现，并且这个概况还可以随时改变。
 </p>
 
@@ -1025,9 +1192,9 @@ Scala的任何方法调用，如果你确实只传入一个参数，就能可选
 
 <p>
 原则上Scala的函数调用中可以省略所有的空括号。然而，在调用的方法表达的超过其接收
-调用者对象的属性时，推荐仍然写一对空的括号。例如，如果方法执行了I/O，或写入
+调用者实例的属性时，推荐仍然写一对空的括号。例如，如果方法执行了I/O，或写入
 可重新赋值的变量（var），或读出不是接受调用者的字段的var，无论是直接的还是非直接
-的通过使用可变对象，那么空括号是合适的。这种方式是让参数列表扮演一个可见的线索
+的通过使用可变实例，那么空括号是合适的。这种方式是让参数列表扮演一个可见的线索
 说明某些有趣的计算正通过调用被触发。例如：
 </p>
 
@@ -1092,10 +1259,35 @@ Scala的任何方法调用，如果你确实只传入一个参数，就能可选
 
 <p>
 如果子类中的字段与超类同名，或是子类的中的方法名称和参数与超类类完全一样，就会
-覆盖（override）超类中的版本。
+覆盖（override）超类中的版本。而且Scala里强制如果覆盖了就一定要加上<code>override</code>
+修饰符。
 </p>
 
 <h2 id="toc_3.5">重写方法和字段</h2>
+
+<h3 id="toc_3.5.1">命名空间</h3>
+
+<p>
+Java为定义准备了四个命名空间：字段，方法，类型和包。
+</p>
+
+<p>
+而Scala仅有两个,与Java的四个命名空间相对：
+</p>
+
+<ul>
+<li>
+值（字段，方法，包还有单例对象）
+
+<li>
+类型（类和特质名）
+
+</ul>
+
+<p>
+Scala把字段和方法放进同一个命名空间的理由很清楚，因为这样你就可以使用<code>val</code>重重写
+无参数的方法，这种你在Java里做不到的事情。
+</p>
 
 <p>
 字段和方法属于相同的命名空间。这使得字段重写无参数方法成为可能。比如说，你可以
@@ -1142,30 +1334,184 @@ Scala的任何方法调用，如果你确实只传入一个参数，就能可选
 
 </pre>
 
+
 <p>
-Java为定义准备了四个命名空间：字段，方法，类型和包。
+如果要调试实例的构造顺序，可在编译加上参数<code>-Xcheckinit</code>。这样在方法末初始化字段
+时会抛出异常。
+</p>
+
+<h3 id="toc_3.5.2">使用override修饰符</h3>
+
+<p>
+考虑一下这样的场景：
 </p>
 
 <p>
-而Scala仅有两个,与Java的四个命名空间相对：
+基类和子类是不同的人维护的。原来基类里没有<code>add</code>方法，所以子类里加上了。后来
+基类里也加上了<code>add</code>方法，但维护子类的人不知道。这样的规定是为了防止“脆基类”问题
+。
+</p>
+
+<p>
+所以Scala里<code>override</code>有强制的规定：
 </p>
 
 <ul>
 <li>
-值（字段，方法，包还有单例对象）
+如果实现了抽象成员，加不加随便。
 
 <li>
-类型（类和特质名）
+如果重载了具体实现，就一定要加。
+
+<li>
+没有重载就绝不能加。
 
 </ul>
 
 <p>
-Scala把字段和方法放进同一个命名空间的理由很清楚，因为这样你就可以使用<code>val</code>重重写
-无参数的方法，这种你在Java里做不到的事情。
+这样起码保证了维护子类的人知道自己会覆盖超类的方法。
 </p>
 
 
-<h2 id="toc_3.6">定义参数化字段</h2>
+<h3 id="toc_3.5.3">不可重写 final</h3>
+
+<p>
+Scala中字段与方法都可以用<code>final</code>修饰为不可重写（因为Scala的字段也是可以重写为
+方法的）。注意这与Java不一样，Java里<code>final</code>字段表示不可改变，而Scala里已经有
+<code>val</code>表示不可改变了。
+</p>
+
+
+<h3 id="toc_3.5.4">重写限制</h3>
+
+<p>
+概括：
+</p>
+
+<ul>
+<li>
+<code>def</code>只能重写另一个<code>def</code>
+
+<li>
+<code>val</code>只能重写另一个<code>val</code>与无参<code>def</code>
+
+<li>
+<code>var</code>只能重写另一个抽象的<code>var</code>
+
+</ul>
+
+<p>
+详述：
+</p>
+
+<ul>
+<li>
+用val
+
+<ul>
+<li>
+重写val：
+
+<ul>
+<li>
+超类同名的私有字段
+
+<li>
+重写超类的getter方法
+
+</ul>
+<li>
+重写def：
+
+<ul>
+<li>
+子类有一个私有字段
+
+<li>
+重写超类的getter方法
+
+</ul>
+<li>
+重写var：错误
+
+</ul>
+<li>
+用def
+
+<ul>
+<li>
+重写val：错误
+
+<li>
+重写def：同Java
+
+<li>
+重写var：错误
+
+</ul>
+<li>
+用var
+
+<ul>
+<li>
+重写val：错误
+
+<li>
+重写def：同时重写getter/setter。只重写getter会报错
+
+<li>
+重写var：重写超类的抽象var
+
+</ul>
+</ul>
+
+<p>
+在当前类中，随时可以对<code>getter</code>与<code>setter</code>重新实现<code>var</code>，但在子类中不能通过
+<code>getter</code>与<code>setter</code>重新实现<code>var</code>，只能接受现有的实现。
+</p>
+
+<h2 id="toc_3.6">类型检查和转换</h2>
+
+<table>
+<tr>
+<td>
+Scala
+</td>
+<td>
+Java
+</td>
+</tr>
+<tr>
+<td>
+obj.isInstanceOf[Clazz]
+</td>
+<td>
+obj instanceof Clazz
+</td>
+</tr>
+<tr>
+<td>
+obj.asInstanceOf[Clazz]
+</td>
+<td>
+(Clazz) obj
+</td>
+</tr>
+<tr>
+<td>
+classOf[Clazz]
+</td>
+<td>
+Clazz.class
+</td>
+</tr>
+</table>
+
+<p>
+相比类型检查与转换，Scala更加推荐模式匹配的方式。
+</p>
+
+<h2 id="toc_3.7">定义参数化字段</h2>
 
 <p>
 <code>ArrayElement</code>类的定义。它有一个参数<code>conts</code>，其唯一目的是被复制到<code>contents</code>字段
@@ -1222,7 +1568,7 @@ Tiger的定义是以下包括重写成员<code>dangerous</code>和<code>private<
 
 
 
-<h2 id="toc_3.7">调用超类构造器</h2>
+<h2 id="toc_3.8">调用超类构造器</h2>
 
 <p>
 如果再要新的子类：
@@ -1241,39 +1587,96 @@ Tiger的定义是以下包括重写成员<code>dangerous</code>和<code>private<
 构造器，只要把你要传递的参数或参数列表放在超类名之后的括号里）即可。
 </p>
 
-
-<h2 id="toc_3.8">使用override修饰符</h2>
+<h3 id="toc_3.8.1">只有主构造器可以调用超类构造器</h3>
 
 <p>
-考虑一下这样的场景：
+Scala中辅助构造器不能调用超类构造器，只有主构造器可以调用超类构造器。
+</p>
+
+<h3 id="toc_3.8.2">构造顺序</h3>
+
+<p>
+Scala与Java有一个共同的问题：超类的构造器会调用被子类覆盖的方法。
 </p>
 
 <p>
-基类和子类是不同的人维护的。原来基类里没有<code>add</code>方法，所以子类里加上了。后来
-基类里也加上了<code>add</code>方法，但维护子类的人不知道。这样的规定是为了防止“脆基类”问题
-。
-</p>
-
-<p>
-所以Scala里<code>override</code>有强制的规定：
+用动物的视力（或感知以距离）来作为例子：
 </p>
 
 <ul>
 <li>
-如果实现了抽象成员，加不加随便。
+默认动物的视力为10
 
 <li>
-如果重载了具体实现，就一定要加。
-
-<li>
-没有重载就绝不能加。
+蚂蚁的视力只有2
 
 </ul>
 
+<pre class="brush: scala">
+class Creature {
+	val range: Int = 10
+	val env: Array[Int] = new array[Int](range)
+}
+
+class Ant extends Creature {
+	override val range = 2
+}
+</pre>
+
 <p>
-这样起码保证了维护子类的人知道自己会覆盖超类的方法。
+如果初始化<code>Ant</code>实例，过程比较复杂：
 </p>
 
+<ol>
+<li>
+调用超类构造器，设置<code>range</code>为10。
+
+<li>
+超类构造器初始化<code>env</code>长度时要用到<code>range</code>，发现<code>range</code>被子类重写。
+
+<li>
+调用子类的<code>range</code>，但是子类还没有初始化，所以<code>range</code>值为<code>0</code>。
+
+<li>
+<code>env</code>被初始化为长度为0的数组。超类构造器执行完毕。
+
+<li>
+子类构造器开始执行，把<code>range</code>设置为2.
+
+</ol>
+
+<p>
+解决的方案：
+</p>
+
+<ul>
+<li>
+<code>final val</code>声明不能覆盖，这样安全但是不灵活。
+
+<li>
+<code>lazy</code>懒加载。安全但是影响性能。
+
+<li>
+预初始化。接下来就讲。
+
+</ul>
+
+<h4 id="toc_3.8.2.1">预初始化</h4>
+
+<p>
+用<code>with</code>代替<code>extends</code>，并给字段定义加上花括号，放在超类的构造器之前：
+</p>
+
+<pre class="brush: scala">
+class Ant {
+	override val range = 2
+} with Creature
+</pre>
+
+<p>
+由于预初始化的字段的超类构造器调用前被初始化，所以不能引用正在被构造的实例。所以
+对于<code>this</code>实际指向的是正被构造的类或对象的实例，而来是被构造的实例本身。
+</p>
 
 <h2 id="toc_3.9">多态和动态绑定</h2>
 
@@ -1306,7 +1709,7 @@ Tiger的定义是以下包括重写成员<code>dangerous</code>和<code>private<
 
 <p>
 变量和表达式上的方法调用是动态绑定（dynamically bound）的。这意味着被调用的
-实际方法实现取决于运行期对象其实的类，而不是变量或表达式的类型。
+实际方法实现取决于运行期实例实际的类，而不是变量或表达式的类型。
 </p>
 
 <p>
@@ -1380,39 +1783,13 @@ Tiger的定义是以下包括重写成员<code>dangerous</code>和<code>private<
 
 <p>
 因为<code>UniformElement</code>没有重写<code>demo</code>，它从它的超类<code>Element</code>继承了<code>demo</code>的实现。
-因此，当对象的类是<code>UniformElement</code>时，<code>Element</code>的实现就是要调用的<code>demo</code>的正确
+因此，当实例的类是<code>UniformElement</code>时，<code>Element</code>的实现就是要调用的<code>demo</code>的正确
 实现。
 </p>
 
 
 
-<h2 id="toc_3.10">定义final成员</h2>
-
-<p>
-要确保成员不被子类重写。Scala里和Java里一样，通过添加<code>final</code>修饰符给成员来做到。
-</p>
-
-<pre class="brush: scala">
-  class ArrayElement extends Element {
-    final override def demo() {
-      println("ArrayElement's implementation invoked")
-    }
-  }
-</pre>
-
-<p>
-在类的声明上添加<code>final</code>修饰符把整个类声明为final：
-</p>
-
-<pre class="brush: scala">
-  final class ArrayElement extends Element {
-    override def demo() {
-      println("ArrayElement's implementation invoked")
-    }
-  }
-</pre>
-
-<h2 id="toc_3.11">使用组合与继承</h2>
+<h2 id="toc_3.10">使用组合与继承</h2>
 
 <p>
 组合与继承是利用其它现存类定义新类的两个方法。
@@ -1430,7 +1807,7 @@ Tiger的定义是以下包括重写成员<code>dangerous</code>和<code>private<
 
 
 
-<h2 id="toc_3.12">实现示例中的功能</h2>
+<h2 id="toc_3.11">实现示例中的功能</h2>
 
 <p>
 把一个元素放在另一个上面是指串连这两个元素的<code>contents</code>值。
@@ -1531,11 +1908,11 @@ Tiger的定义是以下包括重写成员<code>dangerous</code>和<code>private<
 
 
 
-<h2 id="toc_3.13">定义工厂对象</h2>
+<h2 id="toc_3.12">定义工厂对象</h2>
 
 <p>
 最直接的方案是创建类<code>Element</code>的伴生对象并把它做成布局元素的工厂方法。这种方式
-唯一要暴露给客户的就是<code>Element</code>的类/对象组合，隐藏它的三个实现类<code>ArrayElement</code>，
+唯一要暴露给客户的就是<code>Element</code>的类/实例组合，隐藏它的三个实现类<code>ArrayElement</code>，
 <code>LineElement</code>和<code>UniformElement</code>。
 </p>
 
@@ -1641,7 +2018,7 @@ Scala里，你可以在类和单例对象中定义其它的类和单例对象。
 
 
 
-<h2 id="toc_3.14">变高变宽</h2>
+<h2 id="toc_3.13">变高变宽</h2>
 
 <p>
 Element的版本并不完全，因为他不允许客户把不同宽度的元素堆叠在一起，或者不同高度
@@ -1712,7 +2089,7 @@ Element的版本并不完全，因为他不允许客户把不同宽度的元素�
   }
 </pre>
 
-<h2 id="toc_3.15">完整的示例代码</h2>
+<h2 id="toc_3.14">完整的示例代码</h2>
 
 <p>
 写一个画给定数量边界的螺旋的程序。
@@ -1781,7 +2158,7 @@ $ scala Spiral 6    $ scala Spiral 11    $ scala Spiral 17
 
 <p>
 Scala里，每个类都继承自通用的名为<code>Any</code>的超类。因为所有的类都是<code>Any</code>的子类，那么
-定义在<code>Any</code>中的方法就是“普遍”方法：它们可以被任何对象调用。
+定义在<code>Any</code>中的方法就是“普遍”方法：它们可以被任何实例调用。
 </p>
 
 <p>
@@ -1934,7 +2311,7 @@ Scala里这些类的实例都写成字面量，不能使用<code>new</code>创�
 <p>
 Scala类与Java类不同在于它们还继承自一个名为<code>ScalaObject</code>的特别的记号特质。理念是
 <code>ScalaObject</code>包含了Scala编译器定义和实现的方法，目的是让Scala程序的执行更有效。
-到现在为止，Scala对象包含了单个方法，名为<code>$tag</code>，用于内部以提速模式匹配。
+到现在为止，Scala实例包含了单个方法，名为<code>$tag</code>，用于内部以提速模式匹配。
 </p>
 
 
@@ -1975,7 +2352,7 @@ Scala以与Java同样的方式存储整数：把它当作32位的字。这对在
 </pre>
 
 <p>
-却得到了<code>false</code>！原因是数<code>421</code>被装箱了两次，因此参数<code>x</code>和<code>y</code>是两个不同的对象。
+却得到了<code>false</code>！原因是数<code>421</code>被装箱了两次，因此参数<code>x</code>和<code>y</code>是两个不同的实例。
 </p>
 
 <p>
@@ -2068,8 +2445,11 @@ Java里，<code>x</code>与<code>y</code>的比较结果将是<code>false</code>
 某些Scala的面向对象类型系统的“边界情况”的特殊类型。
 </p>
 
+
+<h3 id="toc_4.3.1">Null</h3>
+
 <p>
-类<code>Null</code>是<code>null</code>类型的引用；它是每个引用类（就是说，每个继承自<code>AnyRef</code>的类）的
+类<code>Null</code>唯一的实例是<code>null</code>值；它是每个引用类（就是说，每个继承自<code>AnyRef</code>的类）的
 子类。<code>Null</code>不兼容值类型。比方说，不可把<code>null</code>值赋给整数变量：
 </p>
 
@@ -2080,11 +2460,13 @@ Java里，<code>x</code>与<code>y</code>的比较结果将是<code>false</code>
    required: Int
 </pre>
 
+<h3 id="toc_4.3.2">Nothing</h3>
+
 <p>
 类型<code>Nothing</code>在<code>Scala</code>的类层级的最底端；它是任何其它类型的子类型。然而，根本没有
 这个类型的任何值。要一个没有值的类型有什么意思呢？在控制结构的try-catch中讨论过
-，<code>Nothing</code>的一个用处是它标明了不正常的终止。例如Scala的标准库中的<code>Predef</code>对象
-有一个<code>error</code>方法，如下定义：
+，<code>Nothing</code>的一个用处是它标明了不正常的终止。例如Scala的标准库中的<code>Predef</code>单例
+对象有一个<code>error</code>方法，如下定义：
 </p>
 
 <pre class="brush: scala">
@@ -2110,6 +2492,12 @@ Java里，<code>x</code>与<code>y</code>的比较结果将是<code>false</code>
 因为<code>Nothing</code>是<code>Int</code>的子类型，整个状态语句的类型是<code>Int</code>，正如需要的那样。
 </p>
 
+<h2 id="toc_4.4">Unit</h2>
+
+<p>
+<code>Unit</code>类似于Java中的<code>void</code>。<code>Unit</code>只有一个实例<code>()</code>。
+</p>
+
 
 
 <h1 id="toc_5">特质（Traits）</h1>
@@ -2119,8 +2507,58 @@ trait是Scala里代码复用的基础单元。特质封装了方法和字段的�
 类中重用它们。
 </p>
 
+<h2 id="toc_5.1">抽象与实现</h2>
 
-<h2 id="toc_5.1">概念</h2>
+<p>
+特质中的字段可以是抽象的也可以是抽象的。
+</p>
+
+<h3 id="toc_5.1.1">实现字段</h3>
+
+<p>
+如果字段有初始值，就是已经实现的字段。
+</p>
+
+<h4 id="toc_5.1.1.1">不可被再次继承</h4>
+
+<p>
+因为JVM中不可多重继承，所以特质中的字段只能作为混入类中的一个不能被子类继承的
+成员。
+</p>
+
+<h3 id="toc_5.1.2">抽象字段</h3>
+
+<p>
+如果字段没有初始值，就是抽象字段。它们必须被实现。
+</p>
+
+<h3 id="toc_5.1.3">抽象方法</h3>
+
+<h4 id="toc_5.1.3.1">默认抽象</h4>
+
+<p>
+特质中没有实现的方法默认作为抽象方法，不用<code>abstract</code>修饰：
+</p>
+
+<pre class="brush: scala">
+trait Logger {
+	def log(msg: String)
+}
+</pre>
+
+<h4 id="toc_5.1.3.2">不用override</h4>
+
+<p>
+实现特质中的抽象方法不用加<code>override</code>：
+</p>
+
+<pre class="brush: scala">
+class ConsoleLogger extends Logger {
+	def log(msg: String) { println(msg) }
+}
+</pre>
+
+<h3 id="toc_5.1.4">实现方法</h3>
 
 <p>
 定义，关键字<code>trait</code>：
@@ -2133,6 +2571,20 @@ trait是Scala里代码复用的基础单元。特质封装了方法和字段的�
     }
   }
 </pre>
+
+<h4 id="toc_5.1.4.1">需要重新编译</h4>
+
+<p>
+如果特质带有具体实现，那么这个物质一旦改变，所有已经混入该特质的类必须重新编译。
+</p>
+
+<h2 id="toc_5.2">单例对象也可以扩展特质</h2>
+
+<p>
+不止是类，单例对象也可以扩展特质。
+</p>
+
+<h2 id="toc_5.3">类层级</h2>
 
 <p>
 没有声明超类，因此和类一样，有个缺省的超类<code>AnyRef</code>。一旦特质被定义了，就可以使用
@@ -2173,7 +2625,7 @@ trait是Scala里代码复用的基础单元。特质封装了方法和字段的�
 
 <p>
 <code>phil</code>的类型是<code>Philosophical</code>，一个特质。因此，变量<code>phil</code>可以被初始化为任何混入
-了<code>Philosophical</code>特质的类的对象。
+了<code>Philosophical</code>特质的类的实例。
 </p>
 
 <p>
@@ -2233,318 +2685,43 @@ trait是Scala里代码复用的基础单元。特质封装了方法和字段的�
   It ain't easy being green!
 </pre>
 
+<h2 id="toc_5.4">特质继承</h2>
+
+<h3 id="toc_5.4.1">抽象方法延迟绑定</h3>
+
 <p>
-这时你或许推导出以下哲理：特质就像是带有具体方法的Java接口，不过其实它能做的更多
-：比方说，特质可以声明字段和维持状态值。
+如果重写了特质中的抽象方法，要加上<code>abstract</code>修饰。
 </p>
 
 <p>
-实际上，你可以用特质定义做任何用类定义做的事，并且语法也是一样的，除了两点：
-</p>
-
-<p>
-第一点，特质不能有任何“类”参数，也就是说，传递给类的主构造器的参数。换句话说，
-尽管你可以定义如下的类：
-</p>
-
-<pre class="brush: scala">
-  class Point(x: Int, y: Int)
-</pre>
-
-<p>
-但是下面定义特质的尝试将遭到失败：
+特质中的方法是抽象的：
 </p>
 
 <pre class="brush: scala">
-  trait NoPoint(x: Int, y: Int) // Does not compile
-</pre>
-
-<p>
-类和特质的另一个差别在于不论在类的哪个角落，<code>super</code>调用都是静态绑定的，在特质中
-，它们是动态绑定的。如果你在类中写下<code>super.toString</code>，你很明确哪个方法实现将被
-调用。然而如果你在特质中写了同样的东西，在你定义特质的时候<code>super</code>调用的方法实现
-尚未被定义。调用的实现将在每一次特质被混入到具体类的时候才被决定。这种处理
-<code>super</code>的有趣的行为是使得特质能以可堆叠的改变（stackable modifications）方式
-工作的关键。
-</p>
-
-<h2 id="toc_5.2">比较瘦接口与胖接口</h2>
-
-<p>
-瘦接口与胖接口的对阵体现了面向对象设计中常会面临的在实现者与接口用户之间的权衡。
-</p>
-
-<p>
-胖接口有更多的方法，对于调用者来说更便捷。客户可以捡一个完全符合他们功能需要的
-方法。另一方面瘦接口有较少的方法，对于实现者来说更简单。然而调用瘦接口的客户因此
-要写更多的代码。由于没有更多可选的方法调用，他们或许不得不选一个不太完美匹配他们
-所需的方法并为了使用它写一些额外的代码。
-</p>
-
-<p>
-Java的接口常常是过瘦而非过胖。例如，从Java 1.4开始引入的<code>CharSequence</code>接口，是
-对于字串类型的类来说通用的瘦接口，它持有一个字符序列。下面是把它看作Scala特质的
-定义：
-</p>
-
-<pre class="brush: scala">
-  trait CharSequence {
-    def charAt(index: Int): Char
-    def length: Int
-    def subSequence(start: Int, end: Int): CharSequence
-    def toString(): String
-  }
-</pre>
-
-<p>
-尽管类<code>String</code>里现有的成打的方法中的大多数都可以用在任何<code>CharSequence</code>上，Java的
-<code>CharSequence</code>接口定义仅提供了4个方法。如果<code>CharSequence</code>代以包含全部<code>String</code>
-接口，那它将为<code>CharSequence</code>的实现者压上沉重的负担。任何实现Java<code>CharSequence</code>
-接口的程序员将不得不定义一大堆方法。因为Scala特质可以包含具体方法，这使得创建
-胖接口大为便捷。
-</p>
-
-<p>
-在特质中添加具体方法使得胖瘦对阵的权衡大大倾向于胖接口。不像在Java里那样，在
-Scala中添加具体方法是一次性的劳动。你只要在特质中实现方法一次，而不再需要在每个
-混入特质的方法中重新实现它。因此，与没有特质的语言相比，Scala里的胖接口没什么
-工作要做。
-</p>
-
-<p>
-要使用特质丰满接口，只要简单地定义一个具有少量抽象方法的特质——特质接口的瘦部分——
-和潜在的大量具体方法，所有的都实现在抽象方法之上。然后你就可以把丰满了的特质混入
-到类中，实现接口的瘦部分，并最终获得具有全部胖接口内容的类。
-</p>
-
-<h2 id="toc_5.3">样例：长方形对象</h2>
-
-<p>
-为了使这些长方形对象便于使用，如果库能够提供诸如<code>width</code>，<code>height</code>，<code>left</code>，
-<code>right</code>，<code>topLeft</code>，等等方法。
-</p>
-
-<p>
-没有特质的代码的话，首先会有一些基本的集合类如<code>Point</code>和<code>Rectangle</code>：
-</p>
-
-<pre class="brush: scala">
-  class Point(val x: Int, val y: Int)
-
-  class Rectangle(val topLeft: Point, val bottomRight: Point) {
-    def left = topLeft.x
-    def right = bottomRight.x
-    def width = right - left
-    // and many more geometric methods...
-  }
-</pre>
-
-<p>
-这个<code>Rectangle</code>类在它的主构造器中带两个点，分别是左上角和右下角的坐标。然后它
-通过对这两个点执行简单的计算实现了许多便捷方法诸如<code>left</code>，<code>right</code>，和<code>width</code>。
-</p>
-
-<p>
-图库应该有的另一个类是2-D图像工具：
-</p>
-
-<pre class="brush: scala">
-  abstract class Component {
-    def topLeft: Point
-    def bottomRight: Point
-
-    def left = topLeft.x
-    def right = bottomRight.x
-    def width = right - left
-    // and many more geometric methods...
-  }
-</pre>
-
-<p>
-注意<code>left</code>，<code>right</code>，和<code>width</code>在两个类中的定义是一模一样。除了少许的变动外，他们
-将在任何其他的长方形对象的类中保持一致。
-</p>
-
-<p>
-这种重复可以使用特质消除。这个特质应该具有两个抽象方法：一个返回对象的左上角坐标
-，另一个返回右下角的坐标。然后他就可以应用到所有其他的几何查询的具体实现中：
-</p>
-
-<pre class="brush: scala">
-  trait Rectangular {
-    def topLeft: Point
-    def bottomRight: Point
-
-    def left = topLeft.x
-    def right = bottomRight.x
-    def width = right - left
-    // and many more geometric methods...
-  }
-</pre>
-
-<p>
-类<code>Component</code>可以混入这个特质并获得<code>Rectangular</code>提供的所有的几何方法：
-</p>
-
-<pre class="brush: scala">
-  abstract class Component extends Rectangular {
-    // other methods...
-  }
-</pre>
-
-<p>
-可以创建<code>Rectangle</code>对象并对它调用如<code>width</code>或<code>left</code>的几何方法：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val rect = new Rectangle(new Point(1, 1),
-       | new Point(10, 10))
-  rect: Rectangle = Rectangle@3536fd
-
-  scala&gt; rect.left
-  res2: Int = 1
-
-  scala&gt; rect.right
-  res3: Int = 10
-
-  scala&gt; rect.width
-  res4: Int = 9
-</pre>
-
-
-<h2 id="toc_5.4">实现Ordered特质来排序</h2>
-
-<p>
-以前面我们实现的实数类型来说，原来已经有了四个比较大小的方法：
-</p>
-
-<pre class="brush: scala">
-  class Rational(n: Int, d: Int) {
-    // ...
-    def &lt; (that: Rational) =
-      this.numer * that.denom &gt; that.numer * this.denom
-    def &gt; (that: Rational) = that &lt; this
-    def &lt;= (that: Rational) = (this &lt; that) || (this == that)
-    def &gt;= (that: Rational) = (this &gt; that) || (this == that)
-  }
-</pre>
-
-<p>
-Scala专门提供了<code>Ordered</code>特质来简化比较工作。只要实现<code>Ordered</code>特质中的<code>compare</code>
-方法，就可以自动实现其他的<code>&lt;</code>、<code>&gt;</code>、<code>&lt;=</code>、<code>&gt;=</code>功能：
-</p>
-
-<pre class="brush: scala">
-  class Rational(n: Int, d: Int) extends Ordered[Rational] {
-    // ...
-    def compare(that: Rational) =
-      (this.numer * that.denom) - (that.numer * this.denom)
-  }
-</pre>
-
-<p>
-上面定义<code>compare</code>方法来比较两个对象，类<code>Rational</code>现在具有了所有4种比较方法：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val half = new Rational(1, 2)
-  half: Rational = 1/2
-
-  scala&gt; val third = new Rational(1, 3)
-  third: Rational = 1/3
-
-  scala&gt; half &lt; third
-  res5: Boolean = false
-
-  scala&gt; half &gt; third
-  res6: Boolean = true
-</pre>
-
-<p>
-考虑下面的抽象简化了四个比较操作符的实现：
-</p>
-
-<pre class="brush: scala">
-  trait Ordered[T] {
-    def compare(that: T): Int
-
-    def &lt;(that: T): Boolean = (this compare that) &lt; 0
-    def &gt;(that: T): Boolean = (this compare that) &gt; 0
-    def &lt;=(that: T): Boolean = (this compare that) &lt;= 0
-    def &gt;=(that: T): Boolean = (this compare that) &gt;= 0
-  }
-</pre>
-
-<h2 id="toc_5.5">特质的叠加次序</h2>
-
-<p>
-可以把多个特质加在一个类上，按声明的顺序，它们操作的顺序就像栈一样。
-</p>
-
-<p>
-<code>IntQueue</code>有一个<code>put</code>方法把整数添加到队列中，和一个<code>get</code>方法移除并返回它们：
-</p>
-
-<pre class="brush: scala">
-  abstract class IntQueue {
-    def get(): Int
-    def put(x: Int)
-  }
-</pre>
-
-<p>
-<code>BasicIntQueue</code>类根据上面的特质实现了一个队列：
-</p>
-
-<pre class="brush: scala">
-  import scala.collection.mutable.ArrayBuffer
-
-  class BasicIntQueue extends IntQueue {
-    private val buf = new ArrayBuffer[Int]
-    def get() = buf.remove(0)
-    def put(x: Int) { buf += x }
-  }
-</pre>
-
-<p>
-运行一个队列的效果：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val queue = new BasicIntQueue
-  queue: BasicIntQueue = BasicIntQueue@24655f
-
-  scala&gt; queue.put(10)
-
-  scala&gt; queue.put(20)
-
-  scala&gt; queue.get()
-  res9: Int = 10
-
-  scala&gt; queue.get()
-  res10: Int = 20
+trait Logger {
+	def log(msg: String)
+}
 </pre>
 
 
 <p>
-<code>Doubling</code>特质把整数放入队列的时候对它加倍。
+在实现子类特质的时候，调用的相对父类的方法还是抽象的，所以下而的代码是编译不过
+的：
 </p>
 
 <pre class="brush: scala">
-  trait Doubling extends IntQueue {
-    abstract override def put(x: Int) { super.put(2 * x) }
-  }
+trait TimestampLogger extends Logger {
+	override def log(msg: String) {
+		super.log(new java.util.Date() + " " + msg) // super.log()还是抽象的，错误
+	}
+}
 </pre>
-
-<p>
-注意：定义了超类<code>IntQueue</code>这个定义意味着特质只能混入到扩展了<code>IntQueue</code>的类中。
-</p>
 
 <p>
 声明为抽象的方法中有一个<code>super</code>调用。这种调用对于普通的类来说是非法的，因为继承
 的超类是个抽象类，所以在执行时将必然失败。然而对于特质来说，这样的调用实际能够
-成功。因为特质里的<code>super</code>调用是动态绑定的，特质<code>Doubling</code>的<code>super</code>调用将直到被
-混入在另一个特质或类之后，有了具体的方法定义时才工作。
+成功。因为特质里的<code>super</code>调用是动态绑定的，特质的<code>super</code>调用将直到被混入在另一个
+特质或类之后，有了具体的方法定义时才工作。
 </p>
 
 <p>
@@ -2552,115 +2729,23 @@ Scala专门提供了<code>Ordered</code>特质来简化比较工作。只要实�
 才能实际产生作用。
 </p>
 
-<p>
-现在一行代码都不用写，下面只有一个<code>extends</code>和一个<code>with</code>就把类定义好了：
-</p>
-
 <pre class="brush: scala">
-  scala&gt; class MyQueue extends BasicIntQueue with Doubling
-  defined class MyQueue
-
-  scala&gt; val queue = new MyQueue
-  queue: MyQueue = MyQueue@91f017
-
-  scala&gt; queue.put(10)
-
-  scala&gt; queue.get()
-  res12: Int = 20
+trait TimestampLogger extends Logger {
+	abstract override def log(msg: String) {
+		super.log(new java.util.Date() + " " + msg)
+	}
+}
 </pre>
 
 <p>
-这个队列即能入队出队，而且数字还是加倍的。
+再来看一个例子
 </p>
-
-<p>
-还可以更加简化到类名都不用写，直接<code>new BasicIntQueue with Doubling</code>这个父类名加
-上特质就可以把对象拿到了：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val queue = new BasicIntQueue with Doubling
-  queue: BasicIntQueue with Doubling = $anon$1@5fa12d
-
-  scala&gt; queue.put(10)
-
-  scala&gt; queue.get()
-  res14: Int = 20
-</pre>
-
-
-<h2 id="toc_5.6">特质的叠加</h2>
-
-<p>
-有两个特质，一个在入队时把值加1；另一个过滤掉负数：
-</p>
-
-<pre class="brush: scala">
-  trait Incrementing extends IntQueue {
-    abstract override def put(x: Int) { super.put(x + 1) }
-  }
-
-  trait Filtering extends IntQueue {
-    abstract override def put(x: Int) {
-      if (x &gt;= 0) super.put(x)
-    }
-  }
-</pre>
-
-<p>
-队列能够即过滤负数又对每个进队列的数字增量：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val queue = (new BasicIntQueue
-       | with Incrementing with Filtering)
-  queue: BasicIntQueue with Incrementing with Filtering...
-
-  scala&gt; queue.put(-1); queue.put(0); queue.put(1)
-
-  scala&gt; queue.get()
-  res15: Int = 1
-
-  scala&gt; queue.get()
-  res16: Int = 2
-</pre>
-
-<p>
-粗略地说，越靠近右侧的特质越先起作用。如果那个方法调用了<code>super</code>，它调用其左侧
-特质的方法，以此类推。
-</p>
-
-<p>
-前面的例子里，<code>Filtering</code>的<code>put</code>首先被调用，因此它移除了开始的负整数。
-<code>Incrementing</code>的<code>put</code>第二个被调用，因此它对剩下的整数增量。
-</p>
-
-<p>
-如果你逆转特质的次序，那么整数首先会加1，然后如果仍然是负的才会被抛弃：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val queue = (new BasicIntQueue
-       | with Filtering with Incrementing)
-  queue: BasicIntQueue with Filtering with Incrementing...
-
-  scala&gt; queue.put(-1); queue.put(0); queue.put(1)
-
-  scala&gt; queue.get()
-  res17: Int = 0
-
-  scala&gt; queue.get()
-  res18: Int = 1
-
-  scala&gt; queue.get()
-  res19: Int = 2
-</pre>
-
-
-<h2 id="toc_5.7">特质方法的延迟绑定</h2>
 
 <p>
 在基类方法为抽象时情况比较复杂。比如下面这个抽象<code>Writer</code>类的抽象方法
+</p>
+
+<p>
 <code>writeMessage()</code>：
 </p>
 
@@ -2728,7 +2813,599 @@ THERE IS NO SIN EXCEPT S-----ITY
 THERE IS NO SIN EXCEPT STUPIDITY
 </pre>
 
-<h2 id="toc_5.8">为什么不是多重继承</h2>
+
+<h3 id="toc_5.4.2">特质也可以继承自类</h3>
+
+<p>
+<code>IntQueue</code>类有一个<code>put</code>方法把整数添加到队列中，和一个<code>get</code>方法移除并返回它们：
+</p>
+
+<pre class="brush: scala">
+  abstract class IntQueue {
+    def get(): [[Int]]
+    def put(x: Int)
+  }
+</pre>
+
+<p>
+<code>BasicIntQueue</code>类根据上面的特质实现了一个队列：
+</p>
+
+<pre class="brush: scala">
+  import scala.collection.mutable.ArrayBuffer
+
+  class BasicIntQueue extends IntQueue {
+    private val buf = new ArrayBuffer[Int]
+    def get() = buf.remove(0)
+    def put(x: Int) { buf += x }
+  }
+</pre>
+
+<p>
+运行一个队列的效果：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val queue = new BasicIntQueue
+  queue: BasicIntQueue = BasicIntQueue@24655f
+
+  scala&gt; queue.put(10)
+
+  scala&gt; queue.put(20)
+
+  scala&gt; queue.get()
+  res9: Int = 10
+
+  scala&gt; queue.get()
+  res10: Int = 20
+</pre>
+
+<p>
+<code>Doubling</code>特质继承自类<code>IntQueue</code>，它把整数放入队列的时候对它加倍。
+</p>
+
+<pre class="brush: scala">
+  trait Doubling extends IntQueue {
+    abstract override def put(x: Int) { super.put(2 * x) }
+  }
+</pre>
+
+<h3 id="toc_5.4.3">特质只能混入基类的子类</h3>
+
+<p>
+定义了超类<code>IntQueue</code>这个定义意味着特质只能混入到扩展了<code>IntQueue</code>的类中。
+</p>
+
+<p>
+还有前面提到的抽象绑定:
+</p>
+
+<p>
+声明为抽象的方法中有一个<code>super</code>调用。这种调用对于普通的类来说是非法的，因为继承
+的超类是个抽象类，所以在执行时将必然失败。然而对于特质来说，这样的调用实际能够
+成功。因为特质里的<code>super</code>调用是动态绑定的，特质<code>Doubling</code>的<code>super</code>调用将直到被
+混入在另一个特质或类之后，有了具体的方法定义时才工作。
+</p>
+
+<p>
+所以要加上<code>abstract override</code>，说明要继承父特质（只有特质，类里是不能这样写的）
+才能实际产生作用。
+</p>
+
+<p>
+现在一行代码都不用写，下面只有一个<code>extends</code>和一个<code>with</code>就把类定义好了：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; class MyQueue extends BasicIntQueue with Doubling
+  defined class MyQueue
+
+  scala&gt; val queue = new MyQueue
+  queue: MyQueue = MyQueue@91f017
+
+  scala&gt; queue.put(10)
+
+  scala&gt; queue.get()
+  res12: Int = 20
+</pre>
+
+<p>
+这个队列即能入队出队，而且数字还是加倍的。
+</p>
+
+<p>
+还可以更加简化到类名都不用写，直接<code>new BasicIntQueue with Doubling</code>这个父类名加
+上特质就可以把实例拿到了：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val queue = new BasicIntQueue with Doubling
+  queue: BasicIntQueue with Doubling = $anon$1@5fa12d
+
+  scala&gt; queue.put(10)
+
+  scala&gt; queue.get()
+  res14: Int = 20
+</pre>
+
+
+<h3 id="toc_5.4.4">特质的超类会成为类的超类</h3>
+
+<p>
+之前讨论过特质可以继承自类，那我们就从<code>Exception</code>扩展一个特质出来：
+</p>
+
+<pre class="brush: scala">
+trait LoggedException extends Exception with Logged {
+	def log() { log(getMessage()) }
+}
+</pre>
+
+<p>
+这里的<code>getMessage</code>方法是从<code>Exception</code>继承下来的。接下来把这个特质混入一个类中：
+</p>
+
+<pre class="brush: scala">
+class UnhappyException exteds LoggedException {
+	override def getMessage() = "arggh!"
+}
+</pre>
+
+<p>
+现在特质<code>LoggedException</code>的超类<code>Exception</code>是<code>UnhappyException</code>的超类，对于生成的
+Java类来说：
+</p>
+
+<ul>
+<li>
+<code>UnhappyException</code>实现了<code>LoggedException</code>接口
+
+<li>
+<code>UnhappyException</code>继承了<code>Exception</code>类
+
+</ul>
+
+<h4 id="toc_5.4.4.1">只能有一个超类</h4>
+
+<p>
+因为Java没有多继承，所以类的超类和特质的超类不能关联到不同的类：
+</p>
+
+<pre class="brush: scala">
+class UnhappyFrame extends JFrame with LoggedException
+</pre>
+
+<p>
+不能同时把<code>JFrame</code>和<code>Exception</code>作为超类。
+</p>
+
+<p>
+但如果类的超类是特质超类的子类就没有问题：
+</p>
+
+<pre class="brush: scala">
+class UnhappyException extends IOException with LoggedException
+</pre>
+
+<h3 id="toc_5.4.5"><code>this</code>限制混入类</h3>
+
+<p>
+<code>this: Type =&gt;</code>限制特质只能被混入指定类型的子类：
+</p>
+
+<pre class="brush: scala">
+trait LoggedException extends Logged {
+	this: Exception =&gt;
+		def log() { log(getMessage()) }
+}
+</pre>
+
+<p>
+这里不继承自<code>Exception</code>类，但限制只能混入<code>Exception</code>的子类。而且可以合法地调用
+<code>getMessage()</code>方法，因为它只会被混入<code>Exception</code>的子类。
+</p>
+
+<p>
+通过<code>this: Type</code>来限制类型比继承超类的版本更加灵活。可以避免两个彼此需要的特质
+循环依赖。
+</p>
+
+<pre class="brush: scala">
+trait LoggedException extends Logged {
+	this: { def getMessage(): String }=&gt;
+		def log() { log(getMessage()) }
+}
+</pre>
+
+<p>
+所有拥有<code>getMessage()</code>方法的类都可以混入<code>LoggedException</code>物质。
+</p>
+
+<h4 id="toc_5.4.5.1">结构类型</h4>
+
+<p>
+结构类型（structural type）只给出类必须拥有的方法，而不是类的名称。这种场景下用
+<code>this: Type</code>处理更加方便：
+</p>
+
+<h2 id="toc_5.5">混入多个特质</h2>
+
+<p>
+如果想混入多个特质，都加在<code>with</code>子句里就可以了：
+</p>
+
+<pre class="brush: scala">
+  class Animal
+  trait HasLegs
+
+  class Frog extends Animal with Philosophical with HasLegs {
+    override def toString = "green"
+  }
+</pre>
+
+<h3 id="toc_5.5.1">特质的<code>super</code>引用是动态的</h3>
+
+<p>
+类和特质的另一个差别在于：在类中任何地方，<code>super</code>调用都是静态绑定的，在特质中
+，它们是动态绑定的。如果你在类中写下<code>super.toString</code>，你很明确哪个方法实现将被
+调用。然而如果你在特质中写了同样的东西，在你定义特质的时候<code>super</code>调用的方法实现
+尚未被定义。调用的实现将在每一次特质被混入到具体类的时候才被决定。这种处理
+<code>super</code>的有趣的行为是使得特质能以可堆叠的改变（stackable modifications）方式
+工作的关键。
+</p>
+
+
+<h3 id="toc_5.5.2">特质的叠加栈</h3>
+
+<p>
+有两个特质，一个在入队时把值加1；另一个过滤掉负数：
+</p>
+
+<pre class="brush: scala">
+  trait Incrementing extends IntQueue {
+    abstract override def put(x: Int) { super.put(x + 1) }
+  }
+
+  trait Filtering extends IntQueue {
+    abstract override def put(x: Int) {
+      if (x &gt;= 0) super.put(x)
+    }
+  }
+</pre>
+
+<p>
+队列能够即过滤负数又对每个进队列的数字增量：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val queue = (new BasicIntQueue
+       | with Incrementing with Filtering)
+  queue: BasicIntQueue with Incrementing with Filtering...
+
+  scala&gt; queue.put(-1); queue.put(0); queue.put(1)
+
+  scala&gt; queue.get()
+  res15: Int = 1
+
+  scala&gt; queue.get()
+  res16: Int = 2
+</pre>
+
+<p>
+粗略地说，越靠近右侧的特质越先起作用。如果那个方法调用了<code>super</code>，它调用其左侧
+特质的方法，以此类推。
+</p>
+
+<p>
+前面的例子里，<code>Filtering</code>的<code>put</code>首先被调用，因此它移除了开始的负整数。
+<code>Incrementing</code>的<code>put</code>第二个被调用，因此它对剩下的整数增量。
+</p>
+
+<p>
+如果你逆转特质的次序，那么整数首先会加1，然后如果仍然是负的才会被抛弃：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val queue = (new BasicIntQueue
+       | with Filtering with Incrementing)
+  queue: BasicIntQueue with Filtering with Incrementing...
+
+  scala&gt; queue.put(-1); queue.put(0); queue.put(1)
+
+  scala&gt; queue.get()
+  res17: Int = 0
+
+  scala&gt; queue.get()
+  res18: Int = 1
+
+  scala&gt; queue.get()
+  res19: Int = 2
+</pre>
+
+<h3 id="toc_5.5.3">指定调用特质栈</h3>
+
+<p>
+除了用<code>super.method()</code>调用下个特质，还可以用<code>super[traid].method()</code>来调用指定
+具体特质。注意指定的一定是直接一级，不能使用继承层级中更远的特质类。
+</p>
+
+
+<h2 id="toc_5.6">特质的构造过程</h2>
+
+<h3 id="toc_5.6.1">特质构造器</h3>
+
+<p>
+特质构造器是由字段初始化和其他特质体中的语句构成的。特质所混入对象被构造时，这些
+语句被执行。顺序为：
+</p>
+
+<ul>
+<li>
+调用超类的构造器
+
+<li>
+特质构造器在超类构造器之后，当前类的构造器之前执行
+
+<li>
+特质从左到右被构造，每个特质的你特质先被构造。
+
+<li>
+如果多个特质共有一个你特质，而且父特质已经被构造过了，不会再次构造
+
+<li>
+所有特质构造完毕，当前类构造器被执行
+
+</ul>
+
+<h3 id="toc_5.6.2">特质不能有构造器参数</h3>
+
+<p>
+特质不能有任何“类”参数，也就是说，传递给类的主构造器的参数。换句话说，
+尽管你可以定义如下的类：
+</p>
+
+<pre class="brush: scala">
+  class Point(x: Int, y: Int)
+</pre>
+
+<h3 id="toc_5.6.3">预初始化字段</h3>
+
+<p>
+由于特质不能有参数，所以要用别的方法在初始化时传入值。
+</p>
+
+<p>
+比如，不能有参数，所以用以下的方法指定日志文件是不行的：
+</p>
+
+<pre class="brush: scala">
+val acct = new SavingAccount with FileLogger("mylog.log")
+</pre>
+
+<p>
+另一个方案：
+</p>
+
+<p>
+用抽象字段<code>filenam</code>来存文件名，这样混入这个特质的类可以重写这个字段：
+</p>
+
+<pre class="brush: scala">
+trait FileLogger extends Logger {
+	val filename: String
+	val out = new PrintStream(filename)
+	def long(msg: String) { out.println(msg); out.flush() }
+</pre>
+
+<p>
+但是由于特质的构造器比当前类更先执行，所以特质构造时取得的<code>filename</code>还是没有被
+子类初始化，抛出空指针异常。
+</p>
+
+<p>
+有效的解决方案有两个：
+</p>
+
+<ul>
+<li>
+预初始化字段。
+
+<li>
+懒加载。
+
+</ul>
+
+<h4 id="toc_5.6.3.1">应用于实例</h4>
+
+<p>
+把初始化块放在<code>new</code>之后：
+</p>
+
+<pre class="brush: scala">
+val acct = new {
+	val filename = "mylog.log"
+} with SavingAccount whith FileLogger
+</pre>
+
+<h4 id="toc_5.6.3.2">应用于类</h4>
+
+<p>
+初始化块放在<code>extends</code>前：
+</p>
+
+<pre class="brush: scala">
+clas SavingAccount extends {
+	val filename = "mylog.log"
+} with Account with FileLogger {
+	// ...
+}
+</pre>
+
+<h3 id="toc_5.6.4">懒加载</h3>
+
+<p>
+除了预初始化外的另一个方案是懒加载：
+</p>
+
+<pre class="brush: scala">
+trait FileLogger extends Logger {
+	val filename: String
+	lazy val out = new PrintStream(filename)
+	def long(msg: String) { out.println(msg); out.flush() }
+}
+</pre>
+
+<p>
+初始化输出流的操作只有在用到<code>out</code>时才执行。
+</p>
+
+<h2 id="toc_5.7">Scala特质生成Java接口</h2>
+
+<h3 id="toc_5.7.1">只有抽象方法</h3>
+
+<p>
+只有抽象方法的特质简单地转为Java接口。
+</p>
+
+<p>
+Scala特质：
+</p>
+
+<pre class="brush: scala">
+trait Logger {
+	def log(msg: String)
+}
+</pre>
+
+<p>
+生成的接口：
+</p>
+
+<pre class="brush: java">
+public interface Logger {
+	void log(String msg);
+}
+</pre>
+
+<h3 id="toc_5.7.2">有方法实现的情况</h3>
+
+<p>
+会创建一个伴生类，它的静态方法里存放特质的方法。
+</p>
+
+<pre class="brush: scala">
+trait ConsoleLogger exteds Logger {
+	def log(msg: String) { println(msg) }
+}
+</pre>
+
+<p>
+转换成：
+</p>
+
+<pre class="brush: java">
+public interface ConsoleLogger extends Logger {
+	void log(String msg);
+}
+</pre>
+
+<p>
+伴生类：
+</p>
+
+<pre class="brush: java">
+public class ConsoleLogger$class {
+	public static void log(ConsoleLogger self, String msg) {
+		println(msg);
+	}
+	
+	// ...
+}
+</pre>
+
+<h3 id="toc_5.7.3">特质中的字段</h3>
+
+<p>
+伴生类中不会有字段，字段对应的<code>getter</code>和<code>setter</code>方法加入到实现了特质的类中：
+</p>
+
+<pre class="brush: java">
+trait ShortLogger extends Logger {
+	val maxLength = 15
+	// ...
+}
+</pre>
+
+<p>
+被翻译成：
+</p>
+
+<pre class="brush: java">
+public interface ShortLogger extends Logger {
+	public abstract int maxLength();
+	public abstract void weird_prefix$maxLength_$eq(int);
+	
+	// ...
+}
+</pre>
+
+<p>
+以<code>weird</code>开头的<code>setter</code>方法是用来初始化字段的。初始化发生在伴生类的一个初始化
+方法内：
+</p>
+
+<pre class="brush: scala">
+public class ShortLogger$class {
+	public void $init$(ShortLogger self) {
+		self.weired-prefix$maxLength_$eq(15)
+	}
+
+	// ...
+}
+</pre>
+
+<p>
+被混入的类会有带<code>getter</code>和<code>setter</code>的<code>maxLength</code>字段，上面的构造器会被调用以初始
+化字段。
+</p>
+
+<p>
+如果物质扩展自某个超类，则伴生类并不继承这个超类。该超类会被任何实现该特质的类
+继承。
+</p>
+
+<h2 id="toc_5.8">特质与类的差异</h2>
+
+<p>
+特质就像是带有具体方法的Java接口，不过其实它能做的更多。比方说，特质可以声明字段
+和维持状态值。
+</p>
+
+<p>
+实际上，你可以用特质定义做任何用类定义做的事，并且语法也是一样的，除了两点：
+</p>
+
+<ul>
+<li>
+特质不能有构造器参数。
+
+<li>
+特质的<code>super</code>引用是动态的。
+
+</ul>
+
+<p>
+但是下面定义特质的尝试将遭到失败：
+</p>
+
+<pre class="brush: scala">
+  trait NoPoint(x: Int, y: Int) // Does not compile
+</pre>
+
+
+<h2 id="toc_5.9">应用场景</h2>
+
+<h3 id="toc_5.9.1">为什么不是多重继承</h3>
 
 <p>
 特质是一种继承多个类似于类的结构的方式，但是它与许多语言中的多重继承有很重要的
@@ -2868,7 +3545,57 @@ FourLegged : Any &lt; AnyRef &lt; Animal &lt; HasLegs &lt; FourLegged
        Cat : Any &lt; AnyRef &lt; Animal &lt; Furry &lt; HasLegs &lt; FourLegged &lt; Cat
 </pre>
 
-<h2 id="toc_5.9">什么情况下要用特质</h2>
+
+<h3 id="toc_5.9.2">比较瘦接口与胖接口</h3>
+
+<p>
+瘦接口与胖接口的对阵体现了面向对象设计中常会面临的在实现者与接口用户之间的权衡。
+</p>
+
+<p>
+胖接口有更多的方法，对于调用者来说更便捷。客户可以捡一个完全符合他们功能需要的
+方法。另一方面瘦接口有较少的方法，对于实现者来说更简单。然而调用瘦接口的客户因此
+要写更多的代码。由于没有更多可选的方法调用，他们或许不得不选一个不太完美匹配他们
+所需的方法并为了使用它写一些额外的代码。
+</p>
+
+<p>
+Java的接口常常是过瘦而非过胖。例如，从Java 1.4开始引入的<code>CharSequence</code>接口，是
+对于字串类型的类来说通用的瘦接口，它持有一个字符序列。下面是把它看作Scala特质的
+定义：
+</p>
+
+<pre class="brush: scala">
+  trait CharSequence {
+    def charAt(index: Int): Char
+    def length: Int
+    def subSequence(start: Int, end: Int): CharSequence
+    def toString(): String
+  }
+</pre>
+
+<p>
+尽管类<code>String</code>里现有的成打的方法中的大多数都可以用在任何<code>CharSequence</code>上，Java的
+<code>CharSequence</code>接口定义仅提供了4个方法。如果<code>CharSequence</code>代以包含全部<code>String</code>
+接口，那它将为<code>CharSequence</code>的实现者压上沉重的负担。任何实现Java<code>CharSequence</code>
+接口的程序员将不得不定义一大堆方法。因为Scala特质可以包含具体方法，这使得创建
+胖接口大为便捷。
+</p>
+
+<p>
+在特质中添加具体方法使得胖瘦对阵的权衡大大倾向于胖接口。不像在Java里那样，在
+Scala中添加具体方法是一次性的劳动。你只要在特质中实现方法一次，而不再需要在每个
+混入特质的方法中重新实现它。因此，与没有特质的语言相比，Scala里的胖接口没什么
+工作要做。
+</p>
+
+<p>
+要使用特质丰满接口，只要简单地定义一个具有少量抽象方法的特质——特质接口的瘦部分——
+和潜在的大量具体方法，所有的都实现在抽象方法之上。然后你就可以把丰满了的特质混入
+到类中，实现接口的瘦部分，并最终获得具有全部胖接口内容的类。
+</p>
+
+<h3 id="toc_5.9.3">什么情况下要用特质</h3>
 
 <p>
 没有固定的规律，但是包含了几条可供考虑的导则。
@@ -2904,9 +3631,173 @@ FourLegged : Any &lt; AnyRef &lt; Animal &lt; HasLegs &lt; FourLegged
 </p>
 
 
+<h2 id="toc_5.10">例子</h2>
+
+<h3 id="toc_5.10.1">样例：长方形实例</h3>
+
+<p>
+为了使这些长方形实例便于使用，如果库能够提供诸如<code>width</code>，<code>height</code>，<code>left</code>，
+<code>right</code>，<code>topLeft</code>，等等方法。
+</p>
+
+<p>
+没有特质的代码的话，首先会有一些基本的集合类如<code>Point</code>和<code>Rectangle</code>：
+</p>
+
+<pre class="brush: scala">
+  class Point(val x: Int, val y: Int)
+
+  class Rectangle(val topLeft: Point, val bottomRight: Point) {
+    def left = topLeft.x
+    def right = bottomRight.x
+    def width = right - left
+    // and many more geometric methods...
+  }
+</pre>
+
+<p>
+这个<code>Rectangle</code>类在它的主构造器中带两个点，分别是左上角和右下角的坐标。然后它
+通过对这两个点执行简单的计算实现了许多便捷方法诸如<code>left</code>，<code>right</code>，和<code>width</code>。
+</p>
+
+<p>
+图库应该有的另一个类是2-D图像工具：
+</p>
+
+<pre class="brush: scala">
+  abstract class Component {
+    def topLeft: Point
+    def bottomRight: Point
+
+    def left = topLeft.x
+    def right = bottomRight.x
+    def width = right - left
+    // and many more geometric methods...
+  }
+</pre>
+
+<p>
+注意<code>left</code>，<code>right</code>，和<code>width</code>在两个类中的定义是一模一样。除了少许的变动外，他们
+将在任何其他的长方形实例的类中保持一致。
+</p>
+
+<p>
+这种重复可以使用特质消除。这个特质应该具有两个抽象方法：一个返回实例的左上角坐标
+，另一个返回右下角的坐标。然后他就可以应用到所有其他的几何查询的具体实现中：
+</p>
+
+<pre class="brush: scala">
+  trait Rectangular {
+    def topLeft: Point
+    def bottomRight: Point
+
+    def left = topLeft.x
+    def right = bottomRight.x
+    def width = right - left
+    // and many more geometric methods...
+  }
+</pre>
+
+<p>
+类<code>Component</code>可以混入这个特质并获得<code>Rectangular</code>提供的所有的几何方法：
+</p>
+
+<pre class="brush: scala">
+  abstract class Component extends Rectangular {
+    // other methods...
+  }
+</pre>
+
+<p>
+可以创建<code>Rectangle</code>实例并对它调用如<code>width</code>或<code>left</code>的几何方法：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val rect = new Rectangle(new Point(1, 1),
+       | new Point(10, 10))
+  rect: Rectangle = Rectangle@3536fd
+
+  scala&gt; rect.left
+  res2: Int = 1
+
+  scala&gt; rect.right
+  res3: Int = 10
+
+  scala&gt; rect.width
+  res4: Int = 9
+</pre>
+
+
+<h3 id="toc_5.10.2">实现Ordered特质来排序</h3>
+
+<p>
+以前面我们实现的实数类型来说，原来已经有了四个比较大小的方法：
+</p>
+
+<pre class="brush: scala">
+  class Rational(n: Int, d: Int) {
+    // ...
+    def &lt; (that: Rational) =
+      this.numer * that.denom &gt; that.numer * this.denom
+    def &gt; (that: Rational) = that &lt; this
+    def &lt;= (that: Rational) = (this &lt; that) || (this == that)
+    def &gt;= (that: Rational) = (this &gt; that) || (this == that)
+  }
+</pre>
+
+<p>
+Scala专门提供了<code>Ordered</code>特质来简化比较工作。只要实现<code>Ordered</code>特质中的<code>compare</code>
+方法，就可以自动实现其他的<code>&lt;</code>、<code>&gt;</code>、<code>&lt;=</code>、<code>&gt;=</code>功能：
+</p>
+
+<pre class="brush: scala">
+  class Rational(n: Int, d: Int) extends Ordered[Rational] {
+    // ...
+    def compare(that: Rational) =
+      (this.numer * that.denom) - (that.numer * this.denom)
+  }
+</pre>
+
+<p>
+上面定义<code>compare</code>方法来比较两个实例，类<code>Rational</code>现在具有了所有4种比较方法：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val half = new Rational(1, 2)
+  half: Rational = 1/2
+
+  scala&gt; val third = new Rational(1, 3)
+  third: Rational = 1/3
+
+  scala&gt; half &lt; third
+  res5: Boolean = false
+
+  scala&gt; half &gt; third
+  res6: Boolean = true
+</pre>
+
+<p>
+考虑下面的抽象简化了四个比较操作符的实现：
+</p>
+
+<pre class="brush: scala">
+  trait Ordered[T] {
+    def compare(that: T): Int
+
+    def &lt;(that: T): Boolean = (this compare that) &lt; 0
+    def &gt;(that: T): Boolean = (this compare that) &gt; 0
+    def &lt;=(that: T): Boolean = (this compare that) &lt;= 0
+    def &gt;=(that: T): Boolean = (this compare that) &gt;= 0
+  }
+</pre>
+
 
 
 <h1 id="toc_6">包和引用</h1>
+
+<h2 id="toc_6.1">定义包</h2>
+
+<h3 id="toc_6.1.1">package语句</h3>
 
 <p>
 通过把<code>package</code>子句放在文件顶端的方式把整个文件内容放进包里：
@@ -2916,6 +3807,12 @@ FourLegged : Any &lt; AnyRef &lt; Animal &lt; HasLegs &lt; FourLegged
   package bobsrockets.navigation
   class Navigator 
 </pre>
+
+<p>
+同一个包可以定义在不同的多个文件中。
+</p>
+
+<h3 id="toc_6.1.2">嵌套包</h3>
 
 <p>
 另一种方式很像C#的命名空间。在<code>package</code>子句之后用大括号包起来一段要放到包里去的
@@ -2939,12 +3836,18 @@ FourLegged : Any &lt; AnyRef &lt; Animal &lt; HasLegs &lt; FourLegged
 </pre>
 
 <p>
+这种嵌套方式会把路径上所有的包的内容都相入进来。
+</p>
+
+<p>
 类似于Java的语法实际上只是括号嵌入风格的语法糖。原理是：如果除了签入另一个包之外
 对包不作任何事，你可以下面的方式省去一个缩进：
 </p>
 
 <pre class="brush: scala">
   package bobsrockets.navigation {
+  
+		// 这样就跳过了bobsrockets包，它的内容不会被引入
 
     // In package bobsrockets.navigation
     class Navigator
@@ -2956,6 +3859,8 @@ FourLegged : Any &lt; AnyRef &lt; Animal &lt; HasLegs &lt; FourLegged
     }
   } 
 </pre>
+
+<h3 id="toc_6.1.3">包路径是相对的</h3>
 
 <p>
 Java包尽管是分级的，却不是嵌套的。在Java里，在你命名一个包的时候，你必须从包层级
@@ -2979,6 +3884,18 @@ Scala为了简化，采用包风格类似于是相对路径：
     }
   } 
 </pre>
+
+<p>
+为了避免绝对路径与相对路径之间的歧义，可以用<code>_root_</code>表示顶层包，这样就一定是绝对
+路径：
+</p>
+
+<pre class="brush: scala">
+val aa = new _root_.scala.collection.mutable.ArrayBuffer[Employee] 
+</pre>
+
+
+<h3 id="toc_6.1.4">包层级的作用域</h3>
 
 <p>
 而且内部区域的包可以隐匿被定义在外部区域的同名包。还提供了<code>_root_</code>表示顶层包：
@@ -3018,8 +3935,46 @@ Scala为了简化，采用包风格类似于是相对路径：
 就是最外面的<code>booster</code>类。
 </p>
 
+<h2 id="toc_6.2">包对象</h2>
 
-<h2 id="toc_6.1">引用包</h2>
+<p>
+由于JVM的局限，包里只能放类、对象、特质，不能把变量、常量与函数放在包里。
+</p>
+
+<p>
+解决方案是在上级包是定义一个与子包名称一样的包对象，包对象的成员用起来就像是在
+子包中一样：
+</p>
+
+<pre class="brush: scala">
+package com.horstmann.impatient
+
+package object people {
+	val defaultName = "John Q. Public"
+}
+
+package people {
+	class Person {
+		var name = defaultName // 从包对象取得常量
+	}
+}
+</pre>
+
+<p>
+因为在同一个包中，所以<code>defaultName</code>不需要加限制。在其他的地方访问方式可能为：
+</p>
+
+<p>
+<code>com.horstmann.impatient.people.defaultName</code>
+</p>
+
+<p>
+在幕后包对象被编译成带有静态方法和字段的JVM类，名为<code>package.class</code>，位于相应的
+包下。以这个例子来说就是<code>com.horstmann.impatient.people.package</code>，它包含一个静态
+字段<code>defaultName</code>。
+</p>
+
+<h2 id="toc_6.3">引用包</h2>
 
 <p>
 Scala里用<code>import</code>子句来引用包和其成员：
@@ -3075,6 +4030,10 @@ Scala里用<code>import</code>子句来引用包和其成员：
 </pre>
 
 <p>
+引用语句的作用范围从引入开始到当前代码块结束。
+</p>
+
+<p>
 方法<code>showFruit</code>引用了它的参数，<code>Fruit</code>类型的<code>fruit</code>，的所有成员。之后的
 <code>println</code>语句就可以直接使用<code>name</code>和<code>color</code>了。这两个索引等价于<code>fruit.name</code>和
 <code>fruit.color</code>。
@@ -3099,6 +4058,8 @@ Scala的引用很灵活的另一个方面是它们可以引用包自身，而不
   } 
 </pre>
 
+<h3 id="toc_6.3.1">重命名与隐藏</h3>
+
 <p>
 Scala的引用同样可以重命名或隐藏成员。可以用跟在引用的成员对象之后的包含在括号里
 的引用选择子句（import selector clause）做到：
@@ -3106,13 +4067,13 @@ Scala的引用同样可以重命名或隐藏成员。可以用跟在引用的成
 
 <ul>
 <li>
-重命名子句的格式是<code>&lt;原始名&gt; =&gt; &lt;新名&gt;</code>`。
+重命名子句的格式是<code>&lt;原始名&gt; =&gt; &lt;新命名&gt;</code>。
 
 </ul>
 
 <ul>
 <li>
-<code>&lt;原始名&gt; =&gt; _</code>格式的子句从被引用的名字中排除了&lt;原始名&gt;。
+<code>&lt;原始名&gt; =&gt; _</code>格式的子句从被引用的名字中排除了<code>&lt;原始名&gt;</code>。
 
 </ul>
 
@@ -3168,9 +4129,12 @@ import Fuits.{Pear =&gt; _, _}
 隐藏子句<code>x =&gt; _</code>。把<code>x</code>排除在引用名集之外。
 
 <li>
-全包括<code>_</code>。引用除了前面子句提到的之外的全体成员。如果存在全包括，那么必须是引用选择的最后一个。
+全包括<code>_</code>。引用除了前面子句提到的之外的全体成员。如果存在全包括，那么必须是
 
 </ul>
+<p>
+引用选择的最后一个。
+</p>
  
 <p>
 本节最初展示的比较简单的引用子句可以被视为带有选择子句的简写。
@@ -3181,7 +4145,7 @@ import Fuits.{Pear =&gt; _, _}
 </p>
 
 
-<h2 id="toc_6.2">隐式引用</h2>
+<h2 id="toc_6.4">隐式引用</h2>
 
 <p>
 Scala隐式地添加了一些引用到每个程序中。本质上，就好象下列的三个引用子句已经被
@@ -3194,14 +4158,14 @@ Scala隐式地添加了一些引用到每个程序中。本质上，就好象下
   import Predef._    // everything in the Predef object 
 </pre>
 
-<h3 id="toc_6.2.1">java.lang</h3>
+<h3 id="toc_6.4.1">java.lang</h3>
 
 <p>
 <code>java.lang</code>包囊括了标准Java类。它永远被隐式包含在Scala的JVM实现中。.NET实现将
 代以引用system包，它是<code>java.lang</code>的.NET模拟。
 </p>
 
-<h3 id="toc_6.2.2">scala</h3>
+<h3 id="toc_6.4.2">scala</h3>
 
 <p>
 scala包含有标准的Scala库，包括许多通用的类和对象。因为scala被隐式引用，你可以
@@ -3209,7 +4173,7 @@ scala包含有标准的Scala库，包括许多通用的类和对象。因为scal
 <code>math.sqrt(2)</code>等同于<code>scala.math.sqrt(2)</code>。
 </p>
 
-<h3 id="toc_6.2.3">Predef</h3>
+<h3 id="toc_6.4.3">Predef</h3>
 
 <p>
 Predef对象包含了许多Scala程序中常用到的类型，方法和隐式转换的定义。比如，因为
@@ -3227,13 +4191,13 @@ Predef对象包含了许多Scala程序中常用到的类型，方法和隐式转
 </p>
 
 
-<h2 id="toc_6.3">访问修饰符</h2>
+<h1 id="toc_7">访问修饰符</h1>
 
 <p>
 Scala与Java对访问修饰符的对待方式有一些重要的差异。
 </p>
 
-<h3 id="toc_6.3.1">public</h3>
+<h2 id="toc_7.1">public</h2>
 
 <p>
 没有任何标记就是公开的，可以在任何地方被访问。与Java中默认是<code>protected</code>不同，
@@ -3241,7 +4205,7 @@ Scala中默认是<code>public</code>的。
 </p>
 
 
-<h3 id="toc_6.3.2">private</h3>
+<h2 id="toc_7.2">private</h2>
 
 <p>
 标记为<code>private</code>的成员仅在包含了成员定义的类或对象内部可见。不仅如此，Scala中还
@@ -3274,7 +4238,7 @@ Scala里，<code>(new Inner).f()</code>访问非法，因为<code>f</code>在<co
 这点与Java不同，Java会允许这两种访问因为它允许外部类访问其内部类的私有成员。
 </p>
 
-<h3 id="toc_6.3.3">protected</h3>
+<h2 id="toc_7.3">protected</h2>
 
 <p>
 Java中<code>protected</code>可以被子类或同一个包中的类访问。Scala里，只在定义了成员的类的
@@ -3295,7 +4259,7 @@ Java中<code>protected</code>可以被子类或同一个包中的类访问。Sca
   } 
 </pre>
 
-<h3 id="toc_6.3.4">保护的范围</h3>
+<h2 id="toc_7.4">保护的范围</h2>
 
 <p>
 Scala里的访问修饰符可以通过使用修饰词增加。格式为<code>private[X]</code>或<code>protected[X]</code>的
@@ -3429,7 +4393,7 @@ Scala还具有一种比<code>private</code>更严格的访问修饰符。被<cod
 的变体注释）。
 </p>
 
-<h3 id="toc_6.3.5">伴生对象的可见度性</h3>
+<h2 id="toc_7.5">伴生对象的可见度性</h2>
 
 <p>
 Java里，静态成员和实例成员属于同一个类，因此访问修饰符可以统一地应用在他们之上。
@@ -3475,7 +4439,7 @@ Scala的访问规则给予了伴生对象和类一些特权。类把它所有的
 
 
 
-<h2 id="toc_6.4">断言</h2>
+<h1 id="toc_8">断言</h1>
 
 <p>
 <code>assert</code>是预定义的方法，<code>assert(condition)</code>会在条件不成立时抛出<code>AssertionError</code>。
@@ -3540,14 +4504,14 @@ if-else表达式的<code>Element</code>类结果上的，而不是方法<code>wi
 
 
 
-<h1 id="toc_7">测试</h1>
+<h1 id="toc_9">测试</h1>
 
 <p>
 受益于和Java之间无缝操作。Java的测试库，像JUnit、TestNG，可以直接用于scala的
 单元测试。
 </p>
 
-<h2 id="toc_7.1">Junit 4</h2>
+<h2 id="toc_9.1">Junit 4</h2>
 
 <p>
 如果喜欢JUnit4的风格，那么可以写下面这样的单元测试。
@@ -3589,7 +4553,7 @@ OK (1 test)
 
 
 
-<h2 id="toc_7.2">ScalaTest</h2>
+<h2 id="toc_9.2">ScalaTest</h2>
 
 <p>
 ScalaTest是专为scala设计的一个测试框架。ScalaTest提供了一些比较方便的功能。注意
@@ -3623,7 +4587,7 @@ Main$$anon$1$CanaryTest:
 - testOK
 </pre>
 
-<h3 id="toc_7.2.1">Runner</h3>
+<h3 id="toc_9.2.1">Runner</h3>
 
 <p>
 ScalaTest的<code>Runner</code>类来配置运行或不运行哪些套件，配置不同的<code>reporter</code>来指定报表
@@ -3688,7 +4652,7 @@ All tests passed.
 还有<code>-f</code>参数可以把结果输出到文件。
 </p>
 
-<h3 id="toc_7.2.2">assert()与expect()方法</h3>
+<h3 id="toc_9.2.2">assert()与expect()方法</h3>
 
 <p>
 ScalaTest提供的<code>assert()</code>方法测试条件是否成立。还有一个两个参数版本的，第二个
@@ -3712,7 +4676,7 @@ ScalaTest提供的<code>assert()</code>方法测试条件是否成立。还有�
 注意<code>expect()</code>方法已经过期，用<code>expectResult()</code>方法代替。
 </p>
 
-<h3 id="toc_7.2.3">测试异常</h3>
+<h3 id="toc_9.2.3">测试异常</h3>
 
 <p>
 有一个比较啰嗦的方案：
@@ -3751,9 +4715,9 @@ intercept[IndexOutOfBoundsException]("Expected exception here") {
 <code>intercept()</code>方法会把捕获的结果作为返回值，如果需要的话可以对它进行处理。
 </p>
 
-<h3 id="toc_7.2.4">在测试间共享代码</h3>
+<h3 id="toc_9.2.4">在测试间共享代码</h3>
 
-<h4 id="toc_7.2.4.1">BeforeAndAfter特质</h4>
+<h4 id="toc_9.2.4.1">BeforeAndAfter特质</h4>
 
 <p>
 Scala的<code>BeforeAndAfter</code>特质提供了<code>beforeEach()</code>与<code>afterEach()</code>方法会在每个测试
@@ -3781,7 +4745,7 @@ class ShareCodeImperation extends org.scalatest.Suite
 (new ShareCodeImperative).execute()
 </pre>
 
-<h4 id="toc_7.2.4.2">通过闭包</h4>
+<h4 id="toc_9.2.4.2">通过闭包</h4>
 
 <pre class="brush: scala">
 import org.scalatest.Suite
@@ -3832,7 +4796,7 @@ Main$$anon$1$ShareCodeFunctional:
 - testListEmptyOnCreate
 </pre>
 
-<h3 id="toc_7.2.5">FunSuite</h3>
+<h3 id="toc_9.2.5">FunSuite</h3>
 
 <p>
 ScalaTest提供了函数式的<code>FunSuite</code>（Function Suite）。<code>test</code>方法为测试方法，说明
@@ -3944,7 +4908,7 @@ Time: 0.026
 OK (2 tests)
 </pre>
 
-<h3 id="toc_7.2.6">混合ScalaTest与JUnit</h3>
+<h3 id="toc_9.2.6">混合ScalaTest与JUnit</h3>
 
 <p>
 <code>org.scalatest.junit.JUnitSuite</code>已经混入了特质<code>AssertionsForJUnit</code>，可以同时被

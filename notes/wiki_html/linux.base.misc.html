@@ -1,0 +1,64 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>其他</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>其他</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">mkpasswd</a>
+</ul>
+</div>
+ 
+
+<h1 id="toc_1">mkpasswd</h1>
+
+<p>
+根据指定的长度，产生一个难猜的随机密码。
+</p>
+
+<pre class="brush: bash">
+[avishek@tecmint ~]$ mkpasswd -l 10
+ 
+zI4+Ybqfx9
+</pre>
+	
+<p>
+注意：<code>-l 10</code>产生一个10个字符的随机密码，而<code>-l 20</code>产生20个字符的密码,它可以设置
+为任意长度来取得所希望的结果。这个命令很有用，经常在脚本语言里使用来产生随机的
+密码。你可能需要<code>yum</code>或<code>apt</code> <code>expect</code> 包来使用这个命令。
+</p>
+
+<pre class="brush: bash">
+[avishek@tecmint ~]$ yum install expect
+</pre>
+
+<p>
+或
+</p>
+
+<pre class="brush: bash">
+[avishek@tecmint ~]$ apt-get install expect
+</pre>
+ </div>
+</body>
+</html>

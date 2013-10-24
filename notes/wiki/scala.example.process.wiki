@@ -1,0 +1,173 @@
+
+%title 进程控制
+
+%toc 进程控制
+
+= 进程控制 =
+
+== 执行命令 ==
+
+`scala.sys.process`包提供了与shell交互的工具：
+
+{{{class="brush: scala"
+import sys.process._
+
+"ls -al .." !
+}}}
+
+消息被发送到由字符串隐式转换成`sys.process.ProcessBuilder`单例对象。成功返回值
+为`0`，失败为非`0`的错误码（和shell一样）。
+
+== 返回结果 ==
+
+用`!!`取得返回结果（字符串形式）：
+
+{{{class="brush: scala"
+val result =  "ls -al .." !!
+}}}
+
+== 管道 ==
+
+`#`实现管道：
+
+{{{class="brush: scala"
+"ls -al .." #! "grep src" !
+}}}
+
+== 重定向 ==
+
+重定向输出`#>`，追加用`#>>`：
+
+{{{class="brush: scala"
+"ls -al .." #>> new File("output.txt") !
+}}}
+
+重定向输入`#<`
+
+{{{class="brush: scala"
+"grep sec" #< new File("output.txt") !
+
+"grep Scala" #< new URL("http://horstmann.com/index.html") !
+}}}
+
+== 结合进程 ==
+
+如果`p`成功，执行`q`：
+
+{{{class="brush: scala"
+p #&& q
+}}}
+
+如果`p`不成功，执行`q`：
+
+{{{class="brush: scala"
+p #|| q
+}}}
+
+== 环境变量 ==
+
+通过`Process`对象的`apply`方法来构造`ProcessBuilder`。具体参数包括：
+
+* 命令
+* 当前路径
+* 键－值对偶
+
+{{{class="brush: scala"
+val p = Process(cmd, new File(dirName), ("LANG", "en_US"))
+
+"echo 42" #! p!
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+

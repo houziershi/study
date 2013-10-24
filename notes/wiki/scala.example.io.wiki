@@ -5,6 +5,8 @@
 
 = 终端 =
 
+== 读取 ==
+
 用户输入：
 
 {{{class="brush: scala"
@@ -20,7 +22,13 @@ val str = Console.readLine("Your name: ")
 对于其他类型的，还有`readInt`、`readDouble`、`readByte`、`readShort`、`readLong`
 、`readFloat`、`readBoolean`、`readChar`。
 
-= 文件 =
+== 写入 ==
+
+{{{class="brush: scala"
+printf("%6d %10.2f", quantity, price)
+}}}
+
+= 文本文件 =
 
 == 写入 ==
 
@@ -34,15 +42,83 @@ writer.close()
 
 == 读取 ==
 
+=== 每个字符 ===
+
 {{{class="brush: scala"
 import scala.io.Source
 
 Source.fromFile("tmp.txt").foreach { print }
 }}}
 
-`foreach()`每次读一个字符（输入有缓冲，不用担心性能）。用`getLines()`可以读一行
-。`getLine(index)`可以取得指定行，是索引，从0开始。
+`foreach()`每次读一个字符（输入有缓冲，不用担心性能）。
 
+=== 迭代行 ===
+
+`getLine(index)`可以取得指定行，是索引，从0开始。
+
+用`getLines()`取得行的迭代器。然后用`for`循环、`toArray`等方法处理。
+
+=== 整个文件一起读 ===
+
+`source.mkString`把整个文件作为一个字符串。
+
+= 二进制文件 =
+
+== 读取 ==
+
+Scala没有提供，用Java类库：
+
+{{{class="brush: scala"
+val file = new File(filename)
+val in = new FileInputStream(file)
+val bytes = new Array[Byte](file.length.toInt)
+in.read(bytes)
+in.close()
+}}}
+
+= 目录访问 =
+
+之前有`File`和`Directory`，现在已经不用了，但还是可以在`scala-compiler.jar`文件
+的`scala.tools.nsc.io`包中找到。
+
+== 递归遍历目录下的子目录 ==
+
+{{{class="brush: scala"
+import java.io.File
+
+def subdirs(dir: File): Iterator[File] = {
+	val children = dir.listFiles.filter(_.isDirectory)
+	children.toIterator ++ children.toIterator.flatMap(subdirs _)
+}
+}}}
+
+调用时只要：
+
+{{{class="brush: scala"
+for (d <- subdirs(dir)) {
+	// 处理 d 
+}
+}}}
+
+如果是用Java 7中`java.nio.file.Files`类的`walkFileTree`方法（`FileVisitor`）接口
+。可以更加方便地用隐式转换：
+
+{{{class="brush: scala"
+import java.nio.file._
+
+implicit def makeFileVisitor(f: (Path) => Unit) = new SimpleFileVisitor(Path) {
+	override def visitFile(p: Path, attrs: attribute.BasicFileAttributes) = {
+		f(p)
+		FileVisitResult.CONTINUE
+	}
+}
+}}}
+
+调用（以打印为例子）：
+
+{{{class="brush: scala"
+Files.walkFileTree(dir.toPath, (f: Path) => println(f))
+}}}
 
 = 读取URL =
 
@@ -52,22 +128,6 @@ import java.net.URL
 
 val source = Source.fromURL(new URL("http://ifconfig.me/ip"))
 source.getLines().foreach{ println }
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
 }}}
 
 

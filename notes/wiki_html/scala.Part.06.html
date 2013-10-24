@@ -22,7 +22,6 @@
 	<div class="note-main"> 
 
 
-
 <h1>Part VI</h1>
 <div class="toc">
 <ul>
@@ -56,20 +55,17 @@
 </ul>
 <li><a href="#toc_2">Actor和并发</a>
 <ul>
-<li><a href="#toc_2.1">天堂中的烦恼</a>
+<li><a href="#toc_2.1">多线程</a>
 <li><a href="#toc_2.2">actor和消息传递</a>
 <li><a href="#toc_2.3">把原生线程当作actor</a>
 <li><a href="#toc_2.4">简单的并行计算例子</a>
+<li><a href="#toc_2.5">小结</a>
 <ul>
-<li><a href="#toc_2.4.0.1">小结</a>
-</ul>
-</ul>
-<li><a href="#toc_2.5">消息传递</a>
-<ul>
-<li><a href="#toc_2.5.1">发送不阻塞</a>
-<li><a href="#toc_2.5.2">接收消息不中断</a>
-<li><a href="#toc_2.5.3">接收消息阻塞</a>
-<li><a href="#toc_2.5.4">使用同步的方式传递消息</a>
+<li><a href="#toc_2.5.1">消息传递</a>
+<li><a href="#toc_2.5.2">发送不阻塞</a>
+<li><a href="#toc_2.5.3">接收消息不中断</a>
+<li><a href="#toc_2.5.4">接收消息阻塞</a>
+<li><a href="#toc_2.5.5">使用同步的方式传递消息</a>
 </ul>
 <li><a href="#toc_2.6">通过重用线程取得更好的性能</a>
 <ul>
@@ -96,6 +92,7 @@
 <li><a href="#toc_3">连接符解析</a>
 </ul>
 </div>
+
 
 <h1 id="toc_1">结合Scala与Java</h1>
 
@@ -322,8 +319,19 @@ trait Printable {
 </p>
 
 <pre class="brush: scala">
-  // Java serial version marker
+@SerialVersionUID(42L) class Person extends Serializable
+</pre>
+
+<p>
+对应的Java：
+</p>
+
+<pre class="brush: java">
+public class Person implements java.io.Serializable {
   private final static long SerialVersionUID = 1234L
+  
+	// ...
+}
 </pre>
 
 <p>
@@ -354,8 +362,8 @@ try {
 </p>
 
 <p>
-但是为了和Java程序对接，声明一下会抛出哪些异常还是有必要的。所以通过注解标签
-<code>@throws</code>来说明：
+但是为了和Java程序对接，声明一下会抛出哪些异常还是有必要的。不然Java代码就不能
+捕获可能抛出的异常。所以通过注解标签<code>@throws</code>来说明：
 </p>
 
 <pre class="brush: scala">
@@ -385,6 +393,17 @@ try {
   $
 </pre>
 
+<p>
+这样Java中调用Scala代码时才能捕获异常：
+</p>
+
+<pre class="brush: java">
+try {
+	reader.read();
+} catch (IOException e) {
+	// ...
+}
+</pre>
 
 <h3 id="toc_1.2.3">Java注解</h3>
 
@@ -653,13 +672,26 @@ Java中的<code>Iterator&lt;? extends Component&gt;</code>在Scala中写为：
 
 
 
+
+
 <h1 id="toc_2">Actor和并发</h1>
 
-<h2 id="toc_2.1">天堂中的烦恼</h2>
+<h2 id="toc_2.1">多线程</h2>
 
 <p>
-主要介绍Java并发与同步锁的问题，所以略了。
+虽然推荐使用Actor模式，但还是讲一下传统的多线程控制方式吧。
 </p>
+
+<p>
+<code>AnyRef</code>类追加了来自<code>Object</code>类的<code>wait</code>与<code>notify</code>、<code>notifyAll</code>方法。并且提供了带
+参数的<code>synchronized</code>方法，等同于Java的<code>synchronized</code>块：
+</p>
+
+<pre class="brush: scala">
+account.synchronized {
+	account.balance += amount
+}
+</pre>
 
 <h2 id="toc_2.2">actor和消息传递</h2>
 
@@ -1010,9 +1042,10 @@ def sumAll(num:Int) = {
 println( sumAll(100) )
 </pre>
 
-<h4 id="toc_2.4.0.1">小结</h4>
 
-<h2 id="toc_2.5">消息传递</h2>
+<h2 id="toc_2.5">小结</h2>
+
+<h3 id="toc_2.5.1">消息传递</h3>
 
 <p>
 每个actor都有自己的消息队列：
@@ -1031,7 +1064,9 @@ println( sumAll(100) )
 注意actor传递消息有两个重要的特性：
 </p>
 
-<h3 id="toc_2.5.1">发送不阻塞</h3>
+
+
+<h3 id="toc_2.5.2">发送不阻塞</h3>
 
 <p>
 对于以下的代码来说：
@@ -1048,7 +1083,7 @@ op2();
 <code>op2()</code>的执行，好像发消息的动作不占用时间一样。
 </p>
 
-<h3 id="toc_2.5.2">接收消息不中断</h3>
+<h3 id="toc_2.5.3">接收消息不中断</h3>
 
 <p>
 如果不用<code>receive</code>方法去检查接收队列，actor根本不知道有没有消息进来，所以对于以下
@@ -1067,13 +1102,13 @@ receive { case msg =&gt; println(msg) }
 </p>
 
 
-<h3 id="toc_2.5.3">接收消息阻塞</h3>
+<h3 id="toc_2.5.4">接收消息阻塞</h3>
 
 <p>
 如果在调用<code>receive</code>方法时消息队列里没有消息，那么<code>receive</code>方法会阻塞。
 </p>
 
-<h3 id="toc_2.5.4">使用同步的方式传递消息</h3>
+<h3 id="toc_2.5.5">使用同步的方式传递消息</h3>
 
 <p>
 虽然异步方式能利用并发，但也有需要用同步的情况存在。这时可以用<code>!?()</code>方法，注意
@@ -1388,13 +1423,13 @@ import scala.Actor._
 import scala.actors._
 import scheduler._
 
-if (args.length &gt; 0 &amp;&amp; args(0) == "Single") {                      
+if (args.length &gt; 0 &amp;&amp; args(0) == "Single") {
   println("Command-line argument Single found")
   Scheduler.impl = new SingleThreadedScheduler
 }
 println("Main running in " + Thread.currentThread)
 
-actor { println("Actor1 running in " + Thread.currentThread) }                                                   
+actor { println("Actor1 running in " + Thread.currentThread) }
 actor { println("Actor2 running in " + Thread.currentThread) }
 
 receiveWithin(3000) { case _ =&gt; }
@@ -1491,6 +1526,7 @@ Actor 3 running in Thread[ForkJoinPool-2-worker-7,5,main]
 这个助手actor虽然阻塞了，但是由于它不会收到消息，所以这是OK的。主actor可以继续
 响应新的请求。
 </p>
+
 
 <p>
 下面的<code>emoteLater</code>方法展示了这种处理方式的用法。它创建了一个新的actor来执行
@@ -2324,45 +2360,9 @@ actor和发往该actor的消息：
 </p>
 
 
+
+
 <h1 id="toc_3">连接符解析</h1>
-
-
-<pre class="brush: scala">
-</pre>
-<pre class="brush: scala">
-</pre>
-<pre class="brush: scala">
-</pre>
-<pre class="brush: scala">
-</pre>
-<pre class="brush: scala">
-</pre>
-<pre class="brush: scala">
-</pre>
-<pre class="brush: scala">
-</pre>
-<pre class="brush: scala">
-</pre>
-<pre class="brush: scala">
-</pre>
-<pre class="brush: scala">
-</pre>
-<pre class="brush: scala">
-</pre>
-<pre class="brush: scala">
-</pre>
-<pre class="brush: scala">
-</pre>
-<pre class="brush: scala">
-</pre>
-<pre class="brush: scala">
-</pre>
-<pre class="brush: scala">
-</pre>
-<pre class="brush: scala">
-</pre>
-<pre class="brush: scala">
-</pre>
  </div>
 </body>
 </html>

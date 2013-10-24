@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>linux.tips</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<p>
+显示主机IP：
+</p>
+
+<pre class="brush: bash">
+hostname -I
+</pre>
+
+<pre class="brush: bash">
+df -h --total                    // 列出SD卡的总容量、已用及可用容量
+free -th                         // 列出系统内存使用情况
+top                              // 列出CPU使用情况及当前内存活动情况。退出键入q
+ping -c 3 http://www.google.com  // 检查树莓派是否连接到网络
+cd ~                             // 使你进入用户主文件夹
+ls                               // 列出当前文件夹里面的文件及子文件夹
+ls -l                            // 详细列出文件及子文件夹的信息
+ls -l -color                     // 用不同颜色标志列出文件及子文件夹信息
+reboot                           // 重启树莓派
+shutdown -hP 0                   // 关闭并断开树莓派电源。注意数字0
+clear                            // 清屏
+</pre>
+
+<p>
+常用别名：
+</p>
+
+<pre class="brush: bash">
+# Alias definitions.
+# You may want to put all your additions in here.
+# See /usr/share/doc/bash-doc/examples in the bash-doc package.
+
+# Enable color support
+if [ -x /usr/bin/dircolors ]; then
+test -r ~/.dircolors &amp;&amp; eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+alias ls='ls –color=auto'
+alias grep='grep –color=auto'
+alias fgrep='fgrep –color=auto'
+alias egrep='egrep –color=auto'
+fi
+
+# Extra ls aliases
+alias ll='ls -FAl'
+alias la='ls -FA'
+alias l='ls -FAoh'
+
+# Raspberry Pi Aliases
+alias raspi-audio="/usr/bin/alsamixer"
+alias raspi-cpu="/bin/cat /proc/cpuinfo"
+alias raspi-disk="/bin/df -h –total"
+alias raspi-firmware="/opt/vc/bin/vcgencmd version"
+alias raspi-mem="/usr/bin/free -th"
+alias raspi-ip="/bin/hostname -I"
+alias raspi-ping="/bin/ping -c 3 http://www.google.com"
+alias raspi-reboot="/sbin/reboot"
+alias raspi-shutdown="/sbin/shutdown -Ph 0"
+alias raspi-update="/usr/bin/apt-get update -y;/usr/bin/apt-get upgrade -y"
+alias raspi-version="/bin/cat /proc/version"
+</pre>
+
+
+<pre class="brush: bash">
+</pre>
+
+
+<pre class="brush: bash">
+</pre>
+
+
+<pre class="brush: bash">
+</pre>
+
+
+<pre class="brush: bash">
+</pre>
+
+
+<pre class="brush: bash">
+</pre>
+ </div>
+</body>
+</html>

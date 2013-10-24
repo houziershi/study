@@ -1,0 +1,17 @@
+%title revel.js
+%toc reveal.js
+<section>
+title 1
+title 1
+title 1
+</section>
+<section>
+title 2
+title 2
+title 2
+</section>
+<section>
+title 3
+title 3
+title 3
+</section>

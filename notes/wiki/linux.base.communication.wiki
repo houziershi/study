@@ -1,0 +1,40 @@
+
+%title 通信
+
+%toc 通信
+ 
+
+= wall =
+
+对系统管理员来说一个最重要的命令.`wall`发送一条消息到大家登录端将其`mesg`权限
+设置为`yes`。这条信息可以被`wall`作为参数，或者可以将它作为`wall`的标准输入。
+
+{{{class="brush: bash"
+[avishek@tecmint ~]$ wall "we will be going down for maintenance for one hour sharply at 03:30 pm"
+Broadcast message from root@localhost.localdomain (pts/0) (Sat Jun 29 14:44:02 2013):
+we will be going down for maintenance for one hour sharply at 03:30 pm
+}}}
+
+= mesg =
+
+其他人们可以使用`wtrite`命令,将在在向您发送文本到屏幕上。你可以控制是否显示。
+
+{{{class="brush: bash"
+mesg [<strong>n</strong>|<strong>y</strong>] <strong>n</strong> - prevents the message from others popping up on the screen. <strong>y</strong> – Allows messages to appear on your screen.
+}}}
+
+= write =
+
+如果`mesg`是`y`，让你的文本直接发送到另一台Linux机器的屏幕。
+
+{{{class="brush: bash"
+[avishek@tecmint ~]$ write ravisaive
+}}}
+
+= talk =
+
+增强的`write`命令，talk命令可让你与其他登录的用户交谈。
+
+{{{class="brush: bash"
+[avishek@tecmint ~]$ talk ravisaive
+}}}

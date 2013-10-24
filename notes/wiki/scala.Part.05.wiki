@@ -780,483 +780,42 @@ for表达式的实现是基于`map`、`flatMap`、`filter`这些高阶函数。�
 
 
 
-= 抽取器（Extractors） =
-
-== 例子：抽取email地址 ==
-
-对于一个email类的话，如果是合法的email地址取出用户名与域名。
-
-{{{class="brush: scala"
-  EMail(user, domain)
-}}}
-
-模式匹配表达式可以写为：
-
-{{{class="brush: scala"
-  s match {
-    case EMail(user, domain) => println(user +" AT "+ domain)
-    case _ => println("not an email address")
-  }
-}}}
-
-找到两个连续的同一用户的email地址的模式：
-
-{{{class="brush: scala"
-  ss match {
-    case EMail(u1, d1) :: EMail(u2, d2) :: _ if (u1 == u2) => ...
-    ...
-  }
-}}}
-
-现在要匹配的email不是一个类，而是字符串。我们先把方法定义出来：
-
-{{{class="brush: scala"
-  def isEMail(s: String): Boolean
-  def domain(s: String): String
-  def user(s: String): String
-}}}
-
-调用的时候就是这样的：
-
-{{{class="brush: scala"
-  if (isEMail(s)) println(user(s) +" AT "+ domain(s)
-  else println("not an email address")
-}}}
-
-
-== 抽取器 ==
-
-在scala对象中与`apply`方法相对的方法是`unapply`方法，而有`unapply`成员方法的对象
-就是抽取器。`unapply`是为了匹配并分解值。
-
-下面的例子中`apply`方法注入对象，而`unapply`方法从对象中抽取内容：
-  
-{{{class="brush: scala"
-  object EMail {
-
-    // The injection method (optional)
-    def apply(user: String, domain: String) = user +"@"+ domain
-
-    // The extraction method (mandatory)
-    def unapply(str: String): Option[(String, String)] = {
-      val parts = str split "@"
-      if (parts.length == 2) Some(parts(0), parts(1)) else None
-    }
-  }
-}}}
-
-还可以让这个对象继承自Scala的函数类型：
-
-{{{class="brush: scala"
-  object EMail extends (String, String) => String { ... }
-}}}
-
-对象声明里的`(String, String) => String`的意思相当于`Function2[String, String]`
-，是对Email类实现的抽象`apply`方法的声明。这样可以把Email传递给需要
-`Function2[String,String]`的方法。
-
-
-注意`unapply`方法返回类型是`Option`。因为输入参数可能不是正确的email格式。
-
-{{{class="brush: scala"
-  unapply("John@epfl.ch")  equals  Some("John", "epfl.ch")
-  unapply("John Doe")  equals  None
-}}}
-
-
-现在，当模式匹配到抽取器对象指定的模式就会在选择器表达式中调用抽取器的`unapply`
-方法。如下面的代码：
-
-{{{class="brush: scala"
-  selectorString match { case EMail(user, domain) => ... }
-}}}
-
-`String`类型的`selectorString`其实先被抽取器处理：
-
-{{{class="brush: scala"
-  EMail.unapply(selectorString)
-}}}
-
-产的结构再进行模式匹配判断。
-
-`selectorString`的类型虽然和`unapply`一样都是`String`，但这并不是必须的。像下面
-这样检查任意类型的实例是不是email：
-
-{{{class="brush: scala"
-  val x: Any = ...
-  x match { case EMail(user, domain) => ... }
-}}}
-
-一般来说如果包含了注入方法，那应该与抽取方法成对偶关系。如调用：
-
-{{{class="brush: scala"
-  EMail.unapply(EMail.apply(user, domain))
-}}}
-
-应该返回：
-
-{{{class="brush: scala"
-  Some(user, domain)
-}}}
-
-也就是说被`Some`包装的同一序列的参数。反过来就是先执行`unapply`再执行`apply`：
-
-{{{class="brush: scala"
-  EMail.unapply(obj) match { 
-    case Some(u, d) => EMail.apply(u, d) 
-  }
-}}}
-
-虽然这样的对偶性不是强制要求的，但强烈建议实现。
-  
-
-== 只有1个或没有变量的模式 ==
-
-之前`unapply`方法返回的是元组，这在有多个值要返回的时候很有用。但是在只有一个值
-或没有值要返回的时候有麻烦，因为元组最小是二元组，没有有一元元组。
-
-所以模式只绑定一个变量的情况要特别对待，把结果直接放在`Some`中：
-
-{{{class="brush: scala"
-  object Twice {
-    def apply(s: String): String = s + s
-    def unapply(s: String): Option[String] = {
-      val length = s.length / 2
-      val half = s.substring(0, length)
-      if (half == s.substring(length)) Some(half) else None
-    }
-  }
-}}}
-
-还有一种情况下抽取器模式不绑定任何变量。这样情况下返回布尔值表示匹配成功或失败：
-
-{{{class="brush: scala"
-  object UpperCase {
-    def unapply(s: String): Boolean = s.toUpperCase == s
-  }
-}}}
-
-注意上面的代码没有`apply`，因为本来就没有什么好构造的。
-
-下面的`userTwiceUpper`函数的模式匹配代码集中了前面定义的所有抽取器：
-
-{{{class="brush: scala"
-  def userTwiceUpper(s: String) = s match {
-    case EMail(Twice(x @ UpperCase()), domain) =>
-      "match: "+ x +" in domain "+ domain
-    case _ => 
-      "no match"
-  }
-}}}
-
-函数的第一部分匹配email地址，并且用户名部分需要由大家字母形式的相同字符串出现
-两次组成。
-
-注意第二行里的`UpperCase`的空参数列表`()`是不能省略的，不然会被解释为与
-`UpperCase`对象进行匹配。还要注意虽然`UpperCase()`本身没有绑定任何变量，但还可以
-把变量与匹配它的整个模式联系起来。用模式中的变量绑定方案；以`x @ UpperCase()`的
-模式把`x`与`UpperCase()`匹配的模式联系起来。例如在第一个`userTwiceUpper`调用中，
-`x`被绑定为`DI`，因为匹配于`UpperCase()`模式的值。
-
-{{{class="brush: scala"
-  scala> userTwiceUpper("DIDI@hotmail.com")
-  res0: java.lang.String = match: DI in domain hotmail.com
-
-  scala> userTwiceUpper("DIDO@hotmail.com")
-  res1: java.lang.String = no match
-
-  scala> userTwiceUpper("didi@hotmail.com")
-  res2: java.lang.String = no match
-}}}
-
-
-== 可变参数的抽取器 ==
-
-希望的元素个数是可变的，如对域名的处理：
-
-{{{class="brush: scala"
-  dom match {
-    case Domain("org", "acm") => println("acm.org")
-    case Domain("com", "sun", "java") => println("java.sun.com")
-    case Domain("net", _*) => println("a .net domain")
-  }
-}}}
-
-可以看到上面的域名是反向展开的，最后一个情况下下`_*`剩下的所有元素。`unapply`值
-的返回个数定下了就不能改了，所以Scala允许为变参数定义不同的抽取方法`unapplySeq`
-：
-
-{{{class="brush: scala"
-  object Domain {
-
-    // The injection method (optional)
-    def apply(parts: String*): String = 
-      parts.reverse.mkString(".")
-
-    // The extraction method (mandatory)
-    def unapplySeq(whole: String): Option[Seq[String]] = 
-      Some(whole.split("\\.").reverse)
-  }
-}}}
-
-`unapplySeq`以句点拆分字符串包装在`Some`中返回。`unapplySeq`抽取器返回结果类型
-必须是`Option[seq[T]]`，这里的元素类型`T`不能限制。`Seq`是各种序列类（List、
-Array、RichString等）的共同超类。
-
-这样寻找某个`.com`域名中的email的函数就是这样：
-
-{{{class="brush: scala"
-  def isTomInDotCom(s: String): Boolean = s match {
-    case EMail("tom", Domain("com", _*)) => true
-    case _ => false
-  }
-}}}
-
-返回期望的结果：
-
-{{{class="brush: scala"
-  scala> isTomInDotCom("tom@sun.com")
-  res3: Boolean = true
-
-  scala> isTomInDotCom("peter@sun.com")
-  res4: Boolean = false
-
-  scala> isTomInDotCom("tom@acm.org")
-  res5: Boolean = false
-}}}
-
-同样也可以从`unapplySeq`及变化部分返回固定的元素。表达为包含所有元素的元组，变化
-部分还是在最后，下面是新的抽取器，其中域名部分已经扩展为序列了：
-
-{{{class="brush: scala"
-  object ExpandedEMail {
-    def unapplySeq(email: String)
-        : Option[(String, Seq[String])] = {
-      val parts = email split "@"
-      if (parts.length == 2) 
-        Some(parts(0), parts(1).split("\\.").reverse)
-      else 
-        None
-    }
-  }
-}}}
-
-这里`unapplySeq`方法返回对偶的可选类型。对偶的第一个元素是用户部分，第二个部分是
-表示域名的序列。然后就可以这样匹配它：
-
-{{{class="brush: scala"
-  scala> val s = "tom@support.epfl.ch"
-  s: java.lang.String = tom@support.epfl.ch
-
-  scala> val ExpandedEMail(name, topdom, subdoms @ _*) = s
-  name: String = tom
-  topdom: String = ch
-  subdoms: Seq[String] = List(epfl, support)
-}}}
-
-
-== 抽取器和序列模式 ==
-
-模式匹配中我们已经知道可以使用序列模式访问列表或数组的元素：
-
-{{{class="brush: scala"
-  List()
-  List(x, y, _*)
-  Array(x, 0, 0, _)
-}}}
-
-这里的`List(...)`形式的模式其实是由`scala.List`的伴生对象定义了`unapplySeq`方法
-的抽取器，相关定义如下：
-
-{{{class="brush: scala"
-  package scala
-  object List {
-    def apply[T](elems: T*) = elems.toList
-    def unapplySeq[T](x: List[T]): Option[Seq[T]] = Some(x)
-    ... 
-  }
-}}}
-
-List对象包含了带可变数量参数的`apply`方法，从而允许编写如下的表达式：
-
-{{{class="brush: scala"
-  List()
-  List(1, 2, 3)
-}}}
-
-它还包含了以序列形式返回列表所有元素的`unapplySeq`方法，从而对`List(...)`模式
-提供了支持。`scala.Array`对象定义也非常类似，所以数组也支持注入和抽取方法。
-  
-
-== 抽取器 VS. 样本类 ==
-
-样本类会暴露了数据的具体表达方式，让外部看到了类名与构造器等信息，如：
-
-{{{class="brush: scala"
-  case C(...)
-}}}
-
-对于已经存在的样本类后来写的代码一定要拿来用它们。如果修改了样本类就一定要把用到
-的地方都一起改了。抽取器是独立的，没有这个问题。
-
-样本类的优点是容易实现、性能更加高效。而且样本类如果继承自`sealed`，编译器可以
-穷举所有可能性检查程序里会漏掉的逻辑。
-
-一般来说，如果是封闭的应用，样本类更加合适；如果是开放的，类层级之类的会有重构，
-就更加适合抽取器。
-
-在面临选择的时候可以先从样本类开始做，以后发觉有问题再换抽取器。因为抽取器与
-样本类模式在Scala上看上去样子完全一样，所以在客户代码中的模式匹配还是可以继续
-工作的。但是像本章的email例子中模式架构与数据表现类不相符的情况下，只能用抽取器
-。
-
-== 正则表达式 ==
-
-正则表达式规则看`java.util.regex.Pattern`包的JavaDoc。RTFM！
-
-=== 形成正则表达式 ===
-
-Scala相关正则的类放在`scala.util.matching`包里：
-
-{{{class="brush: scala"
-  scala> import scala.util.matching.Regex
-}}}
-
-通过`Regex`类构造器传递正则表达式：
-
-{{{class="brush: scala"
-  scala> val Decimal = new Regex("(-)?(\\d+)(\\.\\d*)?")
-  Decimal: scala.util.matching.Regex = (-)?(\d+)(\.\d*)?
-}}}
-
-Scala的照排字符串可以免了java复杂的转义：
-
-{{{class="brush: scala"
-  scala> val Decimal = new Regex("""(-)?(\d+)(\.\d*)?""")
-  Decimal: scala.util.matching.Regex = (-)?(\d+)(\.\d*)?
-}}}
-
-还可以更加简化：
-
-{{{class="brush: scala"
-  scala> val Decimal = """(-)?(\d+)(\.\d*)?""".r
-  Decimal: scala.util.matching.Regex = (-)?(\d+)(\.\d*)?
-}}}
-
-`RichString`类里实现了`r`方法把字符串转为正则表达式：
-
-{{{class="brush: scala"
-  package scala.runtime
-  import scala.util.matching.Regex
-
-  class RichString(self: String) ... {
-    ...
-    def r = new Regex(self)
-  }
-}}}
-
-=== 用正则表达式查找替换 ===
-
-查找首次出现作为`Option`类型结果返回：
-
-{{{class="brush: scala"
-regex findFirstIn str
-}}}
-
-所有的出现的匹配以`Iterator`类型结果返回：
-
-{{{class="brush: scala"
-regex findAllIn str
-}}}
-
-查找开始位置匹配出现，返回`Option`类型：
-
-{{{class="brush: scala"
-regex findPrefixOf str
-}}}
-
-例子：
-
-{{{class="brush: scala"
-  scala> val Decimal = """(-)?(\d+)(\.\d*)?""".r
-  Decimal: scala.util.matching.Regex = (-)?(\d+)(\.\d*)?
-
-  scala> val input = "for -1.0 to 99 by 3"      
-  input: java.lang.String = for -1.0 to 99 by 3
-
-  scala> for (s <- Decimal findAllIn input)
-       | println(s)
-  -1.0
-  99
-  3
-
-  scala> Decimal findFirstIn input
-  res1: Option[String] = Some(-1.0)
-
-  scala> Decimal findPrefixOf input
-  res2: Option[String] = None
-}}}
-
-
-=== 正则表达式抽取值 ===
-
-Scala所有的正则表达式都定义了抽取器，可以用来鉴别匹配于正则表达式分组的子字符串
-，相当于买一送一。例如，下面这样解构数值字符串：
-
-{{{class="brush: scala"
-  scala> val Decimal(sign, integerpart, decimalpart) = "-1.23"  
-  sign: String = -
-  integerpart: String = 1
-  decimalpart: String = .23
-}}}
-
-注意这里用`Decimal(...)`来定义了一个`val`。`Decimal`正则表达式值定义了
-`unapplySeq` 方法把字符串与正则匹配到三个模式变量`sign`、`intergerpart`、
-`decimalpart`，如果有一个部分缺少就是`null`：
-
-{{{class="brush: scala"
-  scala> val Decimal(sign, integerpart, decimalpart) = "1.0"
-  sign: String = null
-  integerpart: String = 1
-  decimalpart: String = .0
-}}}
-
-还可以在for表达式中混用抽取器与正则表达式做搜索，如，下面的代码从字符串中找到
-所有的数值：
-
-{{{class="brush: scala"
-  scala> for (Decimal(s, i, d) <- Decimal findAllIn input)
-       |   println("sign: "+ s +", integer: "+
-       |       i +", decimal: "+ d)
-  sign: -, integer: 1, decimal: .0
-  sign: null, integer: 99, decimal: null
-  sign: null, integer: 3, decimal: null
-}}}
-
 
 
 = 注解 = 
 
 == 注解的作用 ==
 
-（略）
+Java的注解只是往字节码里增加信息，但Scala的注解可能会影响编译过程。比如
+`@BeanProperty`注解会增加`getter`与`setter`方法。
 
 == 注解语法 ==
 
-以注解`@deprecated`表示已经被弃用，一希望再被使用的东西：
+=== 主构造器注解 ===
+
+注解放在构造器之前，并加上括号（如果注解没有参数的话）：
 
 {{{class="brush: scala"
-  @deprecated def bigMistake() = //...
+class Credentials @Inject() (var username: String, var password: String)
 }}}
 
-这个注解可以被用在任何声明或定义上，如：val`、`var`、`def`、`class`、`object`、
-`trait`、`type`上。并用于跟随其后的声明或定义整体：
+=== 对实际类型的注解 ===
+
+对实际类型的注解放在类型名称后面。如为`String`类型添加了注解：
 
 {{{class="brush: scala"
-  @deprecated class QuickAndDirty {
-    //...
-  }
+String @cps[Unit]
 }}}
+
+=== 类型参数注解 ===
+
+加在类型参数前：
+
+{{{class="brush: scala"
+class MyContainer[@specialized T]
+}}}
+
+=== 表达式注解 ===
 
 还有应用在表达式上的注解，如`@unchecked`。格式是在表达式后加分号`:`再加注解：
 
@@ -1266,11 +825,15 @@ Scala所有的正则表达式都定义了抽取器，可以用来鉴别匹配于
   }
 }}}
 
+=== 注解完整格式 ===
+
 前面讲的注解形式简单。比较完整的注解格式是：
 
 {{{class="brush: scala"
 	@annot(exp1, exp2, ...) {val name1=const1, val name2 = cost1, ...}
 }}}
+
+==== 注解的参数 ====
 
 小括号里与花括号里的都是注解的参数列表。
 
@@ -1285,33 +848,65 @@ Scala所有的正则表达式都定义了抽取器，可以用来鉴别匹配于
 花括号内的是更加复杂、具有可选参数的注解。这些参数可选并且对顺序没有要求（因为是
 K-V对应）。但是为了方便处理，等号右边的值必须是常量。
 
+如果参数的名称为`value`，则可以省略名称：
+
+{{{class="brush: scala"
+@Named("creds") val credentials: Credentials = _
+}}}
+
+如果没有参数，括号也可以省略。
+
+Java注解的参数类型只能是：
+
+* 数值字面量
+* 字符串
+* 类字面量
+* Java枚举
+* 其他注解
+* 以上类型的数组，但不能是数组的数组
+
+Scala的注解参数可以是任何类型。
 
 == 标准注解 ==
 
 下面介绍Scala里现有的标准注解。
 
-=== 标明废弃 ===
+=== 废弃 ===
 
-警告用户最好不要用某些东西：
+`@deprecated`表示已经被弃用，一希望再被使用的东西：
 
 {{{class="brush: scala"
-  @deprecated def bigMistake() =  //...
+  @deprecated def bigMistake() = //...
 }}}
 
+这个注解可以被用在任何声明或定义上，如：`val`、`var`、`def`、`class`、`object`、
+`trait`、`type`上。并用于跟随其后的声明或定义整体：
 
-=== 易变字段 ===
+{{{class="brush: scala"
+  @deprecated class QuickAndDirty {
+    //...
+  }
+}}}
 
-`@volatile`警告会被多个线程使用，内容会被其他线程改变。
+两个参数`message`和`since`给出提示信息与废弃的版本：
 
-=== 二进制序列化 ===
+{{{class="brush: scala"
+  @deprecated(message = "Use factorial(n: BigInt) instead")
+	def factorial(n: Int): Int = //...
+}}}
 
-Scala没有序列化框架，但准备了三个注解：
+`@deprecatedName`可以被应用到参数上，并给出一个参数之前用过的名字：
 
-* `@serializable`标明类是否可以被序列化。
-* `@SerialVersionUID(version)`标明序列化的版本号。`version`是数字版本号。
-* `@transient`标明类里的某个字段不应该被序列化。
+{{{class="brush: scala"
+def draw(@deprecatedName('sz) size: Int, sytle: Int = NORMAL)
+}}}
+
+注意这里的`'sz`是一个符号。用户还是可能通过`draw(sz = 12)`来调用，但是会得到一个
+过期警告。
 
 === 自动getter和setter方法 ===
+
+`@BeanProperty`
 
 Scala里不用显式写getter和setter方法，但有些框架上还是要的。为此，Scala已经提供
 了`@scala.reflect.BeanProperty`注解可以给字段自动加上getter和setter方法。如，对
@@ -1321,9 +916,268 @@ Scala里不用显式写getter和setter方法，但有些框架上还是要的。
 Scala里用不着这些getter和setter方法，是为了某些框架而需要的。显然我们不会在
 同一时间又编译框架又编译调用框架的代码。
 
+`@BooleanBeanProperty`产带有`is`前缀的`getter`方法，用于`Boolean`类型。
+
+还有一些不常用的如：`@BeanDescription`、`@BeanDisplayName`、`@Beaninfo`和
+`@BeanInfoSkip`自己RTFM。
+
+=== 标明废弃 ===
+
+警告用户最好不要用某些东西：
+
+{{{class="brush: scala"
+  @deprecated def bigMistake() =  //...
+}}}
+
+=== 浮点精度 ===
+
+`@strictfp`对就Java中的`strictfp`修饰符。表示采用IEEE的双精度值进行浮点运算，而
+不是使用Intel处理器默认的80位扩展精度。
+
+{{{class="brush: scala"
+@strictfp def calculate(x: Double) = doSth()
+}}}
+
+=== 本地方法 ===
+
+`@native`注解对应Java的`native`修饰符。表示本地调用C或C++的实现的代码：
+
+{{{class="brush: scala"
+@native def win32RegKeys(root: Int, path: String): Array[String]
+}}}
+
+=== 远程调用 ===
+
+`@remote`注解对应Java的`java.rmi.Remote`接口。
+
+=== 克隆对象 ===
+
+`@cloneable`注解对应Java的`Cloneable`接口。
+
+{{{class="brush: scala"
+@cloneable class Employee
+}}}
+
+=== 易变字段 ===
+
+`@volatile`警告会被多个线程使用，内容会被其他线程改变。
+
+=== 二进制序列化 ===
+
+Scala没有序列化框架，但准备了三个注解：
+
+* `@serializable`表示可序列化（已经过时，应扩展`scala.Serializable物质`）。
+* `@SerialVersionUID(version)`标明序列化的版本号。`version`是数字版本号。
+* `@transient`标明类里的某个字段不应该被序列化。
+
+{{{class="brush: scala"
+@SerialVersionUID(6157032470129384659L)
+class Employee extends Person with Serializable
+}}}
+
 === 不检查 ===
 
 `@unchecked`标明在模式匹配时不用关心被漏掉的可能性。
+
+`@uncheckedVariance`忽略与型变相关的错误提示。例如：`java.util.Comparator`应该是
+逆变的。`Student`是`Person`的子类，所以在`Comparator[Person]`可以用来替代
+`Comparator[Student]`。但Java的泛型不支持型变，所以需要声明忽略：
+
+{{{class="brush: scala"
+trait COmparator[-T] extends java.lang.Comparator[T @uncheckedVariance]
+}}}
+
+=== 变长参数 ===
+
+`@varargs`注解让Java调用Scala带有变长参数的方法。默认情况下变长参数被翻译为序列
+：
+
+{{{class="brush: scala"
+def process(args: String*)
+
+// 等于：
+def process(args: Seq[String])
+}}}
+
+为了方便Java调用：
+
+{{{class="brush: scala"
+@varargs def process(args: String*)
+}}}
+
+产对应的Java方法作为中转：
+
+{{{class="brush: java"
+void process(String ... args)
+}}}
+
+该方法把`args`数组外包装在`Seq`中，然后调用实际上的`Scala`方法。
+
+{{{class="brush: scala"
+}}}
+
+=== 尾递归 ===
+
+`@tailrec`提示编译器进行尾递归优化，如果优化不了会报错：
+
+{{{class="brush: scala"
+@tailrec def sum(num: Int) = ....
+}}}
+
+=== 跳转表 ===
+
+C++与Java中switch语句可编译成跳转表以取得比if-else表达式更好的性能。`@switch`
+注解让Scala尝试对`match`语句生成跳转表：
+
+{{{class="brush: scala"
+(n: @switch) match {
+	case 0 => "Zero"
+	case 1 => "One"
+	case _ => "?"
+}
+}}}
+
+=== 内联 ===
+
+内联把方法调用转为外部方法的方法体内容。Scala中通过`@inline`来建议内联或用
+`@noinlie`禁止内联。
+
+通常内联发生在JVM内部，即时编译器自动进行的内联优化的效果已经非常好了。
+
+=== 可省略方法 ===
+
+`@elidable`注解标记可以在生产环境中移除的方法：
+
+{{{class="brush: scala"
+@elidable(500) 
+def dump(props: Map[String, String]) { doSth() }
+}}}
+
+编译时加上参数`-Xelide-below`：
+
+{{{class="brush: bash"
+scalac -Xelide-below 800 myprog.scala
+}}}
+
+`elidable`对象定义了一些常量值：
+
+* `MAXIMUM`或`OFF = Int.MaxValue`
+* `ASSERTION = 2000`
+* `SEVERE = 1000`
+* `WARNING = 900`
+* `INFO = 800`
+* `CONFIG = 700`
+* `FINE = 500`
+* `FINER = 400`
+* `FINEST = 300`
+* `MINIMUM`或`ALL = Int.MinValue`
+
+注意这里有`ALL`、`OFF`有不同的场景：
+
+* 加在注解里的，表示方法“总是被省略”和“永远不会被省略”
+* 加在编译参数里的表示“打开所有方法”或“省略所有方法”
+
+
+这些常量可以在注解中使用：
+
+{{{class="brush: scala"
+import scala.annotation.elidable._
+
+@elidable(FINE)
+def dump(props: Map[String, String]) { doSth() }
+}}}
+
+
+编译时加上参数中也可以这样用：
+
+{{{class="brush: bash"
+scalac -Xelide-below INFO myprog.scala
+}}}
+
+如果没有指定`-Xelide-below`参数，默认低于1000（也就是低于SEVERE）的方法和断言会
+被去除。
+
+`Predef`模块定义了一个可以被忽略的`assert`方法。例如我们可以这样写：
+
+{{{class="brush: scala"
+def makeMap(keys: Seq[String], values: Seq[String]) = {
+	assert(keys.length == values.length, "lengths don't match")
+	// ...
+}
+}}}
+
+默认情况下断言是启用的，`-Xelide-below`设值`2001`或`MAXIMUM`会禁用断言。
+
+=== 基本类型的包装 ===
+
+基本类型的打包和解包操作并不是很高效，但在涉及到泛型操作时又常常会用到。比如：
+
+{{{class="brush: scala"
+def fun[T](x: T, y:T) = ...
+}}}
+
+`@specialized`注解让编译器添加自动重载的基本类型版本：
+
+{{{class="brush: scala"
+def fun[@specialized T](x: T, y:T) = ...
+}}}
+
+还可以限定类型：
+
+{{{class="brush: scala"
+def fun[@specialized(Long, Double) T](x: T, y:T) = ...
+}}}
+
+可以指定的类型有：`Unit`、`Boolean`、`Byte`、`Short`、`Char`、`Int`、`Lang`、
+`Float`、`Double`。
+
+=== 隐式转换失败提示 ===
+
+`@implicitNotFound`注解在找不到时给出更有意义的提示信息。
+
+
+== 实现Scala注解 ==
+
+必须扩展`Annotation`特质，如`unchecked`注解：
+
+{{{class="brush: scala"
+class unchecked extends annotationAnnotation
+}}}
+
+注解可以选择扩展自下面两个特质：
+
+* `StaticAnnotation`：添加Scala元数据到类文件中。
+* `ClassfileAnnotation`：添加Java元数据到类文件中。（Scala2.9中还没有支持）
+
+=== Scala注解扩展作用范围 ===
+
+一般来说注解的作用范围是所在的位置，但有些元数据注解会扩展范围。如：
+
+* `@param`
+* `@field`
+* `@getter`、`@setter`
+* `@beanGetter`、`@beanSetter`
+
+比较常见的应用场景是，把注解的目标从字段转为字段的`getter`、`setter`方法。例如，
+`deprecated`注解的定义：
+
+{{{class="brush: scala"
+@getter @setter @beanGetter @beanSetter
+class deprecated(message: String = "", since: String = "") 
+	extends annotation.StaticAnnotation
+}}}
+
+除了在定义注解时加入元数据注解，在类中也可以加上元数据注解：
+
+{{{class="brush: scala"
+@Entity class Credentials {
+	@(Id @beanGetter)
+	@(BeanProperty)
+	var id = 0
+}}}
+
+因为JPA要求`@Id`注解要应用的Java的`getId()`方法，所以这里用`@beanGetter`注解把
+标签的作用扩展到`getId()`方法上而不是`id`属性。
 
 
 
@@ -1345,7 +1199,6 @@ Scala里用不着这些getter和setter方法，是为了某些框架而需要的
 Scala里可以直接给XML写字面量。解释器把从根标签的开始到结束都作为XML字面量：
 
 {{{class="brush: scala"
-
   scala> <a>
        |   This is some XML.
        |   Here is a tag: <atag/>
@@ -1357,11 +1210,133 @@ Scala里可以直接给XML写字面量。解释器把从根标签的开始到结
          </a>
 }}}
 
+=== 节点类型 ===
+
 上面的xml类型`Elem`类，其他一些与XML相关的重要类有：
 
 * `Node`类，所有XML节点的抽象。
 * `Text`类，只有文本的节点。
 * `NodeSeq`类，就是多个节点的序列。你可以把`Node`想象成只有一个成员的`NodeSeq`。
+
+还有一个`scala.xml.Null`是一个空属性列表，不是`scala.Null`类型。
+
+还有其他的类型：
+
+<img src="images/scala/xml.node.hir.jpeg" />
+
+`Elem`类表示XML元素：
+
+{{{class="brush: scala"
+val elem = <a href="http://scala-lang.org">The <em>Scala</em> language</a>
+}}}
+
+这里得到一个`label`属性为`a`的元素，它的`child`是子节点（两个`Text`和一个`ELem`
+）
+
+遍历子节点只要：
+
+{{{class="brush: scala"
+for (n <- elem.chile) doSth()
+}}}
+
+对于其他的内容如：注释（`<!-- ... -->`）、实体引用（`&...;`）、处理指令（
+`<?...?>`）也有对应的类型。
+
+=== NodeBuffer ===
+
+`NodeBuffer`扩展自`ArrayBuffer[Node]`，可以用来构建节点序列。
+
+{{{class="brush: scala"
+scala> import scala.xml._
+import scala.xml._
+
+scala> val items = new NodeBuffer
+items: scala.xml.NodeBuffer = ArrayBuffer()
+
+scala> items += <li>Fred</li>
+res0: items.type = ArrayBuffer(<li>Fred</li>)
+
+scala> items += <li>Willma</li>
+res1: items.type = ArrayBuffer(<li>Fred</li>, <li>Willma</li>)
+}}}
+
+`NodeBuffer`是一个`Seq[Node]`可以被隐式转换为`NodeSeq`。注意转换以了就就别再改了
+。XML节点序列应该是不可变的：
+
+{{{class="brush: scala"
+scala> val nodes: NodeSeq = items
+nodes: scala.xml.NodeSeq = NodeSeq(<li>Fred</li>, <li>Willma</li>)
+}}}
+
+=== 元素属性 ===
+
+`attributes`属性取得某个元素属性的键和值，类型为`MetaData`。可能通过`()`操作
+来访问键的值：
+
+{{{class="brush: scala"
+scala> val elem = <a href="http://scala-lang.org/"> The Scala Language</a>
+elem: scala.xml.Elem = <a href="http://scala-lang.org/"> The Scala Language</a>
+
+scala> val url = elem.attributes("href")
+url: Seq[scala.xml.Node] = http://scala-lang.org/
+}}}
+
+注意得到的结果类型是`Seq[Node]`，如果内容中有特殊字符的话：
+
+{{{class="brush: scala"
+scala> val image = <img alt="San josé state university logo" src="ali.jpg" />
+image: scala.xml.Elem = <img alt="San josé state university logo" src="ali.jpg"/>
+
+scala> val alt  = image.attributes("alt")
+alt: Seq[scala.xml.Node] = San josé state university logo
+}}}
+
+可以转义特殊字符：
+
+{{{class="brush: scala"
+scala> val image = <img alt="San jos&#233; state university logo" src="ali.jpg" />
+image: scala.xml.Elem = <img alt="San josé state university logo" src="ali.jpg"/>
+
+scala> val alt  = image.attributes("alt")
+alt: Seq[scala.xml.Node] = San josé state university logo
+}}}
+
+如果属性中不存在未被解析的实体，可以用`test`方法转成字符串：
+
+{{{class="brush: scala"
+scala> val alt  = image.attributes("alt").text
+alt: String = San josé state university logo
+}}}
+
+如果属性不存在，`()`操作返回`null`；用`get`方法可以返回`Option[Seq[Node]]`。
+`MetaData`类没有`getOrElse`方法，但可以用`get`方法对`Option`类结果应用
+`getOrElse`：
+
+{{{class="brush: scala"
+scala> val url = image.attributes.get("href").getOrElse(Text(""))
+url: Seq[scala.xml.Node] = 
+}}}
+
+遍历所有属性：
+
+{{{class="brush: scala"
+for (attr <- elem.attributes)
+	doSth()
+}}}
+
+也可以用`asAttrmap`方法：
+
+{{{class="brush: scala"
+scala> val image = <img alt="TODO" src="hamster.jpg"/>
+image: scala.xml.Elem = <img alt="TODO" src="hamster.jpg"/>
+
+scala> val map = image.attributes.asAttrMap
+map: Map[String,String] = Map(alt -> TODO, src -> hamster.jpg)
+}}}
+
+
+
+=== 内嵌Scala表达式 ===
 
 不仅有字面量，而且还可以用`{}`来引入Scala代码，如：
 
@@ -1370,7 +1345,14 @@ Scala里可以直接给XML写字面量。解释器把从根标签的开始到结
   res1: scala.xml.Elem = <a> hello, world </a>
 }}}
 
-这样可以多层嵌套，在Scala代码与XML字面量中重复切换：
+如果不是要表达式，而就是字面上的花括号，，那连续两个`{{}}`就可以转义了。
+
+{{{class="brush: scala"
+scala> val ms  = <p>{{hello}}</p>
+ms: scala.xml.Elem = <p>{hello}</p>
+}}}
+
+表达式可以多层嵌套，在Scala代码与XML字面量中重复切换：
 
 {{{class="brush: scala"
   scala> val yearMade = 1955
@@ -1420,6 +1402,216 @@ Scala里可以直接给XML写字面量。解释器把从根标签的开始到结
   res7: scala.xml.Elem = <a> {{brace yourself!}} </a>
 }}}
 
+如果表达式产的结果是节点序列会直接添加到XML中，其他类型的结果放到一个`Atom[T]`
+容器中。这样就可以在XML树中放置任何类型的值，并可用`Atom`节点的`data`属性取得
+这些值。XML保存时这些`Atom`类型实例会调用`data`的`toString`方法转成字符串。
+
+内嵌的字符串不会转成`Text`节点而是作为`Atom[String]`节点。保存成文本时没有问题，
+但是如果要用`Text`节点的模式进行模式匹配就匹配不了，因为`Text`是`Atom[String]`
+的子类。这种情况下应该加入的是`Text`节点面不是字符串：
+
+{{{class="brush: scala"
+<li>{Text("Another item")}</li>
+}}}
+
+=== 属性中使用表达式 ===
+
+函数返回的字符串直接作为属性值：
+
+{{{class="brush: scala"
+<img src={makeURL(fileName)} />
+}}}
+
+注意不能加引号，不然就原文输出了。如下面这样：
+
+{{{class="brush: scala"
+<img src="{makeURL(fileName)}" />
+}}}
+
+如果要在属性中包含实体引用或是原子，可以在表达式中产出一个节点序列：
+
+{{{class="brush: scala"
+<a id={new Atom(1)} ... />
+}}}
+
+在表达式返回`null`或`None`的情况下，属性会不被设置：
+
+{{{class="brush: scala"
+<img alt={if (description == "TODO") null else description} ... />
+}}}
+
+用`Option[Seq[Node]]`也有同样的效果：
+
+{{{class="brush: scala"
+<img alt={if (description == "TODO") None else Some(Text(description))} ... />
+}}}
+
+=== 特殊结点类型 ===
+
+非XML文本，如XHTML中的JavaScript代码，用CDATA：
+
+{{{class="brush: scala"
+scala> val js = <script><![CDATA[if (temp < 0) alert("Cold!")]]></script>
+js: scala.xml.Elem = <script>if (temp &lt; 0) alert(&quot;Cold!&quot;)</script>
+}}}
+
+但对解析器来说这只是一个`Text`子节点，不知道它是CDATA。可以用一个`PCData`节点
+类型：
+
+{{{class="brush: scala"
+scala> val code = """if (temp < 0) alert("Cold!")"""
+code: String = if (temp < 0) alert("Cold!")
+
+scala> val js = <script>{PCData(code)}</script>
+js: scala.xml.Elem = <script><![CDATA[if (temp < 0) alert("Cold!")]]></script>
+}}}
+
+还可以用`Unparsed`节点包含任意文本，但这样人工输入的XML很容易格式错误，不推荐：
+
+{{{class="brush: scala"
+scala> val n1 = <xml:unparsed><&></xml:unparsed>
+n1: scala.xml.Unparsed = <&>
+
+scala> val n2 = Unparsed("<&>")
+n2: scala.xml.Unparsed = <&>
+}}}
+
+还可以对节点进行分组：
+
+{{{class="brush: scala"
+scala> val g1 = <xml:group><li>Item 1</li><li>Item 2</li></xml:group>
+g1: scala.xml.Group = <li>Item 1</li><li>Item 2</li>
+
+scala> val g2 = Group(Seq(<li>Item 1</li>, <li>Item 2</li>))
+g2: scala.xml.Group = <li>Item 1</li><li>Item 2</li>
+}}}
+
+注意`Seq()`方法中一定要用逗号与空格分开，不能少。
+
+组里的元素被作为两个元素：
+
+{{{class="brush: scala"
+scala> for (n <- <xml:group><li>Item 1</li><li>Item 2</li></xml:group>) yield n
+res2: scala.xml.NodeSeq = NodeSeq(<li>Item 1</li>, <li>Item 2</li>)
+
+}}}
+
+其他情况下：
+
+{{{class="brush: scala"
+scala> for (n <- <li>Item 1</li><li>Item 2</li>) yield n
+res0: scala.collection.mutable.ArrayBuffer[scala.xml.Node] = ArrayBuffer(<li>Item 1</li>, <li>Item 2</li>)
+
+scala> for (n <- <ol><li>Item 1</li><li>Item 2</li></ol>) yield n
+res1: scala.xml.NodeSeq = NodeSeq(<ol><li>Item 1</li><li>Item 2</li></ol>)
+// 只有一个ol元素
+}}}
+
+
+== 拆解XML ==
+
+Scala中可以直接用基于XPath语言的工具处理XML。
+
+=== 抽取文本 ===
+
+取得去掉了标签以后的文本：
+
+{{{class="brush: scala"
+  scala> <a>Sounds <tag/> good</a>.text
+  res8: String = Sounds  good
+}}}
+
+所有的编码字符会自动解码：
+
+{{{class="brush: scala"
+  scala> <a> input ---&gt; output </a>.text
+  res9: String =  input ---> output 
+}}}
+
+=== 抽取子元素 ===
+
+用类似XPath的`\()`方法查找得第一层子节点：
+
+{{{class="brush: scala"
+  scala> <a><b><c>hello</c></b></a> \ "b"
+  res10: scala.xml.NodeSeq = <b><c>hello</c></b>
+}}}
+
+用`\\()`方法代替`\()`方法搜索任意深度的子节点：
+
+{{{class="brush: scala"
+  scala>  <a><b><c>hello</c></b></a> \ "c"
+  res11: scala.xml.NodeSeq = 
+
+  scala>  <a><b><c>hello</c></b></a> \\ "c"
+  res12: scala.xml.NodeSeq = <c>hello</c>
+
+  scala>  <a><b><c>hello</c></b></a> \ "a"
+  res13: scala.xml.NodeSeq = 
+
+  scala>  <a><b><c>hello</c></b></a> \\ "a"
+  res14: scala.xml.NodeSeq = <a><b><c>hello</c></b></a>
+}}}
+
+Scala用`\`和`\\`代替了XPath里的`/`和`//`。原因是`//`会和Scala的注释混淆。
+
+=== 抽取属性 ===
+
+也是用`\`和`\\`，不过要加上`@`：
+
+{{{class="brush: scala"
+  scala> val joe = <employee
+       |    name="Joe"
+       |    rank="code monkey"
+       |    serial="123"/>
+  joe: scala.xml.Elem = <employee rank="code monkey" name="Joe"
+   serial="123"></employee>
+
+  scala>  joe \ "@name"
+  res15: scala.xml.NodeSeq = Joe
+
+  scala>  joe \ "@serial"
+  res16: scala.xml.NodeSeq = 123
+}}}
+
+属性不能用通配符，如：
+
+{{{class="brush: scala"
+img \ "@_"
+}}}
+
+是什么也查不到的。
+
+与XPath不同，`\()`方法不能从多个节点里取得属性，下面这样：
+
+{{{class="brush: scala"
+doc \\ "img" \ "@src"
+}}}
+
+如果遇到有多个`img`元素的不行的，要用：
+
+{{{class="brush: scala"
+doc \\ "img" \\ "@src"
+}}}
+
+==== 结果是序列 ====
+
+`\()`与`\\()`方法得到的结果是序列类型的。所以除非确信只有一个匹配的结果，否则
+应该用遍历的方式来处理返回的结果：
+
+{{{class="brush: scala"
+for (n <- doc \\ "img") doSth()
+}}}
+
+如果对结果调用`text`会把文本串成一起
+
+{{{class="brush: scala"
+scala> (<img src="aa.jpg"/><img src="bb.jpg"/> \\ "@src").text
+res3: String = aa.jpgbb.jpg
+}}}
+
+
+== 对象与XML转换 ==
 
 == 序列化 ==
 
@@ -1495,71 +1687,6 @@ Scala里可以直接给XML写字面量。解释器把从根标签的开始到结
 注意，虽然`CCTherm`是抽象类，但是`new CCTherm`还是可以正常工作，因为这样的语法
 实际上是实例化了`CCTherm`的匿名子类。
 
-== 拆解XML ==
-
-Scala中可以直接用基于XPath语言的工具处理XML。
-
-=== 抽取文本 ===
-
-取得去掉了标签以后的文本：
-
-{{{class="brush: scala"
-  scala> <a>Sounds <tag/> good</a>.text
-  res8: String = Sounds  good
-}}}
-
-所有的编码字符会自动解码：
-
-{{{class="brush: scala"
-  scala> <a> input ---&gt; output </a>.text
-  res9: String =  input ---> output 
-}}}
-
-=== 抽取子元素 ===
-
-用类似XPath的`\()`方法按路径取得子元素：
-
-{{{class="brush: scala"
-  scala> <a><b><c>hello</c></b></a> \ "b"
-  res10: scala.xml.NodeSeq = <b><c>hello</c></b>
-}}}
-
-用`\\()`方法代替`\()`方法搜索元素：
-
-{{{class="brush: scala"
-  scala>  <a><b><c>hello</c></b></a> \ "c"
-  res11: scala.xml.NodeSeq = 
-
-  scala>  <a><b><c>hello</c></b></a> \\ "c"
-  res12: scala.xml.NodeSeq = <c>hello</c>
-
-  scala>  <a><b><c>hello</c></b></a> \ "a"
-  res13: scala.xml.NodeSeq = 
-
-  scala>  <a><b><c>hello</c></b></a> \\ "a"
-  res14: scala.xml.NodeSeq = <a><b><c>hello</c></b></a>
-}}}
-
-Scala用`\`和`\\`代替了XPath里的`/`和`//`。原因是`//`会和Scala的注释混淆。
-
-=== 抽取属性 ===
-
-也是用`\`和`\\`，不过要加上`@`：
-
-{{{class="brush: scala"
-  scala> val joe = <employee
-       |    name="Joe"
-       |    rank="code monkey"
-       |    serial="123"/>
-  joe: scala.xml.Elem = <employee rank="code monkey" name="Joe"
-   serial="123"></employee>
-
-  scala>  joe \ "@name"
-  res15: scala.xml.NodeSeq = Joe
-
-  scala>  joe \ "@serial"
-  res16: scala.xml.NodeSeq = 123
-}}}
 
 == 反序列化 ==
 
@@ -1597,11 +1724,19 @@ Scala用`\`和`\\`代替了XPath里的`/`和`//`。原因是`//`会和Scala的�
 
 == 读取和保存 ==
 
+=== 保存 ===
+
 把XML转为字符串只要调用`toString`方法。
 
-如果要把XML转换为字节文件可以使用`XML.saveFull`命令。要确定文件名、要保存的节点
-、采用的字符编码、是否在文件头上写上包含字符编码的XML声明、XML的文档类型（可以
-指定为`null`表示任意类型，这里不深入讨论）。例子：
+如果要把XML转换为字节文件可以使用`XML.saveFull`命令。参数：
+
+* 文件名、
+* 要保存的节点、
+* 采用的字符编码、
+* 是否在文件头上写上包含字符编码的XML声明、
+* XML的文档类型`scala.xml.dtd.DocType`（`null`表示任意类型这里不深入讨论）。
+
+例子：
 
 {{{class="brush: scala"
   scala.xml.XML.saveFull("therm1.xml", node, "UTF-8", true, null)
@@ -1621,7 +1756,39 @@ Scala用`\`和`\\`代替了XPath里的`/`和`//`。原因是`//`会和Scala的�
            </cctherm>
 }}}
 
-读取文件比保存简单，只要调用`xml.XML.loadFile`并传入文件名：
+如果要保存一个XHTML，典型的例子是：
+
+{{{class="brush: scala"
+scala.xml.XML.saveFull("therm1.xml", node, "UTF-8", true, 
+	DocType("html", PublicID( "-//W3C//DTD XHTML 1.0 Strict//EN",
+			"http://www.w3.org/TR/xhtml1/DTD/xhtml11-strict.dtd"), Nil)
+)
+}}}
+
+把空节点写为自结束标签：
+
+{{{class="brush: scala"
+scala> val image = <img src="logo.jpg"></img>
+image: scala.xml.Elem = <img src="logo.jpg"></img>
+
+scala> val str = xml.Utility.toXML(image, minimizeTags = true)
+warning: there were 1 deprecation warning(s); re-run with -deprecation for details
+str: StringBuilder = <img src="logo.jpg"/>
+}}}
+
+`PrettyPrinter`类可提供更加美观的格式：
+
+{{{class="brush: scala"
+scala> val printer = new PrettyPrinter(width = 100, step = 4)
+printer: scala.xml.PrettyPrinter = scala.xml.PrettyPrinter@73aa0439
+
+scala> val str = printer.formatNodes(image)
+str: String = <img src="logo.jpg"></img>
+}}}
+
+=== 加载 ===
+
+读取文件比保存简单，只要调用`xml.XML`对象的`loadFile`方法并传入文件名：
 
 {{{class="brush: scala"
   scala> val loadnode = xml.XML.loadFile("therm1.xml")
@@ -1639,6 +1806,95 @@ Scala用`\`和`\\`代替了XPath里的`/`和`//`。原因是`//`会和Scala的�
   res14: CCTherm = hot dog #5
 }}}
 
+也可以从`java.io.InputStream`、`java.io.Reader`或`URL`加载：
+
+{{{class="brush: scala"
+val root2 = XML.load(new FileInputStream("myfile.xml"))
+
+val root3 = XML.load(new InputStreamReader(
+			new FileInputStream("myfile.xml"),"UTF-8"))
+			
+val root4 = XML.load(new URL("http;//horstmann.com/index.html"))
+}}}
+
+==== 解析器 ====
+
+默认的加载工具是Java的SAX解析器，它不会从本地编目而是从w3c.org读取DTD。尤其是
+处理XHTML时会这种行为花非常长的时间。
+
+JDK的`com.sun.org.apache.xml.internal.resolver.tools`包中的`CatelogResolver`类或
+Apache Commons Resolver提供的版本：
+
+http://xml.apache.org/commons/components/resolver/resolver-article.html
+
+XML对象没有接口可以用来安装实体解析器，只能通过后门来达到目的：
+
+{{{class="brush: scala"
+val res = new CatalogResolver
+
+val doc = new factory.XMLLoader[Elem] {
+	override def adapter = new parsing.NoBindingFactoryAdapter() {
+		override def resolveEntity(publicId: String, systemId: String) = {
+			res.resolveEntry(publicId, systemId)
+		}
+	}
+}.load(new URL("http://horstmann.com/index.html"))
+}}}
+
+
+== 命名空间 ==
+
+和Java或Scala中的包一样，XML通过`xmlns`属性指定命名空间，其形式类似URI：
+
+{{{class="brush: scala"
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head></head>
+	<body></body>
+</html>
+}}}
+
+`html`元素和所有的子元素（`head`、`body`等）都是在命令空间中的。子元素也可以导入
+自己的命名空间：
+
+{{{class="brush: scala"
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+	<rect x="25" y="25" width="50" height="50" fill="#ff000000" />
+</svg>
+}}}
+
+混用多个命名空间时，可以用“命令空间前缀”来给长长的命名空间起别名：
+
+{{{class="brush: scala"
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg" >
+}}}
+
+用`svg`来代替`http://www.w3.org/2000/svg`，所有`svg:`开关的都代表该命名空间：
+
+{{{class="brush: scala"
+<svg:svg width="100" height="100">
+	<svg:rect x="25" y="25" width="50" height="50" fill="#ff000000" />
+</svg:svg>
+}}}
+
+每个`Elem`对象都有`prefix`和`scope`值，解析器会自动设置这些值。然后可以用
+`scope.uri`得到命名空间。代码创建里的XML元素要手动设置`prefix`和`scope`：
+
+{{{class="brush: scala"
+scala> val scope = new NamespaceBinding("svg", "http://www.w3.org/2000/svg", 
+     |       TopScope)
+scope: scala.xml.NamespaceBinding =  xmlns:svg="http://www.w3.org/2000/svg"
+
+scala> val attrs = Attribute(null, "width", "100", Attribute( 
+     |       null, "height", "100", Null))
+attrs: scala.xml.Attribute =  width="100" height="100"
+
+scala> val elem = Elem(null, "body", Null, TopScope, Elem(
+     |       "svg", "svg", attrs, scope))
+warning: there were 2 deprecation warning(s); re-run with -deprecation for details
+elem: scala.xml.Elem = <body><svg:svg width="100" height="100" 
+xmlns:svg="http://www.w3.org/2000/svg"/></body>
+}}}
 
 == XML的模式匹配 ==
 
@@ -1699,6 +1955,84 @@ XML的模式很像字面量，差别在于如果加入转义花括号，那么�
   scala> proc(<a/>)
   res22: String = It's an a: Array()
 }}}
+
+=== 只能处理单个节点 ===
+
+case语句中只能处理一个结点，下面的形式是不可以的：
+
+{{{class="brush: scala"
+case <p>{_*}</p><br /> => ...
+}}}
+
+=== 没有子结点 ===
+
+匹配可能属性，但不能有子节点的标签：
+
+{{{class="brush: scala"
+node match {
+	case <img/> => ...
+	...
+}
+}}}
+
+=== 只有一个子节点 ===
+
+匹配只有一个子节点：
+
+{{{class="brush: scala"
+	case <li>{_}</li> => doSth() // 非法
+}}}
+
+=== 多个子节点 ===
+
+匹配有多个子节点，如：
+
+{{{class="brush: xml"
+<li>An <em>important</em> item</li>
+}}}
+
+可用：
+
+{{{class="brush: scala"
+	case <li>{_*}</li> => doSth()
+}}}
+
+=== 绑定变量 ===
+
+用变量取得匹配的内容：
+
+{{{class="brush: scala"
+case <li>{child}</li> => child.text
+}}}
+
+匹配一个文本节点：
+
+{{{class="brush: scala"
+case <li>{Text(item)}</li> => item
+}}}
+
+=== 绑定节点序列到变量 ===
+
+绑定节点序列到变量：
+
+{{{class="brush: scala"
+case <li>{children @ _*}</li> => for (c <- children) yield c
+}}}
+
+=== 匹配属性 ===
+
+XML模式匹配不能有属性：
+
+{{{class="brush: scala"
+case <img alt="TODO"/> => doSth() // 非法
+}}}
+
+匹配属性要结合守卫模式：
+
+{{{class="brush: scala"
+case n @ <img/> if (n.attributes("alt").text == "TODO") => doSth()
+}}}
+
 
 要注意XML模式能很好地与for表达式一起工作，迭代XML结构树的某些部分而忽略其他部分
 。例如希望在下面的XML结构中路过记录之间的空白：
@@ -1766,6 +2100,116 @@ XML的模式很像字面量，差别在于如果加入转义花括号，那么�
 {{{class="brush: scala"
 (catalog \\ "cctherm").size
 }}}
+
+== 修改元素和属性 ==
+
+Scala中XML节点和节点序列都是不可变的，要`copy`方法编辑复本。`copy`方法有五个参数
+：
+
+* lable
+* attributes
+* child
+* prefix
+* scop
+
+不传值给参数会把原来的元素复制过来，也可以通过传名参数指定参数的值：
+
+{{{class="brush: scala"
+scala> val list = <ul><li>Fred</li><li>Wilma</li></ul>
+list: scala.xml.Elem = <ul><li>Fred</li><li>Wilma</li></ul>
+
+scala> val list2 = list.copy()
+list2: scala.xml.Elem = <ul><li>Fred</li><li>Wilma</li></ul>
+
+scala> val list2 = list.copy(label = "ol")
+list2: scala.xml.Elem = <ol><li>Fred</li><li>Wilma</li></ol>
+}}}
+
+添加子节点：
+
+{{{class="brush: scala"
+scala> list.copy(child = list.child ++ <li>Another item</li>)
+res0: scala.xml.Elem = <ul><li>Fred</li><li>Wilma</li><li>Another item</li></ul>
+}}}
+
+修改或添加属性用操作符`%`添加`Attribute`实例。`Attribute`的构造方法格式为：
+
+{{{class="brush: scala"
+Attribute(命名空间, 属性, 值, 额外的元数据列表)
+}}}
+
+{{{class="brush: scala"
+scala> import scala.xml._
+import scala.xml._
+
+scala> val image = <img src="hamster.jpg"/>
+image: scala.xml.Elem = <img src="hamster.jpg"/>
+
+scala> val image2 = image % Attribute(null, "alt", "An image of a hamster", Null)
+image2: scala.xml.Elem = <img alt="An image of a hamster" src="hamster.jpg"/>
+}}}
+
+注意：`scala.xml.Null`是一个空属性列表，不是`scala.Null`类型
+
+添加多个属性，放在最后一个参数里：
+
+{{{class="brush: scala"
+scala> val image3 = image % Attribute(null, "alt", "An image of a hamster",
+     |    Attribute(null, "alt", "An image of a hamster", Null))
+image3: scala.xml.Elem = <img alt="An image of a hamster" src="hamster.jpg"/>
+}}}
+
+同一个属性只能有一个值，新的值会覆盖前一个值。
+
+== 批量XML变化 ==
+
+`RuleTransformer`类批量重写符合指定条件的后代。把一个或多个`RewriteRule`实例应用
+到某个节点及其子节点。
+
+例如，把`ul`节点修改为`ol`，可以定义一个`RewriteRule`并重写`transform`方法：
+
+{{{class="brush: scala"
+scala> import scala.xml.transform._
+import scala.xml.transform._
+
+scala> val rule1 = new RewriteRule {
+     |   override def transform(n: Node) = n match {
+     |     case e @ <ul>{_*}</ul> => e.asInstanceOf[Elem].copy(label = "ol")
+     |     case _ => n
+     |   }
+     | }
+rule1: scala.xml.transform.RewriteRule = <function1>
+}}}
+
+应用：
+
+{{{class="brush: scala"
+scala> val root = <ul><li>item 1</li></ul>
+root: scala.xml.Elem = <ul><li>item 1</li></ul>
+
+scala> val transformed = new RuleTransformer(rule1).transform(root)
+transformed: Seq[scala.xml.Node] = List(<ol><li>item 1</li></ol>)
+}}}
+
+`RuleTransformer`的构造器中可以传入多个规则作为参数：
+
+{{{class="brush: scala"
+new RuleTransformer(rule1, rule2, rule3)
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
 
 
 
@@ -2197,12 +2641,14 @@ Scala中的`==`不能重写，因为在`Any`类中被定义为`final`的：
 
 重写`equals`方法是常常会出现的四种错误，在本节以后的部分会分别讨论：
 
-* 定义时方法签名写错了。
+* 定义时方法签名写错了，参数类型不是`Any`。
 * 只改了`equals`忘记改了`hashCode`。
 * 通过可变字段来定义`equals`方法。
 * 没有通过对等的关系来定义`equals`方法。
 
 === 陷阱1：方法签名错误 ===
+
+`equals`方法参数的类型一定要是是`Any`，不能是具体类。
 
 对于以下的点类，考虑怎么实现`equals`方法：
 
@@ -2252,7 +2698,7 @@ Scala中的`==`不能重写，因为在`Any`类中被定义为`final`的：
 `p1`等于`p2`，而且`p1`已经在`coll`里了，但是为什么程序判断`coll`里不包含`p2`呢？
 为了调查我们遮住一个参与比较的点的精确类开，然后再做以下操作：
 
-把`p2a`作为`p2`的别名，只不是类型是`Any`而不是`Point`，再用`p2a`而不是`p2`来比较
+把`p2a`作为`p2`的别名，只不过类型是`Any`而不是`Point`，再用`p2a`而不是`p2`来比较
 ：
 
 {{{class="brush: scala"

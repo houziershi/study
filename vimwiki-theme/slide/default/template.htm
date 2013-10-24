@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!doctype html>
+<html>
+<head>
+	<meta charset="%encoding%">
+	<title>%title%</title>
+
+	<link rel="stylesheet" href="../../vimwiki-theme/reveal.js/css/reveal.min.css">
+	<link rel="stylesheet" href="../../vimwiki-theme/slide/default/default.css" id="theme">
+	<!-- For syntax highlighting -->
+	<link rel="stylesheet" href="../../vimwiki-theme/reveal.js/lib/css/zenburn.css">
+	<!--[if lt IE 9]>
+	<script src="../../vimwiki-theme/reveal.js/lib/js/html5shiv.js"></script>
+	<![endif]-->
+
+	<!-- 
+	<link type="text/css" rel="stylesheet" href="%root_path%../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+	<link type="text/css" rel="stylesheet" href="%root_path%../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+	-->
+</head>
+<body>
+	<div class="reveal">
+		<div class="slides"> %content% </div>
+	</div>
+	<!-- 
+	<script type="text/javascript" src="%root_path%../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+	<script type="text/javascript" src="%root_path%../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+	<script type="text/javascript" src="%root_path%../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+	-->
+	<script src="../../vimwiki-theme/reveal.js/lib/js/head.min.js"></script>
+	<script src="../../vimwiki-theme/reveal.js/js/reveal.min.js"></script>
+	<script>
+		// Full list of configuration options available here:
+		// https://github.com/hakimel/reveal.js#configuration
+		Reveal.initialize({
+			controls: true,
+			progress: true,
+			history: true,
+			center: true,
+			rollingLinks: true,
+			keyboard: true,
+			overview: true,
+			// slide width
+			// slide height
+			// slide margin
+			// slide minimum scaling factor
+			maxScale: 1.00, // slide maximum scaling factor
+
+			theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+			transition: Reveal.getQueryHash().transition || 'cube', // default/cube/page/concave/zoom/linear/fade/none
+			transitionSpeed: 'default',
+
+			// Optional libraries used to extend on reveal.js
+			dependencies: [
+				{ src: '../../vimwiki-theme/reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+				{ src: '../../vimwiki-theme/reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+				{ src: '../../vimwiki-theme/reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+				{ src: '../../vimwiki-theme/reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+				{ src: '../../vimwiki-theme/reveal.js/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+				{ src: '../../vimwiki-theme/reveal.js/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+				// { src: './reveal.js/plugin/search/search.js', async: true, condition: function() { return !!document.body.classList; } }
+				// { src: './reveal.js/plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+			]
+		});
+	</script>
+</body>
+</html>
