@@ -387,36 +387,301 @@ Angular.js就会负责为你处理JSONP请求，将`JSON_CALLBACK`替换成一�
 </div>
 }}}
 
+== 指令属性 ==
 
-{{{class="brush: html" title=""
+目前为止，我们已提到过几次“指令属性”的概念，但从未深入探讨过它到底是什么。实际上
+，“指令属性”就是绑定在DOM元素上的函数，它可以调用方法、定义行为、绑定controller
+及$scope对象、操作DOM，等等等等。
+
+当浏览器启动、开始解析HTML（像平时一样）时，DOM元素上的指令属性就会跟其他属性
+一样被解析。
+
+当一个Angular.js应用启动，Angular编译器就会遍历DOM树（从有`ng-app`指令属性的那个
+DOM元素开始，如我们在本系列第一篇里所提过的），解析HTML，寻找这些指令属性函数。
+
+当在一个DOM元素上找到一个或多个这样的指令属性函数，它们就会被收集起来、排序，
+然后按照优先级顺序被执行。
+
+每个指令属性都有自己的优先级，在我们关于
+[[http://www.ng-newsletter.com/posts/directives.html|指令属性的专题文章里]]
+，你可以找到更深入的信息。
+
+Angular.js应用的动态性和响应能力，都要归功于指令属性。之前我们已经看过一些指令
+属性的用例，如`ng-model`让标题中的文本与输入框绑定：
+
+{{{class="brush: html" title="directives.html"
+<input ng-model="name" name="Name" placeholder="Enter your name"/>
+<h4>Your name: {{ name }}</h4>
+}}}
+
+`ng-model`指令属性，被用来将DOM文本输入框的值，跟controller里的`$scope model`
+绑定起来。具体的实现过程，是在这个值上绑定了一个`$watch`函数（类似JavaScript里的
+事件监听函数）。
+
+`$watch`函数（在使用时）运行在Angular.js的事件循环
+（即`$digest`循环）里，让Angular.js能够对DOM进行相应的更新。请关注我们关于
+`$digest`循环的高级文章！
+
+在Angular.js应用的开发中，我们用指令属性来将行为绑定到DOM上。指令属性的使用，是
+一个应用能否拥有动态性、响应能力的关键。
+
+=== 表达式简介 ===
+
+{{{class="brush: html" title="directives.html"
+{{ 表达式 }}
+}}}
+
+这个双大括号指令属性，使用`$watch()`函数，给括号内的表达式注册了一个监听器。正是
+这个`$watch`函数，让Angular.js能够实时自动更新view。
+
+要想理解指令属性的运作，我们必须先理解表达式，在之前的例子里我们已经见过表达式，
+例如`{{ person.name }}`和`{{ clock }}`。
+
+{{{class="brush: html" title="directives.html"
+{{ 8 + 1 }}                // 9
+{{ person }}               // {"name":"Ari Lerner"}
+{{ 10 * 3.3 | currency }}  // $33.00
+}}}
+
+最后的例子里`(10 * 3.3 | currency)`用了一个过滤器。本系列之后的部分，会深入介绍
+过滤器。
+
+表达式粗略来看有点像`eval(javascript)`的结果。它们会经过Angular.js的处理，从而
+拥有以下重要而独特的性质：
+
+* 所有表达式都在scope这个context里被执行，因此可以使用所有本地`$scope`中的变量。
+* 如果一个表达式的执行导致类型错误或引用错误，这些错误将不会被抛出。
+* 表达式里不允许任何控制函数流程的功能（如if/else等条件语句）
+* 表达式可接受一个或多个串联起来的过滤器。
+
+表达式都运行在调用它们的scope里，所以一个表达式可访问并操作其scope上的一切。由此
+，你可以使用表达式遍历其scope的属性（我们在`ng-repeat`中会看到这一应用）、调用
+scope里的函数，或者对scope中的变量进行数学运算。
+
+=== 常见指令属性 ===
+
+==== ng-init ====
+
+ng-init指令属性是一个在启动时运行的函数（在程序进入运行阶段之前）。它让我们能够
+在程序运行前设定初始变量的值：
+
+{{{class="brush: html" title="directives.html"
+<b ng-init='name = "Ari Lerner"'>Hello, {{ name }}</b>
+}}}
+
+==== ng-click ====
+
+ng-click指令属性给DOM元素注册了一个点击事件的监听器。当此DOM元素上有点击事件发生
+（即当此button或link被点击时），Angular.js就会执行表达式的内容，并相应地更新view
+。
+
+{{{class="brush: html" title="directives.html"
+<button ng-click="counter = counter + 1">Add one</button>
+Current counter: {{ counter }}
+}}}
+
+我们也可以用ng-click来调用在controller里写好并绑定在$scope上的函数，例如：
+	
+{{{class="brush: html" title="directives.html"
+<div ng-controller="MyController">
+	<button ng-click="sayHello()">Say hello</button>
+</div>
+}}}
+
+controller 里的函数:
+
+{{{class="brush: javascript" title="js/directives.js"
+app.controller('MyController', function($scope) {
+   $scope.sayHello = function() {
+     alert("hello!");
+   }
+ });
+}}}
+
+==== ng-show / ng-hide ====
+
+ng-show和ng-hide指令，根据赋予它们的表达式的值的真假性(truthy)，来显示和隐藏它们
+所属的那一部分DOM。
+
+我们在这里不会深入，但你应该熟悉JavaScript中变量值的`truthy`和`falsy`概念。
+
+{{{class="brush: html" title="directives.html"
+<button ng-init="shouldShow = true" ng-click="shouldShow = !shouldShow">
+	Flip the shouldShow variable
+</button>
+
+<div ng-show="shouldShow">
+  <h3>Showing {{ shouldShow }}</h3>
+</div> <div ng-hide="shouldShow">
+  <h3>Hiding {{ shouldShow }}</h3>
+</div>
+}}}
+
+==== ng-repeat ====
+
+ng-repeat指令遍历一个数据集合中的每个数据元素，加载HTML模版把数据渲染出来。被
+重复使用的模版元素，就是我们绑定了这个指令属性的DOM元素。每一个使用模版渲染的DOM
+元素都有自己的scope。
+
+在更多的解释之前，我们先看一个例子。假设我们的controller里有这样一个数据元素的
+数组：
+
+{{{class="brush: javascript" title="js/directives.js"
+$scope.roommates = [
+	{ name: 'Ari'},
+	{ name: 'Q'},
+	{ name: 'Sean'},
+	{ name: 'Anand'}
+];
 }}}
 
 
-{{{class="brush: html" title=""
+{{{class="brush: html" title="directives.html"
+<ul>
+	<li ng-repeat="person in roommates">{{ person.name }}</li>
+</ul>
 }}}
 
+对赋予ng-repeat的表达式稍作改动，我们还可以用它遍历一个由成对的key-value数据组成
+的集合。例如，假设我们有一个人名和他们最喜欢的颜色的数据集合：
 
-{{{class="brush: html" title=""
+{{{class="brush: javascript" title="js/directives.js"
+$scope.people = {
+   'Ari': 'orange',
+   'Q': 'purple',
+   'Sean': 'green'
+}
 }}}
 
+要遍历它，我们可以给ng-repeat指令属性赋予这个表达式: `(key, value) in object`:
 
-{{{class="brush: html" title=""
+{{{class="brush: html" title="directives.html"
+<ul>
+   <li ng-repeat="(name, color) in people">
+		{{ name }}'s favorite color is {{ color }}
+   </li>
+</ul>
 }}}
 
+=== 指令属性创建指南 ===
 
-{{{class="brush: html" title=""
+Angular.js提供的直接可用的指令属性并不多，但它让我们可以很容易地创建自己的指令
+属性。请到这里查看我们的
+[[http://www.ng-newsletter.com/posts/directives.html|指令属性创建指南]]
+
+=== 收音机应用实例 ===
+
+
+在上一篇中，我们的收音机应用只从NPR API取回了最新的音频节目列表：
+
+{{{class="brush: javascript" title=""
+$scope.programs = data.list.story;
 }}}
 
+现在我们学了遍历一个list的实现方法，可以在我们的收音机应用里，像刚才那样用
+ng-repeat来遍历这个节目列表了：
 
 {{{class="brush: html" title=""
+<ul id="programs_list" class="">
+   <li ng-repeat="program in programs">
+     <span class="large-12">{{ program.title.$text }}</span>
+   </li>
+</ul>
 }}}
 
+NPR API给我们的是一个有`title+$text`的列表，这个结构是NPR API所特有的，而不是
+Angular.js的。
+
+现在我们列出了节目和它们的标题，但还不能点击并播放它们。用ng-click我们可以给HTML
+元素加上一个点击功能：
 
 {{{class="brush: html" title=""
+<ul id="programs_list" class="">
+   <li ng-repeat="program in programs" ng-click="play(program)">
+     <span class="large-12">{{ program.title.$text }}</span>
+   </li>
+</ul>
 }}}
 
+通过这一步，我们把一个play动作函数绑定到了列表里的`<li>`DOM元素上。现在，我们在
+PlayerController里创建这个play动作函数，然后我们就有了一个功能完备的音频应用：
+
+{{{class="brush: javascript" title=""
+// format.mp4.$text是NPR API给我们的到这个音频mp4文件的路径
+$scope.play = function(program) {
+   if ($scope.playing) audio.pause();
+   var url = program.audio[0].format.mp4.$text;
+   audio.src = url;
+   audio.play();
+   // 储存播放器的状态为正在播放
+   $scope.playing = true;
+}
+}}}
+
+现在这个应用功能完备了，但是还不太好看。而且随着我们继续添加新功能，代码也会膨胀
+，变得难以管理。我们可以创建自己的指令属性，来帮助我们减少复杂性。
+
+想更多地学习自定义指令属性，可以看看我们
+[[http://www.ng-newsletter.com/posts/directives.html|深入探讨指令属性的文章]]
+
+创建自定义指令属性，我们使用`app`对象的`directive`方法：
+
+{{{class="brush: javascript" title=""
+app.directive('nprLink', function() {
+   return {
+     restrict: 'EA',
+     require: ['^ngModel'],
+     replace: true,
+     scope: {
+       ngModel: '=',
+       play: '&'
+     },
+     templateUrl: '/views/nprListItem.html',
+     link: function(scope, ele, attr) {
+       scope.duration = scope.ngModel.audio[0].duration.$text;
+     }
+   }
+});
+}}}
+
+我们不会逐个解释每个选项的意义，因为我们有一篇
+[[http://www.ng-newsletter.com/posts/directives.html|专门的深入文章]]
+来介绍它们。这里我们只需要明白，现在我们就能在HTML里使用这个自定义的指令属性了，
+它会将它所在的DOM元素替换为我们给定的`templateUrl`所指向的模版里的内容（在
+`/views/nprListItem`中）。
+
+现在，我们的主HTML文件可以保持整洁，而将用来渲染列表内容的view，创建在这个单独
+提取出来的模版文件里：
 
 {{{class="brush: html" title=""
+<div class="nprLink row" ng-click="play(ngModel)">
+   <span class="name large-8 columns">
+     <button class="large-2 small-2 playButton columns"><div class="triangle"></div></button>
+     <div class="large-10 small-10 columns">
+       <div class="row">
+         <span class="large-12">{{ ngModel.title.$text }}</span>
+       </div>
+       <div class="row">
+         <div class="small-1 columns"></div>
+         <div class="small-2 columns push-8"><a href="{{ ngModel.link[0].$text }}">Link</a></div>
+       </div>
+     </div>
+   </span>
+ </div>
+}}}
+
+注意我们在模版文件里用`ngModel`来指向之前的`program`数据，因为在创建自定义指令
+属性时，我们做了设置。
+
+现在，我们在主HTML文件里就不用再写上面那么多HTML，而只要简单地换上我们的自定义
+指令属性npr-link：
+
+{{{class="brush: html" title=""
+<ul id="programs_list" class="">
+   <li ng-repeat="program in programs">
+     <span npr-link play='play(program)' ng-model="program"></span>
+   </li>
+</ul>
 }}}
 
 

@@ -176,3 +176,7 @@ pidgin：[[pidgin]]
 = 吐槽 =
 
 [[Joke]]
+
+[[linus.said]]
+
+[[google.android]]

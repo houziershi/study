@@ -440,7 +440,7 @@ foldLeft[B](z: B)(op: (B, A) => B): B
 就上面的例子来说，`T`仅用在逆变点位置上，而`U`仅用于协变点的位置上。所以这个
 `Cat`类是协变的。
 
-== 类型变量的界定 ==
+== 泛型变量的界定 ==
 
 === 上界 ===
 
@@ -624,6 +624,7 @@ def append[U >: T](x: U) = new Queue(leading, x :: trailing)
 
 从技术角度来看，这里的情况发生了下界的翻转：类型参数`U`处于逆变点位置（1次翻转）
 ，而下界`U >: T`处于协变点的位置（两次翻转）。
+
 
 == 单例对象不能泛型 ==
 
@@ -1971,6 +1972,95 @@ scala> val chars: List[Char] = "xyz"
     }
   }
 }}}
+
+= 高级类型应用 =
+
+== 多重界定 ==
+
+=== 多重泛型界定 ===
+
+泛型变量可以同时有上界与下界：
+
+{{{class="brush: scala"
+T >: Lower <: Upper
+}}}
+
+虽然同时有多个上界或下界是不可以的，但可以要求一个类型实现多个特质：
+
+{{{class="brush: scala"
+T <: Comparable[T] with Serializable with Coneable
+}}}
+
+=== 多重视图界定 ===
+
+{{{class="brush: scala"
+T <% Comparable[T] <% String
+}}}
+
+=== 多重上下文界定 ===
+
+{{{class="brush: scala"
+T : Ordering : Manifest
+}}}
+
+== 类型约束 ==
+
+可用的约束有三种：
+
+* `T =:= U`：`T`是否等于`U`。
+* `T <:< U`：`T`是`U`的子类型。
+* `T <%< U`：`T`是否能被隐式转换为`U`。
+
+=== 定义只在特定条件下使用的方法 ===
+
+类型约束让程序员定义只有在特定条件下使用的方法。例：
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+
 
 
 
