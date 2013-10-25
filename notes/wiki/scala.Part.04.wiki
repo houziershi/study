@@ -2150,24 +2150,36 @@ Array("Hello", "Fred").corresponds(Array(5, 4))(_.length == _)
 * 确认了`A`与`B`，那`(A, B) => Boolean`就是`(String, Int) => Boolean`。
 
 
+=== 类型证明 ===
 
-
-
-{{{class="brush: scala"
-}}}
-
+如果`firstLast()`方法要返回一个对象的头和尾，最直接的逻辑是：
 
 {{{class="brush: scala"
+def firstLast[C](it: C) = (it.head, it.last)
 }}}
 
+但这样是错误的，因为不知道`it`的类型`C`是什么类型，很有可能它没有`head`与`last`
+方法。所以需要把`C`类型转为有`head`与`last`方法，比如`Iterable`特质。
 
 {{{class="brush: scala"
+def firstLast[A, C](it: C)(implicit ev: C <:< Iterable[A]) = (it.head, it.last)
 }}}
 
+`en`就是类型证明对象，它的类型是`C <:< Iterable[A]`，证明`C`是`Iterable`的子类。
+这里不知道`Iterable`成员的类型是啥，就用`Iterable[A]`来表示。
+
+但`=:=`、`<:<`、`<%<`其实是库中的类而不是语法特性，而且是带有隐式值的类。比如在
+`Predef`对象中`<:<`的定义：
 
 {{{class="brush: scala"
+abstract class <:<[-From, +To] extends Function1[From,To]
+
+object <:< {
+	implicit def conforms[A] = new (A <:< A) { def apply(x: A) = x }
+}
 }}}
 
+类型`<:<`继承自函数，参数`-From`逆变而返回值`+To`协变。
 
 {{{class="brush: scala"
 }}}

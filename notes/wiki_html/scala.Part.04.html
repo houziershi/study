@@ -133,6 +133,7 @@
 <ul>
 <li><a href="#toc_3.2.1">定义只在特定条件下使用的方法</a>
 <li><a href="#toc_3.2.2">改进类型推断</a>
+<li><a href="#toc_3.2.3">类型证明</a>
 </ul>
 </ul>
 <li><a href="#toc_4">抽象成员</a>
@@ -2978,24 +2979,46 @@ Array("Hello", "Fred").corresponds(Array(5, 4))(_.length == _)
 </ul>
 
 
+<h3 id="toc_3.2.3">类型证明</h3>
 
-
-
-<pre class="brush: scala">
-</pre>
-
-
-<pre class="brush: scala">
-</pre>
-
+<p>
+如果<code>firstLast()</code>方法要返回一个对象的头和尾，最直接的逻辑是：
+</p>
 
 <pre class="brush: scala">
+def firstLast[C](it: C) = (it.head, it.last)
 </pre>
 
+<p>
+但这样是错误的，因为不知道<code>it</code>的类型<code>C</code>是什么类型，很有可能它没有<code>head</code>与<code>last</code>
+方法。所以需要把<code>C</code>类型转为有<code>head</code>与<code>last</code>方法，比如<code>Iterable</code>特质。
+</p>
 
 <pre class="brush: scala">
+def firstLast[A, C](it: C)(implicit ev: C &lt;:&lt; Iterable[A]) = (it.head, it.last)
 </pre>
 
+<p>
+<code>en</code>就是类型证明对象，它的类型是<code>C &lt;:&lt; Iterable[A]</code>，证明<code>C</code>是<code>Iterable</code>的子类。
+这里不知道<code>Iterable</code>成员的类型是啥，就用<code>Iterable[A]</code>来表示。
+</p>
+
+<p>
+但<code>=:=</code>、<code>&lt;:&lt;</code>、<code>&lt;%&lt;</code>其实是库中的类而不是语法特性，而且是带有隐式值的类。比如在
+<code>Predef</code>对象中<code>&lt;:&lt;</code>的定义：
+</p>
+
+<pre class="brush: scala">
+abstract class &lt;:&lt;[-From, +To] extends Function1[From,To]
+
+object &lt;:&lt; {
+	implicit def conforms[A] = new (A &lt;:&lt; A) { def apply(x: A) = x }
+}
+</pre>
+
+<p>
+类型<code>&lt;:&lt;</code>继承自函数，参数<code>-From</code>逆变而返回值<code>+To</code>协变。
+</p>
 
 <pre class="brush: scala">
 </pre>
