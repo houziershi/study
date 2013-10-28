@@ -25,4934 +25,3297 @@
 <h1>Part IV</h1>
 <div class="toc">
 <ul>
-<li><a href="#toc_1">类型参数</a>
+<li><a href="#toc_1">使用列表</a>
 <ul>
-<li><a href="#toc_1.1">泛型</a>
+<li><a href="#toc_1.1">列表字面量</a>
+<li><a href="#toc_1.2">列表类型</a>
+<li><a href="#toc_1.3">构造列表</a>
+<li><a href="#toc_1.4">列表的基本操作</a>
+<li><a href="#toc_1.5">列表模式</a>
+<li><a href="#toc_1.6">List类的一阶方法</a>
 <ul>
-<li><a href="#toc_1.1.1">泛型类</a>
-<li><a href="#toc_1.1.2">泛型方法</a>
-<li><a href="#toc_1.1.3">泛型必须指定类型</a>
+<li><a href="#toc_1.6.1">连接列表</a>
+<li><a href="#toc_1.6.2">分治原则</a>
+<li><a href="#toc_1.6.3">列表长度</a>
+<li><a href="#toc_1.6.4">取头和尾</a>
+<li><a href="#toc_1.6.5">反转列表</a>
+<li><a href="#toc_1.6.6">前缀与后缀</a>
+<li><a href="#toc_1.6.7">取得指定元素</a>
+<li><a href="#toc_1.6.8">zip</a>
+<li><a href="#toc_1.6.9">toString 和 mkString</a>
+<li><a href="#toc_1.6.10">列表的转换</a>
+<li><a href="#toc_1.6.11">例：归并排序</a>
 </ul>
-<li><a href="#toc_1.2">类型变化</a>
+<li><a href="#toc_1.7">List类的高阶函数</a>
 <ul>
-<li><a href="#toc_1.2.1">协变</a>
+<li><a href="#toc_1.7.1">列表间映射</a>
+<li><a href="#toc_1.7.2">过滤</a>
+<li><a href="#toc_1.7.3">列表论断</a>
+<li><a href="#toc_1.7.4">reduce与folder</a>
 <ul>
-<li><a href="#toc_1.2.1.1">协变的问题</a>
-<li><a href="#toc_1.2.1.2">Java数组是协变的</a>
-<li><a href="#toc_1.2.1.3">Scala数组是非协变的</a>
+<li><a href="#toc_1.7.4.1">化简（reduce）</a>
+<li><a href="#toc_1.7.4.2">折叠（folder）</a>
 </ul>
-<li><a href="#toc_1.2.2">逆变</a>
-</ul>
-<li><a href="#toc_1.3">检查变化类型注解</a>
+<li><a href="#toc_1.7.5">应用场景</a>
 <ul>
-<li><a href="#toc_1.3.1">禁止方法参数协变</a>
-<li><a href="#toc_1.3.2">禁止可变的字段协变</a>
-<li><a href="#toc_1.3.3">型变类型反转</a>
-<li><a href="#toc_1.3.4">类型变化的验证规则</a>
+<li><a href="#toc_1.7.5.1">例子：统计字母出现次数</a>
+<li><a href="#toc_1.7.5.2">例子：使用折叠实现列表反转</a>
 </ul>
-<li><a href="#toc_1.4">泛型变量的界定</a>
-<ul>
-<li><a href="#toc_1.4.1">上界</a>
-<li><a href="#toc_1.4.2">下界</a>
+<li><a href="#toc_1.7.6">扫描（scan）</a>
+<li><a href="#toc_1.7.7">排序</a>
 </ul>
-<li><a href="#toc_1.5">单例对象不能泛型</a>
-<li><a href="#toc_1.6">类型通配符</a>
+<li><a href="#toc_1.8">List伴生对象的方法</a>
 <ul>
-<li><a href="#toc_1.6.1">模拟协变</a>
-<li><a href="#toc_1.6.2">模拟逆变</a>
-<li><a href="#toc_1.6.3">缺陷</a>
-<li><a href="#toc_1.6.4">存在类型</a>
+<li><a href="#toc_1.8.1">通过元素创建列表</a>
+<li><a href="#toc_1.8.2">按数值范围创建列表</a>
+<li><a href="#toc_1.8.3">创建重复元素的列表</a>
+<li><a href="#toc_1.8.4">解除Zip列表</a>
+<li><a href="#toc_1.8.5">连接列表</a>
+<li><a href="#toc_1.8.6">映射与测试配对</a>
 </ul>
-<li><a href="#toc_1.7">例：开发纯函数式队列</a>
-<ul>
-<li><a href="#toc_1.7.1">信息隐藏</a>
-<ul>
-<li><a href="#toc_1.7.1.1">私有构造器及工厂方法</a>
-<li><a href="#toc_1.7.1.2">可选方案：私有类</a>
+<li><a href="#toc_1.9">了解Scala的类型推断方法</a>
 </ul>
-<li><a href="#toc_1.7.2">对象私有数据</a>
-</ul>
-</ul>
-<li><a href="#toc_2">隐式转换</a>
+<li><a href="#toc_2">集合类型</a>
 <ul>
-<li><a href="#toc_2.1">隐式转换函数</a>
+<li><a href="#toc_2.1">概览</a>
+<li><a href="#toc_2.2">序列</a>
 <ul>
-<li><a href="#toc_2.1.1">隐式转换会引起类型变化</a>
+<li><a href="#toc_2.2.1">列表</a>
+<li><a href="#toc_2.2.2">列表缓存</a>
+<li><a href="#toc_2.2.3">数组</a>
 </ul>
-<li><a href="#toc_2.2">隐式操作规则</a>
+<li><a href="#toc_2.3">数组缓存</a>
 <ul>
-<li><a href="#toc_2.2.1">标记规则</a>
-<li><a href="#toc_2.2.2">作用域规则</a>
-<li><a href="#toc_2.2.3">无歧义规则</a>
-<li><a href="#toc_2.2.4">单一调用原则</a>
-<li><a href="#toc_2.2.5">显式操作先行规则</a>
-<li><a href="#toc_2.2.6">隐式转换的命名</a>
+<li><a href="#toc_2.3.1">队列</a>
+<li><a href="#toc_2.3.2">栈</a>
+<li><a href="#toc_2.3.3">字符串</a>
 </ul>
-<li><a href="#toc_2.3">隐式转换的应用场景</a>
+<li><a href="#toc_2.4">Set与Map</a>
 <ul>
-<li><a href="#toc_2.3.1">隐式转换为期望的类型</a>
-<li><a href="#toc_2.3.2">转换方法调用的接收者</a>
-<ul>
-<li><a href="#toc_2.3.2.1">与新类型的交互操作</a>
-<li><a href="#toc_2.3.2.2">模拟新的语法</a>
+<li><a href="#toc_2.4.1">使用Set</a>
+<li><a href="#toc_2.4.2">Map</a>
+<li><a href="#toc_2.4.3">默认的Set和Map</a>
+<li><a href="#toc_2.4.4">有序的集体和映射</a>
+<li><a href="#toc_2.4.5">同步的Set和Map</a>
 </ul>
-<li><a href="#toc_2.3.3">隐式参数与隐式值</a>
+<li><a href="#toc_2.5">可变与不可变类型的比较</a>
+<li><a href="#toc_2.6">初始化集合</a>
 <ul>
-<li><a href="#toc_2.3.3.1">声明参数列表为隐式</a>
-<li><a href="#toc_2.3.3.2">定义隐式值（实参的默认值）</a>
-<li><a href="#toc_2.3.3.3">implicit会作用于整个参数列表</a>
-<li><a href="#toc_2.3.3.4">参数类型不能相同</a>
-<li><a href="#toc_2.3.3.5">用隐式转换代替变化类型参数</a>
-<li><a href="#toc_2.3.3.6">隐式参数样式规则</a>
+<li><a href="#toc_2.6.1">数组与列表之间转换</a>
+<li><a href="#toc_2.6.2">Set与Map的可变与不可变互转</a>
+<li><a href="#toc_2.6.3">元组</a>
 </ul>
-</ul>
-<li><a href="#toc_2.4">视图界定</a>
+<li><a href="#toc_2.7">惰性求值</a>
 <ul>
-<li><a href="#toc_2.4.1">视图界定与上界</a>
-</ul>
-<li><a href="#toc_2.5">上下文界定</a>
+<li><a href="#toc_2.7.1">迭代器</a>
+<li><a href="#toc_2.7.2">流</a>
+<li><a href="#toc_2.7.3">用迭代器创建流</a>
+<li><a href="#toc_2.7.4">懒视图</a>
 <ul>
-<li><a href="#toc_2.5.1">Manifest上下文界定</a>
-</ul>
-<li><a href="#toc_2.6">SAM（单个抽象方法）</a>
-<li><a href="#toc_2.7">隐式操作的调试</a>
-<ul>
-<li><a href="#toc_2.7.1">没有对应的转换规则</a>
-<li><a href="#toc_2.7.2">被其他转换规则干扰</a>
+<li><a href="#toc_2.7.4.1">应用场景</a>
 </ul>
 </ul>
-<li><a href="#toc_3">高级类型应用</a>
+<li><a href="#toc_2.8">与Java集合互操作</a>
+<li><a href="#toc_2.9">线程安全的集合</a>
+<li><a href="#toc_2.10">并发操作集合</a>
 <ul>
-<li><a href="#toc_3.1">多重界定</a>
+<li><a href="#toc_2.10.1"><code>for-yield</code>循环按顺序执行</a>
+<li><a href="#toc_2.10.2">不要用共享变量</a>
+<li><a href="#toc_2.10.3">ParIterable接口</a>
+<li><a href="#toc_2.10.4">适用范围</a>
 <ul>
-<li><a href="#toc_3.1.1">多重泛型界定</a>
-<li><a href="#toc_3.1.2">多重视图界定</a>
-<li><a href="#toc_3.1.3">多重上下文界定</a>
+<li><a href="#toc_2.10.4.1">reduce</a>
+<li><a href="#toc_2.10.4.2">fold</a>
+<li><a href="#toc_2.10.4.3">aggregate</a>
 </ul>
-<li><a href="#toc_3.2">类型约束</a>
-<ul>
-<li><a href="#toc_3.2.1">定义只在特定条件下使用的方法</a>
-<li><a href="#toc_3.2.2">改进类型推断</a>
-<li><a href="#toc_3.2.3">类型证明</a>
-</ul>
-</ul>
-<li><a href="#toc_4">抽象成员</a>
-<ul>
-<li><a href="#toc_4.1">抽象成员的快速浏览</a>
-<li><a href="#toc_4.2">类型成员</a>
-<li><a href="#toc_4.3">抽象val</a>
-<li><a href="#toc_4.4">抽象var</a>
-<li><a href="#toc_4.5">初始化抽象val</a>
-<ul>
-<li><a href="#toc_4.5.1">预初始化字段</a>
-<ul>
-<li><a href="#toc_4.5.1.1">用于匿名类实例</a>
-<li><a href="#toc_4.5.1.2">用于类</a>
-</ul>
-<li><a href="#toc_4.5.2">懒加载val</a>
-</ul>
-<li><a href="#toc_4.6">抽象类型</a>
-<li><a href="#toc_4.7">路径依赖类型</a>
-<ul>
-<li><a href="#toc_4.7.1">与Java内部类的区别</a>
-</ul>
-<li><a href="#toc_4.8">枚举对象</a>
-<ul>
-<li><a href="#toc_4.8.1">枚举的类型</a>
-<li><a href="#toc_4.8.2">枚举值</a>
-</ul>
-<li><a href="#toc_4.9">案例研究：货币</a>
-</ul>
-<li><a href="#toc_5">有状态的对象</a>
-<ul>
-<li><a href="#toc_5.1">案例：离散事件模拟</a>
-<li><a href="#toc_5.2">为数字电路定制语言</a>
-<li><a href="#toc_5.3">Simulation API</a>
-<li><a href="#toc_5.4">电路模拟</a>
-<ul>
-<li><a href="#toc_5.4.1">Wire类</a>
-<li><a href="#toc_5.4.2">反转操作</a>
-<li><a href="#toc_5.4.3">与门和或门操作</a>
-<li><a href="#toc_5.4.4">模拟输出</a>
-<li><a href="#toc_5.4.5">运行模拟器</a>
 </ul>
 </ul>
 </ul>
 </div>
 
 
-<h1 id="toc_1">类型参数</h1>
 
-<h2 id="toc_1.1">泛型</h2>
+<h1 id="toc_1">使用列表</h1>
 
-<h3 id="toc_1.1.1">泛型类</h3>
+<h2 id="toc_1.1">列表字面量</h2>
 
 <p>
-Scala通过<code>[T]</code>指定类型参数：
+再简单回顾一下：
 </p>
 
 <pre class="brush: scala">
-scala&gt; class Pair[T, S](val first: T, val second: S)
-defined class Pair
+  val fruit = List("apples", "oranges", "pears")
+  val nums = List(1, 2, 3, 4)
+  val diag3 =
+    List(
+      List(1, 0, 0),
+      List(0, 1, 0),
+      List(0, 0, 1)
+    )
+  val empty = List()"brush: scala"
 </pre>
 
 <p>
-通过传入构造器的参数类型可以推导出生成的实例类型：
+注意列表是不可变的。
+</p>
+
+<h2 id="toc_1.2">列表类型</h2>
+
+<p>
+列表是同质化的（homogeneous），所有的成员都有相同的类型，中括号描述成员类型
+<code>List[T]</code>。
 </p>
 
 <pre class="brush: scala">
-scala&gt; val p = new Pair(42, "String")
-p: Pair[Int,String] = Pair@2f63e9a1
+val fruit: List[String] = List("apples", "oranges", "pears")
+  val nums: List[Int] = List(1, 2, 3, 4)
+  val diag3: List[List[Int]] =
+    List(
+      List(1, 0, 0),
+      List(0, 1, 0),
+      List(0, 0, 1)
+    )
+  val empty: List[Nothing] = List()
 </pre>
 
 <p>
-也可以手动指定实例类型：
+Scala里的列表类是协变的（covariant）。如果<code>S</code>是<code>T</code>的子类，那<code>List[S]</code>也是
+<code>List[T]</code>的子类。
+</p>
+
+<p>
+由于<code>Nothing</code>是所有类的子类，所以<code>List[Nothing]</code>是所有<code>List[T]</code>类型的子类：
 </p>
 
 <pre class="brush: scala">
-scala&gt; val p2 = new Pair[Any, Any](42, "String")
-p2: Pair[Any,Any] = Pair@7ffccfe3
+  // List() is also of type List[String]!
+  val xs: List[String] = List()
 </pre>
 
-<h3 id="toc_1.1.2">泛型方法</h3>
+<h2 id="toc_1.3">构造列表</h2>
 
 <p>
-方法的类型参数加了方法名后：
+<code>Nil</code>代表空列表；<code>::</code>（发音为“cons”），<code>elm::list</code>把单个元素<code>elm</code>接在列表<code>list</code>的前面。
 </p>
 
 <pre class="brush: scala">
-scala&gt; def getMiddle[T](a: Array[T]) = a(a.length /2)
-getMiddle: [T](a: Array[T])T
-</pre>
-
-<p>
-也能按参数类型可以推导出生成的实例类型：
-</p>
-
-<pre class="brush: scala">
-scala&gt; getMiddle(Array("Marry","had","a","little","lamb"))
-res0: String = a
-</pre>
-
-<p>
-或显式指定类型：
-</p>
-
-<pre class="brush: scala">
-scala&gt; val f = getMiddle[String] _
-f: Array[String] =&gt; String = &lt;function1&gt;
-
-scala&gt; f(Array("Marry","had","a","little","lamb"))
-res1: String = a
-</pre>
-
-<h3 id="toc_1.1.3">泛型必须指定类型</h3>
-
-<p>
-类型化参数能实现编写泛型类和特质。Scala中的泛型实例都应该写明具体类型（如：
-<code>Set[Int]</code>，<code>Set[Int]</code>） ，而不像Java中可以不带泛型类型。
-</p>
-
-<p>
-例如：对于容器类来说，成员的类型很重要：
-</p>
-
-<pre class="brush: scala">
-scala&gt; import java.util._
-import java.util._
-
-scala&gt; var la = new ArrayList[Any]
-la: java.util.ArrayList[Any] = []
-
-scala&gt; var lb = new ArrayList[String]
-lb: java.util.ArrayList[String] = []
-
-scala&gt; var ln = new ArrayList
-ln: java.util.ArrayList[Nothing] = []
+  val fruit = "apples" :: ("oranges" :: ("pears" :: Nil))
+  val nums = 1 :: (2 :: (3 :: (4 :: Nil)))
+  val diag3 = (1 :: (0 :: (0 :: Nil))) ::
+              (0 :: (1 :: (0 :: Nil))) ::
+              (0 :: (0 :: (1 :: Nil))) :: Nil
+  val empty = Nil
 </pre>
 
 <p>
-注意没有类型参数的类型被定为了<code>ArrayList[Nothing]</code>。而<code>Nothing</code>是所有类的子类，
-</p>
-
-<p>
-所以<code>Queue</code>特质创建实例时一定要加类型参数：
+由于操作符<code>::</code>是右结合性，所以：
 </p>
 
 <pre class="brush: scala">
-  scala&gt; def doesNotCompile(q: Queue) {}
-  &lt;console&gt;:5: error: trait Queue takes type parameters
-         def doesNotCompile(q: Queue) {}
+A :: (B :: C)
 </pre>
 
 <p>
-当然<code>AnyRef</code>也是一种类型：
+相当于：
 </p>
 
 <pre class="brush: scala">
-  scala&gt; def doesCompile(q: Queue[AnyRef]) {}
-  doesCompile: (Queue[AnyRef])Unit
+A :: B :: C
+</pre>
+
+<p>
+所以前一个例子中很多括号都可以省略：
+</p>
+
+<pre class="brush: scala">
+  val nums = 1 :: 2 :: 3 :: 4 :: Nil
+</pre>
+
+<h2 id="toc_1.4">列表的基本操作</h2>
+
+<p>
+三个基本操作：<code>head</code>、<code>tail</code>、<code>isEmpty</code>。
+</p>
+
+<pre class="brush: scala">
+  val fruit = "apples" :: "oranges" :: "pears" :: Nil
+  val nums = 1 :: 2 :: 3 :: 4 :: Nil
+  val diag3 = (1 :: (0 :: (0 :: Nil))) ::
+              (0 :: (1 :: (0 :: Nil))) ::
+              (0 :: (0 :: (1 :: Nil))) :: Nil
+  val empty = Nil
+  
+empty.isEmpty // true
+fruit.isEmpty // flase
+fruit.head // "apples"
+fruit.tail.head // "organges"
+diag3.head // List(1, 0, 0)
+</pre>
+
+<p>
+<code>head</code>与<code>tail</code>只能用在非空列表上，不然抛异常：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; Nil.head
+  java.util.NoSuchElementException: head of empty list
+</pre>
+
+<p>
+一个排序的例子，使用插入排序：对于非空列表<code>x::xs</code>可以先排序<code>xs</code>。然后再把<code>x</code>插入
+正确的地方：
+</p>
+
+<pre class="brush: scala">
+  def isort(xs: List[Int]): List[Int] =
+    if (xs.isEmpty) Nil
+    else insert(xs.head, isort(xs.tail))
+
+  def insert(x: Int, xs: List[Int]): List[Int] =
+    if (xs.isEmpty || x &lt;= xs.head) x :: xs
+    else xs.head :: insert(x, xs.tail)
 </pre>
 
 
-<h2 id="toc_1.2">类型变化</h2>
-
-<h3 id="toc_1.2.1">协变</h3>
+<h2 id="toc_1.5">列表模式</h2>
 
 <p>
-Scala的泛型在默认情况下是非协变的（nonvariant），即：对于泛型<code>Queue[T]</code>来说，
-<code>Queue[String]</code>不是<code>Queue[AnyRef]</code>的子类。
-</p>
-
-<p>
-但还是可以设置为协变（covariant）的。用<code>+</code>表明子类型化协变，即<code>Queue[String]</code>是
-<code>Queue[AnyRef]</code>的子类：
+简单的模式匹配，在确定长度的情况下取出列表里的元素：
 </p>
 
 <pre class="brush: scala">
-  trait Queue[+T] { ... }
+  scala&gt; val List(a, b, c) = fruit
+  a: String = apples
+  b: String = oranges
+  c: String = pears
 </pre>
 
-<h4 id="toc_1.2.1.1">协变的问题</h4>
-
 <p>
-Scala默认禁止协变是因为协变会产生问题：
-</p>
-
-<p>
-在纯函数式中，许多类型都是自然协变的。然而一旦引入了可变数据，情况就改变了。假设
-一个简单的只能读写一个元素的单元格（Cell）类型：
+不确定具体长度但知道至少有几个，或是只要取前几个：
 </p>
 
 <pre class="brush: scala">
-  class Cell[T](init: T) {
-    private[this] var current = init
-    def get = current
-    def set(x: T) { current = x }
+  scala&gt; val a :: b :: rest = fruit
+  a: String = apples
+  b: String = oranges
+  rest: List[String] = List(pears)
+</pre>
+
+<p>
+要注意这里的<code>List(...)</code>和<code>::</code>并不是之前定义的模式匹配。
+</p>
+
+<p>
+实际上<code>List(...)</code>是将来会在抽取器章节介绍的抽取器模式。
+</p>
+
+<p>
+“cos”模式<code>x::xs</code>是中缀操作符模式的特例，一般中缀表达式<code>p op q</code>视为<code>p.op(q)</code>。
+但是如果作为模式，其实是被当作构造器模式的<code>op(p,q)</code>形式。
+</p>
+
+<p>
+对应这个构造器模式的类是<code>scala.::</code>，它可以创建非空列表的类。还有一个<code>List</code>类的
+方法<code>::</code>用来实例化<code>scala.::</code>的对象。在将来的“实现列表”章节中会有进一步的描述。
+</p>
+
+<p>
+再次用模式匹配的方式来实现前面已经实现过的插入排序法：
+</p>
+
+<pre class="brush: scala">
+  def isort(xs: List[Int]): List[Int] = xs match {
+    case List() =&gt; List()
+    case x :: xs1 =&gt; insert(x, isort(xs1))
+  }
+
+  def insert(x: Int, xs: List[Int]): List[Int] = xs match {
+    case List() =&gt; List(x)
+    case y :: ys =&gt; if (x &lt;= y) x :: xs
+                    else y :: insert(x, ys)
   }
 </pre>
 
+<h2 id="toc_1.6">List类的一阶方法</h2>
+
 <p>
-上面的<code>Cell</code>是非协变的。我们现成假设它是协变的，声明为<code>Cell[+T]</code>并发送给Scala
-编译器。于是我们可以构建如下存在问题的语句序列：
+这里介绍的方法是List类的方法，所以是在独立的对象上被调用。
+</p>
+
+<h3 id="toc_1.6.1">连接列表</h3>
+
+<p>
+连接两个列表的操作符是<code>:::</code>，例如：
 </p>
 
 <pre class="brush: scala">
-  val c1 = new Cell[String]("abc")
+  scala&gt; List(1, 2) ::: List(3, 4, 5)
+  res0: List[Int] = List(1, 2, 3, 4, 5)
+
+  scala&gt; List() ::: List(1, 2, 3)
+  res1: List[Int] = List(1, 2, 3)
+
+  scala&gt; List(1, 2, 3) ::: List(4)
+  res2: List[Int] = List(1, 2, 3, 4)
 </pre>
 
 <p>
-建立<code>String</code>放在<code>c1</code>中，OK。
+它也是右结合的：
 </p>
 
 <pre class="brush: scala">
-  val c2: Cell[Any] = c1
+xs ::: ys ::: zs
 </pre>
 
 <p>
-<code>c2</code>类型是<code>Cell[Any]</code>，把<code>Cell[String]</code>的<code>c1</code>赋值给它也OK。
+相当于：
 </p>
 
 <pre class="brush: scala">
-  c2.set(1)
+xs ::: (ys ::: zs)
 </pre>
 
+
+<h3 id="toc_1.6.2">分治原则</h3>
+
 <p>
-<code>c2</code>是<code>Cell[Any]</code>，所以存数字也OK。
+手动实现一个连接列表的<code>append</code>方法。先用模式匹配把输入的列表拆分为更加简单的样本：
 </p>
 
 <pre class="brush: scala">
-  val s: String = c1.get
-</pre>
-
-<p>
-<code>c1</code>里的字符串，赋给字符串也OK。
-</p>
-
-<p>
-上面四行都OK，但是看看这四行放在一起，就出问题了：
-</p>
-
-<pre class="brush: scala">
-  val c1 = new Cell[String]("abc")
-  val c2: Cell[Any] = c1
-  c2.set(1)
-  val s: String = c1.get
-
-  Cell.scala:7: error: covariant type T occurs in
-  contravariant position in type T of value x
-     def set(x: T) = current = x
-                ^
-</pre>
-
-<p>
-这四行代码是要把整数<code>1</code>赋值给字符串<code>s</code>，这样破坏了类型声明。问题出在第二行，
-<code>Cell[Any]</code>和<code>Cell[String]</code>的类型的协变引起了错误。
-</p>
-
-<h4 id="toc_1.2.1.2">Java数组是协变的</h4>
-
-<p>
-以前面的<code>Cell</code>类为例与Java中的数组比较，Java中的数组是协变的：
-</p>
-
-<pre class="brush: scala">
-  // this is Java
-  String[] a1 = { "abc" };
-  Object[] a2 = a1;
-  a2[0] = new Integer(17);
-  String s = a1[0];
-</pre>
-
-<p>
-虽然可以通过编译，但是运行时第四行会报错。Java运行时保存了数组元素类型，在更新时
-对新元素进行合法性校验。类型错误时抛出<code>ArrayStore</code>：
-</p>
-
-<pre class="brush: scala">
-  Exception in thread "main" java.lang.ArrayStoreException:
-  java.lang.Integer
-          at JavaArrays.main(JavaArrays.java:8)
-</pre>
-
-<p>
-这样看起来好像即没有用又浪费性能。按James Gosling的说法是希望有一个通用处理数组
-的简单方法，如需要排序所有元素时：
-</p>
-
-<pre class="brush: scala">
-  void sort(Object[] a, Comparator cmp) { ... }
-</pre>
-
-<p>
-这样确保任意类型参数的数组都可以传入排序方法。当然后来Java有了泛型以后数组的协变
-不再有用了，为了向以前老版本兼容才留着。
-</p>
-
-<h4 id="toc_1.2.1.3">Scala数组是非协变的</h4>
-
-<p>
-Scala中数组是不可协变的：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val a1 = Array("abc")
-  a1: Array[java.lang.String] = Array(abc)
-
-  scala&gt; val a2: Array[Any] = a1
-  &lt;console&gt;:5: error: type mismatch;
-   found : Array[java.lang.String]
-   required: Array[Any]
-         val a2: Array[Any] = a1
-                              ^
-</pre>
-
-<p>
-但有时还是要数组能泛型手段与Java遗留方法进行交互。所以Scala允许把<code>T</code>类型的数组
-转型为任意<code>T</code>的超类的数组：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val a2: Array[Object] =
-       | a1.asInstanceOf[Array[Object]]
-  a2: Array[java.lang.Object] = Array(abc)
-</pre>
-
-
-<h3 id="toc_1.2.2">逆变</h3>
-
-<p>
-与协变相反的<code>[-T]</code>表示逆变。这样<code>MyClass[AnyRef]</code>可以作为<code>MyClass[String]</code>的子类
-。
-</p>
-
-<p>
-先看一个例子，出版物为父类类型，图书为子类。方法<code>getTitle</code>根据出版物取得它的标题
-：
-</p>
-
-<pre class="brush: scala">
-class Publication(val title: String)
-class Book(title: String) extends Publication(title)
-
-def getTitle(p: Publication): String = p.title
-</pre>
-
-<p>
-现在用一个单例对象<code>Library</code>来模拟图书馆，里面用一个<code>Set</code>来存放许多图。还有方法
-<code>printBookList()</code>输出所有图书的信息，这个方法需要有一个取得书名的函数作为参数，
-类型为<code>Book =&gt; AnyRef</code>：
-</p>
-
-<pre class="brush: scala,highlight:[9]">
-object Library {
-
-	val books: Set[Book] = Set(
-		new Book("Programming in Scala"),
-		new Book("Walden")
-	)
-
-	def printBookList(info: Book =&gt; AnyRef) {
-		for (book &lt;- books) println(info(book))
-	}
-}
-</pre>
-
-<p>
-<code>println()</code>方法会用到<code>toString()</code>方法，所以<code>info()</code>方法的返回类型只要是<code>AnyRef</code>
-的子类都可以。
-</p>
-
-<p>
-把之前的<code>getTitle()</code>方法作为实参传递给<code>printBookList()</code>打印出所有书的书名：
-</p>
-
-<pre class="brush: scala">
-scala&gt; Library.printBookList(getTitle)
-Programming in Scala
-Walden
-</pre>
-
-<p>
-从赋值的过程来说，每次赋值操作都是把子类赋值给超类：
-</p>
-
-<p>
-<img src="images/scala/19.03.png" />
-</p>
-
-<p>
-从函数参数的角度来看是把<code>Publication =&gt; String</code>赋值给<code>Book =&gt; AnyRef</code>。在这里：
-</p>
-
-<ul>
-<li>
-参数必须是<code>Book</code>的父类；
-
-<li>
-结果必须是<code>AnyRef</code>的子类；
-
-</ul>
-
-<table>
-<tr>
-<td>
-&nbsp;
-</td>
-<td>
-参数
-</td>
-<td>
-结果
-</td>
-</tr>
-<tr>
-<td>
-实参
-</td>
-<td>
-Publication
-</td>
-<td>
-String
-</td>
-</tr>
-<tr>
-<td>
-类型变化
-</td>
-<td>
-逆变
-</td>
-<td>
-协变
-</td>
-</tr>
-<tr>
-<td>
-形参
-</td>
-<td>
-Book
-</td>
-<td>
-AnyRef
-</td>
-</tr>
-</table>
-
-<p>
-Scala函数特质中对于<code>S =&gt; T</code>类型的函数会定义<code>trait Function[S, T]</code>，这时对参数<code>S</code>
-逆变而对结果<code>T</code>协变就是一种常用的策略：
-</p>
-
-<pre class="brush: scala">
-  trait Function1[-S, +T] {
-    def apply(x: S): T
-  }
-</pre>
-
-<p>
-对于两个类<code>U</code>和<code>T</code>。如果可以用<code>T</code>可以提供<code>U</code>要用到的功能，并且用起来限制更少，
-就可以假设<code>T</code>是<code>U</code>的子类（里氏原则：Liskov Substitution Principle，LSP）。
-</p>
-
-<pre class="brush: scala">
-  trait OutputChannel[-T] {
-    def write(x: T)
-  }
-</pre>
-
-<p>
-这种情况下<code>OutputChannel[AnyRef]</code>作为<code>OutputChannel[String]</code>的子类型。因为它们都
-支持<code>write</code>操作。而且<code>OutputChannel[AnyRef]</code>参数仅要<code>AnyRef</code>就可以，但
-<code>OutputChannel[String]</code>的参数一定要是<code>String</code>才行。
-</p>
-
-<p>
-所以把一个<code>OutputChannel[AnyRef]</code>赋给<code>OutputChannel[String]</code>是安全的，反过来把一个
-<code>OutputChannel[String]</code>赋给<code>OutputChannel[AnyRef]</code>却是不安全的。
-</p>
-
-
-<h2 id="toc_1.3">检查变化类型注解</h2>
-
-<h3 id="toc_1.3.1">禁止方法参数协变</h3>
-
-<p>
-前面已经看到了通常在函数的参数上采用逆变并在返回值上采用协变。概括地说：
-</p>
-
-<p>
-对于对象的消费适合逆变，而对产出的结果适用协变。如果一个对象同时消费和产出某值，
-则类型应该保持不变。
-</p>
-
-<p>
-只要把泛型类型作为方法类型参数，包含它的类或特质就有可能不能与这个类型参数一起
-协变。如形式：
-</p>
-
-<pre class="brush: scala">
-  class Queue[+T] {
-    def append(x: T) = 
-     ...
-  }
-</pre>
-
-<p>
-编译器会报错提示不能放在逆变位置：
-</p>
-
-<pre class="brush: scala">
-  Queues.scala:11: error: covariant type T occurs in
-  contravariant position in type T of value x
-    def append(x: T) = 
-               ^
-</pre>
-
-
-<p>
-把前面的队列改成协变的，然后创建指定元素类型为<code>Int</code>的队列。并重载<code>append</code>方法
-使其在添加前先输出它参数的平方根：
-</p>
-
-<pre class="brush: scala">
-  class StrangeIntQueue extends Queue[Int] {
-    override def append(x: Int) = {
-      println(Math.sqrt(x))
-      super.append(x)
+  def append[T](xs: List[T], ys: List[T]): List[T] =
+    xs match {
+      case List() =&gt; ys
+      case x :: xs1 =&gt; x :: append(xs1, ys)
     }
+</pre>
+
+<p>
+以上代码的让<code>ys</code>操持完整而<code>xs</code>被一步步拆分并放到<code>ys</code>前面，所以把注意集中到<code>xs</code>的
+模式匹配上。
+</p>
+
+<p>
+再通过递归调用层层套用剩下的元素，通过添加单个元素的方法<code>::</code>连接列表。
+</p>
+
+<h3 id="toc_1.6.3">列表长度</h3>
+
+<pre class="brush: scala">
+  scala&gt; List(1, 2, 3).length
+  res3: Int = 3
+</pre>
+
+<p>
+<code>length</code>方法要遍历整个列表来取得长度，所以判断是否为空一般用<code>isEmpty</code>而不用<code>length</code>。
+</p>
+
+<h3 id="toc_1.6.4">取头和尾</h3>
+
+<p>
+<code>head</code>取头，<code>tail</code>取的是除了第一个元素外剩下列表。这两个方法的运行时间是常量。
+</p>
+
+<p>
+<code>last</code>取尾，<code>init</code>取最后一个以外的列表。这两个方法会遍历整个列表。
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val abcde = List('a', 'b', 'c', 'd', 'e')
+  abcde: List[Char] = List(a, b, c, d, e)
+
+  scala&gt; abcde.last
+  res4: Char = e
+
+  scala&gt; abcde.init
+  res5: List[Char] = List(a, b, c, d)
+</pre>
+
+<p>
+对于空列表会抛异常
+</p>
+
+<pre class="brush: scala">
+  scala&gt; List().init
+  java.lang.UnsupportedOperationException: Nil.init
+   at scala.List.init(List.scala:544)
+   at ...
+
+  scala&gt; List().last
+  java.util.NoSuchElementException: Nil.last
+   at scala.List.last(List.scala:563)
+   at ...
+</pre>
+
+<h3 id="toc_1.6.5">反转列表</h3>
+
+<p>
+<code>reverse</code>是创建了一个新列表：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; abcde.reverse
+  res6: List[Char] = List(e, d, c, b, a)
+
+  scala&gt; abcde
+  res7: List[Char] = List(a, b, c, d, e)
+</pre>
+
+<p>
+一些简单的规律：
+</p>
+
+<pre class="brush: scala">
+xs.reverse.reverse equals xs
+
+xs.reverse.init equals xs.tail.reverse
+xs.reverse.tail equals xs.init.reverse
+xs.reverse.head equals xs.last
+xs.reverse.last equals xs.head
+</pre>
+
+<p>
+通过连接在尾部添加操作<code>:::</code>来实现反转：
+</p>
+
+<pre class="brush: scala">
+  def rev[T](xs: List[T]): List[T] = xs match {
+    case List() =&gt; xs
+    case x :: xs1 =&gt; rev(xs1) ::: List(x)
   }
 </pre>
 
 <p>
-假设上面的代码是协变的，对应以下的调用：
+当然这样的效率低得很，因为列表要一个一个遍历才能找到最后一个元素。
+</p>
+
+<h3 id="toc_1.6.6">前缀与后缀</h3>
+
+<p>
+<code>take</code>和<code>drop</code>取得或舍去列表指定长度个元素，长度超过时不会抛异常而是返回整个列表
+或空列表。
 </p>
 
 <pre class="brush: scala">
-  val x: Queue[Any] = new StrangeIntQueue
-  x.append("abc")
+  scala&gt; abcde take 2
+  res8: List[Char] = List(a, b)
+
+  scala&gt; abcde drop 2
+  res9: List[Char] = List(c, d, e)
 </pre>
 
 <p>
-上面的因为协变所以第一行是有效的，但第二行就有问题了，因为不能对字符串求平方根。
-</p>
-
-<h3 id="toc_1.3.2">禁止可变的字段协变</h3>
-
-<p>
-不要对可重新赋值的字段使用<code>+</code>的协变类型参数。如<code>var x:T</code>在Scala里被看作自带
-<code>getter</code>方法<code>def x:T</code>、<code>def x_= (y:T)</code>，所以将不是协变的。
+<code>splitAt</code>在指定位置拆分列表。
 </p>
 
 <pre class="brush: scala">
-class UserName[+T](var first: T, var second: T) // error
+xs splitAt n
+
+// equals
+
+(xs take n, xs drop n)
 </pre>
 
 <p>
-因为<code>first</code>与<code>second</code>会生成setter方法，而前面已经说过函数的参数处于逆变点：
+例：
 </p>
 
 <pre class="brush: scala">
-first_=(value: T)
+  scala&gt; abcde splitAt 2
+  res10: (List[Char], List[Char]) = (List(a, b),List(c, d, e))
 </pre>
 
-<h3 id="toc_1.3.3">型变类型反转</h3>
+<h3 id="toc_1.6.7">取得指定元素</h3>
 
 <p>
-如果函数的参数是函数，这个作为参数的函数型变是反转过来的：参数是协变面结果是
-逆变的。例如<code>Iterable[+A]</code>的<code>foldLeft</code>方法：
+通过索引取得指定元素：
 </p>
 
 <pre class="brush: scala">
-foldLeft[B](z: B)(op: (B, A) =&gt; B): B
-               -       +  +     -   +
-</pre>
+  scala&gt; abcde apply 2 // rare in Scala
+  res11: Char = c
 
-<h3 id="toc_1.3.4">类型变化的验证规则</h3>
-
-<p>
-类型声明中可能会用到类型参数的地方被分为协变点、逆变点、中立。编译器检查类的类型
-参数的每一个用法。
-</p>
-
-<ul>
-<li>
-<code>+</code>的类型参数只能被用在协变点上，
-
-<li>
-<code>-</code>的类型参数只能用在逆变点上。
-
-<li>
-没有变化的类型可以用于任何位置，所以它是唯一能有在中性位置上的类型参数。
-
-</ul>
-
-<p>
-<img src='images/scala/19.02.png' />
-</p>
-
-<p>
-编译器对位置分类是从类型声明开始进入更深的内嵌层。
-</p>
-
-<p>
-处于声明类最顶层（位置１）被划为协变点的位置。默认情况下内层位置（位置２）的分类
-会和外层一致。
-</p>
-
-<p>
-<img src='images/scala/19.01.01.png' />
-</p>
-
-<p>
-但总有例外：
-</p>
-
-<p>
-方法参数位置（位置３）是方法外部的位置的翻转类别，这里协变点转为逆变点，逆变点转
-为协变点，而中性位置仍然保持中性。
-</p>
-
-<p>
-<img src='images/scala/19.01.02.png' />
-</p>
-
-<p>
-方法的类型参数（位置４）的当前类别也会被翻转。
-</p>
-
-<p>
-<img src='images/scala/19.01.03.png' />
-</p>
-
-<p>
-而类型参数的位置，如<code>C[Arg]</code>中的<code>Arg</code>也有可能被翻转，这取决于对应类型参数的变化
-类型：
-</p>
-
-<ul>
-<li>
-如果<code>C</code>的类型参数标了<code>+</code>，那么类别不变；如果标了<code>-</code>，则当前类别被翻转；
-
-<li>
-如果<code>C</code>的类型参数没有变化型注解，那么当前类型将改为中性。
-
-</ul>
-
-<p>
-<img src='images/scala/19.01.04.png' />
-</p>
-
-<p>
-<img src='images/scala/19.01.05.png' />
-</p>
-
-<p>
-上面的类型定义中的若干位置变化弄被标了<code>+</code>或<code>-</code>：
-</p>
-
-<p>
-类型参数<code>W</code>与两个值参数<code>volume</code>和<code>listener</code>的位置都是逆变点。
-</p>
-
-<p>
-<img src='images/scala/19.01.png' />
-</p>
-
-<p>
-注意<code>meow</code>的结果类型<code>Cat[Cat[U, T], U]</code>，第一个<code>Cat[U, T]</code>参数的位置是逆变点。
-因为<code>Cat</code>的第一个类型参数<code>[T]</code>被标了<code>-</code>。这个参数中的类型<code>U</code>重新转为协变点（两次
-翻转），而参数中的类型<code>T</code>仍然是逆变点。
-</p>
-
-<p>
-总的来说：人脑想跟上变化型位置的变化是很困难的，所以Scala编译器自动来完成这项
-工作。计算机变化型过程中，编译器检查每个类型参数是否仅用于分类协变点确的位置上。
-</p>
-
-<p>
-就上面的例子来说，<code>T</code>仅用在逆变点位置上，而<code>U</code>仅用于协变点的位置上。所以这个
-<code>Cat</code>类是协变的。
-</p>
-
-<h2 id="toc_1.4">泛型变量的界定</h2>
-
-<h3 id="toc_1.4.1">上界</h3>
-
-<p>
-上界把类型变化的范围限制为某一个类的子类，这样保证具体绑定的类有基本的功能。格式
-为：<code>T &lt;: U</code>
-</p>
-
-<p>
-比如，<code>Ordered</code>特质实现排序的功能，那么以<code>Ordered</code>特质为上界保证得到的类是可以
-排序的。通过把<code>Ordered</code>特质混入到类中并实现抽象比较方法<code>Compare</code>就可以对实例进行
-比较：
-</p>
-
-<pre class="brush: scala">
-  class Person(val firstName: String, val lastName: String)
-      extends Ordered[Person] {
-
-    def compare(that: Person) = {
-      val lastNameComparison =
-        lastName.compareToIgnoreCase(that.lastName)
-      if (lastNameComparison != 0)
-        lastNameComparison
-      else
-        firstName.compareToIgnoreCase(that.firstName)
-    }
-
-    override def toString = firstName +" "+ lastName
-  }
+  scala&gt; abcde(2) // rare in Scala
+  res12: Char = c
 </pre>
 
 <p>
-这样<code>Person</code>就具有了比较的功能：
+<code>includes</code>方法取得所有的索引列表：
 </p>
 
 <pre class="brush: scala">
-  scala&gt; val robert = new Person("Robert", "Jones")
-  robert: Person = Robert Jones
+  scala&gt; abcde.indices
+  res13: List[Int] = List(0, 1, 2, 3, 4)
+</pre>
 
-  scala&gt; val sally = new Person("Sally", "Smith")
-  sally: Person = Sally Smith
+<h3 id="toc_1.6.8">zip</h3>
 
-  scala&gt; robert &lt; sally
-  res0: Boolean = true
+<p>
+把两个列表组成对偶（二元组），如果长度不一样会丢弃长出来的：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; abcde.indices zip abcde
+  res14: List[(Int, Char)] = List((0,a), (1,b), (2,c), (3,d),
+  (4,e))
+
+  scala&gt; val zipped = abcde zip List(1, 2, 3)
+  zipped: List[(Char, Int)] = List((a,1), (b,2), (c,3))
 </pre>
 
 <p>
-为了让列表类型混入到<code>Ordered</code>中，需要使用上界<code>T &lt;:  Ordered[T]</code>。表明类型必须是
-<code>Ordered</code>的子类型。比如<code>Person</code>，因为<code>Person</code>混入了<code>Ordered</code>特质：
+如果是为了把元素和索引zip在一起，用<code>zipWithIndex</code>方法更有效：
 </p>
 
 <pre class="brush: scala">
-  def orderedMergeSort[T &lt;: Ordered[T]](xs: List[T]): List[T] = {
+  scala&gt; abcde.zipWithIndex
+  res15: List[(Char, Int)] = List((a,0), (b,1), (c,2), (d,3), (e,4))
+</pre>
+
+<h3 id="toc_1.6.9">toString 和 mkString</h3>
+
+<p>
+<code>toString</code>简单字符串化列表
+</p>
+
+<pre class="brush: scala">
+  scala&gt; abcde.toString
+  res16: String = List(a, b, c, d, e)
+</pre>
+
+<p>
+<code>mkString</code>通过三个参数来指定前后包列表的字符和分隔列表元素的字符：
+</p>
+
+<pre class="brush: scala">
+xs mkString (pre, sep, post)
+</pre>
+
+<p>
+还有两个变体：
+</p>
+
+<pre class="brush: scala">
+xs mkString sep
+// equals
+xs mkString ("", sep, "")
+
+sx mkString
+// equals
+xs mkString ""
+</pre>
+
+<p>
+例子：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; abcde mkString ("[", ",", "]")
+  res17: String = [a,b,c,d,e]
+
+  scala&gt; abcde mkString ""
+  res18: String = abcde
+
+  scala&gt; abcde.mkString
+  res19: String = abcde
+
+  scala&gt; abcde mkString ("List(", ", ", ")")
+  res20: String = List(a, b, c, d, e)
+</pre>
+
+<p>
+还有一个<code>addSting</code>变体让结果添加到<code>StringBuilder</code>中，而不是作为结果返回：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val buf = new StringBuilder
+  buf: StringBuilder =
+
+  scala&gt; abcde addString (buf, "(", ";", ")")
+  res21: StringBuilder = (a;b;c;d;e)
+</pre>
+
+
+<h3 id="toc_1.6.10">列表的转换</h3>
+
+<p>
+<code>List</code>类的<code>toArray</code>和<code>Array</code>类的<code>toList</code>，列表和数组转来转去。
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val arr = abcde.toArray
+  arr: Array[Char] = Array(a, b, c, d, e)
+
+  scala&gt; arr.toString
+  res22: String = Array(a, b, c, d, e)
+
+  scala&gt; arr.toList
+  res23: List[Char] = List(a, b, c, d, e)
+</pre>
+
+<p>
+<code>copyToArray</code>把列表复制到数组中一会连续的空间内：
+</p>
+
+<pre class="brush: scala">
+  xs copyToArray (arr, start)
+</pre>
+
+<p>
+<code>start</code>为开始的位置。当然还要保证数组中有足够的空间。例子：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val arr2 = new Array[Int](10)
+  arr2: Array[Int] = Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+  scala&gt; List(1, 2, 3) copyToArray (arr2, 3)
+
+  scala&gt; arr2.toString
+  res25: String = Array(0, 0, 0, 1, 2, 3, 0, 0, 0, 0)
+</pre>
+
+<p>
+<code>elements</code>提供了通过枚举器访问列表元素的方法：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val it = abcde.elements
+  it: Iterator[Char] = non-empty iterator
+
+  scala&gt; it.next
+  res26: Char = a
+
+  scala&gt; it.next
+  res27: Char = b
+</pre>
+
+<h3 id="toc_1.6.11">例：归并排序</h3>
+
+<p>
+归并排序：如果列表长度为0或是1，就算是已经排序好的，直接返回。长度大于1的列表
+可以拆成两个长度接近的，每个再递归调用完成排序，再把返回的两个排序好的列表合并。
+</p>
+
+<p>
+函数的实现用到了柯里化，接收元素之间的比较大小的函数和要排序的列表：
+</p>
+
+<pre class="brush: scala">
+  def msort[T](less: (T, T) =&gt; Boolean)
+      (xs: List[T]): List[T] = {
+
     def merge(xs: List[T], ys: List[T]): List[T] =
       (xs, ys) match {
         case (Nil, _) =&gt; ys
         case (_, Nil) =&gt; xs
         case (x :: xs1, y :: ys1) =&gt;
-          if (x &lt; y) x :: merge(xs1, ys)
+          if (less(x, y)) x :: merge(xs1, ys)
           else y :: merge(xs, ys1)
       }
+
     val n = xs.length / 2
     if (n == 0) xs
     else {
       val (ys, zs) = xs splitAt n
-      merge(orderedMergeSort(ys), orderedMergeSort(zs))
+      merge(msort(less)(ys), msort(less)(zs))
     }
   }
 </pre>
 
 <p>
-使用：
+使用的方法：
 </p>
 
 <pre class="brush: scala">
-  scala&gt; val people = List(
-       |   new Person("Larry", "Wall"),
-       |   new Person("Anders", "Hejlsberg"),
-       |   new Person("Guido", "van Rossum"),
-       |   new Person("Alan", "Kay"),
-       |   new Person("Yukihiro", "Matsumoto")
+  scala&gt; msort((x: Int, y: Int) =&gt; x &lt; y)(List(5, 7, 1, 3))
+  res28: List[Int] = List(1, 3, 5, 7)
+</pre>
+
+<p>
+作为一个柯里化的例子，可以用下划线代表末指定的参数列表：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val intSort = msort((x: Int, y: Int) =&gt; x &lt; y) _
+  intSort: (List[Int]) =&gt; List[Int] = &lt;function&gt;
+</pre>
+
+<p>
+如果要改成倒序排序的话，只要换个比较函数：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val reverseIntSort = msort((x: Int, y: Int) =&gt; x &gt; y) _
+  reverseIntSort: (List[Int]) =&gt; List[Int] = &lt;function&gt;
+</pre>
+
+<p>
+上面的<code>intSort</code>和<code>reverseIntSort</code>都已经绑定了排序的方法，只要传入待排序的列表：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val mixedInts = List(4, 1, 9, 0, 5, 8, 3, 6, 2, 7)
+  mixedInts: List[Int] = List(4, 1, 9, 0, 5, 8, 3, 6, 2, 7)
+
+  scala&gt; intSort(mixedInts)
+  res0: List[Int] = List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+
+  scala&gt; reverseIntSort(mixedInts)
+  res1: List[Int] = List(9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
+</pre>
+
+<h2 id="toc_1.7">List类的高阶函数</h2>
+
+<p>
+这里介绍的方法是List类的方法，所以是在独立的对象上被调用。
+</p>
+
+<p>
+Scala中以操作符形式出现的高阶函数更加简洁地处理Java中用循环来处理的问题。
+</p>
+
+<h3 id="toc_1.7.1">列表间映射</h3>
+
+<p>
+<code>xs map fun</code>把列表中每个元素用方法处理过后生成新列表。<code>xs</code>代表<code>List[T]</code>；<code>fun</code>
+代表<code>T =&gt; U</code>的函数。
+</p>
+
+<pre class="brush: scala">
+  scala&gt; List(1, 2, 3) map (_ + 1)
+  res29: List[Int] = List(2, 3, 4)
+
+  scala&gt; val words = List("the", "quick", "brown", "fox")
+  words: List[java.lang.String] = List(the, quick, brown, fox)
+ 
+  scala&gt; words map (_.length)
+  res30: List[Int] = List(3, 5, 5, 3)
+
+  scala&gt; words map (_.toList.reverse.mkString)
+  res31: List[String] = List(eht, kciuq, nworb, xof)
+</pre>
+
+<p>
+<code>flatMap</code>和<code>map</code>类似，但它把所有元素连成一个列表：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; words map (_.toList)
+  res32: List[List[Char]] = List(List(t, h, e), List(q, u, i,
+      c, k), List(b, r, o, w, n), List(f, o, x))
+
+  scala&gt; words flatMap (_.toList)
+  res33: List[Char] = List(t, h, e, q, u, i, c, k, b, r, o, w,
+      n, f, o, x)
+</pre>
+
+<p>
+<code>flatMap</code>和<code>map</code>合作建立出所有<code>1 &lt;= j &lt; i &lt; 5</code>的<code>(i, j)</code>对偶：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; List.range(1, 5) flatMap (
+       | i =&gt; List.range(1, i) map (j =&gt; (i, j))
        | )
-  people: List[Person] = List(Larry Wall, Anders Hejlsberg,
-    Guido van Rossum, Alan Kay, Yukihiro Matsumoto)
-
-
-  scala&gt; val sortedPeople = orderedMergeSort(people)
-  sortedPeople: List[Person] = List(Anders Hejlsberg, Alan Kay,
-    Yukihiro Matsumoto, Guido van Rossum, Larry Wall)
+  res34: List[(Int, Int)] = List((2,1), (3,1), (3,2), (4,1),
+      (4,2), (4,3))
 </pre>
 
 <p>
-以上的解决方案还是有限制，比如不能适应整数列表。因为<code>Int</code>不是<code>Ordered[Int]</code>的
-子类：
+上面的代码<code>List.range(1, 5)</code>产生从1到5的整数列表。对于其中的每项<code>i</code>再产生1到<code>i</code>
+的列表。<code>map</code>产生<code>(i, j)</code>元组列表，这里的<code>j&lt;i</code>。<code>flatMpa</code>对每个1到5之间的<code>i</code>产生
+列表，并连接所有列表得到结果。
+</p>
+
+<p>
+等同于以下循环结构：
 </p>
 
 <pre class="brush: scala">
-  scala&gt; val wontCompile = orderedMergeSort(List(3, 2, 1))
-  &lt;console&gt;:5: error: inferred type arguments [Int] do
-     not conform to method orderedMergeSort's type
-       parameter bounds [T &lt;: Ordered[T]]
-         val wontCompile = orderedMergeSort(List(3, 2, 1))
-                           ^
+  for (i &lt;- List.range(1, 5); j &lt;- List.range(1, i)) yield (i, j)
 </pre>
 
 <p>
-在以后的“隐式类型转换和参数”的“视图界定”一节中介绍通过采用隐式参数与检查约束来
-实现更加通用的方案。
-</p>
-
-<h3 id="toc_1.4.2">下界</h3>
-
-<p>
-下界限制协变的类型必须为指定类型的超类，格式：<code>U &gt;: T</code>。作为是为了在参数位置实现
-协变。例如：
-</p>
-
-<p>
-<code>Pair</code>类型是一个对偶，因为两个成员是不可变的，所以可以协变:
+<code>foreach</code>没有返回结果（或返回<code>Unit</code>）。如下对<code>sum</code>变量累加，但是没有返回值：
 </p>
 
 <pre class="brush: scala">
-class Pair[+T](val first: T, val second: T)
+  scala&gt; var sum = 0
+  sum: Int = 0
+
+  scala&gt; List(1, 2, 3, 4, 5) foreach (sum += _)
+
+  scala&gt; sum
+  res36: Int = 15
+</pre>
+
+<h3 id="toc_1.7.2">过滤</h3>
+
+<p>
+<code>xs filter p</code>，<code>xs</code>代表<code>List[T]</code>，<code>p</code>代表<code>T =&gt; Boolean</code>形式的函数。返回符合的结果列表：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; List(1, 2, 3, 4, 5) filter (_ % 2 == 0)
+  res37: List[Int] = List(2, 4)
+
+  scala&gt; words filter (_.length == 3)
+  res38: List[java.lang.String] = List(the, fox)
 </pre>
 
 <p>
-添加一个替换第一个元素的方法：
+<code>partition</code>方法返回的是所有符合的元素和所有不符合的元素两个列表对。
 </p>
 
 <pre class="brush: scala">
-class Pair[+T](val first: T, val second: T) {
-	def replaceFirst(newFirst: T) = new Pair[T](newFirst, second) // error
+xs partition p
+// equals
+( xs filter p , xs filter (!p(_)) )
+
+</pre>
+
+<p>
+例：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; List(1, 2, 3, 4, 5) partition (_ % 2 == 0)
+  res39: (List[Int], List[Int]) = (List(2, 4),List(1, 3, 5))
+</pre>
+
+<p>
+<code>find</code>方法只返回第一个符合的元素，一个都不符合返回<code>None</code>：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; List(1, 2, 3, 4, 5) find (_ % 2 == 0)
+  res40: Option[Int] = Some(2)
+
+  scala&gt; List(1, 2, 3, 4, 5) find (_ &lt;= 0)
+  res41: Option[Int] = None
+</pre>
+
+<p>
+<code>takeWhile</code>不断累积符合的结果直到遇到不符合的；<code>dropWhile</code>不断丢弃不符的元素直到
+遇到符合的。
+</p>
+
+<pre class="brush: scala">
+  scala&gt; List(1, 2, 3, -4, 5) takeWhile (_ &gt; 0)
+  res42: List[Int] = List(1, 2, 3)
+
+  scala&gt; words dropWhile (_ startsWith "t")
+  res43: List[java.lang.String] = List(quick, brown, fox)
+</pre>
+
+<p>
+<code>span</code>方法组合了<code>takeWhile</code>和<code>dropWhile</code>返回一对列表，就像是<code>splitAt</code>组合了
+<code>take</code>和<code>drop</code>一样。
+</p>
+
+<pre class="brush: scala">
+xs span p
+// equals
+(xs takeWhile p , xs dropWhile p)
+</pre>
+
+<p>
+和<code>split</code>一样，<code>span</code>避免对列表的二次访问：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; List(1, 2, 3, -4, 5) span (_ &gt; 0)
+  res44: (List[Int], List[Int]) = (List(1, 2, 3),List(-4, 5))
+</pre>
+
+<h3 id="toc_1.7.3">列表论断</h3>
+
+<p>
+<code>xs forall p</code>全部符合，<code>xs exits p</code>存在符合的元素。
+</p>
+
+<pre class="brush: scala">
+  scala&gt; def hasZeroRow(m: List[List[Int]]) =
+       | m exists (row =&gt; row forall (_ == 0))
+  hasZeroRow: (List[List[Int]])Boolean
+
+  scala&gt; hasZeroRow(diag3)
+  res45: Boolean = false
+</pre>
+
+<h3 id="toc_1.7.4">reduce与folder</h3>
+
+<h4 id="toc_1.7.4.1">化简（reduce）</h4>
+
+<p>
+<code>reduceLeft</code>操作：
+</p>
+
+<pre class="brush: scala">
+List(1, 2, 3, 4).reduceLeft(_ + _)
+// 相当于
+((1 + 2) + 3) + 4
+</pre>
+
+<p>
+<code>reduceRight</code>操作：
+</p>
+
+<pre class="brush: scala">
+List(1, 2, 3, 4).reduceRight(_ + _)
+// 相当于
+((4 + 3) + 2) + 1
+</pre>
+
+<h4 id="toc_1.7.4.2">折叠（folder）</h4>
+
+<p>
+左折叠操作符<code>/:</code>，格式为：<code>(z /: xs) (op)</code>。其中<code>z</code>为开始值，<code>xs</code>为列表，<code>op</code>为二元操作。
+</p>
+
+<pre class="brush: scala">
+(z /: List(a, b, c)) (op)
+// equals
+op(op(op(z,a), b), c)
+</pre>
+
+<p>
+用树表示：
+</p>
+
+<pre class="brush: scala">
+      op
+     / \
+    op  c
+   / \
+  op  b
+ / \
+z   a
+</pre>
+
+<p>
+举例：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; def sum(xs: List[Int]): Int = (0 /: xs) (_ + _)
+  sum: (List[Int])Int
+  
+  scala&gt; sum(List(1, 2, 3)) // equals 0 + 1 + 2 + 3
+  res1: Int = 6
+
+  scala&gt; def product(xs: List[Int]): Int = (1 /: xs) (_ * _)
+  product: (List[Int])Int
+  
+  scala&gt; product(List(1, 2, 3)) // equals 1 * 1 * 2 * 3
+  res2: Int = 6
+</pre>
+
+<p>
+用空格连接所有单词：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; ("" /: words) (_ +" "+ _)
+  res46: java.lang.String = the quick brown fox
+</pre>
+
+<p>
+头上多了一个空格，这样去掉它：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; (words.head /: words.tail) (_ +" "+ _)
+  res47: java.lang.String = the quick brown fox
+</pre>
+
+<p>
+相对的还有右倾斜操作树<code>:\</code>：
+</p>
+
+<pre class="brush: scala">
+(List(a, b, c) :\ z) (op)
+// equals
+op(a, op(b, op(c, z)))
+</pre>
+
+<p>
+对于组合操作来说，左右折叠是等价的，但效率上有差异。下面两个把元素连接在一起的
+方法：
+</p>
+
+<pre class="brush: scala">
+  def flattenLeft[T](xss: List[List[T]]) =
+      (List[T]() /: xss) (_ ::: _)
+
+  def flattenRight[T](xss: List[List[T]]) =
+      (xss :\ List[T]()) (_ ::: _)
+
+</pre>
+
+<p>
+采用右折叠的<code>flattenLeft</code>需要复制第一个元素列表<code>xss.head</code>一共<code>xss.length-1</code>次，
+所以效率差一些。
+</p>
+
+<p>
+注意这里两个版本的实现都要对作为折叠开始值的空列表做类型标注。这是由Scala类型
+推断的局限性无法推断出正确的类型。不标注的话会有以下错误：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; def flattenRight[T](xss: List[List[T]]) =
+       | (xss :\ List()) (_ ::: _)
+  &lt;console&gt;:15: error: type mismatch;
+   found : List[T]
+   required: List[Nothing]
+             (xss :\ List()) (_ ::: _)
+                                ^
+</pre>
+
+<p>
+在以后的“实现列表”章节中讨论类型推断失败的原因。
+</p>
+
+<p>
+如果觉得<code>/:</code>和<code>:\</code>看起来不清楚，可以用List提供的<code>foldLeft</code>和<code>foldRight</code>方法代替
+。比如下面这个查找最大元素的方法：
+</p>
+
+<pre class="brush: scala">
+scala&gt; def findMax(l:List[Int]) = {
+     | l.foldLeft(Integer.MIN_VALUE) {Math.max}
+     | }
+findMax: (l: List[Int])Int
+
+scala&gt; findMax(List(-77,99,-3,18,7,21))
+res0: Int = 99
+</pre>
+
+<h3 id="toc_1.7.5">应用场景</h3>
+
+<p>
+reduce与folder更加适合：“两两操作”的结果“继承”到“下一个元素”。
+</p>
+
+<h4 id="toc_1.7.5.1">例子：统计字母出现次数</h4>
+
+<pre class="brush: scala">
+(Map[Char, Int]() /: "Mississippi") {
+  (m, c) =&gt; m + (c -&gt; (m.getOrElse(c, 0) + 1))
 }
+
+res1: scala.collection.immutable.Map[Char,Int] = 
+					Map(M -&gt; 1, i -&gt; 4, s -&gt; 4, p -&gt; 2)
+</pre>
+
+<h4 id="toc_1.7.5.2">例子：使用折叠实现列表反转</h4>
+
+<pre class="brush: scala">
+def reverseLeft[T](xs: List[T]) = (startvalue /: xs) (operation)
 </pre>
 
 <p>
-报错是因为协变类型<code>T</code>出现在了逆变点上。但实际上这个方法不会修改原来的对偶，因为
-它返回的是一个新的实例。解决方案是给方法加上一个新的类型参数：
+为了写出正确的<code>startvalue</code>和<code>operation</code>，从可以出现的最小的列表<code>List()</code>开始推导：
 </p>
 
 <pre class="brush: scala">
-	def replaceFirst[R &gt;: T](newFirst: R) = new Pair[R](newFirst, second) // error
+List()
+// equals
+reverseLeft(List())
+// equals
+(startvalue /: List()) (operation)
+// equals
+startvalue
 </pre>
 
 <p>
-这样就把该方法的类型参数变成了另一个类型<code>R</code>的泛型。因为<code>R</code>没有类型变化，所以可以
-放置在逆变点。
-</p>
-
-<p>
-结论：
-</p>
-
-<p>
-因为在成员方法的参数是不能协变的（逆变点），所以不能用<code>T+</code>类型的参数，只能用超类
-<code>U</code>。方法的返回类型也成了<code>U</code>。形式为：
+所以<code>startvalue</code>一定是<code>List()</code>。再代入推导<code>operation</code>：
 </p>
 
 <pre class="brush: scala">
-  class MyClass[+T] {
+List(x)
+// equals
+reverseLeft(List(x))
+// equals
+(startvalue /: List(x)) (operation)
+// equals
+operation(List(), x)
+// equals
+x :: List()
+</pre>
 
-    def func01[U &gt;: T](x: U): U = { ... }
+<p>
+所以具体实现为：
+</p>
 
+<pre class="brush: scala">
+  def reverseLeft[T](xs: List[T]) =
+    (List[T]() /: xs) {(ys, y) =&gt; y :: ys}
+</pre>
+
+<h3 id="toc_1.7.6">扫描（scan）</h3>
+
+<p>
+<code>scanLeft</code>和<code>scanRight</code>是把<code>folder</code>和<code>map</code>操作结合在一起。返回的结果是包含所有
+中间结果的集合：
+</p>
+
+<pre class="brush: scala">
+
+scala&gt; (1 to 10).scanLeft(0)(_ + _)
+res2: scala.collection.immutable.IndexedSeq[Int] = 
+		Vector(0, 1, 3, 6, 10, 15, 21, 28, 36, 45, 55)
+</pre>
+
+<h3 id="toc_1.7.7">排序</h3>
+
+<p>
+<code>xs sort before</code>，<code>xs</code>是列表，<code>before</code>是比较元素<code>x</code>是否在<code>y</code>前面的方法。
+</p>
+
+<pre class="brush: scala">
+  scala&gt; List(1, -3, 4, 2, 6) sort (_ &lt; _)
+  res48: List[Int] = List(-3, 1, 2, 4, 6)
+
+  scala&gt; words sort (_.length &gt; _.length)
+  res49: List[java.lang.String] = List(quick, brown, fox, the)
+</pre>
+
+<p>
+注意前面还提到过一个<code>msort</code>方法，那个是定义在列表外的。<code>sort</code>是List类的方法。
+</p>
+
+<p>
+<code>sortWith</code>排序：
+</p>
+
+<pre class="brush: scala">
+scala&gt; "Mary has a little lamb".split(" ").sortWith(_.length &lt; _.length)
+res0: Array[String] = Array(a, has, Mary, lamb, little)
+</pre>
+
+<h2 id="toc_1.8">List伴生对象的方法</h2>
+
+<p>
+下面介绍的方法是伴生对象<code>scala.List</code>的，创建列表的工厂方法和特定类型列表的操作。
+</p>
+
+<h3 id="toc_1.8.1">通过元素创建列表</h3>
+
+<p>
+<code>apply</code>方法：
+</p>
+
+<pre class="brush: scala">
+List(1, 2, 3)
+// is actually
+List.apply(1, 2, 3)
+</pre>
+
+<h3 id="toc_1.8.2">按数值范围创建列表</h3>
+
+<p>
+<code>range</code>参数可以是：开始、结束、步长：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; List.range(1, 5)
+  res51: List[Int] = List(1, 2, 3, 4)
+
+  scala&gt; List.range(1, 9, 2)
+  res52: List[Int] = List(1, 3, 5, 7)
+
+  scala&gt; List.range(9, 1, -3)
+  res53: List[Int] = List(9, 6, 3)
+</pre>
+
+<h3 id="toc_1.8.3">创建重复元素的列表</h3>
+
+<p>
+<code>make</code>方法：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; List.make(5, 'a')
+  res54: List[Char] = List(a, a, a, a, a)
+
+  scala&gt; List.make(3, "hello")
+  res55: List[java.lang.String] = List(hello, hello, hello)
+</pre>
+
+<h3 id="toc_1.8.4">解除Zip列表</h3>
+
+<p>
+<code>unzip</code>把二元组列表分成两个列表：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val zipped = "abcde".toList zip List(1, 2, 3)
+  zipped: List[(Char, Int)] = List((a,1), (b,2), (c,3))
+
+  scala&gt; List.unzip(zipped)
+  res56: (List[Char], List[Int]) = (List(a, b, c),
+      List(1, 2, 3))
+</pre>
+
+<p>
+Scala类型系统要求类方法能处理所有类型，而unzip只处理二元组列表。所以unzip不能像
+zip方法一样放在类里而只能放在伴生对象里。
+</p>
+
+<h3 id="toc_1.8.5">连接列表</h3>
+
+<p>
+<code>flatten</code>方法只能处理包含子列表的列表所以不能放在List类里。只能放在伴生对象中。
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val xss =
+       | List(List('a', 'b'), List('c'), List('d', 'e'))
+  xss: List[List[Char]] = List(List(a, b), List(c), List(d, e))
+
+  scala&gt; List.flatten(xss)
+  res57: List[Char] = List(a, b, c, d, e)
+</pre>
+
+<p>
+<code>concat</code>方法把多个列表作为可变长参数形式接收：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; List.concat(List('a', 'b'), List('c'))
+  res58: List[Char] = List(a, b, c)
+
+  scala&gt; List.concat(List(), List('b'), List('c'))
+  res59: List[Char] = List(b, c)
+  
+  scala&gt; List.concat()
+  res60: List[Nothing] = List()
+</pre>
+
+
+<h3 id="toc_1.8.6">映射与测试配对</h3>
+
+<p>
+<code>map2</code>方法接收两个列表，分别作为方法的两个参数：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; List.map2(List(10, 20), List(3, 4, 5)) (_ * _)
+  res61: List[Int] = List(30, 80)
+</pre>
+
+<p>
+<code>exist2</code>也是接收两个列表，分别作为方法的两个参数：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; List.forall2(List("abc", "de"),
+       | List(3, 2)) (_.length == _)
+  res62: Boolean = true
+
+  scala&gt; List.exists2(List("abc", "de"),
+       | List(3, 2)) (_.length != _)
+  res63: Boolean = false
+</pre>
+
+<h2 id="toc_1.9">了解Scala的类型推断方法</h2>
+
+<p>
+Scala的类型推导器是基于流的。
+</p>
+
+<p>
+下面是用占位符<code>_</code>推导出的参数类型：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; abcde sort (_ &gt; _)
+  res65: List[Char] = List(e, d, c, b, a)
+</pre>
+
+<p>
+例如对于<code>List[Char]</code>类型的列表<code>abcd</code>，<code>abcd</code>的成员都是<code>Char</code>。所以
+<code>abcd.sort(_ &gt; _)</code>的两个参数也只会是<code>Char</code>。所以类型被推导为：
+</p>
+
+<pre class="brush: scala">
+(_ &gt; _)
+// trans to
+((x: Char, y: Char) =&gt; x &gt; y)
+</pre>
+
+<p>
+再来看<code>msort</code>方法：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; msort((x: Char, y: Char) =&gt; x &gt; y)(abcde)
+  res64: List[Char] = List(e, d, c, b, a)
+</pre>
+
+<p>
+<code>msort</code>方法却不能用占位符：
+</p>
+  
+<pre class="brush: scala">
+  scala&gt; msort(_ &gt; _)(abcde)
+  &lt;console&gt;:12: error: missing parameter type for expanded
+  function ((x$1, x$2) =&gt; x$1.$greater(x$2))
+         msort(_ &gt; _)(abcde)
+               ^
+</pre>
+
+<p>
+原因是对于<code>func(args)</code>这样的方法，先看<code>func</code>是否有已经的类型。如果有的话这个类型
+就被用来做参数预期类型的推断。而<code>msort(_ &gt; _)(abcde)</code>这个类型是柯里化的、多态的
+方法类型，参数类型是<code>(T, T) =&gt; Boolean</code>，返回类型是从<code>List[T]</code>到<code>List[T]</code>的函数
+。无法推断第一个参数的类型。所以类型推断器要参数的类型信息。
+</p>
+
+<p>
+想要用占位符的话，只能把参数类型传给<code>msort</code>，改为<code>msort[Char]</code>：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; msort[Char](_ &gt; _)(abcde)
+  res66: List[Char] = List(e, d, c, b, a)
+</pre>
+
+<p>
+还有一个方法是交换参数顺序，这样可以用第一个列表的类型来推断比较方法的类型了：
+</p>
+
+<pre class="brush: scala">
+  // same implementation as msort,
+  // but with arguments swapped
+  def msortSwapped[T](xs: List[T])(less:
+      (T, T) =&gt; Boolean): List[T] = {
+  }
+  
+  scala&gt; msortSwapped(abcde)(_ &gt; _)
+  res67: List[Char] = List(e, d, c, b, a)
+</pre>
+
+<p>
+需要推断多态方法类型时只会参考第一个参数列表，所以在柯里化方法有两个参数列表时
+第二个参数不会用来决定方法类型参数。所以这种方案隐含以下的库方法设计原则：
+</p>
+
+<p>
+如果参数包括若干个非函数参数与一个函数参数的组合时，要把函数参数独自放在柯里化
+参数列表的最后面。这样方法的正确实例类型就可以通过非函数参数推断出来，推断出来的
+类型还可以转面用来完成函数参数的类型检查。调用函数的时候也可以写出更加简洁的
+字面量。
+</p>
+
+<p>
+再来看更加复杂的折叠操作：
+</p>
+
+<pre class="brush: scala">
+  (xss :\ List[T]()) (_ ::: _)
+
+</pre>
+
+<p>
+上面的表达式提供了明确的类型参数的原因是这个右折叠操作的类型取决于两个变量：
+</p>
+
+<pre class="brush: scala">
+  (xs :\ z) (op)
+</pre>
+
+<p>
+这里把列表<code>xs</code>的类型记为<code>A</code>，如：<code>xs: List[A]</code>；而开始值<code>z</code>有可能是类型<code>B</code>。对应
+的操作<code>op</code>必须以<code>A</code>和<code>B</code>的值为参数并返回类型<code>B</code>的结果，即：<code>op: (A, B) =&gt; B</code>。
+</p>
+
+<p>
+从上面的描述可以看出：这里的<code>op</code>方法要知道<code>A</code>与<code>B</code>两个类型。<code>A</code>一定与<code>List</code>有关
+，但是<code>B</code>不一定与<code>List</code>有关，所以推不出来。所以下面的表达式是编译不过的：
+</p>
+
+<pre class="brush: scala">
+  (xss :\ List()) (_ ::: _) // this won't compile
+
+</pre>
+
+<p>
+上面表达式中<code>z</code>的类型为<code>List[Nothing]</code>，据此推断器把<code>B</code>的类型定为<code>Nothing</code>：
+</p>
+
+<pre class="brush: scala">
+  (List[T], List[Nothing]) =&gt; List[Nothing]
+</pre>
+
+<p>
+这就意味着输出与输出都是空列表。
+</p>
+
+<p>
+就是因为这个问题，所以在柯里化的方法中，方法类型只取决于第一段参数。但是如果不
+这么做的话，推断器还是没有办法取得<code>op</code>的类型。所以只能程序员明确指定类型。
+</p>
+
+<p>
+所以Scala采用的局部的、基于流的类型推断方法还是比较有局限性的；不如ML或是Haskell
+采用的更加全局化的Hindley-Milner类型推断方式。但是对于面向对象的分支类型处理比
+Hindley-Mlner更加优雅。由于这些局限性在比较极端的情况下才遇到，所以在极端情况下
+还是明确标类型吧。
+</p>
+
+<p>
+另外在遇到多态类型错误时，添加上你认为应该是正确的类型标注也是一种排错方式。
+</p>
+
+
+
+
+<h1 id="toc_2">集合类型</h1>
+
+<h2 id="toc_2.1">概览</h2>
+
+<p>
+<code>scala</code>包中主要特质<code>Iterable</code>，三个子特质：
+</p>
+
+<ul>
+<li>
+<code>Seq</code>：有序集合。
+
+<li>
+<code>Set</code>：对于<code>==</code>方法不可重复的元素集合。
+
+<li>
+<code>Map</code>：键值映射。
+
+</ul>
+
+<p>
+特技<code>Iterable</code>有个抽象方法<code>elements</code>：
+</p>
+
+<pre class="brush: scala">
+  def elements: Iterator[A]
+</pre>
+
+<p>
+注意返回类型是一个迭代器<code>iterator</code>，不是<code>iterate</code>别看错了！
+</p>
+
+<p>
+迭代器用来从头到尾遍历一遍集合。如果要再遍历一遍的话，只能用<code>elements</code>方法再生成
+一个新的迭代器。。
+</p>
+
+<p>
+迭代器<code>Iterator</code>继承自<code>AnyRef</code>。<code>Iterator</code>提供的具体方法都实现了<code>next</code>和
+<code>hasNext</code>抽象方法实现：
+</p>
+
+<pre class="brush: scala">
+  def hasNext: Boolean
+  def next: A
+</pre>
+
+<h2 id="toc_2.2">序列</h2>
+
+<h3 id="toc_2.2.1">列表</h3>
+
+<p>
+列表不能通过索引直接访问元素，只能遍历；但可以支持在头上快速添加和删除。这点像是
+链式表。使用模式匹配的方式可以很好地在头上快速添加和删除元素。
+</p>
+
+<p>
+但是因为只能对列表头快速访问，而尾部不行。所以如果要操作尾部的话可以先建一个反序
+的列表，再<code>reverse</code>把顺序反过来。
+</p>
+
+<h3 id="toc_2.2.2">列表缓存</h3>
+
+<p>
+还有一人方式是使用<code>scala.collection.mutable.ListBuffer</code>。
+</p>
+
+<p>
+<code>+=</code>在尾部添加元素；<code>+:</code>加在头上；完成之后用<code>toList</code>生成<code>List</code>：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; import scala.collection.mutable.ListBuffer
+  import scala.collection.mutable.ListBuffer
+
+  scala&gt; val buf = new ListBuffer[Int]
+  buf: scala.collection.mutable.ListBuffer[Int] = ListBuffer()
+
+  scala&gt; buf += 1
+
+  scala&gt; buf += 2
+
+  scala&gt; buf
+  res11: scala.collection.mutable.ListBuffer[Int]
+    = ListBuffer(1, 2)
+
+  scala&gt; 3 +: buf
+  res12: scala.collection.mutable.Buffer[Int]
+    = ListBuffer(3, 1, 2)
+
+  scala&gt; buf.toList
+  res13: List[Int] = List(3, 1, 2)
+</pre>
+
+<p>
+<code>List</code>结合前置添加元素和递归算法增长列表时，如果用的递归算法不是尾递归，就有栈
+溢出的风险；而<code>ListBuffer</code>可以结合循环替代递归。
+</p>
+
+<h3 id="toc_2.2.3">数组</h3>
+
+<p>
+数组适合按索引快速访问元素。
+</p>
+
+<p>
+按长度产数组：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val fiveInts = new Array[Int](5)
+  fiveInts: Array[Int] = Array(0, 0, 0, 0, 0)
+</pre>
+
+<p>
+按元素产数组：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val fiveToOne = Array(5, 4, 3, 2, 1)
+  fiveToOne: Array[Int] = Array(5, 4, 3, 2, 1)
+</pre>
+
+<p>
+通过<code>()</code>指定索引：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; fiveInts(0) = fiveToOne(4)
+
+  scala&gt; fiveInts
+  res1: Array[Int] = Array(1, 0, 0, 0, 0)
+</pre>
+
+<h2 id="toc_2.3">数组缓存</h2>
+
+<p>
+<code>ArrayBuffer</code>可以在头尾添加元素，但在尾部的添加移除是高效的。常见的用法是先用
+<code>ArrayBuffer</code>构建然后用它的<code>toArray</code>方法生成不可变的数组：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; import scala.collection.mutable.ArrayBuffer
+  import scala.collection.mutable.ArrayBuffer
+
+  scala&gt; val buf = new ArrayBuffer[Int]()
+  buf: scala.collection.mutable.ArrayBuffer[Int] =
+    ArrayBuffer()
+
+  scala&gt; buf += 12
+  scala&gt; buf += 15
+
+  scala&gt; buf
+  res16: scala.collection.mutable.ArrayBuffer[Int] =
+    ArrayBuffer(12, 15)
+
+  scala&gt; buf.length
+  res17: Int = 2
+
+  scala&gt; buf(0)
+  res18: Int = 12
+</pre>
+
+<h3 id="toc_2.3.1">队列</h3>
+
+<p>
+不可变的队列：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; import scala.collection.immutable.Queue
+  import scala.collection.immutable.Queue
+
+  scala&gt; val empty = new Queue[Int]
+  empty: scala.collection.immutable.Queue[Int] = Queue()
+
+// add one element
+  scala&gt; val has1 = empty.enqueue(1)
+  has1: scala.collection.immutable.Queue[Int] = Queue(1)
+
+// use collection to add many elements
+  scala&gt; val has123 = has1.enqueue(List(2, 3))
+  has123: scala.collection.immutable.Queue[Int] = Queue(1,2,3)
+
+  scala&gt; val (element, has23) = has123.dequeue
+  element: Int = 1
+  has23: scala.collection.immutable.Queue[Int] = Queue(2,3)
+</pre>
+
+<p>
+注意上面取后一个出队操作<code>dequeue</code>返回的是一个二元组，包括出来的元素和剩下的队列
+。
+</p>
+
+<p>
+可变的队列也差不多，就是用<code>+=</code>和<code>++=</code>添加元素，<code>dequeue</code>方法只返回一个出除的元素。
+</p>
+
+<pre class="brush: scala">
+  scala&gt; import scala.collection.mutable.Queue
+  import scala.collection.mutable.Queue
+
+  scala&gt; val queue = new Queue[String]
+  queue: scala.collection.mutable.Queue[String] = Queue()
+
+  scala&gt; queue += "a"
+
+  scala&gt; queue ++= List("b", "c")
+
+  scala&gt; queue
+  res21: scala.collection.mutable.Queue[String] = Queue(a, b, c)
+
+  scala&gt; queue.dequeue
+  res22: String = a
+
+  scala&gt; queue
+  res23: scala.collection.mutable.Queue[String] = Queue(b, c)
+</pre>
+
+<h3 id="toc_2.3.2">栈</h3>
+
+<p>
+可变的栈：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; import scala.collection.mutable.Stack
+  import scala.collection.mutable.Stack
+
+  scala&gt; val stack = new Stack[Int]
+  stack: scala.collection.mutable.Stack[Int] = Stack()
+
+  scala&gt; stack.push(1)
+
+  scala&gt; stack
+  res1: scala.collection.mutable.Stack[Int] = Stack(1)
+
+  scala&gt; stack.push(2)
+
+  scala&gt; stack
+  res3: scala.collection.mutable.Stack[Int] = Stack(1, 2)
+
+  scala&gt; stack.top
+  res8: Int = 2
+
+  scala&gt; stack
+  res9: scala.collection.mutable.Stack[Int] = Stack(1, 2)
+
+  scala&gt; stack.pop
+  res10: Int = 2
+
+  scala&gt; stack
+  res11: scala.collection.mutable.Stack[Int] = Stack(1)
+</pre>
+
+<p>
+不可变的栈略。
+</p>
+
+<h3 id="toc_2.3.3">字符串</h3>
+
+<p>
+因为<code>Predef</code>包含了从<code>String</code>到<code>RichString</code>的隐式转换，所以可以把任何字符串当作
+<code>Seq[Char]</code>。
+</p>
+
+<pre class="brush: scala">
+  scala&gt; def hasUpperCase(s: String) = s.exists(_.isUpperCase)
+  hasUpperCase: (String)Boolean
+
+  scala&gt; hasUpperCase("Robert Frost")
+  res14: Boolean = true
+
+  scala&gt; hasUpperCase("e e cummings")
+  res15: Boolean = false
+</pre>
+
+<p>
+<code>exists</code>方法不在<code>String</code>里，所以隐匿转换为包含<code>exists</code>方法的<code>RichString</code>类。
+</p>
+
+<h2 id="toc_2.4">Set与Map</h2>
+
+<p>
+因为<code>Predef</code>对象通过<code>type</code>关键字指定默认引用了Set与Map的不可变版本：
+</p>
+
+<pre class="brush: scala">
+  object Predef {
+    type Set[T] = scala.collection.immutable.Set[T]
+    type Map[K, V] = scala.collection.immutable.Map[K, V]
+    val Set = scala.collection.immutable.Set
+    val Map = scala.collection.immutable.Map
+    // ...
   }
 </pre>
 
 <p>
-要注意对于同一个类来说，即是超类也是子类。所以<code>T</code>是<code>U</code>下界，用<code>T</code>传入也是可以的。
+所以可变版的要手动声明：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; import scala.collection.mutable
+  import scala.collection.mutable
+
+  scala&gt; val mutaSet = mutable.Set(1, 2, 3)
+  mutaSet: scala.collection.mutable.Set[Int] = Set(3, 1, 2)
+</pre>
+
+<h3 id="toc_2.4.1">使用Set</h3>
+
+<p>
+Set的关键在于用对象的<code>==</code>检查唯一性。
+</p>
+
+<p>
+例子：统计出现的单词
+</p>
+
+<p>
+用正则<code>[ !,.]+</code>分隔成单词:
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val text = "See Spot run. Run, Spot. Run!"
+  text: java.lang.String = See Spot run. Run, Spot. Run!
+
+  scala&gt; val wordsArray = text.split("[ !,.]+")
+  wordsArray: Array[java.lang.String] =
+     Array(See, Spot, run, Run, Spot, Run)
+</pre>
+
+<p>
+建立Set并存入：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val words = mutable.Set.empty[String]
+  words: scala.collection.mutable.Set[String] = Set()
+
+  scala&gt; for (word &lt;- wordsArray)
+       | words += word.toLowerCase
+
+  scala&gt; words
+  res25: scala.collection.mutable.Set[String] =
+    Set(spot, run, see)
+</pre>
+
+<p>
+常用方法：
+</p>
+
+<table>
+<tr>
+<td>
+val nums = Set(1, 2, 3)
+</td>
+<td>
+建立集合
+</td>
+</tr>
+<tr>
+<td>
+nums + 5
+</td>
+<td>
+添加元素
+</td>
+</tr>
+<tr>
+<td>
+nums - 3
+</td>
+<td>
+去除元素
+</td>
+</tr>
+<tr>
+<td>
+nums ++ List(5, 6)
+</td>
+<td>
+添加多个元素
+</td>
+</tr>
+<tr>
+<td>
+nums -- List(1, 2)
+</td>
+<td>
+去除多个元素
+</td>
+</tr>
+<tr>
+<td>
+nums ** Set(1, 3, 5, 7)
+</td>
+<td>
+交集（返回Set(1,3)）
+</td>
+</tr>
+<tr>
+<td>
+nums.size
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+nums.contains(3)
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+import scala.collection.mutable
+</td>
+<td>
+引入可变的
+</td>
+</tr>
+<tr>
+<td>
+val words = mutable.Set.empty[String]
+</td>
+<td>
+创建空的可变集
+</td>
+</tr>
+<tr>
+<td>
+words += "the"
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+words -= "the"
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+words ++= List("do", "re", "mi")
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+words --= List("do", "re")
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+words.clear
+</td>
+<td>
+清空所有元素
+</td>
+</tr>
+</table>
+
+<h3 id="toc_2.4.2">Map</h3>
+
+<p>
+使用可变的Map：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val map = mutable.Map.empty[String, Int]
+  map: scala.collection.mutable.Map[String,Int] = Map()
+
+  scala&gt; val map = mutable.Map.empty[String, Int]
+  map: scala.collection.mutable.Map[String,Int] = Map()
+
+  scala&gt; map("hello") = 1
+
+  scala&gt; map("there") = 2
+
+  scala&gt; map
+  res28: scala.collection.mutable.Map[String,Int] =
+    Map(hello -&gt; 1, there -&gt; 2)
+
+  scala&gt; map("hello")
+  res29: Int = 1
+</pre>
+
+<p>
+统计单词出现次数的例子：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; def countWords(text: String) = {
+       |   val counts = mutable.Map.empty[String, Int]
+       |   for (rawWord &lt;- text.split("[ ,!.]+")) {
+       |     val word = rawWord.toLowerCase
+       |     val oldCount =
+       |       if (counts.contains(word)) counts(word)
+       |       else 0
+       |     counts += (word -&gt; (oldCount + 1))
+       |   }
+       |   counts
+       | }
+  countWords: (String)scala.collection.mutable.Map[String,Int]
+  
+
+  scala&gt; countWords("See Spot run! Run, Spot. Run!")
+  res30: scala.collection.mutable.Map[String,Int] =
+    Map(see -&gt; 1, run -&gt; 3, spot -&gt; 2)
+</pre>
+
+<p>
+常用方法：
+</p>
+
+<table>
+<tr>
+<td>
+val nums = Map("i"-&gt;1, "ii"-&gt;2)
+</td>
+<td>
+创建不可变
+</td>
+</tr>
+<tr>
+<td>
+nums + ("vi"-&gt;6)
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+nums - "ii"
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+nums ++ List("iii"-&gt;3, "v"-&gt;5)
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+nums -- List("i", "ii")
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+nums.size
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+nums.contains("ii")
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+nums("ii")
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+nums.keys
+</td>
+<td>
+返回key迭代器
+</td>
+</tr>
+<tr>
+<td>
+nums.keySet
+</td>
+<td>
+返回key的集合(Set)
+</td>
+</tr>
+<tr>
+<td>
+nums.values
+</td>
+<td>
+返回value迭代器
+</td>
+</tr>
+<tr>
+<td>
+nums.isEmpty
+</td>
+<td>
+返回value的集合(Set)
+</td>
+</tr>
+<tr>
+<td>
+import scala.collection.mutable
+</td>
+<td>
+引入可变的版本
+</td>
+</tr>
+<tr>
+<td>
+val words = mutalbe.Map.empty[String, Int]
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+words += ("one"-&gt;1)
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+words -= "one"
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+words ++= List("one"-&gt;1, "two"-&gt;2, "three"-&gt;3))
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+words --= List("one", "two")
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+</table>
+
+<h3 id="toc_2.4.3">默认的Set和Map</h3>
+
+<p>
+不可变的Set与Map会根据元素的数量优化一些工厂方法，这样返回的类就不一定是指定的
+类型。
+</p>
+
+<p>
+不可变的<code>scala.collection.immutable.Set()</code>工厂方法返回：
+</p>
+
+<table>
+<tr>
+<td>
+元素的数量
+</td>
+<td>
+实现
+</td>
+</tr>
+<tr>
+<td>
+0
+</td>
+<td>
+scala.collection.immutable.EmptySet
+</td>
+</tr>
+<tr>
+<td>
+1
+</td>
+<td>
+scala.collection.immutable.Set1
+</td>
+</tr>
+<tr>
+<td>
+2
+</td>
+<td>
+scala.collection.immutable.Set2
+</td>
+</tr>
+<tr>
+<td>
+3
+</td>
+<td>
+scala.collection.immutable.Set3
+</td>
+</tr>
+<tr>
+<td>
+4
+</td>
+<td>
+scala.collection.immutable.Set4
+</td>
+</tr>
+<tr>
+<td>
+&gt;=5
+</td>
+<td>
+scala.collection.immutable.HashSet
+</td>
+</tr>
+</table>
+
+<p>
+不可变的<code>scala.collection.immutable.Map()</code>工厂方法返回：
+</p>
+
+<table>
+<tr>
+<td>
+元素的数量
+</td>
+<td>
+实现
+</td>
+</tr>
+<tr>
+<td>
+0
+</td>
+<td>
+scala.collection.immutable.EmptyMap
+</td>
+</tr>
+<tr>
+<td>
+1
+</td>
+<td>
+scala.collection.immutable.Map1
+</td>
+</tr>
+<tr>
+<td>
+2
+</td>
+<td>
+scala.collection.immutable.Map2
+</td>
+</tr>
+<tr>
+<td>
+3
+</td>
+<td>
+scala.collection.immutable.Map3
+</td>
+</tr>
+<tr>
+<td>
+4
+</td>
+<td>
+scala.collection.immutable.Map4
+</td>
+</tr>
+<tr>
+<td>
+&gt;=5
+</td>
+<td>
+scala.collection.immutable.HashMap
+</td>
+</tr>
+</table>
+
+<h3 id="toc_2.4.4">有序的集体和映射</h3>
+
+<p>
+<code>TreeSet</code>和<code>TreeMap</code>分别实现了<code>SortedSet</code>和<code>SortedMap</code>特质。都用红黑树保存元素，
+顺序由<code>Ordered</code>特质决定。这些类只有不可变的版本：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; import scala.collection.immutable.TreeSet
+  import scala.collection.immutable.TreeSet
+
+  scala&gt; val ts = TreeSet(9, 3, 1, 8, 0, 2, 7, 4, 6, 5)
+  ts: scala.collection.immutable.SortedSet[Int] =
+    Set(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+
+  scala&gt; val cs = TreeSet('f', 'u', 'n')
+  cs: scala.collection.immutable.SortedSet[Char] = Set(f, n, u)
+
+
+  scala&gt; import scala.collection.immutable.TreeMap
+  import scala.collection.immutable.TreeMap
+
+  scala&gt; var tm = TreeMap(3 -&gt; 'x', 1 -&gt; 'x', 4 -&gt; 'x')
+  tm: scala.collection.immutable.SortedMap[Int,Char] =
+    Map(1 -&gt; x, 3 -&gt; x, 4 -&gt; x)
+
+  scala&gt; tm += (2 -&gt; 'x')
+
+  scala&gt; tm
+  res38: scala.collection.immutable.SortedMap[Int,Char] =
+    Map(1 -&gt; x, 2 -&gt; x, 3 -&gt; x, 4 -&gt; x)
+</pre>
+
+<h3 id="toc_2.4.5">同步的Set和Map</h3>
+
+<p>
+把<code>SynchronizedMap</code>特质混入到实现中。下面单例对象中的<code>makeMap</code>方法：
+</p>
+
+<pre class="brush: scala">
+  import scala.collection.mutable.{Map,
+      SynchronizedMap, HashMap}
+
+  object MapMaker {
+
+    def makeMap: Map[String, String] = {
+
+        new HashMap[String, String] with
+            SynchronizedMap[String, String] {
+
+          override def default(key: String) =
+            "Why do you want to know?"
+        }
+    }
+  }
+</pre>
+
+<p>
+上面的方法会返回一个<code>HashMap</code>并且重写了<code>default</code>方法在没有对应的key时有默认的返回。
+</p>
+
+<p>
+单线程访问的情况如下：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val capital = MapMaker.makeMap
+  capital: scala.collection.mutable.Map[String,String] = Map()
+
+  scala&gt; capital ++ List("US" -&gt; "Washington",
+       | "Paris" -&gt; "France", "Japan" -&gt; "Tokyo")
+  res0: scala.collection.mutable.Map[String,String] =
+    Map(Paris -&gt; France, US -&gt; Washington, Japan -&gt; Tokyo)
+
+  scala&gt; capital("Japan")
+  res1: String = Tokyo
+
+  scala&gt; capital("New Zealand")
+  res2: String = Why do you want to know?
+
+  scala&gt; capital += ("New Zealand" -&gt; "Wellington")
+
+  scala&gt; capital("New Zealand")
+  res3: String = Wellington
+</pre>
+
+<p>
+类似地，也可以实现同步的Set：
+</p>
+
+<pre class="brush: scala">
+  val synchroSet =
+    new mutable.HashSet[Int] with
+        mutable.SynchronizedSet[Int]
+</pre>
+
+<h2 id="toc_2.5">可变与不可变类型的比较</h2>
+
+<p>
+为了方便在可变与不可变类型之间地转换，Scala提供了一些语法糖。
+</p>
+
+<p>
+如，不可变类型不支持<code>+=</code>操作：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val people = Set("Nancy", "Jane")
+  people: scala.collection.immutable.Set[java.lang.String] =
+    Set(Nancy, Jane)
+
+  scala&gt; people += "Bob"
+  &lt;console&gt;:6: error: reassignment to val
+         people += "Bob"
+                ^
+</pre>
+
+<p>
+但是如果把变量从<code>val</code>改成<code>var</code>，Scala还是可以返回一个添加后的新对象来模拟：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; var people = Set("Nancy", "Jane")
+  people: scala.collection.immutable.Set[java.lang.String] =
+    Set(Nancy, Jane)
+ 
+  scala&gt; people += "Bob"
+
+  scala&gt; people
+  res42: scala.collection.immutable.Set[java.lang.String] =
+    Set(Nancy, Jane, Bob)
+</pre>
+
+<p>
+类似的还有其他的操作：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; people -= "Jane"
+
+  scala&gt; people ++= List("Tom", "Harry")
+
+  scala&gt; people
+  res45: scala.collection.immutable.Set[java.lang.String] =
+    Set(Nancy, Bob, Tom, Harry)
+</pre>
+
+<p>
+这样的语法糖方便在可变与不可变类型之间转换：
+</p>
+
+<pre class="brush: scala">
+  var capital = Map("US" -&gt; "Washington", "France" -&gt; "Paris")
+  capital += ("Japan" -&gt; "Tokyo")
+  println(capital("France"))
+
+  import scala.collection.mutable.Map // only change needed!
+  var capital = Map("US" -&gt; "Washington", "France" -&gt; "Paris")
+  capital += ("Japan" -&gt; "Tokyo")
+  println(capital("France"))
+</pre>
+
+<p>
+这样的语法糖还可以用在其他类型上。如浮点：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; var roughlyPi = 3.0
+  roughlyPi: Double = 3.0
+
+  scala&gt; roughlyPi += 0.1
+
+  scala&gt; roughlyPi += 0.04
+
+  scala&gt; roughlyPi
+  res48: Double = 3.14
+</pre>
+
+<p>
+基本上<code>+=</code>、<code>-=</code>、<code>*=</code>这类以<code>=</code>结尾的操作符都可以。
+</p>
+
+<h2 id="toc_2.6">初始化集合</h2>
+
+<p>
+最典型的是用伴生对象的工厂方法：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; List(1, 2, 3)
+  res0: List[Int] = List(1, 2, 3)
+
+  scala&gt; Set('a', 'b', 'c')
+  res1: scala.collection.immutable.Set[Char] = Set(a, b, c)
+
+  scala&gt; import scala.collection.mutable
+  import scala.collection.mutable
+
+  scala&gt; mutable.Map("hi" -&gt; 2, "there" -&gt; 5)
+  res2: scala.collection.mutable.Map[java.lang.String,Int] =
+    Map(hi -&gt; 2, there -&gt; 5)
+
+  scala&gt; Array(1.0, 2.0, 3.0)
+  res3: Array[Double] = Array(1.0, 2.0, 3.0)
+</pre>
+
+<p>
+会根据工厂方法推断类型：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; import scala.collection.mutable
+  import scala.collection.mutable
+
+  scala&gt; val stuff = mutable.Set(42)
+  stuff: scala.collection.mutable.Set[Int] = Set(42)
+
+  scala&gt; stuff += "abracadabra"
+  &lt;console&gt;:7: error: type mismatch;
+   found : java.lang.String("abracadabra")
+   required: Int
+         stuff += "abracadabra"
+                  ^
+</pre>
+
+<p>
+但是可以手动声明类型：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val stuff = mutable.Set[Any](42)
+  stuff: scala.collection.mutable.Set[Any] = Set(42)
+</pre>
+
+<p>
+还有一种情况，不能直接把<code>List</code>传递给<code>Set</code>的工厂方法：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val colors = List("blue", "yellow", "red", "green")
+  colors: List[java.lang.String] =
+    List(blue, yellow, red, green)
+
+
+  scala&gt; import scala.collection.immutable.TreeSet
+  import scala.collection.immutable.TreeSet
+
+  scala&gt; val treeSet = TreeSet(colors)
+  &lt;console&gt;:6: error: no implicit argument matching
+    parameter type (List[java.lang.String]) =&gt;
+      Ordered[List[java.lang.String]] was found.
+         val treeSet = TreeSet(colors)
+                       ^
+</pre>
+
+<p>
+可行的方案是建立空的<code>TreeSet[String]</code>对象并用<code>TreeSet</code>的<code>++</code>操作把元素加进去：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val treeSet = TreeSet[String]() ++ colors
+  treeSet: scala.collection.immutable.SortedSet[String] =
+     Set(blue, green, red, yellow)
+</pre>
+
+<h3 id="toc_2.6.1">数组与列表之间转换</h3>
+
+<pre class="brush: scala">
+  scala&gt; treeSet.toList
+  res54: List[String] = List(blue, green, red, yellow)
+
+  scala&gt; treeSet.toArray
+  res55: Array[String] = Array(blue, green, red, yellow)
+</pre>
+
+<p>
+由于实现机制是一个一个元素地复制，所以元素多的话速度会慢。
+</p>
+
+<h3 id="toc_2.6.2">Set与Map的可变与不可变互转</h3>
+
+<p>
+在转为不可变类型时，一般是建一个空的不可变集，再一个一个加上去：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; import scala.collection.mutable
+  import scala.collection.mutable
+
+  scala&gt; treeSet
+  res5: scala.collection.immutable.SortedSet[String] =
+    Set(blue, green, red, yellow)
+
+  scala&gt; val mutaSet = mutable.Set.empty ++ treeSet
+  mutaSet: scala.collection.mutable.Set[String] =
+    Set(yellow, blue, red, green)
+
+  scala&gt; val immutaSet = Set.empty ++ mutaSet
+  immutaSet: scala.collection.immutable.Set[String] =
+    Set(yellow, blue, red, green)
+
+  scala&gt; val muta = mutable.Map("i" -&gt; 1, "ii" -&gt; 2)
+  muta: scala.collection.mutable.Map[java.lang.String,Int] =
+     Map(ii -&gt; 2, i -&gt; 1)
+
+  scala&gt; val immu = Map.empty ++ muta
+  immu: scala.collection.immutable.Map[java.lang.String,Int] =
+     Map(ii -&gt; 2, i -&gt; 1)
+</pre>
+
+<h3 id="toc_2.6.3">元组</h3>
+
+<p>
+元组可以存放不同的类型：
+</p>
+
+<pre class="brush: scala">
+  (1, "hello", Console)
+</pre>
+
+<p>
+元组经常被用来返回多个函数结果，如下面的函数要同时返回单词和索引：
+</p>
+
+<pre class="brush: scala">
+  def longestWord(words: Array[String]) = {
+    var word = words(0)
+    var idx = 0
+    for (i &lt;- 1 until words.length)
+      if (words(i).length &gt; word.length) {
+        word = words(i)
+        idx = i
+      }
+    (word, idx)
+  }
+  
+  scala&gt; val longest =
+       | longestWord("The quick brown fox".split(" "))
+  longest: (String, Int) = (quick,1)
+</pre>
+
+<p>
+然后可以访问各个元素：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; longest._1
+  res56: String = quick
+
+  scala&gt; longest._2
+  res57: Int = 1
+</pre>
+
+<p>
+还可以赋值给自己的变量（其实就是模式匹配）：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val (word, idx) = longest
+  word: String = quick
+  idx: Int = 1
+
+  scala&gt; word
+  res58: String = quick
+</pre>
+
+<p>
+注意括号不能去掉，不然就是给两个变量赋值了两份：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val word, idx = longest
+  word: (String, Int) = (quick,1)
+  idx: (String, Int) = (quick,1)
+</pre>
+
+<h2 id="toc_2.7">惰性求值</h2>
+
+<h3 id="toc_2.7.1">迭代器</h3>
+
+<p>
+迭代器相对于集合来说是一个惰性求值的替代品，不会为没有取得的元素消耗资源。
+</p>
+
+<h3 id="toc_2.7.2">流</h3>
+
+<p>
+迭代器有个缺点：只能一个方向向后走。如果需要访问已经走过元组，可以用流来实现。
+</p>
+
+<p>
+流是一个不可变的列表，但尾部的元素是被惰性求值的，只有用到时才会被计算。
+</p>
+
+<p>
+操作符<code>#::</code>用于构造一个流，例：
+</p>
+
+<pre class="brush: scala">
+scala&gt; def numsFrom(n: BigInt): Stream[BigInt] = n #:: numsFrom(n + 1)
+numsFrom: (n: BigInt)Stream[BigInt]
+</pre>
+
+<p>
+它所产生的流对象尾部的内容都是未知的：
+</p>
+
+<pre class="brush: scala">
+scala&gt; val tenOrMore = numsFrom(10)
+tenOrMore: Stream[BigInt] = Stream(10, ?)
+</pre>
+
+<p>
+在被使用到时才会求值，如用<code>tail</code>来取下一个值：
+</p>
+
+<pre class="brush: scala">
+scala&gt; tenOrMore.tail.tail.tail
+res0: scala.collection.immutable.Stream[BigInt] = Stream(13, ?)
+</pre>
+
+<p>
+对应的操作也是惰性求值的：
+</p>
+
+<pre class="brush: scala">
+scala&gt; val squares = numsFrom(1).map(x =&gt; x * x)
+squares: scala.collection.immutable.Stream[scala.math.BigInt] = Stream(1, ?)
+</pre>
+
+<p>
+可用<code>tail</code>来取下一个元素，也可用<code>take(num)</code>来取多个元素，再用<code>force</code>强制计算这些
+结果：
+</p>
+
+<pre class="brush: scala">
+scala&gt; squares.take(5).force
+res0: scala.collection.immutable.Stream[scala.math.BigInt] = Stream(1, 4, 9, 16, 25)
+</pre>
+
+<p>
+警告：因为之前定义的<code>numsFrom()</code>方法是一个无限递归的方法，所以是一定要在<code>force</code>
+前加上<code>take(num)</code>限制个数。
+</p>
+
+<h3 id="toc_2.7.3">用迭代器创建流</h3>
+
+<p>
+<code>Iterator.toStream</code>方法可以创建一个流，例：
+</p>
+
+<p>
+文本文件：
+</p>
+
+<pre class="brush: bash">
+11111
+22222
+33333
+44444
+55555
+66666
+77777
+88888
+</pre>
+
+<pre class="brush: scala">
+scala&gt; val words = Source.fromFile("tmp/test.txt").getLines.toStream
+words: scala.collection.immutable.Stream[String] = Stream(11111, ?)
+
+scala&gt; words
+res3: scala.collection.immutable.Stream[String] = Stream(11111, ?)
+
+scala&gt; words(5)
+res4: String = 66666
+
+scala&gt; words
+res5: scala.collection.immutable.Stream[String] = Stream(11111, 22222, 33333, 44444, 55555, 66666, ?)
+</pre>
+
+<h3 id="toc_2.7.4">懒视图</h3>
+
+<p>
+对于集合类型，可以使用它们的<code>view</code>方法来取得一个懒求值的集合版本。
 </p>
 
 <p>
 例：
 </p>
 
+<pre class="brush: scala">
+scala&gt; import scala.math._
+import scala.math._
+
+scala&gt; val powers = (0 until 1000).view.map(pow(10, _))
+powers: scala.collection.SeqView[Double,Seq[_]] = SeqViewM(...)
+</pre>
+
 <p>
-要实现一个队列类型<code>Queue[T]</code>，添加队列成员<code>append(T)</code>方法的参数是不能协变的，
-所以为了实现协变的<code>Queue[+T]</code>要在<code>appen</code>方法中使用下界：
+对于流来说，第一个元素会求出值，而上面的视图中连第一个值也没有求出。
+</p>
+
+<p>
+下面的代码求出的是<code>pow(10,100)</code>：
 </p>
 
 <pre class="brush: scala">
-  class Queue[+T] (
-			private val leading: List[T], 
-			private val trailing: List[T] 
-	) {
-    def append[U &gt;: T](x: U) = new Queue[U](leading, x :: trailing) // ...
-  }
+scala&gt; powers(100)
+res0: Double = 1.0E100
 </pre>
 
 <p>
-<code>append</code>方法指定的类型参数<code>U</code>，并通过语法<code>U &gt;: T</code>定义了<code>T</code>为<code>U</code>的下界，即：<code>U</code>
-必须是<code>T</code>的超类。这里可以把T的任意超类<code>U</code>的对象添加进来，返回类型也成了
-<code>Queue[U]</code>。
-</p>
-
-<p>
-对于<code>append</code>方法来说，它不知道自己处理的是某一个子类。只知道处理的是超类<code>U</code>。
-所以不会有类型错误。
-</p>
-
-<p>
-其实上面的方法体中：
+集合中其他的值并没有被计算。注意这里和流不一样，得到的结果不会被缓存，如果再次
+调用，得到的值还是一样的：
 </p>
 
 <pre class="brush: scala">
-def append[U &gt;: T](x: U) = new Queue[U](leading, x :: trailing)
+scala&gt; powers(100)
+res0: Double = 1.0E100
 </pre>
 
 <p>
-可以简写为：
+和流一样可用<code>force</code>方法强制求值。
+</p>
+
+<h4 id="toc_2.7.4.1">应用场景</h4>
+
+<p>
+懒集合常见的应用场景是当需要以多种方式进行变换的大型集合，因为它省去了构建大型
+中间集合的操作。
+</p>
+
+<p>
+例：
 </p>
 
 <pre class="brush: scala">
-def append[U &gt;: T](x: U) = new Queue(leading, x :: trailing)
+scala&gt; (0 to 1000).map(pow(10, _)).map(1 / _)
+res2: scala.collection.immutable.IndexedSeq[Double] = Vector(1.0, 0.1, ... 
 </pre>
 
 <p>
-编译器会自动推断方法的返回类型<code>Queue</code>为<code>Queue[U]</code>。
-</p>
-
-
-<p>
-又一个例子：
+这里会先对每个元素按\(10^n\)建立一个集合，在这个集合的基础上再对每个元素执行
+\(\frac{1}{n}\)。
 </p>
 
 <p>
-对于<code>Fruit</code>和两个子类<code>Orange</code>和<code>Apple</code>，可以把<code>Orange</code>对象传入
-<code>Queue[Apple]</code>而返回<code>Queue[Fruit]</code>。
-</p>
-
-<p>
-从技术角度来看，这里的情况发生了下界的翻转：类型参数<code>U</code>处于逆变点位置（1次翻转）
-，而下界<code>U &gt;: T</code>处于协变点的位置（两次翻转）。
-</p>
-
-
-<h2 id="toc_1.5">单例对象不能泛型</h2>
-
-<p>
-单例对象不能添加类型参数。
-</p>
-
-<p>
-以一个列表的实现为例子：
+如果是以懒视图，就只会在用到中间值时才会计算中间值。相当于就是对每个元素连续执行
+两个操作：
 </p>
 
 <pre class="brush: scala">
-abstract class List[+T] {
-  def isEmpty: Boolean
-  def head: T
-  def tail: List[T]
-}
+scala&gt; (0 to 1000).view.map(pow(10, _)).map(1 / _).force
+res3: Seq[Double] = Vector(1.0, 0.1, 0.01, 0.001, 1.0E-4, 1.0E-5 ...
 </pre>
 
+<h2 id="toc_2.8">与Java集合互操作</h2>
+
 <p>
-这个是结点类，头部是一个元素，其他的元素是尾问列表。其实就相当于Scala已经有的
-<code>::</code>：
+<code>JavaConversions</code>对象提供了很多工具：
 </p>
 
 <pre class="brush: scala">
-class Node[T](val head: T, val tail: List[T]) extends List[T] {
-  def isEmpty = false
-}
+scala&gt; import scala.collection.JavaConversions._
 </pre>
 
 <p>
-这是列表结束符，可以理解为一个不能放元素的空列表。其实就相当于Scala里已经有的
-<code>Nil</code>：
+也可以只导入指定的转换方法：
 </p>
 
 <pre class="brush: scala">
-object Empty extends List[Nothing] {
-	// It can't be object Empty[T] extends List[T] 
-	// OK to be class Empty[T] extends List[T] 
-  def isEmpty = true
-  def head = throw new UnsupportedOperationException
-  def tail = throw new UnsupportedOperationException
-}
+scala&gt; import scala.collection.JavaConversions.propertiesAsScalaMap
+import scala.collection.JavaConversions.propertiesAsScalaMap
+
+scala&gt; val props: scala.collection.mutable.Map[String, String] =
+     | System.getProperties()
+props: scala.collection.mutable.Map[String,String] = 
 </pre>
 
 <p>
-注意上面的<code>Empty</code>是一个单例对象，而单例对象是不能用泛型的。所以在这里它只能继承
-<code>List[Nothing]</code>而不能继承<code>List[T]</code>。
-</p>
-
-<p>
-因为<code>Nothing</code>是所有类型的子类，所以可以这样：
+这里转换出来的<code>props</code>是包装器。它会调用Java对象的接口。
 </p>
 
 <pre class="brush: scala">
-val lst = new Node(42, Empty)
+props("com.horstmann.scala") = "impatient"
 </pre>
 
 <p>
-因为根据协变规则<code>List[Nothing]</code>可以被转为<code>List[Int]</code>。
+实际会调用Java中<code>Properties</code>对象的方法<code>put("com.horstmann.scala","impatient")</code>。
 </p>
 
 <p>
-再定义一个查看刚刚构造的列表的方法：
+Scala集合转Java
 </p>
 
-<pre class="brush: scala">
-scala&gt; def show[T](lst: List[T]) {
-     |   if (!lst.isEmpty) { println(lst.head); show(lst.tail) }
-     | }
-show: [T](lst: List[T])Unit
-
-scala&gt; show(new Node(1729, lst))
-1729
-42
-</pre>
-
-<h2 id="toc_1.6">类型通配符</h2>
+<table>
+<tr>
+<td>
+隐式转换函数
+</td>
+<td>
+从scala.collection
+</td>
+<td>
+到java.util
+</td>
+</tr>
+<tr>
+<td>
+asJavaCollection
+</td>
+<td>
+Iterable
+</td>
+<td>
+Collection
+</td>
+</tr>
+<tr>
+<td>
+asJavaIterable
+</td>
+<td>
+Iterable
+</td>
+<td>
+iterable
+</td>
+</tr>
+<tr>
+<td>
+asjavaIterator
+</td>
+<td>
+Iterator
+</td>
+<td>
+Iterator
+</td>
+</tr>
+<tr>
+<td>
+asJavaEnumeration
+</td>
+<td>
+Iterator
+</td>
+<td>
+Enumeration
+</td>
+</tr>
+<tr>
+<td>
+seqAsJavaList
+</td>
+<td>
+Seq
+</td>
+<td>
+List
+</td>
+</tr>
+<tr>
+<td>
+mutableSeqAsjavaList
+</td>
+<td>
+mutable.Seq
+</td>
+<td>
+List
+</td>
+</tr>
+<tr>
+<td>
+bufferAsJavaList
+</td>
+<td>
+mutable.Buffer
+</td>
+<td>
+List
+</td>
+</tr>
+<tr>
+<td>
+setAsJavaSet
+</td>
+<td>
+Set
+</td>
+<td>
+Set
+</td>
+</tr>
+<tr>
+<td>
+mutableSetAsJavaMap
+</td>
+<td>
+mutable.Set
+</td>
+<td>
+Set
+</td>
+</tr>
+<tr>
+<td>
+mapAsJavaMap
+</td>
+<td>
+Map
+</td>
+<td>
+Map
+</td>
+</tr>
+<tr>
+<td>
+mutableMapAsJavaMap
+</td>
+<td>
+mutable.Map
+</td>
+<td>
+Map
+</td>
+</tr>
+<tr>
+<td>
+asJavaDirectionary
+</td>
+<td>
+Map
+</td>
+<td>
+Dictionary
+</td>
+</tr>
+<tr>
+<td>
+asJavaCurrentMap
+</td>
+<td>
+mutable.CurrentMap
+</td>
+<td>
+concurrent.ConcurrentMap
+</td>
+</tr>
+</table>
 
 <p>
-Java中类型类不可变，但提供了通配符。以对偶为例：
+从Java集合到Scala集合
 </p>
 
-<pre class="brush: java">
-void func01(Pair&lt;? extends Person&gt; people) {} // Person的子类
-void func02(Pair&lt;? super   Person&gt; people) {} // Person的父类
-</pre>
+<table>
+<tr>
+<td>
+方法
+</td>
+<td>
+从java.util
+</td>
+<td>
+到scala.collection
+</td>
+</tr>
+<tr>
+<td>
+collectionAsScalaIterable
+</td>
+<td>
+Collection
+</td>
+<td>
+Iterable
+</td>
+</tr>
+<tr>
+<td>
+iterableAsScalaIterable
+</td>
+<td>
+Iterable
+</td>
+<td>
+Iterable
+</td>
+</tr>
+<tr>
+<td>
+asScalaIterator
+</td>
+<td>
+Iterator
+</td>
+<td>
+Iterator
+</td>
+</tr>
+<tr>
+<td>
+enumerationAsScalaIterator
+</td>
+<td>
+Enumeration
+</td>
+<td>
+Iterator
+</td>
+</tr>
+<tr>
+<td>
+asScalaBuffer
+</td>
+<td>
+List
+</td>
+<td>
+mutable.Buffer
+</td>
+</tr>
+<tr>
+<td>
+asScalaSet
+</td>
+<td>
+Set
+</td>
+<td>
+mutable.Set
+</td>
+</tr>
+<tr>
+<td>
+mapAsScalaMap
+</td>
+<td>
+Map
+</td>
+<td>
+mutable.Map
+</td>
+</tr>
+<tr>
+<td>
+dictionaryAsScalaMap
+</td>
+<td>
+Dictionary
+</td>
+<td>
+mutable.Map
+</td>
+</tr>
+<tr>
+<td>
+propertiesAsScalaMap
+</td>
+<td>
+Properties
+</td>
+<td>
+mutable.Map
+</td>
+</tr>
+<tr>
+<td>
+asScalaConcurrentMap
+</td>
+<td>
+concurrent.ConcurrentMap
+</td>
+<td>
+mutable.ConcurrentMap
+</td>
+</tr>
+</table>
 
-<h3 id="toc_1.6.1">模拟协变</h3>
+<h2 id="toc_2.9">线程安全的集合</h2>
 
 <p>
-在Scala中的协变类型用不着通配符，但是如果<code>Queue</code>类型是不可变的：
-</p>
-
-<pre class="brush: scala">
-scala&gt; class Pair[T](var first: T, var second: T) {
-     |   override def toString = "(" + first + "," + second + ")"
-     | }
-defined class Pair
-</pre>
-
-<p>
-对于父类<code>Person</code>和子类<code>Studeng</code>：
-</p>
-
-<pre class="brush: scala">
-scala&gt; class Person(val name: String) {
-     |   override def toString = getClass.getName + " " + name
-     | }
-defined class Person
-
-scala&gt; class Student(name: String) extends Person(name)
-defined class Student
-
-scala&gt; val fred = new Student("Fred")
-fred: Student = Student Fred
-
-scala&gt; val wilma = new Student("Wilma")
-wilma: Student = Student Wilma
-
-scala&gt; val studentPair = new Pair(fred, wilma)
-studentPair: Pair[Student] = (Student Fred,Student Wilma)
-</pre>
-
-<p>
-可以定义像协变一样的方法：
-</p>
-
-<pre class="brush: scala">
-scala&gt; def makeFriends(p: Pair[_ &lt;: Person]) =
-     |   p.first.name + " and " + p.second.name + " are now friends."
-makeFriends: (p: Pair[_ &lt;: Person])String
-
-scala&gt; makeFriends(studentPair) // OK
-res2: String = Fred and Wilma are now friends.
-</pre>
-
-<h3 id="toc_1.6.2">模拟逆变</h3>
-
-<p>
-结合<code>Comparator</code>特质与逆变，实现一个取对偶中较小元素的方法：
-</p>
-
-<pre class="brush: scala">
-scala&gt; import java.util.Comparator
-import java.util.Comparator
-
-scala&gt; def min[T](p: Pair[T])(comp: Comparator[_ &gt;: T]) =
-     |   if (comp.compare(p.first, p.second) &lt; 0) p.first else p.second
-min: [T](p: Pair[T])(comp: java.util.Comparator[_ &gt;: T])T
-</pre>
-
-<p>
-注意<code>min</code>方法有要两个柯里化的参数列表，分别是：
+Scala类库提供的六个特质，混入它们就可以让集合操作变成同步：
 </p>
 
 <ul>
 <li>
-要进行比较的对偶<code>p: Pair[T]</code>
+SynchronizedBuffer
 
 <li>
-判断大小的方法<code>comp: Comparator[_ &gt;: T]</code>。
+SynchronizedMap
+
+<li>
+SynchronizedPriorityQueue
+
+<li>
+SynchronizedQueue
+
+<li>
+SynchronizedSet
+
+<li>
+SynchronizedStack
 
 </ul>
 
 <p>
-先来看第一个参数，它的类型<code>Pair[T]</code>，那我们给它一个<code>Pair[String]</code>。泛型<code>T</code>就具体
-化为<code>String</code>：
+例，得到一个同步的对象：
 </p>
 
 <pre class="brush: scala">
-scala&gt; val p = new Pair("Fred", "Wilma")
-p: Pair[String] = (Fred,Wilma)
+scala&gt; val scores = new scala.collection.mutable.HashMap[String, Int] with
+     | scala.collection.mutable.SynchronizedMap[String, Int]
+scores: scala.collection.mutable.HashMap[String,Int] with scala.collection.mutable.SynchronizedMap[String,Int] = Map()
 </pre>
 
-<p>
-再来看第二个参数类型<code>Comparator[_ &gt;: T]</code>，这里<code>_</code>代表的类必须是<code>T</code>的超类（但也
-可以就是<code>T</code>）。因为前面<code>T</code>已经确定为是<code>String</code>，那么这里选用<code>Object</code>。实现
-<code>Comparator[Object]</code>：
-</p>
-
-<pre class="brush: scala">
-scala&gt; val sillyHashComp = new Comparator[Object] {
-     |   def compare(a: Object, b: Object) = a.hashCode() - b.hashCode()
-     | }
-sillyHashComp: java.util.Comparator[Object] = $anon$1@1af37801
-</pre>
-
-<p>
-这样就可以通过类型检查，调用<code>min()</code>方法比较大小了：
-</p>
-
-<pre class="brush: scala">
-scala&gt; min(p)(sillyHashComp)
-res5: String = Fred
-</pre>
-
-<h3 id="toc_1.6.3">缺陷</h3>
-
-<p>
-Scala的类型通配符还不是很完善，下面的声明在Scala 2.10以前都不行：
-</p>
-
-<pre class="brush: scala">
-scala&gt; def min[T &lt;: Comparable[_ &gt;: T]](p: Pair[T]) =
-     |   if (p.first.compareTo(p.second) &lt; 0) p.first else p.second
-&lt;console&gt;:12: error: illegal cyclic reference involving type T
-       def min[T &lt;: Comparable[_ &gt;: T]](p: Pair[T]) =
-                               ^
-&lt;console&gt;:13: error: type mismatch;
- found   : T
- required: _$1
-         if (p.first.compareTo(p.second) &lt; 0) p.first else p.second
-</pre>
-
-<p>
-解决方案是分成两步定义：
-</p>
-
-<pre class="brush: scala">
-scala&gt; type SuperComparable[T] = Comparable[_ &gt;: T]
-defined type alias SuperComparable
-
-scala&gt; def min[T &lt;: SuperComparable[T]](p: Pair[T]) =
-     |   if (p.first.compareTo(p.second) &lt; 0) p.first else p.second
-min: [T &lt;: SuperComparable[T]](p: Pair[T])T
-</pre>
-
-<p>
-举例来说，如果<code>Student &lt;: Comparable[Person]</code>：
-</p>
-
-<pre class="brush: scala">
-scala&gt; class Person(val name: String) extends Comparable[Person] {
-     |   override def toString = getClass.getName + " " + name
-     |   def compareTo(other: Person) = name.compareTo(other.name)
-     | }
-defined class Person
-
-scala&gt; class Student(name: String) extends Person(name)
-defined class Student
-</pre>
-
-<p>
-就实现了从<code>Person</code>到<code>Student</code>的协变：
-</p>
-
-<pre class="brush: scala">
-scala&gt; val fred = new Student("Fred")
-fred: Student = Student Fred
-
-scala&gt; val wilma = new Student("Wilma")
-wilma: Student = Student Wilma
-
-scala&gt; val studentPair = new Pair(fred, wilma)
-studentPair: Pair[Student] = (Student Fred,Student Wilma)
-
-scala&gt; min(studentPair)
-res6: Student = Student Fred
-</pre>
-
-<h3 id="toc_1.6.4">存在类型</h3>
-
-<p>
-这里的类型通配符其实是“存在类型”的语法糖，其他章节具体讨论存在类型。
-</p>
-
-
-<h2 id="toc_1.7">例：开发纯函数式队列</h2>
-
-<p>
-函数式的队列是不可变的，添加元素操作会返回一个新的队列。三个基本方法：
-</p>
-
-<ul>
-<li>
-<code>head</code>返回队列的第一个元素。
-
-<li>
-<code>tail</code>返回第一个元素以外的队列。
-
-<li>
-<code>append</code>返回在尾部添加指定元素的列队。
-
-</ul>
-
-<p>
-理想情况下，希望三种基本操作都可以在常量时间中完成。
-</p>
-
-<p>
-一个实现方案是以<code>List</code>作为功能表达类型，可以用现成的<code>head</code>和<code>tail</code>方法。<code>append</code>
-方法调用连接操作：
-</p>
-
-<pre class="brush: scala">
-  class SlowAppendQueue[T](elems: List[T]) { // Not efficient
-    def head = elems.head
-    def tail = new SlowAppendQueue(elems.tail)
-    def append(x: T) = new SlowAppendQueue(elems ::: List(x))
-  }
-</pre>
-
-<p>
-但这样<code>append</code>操作的时间会按元素的数量而增加，那换一种思路，把列表倒过来排序，
-这样会让原来最后加进来的元素出现在列表的最前面：
-</p>
-
-<pre class="brush: scala">
-  class SlowHeadQueue[T](smele: List[T]) { // Not efficient
-    // smele is elems reversed
-    def head = smele.last
-    def tail = new SlowHeadQueue(smele.init)
-    def append(x: T) = new SlowHeadQueue(x :: smele)
-  }
-</pre>
-
-<p>
-现在表现也倒过来了：<code>append</code>操作时间为常量，但<code>head</code>和<code>tail</code>耗时与元素数量
-成正比了。
-</p>
-
-<p>
-试一下结合两种列表的方案：
-</p>
-
-<p>
-用两个列表<code>leading</code>放前面一半；<code>trailing</code>放后一半反向排的元素。这样全部内容就是
-：
-</p>
-
-<pre class="brush: scala">
-leading ::: trailing.reverse
-</pre>
-
-<p>
-添加新元素：
-</p>
-
-<pre class="brush: scala">
-i :: trailing
-</pre>
-
-<p>
-这样常量时间就可以完成。但这样前一半的<code>leading</code>就不放进内容了，所以在对空的
-<code>leading</code>进行第一次<code>head</code>或<code>tail</code>操作前都要把<code>trailing</code>反转并复制给<code>leading</code>。
-这个操作被定义为<code>mirror</code>。
-</p>
-
-<p>
-虽然<code>mirror</code>操作与队列长度成正比，但是这只发生在<code>leading</code>为空时才会被调用。因为
-如果<code>leading</code>不为空它将直接返回。<code>head</code>与<code>tail</code>操作会调用到<code>mirror</code>，所以这两个
-方法的复杂度与队列长度呈线性关系。然而队列越长，<code>mirror</code>被调用的次数就越以级数
-方式递减。
-</p>
-
-<pre class="brush: scala">
-  class Queue[T](
-    private val leading: List[T],
-    private val trailing: List[T]
-  ) {
-    private def mirror =
-      if (leading.isEmpty)
-        new Queue(trailing.reverse, Nil)
-      else
-        this
-
-    def head = mirror.leading.head
-
-    def tail = {
-      val q = mirror
-      new Queue(q.leading.tail, q.trailing)
-    }
-
-    def append(x: T) =
-      new Queue(leading, x :: trailing)
-  }
-</pre>
-
-<h3 id="toc_1.7.1">信息隐藏</h3>
-
-<p>
-前面的<code>Queue</code>实现暴露了太多实现细节，比如构造器的两个参数还有一个是反转的。
-</p>
-
-<h4 id="toc_1.7.1.1">私有构造器及工厂方法</h4>
-
-<p>
-为了不让外部了解构造器的实现，可以把构造器作为隐藏的：
-</p>
-
-<pre class="brush: scala">
-  class Queue[T] private (
-    private val leading: List[T],
-    private val trailing: List[T]
-  )
-</pre>
-
-<p>
-这样防止外部调用主构造器：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; new Queue(List(1, 2), List(3))
-  &lt;console&gt;:6: error: constructor Queue cannot be accessed in
-    object $iw
-         new Queue(List(1, 2), List(3))
-         ^
-</pre>
-
-<p>
-客户代码只能调用辅助构造器：
-</p>
-
-<pre class="brush: scala">
-  def this() = this(Nil, Nil)
-</pre>
-
-<p>
-改良一下，让它可以带上初始队列元素列表：
-</p>
-
-<pre class="brush: scala">
-  def this(elems: T*) = this(elems.toList, Nil)
-</pre>
-
-<p>
-其中的<code>T*</code>是重复参数标记，在前面“函数与闭包”一章中已经介绍。
-</p>
-
-<p>
-还有一种让客户代码构造的方法是在类定义同一个文件内建立伴生类的工厂方法：
-</p>
-
-<pre class="brush: scala">
-  object Queue {
-    // constructs a queue with initial elements `xs'
-    def apply[T](xs: T*) = new Queue[T](xs.toList, Nil)
-  }
-</pre>
-
-<h4 id="toc_1.7.1.2">可选方案：私有类</h4>
-
-<p>
-除了私有构造器和私有成员，还可以直接隐藏掉类本身，只提供暴露类公共接口的特质：
-</p>
-
-<pre class="brush: scala">
-  trait Queue[T] {
-    def head: T
-    def tail: Queue[T]
-    def append(x: T): Queue[T]
-  }
-
-  object Queue {
-
-    def apply[T](xs: T*): Queue[T] =
-      new QueueImpl[T](xs.toList, Nil)
-
-    private class QueueImpl[T](
-      private val leading: List[T],
-      private val trailing: List[T]
-    ) extends Queue[T] {
-
-      def mirror =
-        if (leading.isEmpty)
-          new QueueImpl(trailing.reverse, Nil)
-        else
-          this
-
-      def head: T = mirror.leading.head
-
-      def tail: QueueImpl[T] = {
-        val q = mirror
-        new QueueImpl(q.leading.tail, q.trailing)
-      }
-
-      def append(x: T) =
-        new QueueImpl(leading, x :: trailing)
-    }
-  }
-</pre>
-
-
-<h3 id="toc_1.7.2">对象私有数据</h3>
-
-<p>
-之前的<code>Queue</code>类待改进内容：当<code>leading</code>列表为空时如果重复调用<code>head</code>，那么<code>mirror</code>
-操作会重复地把<code>trailing</code>复制到<code>leading</code>列表。
-</p>
-
-<p>
-改动：
-</p>
-
-<p>
-<code>leading</code>和<code>trailing</code>都是可变变量，<code>mirror</code>操作在当前列表上产生副作用而不是返回
-新的队列。由于它们都是对外不可见的私有变量，所以<code>Queue</code>还是算纯函数对象。
-</p>
-
-<pre class="brush: scala">
- class Queue[+T] private (
-   private[this] var leading: List[T], 
-   private[this] var trailing: List[T]
- ) {
-
-   private def mirror() = 
-     if (leading.isEmpty) {
-       while (!trailing.isEmpty) {
-         leading = trailing.head :: leading
-         trailing = trailing.tail
-       }
-     }
-
-   def head: T = { 
-     mirror()
-     leading.head 
-   }
-
-   def tail: Queue[T] = { 
-     mirror()
-     new Queue(leading.tail, trailing) 
-   }
-
-   def append[U &gt;: T](x: U) = 
-     new Queue[U](leading, x :: trailing)
- }
-</pre>
-
-<p>
-在两个可变私有成员变量的情况下<code>Queue</code>还可以使用协变。因为对于对象的私有值访问
-来说不可能有比定义的对象类型更弱的静态类型对象引用。
-</p>
-
-<p>
-所以Scala的类型变化检查对于对象私有成员，在遇到带有<code>+</code>或<code>-</code>的类型参数只出现在
-具有相同变化型分类的位置上时，会被忽略。
-</p>
-
-<p>
-所以如果去掉<code>private</code>修饰符的<code>[this]</code>限定会编译不过：
-</p>
-
-<pre class="brush: scala">
-  Queues.scala:1: error: covariant type T occurs in 
-  contravariant position in type List[T] of parameter of
-  setter leading_=
-  class Queue[+T] private (private var leading: List[T],
-                                       ^
-  Queues.scala:1: error: covariant type T occurs in 
-  contravariant position in type List[T] of parameter of
-  setter trailing_=
-                           private var trailing: List[T]) {
-                                       ^
-</pre>
-
-<p>
-上面分别报错的原因是：协变类型<code>T</code>出现在setter函数<code>leading_=</code>类型参数<code>List[T]</code>的
-逆变位置上；协变类型<code>T</code>出现在setter函数<code>trailing_=</code>类型参数<code>List[T]</code>的逆变位置
-上。
-</p>
-
-
-
-
-
-
-<h1 id="toc_2">隐式转换</h1>
-
-<h2 id="toc_2.1">隐式转换函数</h2>
-
-<p>
-Scala里有一个很有用的特质<code>RandomAccessSeq[T]</code>提供了可以随机访问的序列。它有很多
-功能，所以它的子类都自动继承这些功能。但是没有混入这个特质的类，比如<code>String</code>
-就用不到那些方便的功能。
-</p>
-
-<p>
-隐式转换函数（implicit conversion function）可以理解为是一个以<code>String</code>类实例为
-参数来构造一个对应的<code>RandomAccessSeq</code>实例的函数。格式以<code>implicit</code>开头：
-</p>
-
-<pre class="brush: scala">
-  implicit def stringWrapper(s: String) = 
-    new RandomAccessSeq[Char] {
-      def length = s.length
-      def apply(i: Int) = s.charAt(i)
-    }
-</pre>
-
-<p>
-然后就可以转换它了：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; stringWrapper("abc123") exists (_.isDigit)
-  res0: Boolean = true
-</pre>
-
-<p>
-之所以称为隐式转换，就是可以在需要的时候自动地转换为可用的类型：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; "abc123" exists (_.isDigit)
-  res1: Boolean = true
-</pre>
-
-<p>
-顺便提一下：<code>Predef</code>对象已经用类似的方式定义了<code>stringWrapper</code>转换，所以其实不用
-定义前面的<code>stringWrapper</code>函数也可以隐式转换了。
-</p>
-
-<h3 id="toc_2.1.1">隐式转换会引起类型变化</h3>
-
-<p>
-隐式转换很有用，但有时要注意隐式转换相引起的类型变化：
-</p>
-
-<pre class="brush: scala">
-"mon".reverse == "mon" // false
-</pre>
-
-<p>
-不相等的原因是因为类型已经变为<code>RichString</code>，这样就是相等的了：
-</p>
-
-<pre class="brush: scala">
-"mon".reverse.toString == "mon" // false
-</pre>
-
-
-<h2 id="toc_2.2">隐式操作规则</h2>
-
-<h3 id="toc_2.2.1">标记规则</h3>
-
-<p>
-只有标记为<code>implicit</code>的定义才是可用的。可以用来标记任何变量、函数或对象定义。
-</p>
-
-<h3 id="toc_2.2.2">作用域规则</h3>
-
-<p>
-必须以单一标识符的形式处于作用域中，或与转换的源或目标类型关联在一起。
-</p>
-
-<p>
-所以不能用<code>aaa.convert(x)</code>，这不是单一的。要先<code>import aaa</code>，然后<code>convert(x)</code>，
-这样才是单一的。
-</p>
-
-<p>
-“单一标识符”规则有个例外。转换的“目标”与“源”的类型的“伴生对象”中的隐式转换定义
-会被编译器找到。如从<code>Dollar</code>转为<code>Euro</code>，可以把隐式转换放在这两者之一的的伴生对象
-中：
-</p>
-
-<pre class="brush: scala">
-  object Dollar {
-    implicit def dollarToEuro(x: Dollar): Euro = ...
-  }
-  class Dollar { ... }
-</pre>
-
-<p>
-这样就不用手动引入了。
-</p>
-
-<p>
-还可以排除某个给你带来麻烦的隐式转换函数。如不希望把整数转为双精度浮点，可以
-排除一个隐式转换：
-</p>
-
-<pre class="brush: scala">
-import aa.TransTools.{int2Double =&gt; _,_}
-</pre>
-
-
-<h3 id="toc_2.2.3">无歧义规则</h3>
-
-<p>
-不能有其他转换，如果有两个可用的从类A到类B的转换，会报错。可以移除一个转换函数，
-或是显式指明一个方法，如：<code>convertFunc2(x) + y</code>
-</p>
-
-<h3 id="toc_2.2.4">单一调用原则</h3>
-
-<p>
-不会嵌套地转换，如：<code>convert1(convert2(x)) + y</code>。
-</p>
-
-<h3 id="toc_2.2.5">显式操作先行规则</h3>
-
-<p>
-如果不用转换类型就可以用，编译器不会再画蛇添足地转换。
-</p>
-
-<p>
-这是一个供程序员把握的度：如果代码太冗长，用隐式转换来精简代码；如果代码看起来
-太简单不明确，用显式的转换来减少歧义和二义性。
-</p>
-
-<h3 id="toc_2.2.6">隐式转换的命名</h3>
-
-<p>
-转换方法的命名可以随意，但要考虑到两个情况：
-</p>
-
-<ul>
-<li>
-是不是需要在方法应用中明确写明
-
-<li>
-决定在哪个隐式转换在程序的任何地方都有效。
-
-</ul>
-
-<p>
-拿第二点来说，设一个对象带两个隐式转换：
-</p>
-
-<pre class="brush: scala">
-  object MyConversions {
-    implicit def stringWrapper(s: String):
-        RandomAccessSeq[Char] = ...
-    implicit def intToString(x: Int): String = ...
-  }
-</pre>
-
-<p>
-现在只需要<code>stringWrapper</code>，不想要<code>intToString</code>。可以只引入一个：
-</p>
-
-<pre class="brush: scala">
-  import MyConversions.stringWrapper
-  ... // code making use of stringWrapper
-</pre>
-
-<p>
-这样的情况下会用到转换方法的名字。
-</p>
-
-
-<p>
-一般约定俗成的习惯是<code>A2B</code>这样的形式。如<code>int2String</code>。
-</p>
-
-<h2 id="toc_2.3">隐式转换的应用场景</h2>
-
-<p>
-Scala会在三种情况下触发隐式转换：转换为需要的类型、指定（方法）调用者的转换、
-隐式参数。接下来的三节分别讨论这三种情况。
-</p>
-
-
-<h3 id="toc_2.3.1">隐式转换为期望的类型</h3>
-
-<p>
-有一个双精度数，但是表达式要用到整数，所以就要隐式转换：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val i: Int = 3.5
-  &lt;console&gt;:5: error: type mismatch;
-   found   : Double(3.5)
-   required: Int
-         val i: Int = 3.5
-                      ^
-</pre>
-
-<p>
-定义隐式转换就可以用了：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; implicit def doubleToInt(x: Double) = x.toInt
-  doubleToInt: (Double)Int
-
-  scala&gt; val i: Int = 3.5
-  i: Int = 3
-</pre>
-
-<p>
-相当于：
-</p>
-
-<pre class="brush: scala">
-  val i: Int = doubleToInt(3.5)
-</pre>
-
-<p>
-因为从<code>Double</code>到<code>Int</code>会丢失精度，所以<code>Predef</code>中没有默认定义；但是反过来在
-<code>Predef</code>中已经有定义了：
-</p>
-
-<pre class="brush: scala">
-  implicit def int2double(x: Int): Double = x.toDouble
-</pre>
-
-
-<h3 id="toc_2.3.2">转换方法调用的接收者</h3>
-
-<p>
-例如，<code>java.io.File</code>类是没有<code>read()</code>方法来读取整个文件的：
-</p>
-
-<pre class="brush: scala">
-val contents = new File("Readme.txt").read
-</pre>
-
-<p>
-在Scala中可以定义一个支持<code>read()</code>方法的强化类：
-</p>
-
-<pre class="brush: scala">
-class RichFile(val from: File) {
-	def read = Source.fromFile(from.getPath).mkstring
-}
-</pre>
-
-<p>
-然后定义一个从<code>File</code>到<code>RichFile</code>的隐式转换：
-</p>
-
-<pre class="brush: scala">
-implicit def file2RichFile(from: File) = new RichFile(from)
-</pre>
-
-<p>
-这样就可以在<code>File</code>类上调用<code>read</code>方法了：
-</p>
-
-<pre class="brush: scala">
-val contents = new File("Readme.txt").read
-</pre>
-
-<h4 id="toc_2.3.2.1">与新类型的交互操作</h4>
-
-<p>
-给新类型加上它没有实现的功能。以实数类为例：
-</p>
-
-<pre class="brush: scala">
-  class Rational(n: Int, d: Int) {
-    ...
-    def + (that: Rational): Rational = ...
-    def + (that: Int): Rational = ...
-  }
-</pre>
-
-<p>
-加法可以用<code>Rational</code>和<code>Int</code>类型作为参数：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val oneHalf = new Rational(1, 2)
-  oneHalf: Rational = 1/2
-
-  scala&gt; oneHalf + oneHalf
-  res4: Rational = 1/1
-
-  scala&gt; oneHalf + 1
-  res5: Rational = 3/2
-</pre>
-
-<p>
-但是一个<code>Int</code>类型的加法没有办法以<code>Rational</code>类型为参数：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; 1 + oneHalf
-  &lt;console&gt;:6: error: overloaded method value + with
-  alternatives (Double)Double &lt;and&gt; ... cannot be applied
-  to (Rational)
-       1 + oneHalf
-         ^
-</pre>
-
-<p>
-办法是让<code>Int</code>转为<code>Rational</code>：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; implicit def intToRational(x: Int) = 
-       |   new Rational(x, 1)
-  intToRational: (Int)Rational
-  
-  scala&gt; 1 + oneHalf
-  res6: Rational = 3/2
-</pre>
-
-<p>
-相当于：
-</p>
-
-<pre class="brush: scala">
-  intToRational(1) + oneHalf
-</pre>
-
-<h4 id="toc_2.3.2.2">模拟新的语法</h4>
-
-<p>
-隐式转换还可以用来模拟新的语法。以我们熟悉的<code>Map</code>构建为例：
-</p>
-
-<pre class="brush: scala">
-  Map(1 -&gt; "one", 2 -&gt; "two", 3 -&gt; "three")
-</pre>
-
-<p>
-其实<code>Map</code>对象里的<code>-&gt;</code>根本就不是内建语法。实际上是定义在<code>scala.Predef</code>中的类
-<code>ArrowAssoc</code>的方法。还有定义了从<code>Any</code>到<code>ArrowAssoc</code>的隐式转换。定义是：
-</p>
-
-<pre class="brush: scala">
-package scala
-object Predef {
-
-  class ArrowAssoc[A](x: A) {
-    def -&gt; [B](y: B): Tuple2[A, B] = Tuple2(x, y)
-  }
-
-  implicit def any2ArrowAssoc[A](x: A): ArrowAssoc[A] = 
-    new ArrowAssoc(x)
-  ...
-
-}
-</pre>
-
-<p>
-拿上面的<code>1 -&gt; "one"</code>来说。
-</p>
-
-<ul>
-<li>
-其实是从先从<code>1</code>到<code>ArrowAssoc[Int]</code>隐式转换。
-
-<li>
-再调用<code>ArrowAssoc[Int]</code>类型的<code>-&gt;</code>方法，返回了一个<code>Touble2</code>。
-
-</ul>
-
-
-<h3 id="toc_2.3.3">隐式参数与隐式值</h3>
-
-<p>
-方法参数列表用<code>implict</code>修饰后，编译器会查找隐式值（即参数的默认值）。因为
-<code>implict</code>会把整个参数列表都作为可隐式参数，一般与柯里化结合把参数列表分成多个
-参数列表。
-</p>
-
-<p>
-举例有一个类实现了命令行提示符：
-</p>
-
-<pre class="brush: scala">
-  class PreferredPrompt(val preference: String)
-</pre>
-
-<h4 id="toc_2.3.3.1">声明参数列表为隐式</h4>
-
-<p>
-还有一个<code>Greeter</code>类的方法<code>greet</code>有两个参数列表。分别是用户名和前面的命令行
-提示符类：
-</p>
-
-<pre class="brush: scala">
-  object Greeter {
-    def greet(name: String)(implicit prompt: PreferredPrompt) {
-      println("Welcome, "+ name +". The system is ready.")
-      println(prompt.preference)
-    }
-  }
-</pre>
-
-<p>
-后一个参数列表被声明为<code>implicit</code>，表示可以隐式提供。当然要显式提供也可以：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val bobsPrompt = new PreferredPrompt("relax&gt; ")
-  bobsPrompt: PreferredPrompt = PreferredPrompt@ece6e1
-
-  scala&gt; Greeter.greet("Bob")(bobsPrompt)                    
-  Welcome, Bob. The system is ready.
-  relax&gt; 
-</pre>
-
-<h4 id="toc_2.3.3.2">定义隐式值（实参的默认值）</h4>
-
-<p>
-<code>implicit</code>修饰隐式值，即实参的默认值：
-</p>
-
-<pre class="brush: scala">
-  object JoesPrefs {
-    implicit val prompt = new PreferredPrompt("Yes, master&gt; ")
-  }
-</pre>
-
-<p>
-注意它本身也要被定义为<code>implicit</code>，不然是不会被用来作为隐式变量的。而且如果不是在
-同一作用域的话，也不能用：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; Greeter.greet("Joe")
-  &lt;console&gt;:7: error: no implicit argument matching parameter
-    type PreferredPrompt was found.
-         Greeter.greet("Joe")
-                 ^
-</pre>
-
-<p>
-不过引入后就可以用了：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; import JoesPrefs._         
-  import JoesPrefs._
-
-  scala&gt; Greeter.greet("Joe")
-  Welcome, Joe. The system is ready.
-  Yes, master&gt; 
-</pre>
-
-<h4 id="toc_2.3.3.3">implicit会作用于整个参数列表</h4>
-
-<p>
-注意<code>implicit</code>关键字作用于全体参数列表而不是单独参数。下面的例子中<code>Greeter</code>的
-<code>greet</code>方法最后的参数列表再次被标记为<code>implicit</code>，它有两个参数：
-<code>prompt: PrefferredPrompt</code>和<code>drink: PrefferedDrink</code>。
-</p>
-
-<pre class="brush: scala">
-  class PreferredPrompt(val preference: String)
-  class PreferredDrink(val preference: String)
-
-  object Greeter {
-    def greet(name: String)(implicit prompt: PreferredPrompt,
-        drink: PreferredDrink) {
-
-      println("Welcome, "+ name +". The system is ready.")
-      print("But while you work, ")
-      println("why not enjoy a cup of "+ drink.preference +"?")
-      println(prompt.preference)
-    }
-  }
-
-  object JoesPrefs {
-    implicit val prompt = new PreferredPrompt("Yes, master&gt; ")
-    implicit val drink = new PreferredDrink("tea")
-  }
-</pre>
-
-<p>
-伴生对象中定义了两个隐式的变量，只要它们不作为单一标识符处于作用域内，不然就不能
-用来填充缺少的参数列表：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; Greeter.greet("Joe") 
-  &lt;console&gt;:8: error: no implicit argument matching parameter
-    type PreferredPrompt was found.
-         Greeter.greet("Joe")
-                 ^
-</pre>
-
-<p>
-用<code>import</code>导入：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; import JoesPrefs._
-  import JoesPrefs._
-</pre>
-
-<p>
-可以自动填充了：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; Greeter.greet("Joe")(prompt, drink)
-  Welcome, Joe. The system is ready.
-  But while you work, why not enjoy a cup of tea?
-  Yes, master&gt; 
-
-
-  scala&gt; Greeter.greet("Joe")
-  Welcome, Joe. The system is ready.
-  But while you work, why not enjoy a cup of tea?
-  Yes, master&gt; 
-</pre>
-
-<p>
-注意这里的没有用<code>String</code>这样的常用类型来作为<code>prompt</code>或<code>drink</code>的类型。就是为了
-防止被过多地匹配到隐式转换。
-</p>
-
-<h4 id="toc_2.3.3.4">参数类型不能相同</h4>
-
-<p>
-隐式参数的默认值是按类型来区分的，所以每种类型只能有一个参数：
-</p>
-
-<pre class="brush: scala">
-def myFunc(value: Int)(implicit left: String, right: String)  // error
-</pre>
-
-<p>
-这样是不行的，<code>left</code>和<code>right</code>两个参数类型相同。
-</p>
-
-<h4 id="toc_2.3.3.5">用隐式转换代替变化类型参数</h4>
-
-<p>
-以实现排序功能为例，类型参数与隐式类型转换代表了两种不同的思路：
-</p>
-
-<ul>
-<li>
-类型参数的上界限制：规定得到的类型必须是具有排序功能的类的子类。
-
-<li>
-隐式类型转换：任何类都可以，但要提供一个从得到类转为具有排序功能的类的方法。
-
-</ul>
-
-<p>
-从上面可以看出，隐式转换可以应用的范围更广。
-</p>
-
-<p>
-例子：
-</p>
-
-<p>
-下面的方法返回两个数中较小的一个：
-</p>
-
-<pre class="brush: scala">
-def smaller[T](a: T, b: T) = if (a &lt; b) a else b  // Error
-</pre>
-
-<p>
-上面的代码有错，因为对于任意类型<code>T</code>，不能保证都支持<code>&lt;()</code>方法。解决方法可以通过
-变化类型的限制（泛型这一部分已经讲过），也可通过提供一个隐式转换函数来把类型<code>T</code>
-转为支持<code>&lt;()</code>操作的类型，比如实现了<code>Ordered</code>特质：
-</p>
-
-<pre class="brush: scala">
-def smaller[T](a: T, b: T)(implicit order: T =&gt; Ordered[T]) = 
-	if (order(a) &lt; b) a else b
-</pre>
-
-<p>
-类型<code>Ordered[T]</code>表示操作方法支持类型<code>T</code>。在这种情况下，<code>Predef</code>对象对很多常见
-类型都已经定义的<code>T =&gt; Ordered[T]</code>的转换，包括已经实现<code>Order[T]</code>或<code>Comparable[T]</code>
-的类型。所以很多情况下已经有默认的转换实现了，下面的代码直接就可以用：
-</p>
-
-<pre class="brush: scala">
-smaller(40,2)
-smaller("Hello", "world")
-</pre>
-
-<p>
-如果有一个自定义的类，比如学生类：
-</p>
-
-<pre class="brush: scala">
-class Student(val name: String, val age: Int) {
-  override def toString = "{name: " + name + ", age: " + age + "}"
-}
-
-val a  = new Student("morgan", 10)
-val b  = new Student("jade", 9)
-val c  = new Student("wendy", 7)
-val d  = new Student("Teo", 12)
-</pre>
-
-<p>
-我们要按年龄比较：
-</p>
-
-<pre class="brush: scala">
-class StudentAgeOrdered(s: Student) extends Ordered[Student] {
-  def compare(that: Student) = s.age - that.age
-}
-</pre>
-
-<p>
-再实现隐式转换：
-</p>
-
-<pre class="brush: scala">
-implicit def Student2StudentAgeOrdered(s: Student) = new StudentAgeOrdered(s)
-</pre>
-
-<p>
-这样就实现了比较的功能：
-</p>
-
-<pre class="brush: scala">
-scala&gt; maxListImpParm(a :: b :: c :: d :: Nil)
-res11: Student = {name: Teo, age: 12}
-</pre>
-
-
-<p>
-再来看一个例子，它返回传入的列表参数中的最大元素。先看一个通过类型参数限制的
-实现版本：
-</p>
-
-<pre class="brush: scala">
-  def maxListUpBound[T &lt;: Ordered[T]](elements: List[T]): T = 
-    elements match {
-      case List() =&gt;
-        throw new IllegalArgumentException("empty list!")
-      case List(x) =&gt; x
-      case x :: rest =&gt;
-        val maxRest = maxListUpBound(rest)
-        if (x &gt; maxRest) x
-        else maxRest
-    }
-</pre>
-
-<p>
-注意类型参数已经被限制为<code>T &lt;: Ordered[T]</code>，就是说列表的元素<code>T</code>要实现<code>Ordered[T]</code>
-特质。所以列表是可排序元素的列表。但是缺点是<code>Int</code>列表不行，因为<code>Int</code>没有实现特质
-<code>Ordered</code>，所以不是<code>Ordered[T]</code>的子类。
-</p>
-
-<p>
-更加泛用的隐式转换版本，添加一个把<code>T</code>转为<code>Ordered[T]</code>的函数作为参数：
-</p>
-
-<p>
-下面的例子中第二个参数被标记为<code>implicit</code>。
-</p>
-
-<pre class="brush: scala">
-  def maxListImpParm[T](elements: List[T])
-        (implicit orderer: T =&gt; Ordered[T]): T =
-
-    elements match {
-      case List() =&gt; 
-        throw new IllegalArgumentException("empty list!")
-      case List(x) =&gt; x
-      case x :: rest =&gt;
-        val maxRest = maxListImpParm(rest)(orderer)
-        if (orderer(x) &gt; maxRest) x
-        else maxRest
-    }
-</pre>
-
-<p>
-要排序的列表是必须显式提供的，所以元素的类型<code>T</code>是在编译时就确定的。确定了类型<code>T</code>
-之后就可以判断<code>T =&gt; Ordered[T]</code>类型的隐式定义是否存在于作用域中。如果存在就隐式
-传入排序函数<code>order</code>。
-</p>
-
-<p>
-这种方式在很多Scala的通用库中也用到，它们提供了隐式的排序方法。所以我们上面写的
-方法可以用在很多类型上：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; maxListImpParm(List(1,5,10,3))
-  res10: Int = 10
-
-  scala&gt; maxListImpParm(List(1.5, 5.2, 10.7, 3.14159))
-  res11: Double = 10.7
-
-  scala&gt; maxListImpParm(List("one", "two", "three"))
-  res12: java.lang.String = two
-</pre>
-
-
-<h4 id="toc_2.3.3.6">隐式参数样式规则</h4>
-
-<p>
-就是在要用到隐式转换的地方最好是从自定义的类型开始转而不是从<code>String</code>这样的很常见
-的类型开始转。如果<code>maxListImpParm</code>直接写成下面这样的方法签名：
-</p>
-
-<pre class="brush: scala">
-  def maxListPoorStyle[T](elments: List[T])
-        (implicit orderer: (T, T) =&gt; Boolean): T
-</pre>
-
-<p>
-这样<code>(T,T) =&gt; Boolean</code>的类型太常见了，很容易被匹配到到不希望匹配到的方法上去。
-</p>
-
-<p>
-所以简单地说：至少用一个确定的名称为隐式类型参数命名。
-</p>
-
-
-<h2 id="toc_2.4">视图界定</h2>
-
-<p>
-可以把<code>T &lt;% Ordered[T]</code>理解为：T是能被当作<code>Ordered[T]</code>的任何类型。编译器将
-调用声明在<code>Predef</code>中的隐式鉴别函数：
-</p>
-
-<pre class="brush: scala">
-implicit def identity[A](x: A): A = x
-</pre>
-
-<p>
-如果传入的类型正好就是<code>Ordered[T]</code>，那上面的转换什么也不做，只是简单地把传入的
-参数再返回出来。
-</p>
-
-<p>
-前面的例子还可以再用隐式操作强化。如果把<code>implicit</code>用在参数上，编译器不仅会尝试用
-隐式值补足这个参数，还会把这个参数当作可用的隐式操作而使用于方法体中。因此方法体
-中<code>orderer</code>的两处应用都可以被省略。
-</p>
-
-<pre class="brush: scala">
-  def maxList[T](elements: List[T])
-        (implicit orderer: T =&gt; Ordered[T]): T =
-
-    elements match {
-      case List() =&gt; 
-        throw new IllegalArgumentException("empty list!")
-      case List(x) =&gt; x
-      case x :: rest =&gt;
-        val maxRest = maxList(rest)  // (orderer) is implicit
-        if (x &gt; maxRest) x           // orderer(x) is implicit
-        else maxRest
-    }
-</pre>
-
-<p>
-编译器会发现上面代码的类型不能匹配。比如如<code>T</code>类型的<code>x</code>不存在<code>&gt;</code>方法，所以
-<code>x &gt; maxRest</code>不起作用。
-</p>
-
-<p>
-但编译器在这个时候并不会马上停止，而是先查找能修复这个问题的隐式转换。
-</p>
-
-<p>
-在这个例子中换成了<code>orderer(x) &gt; maxRest</code>，并且同样把<code>maxList(rest)</code>换成了
-<code>maxList(rest)(ordered)</code>。
-</p>
-
-<p>
-回过来看<code>maxList</code>方法中没有提到有<code>ordered</code>参数的地方，所有对<code>ordered</code>的使用都是
-隐式的。这是一个很常用的代码模式：隐式参数只是用来转换，所以它本身也可以被隐式地
-使用。
-</p>
-
-<p>
-在现在的版本，因为参数名没有被显式调用，所以名称也可以随便定。如，只要不改变
-<code>maxList</code>的方法体，对于只改变参数名称来说，方法的行为没有任何改变：
-</p>
-
-<pre class="brush: scala">
-  def maxList[T](elements: List[T])
-        (implicit converter: T =&gt; Ordered[T]): T =
-    // same body...
-</pre>
-
-<p>
-改成这样也没有问题：
-</p>
-
-<pre class="brush: scala">
-  def maxList[T](elements: List[T])
-        (implicit iceCream: T =&gt; Ordered[T]): T =
-    // same body...
-</pre>
-
-<p>
-因为这样的方法非常常用，所以Scala可以让代码省略这个参数的名称并使用视图界定缩短
-方法头。<code>maxList</code>方法签名可以是这样：
-</p>
-
-<pre class="brush: scala">
-  def maxList[T &lt;% Ordered[T]](elements: List[T]): T =
-    elements match {
-      case List() =&gt; 
-        throw new IllegalArgumentException("empty list!")
-      case List(x) =&gt; x
-      case x :: rest =&gt;
-        val maxRest = maxList(rest)  // (orderer) is implicit
-        if (x &gt; maxRest) x           // orderer(x) is implicit
-        else maxRest
-    }
-</pre>
-
-<h3 id="toc_2.4.1">视图界定与上界</h3>
-
-<p>
-注意这不同于上界表达的意思，上界<code>T &lt;: Ordered[T]</code>的意思是：<code>T</code>是<code>Ordered[T]</code>。
-</p>
-
-<p>
-相比之前用到的上界版本的<code>maxListUpBound</code>方法，唯一的区别就是上界符号与视图界定
-符号的不同，但是我们的视图界定版本可以支持更多类型。
-</p>
-
-<h2 id="toc_2.5">上下文界定</h2>
-
-<p>
-上下文界定的形式为<code>T:M</code>。意思是对于一个泛形类<code>M</code>，要存在一个从类型<code>T</code>到<code>M[T]</code>的
-隐式值。
-</p>
-
-<p>
-如对于上下文界定：
-</p>
-
-<pre class="brush: scala">
-class Pair[T : Ordering]
-</pre>
-
-<p>
-要有一个类型为<code>Ordering[T]</code>的隐式值，该隐式值可以被用在该类的方法中。因为在
-<code>Predef</code>中已经有一个类型为<code>Ordering[Int]</code>的隐式值，所以可以这样定义<code>Pair</code>类：
-</p>
-
-<pre class="brush: scala">
-class Pair[T : Ordering](val first: T, val second: T) {
-
-	def smaller(implicit ord: Ordering[T]) =
-		if (ord.compare(first, second) &lt; 0) first else second
-
-}
-</pre>
-
-<p>
-在进行<code>new Pair(40, 2)</code>操作时，编译器推断出类型为<code>Pair[Int]</code>。会把<code>Predef</code>中定义
-的<code>Ordering[Int]</code>隐式值作为该类的一个字段传入到需要它的方法中。
-</p>
-
-<p>
-也可以用<code>Predef</code>类的<code>implicitly</code>方法取得该值：
-</p>
-
-<pre class="brush: scala">
-class Pair[T : Ordering](val first: T, val second: T) {
-
-	def smaller = 
-		if (implicitly[Ordering[T]].compare(first, second) &lt; 0) first else second
-
-}
-</pre>
-
-<p>
-这个<code>implicitly</code>函数在<code>Predef.scala</code>中是这样定义的：
-</p>
-
-
-<pre class="brush: scala">
-def implicitly[T](implict e: T) = e
-</pre>
-
-<p>
-还有一个方法是利用<code>Ordered</code>特质中定义的从<code>Ordering</code>到<code>Ordered</code>的隐式转换。在引入
-了这个转换以后就可以使用关系操作符：
-</p>
-
-<pre class="brush: scala">
-class Pair[T : Ordering](val first: T, val second: T) {
-
-	def smaller = 
-		import Ordered._;
-		if (first &lt; secone) first else second
-
-}
-</pre>
-
-<p>
-重点是，只能有满足存在类型为<code>Ordering[T]</code>的隐式值条件，就可以随时实例化<code>Pair[T]</code>
-。比如要实例化一个<code>Pair[Point]</code>，就可以组织一个隐式的<code>Ordering[Point]</code>值：
-</p>
-
-<pre class="brush: scala">
-implict object PointOrdering extends Ordering[Point] {
-	def compare(a: Point, b: point) = ....
-}
-</pre>
-
-
-
-<h3 id="toc_2.5.1">Manifest上下文界定</h3>
-
-<p>
-实例化一个<code>Array[T]</code>就需要一个<code>manifest[T]</code>对象。<code>Array</code>只是Scala提供的
-一个类库，虚拟机中泛型相关的信息是被抹除的。
-</p>
-
-<p>
-如果要实现一个泛型的方法来返回一个泛型的数组，就要转入一个<code>Manifest</code>对象来。由于
-它是隐式参数，可以用上下文界定：
-</p>
-
-<pre class="brush: scala">
-def makePair[T: Manifest](first: T, second: T) {
-	val r = new Array[T](2); 
-	r(0) = first; 
-	r(1) = second; 
-	r
-}
-</pre>
-
-<p>
-对于调用<code>makePair(4, 9)</code>，编译器会定位到隐式的<code>Manifest[Int]</code>并实际上调用的是
-<code>makePair(4, 9)(intmanifest)</code>。
-</p>
-
-<p>
-这样在方法内创建数组的调用是<code>new Array(2)(intManifest)</code>，返回基本类型的数组
-<code>int[2]</code>
-</p>
-
-
-
-
-
-
-
-<h2 id="toc_2.6">SAM（单个抽象方法）</h2>
-
-<p>
-Java中这种情况比Scala多：就是一个接口里只有一个抽象方法。
-</p>
-
-<p>
-Scala里虽然可以把函数作为值，但是还是会有SAM的情况出现。比如说，Scala里明明可以
-用函数值作为参数，但在实现一个GUI按钮的监听器为了兼容Java只能写一个SAM接口：
-</p>
-
-<pre class="brush: scala">
-var counter = 0
-
-val button = new JButton("Increment") // 记录按次数的按钮 
-button.addActionListener(new ActionListener {
-	override def actionPerformed(event: ActionEvent) {
-		counter += 1
-	}
-})
-</pre>
-
-<p>
-解决方案是用隐式转换把一个函数转为<code>ActionListener</code>实例：
-</p>
-
-<pre class="brush: scala">
-implicit def makeAction(action: (ActionEvent) =&gt; Unit) = new ActionListener {
-	override def actionPerformed(event: ActionEvent) { action(event) }
-}
-</pre>
-
-<p>
-现在调用时只要传入函数，接口实现类由隐式函数来实现：
-</p>
-
-<pre class="brush: scala">
-button.addActionListener((event: ActionEvent) =&gt; counter += 1)
-</pre>
-
-
-<h2 id="toc_2.7">隐式操作的调试</h2>
-
-<p>
-隐式操作很强大，但也很难调试。这一节包含了一些技巧。
-</p>
-
-<p>
-在REPL环境中：
-</p>
-
-<ul>
-<li>
-<code>:implicits</code>查看<code>Predef</code>以外被引入的隐式成员。
-
-<li>
-<code>:implicits -v</code>查看全部。
-
-</ul>
-
-<p>
-对于编译器，可以检查指定的源代码文件使用了哪些隐式转换：
-</p>
-
-<pre class="brush: scala">
-scalac -Xprint:typer MyProg.scala
-</pre>
-
-<p>
-这样会显示加入了隐式转换后的源代码。
-</p>
-
-<h3 id="toc_2.7.1">没有对应的转换规则</h3>
-
-<p>
-在程序员认为应该隐式转换但编译器没有转换时，手动把转换调用写出来。这样如果有报错
-就知道没有隐式转换的原因了。如下面的代码错把<code>stringWrapper</code>当成<code>String</code>转到
-<code>List</code>而不是<code>RandomAccessSeq</code>：
-</p>
-
-<pre class="brush: scala">
-scala&gt; val chars: List[Char] = "xyz"
-&lt;console&gt;:7: error: type mismatch;
- found   : java.lang.String("xyz")
- required: List[Char]
-       val chars: List[Char] = "xyz"
-                               ^
-</pre>
-
-<h3 id="toc_2.7.2">被其他转换规则干扰</h3>
-
-<p>
-如果手动指定转换以后错误消失，那就很有可以是其他的转换规则覆盖了你想要的替换规则
-。
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val chars: List[Char] = stringWrapper("xyz")
-  &lt;console&gt;:12: error: type mismatch;
-   found   : java.lang.Object with RandomAccessSeq[Char]
-   required: List[Char]
-         val chars: List[Char] = stringWrapper("xyz")
-                                 ^
-</pre>
-
-<p>
-编译器的<code>-Xprint:typer</code>显示隐式转换的信息。如下面的代码中：
-</p>
-
-<pre class="brush: scala">
-  object Mocha extends Application {
-
-    class PreferredDrink(val preference: String)
-
-    implicit val pref = new PreferredDrink("mocha")
-
-    def enjoy(name: String)(implicit drink: PreferredDrink) {
-      print("Welcome, "+ name)
-      print(". Enjoy a ")
-      print(drink.preference)
-      println("!")
-    }
-
-    enjoy("reader")
-  }
-</pre>
-
-<p>
-最后一行的：
-</p>
-
-<pre class="brush: scala">
-  enjoy("reader")
-</pre>
-
-<p>
-已经被扩展为了：
-</p>
-
-<pre class="brush: scala">
-  Mocha.this.enjoy("reader")(Mocha.this.pref)
-</pre>
-
-<p>
-<code>scala - Xprint:typer</code>：
-</p>
-
-<pre class="brush: scala">
-  $ scalac -Xprint:typer mocha.scala
-  [[syntax trees at end of typer]]// Scala source: mocha.scala
-  package &lt;empty&gt; {
-    final object Mocha extends java.lang.Object with Application
-        with ScalaObject {
-
-      // ...
-
-      private[this] val pref: Mocha.PreferredDrink =
-        new Mocha.this.PreferredDrink("mocha");
-      implicit &lt;stable&gt; &lt;accessor&gt;
-        def pref: Mocha.PreferredDrink = Mocha.this.pref;
-      def enjoy(name: String)
-          (implicit drink: Mocha.PreferredDrink): Unit = {
-        scala.this.Predef.print("Welcome, ".+(name));
-        scala.this.Predef.print(". Enjoy a ");
-        scala.this.Predef.print(drink.preference);
-        scala.this.Predef.println("!")
-      };
-      Mocha.this.enjoy("reader")(Mocha.this.pref)
-    }
-  }
-</pre>
-
-<h1 id="toc_3">高级类型应用</h1>
-
-<h2 id="toc_3.1">多重界定</h2>
-
-<h3 id="toc_3.1.1">多重泛型界定</h3>
-
-<p>
-泛型变量可以同时有上界与下界：
-</p>
-
-<pre class="brush: scala">
-T &gt;: Lower &lt;: Upper
-</pre>
-
-<p>
-虽然同时有多个上界或下界是不可以的，但可以要求一个类型实现多个特质：
-</p>
-
-<pre class="brush: scala">
-T &lt;: Comparable[T] with Serializable with Coneable
-</pre>
-
-<h3 id="toc_3.1.2">多重视图界定</h3>
-
-<pre class="brush: scala">
-T &lt;% Comparable[T] &lt;% String
-</pre>
-
-<h3 id="toc_3.1.3">多重上下文界定</h3>
-
-<pre class="brush: scala">
-T : Ordering : Manifest
-</pre>
-
-<h2 id="toc_3.2">类型约束</h2>
-
-<p>
-可用的约束有三种：
-</p>
-
-<ul>
-<li>
-<code>T =:= U</code>：<code>T</code>是否等于<code>U</code>。
-
-<li>
-<code>T &lt;:&lt; U</code>：<code>T</code>是<code>U</code>的子类型。
-
-<li>
-<code>T &lt;%&lt; U</code>：<code>T</code>是否能被隐式转换为<code>U</code>。
-
-</ul>
-
-<h3 id="toc_3.2.1">定义只在特定条件下使用的方法</h3>
-
-<p>
-类型约束让程序员定义只有在特定条件下使用的方法。例：
-</p>
-
-<pre class="brush: scala">
-scala&gt; class Pair[T](val first: T, val second: T) {
-     |   def smaller(implicit ev: T &lt;:&lt; Ordered[T]) =
-     |     if (first &lt; second) first else second
-     | }
-defined class Pair
-</pre>
-
-
-<p>
-可以虽然<code>File</code>没有混入<code>Ordered[T]</code>，但因为<code>smaller</code>声明了隐式参数，所以还是可以
-构造出<code>Pair[File]</code>：
-</p>
-
-<pre class="brush: scala">
-scala&gt; import java.io.File
-import java.io.File
-
-scala&gt; val p = new Pair(new File("."), new File(".."))
-p: Pair[java.io.File] = Pair@be1fcc
-</pre>
-
-<p>
-但是如果调用<code>smaller()</code>方法，那就出错了：
-</p>
-
-<pre class="brush: scala">
-scala&gt; p.smaller // Error
-&lt;console&gt;:11: error: Cannot prove that java.io.File &lt;:&lt; Ordered[java.io.File].
-              p.smaller // Error
-                ^
-</pre>
-
-<p>
-另一个例子：
-</p>
-
-<p>
-<code>Option</code>有一个<code>orNull</code>方法：
-</p>
-
-<pre class="brush: scala">
-scala&gt; val friends = Map("Fred" -&gt; "Barney")
-friends: scala.collection.immutable.Map[String,String] = Map(Fred -&gt; Barney)
-
-scala&gt; val friendOpt = friends.get("Wilma") // An Option[String]
-friendOpt: Option[String] = None
-
-scala&gt; val friendOrNull = friendOpt.orNull // A String or null
-friendOrNull: String = null
-</pre>
-
-<p>
-Java类对象如果为<code>null</code>表示没有值，但基本类型没有办法用<code>null</code>表示。
-</p>
-
-<p>
-因为<code>orNull</code>的实现带有约束<code>Null &lt;:&lt; A</code>，所以可能实例化<code>Option[Int]</code>，只要别对
-这些实例使用<code>orNull</code>就可以了：
-</p>
-
-<pre class="brush: scala">
-scala&gt; val scores = Map("Fred" -&gt; 42)
-scores: scala.collection.immutable.Map[String,Int] = Map(Fred -&gt; 42)
-
-scala&gt; val scoreOpt = scores.get("Fred") // An Option[Int]
-scoreOpt: Option[Int] = Some(42)
-
-scala&gt; val scoreOrNull = scoreOpt.orNull // Error
-&lt;console&gt;:9: error: Cannot prove that Null &lt;:&lt; Int.
-       val scoreOrNull = scoreOpt.orNull // Error
-</pre>
-
-
-<h3 id="toc_3.2.2">改进类型推断</h3>
-
-
-<p>
-<code>&lt;:&lt;</code>能增加类型推断，比如对于参数的下界声明：
-</p>
-
-<pre class="brush: scala">
-scala&gt; def firstLast[A, C &lt;: Iterable[A]](it: C) = (it.head, it.last)
-firstLast: [A, C &lt;: Iterable[A]](it: C)(A, A)
-</pre>
-
-<p>
-调用时不能直接传入整数列表，因为实参类型<code>[Nothing, List[Int]]</code>不符合形参类型
-<code>[A, C &lt;: Iterable[A]]</code>：
-</p>
-
-<pre class="brush: scala">
-scala&gt; firstLast(List(1, 2, 3)) // Error
-&lt;console&gt;:9: error: inferred type arguments [Nothing,List[Int]] do not conform 
-							to method firstLast's type parameter bounds [A,C &lt;: Iterable[A]]
-              firstLast(List(1, 2, 3)) // Error
-              ^
-&lt;console&gt;:9: error: type mismatch;
- found   : List[Int]
- required: C
-              firstLast(List(1, 2, 3)) // Error
-</pre>
-
-<p>
-因为要在同一步中匹配类型<code>A</code>与类型<code>C</code>，仅根据<code>List(1,2,3)</code>无法判断出<code>A</code>的类型。
-解决方案可以通过柯里化的方式先匹配<code>C</code>再匹配<code>A</code>：
-</p>
-
-<pre class="brush: scala">
-scala&gt; def firstLast[A, C](it: C)(implicit ev: C &lt;:&lt; Iterable[A]) =
-     |   (it.head, it.last)
-firstLast: [A, C](it: C)(implicit ev: &lt;:&lt;[C,Iterable[A]])(A, A)
-
-scala&gt; firstLast(List(1, 2, 3)) // OK
-res3: (Int, Int) = (1,3)
-</pre>
-
-<p>
-再看一个类似的例子，<code>corresponds</code>方法检查两个序列的成员是否一一对应：
-</p>
-
-<pre class="brush: scala">
-scala&gt; val a = Array("Hello", "Fred")
-a: Array[String] = Array(Hello, Fred)
-
-scala&gt; val b = Array(5, 4)
-b: Array[Int] = Array(5, 4)
-
-scala&gt; a.corresponds(b)(_.length == _)
-res7: Boolean = true
-</pre>
-
-<p>
-<code>corresponds</code>方法的声明其实是这样：
-</p>
-
-<pre class="brush: scala">
-def corresponds[B](that: Seq[B])(p: (A, B) =&gt; Boolean): Boolean
-</pre>
-
-<p>
-对于柯里化后的两个参数列表，要推断类型<code>B</code>：
-</p>
-
-<pre class="brush: scala">
-scala&gt; a.corresponds(b)(_.length == _)
-</pre>
-
-<p>
-就相当于是：
-</p>
-
-<pre class="brush: scala">
-Array("Hello", "Fred").corresponds(Array(5, 4))(_.length == _)
-</pre>
-
-<ul>
-<li>
-<code>Array[A]</code>对应前实例<code>Array("Hello","Fred")</code>，那类型<code>A</code>就是<code>String</code>。
-
-<li>
-形参<code>Seq[B]</code>得到的实参是<code>Array(5, 4)</code>，那类型<code>B</code>就是<code>Int</code>。
-
-<li>
-确认了<code>A</code>与<code>B</code>，那<code>(A, B) =&gt; Boolean</code>就是<code>(String, Int) =&gt; Boolean</code>。
-
-</ul>
-
-
-<h3 id="toc_3.2.3">类型证明</h3>
-
-<p>
-如果<code>firstLast()</code>方法要返回一个对象的头和尾，最直接的逻辑是：
-</p>
-
-<pre class="brush: scala">
-def firstLast[C](it: C) = (it.head, it.last)
-</pre>
-
-<p>
-但这样是错误的，因为不知道<code>it</code>的类型<code>C</code>是什么类型，很有可能它没有<code>head</code>与<code>last</code>
-方法。所以需要把<code>C</code>类型转为有<code>head</code>与<code>last</code>方法，比如<code>Iterable</code>特质。
-</p>
-
-<pre class="brush: scala">
-def firstLast[A, C](it: C)(implicit ev: C &lt;:&lt; Iterable[A]) = (it.head, it.last)
-</pre>
-
-<p>
-<code>en</code>就是类型证明对象，它的类型是<code>C &lt;:&lt; Iterable[A]</code>，证明<code>C</code>是<code>Iterable</code>的子类。
-这里不知道<code>Iterable</code>成员的类型是啥，就用<code>Iterable[A]</code>来表示。
-</p>
-
-<p>
-但<code>=:=</code>、<code>&lt;:&lt;</code>、<code>&lt;%&lt;</code>其实是库中的类而不是语法特性，而且是带有隐式值的类。比如在
-<code>Predef</code>对象中<code>&lt;:&lt;</code>的定义：
-</p>
-
-<pre class="brush: scala">
-abstract class &lt;:&lt;[-From, +To] extends Function1[From,To]
-
-object &lt;:&lt; {
-	implicit def conforms[A] = new (A &lt;:&lt; A) { def apply(x: A) = x }
-}
-</pre>
-
-<p>
-类型<code>&lt;:&lt;</code>继承自函数，参数<code>-From</code>逆变而返回值<code>+To</code>协变。
-</p>
-
-<pre class="brush: scala">
-</pre>
-
-
-<pre class="brush: scala">
-</pre>
-
-
-<pre class="brush: scala">
-</pre>
-
-
-<pre class="brush: scala">
-</pre>
-
-
-<pre class="brush: scala">
-</pre>
-
-
-<pre class="brush: scala">
-</pre>
-
-
-<pre class="brush: scala">
-</pre>
-
-
-<pre class="brush: scala">
-</pre>
-
-
-
-
-
-
-
-
-<h1 id="toc_4">抽象成员</h1>
-
-<p>
-Scala中不仅可以指定方法为抽象，还可以声明字段甚至抽象类型为类和特质的成员。
-</p>
-
-<h2 id="toc_4.1">抽象成员的快速浏览</h2>
-
-<p>
-在特质中分别对类型（T）、方法（transform）、val（initial）、var（current）的
-抽象声明做出了一个例子：
-</p>
-
-<pre class="brush: scala">
-  trait Abstract {
-    type T
-    def transform(x: T): T
-    val initial: T
-    var current: T
-  }
-</pre>
-
-<p>
-实现：
-</p>
-
-<pre class="brush: scala">
-  class Concrete extends Abstract {
-    type T = String
-    def transform(x: String) = x + x
-    val initial = "hi"
-    var current = initial
-  }
-</pre>
-
-<h2 id="toc_4.2">类型成员</h2>
-
-<p>
-（略）
-</p>
-
-<h2 id="toc_4.3">抽象val</h2>
-
-<p>
-val是不可变的，抽象的val指定了类型与变量名，不指定值：
-</p>
-
-<pre class="brush: scala">
-  val initial: String
-</pre>
-
-<p>
-实现时指定值：
-</p>
-
-<pre class="brush: scala">
-  val initial = "hi"
-</pre>
-
-<p>
-如果不知道类中定义的确切内容，但是确定对于每个实例来说值都是不可变的。在这样的
-情况下可以使用抽象的val声明。
-</p>
-
-<p>
-可以注意到，抽象val的格式非常类似于下面的抽象无参数方法声明：
-</p>
-
-<pre class="brush: scala">
-  def initial: String
-</pre>
-
-<p>
-客户代码将使用统一的<code>obj.initial</code>方法引用val及方法。如果<code>initial</code>是抽象val，那么
-客户就可以保证每次引用都将得到同样的值。如果<code>initial</code>是抽象方法那就无法保证，
-因为在不同的实现中<code>initial</code>可以被实现为每次调用都返回不同的值。
-</p>
-
-<p>
-换句话说抽象的val限制了合法实现的方式：任何实现都必须是<code>val</code>类型的定义不可以是
-<code>var</code>。另一方面，抽象方法声明可以被实现为具体的方法定义或具体的<code>val</code>定义。
-</p>
-
-<p>
-所以在下面的代码中，<code>Apple</code>是合法的子类而<code>BadApple</code>不是：
-</p>
-
-<pre class="brush: scala">
-  abstract class Fruit {
-    val v: String // `v' for value
-    def m: String // `m' for method
-  }
-
-  abstract class Apple extends Fruit {
-    val v: String
-    val m: String // OK to override a `def' with a `val'
-  }
-
-  abstract class BadApple extends Fruit {
-    def v: String // ERROR: cannot override a `val' with a `def'
-    def m: String
-  }
-</pre>
-
-<h2 id="toc_4.4">抽象var</h2>
-
-<p>
-在特质里使用，只声明类型与名称，没有初始值：
-</p>
-
-<pre class="brush: scala">
-  trait AbstractTime {
-    var hour: Int
-    var minute: Int
-  }
-</pre>
-
-<p>
-也会有自动扩展的<code>getter</code>与<code>setter</code>方法，上面的代码相当于：
-</p>
-
-<pre class="brush: scala">
-  trait AbstractTime {
-    def hour: Int          // getter for `hour'
-    def hour_=(x: Int)     // setter for `hour'
-    def minute: Int        // getter for `minute'
-    def minute_=(x: Int)   // setter for `minute'
-  }
-</pre>
-
-<h2 id="toc_4.5">初始化抽象val</h2>
-
-<p>
-结合特质来使用，抽象val可以让子类扩展提供父类没有的参数与细节。因为特质缺省能
-用来传递参数的构造器。
-</p>
-
-<p>
-拿前面的实数类来作例子，以下特质：
-</p>
-
-<pre class="brush: scala">
-  trait RationalTrait { 
-    val numerArg: Int 
-    val denomArg: Int 
-  } 
-</pre>
-
-<p>
-为了实例化这个特质，先要实现val。在这里我们要用到新的<code>new</code>语法结构：
-</p>
-
-<pre class="brush: scala">
-  new RationalTrait {
-    val numerArg = 1
-    val denomArg = 2
-  }
-</pre>
-
-<p>
-上面的代码会产混入了特质的匿名类实例，类似于<code>new Rational(1, 2)</code>。当然区别还是
-有的：
-</p>
-
-<pre class="brush: scala">
-  new Rational(expr1, expr2)
-</pre>
-
-<p>
-上面的两个表达式会在类初始化前计算，而相反的：
-</p>
-
-<pre class="brush: scala">
-  new RationalTrait {
-    val numerArg = expr1
-    val denomArg = expr2
-  }
-</pre>
-
-<p>
-上面的两个表达式会作为匿名类初始化的一部分计算。而匿名类初始化在<code>RationalTrait</code>
-之后执行，所以<code>numerArg</code>和<code>denomArg</code>的值在<code>RationalTrait</code>初始化期间还没有准备好
-，都是<code>Int</code>类型的默认值<code>0</code>。
-</p>
-
-<p>
-所以对下面的代码来说，这会成为一个问题，因为其中定义了经过约分后的分子与分母：
-</p>
-
-<pre class="brush: scala">
-  trait RationalTrait { 
-    val numerArg: Int 
-    val denomArg: Int 
-    require(denomArg != 0)
-    private val g = gcd(numerArg, denomArg)
-    val numer = numerArg / g
-    val denom = denomArg / g
-    private def gcd(a: Int, b: Int): Int = 
-      if (b == 0) a else gcd(b, a % b)
-    override def toString = numer +"/"+ denom
-  }
-</pre>
-
-<p>
-如果尝试使用某种分子和分母的表达式而不是简单的字面量实例化这个特质，会引起以下
-错误：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val x = 2
-  x: Int = 2
-
-  scala&gt; new RationalTrait {
-       |   val numerArg = 1 * x
-       |   val denomArg = 2 * x
-       | }
-  java.lang.IllegalArgumentException: requirement failed
-          at scala.Predef$.require(Predef.scala:107)
-          at RationalTrait$class.$init$(&lt;console&gt;:7)
-          at $anon$1.&lt;init&gt;(&lt;console&gt;:7)
-          ....
-</pre>
-
-<p>
-解决方案有两个，分别是预初始化字段和懒加载val。
-</p>
-
-
-<h3 id="toc_4.5.1">预初始化字段</h3>
-
-<h4 id="toc_4.5.1.1">用于匿名类实例</h4>
-
-<p>
-给字段定义加上花括号，放在超类的构造器之前：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; new { 
-       |   val numerArg = 1 * x
-       |   val denomArg = 2 * x 
-       | } with RationalTrait
-  res15: java.lang.Object with RationalTrait = 1/2
-</pre>
-
-<h4 id="toc_4.5.1.2">用于类</h4>
-
-<p>
-不仅匿名类可以用预加载，有名称的类和单例对象也可以。
-</p>
-
-<p>
-注意要放在关键字<code>extends</code>后面：
-</p>
-
-<pre class="brush: scala">
-  object twoThirds extends {
-    val numerArg = 2
-    val denomArg = 3
-  } with RationalTrait
-</pre>
-
-<p>
-由于预初始化的字段的超类构造器调用前被初始化，所以不能引用正在被构造的对象。所以
-对于<code>this</code>实际指向的是正被构造的类或对象的对象，而来是被构造的对象本身：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; new {
-     |   val numerArg = 1
-     |   val denomArg = this.numerArg * 2
-     | } with RationalTrait
-  &lt;console&gt;:8: error: value numerArg is not a
-       member of object $iw
-           val denomArg = this.numerArg * 2
-                               ^
-</pre>
-
-<p>
-因为实例还没有构建完成，所以会报错。<code>$iw</code>是合成对象，解释器把用户输出语句放在
-这个对象中。
-</p>
-
-<pre class="brush: scala">
-  class RationalClass(n: Int, d: Int) extends {
-    val numerArg = n
-    val denomArg = d
-  } with RationalTrait {
-    def + (that: RationalClass) = new RationalClass(
-      numer * that.denom + that.numer * denom,
-      denom * that.denom
-    )
-  }
-</pre>
-
-
-
-<h3 id="toc_4.5.2">懒加载val</h3>
-
-<p>
-懒加载让表达式在<code>val</code>第一次被使用的时候才计算机。格式为把<code>lazy</code>修饰加在<code>val</code>上。
-</p>
-
-<p>
-普通情况下初始化与类初始化一起的：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; object Demo {
-       |   val x = { println("initializing x"); "done" }
-       | }
-  defined module Demo
-
-
-  scala&gt; Demo
-  initializing x
-  res19: Demo.type = Demo$@97d1ff
-
-  scala&gt; Demo.x
-  res20: java.lang.String = done
-</pre>
-
-<p>
-使用了懒加载以后，<code>val</code>的初始化延迟到第一次使用时：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; object Demo {
-       |   lazy val x = { println("initializing x"); "done" }
-       | }
-  defined module Demo
-
-  scala&gt; Demo
-  res21: Demo.type = Demo$@d81341
-
-  scala&gt; Demo.x
-  initializing x
-  res22: java.lang.String = done
-</pre>
-
-<p>
-上面的情况有点像是用<code>def</code>把<code>x</code>定义为一个无参的方法，不同于<code>def</code>的是计算只进行一次。
-</p>
-
-<p>
-通过上面两个例子可以看出，单例对象的初始化也很像懒加载。它们在第一次被使用时进行
-初始化。
-</p>
-
-<p>
-通过懒加载重新实现<code>RationalTrait</code>，与前一版本的主要变化是<code>require</code>子句从特质的
-方法体移动到了计算<code>numerArg</code>和<code>denomArg</code>最大公约数的私有字段<code>g</code>的初始化器中。
-所以这个版本中<code>LazyRationalTrait</code>初始化器已经用不干啥事儿了：
-</p>
-
-<pre class="brush: scala">
-  trait LazyRationalTrait { 
-    val numerArg: Int 
-    val denomArg: Int 
-    lazy val numer = numerArg / g
-    lazy val denom = denomArg / g
-    override def toString = numer +"/"+ denom
-    private lazy val g = {
-      require(denomArg != 0)
-      gcd(numerArg, denomArg)
-    }
-    private def gcd(a: Int, b: Int): Int = 
-      if (b == 0) a else gcd(b, a % b)
-  }
-
-
-  scala&gt; val x = 2
-  x: Int = 2
-
-  scala&gt; new LazyRationalTrait {
-       |   val numerArg = 1 * x
-       |   val denomArg = 2 * x
-       | }
-  res1: java.lang.Object with LazyRationalTrait = 1/2
-</pre>
-
-<p>
-在特质中的两个懒加载对象<code>number</code>和<code>denom</code>是在<code>toString</code>方法调用时才初始化。计算
-它们的表达式要用到同样是懒加载的<code>g</code>。
-</p>
-
-<p>
-应用懒加载还是要注意副作用，在有副作用的情况下跟踪加载顺序是很重要的事情。
-无副作用的纯函数式应用配合懒加载是相当合适的。
-</p>
-
-<p>
-懒加载并不是没有额外的开销，对于每次访问都会有一个方法被调用。这个方法会以线程
-安全的方式检查该值是否已经被初始化。
-</p>
-
-<h2 id="toc_4.6">抽象类型</h2>
-
-<p>
-抽象类型声明<code>type T</code>应用在尚不可知的类型上，不同的子类可以提供不同的<code>T</code>实现。
-</p>
-
-<p>
-以一个动物食性的例子来解释应用环境，动物吃食物：
-</p>
-
-<pre class="brush: scala">
-  class Food
-  abstract class Animal {
-    def eat(food: Food)
-  }
-</pre>
-
-<p>
-会在想让它们的子类牛吃草时遇到麻烦。<code>eat</code>方法不能重写，因为参数不能从<code>Food</code>转为
-子类<code>Grass</code>：
-</p>
-
-<pre class="brush: scala">
-  class Grass extends Food
-  class Cow extends Animal {
-    override def eat(food: Grass) {} // This won't compile
-  }
-
-  BuggyAnimals.scala:7: error: class Cow needs to be
-  abstract, since method eat in class Animal of type
-      (Food)Unit is not defined
-  class Cow extends Animal {
-        ^
-  BuggyAnimals.scala:8: error: method eat overrides nothing
-    override def eat(food: Grass) {}
-                 ^
-</pre>
-
-<p>
-这样看来类型检查太严格了，应但是如果许子类的话又会失去类型检验保障。比如说喂牛
-吃鱼：
-</p>
-
-<pre class="brush: scala">
-  class Food
-  abstract class Animal {
-    def eat(food: Food)
-  }
-  class Grass extends Food
-  class Cow extends Animal {
-    override def eat(food: Grass) {} // This won't compile,
-  }                                  // but if it did,...
-  class Fish extends Food
-  val bessy: Animal = new Cow
-  bessy eat (new Fish)     // ...you could feed fish to cows.
-</pre>
-
-<p>
-更加精确的方式是能按不同的动物决定食物的种类，父类中指定动物只能吃食物：
-</p>
-
-<pre class="brush: scala">
-  class Food
-  abstract class Animal {
-    type SuitableFood &lt;: Food
-    def eat(food: SuitableFood)
-  }
-</pre>
-
-<p>
-<code>SuitableFood</code>被定义为抽象类，而且有上界<code>Food</code>。以后动物类中指定具体的食物子类：
-</p>
-
-<pre class="brush: scala">
-  class Grass extends Food
-  class Cow extends Animal {
-    type SuitableFood = Grass
-    override def eat(food: Grass) {}
-  }
-</pre>
-
-<p>
-现在得到了比较合适的类型检查：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; class Fish extends Food
-  defined class Fish
-
-  scala&gt; val bessy: Animal = new Cow
-  bessy: Animal = Cow@674bf6
-
-  scala&gt; bessy eat (new Fish)
-  &lt;console&gt;:10: error: type mismatch;
-   found   : Fish
-   required: bessy.SuitableFood
-         bessy eat (new Fish)
-                    ^
-</pre>
-
-
-
-<h2 id="toc_4.7">路径依赖类型</h2>
-
-<p>
-看一下前面例子的最后一条错误信息。它说明需要的类型是<code>bessy.SuitableFood</code>，这里的
-<code>SuitableFood</code>是<code>bessy</code>引用的对象的成员。
-</p>
-
-<p>
-这样的类型被称为路径依赖类型，路径指的是对象的引用。不同路径将产不同的类型：
-</p>
-
-<pre class="brush: scala">
-  class DogFood extends Food
-  class Dog extends Animal {
-    type SuitableFood = DogFood
-    override def eat(food: DogFood) {}
-  }
-
-  scala&gt; val bessy = new Cow
-  bessy: Cow = Cow@10cd6d
-
-  scala&gt; val lassie = new Dog
-  bootsie: Dog = Dog@d11fa6
-
-  scala&gt; lassie eat (new bessy.SuitableFood)
-  &lt;console&gt;:13: error: type mismatch;
-   found   : Grass
-   required: DogFood
-         lassie eat (new bessy.SuitableFood)
-                     ^
-</pre>
-
-<p>
-<code>bessy.SuitableFood</code>不能匹配<code>lassie.SuitableFood</code>，但如果同样是<code>Dog</code>的话，情况又
-不同。因为<code>Dog</code>的<code>SuitableFood</code>被定义为<code>DogFood</code>类的别名，所以实际上是一样的：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val bootsie = new Dog
-  bootsie: Dog = Dog@54ca71
-
-  scala&gt; lassie eat (new bootsie.SuitableFood)
-</pre>
-
-<h3 id="toc_4.7.1">与Java内部类的区别</h3>
-
-<p>
-路径依赖有点像Java里的内部类，但区别是：路径依赖表达了外在的对象，而内部类表达了
-外在的类。Java的内部类在Scala表达为两个类：
-</p>
-
-<pre class="brush: scala">
-  class Outer {
-    class Inner
-  }
-</pre>
-
-<p>
-与Java的<code>Outer.Inner</code>不同，Scala中表达为<code>Outer#Inner</code>。
-</p>
-
-<p>
-总之，要注意。路径依赖是在对象中的类，而不是Java那样类中的类。
-</p>
-
-<p>
-<code>.</code>语法留给对象使用：
-</p>
-
-<pre class="brush: scala">
-  val o1 = new Outer
-  val o2 = new Outer
-</pre>
-
-<p>
-虽然<code>o1.Inner</code>和<code>o2.Inner</code>是不同的两个路径依赖类型，但两个都能匹配更加通用的
-<code>Outer#Inner</code>。
-</p>
-
-<p>
-和Java中一样，Scala的内部类实例也有对外部类实例的引用。所以不能只有内部类实例而
-没有外部类实例。有两个方式实例化内部类：
-</p>
-
-<ul>
-<li>
-直接在外部类方法体中实例化，这样可以用<code>this</code>引用外部类对象。
-
-<li>
-使用路径依赖类型。如<code>o1.Inner</code>。返回的内部类有对<code>01</code>的引用。例子如下：
-
-</ul>
-
-<pre class="brush: scala">
-  scala&gt; new o1.Inner
-  res1: o1.Inner = Outer$Inner@13727f
-</pre>
-
-<p>
-相对的，类型<code>Outer#Inner</code>是没有指向对象的引用的，所以不能创建它的实例：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; new Outer#Inner
-  &lt;console&gt;:6: error: Outer is not a legal prefix for
-    a constructor
-         new Outer#Inner
-                   ^
-</pre>
-
-
-<h2 id="toc_4.8">枚举对象</h2>
-
-<p>
-Scala没有枚举类，而是用标准库中的工具类<code>scala.Enumeration</code>用来扩展实现枚举对象：
-</p>
-
-<pre class="brush: scala">
-  object Color extends Enumeration {
-    val Red = Value
-    val Green = Value
-    val Blue = Value
-  }
-</pre>
-
-<p>
-注意：枚举是和路径依赖一样，是对象中的类，不是类中的类。
-</p>
-
-<p>
-还可以简化：
-</p>
-
-<pre class="brush: scala">
-  object Color extends Enumeration {
-    val Red, Green, Blue = Value
-  }
-</pre>
-
-<p>
-可以<code>Color</code>的全部成员，然后直接写颜色名：
-</p>
-
-<pre class="brush: scala">
-  import Color._
-</pre>
-
-<p>
-前面定义的<code>Red</code>、<code>Green</code>和<code>Blue</code>这些值的类型为<code>Enumeration</code>定义的内部类，名为
-<code>Value</code>。同名无参数方法<code>Value</code>返回该类的新对象，即<code>Color.Red</code>类的值类型是
-<code>Color.Value</code>。而且是依赖路径的。如：
-</p>
-
-<pre class="brush: scala">
-  object Direction extends Enumeration {
-    val North, East, South, West = Value
-  }
-</pre>
-
-<p>
-上面就定义了一个完全不同的类型，因为路径不同。<code>Direction</code>与<code>Color</code>的<code>Value</code>也是
-不同的类。
-</p>
-
-<h3 id="toc_4.8.1">枚举的类型</h3>
-
-<p>
-注意枚举的类型是<code>Direction.Value</code>而不是<code>Direction</code>。<code>Direction</code>是持有这些值的
-单例对象。有些人推荐增加一个类型的别名：
-</p>
-
-<pre class="brush: scala">
-  object Direction extends Enumeration {
-		type Direction = Value
-    val North, East, South, West = Value
-  }
-</pre>
-
-<p>
-这样类型就从<code>Direction.Value</code>增加一个别名<code>Direction.Direction</code>。虽然还是又长又
-啰嗦，但是在<code>import Direction._</code>以后可以只写<code>Direction</code>：
-</p>
-
-<pre class="brush: scala">
-import Direction._
-
-def func01(direction: Direction) = {
-	if (direction == West)
-		"stop"
-	else
-		"keep moving"
-}
-</pre>
-
-<h3 id="toc_4.8.2">枚举值</h3>
-
-<p>
-枚举的值默认从<code>0</code>开始增加，用成员方法<code>id</code>可以取出值：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; Direction.East.id
-  res5: Int = 1
-</pre>
-
-<p>
-反过来也可以通过非零整数取得<code>id</code>：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; Direction(1)
-  res6: Direction.Value = East
-</pre>
-
-<p>
-当然想指定<code>id</code>也可以：
-</p>
-
-<pre class="brush: scala">
-object Direction extends Enumeration {
-  val North = Value(10)
-  val East = Value(20)
-  val South = Value(30)
-  val West = Value(40)
-}
-</pre>
-
-<p>
-还可以重载<code>Value</code>方法把名称与值对应起来：
-</p>
-
-<pre class="brush: scala">
-object Direction extends Enumeration {
-  val North = Value(10,"North")
-  val East = Value(20,"East")
-  val South = Value(30,"South")
-  val West = Value(40,"West")
-}
-</pre>
-
-<p>
-直接通过<code>toString</code>方法就可以取得枚举的名称：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; for (d &lt;- Direction) print(d +" ")
-  North East South West 
-</pre>
-
-<p>
-也可以通过<code>withName</code>方法通过名称得到枚举：
-</p>
-
-<pre class="brush: scala">
-Direction.withName("West")
-</pre>
-
-
-
-<h2 id="toc_4.9">案例研究：货币</h2>
-
-<p>
-设计一个货币类能处理不同的货币。定义抽象类可以扩展为具体不同的货币。当然第一个
-版本肯定是不完善的：
-</p>
-
-<pre class="brush: scala">
-  // A first (faulty) design of the Currency class
-  abstract class Currency {
-    val amount: Long
-    def designation: String 
-    override def toString = amount +" "+ designation
-    def + (that: Currency): Currency = ...
-    def * (x: Double): Currency = ...
-  }
-</pre>
-
-<p>
-<code>amount</code>和<code>designation</code>分别代表金额和表示金额的符号。其他方法还有加法和乘法操作
-。这个版本的问题是，在语法上两个不同的子类可以相加：
-</p>
-
-<pre class="brush: scala">
-  abstract class Dollar extends Currency {
-    def designation = "USD"
-  }
-  abstract class Euro extends Currency {
-    def designation = "Euro"
-  }
-</pre>
-
-<p>
-这样不同货币的相加是有问题的。所以下一个改进版本用抽象类型来标明末知的类型：
-</p>
-
-<pre class="brush: scala">
-  abstract class AbstractCurrency {
-    type Currency &lt;: AbstractCurrency
-    val amount: Long
-    def designation: String 
-    override def toString = amount +" "+ designation
-    def + (that: Currency): Currency = ...
-    def * (x: Double): Currency = ...
-  }
-</pre>
-
-<p>
-每个子类都要把<code>Currency</code>指定为这个类自身，扩展实现是类似于这样：
-</p>
-
-<pre class="brush: scala">
-  abstract class Dollar extends AbstractCurrency {
-    type Currency = Dollar
-    def designation = "USD"
-  }
-</pre>
-
-<p>
-这个版本的问题在于加法与乘法的定义。首先想到的把金额转为正确类型的货币的方法可能
-是这样的：
-</p>
-
-<pre class="brush: scala">
-  def + (that: Currency): Currency = new Currency {
-    val amount = this.amount + that.amount
-  }
-</pre>
-
-<p>
-但这通不过编译，因为Scala不能用抽象类型<code>new</code>出实例来，即使是作为其他类型的父类：
-</p>
-
-<pre class="brush: scala">
-  error: class type required
-    def + (that: Currency): Currency = new Currency {
-</pre>
-
-<p>
-使用工厂方法是个解决方案：用声明抽象方法代替直接创建抽象类的实例：
-</p>
-
-<pre class="brush: scala">
-  abstract class AbstractCurrency {
-    type Currency &lt;: AbstractCurrency // abstract type
-    def make(amount: Long): Currency  // factory method
-    ...                               // rest of class
-  }
-</pre>
-
-<p>
-但这样有别的问题，因为这样不得不把工厂方法放到<code>AbstractCurrency</code>类中，所有的实例
-都可以调用<code>make</code>方法，也就都有了创建货币的能力：
-</p>
-
-<pre class="brush: scala">
-  myDollar.make(100)  // here are a hundred more!
-</pre>
-
-<p>
-所以把工厂方法移到一个新的类中，新的类叫<code>CurrencyZone</code>。把<code>AbstractCurrency</code>和
-<code>Currency</code>也作为它的内部类：
-</p>
-
-<pre class="brush: scala">
-  abstract class CurrencyZone {
-    type Currency &lt;: AbstractCurrency
-    def make(x: Long): Currency
-    abstract class AbstractCurrency {
-      val amount: Long
-      def designation: String 
-      override def toString = amount +" "+ designation
-      def + (that: Currency): Currency = 
-        make(this.amount + that.amount)
-      def * (x: Double): Currency = 
-        make((this.amount * x).toLong)
-    }
-  }
-</pre>
-
-<p>
-这样按不同货币来扩展：
-</p>
-
-<pre class="brush: scala">
-  object US extends CurrencyZone {
-    abstract class Dollar extends AbstractCurrency {
-      def designation = "USD"
-    }
-    type Currency = Dollar
-    def make(x: Long) = new Dollar { val amount = x }
-  }
-</pre>
-
-<p>
-<code>US</code>中定义了类<code>Dollar</code>。它的类型是<code>US.Dollar</code>。
-</p>
-
-<p>
-继续改进设计：关于单位，单位不仅是美元，还有美分。所以让<code>amount</code>以美分为单位比较
-合适。所以用多一个字段<code>CurrencyUnit</code>记录单位：
-</p>
-
-<pre class="brush: scala">
-  class CurrencyZone { 
-    ... 
-    val CurrencyUnit: Currency 
-  } 
-</pre>
-
-<p>
-子类里再加上两个方法直接把1美元代表100美分的逻辑描述出来：
-</p>
-
-<pre class="brush: scala">
-  object US extends CurrencyZone {
-    abstract class Dollar extends AbstractCurrency {
-      def designation = "USD"
-    }
-    type Currency = Dollar
-    def make(cents: Long) = new Dollar {
-      val amount = cents
-    }
-    val Cent = make(1)
-    val Dollar = make(100)
-    val CurrencyUnit = Dollar
-  }
-</pre>
-
-<p>
-还有显示问题，用多数内部类型上都带的<code>format</code>方法格式化美元与美分的小数显示，如
-<code>10.23 USD</code>：
-</p>
-
-<pre class="brush: scala">
-    ((amount.toDouble / CurrencyUnit.amount.toDouble)
-     formatted ("%."+ decimals(CurrencyUnit.amount) +"f")
-     +" "+ designation)
-</pre>
-
-<p>
-输出字符的长度是通过<code>decimals</code>方法得出的。<code>decimals</code>方法返回十进制数字所要占用的
-字符长度。如对于<code>decimals(10)</code>代表0到9，会占用一个字符，而<code>decimals(100)</code>是0到99
-会占用两个字符。<code>decimals</code>方法通过简单递归实现：
-</p>
-
-<pre class="brush: scala">
-  private def decimals(n: Long): Int = 
-    if (n == 1) 0 else 1 + decimals(n / 10)
-</pre>
-
-<p>
-相对的看一下欧元的实现：
-</p>
-
-<pre class="brush: scala">
-  object Europe extends CurrencyZone {
-    abstract class Euro extends AbstractCurrency {
-      def designation = "EUR"
-    }
-    type Currency = Euro
-    def make(cents: Long) = new Euro {
-      val amount = cents
-    }
-    val Cent = make(1)
-    val Euro = make(100)
-    val CurrencyUnit = Euro
-  }
-
-  object Japan extends CurrencyZone {
-    abstract class Yen extends AbstractCurrency {
-      def designation = "JPY"
-    }
-    type Currency = Yen
-    def make(yen: Long) = new Yen {
-      val amount = yen
-    }
-    val Yen = make(1)
-    val CurrencyUnit = Yen
-  }
-</pre>
-
-<p>
-再改进一下，增加汇率的功能。先用一个新的对象来记录汇率：
-</p>
-
-<pre class="brush: scala">
-  object Converter {
-    var exchangeRate = Map(
-      "USD" -&gt; Map("USD" -&gt; 1.0   , "EUR" -&gt; 0.7596, 
-                   "JPY" -&gt; 1.211 , "CHF" -&gt; 1.223),
-      "EUR" -&gt; Map("USD" -&gt; 1.316 , "EUR" -&gt; 1.0   , 
-                   "JPY" -&gt; 1.594 , "CHF" -&gt; 1.623),
-      "JPY" -&gt; Map("USD" -&gt; 0.8257, "EUR" -&gt; 0.6272, 
-                   "JPY" -&gt; 1.0   , "CHF" -&gt; 1.018),
-      "CHF" -&gt; Map("USD" -&gt; 0.8108, "EUR" -&gt; 0.6160, 
-                   "JPY" -&gt; 0.982 , "CHF" -&gt; 1.0  )
-    )
-  }
-</pre>
-
-<p>
-在货币中增加根据汇率来转换的功能。接收一个外币类型，把自己的金额转成这个外币的
-金额：
-</p>
-
-<pre class="brush: scala">
-  def from(other: CurrencyZone#AbstractCurrency): Currency = 
-    make(Math.round(
-      other.amount.toDouble * Converter.exchangeRate
-        (other.designation)(this.designation)))
-</pre>
-
-<p>
-参数是末知的<code>CurrencyZone#AbstractCurrency</code>，所以能处理任意外币类型。
-</p>
-
-<p>
-全部的货币代码，假设都放在<code>org.stairwaybook.currencies</code>包中：
-</p>
-
-<pre class="brush: scala">
-  abstract class CurrencyZone {
-
-    type Currency &lt;: AbstractCurrency
-    def make(x: Long): Currency
-
-    abstract class AbstractCurrency {
-
-      val amount: Long
-      def designation: String 
-
-      def + (that: Currency): Currency = 
-        make(this.amount + that.amount)
-      def * (x: Double): Currency = 
-        make((this.amount * x).toLong)
-      def - (that: Currency): Currency = 
-        make(this.amount - that.amount)
-      def / (that: Double) = 
-        make((this.amount / that).toLong)
-      def / (that: Currency) = 
-        this.amount.toDouble / that.amount
-
-      def from(other: CurrencyZone#AbstractCurrency): Currency = 
-        make(Math.round(
-          other.amount.toDouble * Converter.exchangeRate
-            (other.designation)(this.designation)))
-
-      private def decimals(n: Long): Int = 
-        if (n == 1) 0 else 1 + decimals(n / 10)
-
-      override def toString = 
-        ((amount.toDouble / CurrencyUnit.amount.toDouble)
-         formatted ("%."+ decimals(CurrencyUnit.amount) +"f")
-         +" "+ designation)
-    }
-
-    val CurrencyUnit: Currency
-  }
-</pre>
-
-<p>
-调用的例子：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; import org.stairwaybook.currencies._
-
-  scala&gt; Japan.Yen from US.Dollar * 100
-  res16: Japan.Currency = 12110 JPY
-
-  scala&gt; Europe.Euro from res16
-  res17: Europe.Currency = 75.95 EUR
-
-  scala&gt; US.Dollar from res17
-  res18: US.Currency = 99.95 USD
-</pre>
-
-<p>
-相同类型的货币可以相加，不同类型的不可以相加：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; US.Dollar * 100 + res18
-  res19: currencies.US.Currency = 199.95
-
-
-  scala&gt; US.Dollar + Europe.Euro
-  &lt;console&gt;:7: error: type mismatch;
-   found   : currencies.Europe.Euro
-   required: currencies.US.Currency
-         US.Dollar + Europe.Euro
-                            ^
-</pre>
-
-<p>
-类型抽象实现了不同货币不能相加的功能。像是1999年9月23日，混用英制单位和公制单位
-引起的火星航天器坠毁事件不会再重演了。
-</p>
-
-
-
-
-
-
-<h1 id="toc_5">有状态的对象</h1>
-
-<p>
-类似于JavaBean的getter和setter方法，Scala对象的非私有<code>var x</code>有自动生成的访问方法
-<code>x</code>和设值方法<code>x_=</code>。
-</p>
-
-<p>
-对于类中的字段：
-</p>
-
-<pre class="brush: scala">
-var hour = 12
-</pre>
-
-<p>
-会有额外的getter方法<code>hour</code>和setter方法<code>hour_=</code>。方法的访问性与字段一致。
-</p>
-
-<p>
-拿这个例子来说：
-</p>
-
-<pre class="brush: scala">
-  class Time {
-    var hour = 12
-    var minute = 0
-  }
-</pre>
-
-<p>
-和下面的代码是一样的：
-</p>
-
-<pre class="brush: scala">
-  class Time {
-
-    private[this] var h = 12
-    private[this] var m = 0
-
-    def hour: Int = h
-    def hour_=(x: Int) { h = x }
-
-    def minute: Int = m
-    def minute_=(x: Int) { m = x }
-  }
-</pre>
+<h2 id="toc_2.10">并发操作集合</h2>
 
 <p>
-所以可以直接定义getter和setter。
+<code>par</code>方法会把一个集合的遍历操作分成多个段并行操作，多个段的结果汇总在一起。
 </p>
 
 <p>
-下面的代码在setter前进行检查：
+如，统计偶数个数：
 </p>
 
 <pre class="brush: scala">
-  class Time {
+scala&gt; val coll = 0 until 100
 
-    private[this] var h = 12
-    private[this] var m = 12
-
-    def hour: Int = h
-    def hour_= (x: Int) {
-      require(0 &lt;= x &amp;&amp; x &lt; 24)
-      h = x
-    }
-
-    def minute = m
-    def minute_= (x: Int) {
-      require(0 &lt;= x &amp;&amp; x &lt; 60)
-      m = x
-    }
-  }
-</pre>
-
-<p>
-再看一个温度的例子：
-</p>
-
-<pre class="brush: scala">
-  class Thermometer {
-
-    var celsius: Float = _
-
-    def fahrenheit = celsius * 9 / 5 + 32
-    def fahrenheit_= (f: Float) {
-      celsius = (f - 32) * 5 / 9
-    }
-    override def toString = fahrenheit +"F/"+ celsius +"C"
-  }
-</pre>
-
-<p>
-注意：变量<code>celsius</code>的值为<code>_</code>，表示初始化值。对于数值代表<code>0</code>，对于布尔类型代表
-<code>false</code>，引用类型则代表<code>null</code>。
-</p>
-
-<p>
-Scala中的初始化器<code>=_</code>，如果写成：
-</p>
-
-<pre class="brush: scala">
-var celsius
-</pre>
-
-<p>
-这样就成了抽象变量（以后到了“抽象成员”这一章介绍），而不是一个没有初始化的变量。
-这个和Java的习惯很不一样。
-</p>
-
-<p>
-使用的例子：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val t = new Thermometer
-  t: Thermometer = 32.0F/0.0C
-
-  scala&gt; t.celsius = 100
-
-  scala&gt; t
-  res3: Thermometer = 212.0F/100.0C
-
-  scala&gt; t.fahrenheit = -40
-
-  scala&gt; t
-  res4: Thermometer = -40.0F/-40.0C
-</pre>
-
-<h2 id="toc_5.1">案例：离散事件模拟</h2>
-
-<p>
-来个SICP（Structure and Interpretation of Computer Programs，计算机程序的构造与
-解释）里的例子。
-</p>
-
-<h2 id="toc_5.2">为数字电路定制语言</h2>
-
-<p>
-<img src="images/scala/18.01.png" />
-</p>
-
-<p>
-为了实现这三种基本的门，我们建立一个<code>Wire</code>类代表线路。可以这样构造线路：
-</p>
-
-<pre class="brush: scala">
-val a = new Wire
-val b = new Wire
-val c = new Wire
-</pre>
-
-<p>
-或简洁地写成：
-</p>
-
-<pre class="brush: scala">
-val a, b, c = new Wire
-</pre>
-
-<p>
-三个基本的门电路由以下三个过程模拟：
-</p>
-
-<pre class="brush: scala">
-  def inverter(input: Wire, output: Wire)
-  def andGate(a1: Wire, a2: Wire, output: Wire)
-  def orGate(o1: Wire, o2: Wire, output: Wire)
-</pre>
-
-<p>
-注意这里的过程都没有返回值。按照函数式的思想，应该是返回构造好的门对象。但是在
-这里我们选择了没有返回值，而是通过副作用来模拟门电路。副作用让一步步渐进地构造
-复杂的电路更加容易，如<code>inverter(a,b)</code>在<code>a</code>与<code>b</code>之间放置反转电路。
-</p>
-
-<p>
-还有这里的方法名没有用动词而是用了名词，这是为了方便说明制造的是哪个门电路。这
-反映了DSL说明的本质：应该描述电路，而不是如何制造它。
-</p>
-
-<p>
-下面是一个半加法器（half-adder）。它根据两个输入<code>a</code>和<code>b</code>产生累加和<code>s</code>。
-</p>
-
-<p>
-累加的定义为：<code>s= (a+b)%2</code>及进位<code>c</code>，其中的<code>c = (a+b)/2</code>。
-</p>
-
-<p>
-半加法器电路图：
-</p>
-
-<p>
-<img src="images/scala/18.02.png" />
-</p>
-
-<p>
-用我们的代码描述：
-</p>
-
-<pre class="brush: scala">
-  def halfAdder(a: Wire, b: Wire, s: Wire, c: Wire) {
-    val d, e = new Wire
-    orGate(a, b, d)
-    andGate(a, b, c)
-    inverter(c, e)
-    andGate(d, e, s)
-  }
-</pre>
-
-<p>
-接下来是一个全加法器，定义为根据参数<code>a</code>和<code>b</code>还有进位<code>cin</code>得到两个输出。一个是和
-<code>sum = (a+b+cin)%2</code>，另一个是进位输出<code>count = (a+b+cin)/2</code>：
-</p>
-
-<p>
-<img src="images/scala/18.03.png" />
-</p>
-
-<p>
-代码为：
-</p>
-
-<pre class="brush: scala">
-  def fullAdder(a: Wire, b: Wire, cin: Wire,
-      sum: Wire, cout: Wire) {
-
-    val s, c1, c2 = new Wire
-    halfAdder(a, cin, s, c1)
-    halfAdder(b, s, sum, c2)
-    orGate(c1, c2, cout)
-  }
-</pre>
-
-<p>
-这是内部DSL很好的例子：通过宿主语言将特定的语言定义为库面不是完全实现这种语言。
-</p>
-
-
-<h2 id="toc_5.3">Simulation API</h2>
-
-<p>
-完成了对电路的模拟以后，再来分析对时间的模拟。模拟时间包括在指定时间执行指定的
-动作。
-</p>
-
-<p>
-私有变量保存时间，但提供对时间的公开访问：
-</p>
-
-<pre class="brush: scala">
-  private var curtime: Int = 0
-
-  def currentTime: Int = curtime
-</pre>
-
-<p>
-定义动作：在我们的例子中，把参数列表和返回都为空的过程<code>() =&gt; Unit</code>作为基本的动作
-。给这样类型的过程起个别名叫<code>Action</code>：
-</p>
-
-<pre class="brush: scala">
-type Action = () =&gt; Unit
-</pre>
-
-<p>
-在特定时间执行的的操作定义为工作项目（work item）：
-</p>
-
-<pre class="brush: scala">
-  case class WorkItem(time: Int, action: Action)
-</pre>
-
-<p>
-注意这里用的是样本类，所以用工厂方法创建实例就可以自动获得访问构造器参数<code>time</code>和
-<code>action</code>的方法。
-</p>
-
-<p>
-还有一个类来保存末执行工作条目的排程表（agenda），注意它是按时间排序的：
-</p>
-
-<pre class="brush: scala">
-  private var agenda: List[WorkItem] = List()
-</pre>
-
-<p>
-提供在一定 时延后加入新的工作条目的方法，注意加入操作也要排序：
-</p>
-
-<pre class="brush: scala">
-  def afterDelay(delay: Int)(block: =&gt; Unit) {
-    val item = WorkItem(currentTime + delay, () =&gt; block)
-    agenda = insert(agenda, item)
-  }
-
-  private def insert(ag: List[WorkItem],
-      item: WorkItem): List[WorkItem] = {
-    if (ag.isEmpty || item.time &lt; ag.head.time) item :: ag
-    else ag.head :: insert(ag.tail, item)
-  }
-</pre>
-
-<p>
-核心是<code>run</code>方法：
-</p>
-
-<pre class="brush: scala">
-  def run() {
-    afterDelay(0) {
-      println("*** simulation started, time = "+
-          currentTime +" ***")
-    }
-    while (!agenda.isEmpty) next()
-  }
-  
-  private def next() {
-    (agenda: @unchecked) match {
-      case item :: rest =&gt;
-        agenda = rest
-        curtime = item.time
-        item.action()
-    }
-  }
-</pre>
-
-<p>
-注意这里为了方便去掉了空列表的情况。为了防止编译器警告我们在模式匹配里故意漏掉了
-列表为空的情况，在这里使用了<code>(agenda: @unchecked) match</code>而不是<code>agenda match</code>。
-</p>
-
-<p>
-完整的代码在包<code>org.stairwaybook.simulation</code>里：
-</p>
-
-<pre class="brush: scala">
-  abstract class Simulation {
-
-    type Action = () =&gt; Unit
-
-    case class WorkItem(time: Int, action: Action)
-
-    private var curtime = 0
-    def currentTime: Int = curtime
-
-    private var agenda: List[WorkItem] = List()
-
-    private def insert(ag: List[WorkItem],
-        item: WorkItem): List[WorkItem] = {
-
-      if (ag.isEmpty || item.time &lt; ag.head.time) item :: ag
-      else ag.head :: insert(ag.tail, item)
-    }
-
-    def afterDelay(delay: Int)(block: =&gt; Unit) {
-      val item = WorkItem(currentTime + delay, () =&gt; block)
-      agenda = insert(agenda, item)
-    }
-
-    private def next() {
-      (agenda: @unchecked) match {
-        case item :: rest =&gt;
-          agenda = rest
-          curtime = item.time
-          item.action()
-      }
-    }
-
-    def run() {
-      afterDelay(0) {
-        println("*** simulation started, time = "+
-            currentTime +" ***")
-      }
-      while (!agenda.isEmpty) next()
-    }
-  }
+scala&gt; coll.par.count(_ % 2 == 0)
+res6: Int = 50
 </pre>
-
-
-
-<h2 id="toc_5.4">电路模拟</h2>
-
-<p>
-这里创建了<code>BasicCircuitSiomulation</code>来模拟电路。
-</p>
-
-<p>
-为了模拟电路和延迟声明了三个方法：<code>InverterDelay</code>、<code>AndGateDelay</code>、<code>OrGateDelay</code>。由于
-不同模拟电路的技术参数不同，所以这三个方法是抽象方法。
-</p>
-
-<h3 id="toc_5.4.1">Wire类</h3>
-
-<p>
-需要支持的三种基本动作：
-</p>
-
-<p>
-<code>getSignal: Boolean</code>：返回当前线路上的信号。
-</p>
-
-<p>
-<code>setSignal(sig: Boolean)</code>：设置线路信号。
-</p>
-
-<p>
-<code>addAction(p: Action)</code>：添加动作到线路上。基本思想是所有附加在某线路上的动作过程
-在每次信号改变时被执行。通过连接组件可以为线路添加该组件的功能。加上的动作会在被
-加到线路时以及每次线路信号改变时被执行。
-</p>
 
 <p>
-实现代码<code>sigVal</code>代表当前信号，<code>actions</code>是附加的动作过程。需要注意的是<code>setSignal</code>
-方法，当信号改变时，新的信号首先被保存在变量<code>sigVal</code>中，然后执行所有线路附加
-动作：
+通过下面的例子可以看出，顺序是并行执行的：
 </p>
 
 <pre class="brush: scala">
-  class Wire {
-    private var sigVal = false
-    private var actions: List[Action] = List()
-
-    def getSignal = sigVal
-
-    def setSignal(s: Boolean) =
-      if (s != sigVal) {
-        sigVal = s
-        actions foreach (_ ())
-      }
-
-    def addAction(a: Action) = {
-      actions = a :: actions
-      a()
-    }
-  }
+scala&gt; for (i &lt;- (0 until 100).par) print( i + ", ")
+0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 
+22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41,
+42, 43, 44, 45, 46, 47, 48, 49, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86,
+87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 62, 63, 64, 65, 66, 67, 68,
+69, 70, 71, 72, 73, 74, 56, 57, 58, 59, 60, 61, 50, 51, 52, 53, 54, 55, 
 </pre>
-
-<p>
-注意上面的缩写格式：<code>actions forearch(_())</code>代表对每个元素执行<code>_()</code>。在“函数和装饰”这一章的
-“占位符”部分说明过，函数<code>_()</code>是<code>f =&gt; f()</code>的缩写，代表空参数函数。
-</p>
 
-<h3 id="toc_5.4.2">反转操作</h3>
 
-<p>
-<code>inverter</code>方法会在安装之后以及每次线路信号变化时被调用。它通过<code>setSignal</code>把输出设为输入的反值。
-</p>
+<h3 id="toc_2.10.1"><code>for-yield</code>循环按顺序执行</h3>
 
 <p>
-另外，由于还要模拟电路的响应时间，所以输入值改变以后，还要等<code>InverterDelay</code>单位的模拟时间后，
-才发生改变：
+但是在<code>for-yield</code>循环中是按顺序执行的：
 </p>
 
 <pre class="brush: scala">
-  def inverter(input: Wire, output: Wire) = {
-    def invertAction() {
-      val inputSig = input.getSignal
-      afterDelay(InverterDelay) {
-        output setSignal !inputSig
-      }
-    }
-    input addAction invertAction
-  }
+scala&gt; for (i &lt;- (0 until 100).par) yield i
+res8: scala.collection.parallel.immutable.ParSeq[Int] = ParVector(0, 1, 2, 3, 
+		4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 
+		24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 
+		43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 
+		62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 
+		81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99)
 </pre>
 
-<p>
-注意这里的<code>afterDelay</code>方法是把这个操作加到队列的最后面。
-</p>
+<h3 id="toc_2.10.2">不要用共享变量</h3>
 
-<h3 id="toc_5.4.3">与门和或门操作</h3>
-
 <p>
-大致思想和上面类似：
+绝对不要这样写，结果不要预知：
 </p>
 
 <pre class="brush: scala">
-  def andGate(a1: Wire, a2: Wire, output: Wire) = {
-    def andAction() = {
-      val a1Sig = a1.getSignal
-      val a2Sig = a2.getSignal
-      afterDelay(AndGateDelay) {
-        output setSignal (a1Sig &amp; a2Sig)
-      }
-    }
-    a1 addAction andAction
-    a2 addAction andAction
-  }
-
-  def orGate(o1: Wire, o2: Wire, output: Wire) {
-    def orAction() {
-      val o1Sig = o1.getSignal
-      val o2Sig = o2.getSignal
-      afterDelay(OrGateDelay) {
-        output setSignal (o1Sig | o2Sig)
-      }
-    }
-    o1 addAction orAction
-    o2 addAction orAction
-  }
+var count = 0
+for (c &lt;- coll.par) { if (c % 2 == 0) count += 1 }
 </pre>
 
-<h3 id="toc_5.4.4">模拟输出</h3>
+<h3 id="toc_2.10.3">ParIterable接口</h3>
 
 <p>
-通过探针（probe）观察线路上信号的改变。
+<code>par</code>方法返回的并行集合类型扩展自<code>ParIterable</code>接口的子接口，如<code>ParSeq</code>、<code>ParSet</code>
+或<code>ParMap</code>特质。
 </p>
-
-<p>
-还是在信号改变时被调用，显示输出线路的名称、模拟时间、信号值：
-</p>
-
-<pre class="brush: scala">
-  def probe(name: String, wire: Wire) {
-    def probeAction() {
-      println(name +" "+ currentTime +
-          " new-value = "+ wire.getSignal)
-    }
-    wire addAction probeAction
-  }
-</pre>
 
-<h3 id="toc_5.4.5">运行模拟器</h3>
-
 <p>
-<code>BasicCircuitSimulation</code>继承了<code>CircuitSimulation</code>
+注意<code>Parable</code>不是<code>Iterable</code>的子类型，所以不能把并行集合传递给<code>Iterable</code>、<code>Seq</code>
+、<code>set</code>与<code>Map</code>，但可以用<code>ser</code>方法转过去。还可以传递给通用的类型<code>GenIterable</code>、
+<code>GenSeq</code>、<code>GenSet</code>、<code>GenMap</code>
 </p>
-
-<pre class="brush: scala">
-  package org.stairwaybook.simulation
-
-  abstract class CircuitSimulation
-    extends BasicCircuitSimulation {
-
-    def halfAdder(a: Wire, b: Wire, s: Wire, c: Wire) {
-      val d, e = new Wire
-      orGate(a, b, d)
-      andGate(a, b, c)
-      inverter(c, e)
-      andGate(d, e, s)
-    }
-
-    def fullAdder(a: Wire, b: Wire, cin: Wire,
-        sum: Wire, cout: Wire) {
 
-      val s, c1, c2 = new Wire
-      halfAdder(a, cin, s, c1)
-      halfAdder(b, s, sum, c2)
-      orGate(c1, c2, cout)
-    }
-  }
-</pre>
+<h3 id="toc_2.10.4">适用范围</h3>
 
 <p>
-剩下的电路延迟时间和定义被模拟的电路都留在Scala交互Shell中实现：
+并不是所有的方法都可以并行化，因为有些操作关系到操作顺序。
 </p>
 
-<pre class="brush: scala">
-  scala&gt; import org.stairwaybook.simulation._
-  import org.stairwaybook.simulation._
-</pre>
+<h4 id="toc_2.10.4.1">reduce</h4>
 
 <p>
-定义延迟时间：
+<code>reduceLeft</code>和<code>reduceRight</code>是顺序相关的。
 </p>
-
-<pre class="brush: scala">
-  scala&gt; object MySimulation extends CircuitSimulation {
-       | def InverterDelay = 1
-       | def AndGateDelay = 3
-       | def OrGateDelay = 5
-       | }
-  defined module MySimulation
-</pre>
 
 <p>
-定义一下简化以后对<code>MySimulation</code>的引用：
+<code>reduce</code>方法无关顺序，但具体执行的操作可能与顺序相关。如：\((a+b)+c = a+(b+c)\)，
+但是\((a-b)-c \neq a-(b-c)\)。
 </p>
 
-<pre class="brush: scala">
-  scala&gt; import MySimulation._
-  import MySimulation._
-</pre>
+<h4 id="toc_2.10.4.2">fold</h4>
 
 <p>
-定义线路的部分。先定义四根线路，再把探针放在其中的两根上。探针会立即输出结果：
+<code>fold</code>方法的两个操作参数必须都是当前集合的成员，如：<code>coll.par.fold(0)(_ + _)</code>，
+不能进行如<code>foldLeft</code>和<code>foldRight</code>该当那样更加复杂的折叠操作。
 </p>
 
-<pre class="brush: scala">
-  scala&gt; val input1, input2, sum, carry = new Wire
-  input1: MySimulation.Wire =
-      simulator.BasicCircuitSimulation$Wire@111089b
-  input2: MySimulation.Wire =
-      simulator.BasicCircuitSimulation$Wire@14c352e
-  sum: MySimulation.Wire =
-      simulator.BasicCircuitSimulation$Wire@37a04c
-  carry: MySimulation.Wire =
-      simulator.BasicCircuitSimulation$Wire@1fd10fa
-
-  scala&gt; probe("sum", sum)
-  sum 0 new-value = false
-
-  scala&gt; probe("carry", carry)
-  carry 0 new-value = false
-</pre>
+<h4 id="toc_2.10.4.3">aggregate</h4>
 
 <p>
-加上半加法器：
+解决方案是用<code>aggregate</code>方法将操作应用于于集合的不同部分，然后再用另一个操作符
+组合各部分的结果。例：
 </p>
 
 <pre class="brush: scala">
-  scala&gt; halfAdder(input1, input2, sum, carry)
+str.par.aggregate(Set[Char]())(_ + _, _ ++ _)
 </pre>
 
 <p>
-逐次把两根输入线信号设为<code>true</code>，并执行模拟过程：
+等同于：
 </p>
 
 <pre class="brush: scala">
-  scala&gt; input1 setSignal true
-
-  scala&gt; run()
-  *** simulation started, time = 0 ***
-  sum 8 new-value = true
-
-  scala&gt; input2 setSignal true
-
-  scala&gt; run()
-  *** simulation started, time = 8 ***
-  carry 11 new-value = true
-  sum 15 new-value = false
+str.foldLeft(Set[Char]())(_ + _)
 </pre>
 
 <p>
-全部代码如下：
+产出的结果是一个<code>str</code>里所有不同的字符集。
 </p>
-
-<pre class="brush: scala">
-package org.stairwaybook.simulation
-
-abstract class BasicCircuitSimulation extends Simulation {
-
-  def InverterDelay: Int
-  def AndGateDelay: Int
-  def OrGateDelay: Int
-
-  class Wire {
-
-    private var sigVal = false
-    private var actions: List[Action] = List()
-
-    def getSignal = sigVal
-
-    def setSignal(s: Boolean) =
-      if (s != sigVal) {
-        sigVal = s
-        actions foreach (_ ())
-      }
-
-    def addAction(a: Action) = {
-      actions = a :: actions
-      a()
-    }
-  }
-
-  def inverter(input: Wire, output: Wire) = {
-    def invertAction() {
-      val inputSig = input.getSignal
-      afterDelay(InverterDelay) {
-        output setSignal !inputSig
-      }
-    }
-    input addAction invertAction
-  }
-
-  // continued in Listing 18.10...
-  // ...continued from Listing 18.9
-  def andGate(a1: Wire, a2: Wire, output: Wire) = {
-    def andAction() = {
-      val a1Sig = a1.getSignal
-      val a2Sig = a2.getSignal
-      afterDelay(AndGateDelay) {
-        output setSignal (a1Sig &amp; a2Sig)
-      }
-    }
-    a1 addAction andAction
-    a2 addAction andAction
-  }
-
-  def orGate(o1: Wire, o2: Wire, output: Wire) {
-    def orAction() {
-      val o1Sig = o1.getSignal
-      val o2Sig = o2.getSignal
-      afterDelay(OrGateDelay) {
-        output setSignal (o1Sig | o2Sig)
-      }
-    }
-    o1 addAction orAction
-    o2 addAction orAction
-  }
-
-  def probe(name: String, wire: Wire) {
-    def probeAction() {
-      println(name +" "+ currentTime +
-          " new-value = "+ wire.getSignal)
-    }
-    wire addAction probeAction
-  }
-}
-
-abstract class Simulation {
-
-  type Action = () =&gt; Unit
-
-  case class WorkItem(time: Int, action: Action)
-
-  private var curtime = 0
-  def currentTime: Int = curtime
-
-  private var agenda: List[WorkItem] = List()
-
-  private def insert(ag: List[WorkItem],
-      item: WorkItem): List[WorkItem] = {
-
-    if (ag.isEmpty || item.time &lt; ag.head.time) item :: ag
-    else ag.head :: insert(ag.tail, item)
-  }
-
-  def afterDelay(delay: Int)(block: =&gt; Unit) {
-    val item = WorkItem(currentTime + delay, () =&gt; block)
-    agenda = insert(agenda, item)
-  }
-
-  private def next() {
-    (agenda: @unchecked) match {
-      case item :: rest =&gt;
-        agenda = rest
-        curtime = item.time
-        item.action()
-    }
-  }
-
-  def run() {
-    afterDelay(0) {
-      println("*** simulation started, time = "+
-          currentTime +" ***")
-    }
-    while (!agenda.isEmpty) next()
-  }
-}
-
-
-abstract class CircuitSimulation
-  extends BasicCircuitSimulation {
-
-  def halfAdder(a: Wire, b: Wire, s: Wire, c: Wire) {
-    val d, e = new Wire
-    orGate(a, b, d)
-    andGate(a, b, c)
-    inverter(c, e)
-    andGate(d, e, s)
-  }
-
-  def fullAdder(a: Wire, b: Wire, cin: Wire,
-      sum: Wire, cout: Wire) {
-
-    val s, c1, c2 = new Wire
-    halfAdder(a, cin, s, c1)
-    halfAdder(b, s, sum, c2)
-    orGate(c1, c2, cout)
-  }
-}
-
- object MySimulation extends CircuitSimulation {
-           def InverterDelay = 1
-           def AndGateDelay = 3
-           def OrGateDelay = 5
-
-  def main(args: Array[String]) {
-    val input1, input2, sum, carry = new Wire
-
-    probe("sum", sum)
-    probe("carry", carry)
-    halfAdder(input1, input2, sum, carry)
-
-    input1 setSignal true
-    run()
-
-    input2 setSignal true
-    run()
-  }
-}
-</pre>
  </div>
 </body>
 </html>

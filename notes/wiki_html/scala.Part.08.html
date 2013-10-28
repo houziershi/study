@@ -1,0 +1,2369 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>Part VIII</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>Part VIII</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">结合Scala与Java</a>
+<ul>
+<li><a href="#toc_1.1">在Java中使用Scala</a>
+<ul>
+<li><a href="#toc_1.1.1">一般性原则</a>
+<li><a href="#toc_1.1.2">值类型</a>
+<li><a href="#toc_1.1.3">高阶函数</a>
+<li><a href="#toc_1.1.4">单例对象与伴生对象</a>
+<ul>
+<li><a href="#toc_1.1.4.1">单例对象</a>
+<li><a href="#toc_1.1.4.2">伴生对象</a>
+</ul>
+<li><a href="#toc_1.1.5">作为接口的特质</a>
+</ul>
+<li><a href="#toc_1.2">注解</a>
+<ul>
+<li><a href="#toc_1.2.1">标准注解的额外效果</a>
+<ul>
+<li><a href="#toc_1.2.1.1">过期</a>
+<li><a href="#toc_1.2.1.2">volatile字段</a>
+<li><a href="#toc_1.2.1.3">序列化</a>
+</ul>
+<li><a href="#toc_1.2.2">抛出的异常</a>
+<li><a href="#toc_1.2.3">Java注解</a>
+<li><a href="#toc_1.2.4">编写自己的注解</a>
+</ul>
+<li><a href="#toc_1.3">存在类型</a>
+</ul>
+<li><a href="#toc_2">Actor和并发</a>
+<ul>
+<li><a href="#toc_2.1">多线程</a>
+<li><a href="#toc_2.2">actor和消息传递</a>
+<li><a href="#toc_2.3">把原生线程当作actor</a>
+<li><a href="#toc_2.4">简单的并行计算例子</a>
+<li><a href="#toc_2.5">小结</a>
+<ul>
+<li><a href="#toc_2.5.1">消息传递</a>
+<li><a href="#toc_2.5.2">发送不阻塞</a>
+<li><a href="#toc_2.5.3">接收消息不中断</a>
+<li><a href="#toc_2.5.4">接收消息阻塞</a>
+<li><a href="#toc_2.5.5">使用同步的方式传递消息</a>
+</ul>
+<li><a href="#toc_2.6">通过重用线程取得更好的性能</a>
+<ul>
+<li><a href="#toc_2.6.1">react工作原理</a>
+<li><a href="#toc_2.6.2">reactWithin</a>
+<li><a href="#toc_2.6.3">loop与loopWhile</a>
+</ul>
+<li><a href="#toc_2.7">控制线程执行</a>
+<li><a href="#toc_2.8">良好的actor风格</a>
+<ul>
+<li><a href="#toc_2.8.1">actor不应该阻塞</a>
+<li><a href="#toc_2.8.2">只通过消息与actor通信</a>
+<li><a href="#toc_2.8.3">优选不可变消息</a>
+<li><a href="#toc_2.8.4">让消息自包含</a>
+</ul>
+<li><a href="#toc_2.9">更加长的例子：并行离散事件模拟</a>
+<ul>
+<li><a href="#toc_2.9.1">总体设计</a>
+<li><a href="#toc_2.9.2">实现模拟架构</a>
+<li><a href="#toc_2.9.3">实现一个电路模拟</a>
+<li><a href="#toc_2.9.4">把所有内容结合在一起</a>
+</ul>
+</ul>
+<li><a href="#toc_3">连接符解析</a>
+</ul>
+</div>
+
+
+
+<h1 id="toc_1">结合Scala与Java</h1>
+
+<h2 id="toc_1.1">在Java中使用Scala</h2>
+
+<p>
+要保证<code>classpath</code>里有<code>scala-librasy.jar</code>。虽然Scala代码被编译成了Java字节码，但
+还是要知道编译成了字节码以后长什么样子。
+</p>
+
+<h3 id="toc_1.1.1">一般性原则</h3>
+
+<p>
+Scala尽可能把Scala特性编译成对等的Java特性，如：类、方法、字符串、异常等。
+</p>
+
+<p>
+虽然在运行时进行确定重载方法是一个很好的方案，但是为了和Java的重载一致Scala还是
+和Java保持一致使用编译时解析重载。这样Scala的方法与调用方式可以和Java的一致。
+</p>
+
+<p>
+但是像特质这样在Java里没有对应的特性就比较麻烦，还有Java和Scala的泛型要细节上是
+有冲突的，只能用别的方式解决。注意在不同版本中这样的解决方案会不断的优化改变。
+所以可靠的方式还是用<code>javap</code>工具检查<code>.class</code>文件。
+</p>
+
+<h3 id="toc_1.1.2">值类型</h3>
+
+<p>
+<code>Int</code>这样的值类型会尽量用Java的<code>Int</code>表示。但有些情况下如<code>List[Any]</code>时不能确定用
+的是哪一种类型，所以会用<code>Interger</code>这样的包装器类。
+</p>
+
+<h3 id="toc_1.1.3">高阶函数</h3>
+
+<p>
+Java不支持高阶函数与闭包等特性，所以用不了。如果预计以后要给Java用的话，就再定义
+一个不用高阶函数实现的函数给Java代码调用……
+</p>
+
+<h3 id="toc_1.1.4">单例对象与伴生对象</h3>
+
+<p>
+由于在Java里没有对应的特性，所以采用静态和实例方法结合的方式。每个Scala的单例
+对象编译器都会创建一个名称后加美元符号的Java类。对于名为<code>App</code>的单例对象编译器
+产出一个名为<code>App$</code>的Java类。这个类拥有Scala单例对象的所有字段和方法，这个Java类
+同时还有一个名为<code>MODULE$</code>的静态字段，保存该类在运行期创建的一个实例。
+</p>
+
+<p>
+完整的例子：
+</p>
+
+<pre class="brush: scala">
+  object App {
+    def main(args: Array[String]) {
+      println("Hello, world!")
+    }
+  }
+</pre>
+
+<p>
+会生成一个Java类<code>App$</code>：
+</p>
+
+<pre class="brush: scala">
+  $ javap App$
+  public final class App$ extends java.lang.Object
+  implements scala.ScalaObject{
+      public static final App$ MODULE$;
+      public static {};
+      public App$();
+      public void main(java.lang.String[]);
+      public int $tag();
+  }
+</pre>
+
+
+<h4 id="toc_1.1.4.1">单例对象</h4>
+
+<p>
+编译器还要为单例对象<code>App</code>自动创建一个叫<code>App</code>的Java类。这个类对于每个Scala单例
+对象的方法都有一个静态转发方法与之对应：
+</p>
+
+<pre class="brush: scala">
+  $ javap App
+  Compiled from "App.scala"
+  public final class App extends java.lang.Object{
+      public static final int $tag();
+      public static final void main(java.lang.String[]);
+  }
+</pre>
+
+<p>
+在Java中调用单例对象的例子：
+</p>
+
+<pre class="brush: scala">
+object Single {
+	def greet() { println("hello") }
+}
+</pre>
+
+<p>
+在Java里调用时就像用静态方法一样：
+</p>
+
+<pre class="brush: java">
+public class SingleUser {
+	public static void main(String [] args) {
+		Single.greet()
+	}
+}
+</pre>
+
+<h4 id="toc_1.1.4.2">伴生对象</h4>
+
+<p>
+反之如果已经有一个名为<code>App</code>的类了，Scala会创建一个相对应的Java类<code>App</code>来保存定义
+<code>App</code>类的成员。在这种情况下就不包含任何转发到同名单例对象的方法，Java代码必须
+通过<code>MODULE$</code>字段来访问这个单例。
+</p>
+
+<pre class="brush: scala">
+class Buddy {
+	def greet() { println("this is Buddy class") }
+}
+
+object Buddy {
+	def greet() { println("this is Buddy object") }
+}
+</pre>
+
+<p>
+在Java里调用伴生对象要通过<code>MODULE$</code>：
+</p>
+
+<pre class="brush: java">
+public class BUddyUser {
+	public static void main(String [] args) {
+		new Buddy().greet();
+		Buddy$.MODULE$.greet();
+	}
+}
+</pre>
+
+<h3 id="toc_1.1.5">作为接口的特质</h3>
+
+<p>
+每个特质都会创建一个同名的Java接口。这个接口可以作为Java类型使用，可以通过这个
+接口类型的变量来调用Scala的对象方法。
+</p>
+
+<p>
+反过来如果要在Java中建立一个Scala特质的情况非常罕见，但也有特殊情况下需要这样做
+。如果Scala特质只有抽象方法的话就直接翻译成Java接口。所以本质上说能Scala语法来
+编写Java接口。
+</p>
+
+<p>
+举例来说，如果一个特质没有实现方法，那个Java代码里可以把它作为接口来用：
+</p>
+
+<pre class="brush: scala">
+trait Writable {
+	def wirte(msg: String) : Unit
+}
+</pre>
+
+<p>
+Java代码里可以实现它：
+</p>
+
+<pre class="brush: java">
+public class AWritableJavaClass implements Writable {
+	public void write(String msg) {}
+}
+</pre>
+
+<p>
+如果特质里有实现：
+</p>
+
+<pre class="brush: scala">
+trait Printable {
+	def print() {}
+}
+</pre>
+
+<p>
+那在Java里就不能实现它了，但可以反它作为一个类型，持有它的一个引用。
+</p>
+
+<h2 id="toc_1.2">注解</h2>
+
+<h3 id="toc_1.2.1">标准注解的额外效果</h3>
+
+<p>
+有一些注解编译器在针对Java平台编译时会产额外的信息。编译器会首先按Scala原则去
+处理，然后针对Java做一些额外的工作。
+</p>
+
+<h4 id="toc_1.2.1.1">过期</h4>
+
+<p>
+<code>@deprecated</code>标记的方法或类，编译器会为产的代码添加Java自己的过期注解。所以Java
+也会警告过期。
+</p>
+
+<h4 id="toc_1.2.1.2">volatile字段</h4>
+
+<p>
+对应到Java里的<code>volatile</code>修饰符。所以这两套机制一样，对volatile字段的访问也完全
+根据Java内存模型所规定的volatile字段处理原则来进行排列。
+</p>
+
+<h4 id="toc_1.2.1.3">序列化</h4>
+
+<p>
+<code>@serializable</code>被加上Java的<code>Serializable</code>接口。<code>@SerialVersionUID</code>被转成Java的
+版本字段：
+</p>
+
+<pre class="brush: scala">
+@SerialVersionUID(42L) class Person extends Serializable
+</pre>
+
+<p>
+对应的Java：
+</p>
+
+<pre class="brush: java">
+public class Person implements java.io.Serializable {
+  private final static long SerialVersionUID = 1234L
+  
+	// ...
+}
+</pre>
+
+<p>
+<code>@transient</code>变量会被加上Java的<code>transient</code>修饰符： 
+</p>
+
+
+<h3 id="toc_1.2.2">抛出的异常</h3>
+
+<p>
+Scala不检查抛出的异常是否被捕获。也就是说Scala没有<code>throws</code>声明。所以所有的Scala
+都被翻译成不抛出任何异常的Java方法。这样做的原因是<code>throws</code>声明就是为了强制开发
+人员一定要处理异常。但是的很多开发人员写Java在捕获了以后也不处理，这样语法上虽然
+过了但是等于没有抛出声明。比如下面这样的<code>catch</code>块里一句语句也没有：
+</p>
+
+<pre class="brush: scala">
+try {
+	...
+} catch (IOException e) {
+	// do nothing
+}
+</pre>
+
+<p>
+这样异常没有处理，反而还给代码包了一层<code>try-catch</code>。Scala为了代码干净就直接不声明
+抛出异常了。
+</p>
+
+<p>
+但是为了和Java程序对接，声明一下会抛出哪些异常还是有必要的。不然Java代码就不能
+捕获可能抛出的异常。所以通过注解标签<code>@throws</code>来说明：
+</p>
+
+<pre class="brush: scala">
+  import java.io._
+  class Reader(fname: String) {
+    private val in =
+      new BufferedReader(new FileReader(fname))
+ 
+    @throws(classOf[IOException])
+    def read() = in.read()
+  }
+</pre>
+
+<p>
+从Java看来是这个样子的：
+</p>
+
+<pre class="brush: scala">
+  $ javap Reader
+  Compiled from "Reader.scala"
+  public class Reader extends java.lang.Object implements
+  scala.ScalaObject{
+      public Reader(java.lang.String);
+      public int read()       throws java.io.IOException;
+      public int $tag();
+  }
+  $
+</pre>
+
+<p>
+这样Java中调用Scala代码时才能捕获异常：
+</p>
+
+<pre class="brush: java">
+try {
+	reader.read();
+} catch (IOException e) {
+	// ...
+}
+</pre>
+
+<h3 id="toc_1.2.3">Java注解</h3>
+
+<p>
+Java注解可以直接在Scala代码中用，任何Java框架都会看到这些注解。如Junit的注解：
+</p>
+
+<pre class="brush: scala">
+  import org.junit.Test
+  import org.junit.Assert.assertEquals
+
+  class SetTest {
+
+    @Test
+    def testMultiAdd {
+      val set = Set() + 1 + 2 + 3 + 1 + 2 + 3
+      assertEquals(3, set.size)
+    }
+  }
+</pre>
+
+<p>
+Scala可以直接用：
+</p>
+
+<pre class="brush: scala">
+  $ scala -cp junit-4.3.1.jar:. org.junit.runner.JUnitCore SetTest
+  JUnit version 4.3.1
+  .
+  Time: 0.023
+ 
+  OK (1 test)
+</pre>
+
+
+<h3 id="toc_1.2.4">编写自己的注解</h3>
+
+<p>
+为了让注解对Java反射可见，必须用Java语法编写并用<code>javac</code>编译。将来Scala可能会有
+自己的反射，但现在Scala还没有办法来实现Java注解的全部功能。
+</p>
+
+<p>
+但是有可以要使用Scala反射来访问Scala的注解。所以要先用Java来写：
+</p>
+
+<pre class="brush: scala">
+  import java.lang.annotation.*;
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target(ElementType.METHOD)
+  public @interface Ignore { }
+</pre>
+
+<p>
+使用<code>javac</code>编译过以后，Scala里使用的方式：
+</p>
+
+<pre class="brush: scala">
+  object Tests {
+    @Ignore
+    def testData = List(0, 1, -1, 5, -5)
+
+    def test1 {
+      assert(testData == (testData.head :: testData.tail))
+    }
+
+    def test2 {
+      assert(testData.contains(testData.head))
+    }
+  }
+</pre>
+
+<p>
+这里的<code>test1</code>和<code>test2</code>应该是测试方法，尽管<code>testData</code>以<code>test</code>开头，但实际上应该
+被忽略。
+</p>
+
+<p>
+通过Java的反身API来观察这些注解是否被用到：
+</p>
+
+<pre class="brush: scala">
+  for {
+    method &lt;- Tests.getClass.getMethods
+    if method.getName.startsWith("test")
+    if method.getAnnotation(classOf[Ignore]) == null
+  } {
+    println("found a test method: " + method)
+  }
+</pre>
+
+<p>
+在这里用反射方法<code>getClass</code>和<code>getMethods</code>来检查输入对象类的所有字段。与注解相关的
+部分是<code>getAnnotation</code>方法，它用来查找特定类型的注解，这里用来查找我们定义的
+<code>Ignore</code>类型的注解。运行起来是这样的：
+</p>
+
+<pre class="brush: scala">
+  $ javac Ignore.java
+  $ scalac Tests.scala
+  $ scalac FindTests.scala
+  $ scala FindTests
+  found a test method: public void Tests$.test2()
+  found a test method: public void Tests$.test1()
+</pre>
+
+<p>
+注意这些方法在Java反射看来是位于<code>Test$</code>类而不是<code>Test</code>类中，因为这是单例对象。
+</p>
+
+<p>
+还要注意Java注解的限制，比如，注解的参数只能用常量不能用表达式。（可以用
+<code>@serial(1234)</code>而不能用<code>@serial(x*2)</code>）。
+</p>
+
+<h2 id="toc_1.3">存在类型</h2>
+
+<p>
+所有Java类型在Scala中都有对等的概念。一般的类型可以用同名的类型表示，如Java中的
+<code>Pattern</code>对应Scala里的<code>Pattern</code>、<code>Iterator&lt;Component&gt;</code>对应<code>Iterator[Component]</code>
+。但是像是Java里的<code>Iterator&lt;?&gt;</code>或<code>Iterator&lt;? extends Component&gt;</code>这样的通配符类型
+或是<code>Iterator</code>这样没有参数的原始类型要用到一种额外的叫作“存在类型”的类型来表示。
+</p>
+
+<p>
+存在类型是Scala语言所支持的特性，但实际上它的作用是用于从Scala访问Java类型。
+这一节里会介绍它的工作机制，但它的主要用途是当Scala访问Java时能够理解编译器报错
+的信息。存在类型的通用形式如下：
+</p>
+
+<pre class="brush: scala">
+  type forSome { declarations }
+</pre>
+
+<p>
+<code>type</code>是任意的Scala类型，<code>declarations</code>是一个抽象的<code>val</code>和<code>type</code>列表。这个定义
+可以解读为：声明的变量和类型是存在但未知的，正如类中的抽象成员那样。这个类型进而
+被允许引用这些声明的变量和类型，虽然编译器不知道具体是什么类。
+</p>
+
+<p>
+看一个具体的例子，Java中的<code>Iterator&lt;?&gt;</code>可以在Scala中写为：
+</p>
+
+<pre class="brush: scala">
+  Iterator[T] forSome { type T }
+</pre>
+
+<p>
+Java中的<code>Iterator&lt;? extends Component&gt;</code>在Scala中写为：
+</p>
+
+<pre class="brush: scala">
+  Iterator[T] forSome { type T &lt;: Component }
+</pre>
+
+<p>
+还有简写法，<code>Iterator[T] forSome{type T}</code>简写为<code>Iterator[_]</code>。像占位符一样用<code>_</code>
+来组成字面量来表示类型。
+</p>
+
+<p>
+指定上界和下界的方式也可以简写，<code>Iterator[_ &lt;: Component]</code>相当于：
+</p>
+
+<pre class="brush: scala">
+  Iterator[T] forSome { type T &lt;: Component }
+</pre>
+
+<p>
+存在类型对于对于简单的用例来说，可以当<code>forSome</code>不存在。虽然<code>forSome</code>语句中的类型
+和值是未知的，Scala还是会检查程序是否完备。举例来说，对于以下的Java类：
+</p>
+
+<pre class="brush: scala">
+  // This is a Java class with wildcards
+  public class Wild {
+    Collection&lt;?&gt; contents() {
+      Collection&lt;String&gt; stuff = new Vector&lt;String&gt;();
+      stuff.add("a");
+      stuff.add("b");
+      stuff.add("see");
+      return stuff;
+    }
+  }
+</pre>
+
+<p>
+如果在Scala中访问这个类，会看到它有一个存在类型：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val contents = (new Wild).contents
+  contents: java.util.Collection[?0] forSome { type ?0 } =
+     [a, b, see]
+</pre>
+
+<p>
+要看这个集合里有多少元素，可以简单忽略存在定义部分，像平常一样调用<code>size</code>方法：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; contents.size()
+  res0: Int = 3
+</pre>
+
+<p>
+对于复杂的类型的情况，存在类型会显得笨拙一些。因为没有办法给存在类型命名。以创建
+一个可变Scala类型为例，需要用<code>contents</code>的元素初始化它：
+</p>
+
+<pre class="brush: scala">
+  import scala.collection.mutable.Set
+  val iter = (new Wild).contents.iterator
+  val set = Set.empty[???]     // what type goes here? 这里要用什么类型？
+  while (iter.hasMore)
+    set += iter.next()
+</pre>
+
+<p>
+第三行里没有办法给出Java集合里的元素类型名称，所以不能给出<code>set</code>方法的满足类型。
+为了绕过此问题，应该考试如下两种技巧：
+</p>
+
+<p>
+1）将存在的类型传入方法时，把类型参数从<code>forSome</code>语句移到方法的类型参数中。
+在方法体内，可以用这个类型参数来指定本来在<code>forSome</code>语句中的类型。
+</p>
+
+<p>
+2）不要从方法返回存在的类型，而是返回一个带有<code>forSome</code>语句中的每个类型的抽象成员
+的对象（参见抽象对象一章）。
+</p>
+
+<p>
+使用这两个技巧，之前的代码写成这个样子：
+</p>
+
+<pre class="brush: scala">
+  import scala.collection.mutable.Set
+  import java.util.Collection
+
+  abstract class SetAndType {
+    type Elem
+    val set: Set[Elem]
+  }
+
+  def javaSet2ScalaSet[T](jset: Collection[T]): SetAndType = {
+    val sset = Set.empty[T]  // now T can be named!
+
+    val iter = jset.iterator
+    while (iter.hasNext)
+      sset += iter.next()
+
+    return new SetAndType {
+      type Elem = T
+      val set = sset
+    }
+  }
+</pre>
+
+<p>
+综上所棕，对于Scala来说，用存在类型实现的这么复杂的东西用Scala的抽象类都聚脂实现
+。所以Scala中几乎不用存在类型。
+</p>
+
+
+
+
+
+<h1 id="toc_2">Actor和并发</h1>
+
+<h2 id="toc_2.1">多线程</h2>
+
+<p>
+虽然推荐使用Actor模式，但还是讲一下传统的多线程控制方式吧。
+</p>
+
+<p>
+<code>AnyRef</code>类追加了来自<code>Object</code>类的<code>wait</code>与<code>notify</code>、<code>notifyAll</code>方法。并且提供了带
+参数的<code>synchronized</code>方法，等同于Java的<code>synchronized</code>块：
+</p>
+
+<pre class="brush: scala">
+account.synchronized {
+	account.balance += amount
+}
+</pre>
+
+<h2 id="toc_2.2">actor和消息传递</h2>
+
+<p>
+actor是一个类似线程的实体，它有一个接收消息的邮箱。Scala里实现actor的方法是混入
+<code>scala.actors.Actor</code>特质并实现其<code>act</code>方法。下面一个简单的例子都不检查它的邮箱，
+只是把一个消息打印五次然后退出：
+</p>
+
+<pre class="brush: scala">
+  import scala.actors._
+
+  object SillyActor extends Actor {
+    def act() { 
+      for (i &lt;- 1 to 5) {
+        println("I'm acting!")
+        Thread.sleep(1000)
+      }
+    }
+  }
+</pre>
+
+<p>
+注意：如果没有继承任何类，可以用关键字<code>extends</code>来混入特质。
+</p>
+
+<p>
+启动方法和Java线程类似，也是调用<code>start</code>方法：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; SillyActor.start()
+  I'm acting!
+  res4: scala.actors.Actor = SillyActor$@1945696
+
+  scala&gt; I'm acting!
+  I'm acting!
+  I'm acting!
+  I'm acting!
+</pre>
+
+<p>
+注意输出的文本与Scala交互程序的回显交错在一起了，因为这是在另一个独立的线程里。
+所以运行是独立的。再来看第二版的actor：
+</p>
+
+<pre class="brush: scala">
+  import scala.actors._
+
+  object SeriousActor extends Actor {
+    def act() { 
+      for (i &lt;- 1 to 5) {
+        println("To be or not to be.")
+        Thread.sleep(1000)
+      }
+    }
+  }
+</pre>
+
+<p>
+这里同时运行两个actor：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; SillyActor.start(); SeriousActor.start()
+  res3: scala.actors.Actor = seriousActor$@1689405
+
+  scala&gt; To be or not to be.
+  I'm acting!
+  To be or not to be.
+  I'm acting!
+  To be or not to be.
+  I'm acting!
+  To be or not to be.
+  I'm acting!
+  To be or not to be.
+  I'm acting!
+</pre>
+
+<p>
+还可以用伴生对象<code>scala.actor.Actor</code>的<code>actor</code>方法来创建actor，它接收一个函数值/
+闭包做参数：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; import scala.actors.Actor._
+
+  scala&gt; val seriousActor2 = actor {
+       |    for (i &lt;- 1 to 5)
+       |      println("That is the question.")
+       |    Thread.sleep(1000)
+       | }
+
+  scala&gt; That is the question.
+  That is the question.
+  That is the question.
+  That is the question.
+  That is the question.
+</pre>
+
+<p>
+注意上面用<code>actor</code>方法创建的actor在创建后是立即启动的。
+</p>
+
+<p>
+actor之间的协作方式是通过<code>!()</code>方法来发送消息：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; SillyActor ! "hi there"
+</pre>
+
+<p>
+虽然消息<code>"hi there"</code>被发给了<code>SillyActor</code>，但消息只是放在邮箱里保持未读状态。
+</p>
+
+<p>
+下面的新版本会通过<code>receive()</code>方法来收消息，这个方法也可以接收一个闭包作为参数。
+如下面这样只是把消息打印出来：
+</p>
+
+<pre class="brush: scala">
+  val echoActor = actor {
+    while (true) {
+      receive {
+        case msg =&gt;
+          println("received message: "+ msg)
+      }
+    }
+  }
+</pre>
+
+<p>
+注意这里的使用的偏函数字面量，除了没有<code>match</code>关键字外，和match表达式样子很像。
+</p>
+
+<p>
+当actor发消息时并不会阻塞，收到消息时处理的过程是阻塞的，不会被打断。发送的消息
+在接收的actor的邮箱里等待被处理，直到actor调用<code>receive</code>方法：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; echoActor ! "hi there"
+  received message: hi there
+
+  scala&gt; echoActor ! 15
+
+  scala&gt; received message: 15
+</pre>
+
+<p>
+这里要解释一下<code>receive</code>以偏函数字面量作为参数。除了没有<code>match</code>关键字外，和match
+表达式样子很像，而且不像match表达式一样要匹配所有的可能性，的会直接忽略掉没有
+匹配的情况（即偏函数没有定义）。
+</p>
+
+<p>
+正如“模式匹配”一章中“模式无处不在”这一节中所说的，偏函数（特质<code>PartialFunction</code>
+的实例）并不是完整的函数。所以它不对所有输入值有都定义。除了接受单个<code>apply</code>方法
+外，偏函数还提供一个<code>isDefineAt</code>方法，同样只接收单个参数。如果偏函数能处理传给
+<code>isDefineAt</code>函数的参数，那么<code>isDefineAt</code>返回<code>true</code>。把这个消息传递给偏函数的
+<code>apply</code>方法，<code>apply</code>方法就会处理这个消息。
+</p>
+
+
+<p>
+例如<code>echoActor</code>的<code>apply</code>方法会打印<code>"received message: "</code>，然后再输出消息对象的
+<code>toString</code>结果。如果邮箱里没有让<code>isDefineAt</code>返回<code>true</code>的消息，则被调用<code>receive</code>
+的actor将会被阻塞，直到有匹配的消息。
+</p>
+
+<p>
+举例来说，以下是只处理<code>Int</code>类型消息的actor：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val intActor = actor {
+       |   receive {
+       |     case x: Int =&gt; // I only want Ints
+       |       println("Got an Int: "+ x)
+       |   }
+       | }
+  intActor: scala.actors.Actor = 
+    scala.actors.Actor$$anon$1@34ba6b
+</pre>
+
+<p>
+如果是<code>String</code>或<code>Double</code>类型的消息会被忽略：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; intActor ! "hello"
+  scala&gt; intActor ! Math.Pi
+</pre>
+
+<p>
+给个<code>Int</code>就会有响应：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; intActor ! 12
+  Got an Int: 12
+</pre>
+
+<p>
+<code>exit()</code>方法会抛出异常，以试图停止当前线程的方式停止actor。它还有一个版本接收
+一个参数作为退出原因：
+</p>
+
+<pre class="brush: scala; highlight:[8]">
+import scala.actors._
+import Actor._
+
+class MyAct extends Actor {
+    def act() {
+        while (true) {
+            receive {
+                case "quit" =&gt; exit
+                case msg    =&gt; println(msg)
+            }
+        }
+    }
+}
+
+val myAct = new MyAct
+
+myAct.start()
+
+myAct ! "Hello World!" 
+myAct ! "nice Day!" 
+myAct ! "quit" 
+</pre>
+
+<p>
+如果actor还没有启动，收到的消息也会放在队列里，不是不会马上处理。在<code>start()</code>方法
+被调用后也会开始处理：
+</p>
+
+<pre class="brush: scala">
+myAct ! "before start 1" 
+myAct ! "before start 2" 
+myAct ! "before start 3" 
+myAct ! "before start 4" 
+
+myAct.start()
+
+myAct ! "after start 1" 
+myAct ! "after start 2" 
+myAct ! "after start 3" 
+myAct ! "after start 4" 
+</pre>
+
+<h2 id="toc_2.3">把原生线程当作actor</h2>
+
+<p>
+Actor子系统会管理线程，所以定义了actor以后开发人员不用操心actor与线程的对应关系
+是怎么样的。
+</p>
+
+<p>
+Java里可以用<code>Thread.current</code>得到当前线程的引用，类似地，Scala里<code>Actor</code>对象的
+<code>Actor.self</code>方法可以取得用当前线程生成的Actor的引用。这样在交互环境可以少写很多
+代码，如：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; import scala.actors.Actor._
+  import scala.actors.Actor._
+
+  scala&gt; self ! "hello"
+
+  scala&gt; self.receive { case x =&gt; x }
+  res6: Any = hello
+</pre>
+
+<p>
+上面的<code>receive</code>方法返回由传递给它的偏函数计算出的值。在本例中，偏函数返回消息
+本身，所以消息被交互环境打印了出来。
+</p>
+
+<p>
+因为<code>receive</code>是阻塞的，所以不知道要等到啥时候。所以如果使用了这项技巧，最好是用
+<code>receive</code>的变种<code>receiveWithin</code>。因为它可以指定一个以毫秒计的超时时限：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; self.receiveWithin(1000) { case x =&gt; x } // wait a sec!
+  res7: Any = TIMEOUT
+</pre>
+
+<p>
+可以用<code>case TIMEOUT</code>来匹配超时的情况。
+</p>
+
+<h2 id="toc_2.4">简单的并行计算例子</h2>
+
+<p>
+要计算从1到n的所有整数累加，可以分成多段并行执行。下面是处理每一段的方法：
+</p>
+
+<pre class="brush: scala">
+import scala.actors._
+import scala.actors.Actor._
+
+def sumPart(floor:Int, top:Int) = {
+	(0 /: (floor to top)) {
+		(sum, i) =&gt; { sum + i }
+	}
+}
+</pre>
+
+<p>
+把整个区间分成多个段并行执行：
+</p>
+
+<pre class="brush: scala; highlight:[4,9,13]">
+def sumAll(num:Int) = {
+	val RANGE = 10
+	val partCount = (num.toDouble / RANGE).ceil.toInt
+	val caller = self
+
+	for (i &lt;- 0 until partCount) {
+		val floor = i * RANGE + 1;
+		val top = num min (i + 1) * RANGE
+		actor { caller ! sumPart(floor, top) }
+	}
+
+	(0 /: (0 until partCount)) {
+		(allSum, i) =&gt; receive {
+			case sumInRange:Int =&gt; { allSum + sumInRange }
+		}
+	}
+}
+</pre>
+
+
+<p>
+能够实现并行操作的关键在于：actor发送消息是不阻塞的，打个比方就是每个发送操作都
+在新建的线程中执行。结合上面代码的第9行是在发送的操作中调用的计算局部的方法，
+所以每个局部计算的工作都是在新的线程中进行的。
+</p>
+
+<p>
+调用：
+</p>
+
+<pre class="brush: scala">
+println( sumAll(100) )
+</pre>
+
+
+<h2 id="toc_2.5">小结</h2>
+
+<h3 id="toc_2.5.1">消息传递</h3>
+
+<p>
+每个actor都有自己的消息队列：
+</p>
+
+<ul>
+<li>
+<code>InputChannel[Any]</code>接收队列。
+
+<li>
+<code>OutputChannel[Any]</code>发送队列。
+
+</ul>
+
+<p>
+注意actor传递消息有两个重要的特性：
+</p>
+
+
+
+<h3 id="toc_2.5.2">发送不阻塞</h3>
+
+<p>
+对于以下的代码来说：
+</p>
+
+<pre class="brush: scala">
+op1();
+myActor ! "msg"
+op2();
+</pre>
+
+<p>
+即使中间一步发消息的动作如果要花很长时间，感觉也像是<code>op1()</code>执行以后接着就是
+<code>op2()</code>的执行，好像发消息的动作不占用时间一样。
+</p>
+
+<h3 id="toc_2.5.3">接收消息不中断</h3>
+
+<p>
+如果不用<code>receive</code>方法去检查接收队列，actor根本不知道有没有消息进来，所以对于以下
+的代码：
+</p>
+
+<pre class="brush: scala">
+op1();
+op2();
+receive { case msg =&gt; println(msg) }
+</pre>
+
+<p>
+在<code>op1()</code>和<code>op2()</code>执行过程中如果外部有发消息给当前actor，由于还没有调用<code>receive</code>
+方法，actor根本就不知道有消息进来，所以<code>op1()</code>和<code>op2()</code>的执行不会被打断。
+</p>
+
+
+<h3 id="toc_2.5.4">接收消息阻塞</h3>
+
+<p>
+如果在调用<code>receive</code>方法时消息队列里没有消息，那么<code>receive</code>方法会阻塞。
+</p>
+
+<h3 id="toc_2.5.5">使用同步的方式传递消息</h3>
+
+<p>
+虽然异步方式能利用并发，但也有需要用同步的情况存在。这时可以用<code>!?()</code>方法，注意
+这样会导致阻塞，所以推荐用带超时参数的版本：<code>!?(timeout, msg)</code>。它在正常时返回
+<code>Option[Any]</code>；超时时返回<code>None</code>，但actor还是会收到这条消息，并把它发给自己。可以
+通过一个特殊的case类<code>![a](val ch:Channel[a], val msg:a)</code>表示actor发给自己的消息
+，这样就能得到超时丢失的消息。
+</p>
+
+<p>
+<code>sender</code>引用的总是最近一个发送消息的actor，用<code>reply</code>方法也可以说明把消息发送给
+<code>sender</code>。
+</p>
+
+<p>
+如果发送消息给一个actor以后不希望它把响应发回给自己，而是希望它发给另外一个actor
+，就可以用<code>send()</code>方法。
+</p>
+
+<pre class="brush: scala; highlight:[8,21,28]">
+import scala.actors._
+import Actor._
+
+val fortuneTeller = actor {
+    for (i &lt;- 1 to 4) {
+        Thread.sleep(1000)
+        receive {
+            case _ =&gt; sender ! "your day will rock! " + i
+            // case _ =&gt; reply("your day will rock! " + i) // same as above
+        }
+    }
+}
+
+println( fortuneTeller !? (2000, "what's ahead") )
+println( fortuneTeller !? (200,  "what's ahead") )
+
+val aPrinter = actor {
+    receive { case msg =&gt; println("Ah, Fortune message for you: " + msg) }
+}
+
+fortuneTeller.send("what's up", aPrinter)
+fortuneTeller ! "How's my future?"
+
+Thread.sleep(3000)
+receive { case msg : String =&gt; println("received " + msg) }
+
+println("let's get that message")
+receive { case !(channel, msg) =&gt; println("received belated message " + msg) }
+</pre>
+
+<p>
+上面的代码最后一行拿到的是超时丢弃的消息。运行时输出如下：
+</p>
+
+<pre class="brush: bash">
+└─(1:pts/4:%)=&gt; scala tmp.scala
+Some(your day will rock! 1)
+None
+Ah, Fortune message for you: your day will rock! 3
+received your day will rock! 4
+let's get that message
+received belated message your day will rock! 2
+</pre>
+
+
+<h2 id="toc_2.6">通过重用线程取得更好的性能</h2>
+
+<p>
+Acter建立在普通的Java线程上，用之前的方法每actor的<code>receive</code>方法个都占一个线程。
+就是说，在没有消息的时候，阻塞着的<code>receive</code>方法也会一直占一个线程。为了重用线程，
+Scala提供了<code>react</code>方法从线程池里取已经有的线程（还有一个带超时的<code>reactWithin</code>）
+。它处理消息以后不会返回，返回类型是<code>Nothing</code>。其实在后台，<code>react</code>在完成后会抛出
+一个异常。
+</p>
+
+<p>
+<code>react</code>方法执行完毕以后就会放弃对线程的占用，所以在<code>react</code>方法后面的代码是执行
+不到的。如果还有其他代码要执行，就一定要放在<code>react</code>方法内。
+</p>
+
+<p>
+下面同时用了<code>receive</code>和<code>react</code>两个方法比较：
+</p>
+
+<pre class="brush: scala; highlight:[4,8,14]">
+
+</pre>
+
+<p>
+从输出可以看到，同一个actor的<code>receiveWithin</code>方法总是在同一个线程。如，actor3总是
+在线程<code>Thread[ForkJoinPool-1-worker-1,5,main]</code>中；actor4总是在同一个线程
+<code>Thread[ForkJoinPool-1-worker-3,5,main]</code>；相对的，<code>react</code>方法就不固定了，可能会
+多个actor共用一个线程，也可能会一个actor用多个线程：
+</p>
+
+<pre class="brush: bash; highlight:[7,11]">
+create actor by Thread[ForkJoinPool-1-worker-3,5,main]
+create actor by Thread[ForkJoinPool-1-worker-3,5,main]
+create actor by Thread[ForkJoinPool-1-worker-1,5,main]
+create actor by Thread[ForkJoinPool-1-worker-5,5,main]
+  react: 1hello by Thread[ForkJoinPool-1-worker-7,5,main]
+  react: 2hello by Thread[ForkJoinPool-1-worker-5,5,main]
+receive: 3hello by Thread[ForkJoinPool-1-worker-1,5,main]
+receive: 4hello by Thread[ForkJoinPool-1-worker-3,5,main]
+  react: 1hello by Thread[ForkJoinPool-1-worker-5,5,main]
+  react: 2hello by Thread[ForkJoinPool-1-worker-5,5,main]
+receive: 3hello by Thread[ForkJoinPool-1-worker-1,5,main]
+receive: 4hello by Thread[ForkJoinPool-1-worker-3,5,main]
+</pre>
+
+<p>
+因为<code>react</code>不返回所以接收消息处理器必须同时处理消息并执行actor所有剩下的工作。
+通常做法是用一个顶级的工作方法，比如<code>act</code>自身，以供处理器在完成时调用。下面的
+例子显示了这种方式。等待内容为主机名的字符串，如果有的话，返回那个主机名对应的
+IP地址：
+</p>
+
+<pre class="brush: scala; highlight:[4,8,14]">
+  object NameResolver extends Actor {
+    import java.net.{InetAddress, UnknownHostException}
+
+    def act() { 
+      react {
+        case (name: String, actor: Actor) =&gt;
+          actor ! getIp(name)
+          act()                         // 尾递归再次调用
+        case "EXIT" =&gt;
+          println("Name resolver exiting.")
+          // quit
+        case msg =&gt;
+          println("Unhandled message: "+ msg)
+          act()                         // 尾递归再次调用
+      }
+    }
+
+    def getIp(name: String): Option[InetAddress] = {
+      try {
+        Some(InetAddress.getByName(name))
+      } catch {
+        case _:UnknownHostException =&gt; None
+      }
+    }
+  }
+</pre>
+
+<p>
+调用方式：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; NameResolver.start()
+  res0: scala.actors.Actor = NameResolver$@90d6c5
+
+  scala&gt; NameResolver ! ("www.scala-lang.org", self)
+
+  scala&gt; self.receiveWithin(0) { case x =&gt; x }
+  res2: Any = Some(www.scala-lang.org/128.178.154.102)
+
+  scala&gt; NameResolver ! ("wwwwww.scala-lang.org", self)
+
+  scala&gt; self.receiveWithin(0) { case x =&gt; x }
+  res4: Any = None
+</pre>
+
+<p>
+因为不返回所以当前线程的调用栈可以被再次使用，所以如果全用<code>react</code>的话只要一个
+线程就可以运行所有的actor。实例应用中应该用少用几个<code>receive</code>，尽量多用<code>react</code>。
+</p>
+
+<h3 id="toc_2.6.1">react工作原理</h3>
+
+<p>
+返回类型<code>Nothing</code>表示永远不会正常返回的函数，相反，总是以一个异常方式完成。
+</p>
+
+<p>
+虽然不同版本中实现方式还在不断调整，但可以认为<code>react</code>是这样工作的：
+</p>
+
+<p>
+actor的<code>start</code>方法被调用时，<code>start</code>方法会以某种方式确保最终会有某个线程来调用
+actor的<code>act</code>方法。如果<code>act</code>调用了<code>react</code>，则<code>react</code>方法会在actor邮箱里查找偏函数
+能够处理的消息。如果找到<code>react</code>会安排在未来某个时间处理该消息并抛出异常。如果
+没有act还是处于“冷存储”状态等待邮箱里有新消息时重新激活并抛出异常。无论哪种情况
+<code>react</code>都会以这个异常的方式完成其执行，<code>act</code>方法也随之结束。调用<code>act</code>的线程会
+捕获这个异常，并忘记这个actor，转而处理其他任务。
+</p>
+
+<p>
+这就是为什么想要<code>react</code>在处理第一个消息之外做更多的事，就需要在偏函数中再次调用
+<code>act</code>方法，或使用其他手段让<code>react</code>再次被调用。
+</p>
+
+<h3 id="toc_2.6.2">reactWithin</h3>
+
+<p>
+<code>reactWithin</code>在超时没有收到消息时会匹配<code>case TIMEOUT</code>。下面有一个累加器的实现：
+</p>
+
+<pre class="brush: scala; highlight:[7,10]">
+import scala.actors._
+import Actor._ 
+
+val caller = self
+
+def accumulate() {
+  var sum = 0
+  reactWithin(500) {
+    case number: Int =&gt; sum += number
+    accumulate()
+    case TIMEOUT =&gt; 
+      println("Timed out! Will send result now")
+      caller ! sum
+  }
+  println("This will not be called...")
+}
+
+val accumulator = actor { accumulate() }
+accumulator ! 1
+accumulator ! 7
+accumulator ! 8
+
+receiveWithin(10000) { case result =&gt; println("Total is " + result) }
+</pre>
+
+<p>
+结果是错误的，没有累加输出：
+</p>
+
+<pre class="brush: bash">
+Timed out! Will send result now
+Total is 0
+</pre>
+
+<p>
+问题在于再次调用<code>accumulate</code>方法时对<code>sum</code>产生了新的闭包，可以把<code>sum</code>放到外面作为
+全局变量，但这样不够函数式。更加函数式的修改方案是把每次的结果作为参数：
+</p>
+
+<pre class="brush: scala; highlight:[6,8]">
+import scala.actors._
+import Actor._ 
+
+val caller = self
+
+def accumulate(sum : Int) {
+  reactWithin(500) {
+    case number: Int =&gt; accumulate(sum + number)
+    case TIMEOUT =&gt; 
+      println("Timed out! Will send result now")
+      caller ! sum
+  }
+  println("This will not be called...")
+}
+
+val accumulator = actor { accumulate(0) }
+accumulator ! 1
+accumulator ! 7
+accumulator ! 8
+
+receiveWithin(10000) { case result =&gt; println("Total is " + result) }
+</pre>
+
+<p>
+这次得到了正确的结果：
+</p>
+
+<pre class="brush: bash">
+Timed out! Will send result now
+Total is 16
+</pre>
+
+<h3 id="toc_2.6.3">loop与loopWhile</h3>
+
+<p>
+由于通过<code>react</code>重用线程的方案非常普遍，所以actor库对此有特别的支持。<code>actor.loop</code>
+函数重复执行一个代码块，哪怕代码调用的是<code>react</code>。下面用<code>loop</code>来重写
+<code>NameResolver</code>的<code>act</code>方法。下面的例子与前一个例子不同的地方是它并不退出来响应
+<code>"EXIT"</code>消息，而是一直循环响应消息：
+</p>
+
+<pre class="brush: scala">
+  def act() { 
+    loop {
+      react {
+        case (name: String, actor: Actor) =&gt;
+          actor ! getIp(name)
+        case msg =&gt;
+          println("Unhandled message: " + msg)
+      }
+    }
+  }
+</pre>
+
+<p>
+还有带循环条件的版本<code>loopWhile(...)</code>。
+</p>
+
+<h2 id="toc_2.7">控制线程执行</h2>
+
+<p>
+Scala会让单例对象<code>Scheduler</code>去运行actor，通过设置<code>Scheduler.impl</code>的各种实现，
+可以整个应用的actor的调度策略。
+</p>
+
+<p>
+通过下面的例子<code>SingleThreadedScheduler</code>可以控制Scala在主线程里运行actor:
+</p>
+
+<pre class="brush: scala">
+import scala.Actor._
+import scala.actors._
+import scheduler._
+
+if (args.length &gt; 0 &amp;&amp; args(0) == "Single") {
+  println("Command-line argument Single found")
+  Scheduler.impl = new SingleThreadedScheduler
+}
+println("Main running in " + Thread.currentThread)
+
+actor { println("Actor1 running in " + Thread.currentThread) }
+actor { println("Actor2 running in " + Thread.currentThread) }
+
+receiveWithin(3000) { case _ =&gt; }
+</pre>
+
+<p>
+如果没有参数，两个actor和主线程会分别执行：
+</p>
+
+<pre class="brush: bash">
+$ scala InMainThread.scala
+Main running in Thread[main,5,main]
+Actor1 running in Thread[ForkJoinPool-1-worker-5,5,main]
+Actor2 running in Thread[ForkJoinPool-1-worker-5,5,main]
+</pre>
+
+<p>
+如果加上参数，会在同一线程中执行：
+</p>
+
+<pre class="brush: bash">
+$ scala InMainThread.scala Single
+Command-line argument Single found
+Main running in Thread[main,5,main]
+Actor1 running in Thread[main,5,main]
+Actor2 running in Thread[main,5,main]
+</pre>
+
+<p>
+上面是例子配置的两个应用的线程调度。其实通过继承<code>Actor</code>特质时改写<code>scheduler()</code>
+方法还可以更加细粒度地控制具体actor是在主线程，一部分在新线程中。
+</p>
+
+<pre class="brush: scala; highlight: [6]">
+import scala.Actor._
+import scala.actors._
+import scheduler._
+
+trait SingleThreadedActor extends Actor {
+  override def scheduler() = new SingleThreadedScheduler
+}
+
+class MyActor1 extends Actor {
+  def act() = println("Actor1 running in " + Thread.currentThread)
+}
+                      
+class MyActor2 extends SingleThreadedActor {                     
+  def act() = println("Actor2 running in " + Thread.currentThread)
+}                                                      
+
+println("Main running in " + Thread.currentThread)
+new MyActor1().start()
+new MyActor2().start()
+actor { println("Actor3 running in " + Thread.currentThread) }
+
+receiveWithin(5000) { case _ =&gt; }
+</pre>
+
+<p>
+可以看到主线程与fork出的线程：
+</p>
+
+<pre class="brush: scala">
+$ scala InMainThreadSelective.scala
+Main running in Thread[main,5,main]
+Actor1 running in Thread[ForkJoinPool-1-worker-5,5,main]
+Actor2 running in Thread[main,5,main]
+Actor 3 running in Thread[ForkJoinPool-2-worker-7,5,main]
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+<h2 id="toc_2.8">良好的actor风格</h2>
+
+<h3 id="toc_2.8.1">actor不应该阻塞</h3>
+
+<p>
+当一个阻塞时，另一个actor可以会发出别的请求。多个actor等一个阻塞的actor会带来
+死锁。actor应该允许某种表示动作可以执行的消息发送给它。通常这样要安排其他的actor
+帮助。例如通过调用<code>Thread.sleep</code>代替并阻塞当前的actor，可以创建一个助手actor，
+这个actor睡眠并在一定时间后发加一个消息：
+</p>
+
+<pre class="brush: scala">
+  actor {
+    Thread.sleep(time)
+    mainActor ! "WAKEUP"
+  } 
+</pre>
+
+<p>
+这个助手actor虽然阻塞了，但是由于它不会收到消息，所以这是OK的。主actor可以继续
+响应新的请求。
+</p>
+
+
+<p>
+下面的<code>emoteLater</code>方法展示了这种处理方式的用法。它创建了一个新的actor来执行
+<code>sleep</code>以便主actor不阻塞。以确保它向正确的actor发送<code>"Emote"</code>消息，我们必须小心地
+在主actor中对<code>self</code>求值而不是在助手actor中：
+</p>
+
+<pre class="brush: scala">
+  val sillyActor2 = actor {
+    def emoteLater() {
+      val mainActor = self
+      actor {
+        Thread.sleep(1000)
+        mainActor ! "Emote"
+      }
+    }
+ 
+    var emoted = 0
+    emoteLater()
+
+    loop {
+      react {
+        case "Emote" =&gt;
+          println("I'm acting!")
+          emoted += 1
+          if (emoted &lt; 5)
+            emoteLater()
+        case msg =&gt;
+          println("Received: "+ msg)
+      }
+    }
+  }
+</pre>
+
+<p>
+由于这个actor并不在<code>sleep</code>方法中阻塞，而是助手actor阻塞，所以主actor可以在等待
+下次表演前继续做其他的事情。与早先的<code>SillyActor</code>不同，这个actor会在等待下一个
+输出的同时继续打印消息：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; sillyActor2 ! "hi there"
+  scala&gt; Received: hi there
+  I'm acting!
+  I'm acting!
+  I'm acting!
+</pre>
+
+<h3 id="toc_2.8.2">只通过消息与actor通信</h3>
+
+<p>
+Scala可以混用actor模式与共享数据／锁模式两种方式。但第二种方式有锁死线程和线程
+不安全变量的风险。
+</p>
+
+
+<h3 id="toc_2.8.3">优选不可变消息</h3>
+
+<p>
+虽然actor模式对于线程来说数据是不共享的，但还是有共享数据的情况：就是消息会在
+多个actor中传递，如果传递过程中被改变的话是被谁改的都不知道。
+</p>
+
+<p>
+而且下面会说到，有些消息会有一个指向自己的引用。所以尽量使用不可变的消息。
+</p>
+
+<h3 id="toc_2.8.4">让消息自包含</h3>
+
+<p>
+因为actor是非阻塞的，发出一个请求不等响应就做别的事情的。等响应回来都不知道是
+响应哪个请求的。所以一个简单的方案是以发出的消息里包含与请求相关的冗余信息。
+</p>
+
+<p>
+如果请求是一个不可变的对象，花费代价很少的一个方案是在返回值中包含一个指向请求
+自己的引用。这样就知道响应是对应哪个请求的了。
+</p>
+
+<p>
+举例，IP查询功能的actor在返回IP时带一个当时请求的主机名该有多好：
+</p>
+
+<pre class="brush: scala">
+ def act() { 
+   loop {
+     react {
+       case (name: String, actor: Actor) =&gt;
+         actor ! (name, getIp(name))
+     }
+   }
+ }
+</pre>
+
+<p>
+另一个增加冗余的方案是为每类消息制作样本类。比如当字符串看起来意义不是很明确：
+</p>
+
+<pre class="brush: scala">
+  lookerUpper ! ("www.scala-lang.org", self)
+</pre>
+
+<p>
+但有了类型名字看起来就好理解多了：
+</p>
+
+<pre class="brush: scala">
+  case class LookupIP(hostname: String, requester: Actor)
+
+  lookerUpper ! LookupIP("www.scala-lang.org", self)
+</pre>
+
+<p>
+下面是使用样本类而不是简单的元组来查询IP的程序：
+</p>
+
+<pre class="brush: scala">
+  import scala.actors.Actor._
+  import java.net.{InetAddress, UnknownHostException}
+
+  case class LookupIP(name: String, respondTo: Actor)
+  case class LookupResult(
+    name: String, 
+    address: Option[InetAddress]
+  )
+
+  object NameResolver2 extends Actor {
+
+    def act() { 
+      loop {
+        react {
+          case LookupIP(name, actor) =&gt;
+            actor ! LookupResult(name, getIp(name))
+        }
+      }
+    }
+
+    def getIp(name: String): Option[InetAddress] = {
+      // As before (in Listing 30.3)
+    }
+  }
+</pre>
+
+
+<h2 id="toc_2.9">更加长的例子：并行离散事件模拟</h2>
+
+<p>
+把“有状态对象”一章的电路模拟强化成并行化的。
+</p>
+
+<h3 id="toc_2.9.1">总体设计</h3>
+
+<p>
+核心思路是把每个模拟的对象都用actor，状态位于actor内部。这样实现并行性。
+</p>
+
+<p>
+在类层级上，因为不同的模拟对象可能会有一些共通行为，所以抽象一个<code>Simulant</code>特质
+出来。线路、门等都可以加上这个特质：
+</p>
+
+<pre class="brush: scala">
+  trait Simulant extends Actor
+  class Wire extends Simulant
+</pre>
+
+<p>
+时间同步问题：每个参与者都自己的任务列表顺序而不看任务的时间处理任务的话，可能
+参与者A正在处理时间点90秒的任务；参与者B已经在处理时间点100的任务。A的任务要与
+B的任务协作时就有问题。所以要同步，任何参与者都不应该当其他参与者完成时间位于
+<code>n-1</code>的任务前，处理时间位于<code>n</code>的任务。
+</p>
+
+<p>
+专门有一个actor来控制时钟，给模拟对象发出<code>ping</code>消息，模拟对象在准备好让钟走到下
+一个时间单位时发出<code>pong</code>消息给时钟：
+</p>
+
+<pre class="brush: scala">
+  case class Ping(time: Int)
+  case class Pong(time: Int, from: Actor)
+</pre>
+
+<p>
+这两个消息里可以没有字段，但这里的冗余是有好处的。<code>ping</code>里的<code>time</code>是为了回写到
+<code>pong</code>的<code>time</code>里，知道对应成功的是哪个时间。
+</p>
+
+<p>
+现在的原则是每个模拟对象在处理完了要完成的任务以后才会响应<code>ping</code>消息。但问题是
+任务也可能是别的模拟对象要发给它的，所以当前任务做完了并不一定是真的做完了，
+可能是其他模拟对象还没有把任务发过来。
+</p>
+
+<p>
+为了简化这个问题，要再增加两个限制。首先，要假设模拟对象之间不直接发送消息，而
+只是相互安排事件日程。其次，它们不向当前的时间点<code>n</code>提交事件，而是给<code>n+1</code>以上的
+时间提交事件。虽然有点限制，但对于模拟的事件来说，有点时延还是可以接受的。
+</p>
+
+<p>
+还有一个方案：模拟对象可以相互发消息，但是要精心设计一个机制来决定一个actor何时
+可以安全地送回一个<code>Pong</code>。每个模拟对象都应该延迟响应<code>Ping</code>消息直到它发出的所有
+请求都已经完成了处理。所以传递的消息要加一些额外的内容。
+</p>
+
+<p>
+现在假定模拟对象之间不发直接消息，只发送事件日程表。这样还要有一个工作项的日程表
+这个日程表也可能由时钟actor所持有。这样时钟actor就可以等到当前时间点所有工作项的
+请求都发送完成后再发出<code>Ping</code>消息。Actor们知道收到<code>Ping</code>时就表示当前时间点所有的
+工作项都已经拿到了，可以马上送回<code>Pong</code>，因为不会有更多的工作发过来了。时钟由类
+<code>Clock</code>实现：
+</p>
+
+<pre class="brush: scala">
+  class Clock extends Actor {
+    private var running = false
+    private var currentTime = 0
+    private var agenda: List[WorkItem] = List()
+  }
+</pre>
+
+<p>
+最后要设计如何设置好一个初始模拟场景。一种自然的方式是在时钟停止的状态下创建模拟
+，添加所有的模拟对象再连接在一起，然后启动时钟。注意一定要绝对确认所有的东西都
+连接好了再启动时钟。
+</p>
+
+<p>
+所以关键在于如何确定都已经连接好了，方案有很多。这里用最简单的方法是在设置过程中
+不向actor发消息，这样当最后一个消息调用返回就知道模拟被完整地构建好了。最终的
+编码模式是用常规的方法调用将模拟设置好，然后可以在模拟运行时使用actor发消息。
+</p>
+
+<p>
+基本设计完成其他的就比较直接。<code>WorkItem</code>还是像“有状态对象”里实现的那样有一个时间
+和一个动作成员，区别在动作模拟，老版本是用无参函数，在这里的并行版本中使用目标
+actor和发往该actor的消息：
+</p>
+
+<pre class="brush: scala">
+  case class WorkItem(time: Int, msg: Any, target: Actor)
+</pre>
+
+<p>
+<code>afterDelay</code>方法变成了发往时钟的<code>AfterDelay</code>消息。无参函数被替换成了一个消息和
+一个目标actor：
+</p>
+
+<pre class="brush: scala">
+  case class AfterDelay(delay: Int, msg: Any, target: Actor)
+</pre>
+
+<p>
+定义要求模拟启动和停止的消息：
+</p>
+
+<pre class="brush: scala">
+  case object Start
+  case object Stop
+</pre>
+
+<p>
+总体设计就是这样，时钟<code>Clock</code>有当前时间和日程表，它只会在<code>Ping</code>了所有模拟对象并
+确保它们准备好了以后才往前进。<code>Simulant</code>特质来模拟参与者，它们所代表的参与者们
+通过向时钟发送工作项增加到日程表的方式来和其他参与者们通信。
+</p>
+
+<h3 id="toc_2.9.2">实现模拟架构</h3>
+
+<p>
+<code>Clock</code>类的<code>running</code>初始为<code>false</code>。模拟初始化全都完成以后，会发<code>Start</code>消息给它，
+才会变成<code>true</code>。保证初始化完成以后才会运行：
+</p>
+
+<pre class="brush: scala">
+  class Clock extends Actor {
+    private var running = false
+    private var currentTime = 0
+    private var agenda: List[WorkItem] = List()
+    private var allSimulants: List[Actor] = List()
+    private var busySimulants: Set[Actor] = Set.empty
+</pre>
+
+<p>
+时钟可以在创建后后马上调用<code>start()</code>方法，因为<code>running</code>还是<code>false</code>。所以不会真的
+运行：
+</p>
+
+<pre class="brush: scala">
+  start()
+</pre>
+
+<p>
+<code>allSimulants</code>是所有模拟对象，不会变所以用列表；<code>busySimulants</code>是正有任务的，会
+不断添加删除所以用集。一旦模拟器开始运行，它只有当<code>busySimulants</code>为空时才会进入
+下一个时间单位，并把<code>allSimulants</code>的成员全放到<code>busySimulants</code>里：
+</p>
+
+<pre class="brush: scala">
+  def add(sim: Simulant) {
+    allSimulants = sim :: allSimulants
+  }
+</pre>
+
+<p>
+以上是时钟状态的描述，再来看时钟活动。它的主循环由两个职责交替：让时钟前进、响应
+消息。一旦时间　前进，它只能在至少收到一个消息时才会再次前进，所以把主循环定义为
+这两个活动交替是安全的：
+</p>
+
+<pre class="brush: scala">
+  def act() {
+    loop {
+      if (running &amp;&amp; busySimulants.isEmpty)
+        advance()
+
+      reactToOneMessage()
+    }
+  }
+</pre>
+
+<p>
+时间的推进除了简单地<code>currentTime</code>步进之外还有些额外的工作：
+</p>
+
+<p>
+首先，如果日程表是空的而且模拟不是刚刚开始，那么模拟需要退出。
+</p>
+
+<p>
+其次，如果日程表非空，则当前时间点所有的工作需要现在进行。
+</p>
+
+<p>
+再次，所有的模拟对象要放到<code>busySimulant</code>中，并发<code>Ping</code>消息给它们。等它们全响应
+之后才能再次推进时间。
+</p>
+
+<pre class="brush: scala">
+  def advance() {
+    if (agenda.isEmpty &amp;&amp; currentTime &gt; 0) {
+      println("** Agenda empty.  Clock exiting at time "+
+              currentTime+".")
+      self ! Stop
+      return
+    }
+      
+    currentTime += 1
+    println("Advancing to time "+currentTime)
+
+    processCurrentEvents()
+    for (sim &lt;- allSimulants)
+      sim ! Ping(currentTime)
+      
+    busySimulants = Set.empty ++ allSimulants
+  }
+</pre>
+
+<p>
+处理当前事件只示过是简单地处理所有在日程表最上方时间为<code>currentTime</code>的事件：
+</p>
+
+<pre class="brush: scala">
+  private def processCurrentEvents() {
+    val todoNow = agenda.takeWhile(_.time &lt;= currentTime)
+
+    agenda = agenda.drop(todoNow.length)
+
+    for (WorkItem(time, msg, target) &lt;- todoNow) {
+      assert(time == currentTime)
+      target ! msg
+    }
+  }
+</pre>
+
+<p>
+上面的方法有三步：首先，<code>takeWile</code>取出所有当前时间的条目存入<code>todoNow</code>。然后，用
+<code>drop</code>从日程表中去掉这些。最后遍历这些条目并向它们的发送目标消息。<code>assert</code>是为了
+确保排程器的逻辑没有问题。
+</p>
+
+<p>
+有了这些基础工作，处理时间可能收到的消息就会很简单。<code>AfterDelay</code>消息把新的条目
+添加到工作队列；<code>Pong</code>消息从忙碌列表中去掉一个；<code>Start</code>让模拟开始；<code>Stop</code>让时钟
+停止：
+</p>
+
+<pre class="brush: scala">
+  def reactToOneMessage() {
+    react {
+      case AfterDelay(delay, msg, target) =&gt;
+        val item = WorkItem(currentTime + delay, msg, target)
+        agenda = insert(agenda, item)
+
+      case Pong(time, sim) =&gt;
+        assert(time == currentTime)
+        assert(busySimulants contains sim)
+        busySimulants -= sim
+          
+      case Start =&gt; running = true
+
+      case Stop =&gt;
+        for (sim &lt;- allSimulants)
+          sim ! Stop
+        exit()
+    }
+  }
+</pre>
+
+<p>
+<code>insert</code>方法和老版本的一样，就不列出来了。它把条目加入日程表并保证顺序正确。
+</p>
+
+<p>
+时钟类到这里实现完毕，现在来看模拟特质。本质上说一个<code>Simulant</code>可以是理解模拟消息
+<code>Stop</code>和<code>Ping</code>并与它们合作的任何actor。其<code>act</code>方法简单这样实现：
+</p>
+
+<pre class="brush: scala">
+  def act() {
+    loop {
+      react {
+        case Stop =&gt; exit()
+        case Ping(time) =&gt;
+          if (time == 1) simStarting()
+          clock ! Pong(time, self)
+        case msg =&gt; handleSimMessage(msg)
+      }
+    }
+  }
+</pre>
+
+<p>
+每当收到<code>Stop</code>，它就退出；收到<code>Ping</code>就响应一个<code>Pong</code>；如果<code>Ping</code>的时间为<code>1</code>，则
+在返回<code>Pong</code>前调用<code>simStarting</code>让子类可以定义当模拟开始运行时应该发生的行为。
+其他的所有消息都由子类来翻译，给抽象方法<code>handleSimMessage</code>方法。
+</p>
+
+<p>
+还有一个抽象成员<code>clock</code>记录时钟以回复<code>Ping</code>消息并安排新的工作项。由于在时钟发
+消息来以前不会做任何事情，所以可以在对象创建以后马上运行：
+</p>
+
+<pre class="brush: scala">
+  trait Simulant extends Actor {
+    val clock: Clock
+    def handleSimMessage(msg: Any)
+    def simStarting() { }
+    def act() {
+      loop {
+        react {
+          case Stop =&gt; exit()
+          case Ping(time) =&gt;
+            if (time == 1) simStarting()
+            clock ! Pong(time, self)
+          case msg =&gt; handleSimMessage(msg)
+        }
+      }
+    }
+    start()
+  }
+</pre>
+
+<h3 id="toc_2.9.3">实现一个电路模拟</h3>
+
+<p>
+电路类<code>Circuit</code>：
+</p>
+
+<pre class="brush: scala">
+  class Circuit {
+    val clock = new Clock
+    // 模拟消息
+    // 延时常量
+    // Wire 类和 Gate 类的方法
+    // 其他工具方法
+  }
+</pre>
+
+<p>
+模拟消息这块：一旦模拟开始运行，线路和门就只能通过发消息通信，所以要对每一种信息
+定义一个消息类型。这样消息只有两种：门要告诉线路改输出状态，线路要告诉门输入状态
+改了：
+</p>
+
+<pre class="brush: scala">
+  case class SetSignal(sig: Boolean)
+  case class SignalChanged(wire: Wire, sig: Boolean)
+</pre>
+
+<p>
+电路是有时间延迟的，不过这个值不确定，就先用个<code>val</code>放着吧：
+</p>
+
+<pre class="brush: scala">
+  val WireDelay = 1
+  val InverterDelay = 2
+  val OrGateDelay = 3
+  val AndGateDelay = 3
+</pre>
+
+<p>
+<code>Wire</code>和<code>Gate</code>类。线路记录当前的信号状态并观察门的列表的模拟对象。因为混入了
+<code>Simulant</code>特质所以也需要指定一个时间：
+</p>
+
+<pre class="brush: scala">
+  class Wire(name: String, init: Boolean) extends Simulant {
+    def this(name: String) { this(name, false) }
+    def this() { this("unnamed") }
+
+    val clock = Circuit.this.clock
+    clock.add(this)
+
+    private var sigVal = init
+    private var observers: List[Actor] = List()
+</pre>
+
+<p>
+<code>handleSimMessage</code>方法来处理收到的消息。线路只会收到<code>SetSignal</code>消息设定信号，
+注意只有新的信号与当前的信号不同时会改变状态并发出消息通知别的模拟对象：
+</p>
+
+<pre class="brush: scala">
+  def handleSimMessage(msg: Any) {
+    msg match {
+      case SetSignal(s) =&gt;
+        if (s != sigVal) {
+          sigVal = s
+          signalObservers()
+        }
+    }
+  }
+    
+  def signalObservers() {
+    for (obs &lt;- observers)
+      clock ! AfterDelay(
+        WireDelay,
+        SignalChanged(this, sigVal),
+        obs)
+  }
+</pre>
+
+<p>
+上面的代码中将线路初始状态传给任何作为观察者的门也很重要。这个动作只在初始化时做
+一次，以后只收改变信号的消息。模拟开始的发送初始信号也只要简单地提供一个
+<code>simStarting()</code>方法：
+</p>
+
+<pre class="brush: scala">
+  override def simStarting() { signalObservers() }
+</pre>
+
+<p>
+还有怎么连接门的问题。用一个新的方法来连接门，并加上一个<code>toString</code>方法:
+</p>
+
+<pre class="brush: scala">
+  def addObserver(obs: Actor) {
+    observers = obs :: observers
+  }
+
+  override def toString = "Wire("+ name +")"
+</pre>
+
+<p>
+线路的实现完成，现在再来看门。与门和或门有两个输入而非门只有一个输入，为了代码
+简单那就设定所有的门都有两个入口而非门会忽视第二个入口。被忽视的可以设为某个永远
+为<code>false</code>的线路：
+</p>
+
+<pre class="brush: scala">
+  private object DummyWire extends Wire("dummy")
+</pre>
+
+<p>
+通用的门超类：
+</p>
+
+<pre class="brush: scala">
+  abstract class Gate(in1: Wire, in2: Wire, out: Wire)
+      extends Simulant {
+</pre>
+
+<p>
+抽象方法算出输出信号：
+</p>
+
+<pre class="brush: scala">
+  def computeOutput(s1: Boolean, s2: Boolean): Boolean
+</pre>
+
+<p>
+不同的门有不同的延迟：
+</p>
+
+<pre class="brush: scala">
+  val delay: Int
+</pre>
+
+<p>
+时钟可以在创建好后马上加上：
+</p>
+
+<pre class="brush: scala">
+  val clock = Circuit.this.clock
+  clock.add(this)
+</pre>
+
+<p>
+连接两个线路作为输入连上门：
+</p>
+
+<pre class="brush: scala">
+  in1.addObserver(this)
+  in2.addObserver(this)
+</pre>
+
+<p>
+门唯一的本地状态就是它每一输入线路最近一次信号。这个状态要保存，因为线路只会在
+状态变化时才发信号，而输出信号要两个线路的信号一起才能算出来：
+</p>
+
+<pre class="brush: scala">
+  var s1, s2 = false
+</pre>
+
+<p>
+响应消息是在收到输入线路信号变化时重新算输出信号，并用<code>SetSignal</code>发消息给输出
+线路：
+</p>
+
+<pre class="brush: scala">
+  def handleSimMessage(msg: Any) {
+    msg match {
+      case SignalChanged(w, sig) =&gt;
+        if (w == in1)
+          s1 = sig
+        if (w == in2)
+          s2 = sig
+        clock ! AfterDelay(delay,
+            SetSignal(computeOutput(s1, s2)),
+            out)
+    }
+  }
+</pre>
+
+<p>
+具体的门实现就简单了：
+</p>
+
+<pre class="brush: scala">
+  def orGate(in1: Wire, in2: Wire, output: Wire) = 
+    new Gate(in1, in2, output) {
+      val delay = OrGateDelay
+      def computeOutput(s1: Boolean, s2: Boolean) = s1 || s2 
+    }
+  
+  def andGate(in1: Wire, in2: Wire, output: Wire) = 
+    new Gate(in1, in2, output) {
+      val delay = AndGateDelay
+      def computeOutput(s1: Boolean, s2: Boolean) = s1 &amp;&amp; s2 
+    }
+</pre>
+
+<p>
+非门有一个假的输入：
+</p>
+
+<pre class="brush: scala">
+  def inverter(input: Wire, output: Wire) = 
+    new Gate(input, DummyWire, output) {
+      val delay = InverterDelay
+      def computeOutput(s1: Boolean, ignored: Boolean) = !s1
+    }
+</pre>
+
+<p>
+模拟电路的功能已经完成了。但增加一个查看器观察线路的变化还是有必要的。定义一个
+接收<code>Wire</code>类作为参数的并输出文本的<code>probe</code>方法。这个方法可以简单地制作一个新把
+自己连接到指定线路和模拟对象来实现。这个模拟对象可以通过打印出新的信号来响应
+<code>SignalChanged</code>消息：
+</p>
+
+<pre class="brush: scala">
+  def probe(wire: Wire) = new Simulant {
+    val clock = Circuit.this.clock
+    clock.add(this)
+    wire.addObserver(this)
+    def handleSimMessage(msg: Any) {
+      msg match {
+        case SignalChanged(w, s) =&gt;
+           println("signal "+ w +" changed to "+ s)
+      }
+    }
+  }
+</pre>
+
+<p>
+这里基本上<code>Circuit</code>类就完成了。调用时创建一个<code>Circuit</code>类实例，和一组门电路，在
+需要观察的线路上加上<code>prob</code>，开始模拟。启动模拟的方法只要向时钟发<code>Start</code>消息
+就行：
+</p>
+
+<pre class="brush: scala">
+  def start() { clock ! Start }
+</pre>
+
+<p>
+和前面非并行的版本不同我们把半加器和全加器包装成了<code>Adders</code>特质。由于继承自
+<code>Circuit</code>所以它可以访问<code>Circuit</code>的成员如<code>Wire</code>和<code>orGate</code>：
+</p>
+
+<pre class="brush: scala">
+  trait Adders extends Circuit {
+    def halfAdder(a: Wire, b: Wire, s: Wire, c: Wire) {
+      val d, e = new Wire
+      orGate(a, b, d)
+      andGate(a, b, c)
+      inverter(c, e)
+      andGate(d, e, s)
+    }
+
+    def fullAdder(a: Wire, b: Wire, cin: Wire,
+        sum: Wire, cout: Wire) {
+      val s, c1, c2 = new Wire
+      halfAdder(a, cin, s, c1)
+      halfAdder(b, s, sum, c2)
+      orGate(c1, c2, cout)
+    }
+  }
+
+
+  val circuit = new Circuit with Adders
+</pre>
+
+<p>
+上面最后一行的<code>circuit</code>变量保存了拥有所有<code>Circuit</code>方法和所有<code>Adders</code>方法的电路。
+这就是通过特质而不是用类来组合逻辑的强大之处。可以混入任何想要用的组件：
+</p>
+
+<pre class="brush: scala">
+  val circuit =
+    new Circuit 
+      with Adders 
+      with Multiplexers
+      with FlipFlops
+      with MultiCoreProcessors
+</pre>
+
+<h3 id="toc_2.9.4">把所有内容结合在一起</h3>
+
+<p>
+一切大功告成。简单地演示如下：
+</p>
+
+<pre class="brush: scala">
+  object Demo {
+    def main(args: Array[String]) {
+      val circuit = new Circuit with Adders
+      import circuit._
+
+      val ain = new Wire("ain", true)
+      val bin = new Wire("bin", false)
+      val cin = new Wire("cin", true)
+      val sout = new Wire("sout")
+      val cout = new Wire("cout")
+
+      probe(ain)
+      probe(bin)
+      probe(cin)
+      probe(sout)
+      probe(cout)
+    
+      fullAdder(ain, bin, cin, sout, cout)
+
+      circuit.start()
+    }
+  }
+</pre>
+
+<p>
+这里<code>import</code>了所有成员，所以可以把<code>circuit.probe(ain)</code>简写成<code>probe(ain)</code>。
+</p>
+
+<p>
+创建了两条输出<code>sout</code>、<code>cout</code>。还创建了三条输入线路：<code>ain</code>初始化为<code>true</code>、<code>bin</code>
+初始化为<code>false</code>、<code>cin</code>初始化为<code>true</code>。意思是给数值<code>0</code>加<code>1</code>，并带入一个进位<code>1</code>。
+</p>
+
+<p>
+五条线路上都有<code>probe</code>观测。把线路加到全加器中，模拟开始，输出如下：
+</p>
+
+<pre class="brush: scala">
+  Advancing to time 1
+  Advancing to time 2
+  signal Wire(cout) changed to false
+  signal Wire(cin) changed to true
+  signal Wire(ain) changed to true
+  signal Wire(sout) changed to false
+  signal Wire(bin) changed to false
+  Advancing to time 3
+  Advancing to time 4
+  Advancing to time 5
+  Advancing to time 6
+  Advancing to time 7
+  Advancing to time 8
+  Advancing to time 9
+  Advancing to time 10
+  signal Wire(cout) changed to true
+  Advancing to time 11
+  Advancing to time 12
+  Advancing to time 13
+  Advancing to time 14
+  Advancing to time 15
+  Advancing to time 16
+  Advancing to time 17
+  Advancing to time 18
+  signal Wire(sout) changed to true
+  Advancing to time 19
+  Advancing to time 20
+  Advancing to time 21
+  signal Wire(sout) changed to false
+  ** Agenda empty.  Clock exiting at time 21.
+</pre>
+
+<p>
+对于输入<code>1,0,1</code>输出进位<code>1</code>和为<code>0</code>。
+</p>
+
+
+
+
+<h1 id="toc_3">连接符解析</h1>
+ </div>
+</body>
+</html>

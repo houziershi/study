@@ -25,200 +25,1423 @@
 <h1>Part III</h1>
 <div class="toc">
 <ul>
-<li><a href="#toc_1">样本类和模式匹配</a>
+<li><a href="#toc_1">包和引用</a>
 <ul>
-<li><a href="#toc_1.1">样本类</a>
+<li><a href="#toc_1.1">定义包</a>
 <ul>
-<li><a href="#toc_1.1.1">省略new</a>
-<li><a href="#toc_1.1.2">类参数作为字段</a>
-<li><a href="#toc_1.1.3">copy方法的带名参数</a>
-<li><a href="#toc_1.1.4">默认toString、hashCode、equals、copy方法</a>
-<li><a href="#toc_1.1.5">不要继承样本类</a>
+<li><a href="#toc_1.1.1">package语句</a>
+<li><a href="#toc_1.1.2">嵌套包</a>
+<li><a href="#toc_1.1.3">包路径是相对的</a>
+<li><a href="#toc_1.1.4">包层级的作用域</a>
 </ul>
-<li><a href="#toc_1.2">模式匹配</a>
+<li><a href="#toc_1.2">包对象</a>
+<li><a href="#toc_1.3">引用包</a>
 <ul>
-<li><a href="#toc_1.2.1">match与switch的比较</a>
+<li><a href="#toc_1.3.1">重命名与隐藏</a>
 </ul>
-<li><a href="#toc_1.3">模式的种类</a>
+<li><a href="#toc_1.4">隐式引用</a>
 <ul>
-<li><a href="#toc_1.3.1">通配模式</a>
-<li><a href="#toc_1.3.2">常量模式</a>
-<li><a href="#toc_1.3.3">变量模式</a>
-<li><a href="#toc_1.3.4">变量模式与常量模式的区别</a>
-<ul>
-<li><a href="#toc_1.3.4.1">变量模式不能用通配符</a>
-<li><a href="#toc_1.3.4.2">默认常量用大写开头</a>
-<li><a href="#toc_1.3.4.3">小写常量名加<code>this</code>限定</a>
-<li><a href="#toc_1.3.4.4">反引号转义</a>
-</ul>
-<li><a href="#toc_1.3.5">构造器模式</a>
-<li><a href="#toc_1.3.6">序列模式</a>
-<ul>
-<li><a href="#toc_1.3.6.1">数组</a>
-<li><a href="#toc_1.3.6.2">列表匹配</a>
-<li><a href="#toc_1.3.6.3">列表连接匹配</a>
-</ul>
-<li><a href="#toc_1.3.7">元组模式</a>
-<li><a href="#toc_1.3.8">类型模式</a>
-<ul>
-<li><a href="#toc_1.3.8.1">类型推断与类型转换</a>
-<li><a href="#toc_1.3.8.2">类型擦除</a>
+<li><a href="#toc_1.4.1">java.lang</a>
+<li><a href="#toc_1.4.2">scala</a>
+<li><a href="#toc_1.4.3">Predef</a>
 </ul>
 </ul>
-<li><a href="#toc_1.4">变量绑定</a>
-<li><a href="#toc_1.5">守卫模式</a>
-<li><a href="#toc_1.6">模式重叠</a>
-<li><a href="#toc_1.7">封闭类</a>
-<li><a href="#toc_1.8">可选（Option）类型</a>
+<li><a href="#toc_2">访问修饰符</a>
 <ul>
-<li><a href="#toc_1.8.1"><code>getOrElse</code>方法</a>
-<li><a href="#toc_1.8.2"><code>Map</code>返回<code>Option</code></a>
-<li><a href="#toc_1.8.3">模式匹配处理<code>Option</code></a>
-<li><a href="#toc_1.8.4"><code>isEmpty</code>检查是否为空</a>
-<li><a href="#toc_1.8.5"><code>for</code>会跳过空</a>
-<li><a href="#toc_1.8.6">防止空指针</a>
+<li><a href="#toc_2.1">public</a>
+<li><a href="#toc_2.2">private</a>
+<li><a href="#toc_2.3">protected</a>
+<li><a href="#toc_2.4">保护的范围</a>
+<li><a href="#toc_2.5">伴生对象的可见度性</a>
 </ul>
-<li><a href="#toc_1.9">case语句的中置表示法</a>
+<li><a href="#toc_3">断言</a>
+<li><a href="#toc_4">测试</a>
 <ul>
-<li><a href="#toc_1.9.1">中置模式匹配序列</a>
+<li><a href="#toc_4.1">Junit 4</a>
+<li><a href="#toc_4.2">ScalaTest</a>
+<ul>
+<li><a href="#toc_4.2.1">Runner</a>
+<li><a href="#toc_4.2.2">assert()与expect()方法</a>
+<li><a href="#toc_4.2.3">测试异常</a>
+<li><a href="#toc_4.2.4">在测试间共享代码</a>
+<ul>
+<li><a href="#toc_4.2.4.1">BeforeAndAfter特质</a>
+<li><a href="#toc_4.2.4.2">通过闭包</a>
 </ul>
-<li><a href="#toc_1.10">模式无处不在</a>
-<ul>
-<li><a href="#toc_1.10.1">变量定义</a>
-<li><a href="#toc_1.10.2">偏函数的样本序列</a>
-<li><a href="#toc_1.10.3">for表达式</a>
-</ul>
-<li><a href="#toc_1.11">大型的例子</a>
-</ul>
-<li><a href="#toc_2">抽取器（Extractors）</a>
-<ul>
-<li><a href="#toc_2.1">例子：抽取email地址</a>
-<li><a href="#toc_2.2">抽取器</a>
-<li><a href="#toc_2.3">只有1个或没有变量的模式</a>
-<li><a href="#toc_2.4">可变参数的抽取器</a>
-<li><a href="#toc_2.5">抽取器和序列模式</a>
-<li><a href="#toc_2.6">抽取器与模式匹配</a>
-<ul>
-<li><a href="#toc_2.6.1">抽取器中置模式匹配</a>
-<li><a href="#toc_2.6.2">抽取器 VS. 样本类</a>
-</ul>
-<li><a href="#toc_2.7">正则表达式</a>
-<ul>
-<li><a href="#toc_2.7.1">形成正则表达式</a>
-<li><a href="#toc_2.7.2">用正则表达式查找替换</a>
-<li><a href="#toc_2.7.3">正则表达式抽取值</a>
+<li><a href="#toc_4.2.5">FunSuite</a>
+<li><a href="#toc_4.2.6">混合ScalaTest与JUnit</a>
 </ul>
 </ul>
-<li><a href="#toc_3">使用列表</a>
+<li><a href="#toc_5">样本类和模式匹配</a>
 <ul>
-<li><a href="#toc_3.1">列表字面量</a>
-<li><a href="#toc_3.2">列表类型</a>
-<li><a href="#toc_3.3">构造列表</a>
-<li><a href="#toc_3.4">列表的基本操作</a>
-<li><a href="#toc_3.5">列表模式</a>
-<li><a href="#toc_3.6">List类的一阶方法</a>
+<li><a href="#toc_5.1">样本类</a>
 <ul>
-<li><a href="#toc_3.6.1">连接列表</a>
-<li><a href="#toc_3.6.2">分治原则</a>
-<li><a href="#toc_3.6.3">列表长度</a>
-<li><a href="#toc_3.6.4">取头和尾</a>
-<li><a href="#toc_3.6.5">反转列表</a>
-<li><a href="#toc_3.6.6">前缀与后缀</a>
-<li><a href="#toc_3.6.7">取得指定元素</a>
-<li><a href="#toc_3.6.8">zip</a>
-<li><a href="#toc_3.6.9">toString 和 mkString</a>
-<li><a href="#toc_3.6.10">列表的转换</a>
-<li><a href="#toc_3.6.11">例：归并排序</a>
+<li><a href="#toc_5.1.1">省略new</a>
+<li><a href="#toc_5.1.2">类参数作为字段</a>
+<li><a href="#toc_5.1.3">copy方法的带名参数</a>
+<li><a href="#toc_5.1.4">默认toString、hashCode、equals、copy方法</a>
+<li><a href="#toc_5.1.5">不要继承样本类</a>
 </ul>
-<li><a href="#toc_3.7">List类的高阶函数</a>
+<li><a href="#toc_5.2">模式匹配</a>
 <ul>
-<li><a href="#toc_3.7.1">列表间映射</a>
-<li><a href="#toc_3.7.2">过滤</a>
-<li><a href="#toc_3.7.3">列表论断</a>
-<li><a href="#toc_3.7.4">reduce与folder</a>
-<ul>
-<li><a href="#toc_3.7.4.1">化简（reduce）</a>
-<li><a href="#toc_3.7.4.2">折叠（folder）</a>
+<li><a href="#toc_5.2.1">match与switch的比较</a>
 </ul>
-<li><a href="#toc_3.7.5">应用场景</a>
+<li><a href="#toc_5.3">模式的种类</a>
 <ul>
-<li><a href="#toc_3.7.5.1">例子：统计字母出现次数</a>
-<li><a href="#toc_3.7.5.2">例子：使用折叠实现列表反转</a>
+<li><a href="#toc_5.3.1">通配模式</a>
+<li><a href="#toc_5.3.2">常量模式</a>
+<li><a href="#toc_5.3.3">变量模式</a>
+<li><a href="#toc_5.3.4">变量模式与常量模式的区别</a>
+<ul>
+<li><a href="#toc_5.3.4.1">变量模式不能用通配符</a>
+<li><a href="#toc_5.3.4.2">默认常量用大写开头</a>
+<li><a href="#toc_5.3.4.3">小写常量名加<code>this</code>限定</a>
+<li><a href="#toc_5.3.4.4">反引号转义</a>
 </ul>
-<li><a href="#toc_3.7.6">扫描（scan）</a>
-<li><a href="#toc_3.7.7">排序</a>
+<li><a href="#toc_5.3.5">构造器模式</a>
+<li><a href="#toc_5.3.6">序列模式</a>
+<ul>
+<li><a href="#toc_5.3.6.1">数组</a>
+<li><a href="#toc_5.3.6.2">列表匹配</a>
+<li><a href="#toc_5.3.6.3">列表连接匹配</a>
 </ul>
-<li><a href="#toc_3.8">List伴生对象的方法</a>
+<li><a href="#toc_5.3.7">元组模式</a>
+<li><a href="#toc_5.3.8">类型模式</a>
 <ul>
-<li><a href="#toc_3.8.1">通过元素创建列表</a>
-<li><a href="#toc_3.8.2">按数值范围创建列表</a>
-<li><a href="#toc_3.8.3">创建重复元素的列表</a>
-<li><a href="#toc_3.8.4">解除Zip列表</a>
-<li><a href="#toc_3.8.5">连接列表</a>
-<li><a href="#toc_3.8.6">映射与测试配对</a>
-</ul>
-<li><a href="#toc_3.9">了解Scala的类型推断方法</a>
-</ul>
-<li><a href="#toc_4">集合类型</a>
-<ul>
-<li><a href="#toc_4.1">概览</a>
-<li><a href="#toc_4.2">序列</a>
-<ul>
-<li><a href="#toc_4.2.1">列表</a>
-<li><a href="#toc_4.2.2">列表缓存</a>
-<li><a href="#toc_4.2.3">数组</a>
-</ul>
-<li><a href="#toc_4.3">数组缓存</a>
-<ul>
-<li><a href="#toc_4.3.1">队列</a>
-<li><a href="#toc_4.3.2">栈</a>
-<li><a href="#toc_4.3.3">字符串</a>
-</ul>
-<li><a href="#toc_4.4">Set与Map</a>
-<ul>
-<li><a href="#toc_4.4.1">使用Set</a>
-<li><a href="#toc_4.4.2">Map</a>
-<li><a href="#toc_4.4.3">默认的Set和Map</a>
-<li><a href="#toc_4.4.4">有序的集体和映射</a>
-<li><a href="#toc_4.4.5">同步的Set和Map</a>
-</ul>
-<li><a href="#toc_4.5">可变与不可变类型的比较</a>
-<li><a href="#toc_4.6">初始化集合</a>
-<ul>
-<li><a href="#toc_4.6.1">数组与列表之间转换</a>
-<li><a href="#toc_4.6.2">Set与Map的可变与不可变互转</a>
-<li><a href="#toc_4.6.3">元组</a>
-</ul>
-<li><a href="#toc_4.7">惰性求值</a>
-<ul>
-<li><a href="#toc_4.7.1">迭代器</a>
-<li><a href="#toc_4.7.2">流</a>
-<li><a href="#toc_4.7.3">用迭代器创建流</a>
-<li><a href="#toc_4.7.4">懒视图</a>
-<ul>
-<li><a href="#toc_4.7.4.1">应用场景</a>
+<li><a href="#toc_5.3.8.1">类型推断与类型转换</a>
+<li><a href="#toc_5.3.8.2">类型擦除</a>
 </ul>
 </ul>
-<li><a href="#toc_4.8">与Java集合互操作</a>
-<li><a href="#toc_4.9">线程安全的集合</a>
-<li><a href="#toc_4.10">并发操作集合</a>
+<li><a href="#toc_5.4">变量绑定</a>
+<li><a href="#toc_5.5">守卫模式</a>
+<li><a href="#toc_5.6">模式重叠</a>
+<li><a href="#toc_5.7">封闭类</a>
+<li><a href="#toc_5.8">可选（Option）类型</a>
 <ul>
-<li><a href="#toc_4.10.1"><code>for-yield</code>循环按顺序执行</a>
-<li><a href="#toc_4.10.2">不要用共享变量</a>
-<li><a href="#toc_4.10.3">ParIterable接口</a>
-<li><a href="#toc_4.10.4">适用范围</a>
-<ul>
-<li><a href="#toc_4.10.4.1">reduce</a>
-<li><a href="#toc_4.10.4.2">fold</a>
-<li><a href="#toc_4.10.4.3">aggregate</a>
+<li><a href="#toc_5.8.1"><code>getOrElse</code>方法</a>
+<li><a href="#toc_5.8.2"><code>Map</code>返回<code>Option</code></a>
+<li><a href="#toc_5.8.3">模式匹配处理<code>Option</code></a>
+<li><a href="#toc_5.8.4"><code>isEmpty</code>检查是否为空</a>
+<li><a href="#toc_5.8.5"><code>for</code>会跳过空</a>
+<li><a href="#toc_5.8.6">防止空指针</a>
 </ul>
+<li><a href="#toc_5.9">case语句的中置表示法</a>
+<ul>
+<li><a href="#toc_5.9.1">中置模式匹配序列</a>
+</ul>
+<li><a href="#toc_5.10">模式无处不在</a>
+<ul>
+<li><a href="#toc_5.10.1">变量定义</a>
+<li><a href="#toc_5.10.2">偏函数的样本序列</a>
+<li><a href="#toc_5.10.3">for表达式</a>
+</ul>
+<li><a href="#toc_5.11">大型的例子</a>
+</ul>
+<li><a href="#toc_6">抽取器（Extractors）</a>
+<ul>
+<li><a href="#toc_6.1">例子：抽取email地址</a>
+<li><a href="#toc_6.2">抽取器</a>
+<li><a href="#toc_6.3">只有1个或没有变量的模式</a>
+<li><a href="#toc_6.4">可变参数的抽取器</a>
+<li><a href="#toc_6.5">抽取器和序列模式</a>
+<li><a href="#toc_6.6">抽取器与模式匹配</a>
+<ul>
+<li><a href="#toc_6.6.1">抽取器中置模式匹配</a>
+<li><a href="#toc_6.6.2">抽取器 VS. 样本类</a>
+</ul>
+<li><a href="#toc_6.7">正则表达式</a>
+<ul>
+<li><a href="#toc_6.7.1">形成正则表达式</a>
+<li><a href="#toc_6.7.2">用正则表达式查找替换</a>
+<li><a href="#toc_6.7.3">正则表达式抽取值</a>
 </ul>
 </ul>
 </ul>
 </div>
 
 
-<h1 id="toc_1">样本类和模式匹配</h1>
+
+
+<h1 id="toc_1">包和引用</h1>
+
+<h2 id="toc_1.1">定义包</h2>
+
+<h3 id="toc_1.1.1">package语句</h3>
+
+<p>
+通过把<code>package</code>子句放在文件顶端的方式把整个文件内容放进包里：
+</p>
+
+<pre class="brush: scala">
+  package bobsrockets.navigation
+  class Navigator 
+</pre>
+
+<p>
+同一个包可以定义在不同的多个文件中。
+</p>
+
+<h3 id="toc_1.1.2">嵌套包</h3>
+
+<p>
+另一种方式很像C#的命名空间。在<code>package</code>子句之后用大括号包起来一段要放到包里去的
+定义。除此之外，这种语法还能把同一个文件内的不同部分放在不同的包里。
+</p>
+
+<pre class="brush: scala">
+  package bobsrockets {
+    package navigation {
+
+      // In package bobsrockets.navigation
+      class Navigator
+
+      package tests {
+
+        // In package bobsrockets.navigation.tests
+        class NavigatorSuite
+      }
+    }
+  } 
+</pre>
+
+<p>
+这种嵌套方式会把路径上所有的包的内容都相入进来。
+</p>
+
+<p>
+类似于Java的语法实际上只是括号嵌入风格的语法糖。原理是：如果除了签入另一个包之外
+对包不作任何事，你可以下面的方式省去一个缩进：
+</p>
+
+<pre class="brush: scala">
+  package bobsrockets.navigation {
+  
+		// 这样就跳过了bobsrockets包，它的内容不会被引入
+
+    // In package bobsrockets.navigation
+    class Navigator
+
+    package tests {
+
+      // In package bobsrockets.navigation.tests
+      class NavigatorSuite
+    }
+  } 
+</pre>
+
+<h3 id="toc_1.1.3">包路径是相对的</h3>
+
+<p>
+Java包尽管是分级的，却不是嵌套的。在Java里，在你命名一个包的时候，你必须从包层级
+的根开始。
+</p>
+
+<p>
+Scala为了简化，采用包风格类似于是相对路径：
+</p>
+
+<pre class="brush: scala">
+  package bobsrockets {
+    package navigation {
+      class Navigator
+    }
+    package launch {
+      class Booster {
+        // No need to say bobsrockets.navigation.Navigator
+        val nav = new navigation.Navigator
+      }
+    }
+  } 
+</pre>
+
+<p>
+为了避免绝对路径与相对路径之间的歧义，可以用<code>_root_</code>表示顶层包，这样就一定是绝对
+路径：
+</p>
+
+<pre class="brush: scala">
+val aa = new _root_.scala.collection.mutable.ArrayBuffer[Employee] 
+</pre>
+
+
+<h3 id="toc_1.1.4">包层级的作用域</h3>
+
+<p>
+而且内部区域的包可以隐匿被定义在外部区域的同名包。还提供了<code>_root_</code>表示顶层包：
+</p>
+
+<pre class="brush: scala">
+  // In file launch.scala
+  package launch {
+    class Booster3
+  }
+
+  // In file bobsrockets.scala
+  package bobsrockets {
+    package navigation {
+      package launch {
+        class Booster1
+      }
+      class MissionControl {
+        val booster1 = new launch.Booster1
+        val booster2 = new bobsrockets.launch.Booster2
+        val booster3 = new _root_.launch.Booster3
+      }
+    }
+    package launch {
+      class Booster2
+    }
+  } 
+</pre>
+
+<p>
+上面的代码中，为了访问<code>Booster3</code>，Scala提供了所有用户可创建的包之外的名为
+<code>_root_</code>的包。换句话就是，任何你写的顶层包都被当作是<code>_root_</code>包的成员。
+</p>
+
+<p>
+因此，<code>_root_.launch</code>让你能访问顶层的<code>launch</code>包，<code>_root_.launch.Booster3</code>指向的
+就是最外面的<code>booster</code>类。
+</p>
+
+<h2 id="toc_1.2">包对象</h2>
+
+<p>
+由于JVM的局限，包里只能放类、对象、特质，不能把变量、常量与函数放在包里。
+</p>
+
+<p>
+解决方案是在上级包是定义一个与子包名称一样的包对象，包对象的成员用起来就像是在
+子包中一样：
+</p>
+
+<pre class="brush: scala">
+package com.horstmann.impatient
+
+package object people {
+	val defaultName = "John Q. Public"
+}
+
+package people {
+	class Person {
+		var name = defaultName // 从包对象取得常量
+	}
+}
+</pre>
+
+<p>
+因为在同一个包中，所以<code>defaultName</code>不需要加限制。在其他的地方访问方式可能为：
+</p>
+
+<p>
+<code>com.horstmann.impatient.people.defaultName</code>
+</p>
+
+<p>
+在幕后包对象被编译成带有静态方法和字段的JVM类，名为<code>package.class</code>，位于相应的
+包下。以这个例子来说就是<code>com.horstmann.impatient.people.package</code>，它包含一个静态
+字段<code>defaultName</code>。
+</p>
+
+<h2 id="toc_1.3">引用包</h2>
+
+<p>
+Scala里用<code>import</code>子句来引用包和其成员：
+</p>
+
+<pre class="brush: scala">
+  package bobsdelights
+
+  abstract class Fruit(
+    val name: String,
+    val color: String
+  )
+
+  object Fruits {
+    object Apple extends Fruit("apple", "red")
+    object Orange extends Fruit("orange", "orange")
+    object Pear extends Fruit("pear", "yellowish")
+    val menu = List(Apple, Orange, Pear)
+  } 
+</pre>
+
+<p>
+不止是包，其他成员也可以用<code>import</code>来引用：
+</p>
+
+<pre class="brush: scala">
+  // easy access to Fruit
+  import bobsdelights.Fruit
+
+  // easy access to all members of bobsdelights
+  import bobsdelights._
+
+  // easy access to all members of Fruits
+  import bobsdelights.Fruits._ 
+//
+</pre>
+
+<p>
+差别是Scala的按需引用写作尾下划线<code>_</code>而不是星号<code>*</code>（毕竟<code>*</code>是合法的Scala标识符！
+）。上面的第三个引用子句与Java的静态类字段引用一致。
+</p>
+
+<p>
+<code>cala</code>引用可以出现在任何地方，而不是仅仅在编译单元的开始处。同样，它们可以指向
+任意值。
+</p>
+
+<pre class="brush: scala">
+  def showFruit(fruit: Fruit) {
+    import fruit._
+    println(name +"s are "+ color)
+  } 
+</pre>
+
+<p>
+引用语句的作用范围从引入开始到当前代码块结束。
+</p>
+
+<p>
+方法<code>showFruit</code>引用了它的参数，<code>Fruit</code>类型的<code>fruit</code>，的所有成员。之后的
+<code>println</code>语句就可以直接使用<code>name</code>和<code>color</code>了。这两个索引等价于<code>fruit.name</code>和
+<code>fruit.color</code>。
+</p>
+
+<p>
+Scala的引用很灵活的另一个方面是它们可以引用包自身，而不只是非包成员。这只有你把
+内嵌包想象成包含在外围包之内才是自然的。
+</p>
+
+<p>
+例如，下面的代码里包<code>java.util.regex</code>被引用。这使得<code>regex</code>可以用作简单名。要访问
+<code>java.util.regex</code>包的<code>Pattern</code>单例对象，你可以只是写成<code>regex.Pattern</code>：
+</p>
+
+<pre class="brush: scala">
+  import java.util.regex
+
+  class AStarB {
+    // Accesses java.util.regex.Pattern
+    val pat = regex.Pattern.compile("a*b")
+  } 
+</pre>
+
+<h3 id="toc_1.3.1">重命名与隐藏</h3>
+
+<p>
+Scala的引用同样可以重命名或隐藏成员。可以用跟在引用的成员对象之后的包含在括号里
+的引用选择子句（import selector clause）做到：
+</p>
+
+<ul>
+<li>
+重命名子句的格式是<code>&lt;原始名&gt; =&gt; &lt;新命名&gt;</code>。
+
+</ul>
+
+<ul>
+<li>
+<code>&lt;原始名&gt; =&gt; _</code>格式的子句从被引用的名字中排除了<code>&lt;原始名&gt;</code>。
+
+</ul>
+
+<pre class="brush: scala">
+// 只引用了对象Fruits的Apple和Orange成员。 
+import Fruits.{Apple, Orange} 
+
+// Apple对象重命名为McIntosh。
+import Fruits.{Apple =&gt; McIntosh, Orange}
+
+// 以SDate的名字引用了SQL的日期类，因此你可以在同时引用普通的Java日期类Date。
+import java.sql.{Date =&gt; SDate}
+
+// 以名称S引用了java.sql包，这样你就可以写成S.Date。
+import java.{sql =&gt; S}
+
+// 引用了对象Fruits的所有成员。这与import Fruits._同义。
+import Fruits.{_}
+
+// 从Fruits对象引用所有成员，不过重命名Apple为McIntosh。
+import Fuites.{Apple =&gt; McIntosh, _}
+
+// 引用了除Pear之外的所有Fruits成员。
+import Fuits.{Pear =&gt; _, _}
+//
+</pre>
+
+<p>
+把某样东西重命名为<code>_</code>就是表示把它隐藏掉。这对避免出现混淆的局面有所帮助。比方说
+你有两个包，<code>Fruits</code>和<code>Notebooks</code>，它们都定义了类<code>Apple</code>。如果你想只是得到名为
+<code>Apple</code>的笔记本而不是水果，就需要引用所有的<code>Notebooks</code>和除了<code>Apple</code>之外所有的
+水果：
+</p>
+
+<pre class="brush: scala">
+  import Notebooks._
+  import Fruits.{Apple =&gt; _, _} 
+//
+</pre>
+
+<p>
+总而言之，引用选择可以包括下列模式：
+</p>
+
+<ul>
+<li>
+简单名<code>x</code>。把<code>x</code>包含进引用名集。
+
+<li>
+重命名子句<code>x =&gt; y</code>。让名为<code>x</code>的成员以名称<code>y</code>出现。
+
+<li>
+隐藏子句<code>x =&gt; _</code>。把<code>x</code>排除在引用名集之外。
+
+<li>
+全包括<code>_</code>。引用除了前面子句提到的之外的全体成员。如果存在全包括，那么必须是
+
+</ul>
+<p>
+引用选择的最后一个。
+</p>
+ 
+<p>
+本节最初展示的比较简单的引用子句可以被视为带有选择子句的简写。
+</p>
+
+<p>
+例如，<code>import p._</code>等价于<code>import p.{_}</code>：并且<code>import p.n</code>等价于<code>import p.{n}</code>。
+</p>
+
+
+<h2 id="toc_1.4">隐式引用</h2>
+
+<p>
+Scala隐式地添加了一些引用到每个程序中。本质上，就好象下列的三个引用子句已经被
+加载了：
+</p>
+
+<pre class="brush: scala">
+  import java.lang._ // everything in the java.lang package
+  import scala._     // everything in the scala package
+  import Predef._    // everything in the Predef object 
+</pre>
+
+<h3 id="toc_1.4.1">java.lang</h3>
+
+<p>
+<code>java.lang</code>包囊括了标准Java类。它永远被隐式包含在Scala的JVM实现中。.NET实现将
+代以引用system包，它是<code>java.lang</code>的.NET模拟。
+</p>
+
+<h3 id="toc_1.4.2">scala</h3>
+
+<p>
+scala包含有标准的Scala库，包括许多通用的类和对象。因为scala被隐式引用，你可以
+直接用<code>List</code>而不是<code>scala.List</code>；<code>import math._</code>等同于<code>import scala.math._</code>；
+<code>math.sqrt(2)</code>等同于<code>scala.math.sqrt(2)</code>。
+</p>
+
+<h3 id="toc_1.4.3">Predef</h3>
+
+<p>
+Predef对象包含了许多Scala程序中常用到的类型，方法和隐式转换的定义。比如，因为
+<code>Predef</code>是隐式引用，你可以直接写<code>assert</code>而不是<code>Predef.assert</code>。
+</p>
+
+<p>
+上面的这三个引用子句与其它的稍有不同，靠后的引用将遮盖靠前的。
+</p>
+
+<p>
+例如，<code>StringBuilder</code>类被定义在<code>scala</code>包里以及Java版本1.5以后的<code>java.lang</code>包中
+都有。因为<code>scala</code>引用遮盖了<code>java.lang</code>引用，所以<code>StringBuilder</code>简单名将被看作是
+<code>scala.StringBuilder</code>，而不是<code>java.lang.StringBuilder</code>。
+</p>
+
+
+<h1 id="toc_2">访问修饰符</h1>
+
+<p>
+Scala与Java对访问修饰符的对待方式有一些重要的差异。
+</p>
+
+<h2 id="toc_2.1">public</h2>
+
+<p>
+没有任何标记就是公开的，可以在任何地方被访问。与Java中默认是<code>protected</code>不同，
+Scala中默认是<code>public</code>的。
+</p>
+
+
+<h2 id="toc_2.2">private</h2>
+
+<p>
+标记为<code>private</code>的成员仅在包含了成员定义的类或对象内部可见。不仅如此，Scala中还
+可以进一步限制只在当前的实例中可见。
+</p>
+
+<p>
+不同于Java，Scala里这个规则同样应用到了内部类上。这种方式更一致。
+</p>
+
+<pre class="brush: scala">
+  class Outer {
+    class Inner {
+      private def f() { println("f") }
+      class InnerMost {
+        f() // OK
+      }
+    }
+    (new Inner).f() // error: f is not accessible
+  } 
+</pre>
+
+<p>
+Scala里，<code>(new Inner).f()</code>访问非法，因为<code>f</code>在<code>Inner</code>中被声明为<code>private</code>所以类
+<code>Inner</code>外面不能被访问。相反，类<code>InnerMost</code>里访问<code>f</code>没有问题，因为这个访问包含在
+<code>Inner</code>类之内。
+</p>
+
+<p>
+这点与Java不同，Java会允许这两种访问因为它允许外部类访问其内部类的私有成员。
+</p>
+
+<h2 id="toc_2.3">protected</h2>
+
+<p>
+Java中<code>protected</code>可以被子类或同一个包中的类访问。Scala里，只在定义了成员的类的
+子类中可以被访问，同一包中的其他类不能访问。
+</p>
+
+<pre class="brush: scala">
+  package p {
+    class Super {
+      protected def f() { println("f") }
+    }
+    class Sub extends Super {
+      f()
+    }
+    class Other {
+      (new Super).f()  // error: f is not accessible
+    }
+  } 
+</pre>
+
+<h2 id="toc_2.4">保护的范围</h2>
+
+<p>
+Scala里的访问修饰符可以通过使用修饰词增加。格式为<code>private[X]</code>或<code>protected[X]</code>的
+修饰符表示针对<code>X</code>的私有或保护，这里<code>X</code>指代某些外围的包、类与其单例对象，也可以
+用<code>this</code>表示只有当前类自己可以访问。
+</p>
+
+<p>
+这样允许定义一些在你项目的若干子包中可见但对于项目外部的客户却始终不可见的东西。
+同样的技巧在Java里是不可能的：
+</p>
+
+<pre class="brush: scala">
+ package bobsrockets {
+   package navigation {
+     private[bobsrockets] class Navigator { 
+       protected[navigation] def useStarChart() {}
+       class LegOfJourney {
+         private[Navigator] val distance = 100
+       }
+       private[this] var speed = 200
+     }
+   }
+   package launch {
+     import navigation._
+     object Vehicle { 
+       private[launch] val guide = new Navigator
+     }
+   }
+ } 
+</pre>
+
+<p>
+类<code>Navigator</code>被标记为<code>private[bobsrockets]</code>。这就是说这个类对包含在<code>bobsrockets</code>
+包的所有的类和对象可见。特别是对象<code>Vehicle</code>里对<code>Navigator</code>的访问被允许，因为
+<code>Vehicle</code>包含在包<code>launch</code>中，而<code>launch</code>包在<code>bobsrockets</code>中。另一方面，包
+<code>bobsrockets</code>包之外的所有代码都不能访问类Navigator。
+</p>
+
+<p>
+<code>private</code>修饰词同样可以直接是外围包。对象<code>Vehicle</code>类的<code>guide</code>对象的访问修饰符是
+这样的例子。这种访问修饰符等价于Java的包私有访问。
+</p>
+
+<table>
+<tr>
+<td>
+没有修饰符
+</td>
+<td>
+公开访问
+</td>
+</tr>
+<tr>
+<td>
+Private[bobsrockets]
+</td>
+<td>
+在外部包中访问
+</td>
+</tr>
+<tr>
+<td>
+Private[navigation]
+</td>
+<td>
+与Java的包可见度相同
+</td>
+</tr>
+<tr>
+<td>
+Private[Navigator]
+</td>
+<td>
+与Java的private相同
+</td>
+</tr>
+<tr>
+<td>
+Private[LegOfJourney]
+</td>
+<td>
+与Scala的private相同
+</td>
+</tr>
+<tr>
+<td>
+Private[this]
+</td>
+<td>
+仅在类的同一个实例中可以访问
+</td>
+</tr>
+</table>
+
+
+<p>
+所有的修饰词也可以用在<code>protected</code>上，与<code>private</code>意思相同。也就是说，类<code>C</code>的
+<code>protected[X]</code>修饰符允许<code>C</code>的所有子类和外围的包、类、或对象<code>X</code>访问被标记的定义。
+例如，<code>useStarChart</code>方法在<code>Navigator</code>所有子类以及包含在<code>navigation</code>包里的所有
+代码能够被访问。这与Java的protected意思完全一致。
+</p>
+
+<p>
+<code>Private</code>的修饰词还能指向外围类或对象。例如<code>LegOfJourney</code>里的<code>distance</code>变量被
+标记为<code>private[Navigator]</code>，因此它在类<code>Navigator</code>的任何地方都可见。这与Java里的
+内部类的私有成员具有同样的访问能力。<code>private[C]</code>里的<code>C</code>如果是最外层类，那么
+<code>private</code>的意思和Java一致。
+</p>
+
+<p>
+Scala还具有一种比<code>private</code>更严格的访问修饰符。被<code>private[this]</code>标记的定义仅能在
+包含了定义的同一个实例中被访问。这种定义被称为对象私有（object-private）。例如，
+代码13.11中，类<code>Navigator</code>的的<code>speed</code>定义就是对象私有的。这就是说所有的访问必须
+不仅是在<code>Navigator</code>类里，而且还要是同一个<code>Navigator</code>实例发生的。
+</p>
+
+<p>
+因此在<code>Navigator</code>内访问<code>speed</code>和<code>this.speed</code>是合法的。然而以下的访问，将不被允许
+，即使它发生在<code>Navigator</code>类之中：
+</p>
+
+<pre class="brush: scala">
+  val other = new Navigator
+  other.speed // this line would not compile 
+</pre>
+
+<p>
+把成员标记为<code>private[this]</code>是一个让它不能被同一个类中其它实例访问的保障。这在做
+文档时比较有用。有时它也能让写出更通用的变体注释（参见以后会讲到的参数类型化章节
+的变体注释）。
+</p>
+
+<h2 id="toc_2.5">伴生对象的可见度性</h2>
+
+<p>
+Java里，静态成员和实例成员属于同一个类，因此访问修饰符可以统一地应用在他们之上。
+在Scala里没有静态成员，代之以可以拥有包含成员的仅存在一个的伴生对象。
+</p>
+
+<pre class="brush: scala">
+  class Rocket {
+    import Rocket.fuel
+    private def canGoHomeAgain = fuel &gt; 20
+  }
+
+  object Rocket {
+    private def fuel = 10
+    def chooseStrategy(rocket: Rocket) {
+      if (rocket.canGoHomeAgain)
+        goHome()
+      else
+        pickAStar()
+    }
+    def goHome() {}
+    def pickAStar() {}
+  }
+ 
+</pre>
+
+<p>
+Scala的访问规则给予了伴生对象和类一些特权。类把它所有的访问权限共享给半生对象，
+反过来也是如此。特别的是，对象可以访问所有它的伴生类的私有成员，就好象类也可以
+访问所有伴生对象的私有成员一样。
+</p>
+
+<p>
+举个例子，上面的<code>Rocket</code>类可以访问方法<code>fuel</code>，它在<code>Rocket</code>对象中被声明为私有。
+类似地，<code>Rocket</code>对象也可以访问<code>Rocket</code>类里面的私有方法<code>canGetHome</code>。
+</p>
+
+<p>
+有一个例外，说到<code>protected static</code>成员时，Scala和Java的相似性被打破了。Java类<code>C</code>
+的保护静态成员可以被<code>C</code>的所有子类访问。相反，伴生对象的<code>protected</code>成员没有意义，
+因为单例对象没有任何子类。
+</p>
+
+
+
+<h1 id="toc_3">断言</h1>
+
+<p>
+<code>assert</code>是预定义的方法，<code>assert(condition)</code>会在条件不成立时抛出<code>AssertionError</code>。
+</p>
+
+<p>
+另一个版本<code>assert(condition, explanation)</code>，指定了抛出含有指定<code>explantion</code>作为
+说明的<code>assertionError</code>。<code>explation</code>的类型为<code>Any</code>，所以任何对象都可以作为参数。
+<code>assert</code>方法会对传入的参数调用<code>toString</code>的结果作为放在<code>AssertionError</code>中的文字描述。
+</p>
+
+<p>
+在前面的“组合与继承”这一章中的<code>above</code>方法加上道检查，只有宽度一样的元素才可以
+上下连接在一起：
+</p>
+
+<pre class="brush: scala">
+  def above(that: Element): Element = {
+    val this1 = this widen that.width
+    val that1 = that widen this.width
+    elem(this1.contents ++ that1.contents)
+  }
+</pre>
+
+<p>
+<code>assert</code>方法所在的<code>Predef</code>包里还有一个<code>ensuring</code>方法可以直接对表达式的返回结果
+进行测试而不用先把表达式的结果先存放到变量中：
+</p>
+
+<pre class="brush: scala">
+  def widen(w: Int): Element =
+    if (w &lt;= width) this
+    else {
+      val left = elem(' ', (w - width) / 2, height)
+      var right = elem(' ', w - width - left.width, height)
+      left beside this beside right
+    } ensuring (w &lt;= _.width)
+</pre>
+
+<p>
+<code>ensuring</code>接收一个返回类型为Boolean的函数作为参数。注意这里<code>ensuring</code>是作用在
+if-else表达式的<code>Element</code>类结果上的，而不是方法<code>widen</code>的返回值上。相当于是：
+</p>
+
+<pre class="brush: scala">
+  def widen(w: Int): Element = {
+    if (w &lt;= width) this
+    else {
+      val left = elem(' ', (w - width) / 2, height)
+      var right = elem(' ', w - width - left.width, height)
+      left beside this beside right
+    } ensuring (w &lt;= _.width)
+  }
+</pre>
+
+<p>
+还有一点要明白的是，这里的语法看起来像是对<code>Element</code>类对象调用<code>ensuring</code>方法（把
+<code>xxx.ensuring(...)</code>中的点换成了空格）。但是实际上<code>Emement</code>对象没有这个成员方法，
+而是被隐式转换成了<code>Ensuring</code>对象。由于存在隐式转换，所以<code>ensuring</code>可以作用在任何
+类型上。
+</p>
+
+
+
+<h1 id="toc_4">测试</h1>
+
+<p>
+受益于和Java之间无缝操作。Java的测试库，像JUnit、TestNG，可以直接用于scala的
+单元测试。
+</p>
+
+<h2 id="toc_4.1">Junit 4</h2>
+
+<p>
+如果喜欢JUnit4的风格，那么可以写下面这样的单元测试。
+</p>
+
+<pre class="brush: bash">
+import java.util.ArrayList
+import org.junit.Test
+import org.junit.Assert._
+
+class SampleTest {
+
+	@Test
+	def listAdd() {
+		val list = new ArrayList[String]
+		list add "milk"
+		list add "sugar"
+		assertEquals(2, list.size())
+	}
+
+}
+</pre>
+
+<p>
+产生的测试类可以直接在Java中使用：
+</p>
+
+<pre class="brush: bash">
+$ scalac -classpath .:junit-4.10.jar tmp.scala
+
+$ java -classpath .:junit-4.10.jar:scala-library-2.10.2.jar \
+		org.junit.runner.JUnitCore SampleTest
+JUnit version 4.10
+.
+Time: 0.009
+
+OK (1 test)
+</pre>
+
+
+
+<h2 id="toc_4.2">ScalaTest</h2>
+
+<p>
+ScalaTest是专为scala设计的一个测试框架。ScalaTest提供了一些比较方便的功能。注意
+ScalaTest除了自己的版本号外，对应不同的Scala版本还有不同的对应版本。拿错了是
+用不了的。
+</p>
+
+<p>
+先用脚本来测试一下对不对：
+</p>
+
+<pre class="brush: scala">
+class CanaryTest extends org.scalatest.Suite {
+
+	def testOK() {
+		assert(true)
+	}
+
+}
+
+(new CanaryTest).execute()
+</pre>
+
+<p>
+因为使用的是脚本，所以上面最后一行调用<code>execute()</code>方法直接运行。执行：
+</p>
+
+<pre class="brush: scala">
+$ scala -classpath .:scalatest_2.10-1.9.1.jar tmp.scala
+Main$$anon$1$CanaryTest:
+- testOK
+</pre>
+
+<h3 id="toc_4.2.1">Runner</h3>
+
+<p>
+ScalaTest的<code>Runner</code>类来配置运行或不运行哪些套件，配置不同的<code>reporter</code>来指定报表
+。可以在ScalaTest的文档中查看所有的选项。
+</p>
+
+<pre class="brush: scala">
+class CanaryTest extends org.scalatest.Suite {
+
+	def testListEmpty() {
+		val list = new java.util.ArrayList[Integer]
+		assert(0 == list.size)
+	}
+
+	def testListAdd() {
+		val list = new java.util.ArrayList[Integer]
+		list add 1
+		list add 4
+		assert(2 == list.size)
+	}
+
+}
+</pre>
+
+<p>
+通过<code>Runner</code>打开图形界面，在<code>view</code>菜单中可以显示测试过程信息：
+</p>
+
+<pre class="brush: bash">
+$ scalac -classpath .:scalatest_2.10-1.9.1.jar tmp.scala
+
+$ scala -classpath .:scalatest_2.10-1.9.1.jar org.scalatest.tools.Runner -p .
+WARNING: -p has been deprecated and will be reused for a different (but still 
+		very cool) purpose in ScalaTest 2.0. Please change all uses of -p to -R.
+</pre>
+
+<p>
+上面的参数<code>-p</code>指定的查找测试类的路径。
+</p>
+
+<p>
+如果不想要图形界面，可以用<code>-o</code>重定向结果到标准输出：
+</p>
+
+<pre class="brush: bash">
+$ scala -classpath .:scalatest_2.10-1.9.1.jar org.scalatest.tools.Runner -p . -o
+WARNING: -p has been deprecated and will be reused for a different (but still 
+		very cool) purpose in ScalaTest 2.0. Please change all uses of -p to -R.
+Run starting. Expected test count is: 2
+DiscoverySuite:
+CanaryTest:
+- testListAdd
+- testListEmpty
+Run completed in 150 milliseconds.
+Total number of tests run: 2
+Suites: completed 2, aborted 0
+Tests: succeeded 2, failed 0, ignored 0, pending 0
+All tests passed.
+</pre>
+
+<p>
+还有<code>-f</code>参数可以把结果输出到文件。
+</p>
+
+<h3 id="toc_4.2.2">assert()与expect()方法</h3>
+
+<p>
+ScalaTest提供的<code>assert()</code>方法测试条件是否成立。还有一个两个参数版本的，第二个
+参数设置失败时的提示信息。
+</p>
+
+<pre class="brush: scala">
+	assert(2 == list.size(), "Unexpected size of list")
+</pre>
+
+<p>
+还有一个<code>expect()</code>方法作为类似于Junit的<code>assertEquals()</code>方法。注意它的第三个参数
+是一个闭包：
+</p>
+
+<pre class="brush: scala">
+	assert(2, "Unexpected size of list") { list.size() }
+</pre>
+
+<p>
+注意<code>expect()</code>方法已经过期，用<code>expectResult()</code>方法代替。
+</p>
+
+<h3 id="toc_4.2.3">测试异常</h3>
+
+<p>
+有一个比较啰嗦的方案：
+</p>
+
+<pre class="brush: scala">
+try {
+	// .....
+	fail("Expected exception here")
+} catch {
+	case e: IndexOutOfBoundsException =&gt; // success
+}
+</pre>
+
+<p>
+更好的方法是用ScalaTest提供的<code>intercept()</code>方法：
+</p>
+
+<pre class="brush: scala">
+intercept(classOf[IndexOutOfBoundsException], "Expected exception here") {
+	// .....
+}
+</pre>
+
+<p>
+注意上面的格式可能会在ScalaTest的新版本中改变，会是这样的：
+</p>
+
+<pre class="brush: scala">
+intercept[IndexOutOfBoundsException]("Expected exception here") {
+	// .....
+}
+</pre>
+
+<p>
+<code>intercept()</code>方法会把捕获的结果作为返回值，如果需要的话可以对它进行处理。
+</p>
+
+<h3 id="toc_4.2.4">在测试间共享代码</h3>
+
+<h4 id="toc_4.2.4.1">BeforeAndAfter特质</h4>
+
+<p>
+Scala的<code>BeforeAndAfter</code>特质提供了<code>beforeEach()</code>与<code>afterEach()</code>方法会在每个测试
+开始与结束前调用；还有<code>beforeAll()</code>和<code>afterAll()</code>在所有的开始与结束时运行一次。
+</p>
+
+<pre class="brush: scala">
+class ShareCodeImperation extends org.scalatest.Suite 
+	with org.scalatest.BeforeAndAfter
+{
+		var list: java.util.ArrayList[Integer] = _
+
+		override def beforeEach() { list = new java.util.ArrayList[Integer] }
+		override def afterEach()  { list = null }
+
+		def testListEmptyOnCreate() {
+			expect(0, "Expected size to be 0") { list.size() }
+		}
+
+		def testGetOnEmptyList() {
+			intercept[IndexOutOfBoundsException] { list.get(0) }
+		}
+}
+
+(new ShareCodeImperative).execute()
+</pre>
+
+<h4 id="toc_4.2.4.2">通过闭包</h4>
+
+<pre class="brush: scala">
+import org.scalatest.Suite
+import java.util.ArrayList
+
+class ShareCodeFunctional extends Suite {
+
+	def withList(testFunction : (ArrayList[Integer]) =&gt; Unit) {
+		// init list
+		val list = new ArrayList[Integer]
+
+		try {
+			testFunction(list)
+		} finally {
+			// clean up
+		}
+	}
+
+	def testListEmptyOnCreate() {
+		withList {
+			list =&gt; expectResult(0, "Expected size to be 0") {
+				list.size()
+			}
+		}
+	}
+
+	def testGetOnEmptyList() {
+		withList {
+			list =&gt; intercept[IndexOutOfBoundsException] {
+				list.get(0)
+			}
+		}
+	}
+
+}
+
+(new ShareCodeFunctional).execute()
+</pre>
+
+<p>
+运行：
+</p>
+
+<pre class="brush: scala">
+$ scala -deprecation -classpath .:scalatest_2.10-1.9.1.jar tmp.scala
+Main$$anon$1$ShareCodeFunctional:
+- testGetOnEmptyList
+- testListEmptyOnCreate
+</pre>
+
+<h3 id="toc_4.2.5">FunSuite</h3>
+
+<p>
+ScalaTest提供了函数式的<code>FunSuite</code>（Function Suite）。<code>test</code>方法为测试方法，说明
+字符串的内容会显示在输出信息中：
+</p>
+
+<pre class="brush: scala">
+import org.scalatest.FunSuite
+import scala.collection.mutable.Stack
+ 
+class ExampleSuite extends FunSuite {
+ 
+  test("pop is invoked on a non-empty stack") {
+    val stack = new Stack[Int]
+    stack.push(1)
+    stack.push(2)
+    val oldSize = stack.size
+    val result = stack.pop()
+    assert(result === 2)
+    assert(stack.size === oldSize - 1)
+  }
+ 
+  test("pop is invoked on an empty stack") {
+    val emptyStack = new Stack[Int]
+    intercept[NoSuchElementException] {
+      emptyStack.pop()
+    }
+    assert(emptyStack.isEmpty)
+  }
+}
+</pre>
+
+<pre class="brush: bash">
+\-(morgan:%) &gt;&gt;&gt; scalac -cp scalatest_2.9.0-1.9.1.jar ExampleSuite.scala                      
+\-(morgan:%) &gt;&gt;&gt; scala -cp .:scalatest_2.9.0-1.9.1.jar org.scalatest.run ExampleSuite 
+Run starting. Expected test count is: 2
+ExampleSuite:
+- pop is invoked on a non-empty stack
+- pop is invoked on an empty stack
+Run completed in 158 milliseconds.
+Total number of tests run: 2
+Suites: completed 1, aborted 0
+Tests: succeeded 2, failed 0, ignored 0, pending 0
+All tests passed.
+</pre>
+
+
+<p>
+ScalaTest中也可以写JUnit风格的测试：
+</p>
+
+<pre class="brush: scala">
+import org.scalatest.junit.AssertionsForJUnit
+import scala.collection.mutable.ListBuffer
+import org.junit.Assert._
+import org.junit.Test
+import org.junit.Before
+
+class ExampleSuite extends AssertionsForJUnit {
+
+  var sb: StringBuilder = _
+  var lb: ListBuffer[String] = _
+
+  @Before 
+	def initialize() {
+    sb = new StringBuilder("ScalaTest is ")
+    lb = new ListBuffer[String]
+  }
+
+  @Test 
+	def verifyEasy() { // Uses JUnit-style assertions
+    sb.append("easy!")
+    assertEquals("ScalaTest is easy!", sb.toString)
+    assertTrue(lb.isEmpty)
+    lb += "sweet"
+    try {
+      "verbose".charAt(-1)
+      fail()
+    }
+    catch {
+      case e: StringIndexOutOfBoundsException =&gt; // Expected
+    }
+  }
+
+  @Test 
+	def verifyFun() { // Uses ScalaTest assertions
+    sb.append("fun!")
+    assert(sb.toString === "ScalaTest is fun!")
+    assert(lb.isEmpty)
+    lb += "sweeter"
+    intercept[StringIndexOutOfBoundsException] {
+      "concise".charAt(-1)
+    }
+  }
+}
+</pre>
+
+<p>
+编译运行：
+</p>
+
+<pre class="brush: bash">
+\-(morgan:%) &gt;&gt;&gt; scalac -cp scalatest_2.9.0-1.9.1.jar:junit-4.8.2.jar ExampleSuite.scala                      
+\-(morgan:%) &gt;&gt;&gt; scala -cp .:scalatest_2.9.0-1.9.1.jar:junit-4.8.2.jar org.junit.runner.JUnitCore ExampleSuite
+JUnit version 4.8.2
+..
+Time: 0.026
+
+OK (2 tests)
+</pre>
+
+<h3 id="toc_4.2.6">混合ScalaTest与JUnit</h3>
+
+<p>
+<code>org.scalatest.junit.JUnitSuite</code>已经混入了特质<code>AssertionsForJUnit</code>，可以同时被
+用于JUnit与ScalaTest方法： 
+</p>
+
+<pre class="brush: scala">
+import org.scalatest.junit.JUnitSuite
+import scala.collection.mutable.ListBuffer
+import org.junit.Assert._
+import org.junit.Test
+import org.junit.Before
+
+class ExampleSuite extends JUnitSuite {
+
+  var sb: StringBuilder = _
+  var lb: ListBuffer[String] = _
+
+  @Before
+	def initialize() {
+    sb = new StringBuilder("ScalaTest is ")
+    lb = new ListBuffer[String]
+  }
+
+  @Test
+	def verifyEasy() { // Uses JUnit-style assertions
+    sb.append("easy!")
+    assertEquals("ScalaTest is easy!", sb.toString)
+    assertTrue(lb.isEmpty)
+    lb += "sweet"
+    try {
+      "verbose".charAt(-1)
+      fail()
+    }
+    catch {
+      case e: StringIndexOutOfBoundsException =&gt; // Expected
+    }
+  }
+
+  @Test
+	def verifyFun() { // Uses ScalaTest assertions
+    sb.append("fun!")
+    assert(sb.toString === "ScalaTest is fun!")
+    assert(lb.isEmpty)
+    lb += "sweeter"
+    intercept[StringIndexOutOfBoundsException] {
+      "concise".charAt(-1)
+    }
+  }
+}
+</pre>
+
+<p>
+JUnit调用：
+</p>
+
+<pre class="brush: bash">
+\-(morgan:%) &gt;&gt;&gt; scala -cp .:scalatest_2.9.0-1.9.1.jar:junit-4.8.2.jar org.junit.runner.JUnitCore ExampleSuite
+JUnit version 4.8.2
+..
+Time: 0.026
+
+OK (2 tests)
+</pre>
+
+<p>
+ScalaTest调用：
+</p>
+
+<pre class="brush: bash">
+\-(morgan:%) &gt;&gt;&gt; scala -cp .:scalatest_2.9.0-1.9.1.jar:junit-4.8.2.jar org.scalatest.run ExampleSuite
+Run starting. Expected test count is: 2
+ExampleSuite:
+- verifyEasy
+- verifyFun
+Run completed in 226 milliseconds.
+Total number of tests run: 2
+Suites: completed 1, aborted 0
+Tests: succeeded 2, failed 0, ignored 0, pending 0
+All tests passed.
+</pre>
+
+<p>
+ScalaTest还提供了函数式的单元测试。
+</p>
+
+<pre class="brush: scala">
+// 用函数式的方式来写单元测试
+// IDE目前对ScalaTest的支持不是特别好
+// 加上RunWith就可以用JUnit的方式来运行了
+@RunWith(classOf[JUnitRunner])
+class ElementSuite3 extends FunSuite {
+    test("elem result should have passed width") {
+        val ele = elem('x', 2, 3)
+        assert(ele.width == 2)
+    }
+}
+</pre>
+
+<p>
+单元测试对提高软件质量很有好处。唯一的不足就是只针对程序员。其它人员要看懂还是
+比较困难。ScalaTest提供了BDD（Behavior Driven Development行为驱动开发）测试方式
+。下面的这段测试代码在运行时就会打印出可读的解释。
+</p>
+	
+<pre class="brush: scala">
+class ElementSpec extends FlatSpec with ShouldMatchers {
+    "A UniformElement" should
+        "have a width equal to the passed value" in {
+        val ele = elem('x', 2, 3)
+        ele.width should be(2)
+    }
+    it should
+        "have a height equal to the passed value" in {
+        val ele = elem('x', 2, 3)
+        ele.height should be(3)
+    }
+    it should
+        "throw an IAE if passed a negative width" in {
+        evaluating {
+            elem('x', -2, 3)
+        } should produce[IllegalArgumentException]
+    }
+}
+</pre>
+
+<p>
+上面的代码会打印出下面这样的提示。
+</p>
+
+<pre class="brush: scala">
+A UniformElement 
+- should have a width equal to the passed value
+- should have a height equal to the passed value
+- should throw an IAE if passed a negative width
+</pre>
+
+<p>
+我们写单元测试时会测试一些边界值。然后再选一些典型的值。如果这些选值有库来做，
+不但可以减少单元测试的工作量，而且可以将边界值选取更合理。
+</p>
+
+<p>
+下面是如何将<code>ScalaChecker</code>和<code>ScalaTest</code>联合起来使用的一个例子：
+</p>
+
+<pre class="brush: scala">
+class ElementSpecChecker extends FlatSpec with ShouldMatchers with Checkers{
+    "A UniformElement" should
+        "have a width equal to the passed value" in {
+        // 这可以用数学化的方式来读
+        // 对每个整数w
+        // 当w&gt;0时
+        // 都有后面的等式成立
+        check((w: Int) =&gt; w &gt; 0 ==&gt; (elem('x', w, 3).width == w))
+    }
+}
+</pre>
+
+
+
+
+
+<h1 id="toc_5">样本类和模式匹配</h1>
 
 <p>
 样本类（case class）和模式匹配（pattern matching）。
@@ -230,7 +1453,7 @@
 </p>
 
 
-<h2 id="toc_1.1">样本类</h2>
+<h2 id="toc_5.1">样本类</h2>
 
 <p>
 带<code>case</code>修饰符会被编译器识别为样本类。
@@ -254,7 +1477,7 @@
 每个子类都有一个<code>case</code>修饰符，会被编译器识别为样本类。
 </p>
 
-<h3 id="toc_1.1.1">省略new</h3>
+<h3 id="toc_5.1.1">省略new</h3>
 
 <p>
 样本类有自动产生的工厂方法，创建时就用不着<code>new</code>了：
@@ -272,7 +1495,7 @@ val v = Var("x")
 val op = binOp("+", Number(1), v)
 </pre>
 
-<h3 id="toc_1.1.2">类参数作为字段</h3>
+<h3 id="toc_5.1.2">类参数作为字段</h3>
 
 <p>
 样本类的另一个特点是参数列表中所有的参数隐式获得了<code>val</code>前缀，被作为字段维护：
@@ -286,7 +1509,7 @@ scala&gt; op.left
 res1: Expr = Number(1.0)
 </pre>
 
-<h3 id="toc_1.1.3">copy方法的带名参数</h3>
+<h3 id="toc_5.1.3">copy方法的带名参数</h3>
 
 <p>
 <code>copy</code>方法可以得到一个副本。
@@ -316,7 +1539,7 @@ val price = amt.copy(value = 19.95)
 val price = amt.copy(unit = "CHF")
 </pre>
 
-<h3 id="toc_1.1.4">默认toString、hashCode、equals、copy方法</h3>
+<h3 id="toc_5.1.4">默认toString、hashCode、equals、copy方法</h3>
 
 <p>
 编译器为样本类添加了可读性更强的<code>toString</code>方法；还有自动提供的<code>hashCode</code>和
@@ -331,7 +1554,7 @@ val price = amt.copy(unit = "CHF")
   res3: Boolean = true
 </pre>
 
-<h3 id="toc_1.1.5">不要继承样本类</h3>
+<h3 id="toc_5.1.5">不要继承样本类</h3>
 
 <p>
 如果一个样本类是从其他样本类继承过来的，那么不会自动实现默认的<code>toString</code>、
@@ -343,7 +1566,7 @@ val price = amt.copy(unit = "CHF")
 所以，推荐只有最末端的子类是样本类。
 </p>
 
-<h2 id="toc_1.2">模式匹配</h2>
+<h2 id="toc_5.2">模式匹配</h2>
 
 <p>
 先来看一下格式。在格式上相当于把Java的<code>switch</code>格式：
@@ -421,7 +1644,7 @@ val price = amt.copy(unit = "CHF")
 传递过去的就不是样本类实例，而是伴生对象。
 </p>
 
-<h3 id="toc_1.2.1">match与switch的比较</h3>
+<h3 id="toc_5.2.1">match与switch的比较</h3>
 
 <ul>
 <li>
@@ -456,9 +1679,9 @@ val price = amt.copy(unit = "CHF")
 </p>
 
 
-<h2 id="toc_1.3">模式的种类</h2>
+<h2 id="toc_5.3">模式的种类</h2>
 
-<h3 id="toc_1.3.1">通配模式</h3>
+<h3 id="toc_5.3.1">通配模式</h3>
 
 <p>
 通配模式“<code>_</code>”匹配所有的结果：
@@ -484,7 +1707,7 @@ val price = amt.copy(unit = "CHF")
   }
 </pre>
 
-<h3 id="toc_1.3.2">常量模式</h3>
+<h3 id="toc_5.3.2">常量模式</h3>
 
 <p>
 任何字面量都可以用作常量，还有<code>val</code>与单例对象也可以。如<code>Nil</code>，<code>5</code>，<code>true</code>和<code>"hello"</code>：
@@ -521,7 +1744,7 @@ val price = amt.copy(unit = "CHF")
   res9: java.lang.String = something else
 </pre>
 
-<h3 id="toc_1.3.3">变量模式</h3>
+<h3 id="toc_5.3.3">变量模式</h3>
 
 <p>
 变量类似通配模式，只不过有个变量名所以可以在后面的表达式中操作这个变量：
@@ -534,7 +1757,7 @@ val price = amt.copy(unit = "CHF")
   }
 </pre>
 
-<h3 id="toc_1.3.4">变量模式与常量模式的区别</h3>
+<h3 id="toc_5.3.4">变量模式与常量模式的区别</h3>
 
 <p>
 常量不止有字面形式，还有用符号名的（比如<code>Nil</code>）。这样看起来就很容易与变量模式
@@ -568,7 +1791,7 @@ val price = amt.copy(unit = "CHF")
   res11: java.lang.String = strange math? Pi = 2.7182818...
 </pre>
 
-<h4 id="toc_1.3.4.1">变量模式不能用通配符</h4>
+<h4 id="toc_5.3.4.1">变量模式不能用通配符</h4>
 
 <p>
 在这个变量模式情况下，不能使用通配模式。因为变量模式已经可以匹配所有情况了：
@@ -584,7 +1807,7 @@ val price = amt.copy(unit = "CHF")
                      ^
 </pre>
 
-<h4 id="toc_1.3.4.2">默认常量用大写开头</h4>
+<h4 id="toc_5.3.4.2">默认常量用大写开头</h4>
 
 <p>
 在区别常量与变量时Scala一般默认常量是以大写开头命名的，所以下面的代码编译不过：
@@ -605,7 +1828,7 @@ class Sample {
 }
 </pre>
 
-<h4 id="toc_1.3.4.3">小写常量名加<code>this</code>限定</h4>
+<h4 id="toc_5.3.4.3">小写常量名加<code>this</code>限定</h4>
 
 <p>
 强制使用小写常量名要加上限定，如：<code>this.pi</code>或<code>obj.pi</code>的形式表示是常量模式；如果
@@ -620,7 +1843,7 @@ class Sample {
   res13: java.lang.String = OK
 </pre>
 
-<h4 id="toc_1.3.4.4">反引号转义</h4>
+<h4 id="toc_5.3.4.4">反引号转义</h4>
 
 <p>
 反引号也可以用来处理其他的编码问题，如对于标识符来说，因为<code>yield</code>是Scala的保留字
@@ -635,7 +1858,7 @@ Thread.`yield`()
 这样这里的<code>yield</code>就被当作标识符而不是关键字了。
 </p>
 
-<h3 id="toc_1.3.5">构造器模式</h3>
+<h3 id="toc_5.3.5">构造器模式</h3>
 
 <p>
 这个模式是真正牛X的模式，不仅检查对象是否是样本类的成员，还检查对象的构造器参数
@@ -660,9 +1883,9 @@ Scala的模式支持深度匹配（deep match）。不止检查对象是否一�
   }
 </pre>
 
-<h3 id="toc_1.3.6">序列模式</h3>
+<h3 id="toc_5.3.6">序列模式</h3>
 
-<h4 id="toc_1.3.6.1">数组</h4>
+<h4 id="toc_5.3.6.1">数组</h4>
 
 <p>
 用<code>Array</code>表达式：
@@ -677,7 +1900,7 @@ arr match {
 }
 </pre>
 
-<h4 id="toc_1.3.6.2">列表匹配</h4>
+<h4 id="toc_5.3.6.2">列表匹配</h4>
 
 <p>
 指定匹配序列中任意元素，如指定开始为0：
@@ -701,7 +1924,7 @@ arr match {
   }
 </pre>
 
-<h4 id="toc_1.3.6.3">列表连接匹配</h4>
+<h4 id="toc_5.3.6.3">列表连接匹配</h4>
 
 <pre class="brush: scala">
 let match {
@@ -713,7 +1936,7 @@ let match {
 </pre>
 
 
-<h3 id="toc_1.3.7">元组模式</h3>
+<h3 id="toc_5.3.7">元组模式</h3>
 
 <p>
 检查参数是不是三元组：
@@ -736,7 +1959,7 @@ let match {
   matched a 3-tuple
 </pre>
 
-<h3 id="toc_1.3.8">类型模式</h3>
+<h3 id="toc_5.3.8">类型模式</h3>
 
 <p>
 这个模式可以被用来当成类型测试和类型转换的简易替代：
@@ -772,7 +1995,7 @@ let match {
 </pre>
 
 
-<h4 id="toc_1.3.8.1">类型推断与类型转换</h4>
+<h4 id="toc_5.3.8.1">类型推断与类型转换</h4>
 
 <p>
 <code>isInstanceOf</code>测试类型的方法：
@@ -811,7 +2034,7 @@ expr.asInstanceOf[String]
 了
 </p>
 
-<h4 id="toc_1.3.8.2">类型擦除</h4>
+<h4 id="toc_5.3.8.2">类型擦除</h4>
 
 <p>
 和Java一样，对于除了数组以外其他集合都采用了泛型擦除（erasure）。就是在运行时
@@ -891,7 +2114,7 @@ scala&gt; def isIntIntMap(x: Any) = x match {
   res20: java.lang.String = no
 </pre>
 
-<h2 id="toc_1.4">变量绑定</h2>
+<h2 id="toc_5.4">变量绑定</h2>
 
 <p>
 在变量模式里可以用变量操作匹配的部分，那么其他的模式里有没有办法也这样做呢？
@@ -917,7 +2140,7 @@ scala&gt; def isIntIntMap(x: Any) = x match {
 这里的<code>e</code>代表的就是<code>UnOp("abs",_)</code>部分。
 </p>
 
-<h2 id="toc_1.5">守卫模式</h2>
+<h2 id="toc_5.5">守卫模式</h2>
 
 <p>
 如，想要把<code>e+e</code>这个重复加法替换成乘法<code>e*2</code>：
@@ -980,7 +2203,7 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
   case s: String if s(0) == 'a' =&gt; ...
 </pre>
 
-<h2 id="toc_1.6">模式重叠</h2>
+<h2 id="toc_5.6">模式重叠</h2>
 
 <pre class="brush: scala; highlight:[8,10]">
   def simplifyAll(expr: Expr): Expr = expr match {
@@ -1017,7 +2240,7 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
                                            ^
 </pre>
 
-<h2 id="toc_1.7">封闭类</h2>
+<h2 id="toc_5.7">封闭类</h2>
 
 <p>
 前面说过Scala里如果所有的样本都没有匹配，那是会抛异常的。为了全都匹配，程序员会
@@ -1099,7 +2322,7 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
 有漏掉的可能性。
 </p>
 
-<h2 id="toc_1.8">可选（Option）类型</h2>
+<h2 id="toc_5.8">可选（Option）类型</h2>
 
 <p>
 可选类型的格式为<code>Option[类型]</code>，它的值有两种形式：
@@ -1114,7 +2337,7 @@ Scala要求模式是线性的，即模式变量只能在模式中出现一次。
 
 </ul>
 
-<h3 id="toc_1.8.1"><code>getOrElse</code>方法</h3>
+<h3 id="toc_5.8.1"><code>getOrElse</code>方法</h3>
 
 <p>
 <code>Option</code>类型的<code>getOrElse</code>方法可以定义在没有值返回时的默认行为：
@@ -1139,7 +2362,7 @@ scala&gt; println(comment.getOrElse("No comments"))
 No comments
 </pre>
 
-<h3 id="toc_1.8.2"><code>Map</code>返回<code>Option</code></h3>
+<h3 id="toc_5.8.2"><code>Map</code>返回<code>Option</code></h3>
 
 <p>
 比如Scala的<code>Map</code>类型的<code>get</code>方法就是<code>Option</code>类型。在<code>key</code>有值的情况下返回
@@ -1160,7 +2383,7 @@ No comments
   res22: Option[java.lang.String] = None
 </pre>
 
-<h3 id="toc_1.8.3">模式匹配处理<code>Option</code></h3>
+<h3 id="toc_5.8.3">模式匹配处理<code>Option</code></h3>
 
 <p>
 应用模式匹配处理有值和没有值的情况：
@@ -1183,7 +2406,7 @@ No comments
   res25: String = ?
 </pre>
 
-<h3 id="toc_1.8.4"><code>isEmpty</code>检查是否为空</h3>
+<h3 id="toc_5.8.4"><code>isEmpty</code>检查是否为空</h3>
 
 <pre class="brush: scala">
 if (res.isEmpty)
@@ -1192,14 +2415,14 @@ else
 	println(res.get)
 </pre>
 
-<h3 id="toc_1.8.5"><code>for</code>会跳过空</h3>
+<h3 id="toc_5.8.5"><code>for</code>会跳过空</h3>
 
 <pre class="brush: scala">
 for (result &lt;- resultList.get("Alice"))
 	println(result)
 </pre>
 
-<h3 id="toc_1.8.6">防止空指针</h3>
+<h3 id="toc_5.8.6">防止空指针</h3>
 
 <p>
 在Java里Map没有值时返回的是<code>null</code>，如果忘记检查会引起空指针异常。而在Scala里对于
@@ -1219,7 +2442,7 @@ for (result &lt;- resultList.get("Alice"))
 
 </ul>
 
-<h2 id="toc_1.9">case语句的中置表示法</h2>
+<h2 id="toc_5.9">case语句的中置表示法</h2>
 
 <p>
 对于匹配两个部分的case，可以用中置表示法：
@@ -1246,7 +2469,7 @@ amt match { case Currency(a, u) =&gt; println(u + " " + a) }
 amt match { case a Currency u =&gt; println(u + " " + a) }
 </pre>
 
-<h3 id="toc_1.9.1">中置模式匹配序列</h3>
+<h3 id="toc_5.9.1">中置模式匹配序列</h3>
 
 <p>
 中置模式原来是要匹配序列的。以<code>List</code>为例，可以理解为每个实例要么是<code>Nil</code>，要么是
@@ -1302,9 +2525,9 @@ match { case first :: second :: rest =&gt; doSth() }
 </pre>
 
 
-<h2 id="toc_1.10">模式无处不在</h2>
+<h2 id="toc_5.10">模式无处不在</h2>
 
-<h3 id="toc_1.10.1">变量定义</h3>
+<h3 id="toc_5.10.1">变量定义</h3>
 
 <p>
 通过类型定义变量：
@@ -1347,7 +2570,7 @@ match { case first :: second :: rest =&gt; doSth() }
 上面的代码正好在赋值时把参数一一对应地传了过去。
 </p>
 
-<h3 id="toc_1.10.2">偏函数的样本序列</h3>
+<h3 id="toc_5.10.2">偏函数的样本序列</h3>
 
 <p>
 被包在花括号内的一组case选项其实是一个偏函数，偏函数并不是对所有输入的参数都有
@@ -1496,7 +2719,7 @@ Scala在编译器在把这样的表达式转为偏函数时会对模式进行两
 偏函数可能会引起运行时的异常，所以在调用前用<code>isDefineAt</code>检查一下。
 </p>
 
-<h3 id="toc_1.10.3">for表达式</h3>
+<h3 id="toc_5.10.3">for表达式</h3>
 
 <p>
 来看一个典型的例子：每个元素都是<code>(country,city)</code>：
@@ -1525,7 +2748,7 @@ Scala在编译器在把这样的表达式转为偏函数时会对模式进行两
   orange
 </pre>
 
-<h2 id="toc_1.11">大型的例子</h2>
+<h2 id="toc_5.11">大型的例子</h2>
 
 <p>
 目标是生成公式<code>((a / (b * c) + 1 / n) / 3)</code>显示形式为：
@@ -1921,9 +3144,9 @@ x   1.5
 
 
 
-<h1 id="toc_2">抽取器（Extractors）</h1>
+<h1 id="toc_6">抽取器（Extractors）</h1>
 
-<h2 id="toc_2.1">例子：抽取email地址</h2>
+<h2 id="toc_6.1">例子：抽取email地址</h2>
 
 <p>
 对于一个email类的话，如果是合法的email地址取出用户名与域名。
@@ -1975,7 +3198,7 @@ x   1.5
 </pre>
 
 
-<h2 id="toc_2.2">抽取器</h2>
+<h2 id="toc_6.2">抽取器</h2>
 
 <p>
 在scala对象中与<code>apply</code>方法相对的方法是<code>unapply</code>方法，而有<code>unapply</code>成员方法的对象
@@ -2087,7 +3310,7 @@ x   1.5
 </p>
   
 
-<h2 id="toc_2.3">只有1个或没有变量的模式</h2>
+<h2 id="toc_6.3">只有1个或没有变量的模式</h2>
 
 <p>
 之前<code>unapply</code>方法返回的是元组，这在有多个值要返回的时候很有用。但是在只有一个值
@@ -2161,7 +3384,7 @@ x   1.5
 </pre>
 
 
-<h2 id="toc_2.4">可变参数的抽取器</h2>
+<h2 id="toc_6.4">可变参数的抽取器</h2>
 
 <p>
 希望的元素个数是可变的，如对域名的处理：
@@ -2260,7 +3483,7 @@ Array、RichString等）的共同超类。
 </pre>
 
 
-<h2 id="toc_2.5">抽取器和序列模式</h2>
+<h2 id="toc_6.5">抽取器和序列模式</h2>
 
 <p>
 模式匹配中我们已经知道可以使用序列模式访问列表或数组的元素：
@@ -2300,9 +3523,9 @@ List对象包含了带可变数量参数的<code>apply</code>方法，从而允�
 提供了支持。<code>scala.Array</code>对象定义也非常类似，所以数组也支持注入和抽取方法。
 </p>
 
-<h2 id="toc_2.6">抽取器与模式匹配</h2>
+<h2 id="toc_6.6">抽取器与模式匹配</h2>
 
-<h3 id="toc_2.6.1">抽取器中置模式匹配</h3>
+<h3 id="toc_6.6.1">抽取器中置模式匹配</h3>
 
 <p>
 如果<code>unapply</code>方法产出的是一个对偶，就可以是模式匹配<code>case</code>语句中使用跳转表示法。
@@ -2354,7 +3577,7 @@ case object +: {
 }
 </pre>
 
-<h3 id="toc_2.6.2">抽取器 VS. 样本类</h3>
+<h3 id="toc_6.6.2">抽取器 VS. 样本类</h3>
 
 <p>
 样本类会暴露了数据的具体表达方式，让外部看到了类名与构造器等信息，如：
@@ -2386,13 +3609,13 @@ case object +: {
 。
 </p>
 
-<h2 id="toc_2.7">正则表达式</h2>
+<h2 id="toc_6.7">正则表达式</h2>
 
 <p>
 正则表达式规则看<code>java.util.regex.Pattern</code>包的JavaDoc。RTFM！
 </p>
 
-<h3 id="toc_2.7.1">形成正则表达式</h3>
+<h3 id="toc_6.7.1">形成正则表达式</h3>
 
 <p>
 Scala相关正则的类放在<code>scala.util.matching</code>包里：
@@ -2443,7 +3666,7 @@ Scala的照排字符串可以免了java复杂的转义：
   }
 </pre>
 
-<h3 id="toc_2.7.2">用正则表达式查找替换</h3>
+<h3 id="toc_6.7.2">用正则表达式查找替换</h3>
 
 <p>
 查找首次出现作为<code>Option</code>类型结果返回：
@@ -2494,7 +3717,7 @@ regex findPrefixOf str
 </pre>
 
 
-<h3 id="toc_2.7.3">正则表达式抽取值</h3>
+<h3 id="toc_6.7.3">正则表达式抽取值</h3>
 
 <p>
 Scala所有的正则表达式都定义了抽取器，可以用来鉴别匹配于正则表达式分组的子字符串
@@ -2534,3193 +3757,6 @@ Scala所有的正则表达式都定义了抽取器，可以用来鉴别匹配于
   sign: null, integer: 99, decimal: null
   sign: null, integer: 3, decimal: null
 </pre>
-
-
-
-
-
-
-<h1 id="toc_3">使用列表</h1>
-
-<h2 id="toc_3.1">列表字面量</h2>
-
-<p>
-再简单回顾一下：
-</p>
-
-<pre class="brush: scala">
-  val fruit = List("apples", "oranges", "pears")
-  val nums = List(1, 2, 3, 4)
-  val diag3 =
-    List(
-      List(1, 0, 0),
-      List(0, 1, 0),
-      List(0, 0, 1)
-    )
-  val empty = List()"brush: scala"
-</pre>
-
-<p>
-注意列表是不可变的。
-</p>
-
-<h2 id="toc_3.2">列表类型</h2>
-
-<p>
-列表是同质化的（homogeneous），所有的成员都有相同的类型，中括号描述成员类型
-<code>List[T]</code>。
-</p>
-
-<pre class="brush: scala">
-val fruit: List[String] = List("apples", "oranges", "pears")
-  val nums: List[Int] = List(1, 2, 3, 4)
-  val diag3: List[List[Int]] =
-    List(
-      List(1, 0, 0),
-      List(0, 1, 0),
-      List(0, 0, 1)
-    )
-  val empty: List[Nothing] = List()
-</pre>
-
-<p>
-Scala里的列表类是协变的（covariant）。如果<code>S</code>是<code>T</code>的子类，那<code>List[S]</code>也是
-<code>List[T]</code>的子类。
-</p>
-
-<p>
-由于<code>Nothing</code>是所有类的子类，所以<code>List[Nothing]</code>是所有<code>List[T]</code>类型的子类：
-</p>
-
-<pre class="brush: scala">
-  // List() is also of type List[String]!
-  val xs: List[String] = List()
-</pre>
-
-<h2 id="toc_3.3">构造列表</h2>
-
-<p>
-<code>Nil</code>代表空列表；<code>::</code>（发音为“cons”），<code>elm::list</code>把单个元素<code>elm</code>接在列表<code>list</code>的前面。
-</p>
-
-<pre class="brush: scala">
-  val fruit = "apples" :: ("oranges" :: ("pears" :: Nil))
-  val nums = 1 :: (2 :: (3 :: (4 :: Nil)))
-  val diag3 = (1 :: (0 :: (0 :: Nil))) ::
-              (0 :: (1 :: (0 :: Nil))) ::
-              (0 :: (0 :: (1 :: Nil))) :: Nil
-  val empty = Nil
-</pre>
-
-<p>
-由于操作符<code>::</code>是右结合性，所以：
-</p>
-
-<pre class="brush: scala">
-A :: (B :: C)
-</pre>
-
-<p>
-相当于：
-</p>
-
-<pre class="brush: scala">
-A :: B :: C
-</pre>
-
-<p>
-所以前一个例子中很多括号都可以省略：
-</p>
-
-<pre class="brush: scala">
-  val nums = 1 :: 2 :: 3 :: 4 :: Nil
-</pre>
-
-<h2 id="toc_3.4">列表的基本操作</h2>
-
-<p>
-三个基本操作：<code>head</code>、<code>tail</code>、<code>isEmpty</code>。
-</p>
-
-<pre class="brush: scala">
-  val fruit = "apples" :: "oranges" :: "pears" :: Nil
-  val nums = 1 :: 2 :: 3 :: 4 :: Nil
-  val diag3 = (1 :: (0 :: (0 :: Nil))) ::
-              (0 :: (1 :: (0 :: Nil))) ::
-              (0 :: (0 :: (1 :: Nil))) :: Nil
-  val empty = Nil
-  
-empty.isEmpty // true
-fruit.isEmpty // flase
-fruit.head // "apples"
-fruit.tail.head // "organges"
-diag3.head // List(1, 0, 0)
-</pre>
-
-<p>
-<code>head</code>与<code>tail</code>只能用在非空列表上，不然抛异常：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; Nil.head
-  java.util.NoSuchElementException: head of empty list
-</pre>
-
-<p>
-一个排序的例子，使用插入排序：对于非空列表<code>x::xs</code>可以先排序<code>xs</code>。然后再把<code>x</code>插入
-正确的地方：
-</p>
-
-<pre class="brush: scala">
-  def isort(xs: List[Int]): List[Int] =
-    if (xs.isEmpty) Nil
-    else insert(xs.head, isort(xs.tail))
-
-  def insert(x: Int, xs: List[Int]): List[Int] =
-    if (xs.isEmpty || x &lt;= xs.head) x :: xs
-    else xs.head :: insert(x, xs.tail)
-</pre>
-
-
-<h2 id="toc_3.5">列表模式</h2>
-
-<p>
-简单的模式匹配，在确定长度的情况下取出列表里的元素：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val List(a, b, c) = fruit
-  a: String = apples
-  b: String = oranges
-  c: String = pears
-</pre>
-
-<p>
-不确定具体长度但知道至少有几个，或是只要取前几个：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val a :: b :: rest = fruit
-  a: String = apples
-  b: String = oranges
-  rest: List[String] = List(pears)
-</pre>
-
-<p>
-要注意这里的<code>List(...)</code>和<code>::</code>并不是之前定义的模式匹配。
-</p>
-
-<p>
-实际上<code>List(...)</code>是将来会在抽取器章节介绍的抽取器模式。
-</p>
-
-<p>
-“cos”模式<code>x::xs</code>是中缀操作符模式的特例，一般中缀表达式<code>p op q</code>视为<code>p.op(q)</code>。
-但是如果作为模式，其实是被当作构造器模式的<code>op(p,q)</code>形式。
-</p>
-
-<p>
-对应这个构造器模式的类是<code>scala.::</code>，它可以创建非空列表的类。还有一个<code>List</code>类的
-方法<code>::</code>用来实例化<code>scala.::</code>的对象。在将来的“实现列表”章节中会有进一步的描述。
-</p>
-
-<p>
-再次用模式匹配的方式来实现前面已经实现过的插入排序法：
-</p>
-
-<pre class="brush: scala">
-  def isort(xs: List[Int]): List[Int] = xs match {
-    case List() =&gt; List()
-    case x :: xs1 =&gt; insert(x, isort(xs1))
-  }
-
-  def insert(x: Int, xs: List[Int]): List[Int] = xs match {
-    case List() =&gt; List(x)
-    case y :: ys =&gt; if (x &lt;= y) x :: xs
-                    else y :: insert(x, ys)
-  }
-</pre>
-
-<h2 id="toc_3.6">List类的一阶方法</h2>
-
-<p>
-这里介绍的方法是List类的方法，所以是在独立的对象上被调用。
-</p>
-
-<h3 id="toc_3.6.1">连接列表</h3>
-
-<p>
-连接两个列表的操作符是<code>:::</code>，例如：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; List(1, 2) ::: List(3, 4, 5)
-  res0: List[Int] = List(1, 2, 3, 4, 5)
-
-  scala&gt; List() ::: List(1, 2, 3)
-  res1: List[Int] = List(1, 2, 3)
-
-  scala&gt; List(1, 2, 3) ::: List(4)
-  res2: List[Int] = List(1, 2, 3, 4)
-</pre>
-
-<p>
-它也是右结合的：
-</p>
-
-<pre class="brush: scala">
-xs ::: ys ::: zs
-</pre>
-
-<p>
-相当于：
-</p>
-
-<pre class="brush: scala">
-xs ::: (ys ::: zs)
-</pre>
-
-
-<h3 id="toc_3.6.2">分治原则</h3>
-
-<p>
-手动实现一个连接列表的<code>append</code>方法。先用模式匹配把输入的列表拆分为更加简单的样本：
-</p>
-
-<pre class="brush: scala">
-  def append[T](xs: List[T], ys: List[T]): List[T] =
-    xs match {
-      case List() =&gt; ys
-      case x :: xs1 =&gt; x :: append(xs1, ys)
-    }
-</pre>
-
-<p>
-以上代码的让<code>ys</code>操持完整而<code>xs</code>被一步步拆分并放到<code>ys</code>前面，所以把注意集中到<code>xs</code>的
-模式匹配上。
-</p>
-
-<p>
-再通过递归调用层层套用剩下的元素，通过添加单个元素的方法<code>::</code>连接列表。
-</p>
-
-<h3 id="toc_3.6.3">列表长度</h3>
-
-<pre class="brush: scala">
-  scala&gt; List(1, 2, 3).length
-  res3: Int = 3
-</pre>
-
-<p>
-<code>length</code>方法要遍历整个列表来取得长度，所以判断是否为空一般用<code>isEmpty</code>而不用<code>length</code>。
-</p>
-
-<h3 id="toc_3.6.4">取头和尾</h3>
-
-<p>
-<code>head</code>取头，<code>tail</code>取的是除了第一个元素外剩下列表。这两个方法的运行时间是常量。
-</p>
-
-<p>
-<code>last</code>取尾，<code>init</code>取最后一个以外的列表。这两个方法会遍历整个列表。
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val abcde = List('a', 'b', 'c', 'd', 'e')
-  abcde: List[Char] = List(a, b, c, d, e)
-
-  scala&gt; abcde.last
-  res4: Char = e
-
-  scala&gt; abcde.init
-  res5: List[Char] = List(a, b, c, d)
-</pre>
-
-<p>
-对于空列表会抛异常
-</p>
-
-<pre class="brush: scala">
-  scala&gt; List().init
-  java.lang.UnsupportedOperationException: Nil.init
-   at scala.List.init(List.scala:544)
-   at ...
-
-  scala&gt; List().last
-  java.util.NoSuchElementException: Nil.last
-   at scala.List.last(List.scala:563)
-   at ...
-</pre>
-
-<h3 id="toc_3.6.5">反转列表</h3>
-
-<p>
-<code>reverse</code>是创建了一个新列表：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; abcde.reverse
-  res6: List[Char] = List(e, d, c, b, a)
-
-  scala&gt; abcde
-  res7: List[Char] = List(a, b, c, d, e)
-</pre>
-
-<p>
-一些简单的规律：
-</p>
-
-<pre class="brush: scala">
-xs.reverse.reverse equals xs
-
-xs.reverse.init equals xs.tail.reverse
-xs.reverse.tail equals xs.init.reverse
-xs.reverse.head equals xs.last
-xs.reverse.last equals xs.head
-</pre>
-
-<p>
-通过连接在尾部添加操作<code>:::</code>来实现反转：
-</p>
-
-<pre class="brush: scala">
-  def rev[T](xs: List[T]): List[T] = xs match {
-    case List() =&gt; xs
-    case x :: xs1 =&gt; rev(xs1) ::: List(x)
-  }
-</pre>
-
-<p>
-当然这样的效率低得很，因为列表要一个一个遍历才能找到最后一个元素。
-</p>
-
-<h3 id="toc_3.6.6">前缀与后缀</h3>
-
-<p>
-<code>take</code>和<code>drop</code>取得或舍去列表指定长度个元素，长度超过时不会抛异常而是返回整个列表
-或空列表。
-</p>
-
-<pre class="brush: scala">
-  scala&gt; abcde take 2
-  res8: List[Char] = List(a, b)
-
-  scala&gt; abcde drop 2
-  res9: List[Char] = List(c, d, e)
-</pre>
-
-<p>
-<code>splitAt</code>在指定位置拆分列表。
-</p>
-
-<pre class="brush: scala">
-xs splitAt n
-
-// equals
-
-(xs take n, xs drop n)
-</pre>
-
-<p>
-例：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; abcde splitAt 2
-  res10: (List[Char], List[Char]) = (List(a, b),List(c, d, e))
-</pre>
-
-<h3 id="toc_3.6.7">取得指定元素</h3>
-
-<p>
-通过索引取得指定元素：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; abcde apply 2 // rare in Scala
-  res11: Char = c
-
-  scala&gt; abcde(2) // rare in Scala
-  res12: Char = c
-</pre>
-
-<p>
-<code>includes</code>方法取得所有的索引列表：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; abcde.indices
-  res13: List[Int] = List(0, 1, 2, 3, 4)
-</pre>
-
-<h3 id="toc_3.6.8">zip</h3>
-
-<p>
-把两个列表组成对偶（二元组），如果长度不一样会丢弃长出来的：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; abcde.indices zip abcde
-  res14: List[(Int, Char)] = List((0,a), (1,b), (2,c), (3,d),
-  (4,e))
-
-  scala&gt; val zipped = abcde zip List(1, 2, 3)
-  zipped: List[(Char, Int)] = List((a,1), (b,2), (c,3))
-</pre>
-
-<p>
-如果是为了把元素和索引zip在一起，用<code>zipWithIndex</code>方法更有效：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; abcde.zipWithIndex
-  res15: List[(Char, Int)] = List((a,0), (b,1), (c,2), (d,3), (e,4))
-</pre>
-
-<h3 id="toc_3.6.9">toString 和 mkString</h3>
-
-<p>
-<code>toString</code>简单字符串化列表
-</p>
-
-<pre class="brush: scala">
-  scala&gt; abcde.toString
-  res16: String = List(a, b, c, d, e)
-</pre>
-
-<p>
-<code>mkString</code>通过三个参数来指定前后包列表的字符和分隔列表元素的字符：
-</p>
-
-<pre class="brush: scala">
-xs mkString (pre, sep, post)
-</pre>
-
-<p>
-还有两个变体：
-</p>
-
-<pre class="brush: scala">
-xs mkString sep
-// equals
-xs mkString ("", sep, "")
-
-sx mkString
-// equals
-xs mkString ""
-</pre>
-
-<p>
-例子：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; abcde mkString ("[", ",", "]")
-  res17: String = [a,b,c,d,e]
-
-  scala&gt; abcde mkString ""
-  res18: String = abcde
-
-  scala&gt; abcde.mkString
-  res19: String = abcde
-
-  scala&gt; abcde mkString ("List(", ", ", ")")
-  res20: String = List(a, b, c, d, e)
-</pre>
-
-<p>
-还有一个<code>addSting</code>变体让结果添加到<code>StringBuilder</code>中，而不是作为结果返回：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val buf = new StringBuilder
-  buf: StringBuilder =
-
-  scala&gt; abcde addString (buf, "(", ";", ")")
-  res21: StringBuilder = (a;b;c;d;e)
-</pre>
-
-
-<h3 id="toc_3.6.10">列表的转换</h3>
-
-<p>
-<code>List</code>类的<code>toArray</code>和<code>Array</code>类的<code>toList</code>，列表和数组转来转去。
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val arr = abcde.toArray
-  arr: Array[Char] = Array(a, b, c, d, e)
-
-  scala&gt; arr.toString
-  res22: String = Array(a, b, c, d, e)
-
-  scala&gt; arr.toList
-  res23: List[Char] = List(a, b, c, d, e)
-</pre>
-
-<p>
-<code>copyToArray</code>把列表复制到数组中一会连续的空间内：
-</p>
-
-<pre class="brush: scala">
-  xs copyToArray (arr, start)
-</pre>
-
-<p>
-<code>start</code>为开始的位置。当然还要保证数组中有足够的空间。例子：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val arr2 = new Array[Int](10)
-  arr2: Array[Int] = Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-
-  scala&gt; List(1, 2, 3) copyToArray (arr2, 3)
-
-  scala&gt; arr2.toString
-  res25: String = Array(0, 0, 0, 1, 2, 3, 0, 0, 0, 0)
-</pre>
-
-<p>
-<code>elements</code>提供了通过枚举器访问列表元素的方法：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val it = abcde.elements
-  it: Iterator[Char] = non-empty iterator
-
-  scala&gt; it.next
-  res26: Char = a
-
-  scala&gt; it.next
-  res27: Char = b
-</pre>
-
-<h3 id="toc_3.6.11">例：归并排序</h3>
-
-<p>
-归并排序：如果列表长度为0或是1，就算是已经排序好的，直接返回。长度大于1的列表
-可以拆成两个长度接近的，每个再递归调用完成排序，再把返回的两个排序好的列表合并。
-</p>
-
-<p>
-函数的实现用到了柯里化，接收元素之间的比较大小的函数和要排序的列表：
-</p>
-
-<pre class="brush: scala">
-  def msort[T](less: (T, T) =&gt; Boolean)
-      (xs: List[T]): List[T] = {
-
-    def merge(xs: List[T], ys: List[T]): List[T] =
-      (xs, ys) match {
-        case (Nil, _) =&gt; ys
-        case (_, Nil) =&gt; xs
-        case (x :: xs1, y :: ys1) =&gt;
-          if (less(x, y)) x :: merge(xs1, ys)
-          else y :: merge(xs, ys1)
-      }
-
-    val n = xs.length / 2
-    if (n == 0) xs
-    else {
-      val (ys, zs) = xs splitAt n
-      merge(msort(less)(ys), msort(less)(zs))
-    }
-  }
-</pre>
-
-<p>
-使用的方法：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; msort((x: Int, y: Int) =&gt; x &lt; y)(List(5, 7, 1, 3))
-  res28: List[Int] = List(1, 3, 5, 7)
-</pre>
-
-<p>
-作为一个柯里化的例子，可以用下划线代表末指定的参数列表：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val intSort = msort((x: Int, y: Int) =&gt; x &lt; y) _
-  intSort: (List[Int]) =&gt; List[Int] = &lt;function&gt;
-</pre>
-
-<p>
-如果要改成倒序排序的话，只要换个比较函数：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val reverseIntSort = msort((x: Int, y: Int) =&gt; x &gt; y) _
-  reverseIntSort: (List[Int]) =&gt; List[Int] = &lt;function&gt;
-</pre>
-
-<p>
-上面的<code>intSort</code>和<code>reverseIntSort</code>都已经绑定了排序的方法，只要传入待排序的列表：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val mixedInts = List(4, 1, 9, 0, 5, 8, 3, 6, 2, 7)
-  mixedInts: List[Int] = List(4, 1, 9, 0, 5, 8, 3, 6, 2, 7)
-
-  scala&gt; intSort(mixedInts)
-  res0: List[Int] = List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
-
-  scala&gt; reverseIntSort(mixedInts)
-  res1: List[Int] = List(9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
-</pre>
-
-<h2 id="toc_3.7">List类的高阶函数</h2>
-
-<p>
-这里介绍的方法是List类的方法，所以是在独立的对象上被调用。
-</p>
-
-<p>
-Scala中以操作符形式出现的高阶函数更加简洁地处理Java中用循环来处理的问题。
-</p>
-
-<h3 id="toc_3.7.1">列表间映射</h3>
-
-<p>
-<code>xs map fun</code>把列表中每个元素用方法处理过后生成新列表。<code>xs</code>代表<code>List[T]</code>；<code>fun</code>
-代表<code>T =&gt; U</code>的函数。
-</p>
-
-<pre class="brush: scala">
-  scala&gt; List(1, 2, 3) map (_ + 1)
-  res29: List[Int] = List(2, 3, 4)
-
-  scala&gt; val words = List("the", "quick", "brown", "fox")
-  words: List[java.lang.String] = List(the, quick, brown, fox)
- 
-  scala&gt; words map (_.length)
-  res30: List[Int] = List(3, 5, 5, 3)
-
-  scala&gt; words map (_.toList.reverse.mkString)
-  res31: List[String] = List(eht, kciuq, nworb, xof)
-</pre>
-
-<p>
-<code>flatMap</code>和<code>map</code>类似，但它把所有元素连成一个列表：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; words map (_.toList)
-  res32: List[List[Char]] = List(List(t, h, e), List(q, u, i,
-      c, k), List(b, r, o, w, n), List(f, o, x))
-
-  scala&gt; words flatMap (_.toList)
-  res33: List[Char] = List(t, h, e, q, u, i, c, k, b, r, o, w,
-      n, f, o, x)
-</pre>
-
-<p>
-<code>flatMap</code>和<code>map</code>合作建立出所有<code>1 &lt;= j &lt; i &lt; 5</code>的<code>(i, j)</code>对偶：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; List.range(1, 5) flatMap (
-       | i =&gt; List.range(1, i) map (j =&gt; (i, j))
-       | )
-  res34: List[(Int, Int)] = List((2,1), (3,1), (3,2), (4,1),
-      (4,2), (4,3))
-</pre>
-
-<p>
-上面的代码<code>List.range(1, 5)</code>产生从1到5的整数列表。对于其中的每项<code>i</code>再产生1到<code>i</code>
-的列表。<code>map</code>产生<code>(i, j)</code>元组列表，这里的<code>j&lt;i</code>。<code>flatMpa</code>对每个1到5之间的<code>i</code>产生
-列表，并连接所有列表得到结果。
-</p>
-
-<p>
-等同于以下循环结构：
-</p>
-
-<pre class="brush: scala">
-  for (i &lt;- List.range(1, 5); j &lt;- List.range(1, i)) yield (i, j)
-</pre>
-
-<p>
-<code>foreach</code>没有返回结果（或返回<code>Unit</code>）。如下对<code>sum</code>变量累加，但是没有返回值：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; var sum = 0
-  sum: Int = 0
-
-  scala&gt; List(1, 2, 3, 4, 5) foreach (sum += _)
-
-  scala&gt; sum
-  res36: Int = 15
-</pre>
-
-<h3 id="toc_3.7.2">过滤</h3>
-
-<p>
-<code>xs filter p</code>，<code>xs</code>代表<code>List[T]</code>，<code>p</code>代表<code>T =&gt; Boolean</code>形式的函数。返回符合的结果列表：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; List(1, 2, 3, 4, 5) filter (_ % 2 == 0)
-  res37: List[Int] = List(2, 4)
-
-  scala&gt; words filter (_.length == 3)
-  res38: List[java.lang.String] = List(the, fox)
-</pre>
-
-<p>
-<code>partition</code>方法返回的是所有符合的元素和所有不符合的元素两个列表对。
-</p>
-
-<pre class="brush: scala">
-xs partition p
-// equals
-( xs filter p , xs filter (!p(_)) )
-
-</pre>
-
-<p>
-例：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; List(1, 2, 3, 4, 5) partition (_ % 2 == 0)
-  res39: (List[Int], List[Int]) = (List(2, 4),List(1, 3, 5))
-</pre>
-
-<p>
-<code>find</code>方法只返回第一个符合的元素，一个都不符合返回<code>None</code>：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; List(1, 2, 3, 4, 5) find (_ % 2 == 0)
-  res40: Option[Int] = Some(2)
-
-  scala&gt; List(1, 2, 3, 4, 5) find (_ &lt;= 0)
-  res41: Option[Int] = None
-</pre>
-
-<p>
-<code>takeWhile</code>不断累积符合的结果直到遇到不符合的；<code>dropWhile</code>不断丢弃不符的元素直到
-遇到符合的。
-</p>
-
-<pre class="brush: scala">
-  scala&gt; List(1, 2, 3, -4, 5) takeWhile (_ &gt; 0)
-  res42: List[Int] = List(1, 2, 3)
-
-  scala&gt; words dropWhile (_ startsWith "t")
-  res43: List[java.lang.String] = List(quick, brown, fox)
-</pre>
-
-<p>
-<code>span</code>方法组合了<code>takeWhile</code>和<code>dropWhile</code>返回一对列表，就像是<code>splitAt</code>组合了
-<code>take</code>和<code>drop</code>一样。
-</p>
-
-<pre class="brush: scala">
-xs span p
-// equals
-(xs takeWhile p , xs dropWhile p)
-</pre>
-
-<p>
-和<code>split</code>一样，<code>span</code>避免对列表的二次访问：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; List(1, 2, 3, -4, 5) span (_ &gt; 0)
-  res44: (List[Int], List[Int]) = (List(1, 2, 3),List(-4, 5))
-</pre>
-
-<h3 id="toc_3.7.3">列表论断</h3>
-
-<p>
-<code>xs forall p</code>全部符合，<code>xs exits p</code>存在符合的元素。
-</p>
-
-<pre class="brush: scala">
-  scala&gt; def hasZeroRow(m: List[List[Int]]) =
-       | m exists (row =&gt; row forall (_ == 0))
-  hasZeroRow: (List[List[Int]])Boolean
-
-  scala&gt; hasZeroRow(diag3)
-  res45: Boolean = false
-</pre>
-
-<h3 id="toc_3.7.4">reduce与folder</h3>
-
-<h4 id="toc_3.7.4.1">化简（reduce）</h4>
-
-<p>
-<code>reduceLeft</code>操作：
-</p>
-
-<pre class="brush: scala">
-List(1, 2, 3, 4).reduceLeft(_ + _)
-// 相当于
-((1 + 2) + 3) + 4
-</pre>
-
-<p>
-<code>reduceRight</code>操作：
-</p>
-
-<pre class="brush: scala">
-List(1, 2, 3, 4).reduceRight(_ + _)
-// 相当于
-((4 + 3) + 2) + 1
-</pre>
-
-<h4 id="toc_3.7.4.2">折叠（folder）</h4>
-
-<p>
-左折叠操作符<code>/:</code>，格式为：<code>(z /: xs) (op)</code>。其中<code>z</code>为开始值，<code>xs</code>为列表，<code>op</code>为二元操作。
-</p>
-
-<pre class="brush: scala">
-(z /: List(a, b, c)) (op)
-// equals
-op(op(op(z,a), b), c)
-</pre>
-
-<p>
-用树表示：
-</p>
-
-<pre class="brush: scala">
-      op
-     / \
-    op  c
-   / \
-  op  b
- / \
-z   a
-</pre>
-
-<p>
-举例：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; def sum(xs: List[Int]): Int = (0 /: xs) (_ + _)
-  sum: (List[Int])Int
-  
-  scala&gt; sum(List(1, 2, 3)) // equals 0 + 1 + 2 + 3
-  res1: Int = 6
-
-  scala&gt; def product(xs: List[Int]): Int = (1 /: xs) (_ * _)
-  product: (List[Int])Int
-  
-  scala&gt; product(List(1, 2, 3)) // equals 1 * 1 * 2 * 3
-  res2: Int = 6
-</pre>
-
-<p>
-用空格连接所有单词：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; ("" /: words) (_ +" "+ _)
-  res46: java.lang.String = the quick brown fox
-</pre>
-
-<p>
-头上多了一个空格，这样去掉它：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; (words.head /: words.tail) (_ +" "+ _)
-  res47: java.lang.String = the quick brown fox
-</pre>
-
-<p>
-相对的还有右倾斜操作树<code>:\</code>：
-</p>
-
-<pre class="brush: scala">
-(List(a, b, c) :\ z) (op)
-// equals
-op(a, op(b, op(c, z)))
-</pre>
-
-<p>
-对于组合操作来说，左右折叠是等价的，但效率上有差异。下面两个把元素连接在一起的
-方法：
-</p>
-
-<pre class="brush: scala">
-  def flattenLeft[T](xss: List[List[T]]) =
-      (List[T]() /: xss) (_ ::: _)
-
-  def flattenRight[T](xss: List[List[T]]) =
-      (xss :\ List[T]()) (_ ::: _)
-
-</pre>
-
-<p>
-采用右折叠的<code>flattenLeft</code>需要复制第一个元素列表<code>xss.head</code>一共<code>xss.length-1</code>次，
-所以效率差一些。
-</p>
-
-<p>
-注意这里两个版本的实现都要对作为折叠开始值的空列表做类型标注。这是由Scala类型
-推断的局限性无法推断出正确的类型。不标注的话会有以下错误：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; def flattenRight[T](xss: List[List[T]]) =
-       | (xss :\ List()) (_ ::: _)
-  &lt;console&gt;:15: error: type mismatch;
-   found : List[T]
-   required: List[Nothing]
-             (xss :\ List()) (_ ::: _)
-                                ^
-</pre>
-
-<p>
-在以后的“实现列表”章节中讨论类型推断失败的原因。
-</p>
-
-<p>
-如果觉得<code>/:</code>和<code>:\</code>看起来不清楚，可以用List提供的<code>foldLeft</code>和<code>foldRight</code>方法代替
-。比如下面这个查找最大元素的方法：
-</p>
-
-<pre class="brush: scala">
-scala&gt; def findMax(l:List[Int]) = {
-     | l.foldLeft(Integer.MIN_VALUE) {Math.max}
-     | }
-findMax: (l: List[Int])Int
-
-scala&gt; findMax(List(-77,99,-3,18,7,21))
-res0: Int = 99
-</pre>
-
-<h3 id="toc_3.7.5">应用场景</h3>
-
-<p>
-reduce与folder更加适合：“两两操作”的结果“继承”到“下一个元素”。
-</p>
-
-<h4 id="toc_3.7.5.1">例子：统计字母出现次数</h4>
-
-<pre class="brush: scala">
-(Map[Char, Int]() /: "Mississippi") {
-  (m, c) =&gt; m + (c -&gt; (m.getOrElse(c, 0) + 1))
-}
-
-res1: scala.collection.immutable.Map[Char,Int] = 
-					Map(M -&gt; 1, i -&gt; 4, s -&gt; 4, p -&gt; 2)
-</pre>
-
-<h4 id="toc_3.7.5.2">例子：使用折叠实现列表反转</h4>
-
-<pre class="brush: scala">
-def reverseLeft[T](xs: List[T]) = (startvalue /: xs) (operation)
-</pre>
-
-<p>
-为了写出正确的<code>startvalue</code>和<code>operation</code>，从可以出现的最小的列表<code>List()</code>开始推导：
-</p>
-
-<pre class="brush: scala">
-List()
-// equals
-reverseLeft(List())
-// equals
-(startvalue /: List()) (operation)
-// equals
-startvalue
-</pre>
-
-<p>
-所以<code>startvalue</code>一定是<code>List()</code>。再代入推导<code>operation</code>：
-</p>
-
-<pre class="brush: scala">
-List(x)
-// equals
-reverseLeft(List(x))
-// equals
-(startvalue /: List(x)) (operation)
-// equals
-operation(List(), x)
-// equals
-x :: List()
-</pre>
-
-<p>
-所以具体实现为：
-</p>
-
-<pre class="brush: scala">
-  def reverseLeft[T](xs: List[T]) =
-    (List[T]() /: xs) {(ys, y) =&gt; y :: ys}
-</pre>
-
-<h3 id="toc_3.7.6">扫描（scan）</h3>
-
-<p>
-<code>scanLeft</code>和<code>scanRight</code>是把<code>folder</code>和<code>map</code>操作结合在一起。返回的结果是包含所有
-中间结果的集合：
-</p>
-
-<pre class="brush: scala">
-
-scala&gt; (1 to 10).scanLeft(0)(_ + _)
-res2: scala.collection.immutable.IndexedSeq[Int] = 
-		Vector(0, 1, 3, 6, 10, 15, 21, 28, 36, 45, 55)
-</pre>
-
-<h3 id="toc_3.7.7">排序</h3>
-
-<p>
-<code>xs sort before</code>，<code>xs</code>是列表，<code>before</code>是比较元素<code>x</code>是否在<code>y</code>前面的方法。
-</p>
-
-<pre class="brush: scala">
-  scala&gt; List(1, -3, 4, 2, 6) sort (_ &lt; _)
-  res48: List[Int] = List(-3, 1, 2, 4, 6)
-
-  scala&gt; words sort (_.length &gt; _.length)
-  res49: List[java.lang.String] = List(quick, brown, fox, the)
-</pre>
-
-<p>
-注意前面还提到过一个<code>msort</code>方法，那个是定义在列表外的。<code>sort</code>是List类的方法。
-</p>
-
-<p>
-<code>sortWith</code>排序：
-</p>
-
-<pre class="brush: scala">
-scala&gt; "Mary has a little lamb".split(" ").sortWith(_.length &lt; _.length)
-res0: Array[String] = Array(a, has, Mary, lamb, little)
-</pre>
-
-<h2 id="toc_3.8">List伴生对象的方法</h2>
-
-<p>
-下面介绍的方法是伴生对象<code>scala.List</code>的，创建列表的工厂方法和特定类型列表的操作。
-</p>
-
-<h3 id="toc_3.8.1">通过元素创建列表</h3>
-
-<p>
-<code>apply</code>方法：
-</p>
-
-<pre class="brush: scala">
-List(1, 2, 3)
-// is actually
-List.apply(1, 2, 3)
-</pre>
-
-<h3 id="toc_3.8.2">按数值范围创建列表</h3>
-
-<p>
-<code>range</code>参数可以是：开始、结束、步长：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; List.range(1, 5)
-  res51: List[Int] = List(1, 2, 3, 4)
-
-  scala&gt; List.range(1, 9, 2)
-  res52: List[Int] = List(1, 3, 5, 7)
-
-  scala&gt; List.range(9, 1, -3)
-  res53: List[Int] = List(9, 6, 3)
-</pre>
-
-<h3 id="toc_3.8.3">创建重复元素的列表</h3>
-
-<p>
-<code>make</code>方法：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; List.make(5, 'a')
-  res54: List[Char] = List(a, a, a, a, a)
-
-  scala&gt; List.make(3, "hello")
-  res55: List[java.lang.String] = List(hello, hello, hello)
-</pre>
-
-<h3 id="toc_3.8.4">解除Zip列表</h3>
-
-<p>
-<code>unzip</code>把二元组列表分成两个列表：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val zipped = "abcde".toList zip List(1, 2, 3)
-  zipped: List[(Char, Int)] = List((a,1), (b,2), (c,3))
-
-  scala&gt; List.unzip(zipped)
-  res56: (List[Char], List[Int]) = (List(a, b, c),
-      List(1, 2, 3))
-</pre>
-
-<p>
-Scala类型系统要求类方法能处理所有类型，而unzip只处理二元组列表。所以unzip不能像
-zip方法一样放在类里而只能放在伴生对象里。
-</p>
-
-<h3 id="toc_3.8.5">连接列表</h3>
-
-<p>
-<code>flatten</code>方法只能处理包含子列表的列表所以不能放在List类里。只能放在伴生对象中。
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val xss =
-       | List(List('a', 'b'), List('c'), List('d', 'e'))
-  xss: List[List[Char]] = List(List(a, b), List(c), List(d, e))
-
-  scala&gt; List.flatten(xss)
-  res57: List[Char] = List(a, b, c, d, e)
-</pre>
-
-<p>
-<code>concat</code>方法把多个列表作为可变长参数形式接收：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; List.concat(List('a', 'b'), List('c'))
-  res58: List[Char] = List(a, b, c)
-
-  scala&gt; List.concat(List(), List('b'), List('c'))
-  res59: List[Char] = List(b, c)
-  
-  scala&gt; List.concat()
-  res60: List[Nothing] = List()
-</pre>
-
-
-<h3 id="toc_3.8.6">映射与测试配对</h3>
-
-<p>
-<code>map2</code>方法接收两个列表，分别作为方法的两个参数：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; List.map2(List(10, 20), List(3, 4, 5)) (_ * _)
-  res61: List[Int] = List(30, 80)
-</pre>
-
-<p>
-<code>exist2</code>也是接收两个列表，分别作为方法的两个参数：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; List.forall2(List("abc", "de"),
-       | List(3, 2)) (_.length == _)
-  res62: Boolean = true
-
-  scala&gt; List.exists2(List("abc", "de"),
-       | List(3, 2)) (_.length != _)
-  res63: Boolean = false
-</pre>
-
-<h2 id="toc_3.9">了解Scala的类型推断方法</h2>
-
-<p>
-Scala的类型推导器是基于流的。
-</p>
-
-<p>
-下面是用占位符<code>_</code>推导出的参数类型：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; abcde sort (_ &gt; _)
-  res65: List[Char] = List(e, d, c, b, a)
-</pre>
-
-<p>
-例如对于<code>List[Char]</code>类型的列表<code>abcd</code>，<code>abcd</code>的成员都是<code>Char</code>。所以
-<code>abcd.sort(_ &gt; _)</code>的两个参数也只会是<code>Char</code>。所以类型被推导为：
-</p>
-
-<pre class="brush: scala">
-(_ &gt; _)
-// trans to
-((x: Char, y: Char) =&gt; x &gt; y)
-</pre>
-
-<p>
-再来看<code>msort</code>方法：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; msort((x: Char, y: Char) =&gt; x &gt; y)(abcde)
-  res64: List[Char] = List(e, d, c, b, a)
-</pre>
-
-<p>
-<code>msort</code>方法却不能用占位符：
-</p>
-  
-<pre class="brush: scala">
-  scala&gt; msort(_ &gt; _)(abcde)
-  &lt;console&gt;:12: error: missing parameter type for expanded
-  function ((x$1, x$2) =&gt; x$1.$greater(x$2))
-         msort(_ &gt; _)(abcde)
-               ^
-</pre>
-
-<p>
-原因是对于<code>func(args)</code>这样的方法，先看<code>func</code>是否有已经的类型。如果有的话这个类型
-就被用来做参数预期类型的推断。而<code>msort(_ &gt; _)(abcde)</code>这个类型是柯里化的、多态的
-方法类型，参数类型是<code>(T, T) =&gt; Boolean</code>，返回类型是从<code>List[T]</code>到<code>List[T]</code>的函数
-。无法推断第一个参数的类型。所以类型推断器要参数的类型信息。
-</p>
-
-<p>
-想要用占位符的话，只能把参数类型传给<code>msort</code>，改为<code>msort[Char]</code>：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; msort[Char](_ &gt; _)(abcde)
-  res66: List[Char] = List(e, d, c, b, a)
-</pre>
-
-<p>
-还有一个方法是交换参数顺序，这样可以用第一个列表的类型来推断比较方法的类型了：
-</p>
-
-<pre class="brush: scala">
-  // same implementation as msort,
-  // but with arguments swapped
-  def msortSwapped[T](xs: List[T])(less:
-      (T, T) =&gt; Boolean): List[T] = {
-  }
-  
-  scala&gt; msortSwapped(abcde)(_ &gt; _)
-  res67: List[Char] = List(e, d, c, b, a)
-</pre>
-
-<p>
-需要推断多态方法类型时只会参考第一个参数列表，所以在柯里化方法有两个参数列表时
-第二个参数不会用来决定方法类型参数。所以这种方案隐含以下的库方法设计原则：
-</p>
-
-<p>
-如果参数包括若干个非函数参数与一个函数参数的组合时，要把函数参数独自放在柯里化
-参数列表的最后面。这样方法的正确实例类型就可以通过非函数参数推断出来，推断出来的
-类型还可以转面用来完成函数参数的类型检查。调用函数的时候也可以写出更加简洁的
-字面量。
-</p>
-
-<p>
-再来看更加复杂的折叠操作：
-</p>
-
-<pre class="brush: scala">
-  (xss :\ List[T]()) (_ ::: _)
-
-</pre>
-
-<p>
-上面的表达式提供了明确的类型参数的原因是这个右折叠操作的类型取决于两个变量：
-</p>
-
-<pre class="brush: scala">
-  (xs :\ z) (op)
-</pre>
-
-<p>
-这里把列表<code>xs</code>的类型记为<code>A</code>，如：<code>xs: List[A]</code>；而开始值<code>z</code>有可能是类型<code>B</code>。对应
-的操作<code>op</code>必须以<code>A</code>和<code>B</code>的值为参数并返回类型<code>B</code>的结果，即：<code>op: (A, B) =&gt; B</code>。
-</p>
-
-<p>
-从上面的描述可以看出：这里的<code>op</code>方法要知道<code>A</code>与<code>B</code>两个类型。<code>A</code>一定与<code>List</code>有关
-，但是<code>B</code>不一定与<code>List</code>有关，所以推不出来。所以下面的表达式是编译不过的：
-</p>
-
-<pre class="brush: scala">
-  (xss :\ List()) (_ ::: _) // this won't compile
-
-</pre>
-
-<p>
-上面表达式中<code>z</code>的类型为<code>List[Nothing]</code>，据此推断器把<code>B</code>的类型定为<code>Nothing</code>：
-</p>
-
-<pre class="brush: scala">
-  (List[T], List[Nothing]) =&gt; List[Nothing]
-</pre>
-
-<p>
-这就意味着输出与输出都是空列表。
-</p>
-
-<p>
-就是因为这个问题，所以在柯里化的方法中，方法类型只取决于第一段参数。但是如果不
-这么做的话，推断器还是没有办法取得<code>op</code>的类型。所以只能程序员明确指定类型。
-</p>
-
-<p>
-所以Scala采用的局部的、基于流的类型推断方法还是比较有局限性的；不如ML或是Haskell
-采用的更加全局化的Hindley-Milner类型推断方式。但是对于面向对象的分支类型处理比
-Hindley-Mlner更加优雅。由于这些局限性在比较极端的情况下才遇到，所以在极端情况下
-还是明确标类型吧。
-</p>
-
-<p>
-另外在遇到多态类型错误时，添加上你认为应该是正确的类型标注也是一种排错方式。
-</p>
-
-
-
-
-<h1 id="toc_4">集合类型</h1>
-
-<h2 id="toc_4.1">概览</h2>
-
-<p>
-<code>scala</code>包中主要特质<code>Iterable</code>，三个子特质：
-</p>
-
-<ul>
-<li>
-<code>Seq</code>：有序集合。
-
-<li>
-<code>Set</code>：对于<code>==</code>方法不可重复的元素集合。
-
-<li>
-<code>Map</code>：键值映射。
-
-</ul>
-
-<p>
-特技<code>Iterable</code>有个抽象方法<code>elements</code>：
-</p>
-
-<pre class="brush: scala">
-  def elements: Iterator[A]
-</pre>
-
-<p>
-注意返回类型是一个迭代器<code>iterator</code>，不是<code>iterate</code>别看错了！
-</p>
-
-<p>
-迭代器用来从头到尾遍历一遍集合。如果要再遍历一遍的话，只能用<code>elements</code>方法再生成
-一个新的迭代器。。
-</p>
-
-<p>
-迭代器<code>Iterator</code>继承自<code>AnyRef</code>。<code>Iterator</code>提供的具体方法都实现了<code>next</code>和
-<code>hasNext</code>抽象方法实现：
-</p>
-
-<pre class="brush: scala">
-  def hasNext: Boolean
-  def next: A
-</pre>
-
-<h2 id="toc_4.2">序列</h2>
-
-<h3 id="toc_4.2.1">列表</h3>
-
-<p>
-列表不能通过索引直接访问元素，只能遍历；但可以支持在头上快速添加和删除。这点像是
-链式表。使用模式匹配的方式可以很好地在头上快速添加和删除元素。
-</p>
-
-<p>
-但是因为只能对列表头快速访问，而尾部不行。所以如果要操作尾部的话可以先建一个反序
-的列表，再<code>reverse</code>把顺序反过来。
-</p>
-
-<h3 id="toc_4.2.2">列表缓存</h3>
-
-<p>
-还有一人方式是使用<code>scala.collection.mutable.ListBuffer</code>。
-</p>
-
-<p>
-<code>+=</code>在尾部添加元素；<code>+:</code>加在头上；完成之后用<code>toList</code>生成<code>List</code>：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; import scala.collection.mutable.ListBuffer
-  import scala.collection.mutable.ListBuffer
-
-  scala&gt; val buf = new ListBuffer[Int]
-  buf: scala.collection.mutable.ListBuffer[Int] = ListBuffer()
-
-  scala&gt; buf += 1
-
-  scala&gt; buf += 2
-
-  scala&gt; buf
-  res11: scala.collection.mutable.ListBuffer[Int]
-    = ListBuffer(1, 2)
-
-  scala&gt; 3 +: buf
-  res12: scala.collection.mutable.Buffer[Int]
-    = ListBuffer(3, 1, 2)
-
-  scala&gt; buf.toList
-  res13: List[Int] = List(3, 1, 2)
-</pre>
-
-<p>
-<code>List</code>结合前置添加元素和递归算法增长列表时，如果用的递归算法不是尾递归，就有栈
-溢出的风险；而<code>ListBuffer</code>可以结合循环替代递归。
-</p>
-
-<h3 id="toc_4.2.3">数组</h3>
-
-<p>
-数组适合按索引快速访问元素。
-</p>
-
-<p>
-按长度产数组：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val fiveInts = new Array[Int](5)
-  fiveInts: Array[Int] = Array(0, 0, 0, 0, 0)
-</pre>
-
-<p>
-按元素产数组：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val fiveToOne = Array(5, 4, 3, 2, 1)
-  fiveToOne: Array[Int] = Array(5, 4, 3, 2, 1)
-</pre>
-
-<p>
-通过<code>()</code>指定索引：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; fiveInts(0) = fiveToOne(4)
-
-  scala&gt; fiveInts
-  res1: Array[Int] = Array(1, 0, 0, 0, 0)
-</pre>
-
-<h2 id="toc_4.3">数组缓存</h2>
-
-<p>
-<code>ArrayBuffer</code>可以在头尾添加元素，但在尾部的添加移除是高效的。常见的用法是先用
-<code>ArrayBuffer</code>构建然后用它的<code>toArray</code>方法生成不可变的数组：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; import scala.collection.mutable.ArrayBuffer
-  import scala.collection.mutable.ArrayBuffer
-
-  scala&gt; val buf = new ArrayBuffer[Int]()
-  buf: scala.collection.mutable.ArrayBuffer[Int] =
-    ArrayBuffer()
-
-  scala&gt; buf += 12
-  scala&gt; buf += 15
-
-  scala&gt; buf
-  res16: scala.collection.mutable.ArrayBuffer[Int] =
-    ArrayBuffer(12, 15)
-
-  scala&gt; buf.length
-  res17: Int = 2
-
-  scala&gt; buf(0)
-  res18: Int = 12
-</pre>
-
-<h3 id="toc_4.3.1">队列</h3>
-
-<p>
-不可变的队列：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; import scala.collection.immutable.Queue
-  import scala.collection.immutable.Queue
-
-  scala&gt; val empty = new Queue[Int]
-  empty: scala.collection.immutable.Queue[Int] = Queue()
-
-// add one element
-  scala&gt; val has1 = empty.enqueue(1)
-  has1: scala.collection.immutable.Queue[Int] = Queue(1)
-
-// use collection to add many elements
-  scala&gt; val has123 = has1.enqueue(List(2, 3))
-  has123: scala.collection.immutable.Queue[Int] = Queue(1,2,3)
-
-  scala&gt; val (element, has23) = has123.dequeue
-  element: Int = 1
-  has23: scala.collection.immutable.Queue[Int] = Queue(2,3)
-</pre>
-
-<p>
-注意上面取后一个出队操作<code>dequeue</code>返回的是一个二元组，包括出来的元素和剩下的队列
-。
-</p>
-
-<p>
-可变的队列也差不多，就是用<code>+=</code>和<code>++=</code>添加元素，<code>dequeue</code>方法只返回一个出除的元素。
-</p>
-
-<pre class="brush: scala">
-  scala&gt; import scala.collection.mutable.Queue
-  import scala.collection.mutable.Queue
-
-  scala&gt; val queue = new Queue[String]
-  queue: scala.collection.mutable.Queue[String] = Queue()
-
-  scala&gt; queue += "a"
-
-  scala&gt; queue ++= List("b", "c")
-
-  scala&gt; queue
-  res21: scala.collection.mutable.Queue[String] = Queue(a, b, c)
-
-  scala&gt; queue.dequeue
-  res22: String = a
-
-  scala&gt; queue
-  res23: scala.collection.mutable.Queue[String] = Queue(b, c)
-</pre>
-
-<h3 id="toc_4.3.2">栈</h3>
-
-<p>
-可变的栈：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; import scala.collection.mutable.Stack
-  import scala.collection.mutable.Stack
-
-  scala&gt; val stack = new Stack[Int]
-  stack: scala.collection.mutable.Stack[Int] = Stack()
-
-  scala&gt; stack.push(1)
-
-  scala&gt; stack
-  res1: scala.collection.mutable.Stack[Int] = Stack(1)
-
-  scala&gt; stack.push(2)
-
-  scala&gt; stack
-  res3: scala.collection.mutable.Stack[Int] = Stack(1, 2)
-
-  scala&gt; stack.top
-  res8: Int = 2
-
-  scala&gt; stack
-  res9: scala.collection.mutable.Stack[Int] = Stack(1, 2)
-
-  scala&gt; stack.pop
-  res10: Int = 2
-
-  scala&gt; stack
-  res11: scala.collection.mutable.Stack[Int] = Stack(1)
-</pre>
-
-<p>
-不可变的栈略。
-</p>
-
-<h3 id="toc_4.3.3">字符串</h3>
-
-<p>
-因为<code>Predef</code>包含了从<code>String</code>到<code>RichString</code>的隐式转换，所以可以把任何字符串当作
-<code>Seq[Char]</code>。
-</p>
-
-<pre class="brush: scala">
-  scala&gt; def hasUpperCase(s: String) = s.exists(_.isUpperCase)
-  hasUpperCase: (String)Boolean
-
-  scala&gt; hasUpperCase("Robert Frost")
-  res14: Boolean = true
-
-  scala&gt; hasUpperCase("e e cummings")
-  res15: Boolean = false
-</pre>
-
-<p>
-<code>exists</code>方法不在<code>String</code>里，所以隐匿转换为包含<code>exists</code>方法的<code>RichString</code>类。
-</p>
-
-<h2 id="toc_4.4">Set与Map</h2>
-
-<p>
-因为<code>Predef</code>对象通过<code>type</code>关键字指定默认引用了Set与Map的不可变版本：
-</p>
-
-<pre class="brush: scala">
-  object Predef {
-    type Set[T] = scala.collection.immutable.Set[T]
-    type Map[K, V] = scala.collection.immutable.Map[K, V]
-    val Set = scala.collection.immutable.Set
-    val Map = scala.collection.immutable.Map
-    // ...
-  }
-</pre>
-
-<p>
-所以可变版的要手动声明：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; import scala.collection.mutable
-  import scala.collection.mutable
-
-  scala&gt; val mutaSet = mutable.Set(1, 2, 3)
-  mutaSet: scala.collection.mutable.Set[Int] = Set(3, 1, 2)
-</pre>
-
-<h3 id="toc_4.4.1">使用Set</h3>
-
-<p>
-Set的关键在于用对象的<code>==</code>检查唯一性。
-</p>
-
-<p>
-例子：统计出现的单词
-</p>
-
-<p>
-用正则<code>[ !,.]+</code>分隔成单词:
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val text = "See Spot run. Run, Spot. Run!"
-  text: java.lang.String = See Spot run. Run, Spot. Run!
-
-  scala&gt; val wordsArray = text.split("[ !,.]+")
-  wordsArray: Array[java.lang.String] =
-     Array(See, Spot, run, Run, Spot, Run)
-</pre>
-
-<p>
-建立Set并存入：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val words = mutable.Set.empty[String]
-  words: scala.collection.mutable.Set[String] = Set()
-
-  scala&gt; for (word &lt;- wordsArray)
-       | words += word.toLowerCase
-
-  scala&gt; words
-  res25: scala.collection.mutable.Set[String] =
-    Set(spot, run, see)
-</pre>
-
-<p>
-常用方法：
-</p>
-
-<table>
-<tr>
-<td>
-val nums = Set(1, 2, 3)
-</td>
-<td>
-建立集合
-</td>
-</tr>
-<tr>
-<td>
-nums + 5
-</td>
-<td>
-添加元素
-</td>
-</tr>
-<tr>
-<td>
-nums - 3
-</td>
-<td>
-去除元素
-</td>
-</tr>
-<tr>
-<td>
-nums ++ List(5, 6)
-</td>
-<td>
-添加多个元素
-</td>
-</tr>
-<tr>
-<td>
-nums -- List(1, 2)
-</td>
-<td>
-去除多个元素
-</td>
-</tr>
-<tr>
-<td>
-nums ** Set(1, 3, 5, 7)
-</td>
-<td>
-交集（返回Set(1,3)）
-</td>
-</tr>
-<tr>
-<td>
-nums.size
-</td>
-<td>
-&nbsp;
-</td>
-</tr>
-<tr>
-<td>
-nums.contains(3)
-</td>
-<td>
-&nbsp;
-</td>
-</tr>
-<tr>
-<td>
-import scala.collection.mutable
-</td>
-<td>
-引入可变的
-</td>
-</tr>
-<tr>
-<td>
-val words = mutable.Set.empty[String]
-</td>
-<td>
-创建空的可变集
-</td>
-</tr>
-<tr>
-<td>
-words += "the"
-</td>
-<td>
-&nbsp;
-</td>
-</tr>
-<tr>
-<td>
-words -= "the"
-</td>
-<td>
-&nbsp;
-</td>
-</tr>
-<tr>
-<td>
-words ++= List("do", "re", "mi")
-</td>
-<td>
-&nbsp;
-</td>
-</tr>
-<tr>
-<td>
-words --= List("do", "re")
-</td>
-<td>
-&nbsp;
-</td>
-</tr>
-<tr>
-<td>
-words.clear
-</td>
-<td>
-清空所有元素
-</td>
-</tr>
-</table>
-
-<h3 id="toc_4.4.2">Map</h3>
-
-<p>
-使用可变的Map：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val map = mutable.Map.empty[String, Int]
-  map: scala.collection.mutable.Map[String,Int] = Map()
-
-  scala&gt; val map = mutable.Map.empty[String, Int]
-  map: scala.collection.mutable.Map[String,Int] = Map()
-
-  scala&gt; map("hello") = 1
-
-  scala&gt; map("there") = 2
-
-  scala&gt; map
-  res28: scala.collection.mutable.Map[String,Int] =
-    Map(hello -&gt; 1, there -&gt; 2)
-
-  scala&gt; map("hello")
-  res29: Int = 1
-</pre>
-
-<p>
-统计单词出现次数的例子：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; def countWords(text: String) = {
-       |   val counts = mutable.Map.empty[String, Int]
-       |   for (rawWord &lt;- text.split("[ ,!.]+")) {
-       |     val word = rawWord.toLowerCase
-       |     val oldCount =
-       |       if (counts.contains(word)) counts(word)
-       |       else 0
-       |     counts += (word -&gt; (oldCount + 1))
-       |   }
-       |   counts
-       | }
-  countWords: (String)scala.collection.mutable.Map[String,Int]
-  
-
-  scala&gt; countWords("See Spot run! Run, Spot. Run!")
-  res30: scala.collection.mutable.Map[String,Int] =
-    Map(see -&gt; 1, run -&gt; 3, spot -&gt; 2)
-</pre>
-
-<p>
-常用方法：
-</p>
-
-<table>
-<tr>
-<td>
-val nums = Map("i"-&gt;1, "ii"-&gt;2)
-</td>
-<td>
-创建不可变
-</td>
-</tr>
-<tr>
-<td>
-nums + ("vi"-&gt;6)
-</td>
-<td>
-&nbsp;
-</td>
-</tr>
-<tr>
-<td>
-nums - "ii"
-</td>
-<td>
-&nbsp;
-</td>
-</tr>
-<tr>
-<td>
-nums ++ List("iii"-&gt;3, "v"-&gt;5)
-</td>
-<td>
-&nbsp;
-</td>
-</tr>
-<tr>
-<td>
-nums -- List("i", "ii")
-</td>
-<td>
-&nbsp;
-</td>
-</tr>
-<tr>
-<td>
-nums.size
-</td>
-<td>
-&nbsp;
-</td>
-</tr>
-<tr>
-<td>
-nums.contains("ii")
-</td>
-<td>
-&nbsp;
-</td>
-</tr>
-<tr>
-<td>
-nums("ii")
-</td>
-<td>
-&nbsp;
-</td>
-</tr>
-<tr>
-<td>
-nums.keys
-</td>
-<td>
-返回key迭代器
-</td>
-</tr>
-<tr>
-<td>
-nums.keySet
-</td>
-<td>
-返回key的集合(Set)
-</td>
-</tr>
-<tr>
-<td>
-nums.values
-</td>
-<td>
-返回value迭代器
-</td>
-</tr>
-<tr>
-<td>
-nums.isEmpty
-</td>
-<td>
-返回value的集合(Set)
-</td>
-</tr>
-<tr>
-<td>
-import scala.collection.mutable
-</td>
-<td>
-引入可变的版本
-</td>
-</tr>
-<tr>
-<td>
-val words = mutalbe.Map.empty[String, Int]
-</td>
-<td>
-&nbsp;
-</td>
-</tr>
-<tr>
-<td>
-words += ("one"-&gt;1)
-</td>
-<td>
-&nbsp;
-</td>
-</tr>
-<tr>
-<td>
-words -= "one"
-</td>
-<td>
-&nbsp;
-</td>
-</tr>
-<tr>
-<td>
-words ++= List("one"-&gt;1, "two"-&gt;2, "three"-&gt;3))
-</td>
-<td>
-&nbsp;
-</td>
-</tr>
-<tr>
-<td>
-words --= List("one", "two")
-</td>
-<td>
-&nbsp;
-</td>
-</tr>
-</table>
-
-<h3 id="toc_4.4.3">默认的Set和Map</h3>
-
-<p>
-不可变的Set与Map会根据元素的数量优化一些工厂方法，这样返回的类就不一定是指定的
-类型。
-</p>
-
-<p>
-不可变的<code>scala.collection.immutable.Set()</code>工厂方法返回：
-</p>
-
-<table>
-<tr>
-<td>
-元素的数量
-</td>
-<td>
-实现
-</td>
-</tr>
-<tr>
-<td>
-0
-</td>
-<td>
-scala.collection.immutable.EmptySet
-</td>
-</tr>
-<tr>
-<td>
-1
-</td>
-<td>
-scala.collection.immutable.Set1
-</td>
-</tr>
-<tr>
-<td>
-2
-</td>
-<td>
-scala.collection.immutable.Set2
-</td>
-</tr>
-<tr>
-<td>
-3
-</td>
-<td>
-scala.collection.immutable.Set3
-</td>
-</tr>
-<tr>
-<td>
-4
-</td>
-<td>
-scala.collection.immutable.Set4
-</td>
-</tr>
-<tr>
-<td>
-&gt;=5
-</td>
-<td>
-scala.collection.immutable.HashSet
-</td>
-</tr>
-</table>
-
-<p>
-不可变的<code>scala.collection.immutable.Map()</code>工厂方法返回：
-</p>
-
-<table>
-<tr>
-<td>
-元素的数量
-</td>
-<td>
-实现
-</td>
-</tr>
-<tr>
-<td>
-0
-</td>
-<td>
-scala.collection.immutable.EmptyMap
-</td>
-</tr>
-<tr>
-<td>
-1
-</td>
-<td>
-scala.collection.immutable.Map1
-</td>
-</tr>
-<tr>
-<td>
-2
-</td>
-<td>
-scala.collection.immutable.Map2
-</td>
-</tr>
-<tr>
-<td>
-3
-</td>
-<td>
-scala.collection.immutable.Map3
-</td>
-</tr>
-<tr>
-<td>
-4
-</td>
-<td>
-scala.collection.immutable.Map4
-</td>
-</tr>
-<tr>
-<td>
-&gt;=5
-</td>
-<td>
-scala.collection.immutable.HashMap
-</td>
-</tr>
-</table>
-
-<h3 id="toc_4.4.4">有序的集体和映射</h3>
-
-<p>
-<code>TreeSet</code>和<code>TreeMap</code>分别实现了<code>SortedSet</code>和<code>SortedMap</code>特质。都用红黑树保存元素，
-顺序由<code>Ordered</code>特质决定。这些类只有不可变的版本：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; import scala.collection.immutable.TreeSet
-  import scala.collection.immutable.TreeSet
-
-  scala&gt; val ts = TreeSet(9, 3, 1, 8, 0, 2, 7, 4, 6, 5)
-  ts: scala.collection.immutable.SortedSet[Int] =
-    Set(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
-
-  scala&gt; val cs = TreeSet('f', 'u', 'n')
-  cs: scala.collection.immutable.SortedSet[Char] = Set(f, n, u)
-
-
-  scala&gt; import scala.collection.immutable.TreeMap
-  import scala.collection.immutable.TreeMap
-
-  scala&gt; var tm = TreeMap(3 -&gt; 'x', 1 -&gt; 'x', 4 -&gt; 'x')
-  tm: scala.collection.immutable.SortedMap[Int,Char] =
-    Map(1 -&gt; x, 3 -&gt; x, 4 -&gt; x)
-
-  scala&gt; tm += (2 -&gt; 'x')
-
-  scala&gt; tm
-  res38: scala.collection.immutable.SortedMap[Int,Char] =
-    Map(1 -&gt; x, 2 -&gt; x, 3 -&gt; x, 4 -&gt; x)
-</pre>
-
-<h3 id="toc_4.4.5">同步的Set和Map</h3>
-
-<p>
-把<code>SynchronizedMap</code>特质混入到实现中。下面单例对象中的<code>makeMap</code>方法：
-</p>
-
-<pre class="brush: scala">
-  import scala.collection.mutable.{Map,
-      SynchronizedMap, HashMap}
-
-  object MapMaker {
-
-    def makeMap: Map[String, String] = {
-
-        new HashMap[String, String] with
-            SynchronizedMap[String, String] {
-
-          override def default(key: String) =
-            "Why do you want to know?"
-        }
-    }
-  }
-</pre>
-
-<p>
-上面的方法会返回一个<code>HashMap</code>并且重写了<code>default</code>方法在没有对应的key时有默认的返回。
-</p>
-
-<p>
-单线程访问的情况如下：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val capital = MapMaker.makeMap
-  capital: scala.collection.mutable.Map[String,String] = Map()
-
-  scala&gt; capital ++ List("US" -&gt; "Washington",
-       | "Paris" -&gt; "France", "Japan" -&gt; "Tokyo")
-  res0: scala.collection.mutable.Map[String,String] =
-    Map(Paris -&gt; France, US -&gt; Washington, Japan -&gt; Tokyo)
-
-  scala&gt; capital("Japan")
-  res1: String = Tokyo
-
-  scala&gt; capital("New Zealand")
-  res2: String = Why do you want to know?
-
-  scala&gt; capital += ("New Zealand" -&gt; "Wellington")
-
-  scala&gt; capital("New Zealand")
-  res3: String = Wellington
-</pre>
-
-<p>
-类似地，也可以实现同步的Set：
-</p>
-
-<pre class="brush: scala">
-  val synchroSet =
-    new mutable.HashSet[Int] with
-        mutable.SynchronizedSet[Int]
-</pre>
-
-<h2 id="toc_4.5">可变与不可变类型的比较</h2>
-
-<p>
-为了方便在可变与不可变类型之间地转换，Scala提供了一些语法糖。
-</p>
-
-<p>
-如，不可变类型不支持<code>+=</code>操作：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val people = Set("Nancy", "Jane")
-  people: scala.collection.immutable.Set[java.lang.String] =
-    Set(Nancy, Jane)
-
-  scala&gt; people += "Bob"
-  &lt;console&gt;:6: error: reassignment to val
-         people += "Bob"
-                ^
-</pre>
-
-<p>
-但是如果把变量从<code>val</code>改成<code>var</code>，Scala还是可以返回一个添加后的新对象来模拟：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; var people = Set("Nancy", "Jane")
-  people: scala.collection.immutable.Set[java.lang.String] =
-    Set(Nancy, Jane)
- 
-  scala&gt; people += "Bob"
-
-  scala&gt; people
-  res42: scala.collection.immutable.Set[java.lang.String] =
-    Set(Nancy, Jane, Bob)
-</pre>
-
-<p>
-类似的还有其他的操作：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; people -= "Jane"
-
-  scala&gt; people ++= List("Tom", "Harry")
-
-  scala&gt; people
-  res45: scala.collection.immutable.Set[java.lang.String] =
-    Set(Nancy, Bob, Tom, Harry)
-</pre>
-
-<p>
-这样的语法糖方便在可变与不可变类型之间转换：
-</p>
-
-<pre class="brush: scala">
-  var capital = Map("US" -&gt; "Washington", "France" -&gt; "Paris")
-  capital += ("Japan" -&gt; "Tokyo")
-  println(capital("France"))
-
-  import scala.collection.mutable.Map // only change needed!
-  var capital = Map("US" -&gt; "Washington", "France" -&gt; "Paris")
-  capital += ("Japan" -&gt; "Tokyo")
-  println(capital("France"))
-</pre>
-
-<p>
-这样的语法糖还可以用在其他类型上。如浮点：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; var roughlyPi = 3.0
-  roughlyPi: Double = 3.0
-
-  scala&gt; roughlyPi += 0.1
-
-  scala&gt; roughlyPi += 0.04
-
-  scala&gt; roughlyPi
-  res48: Double = 3.14
-</pre>
-
-<p>
-基本上<code>+=</code>、<code>-=</code>、<code>*=</code>这类以<code>=</code>结尾的操作符都可以。
-</p>
-
-<h2 id="toc_4.6">初始化集合</h2>
-
-<p>
-最典型的是用伴生对象的工厂方法：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; List(1, 2, 3)
-  res0: List[Int] = List(1, 2, 3)
-
-  scala&gt; Set('a', 'b', 'c')
-  res1: scala.collection.immutable.Set[Char] = Set(a, b, c)
-
-  scala&gt; import scala.collection.mutable
-  import scala.collection.mutable
-
-  scala&gt; mutable.Map("hi" -&gt; 2, "there" -&gt; 5)
-  res2: scala.collection.mutable.Map[java.lang.String,Int] =
-    Map(hi -&gt; 2, there -&gt; 5)
-
-  scala&gt; Array(1.0, 2.0, 3.0)
-  res3: Array[Double] = Array(1.0, 2.0, 3.0)
-</pre>
-
-<p>
-会根据工厂方法推断类型：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; import scala.collection.mutable
-  import scala.collection.mutable
-
-  scala&gt; val stuff = mutable.Set(42)
-  stuff: scala.collection.mutable.Set[Int] = Set(42)
-
-  scala&gt; stuff += "abracadabra"
-  &lt;console&gt;:7: error: type mismatch;
-   found : java.lang.String("abracadabra")
-   required: Int
-         stuff += "abracadabra"
-                  ^
-</pre>
-
-<p>
-但是可以手动声明类型：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val stuff = mutable.Set[Any](42)
-  stuff: scala.collection.mutable.Set[Any] = Set(42)
-</pre>
-
-<p>
-还有一种情况，不能直接把<code>List</code>传递给<code>Set</code>的工厂方法：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val colors = List("blue", "yellow", "red", "green")
-  colors: List[java.lang.String] =
-    List(blue, yellow, red, green)
-
-
-  scala&gt; import scala.collection.immutable.TreeSet
-  import scala.collection.immutable.TreeSet
-
-  scala&gt; val treeSet = TreeSet(colors)
-  &lt;console&gt;:6: error: no implicit argument matching
-    parameter type (List[java.lang.String]) =&gt;
-      Ordered[List[java.lang.String]] was found.
-         val treeSet = TreeSet(colors)
-                       ^
-</pre>
-
-<p>
-可行的方案是建立空的<code>TreeSet[String]</code>对象并用<code>TreeSet</code>的<code>++</code>操作把元素加进去：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val treeSet = TreeSet[String]() ++ colors
-  treeSet: scala.collection.immutable.SortedSet[String] =
-     Set(blue, green, red, yellow)
-</pre>
-
-<h3 id="toc_4.6.1">数组与列表之间转换</h3>
-
-<pre class="brush: scala">
-  scala&gt; treeSet.toList
-  res54: List[String] = List(blue, green, red, yellow)
-
-  scala&gt; treeSet.toArray
-  res55: Array[String] = Array(blue, green, red, yellow)
-</pre>
-
-<p>
-由于实现机制是一个一个元素地复制，所以元素多的话速度会慢。
-</p>
-
-<h3 id="toc_4.6.2">Set与Map的可变与不可变互转</h3>
-
-<p>
-在转为不可变类型时，一般是建一个空的不可变集，再一个一个加上去：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; import scala.collection.mutable
-  import scala.collection.mutable
-
-  scala&gt; treeSet
-  res5: scala.collection.immutable.SortedSet[String] =
-    Set(blue, green, red, yellow)
-
-  scala&gt; val mutaSet = mutable.Set.empty ++ treeSet
-  mutaSet: scala.collection.mutable.Set[String] =
-    Set(yellow, blue, red, green)
-
-  scala&gt; val immutaSet = Set.empty ++ mutaSet
-  immutaSet: scala.collection.immutable.Set[String] =
-    Set(yellow, blue, red, green)
-
-  scala&gt; val muta = mutable.Map("i" -&gt; 1, "ii" -&gt; 2)
-  muta: scala.collection.mutable.Map[java.lang.String,Int] =
-     Map(ii -&gt; 2, i -&gt; 1)
-
-  scala&gt; val immu = Map.empty ++ muta
-  immu: scala.collection.immutable.Map[java.lang.String,Int] =
-     Map(ii -&gt; 2, i -&gt; 1)
-</pre>
-
-<h3 id="toc_4.6.3">元组</h3>
-
-<p>
-元组可以存放不同的类型：
-</p>
-
-<pre class="brush: scala">
-  (1, "hello", Console)
-</pre>
-
-<p>
-元组经常被用来返回多个函数结果，如下面的函数要同时返回单词和索引：
-</p>
-
-<pre class="brush: scala">
-  def longestWord(words: Array[String]) = {
-    var word = words(0)
-    var idx = 0
-    for (i &lt;- 1 until words.length)
-      if (words(i).length &gt; word.length) {
-        word = words(i)
-        idx = i
-      }
-    (word, idx)
-  }
-  
-  scala&gt; val longest =
-       | longestWord("The quick brown fox".split(" "))
-  longest: (String, Int) = (quick,1)
-</pre>
-
-<p>
-然后可以访问各个元素：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; longest._1
-  res56: String = quick
-
-  scala&gt; longest._2
-  res57: Int = 1
-</pre>
-
-<p>
-还可以赋值给自己的变量（其实就是模式匹配）：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val (word, idx) = longest
-  word: String = quick
-  idx: Int = 1
-
-  scala&gt; word
-  res58: String = quick
-</pre>
-
-<p>
-注意括号不能去掉，不然就是给两个变量赋值了两份：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val word, idx = longest
-  word: (String, Int) = (quick,1)
-  idx: (String, Int) = (quick,1)
-</pre>
-
-<h2 id="toc_4.7">惰性求值</h2>
-
-<h3 id="toc_4.7.1">迭代器</h3>
-
-<p>
-迭代器相对于集合来说是一个惰性求值的替代品，不会为没有取得的元素消耗资源。
-</p>
-
-<h3 id="toc_4.7.2">流</h3>
-
-<p>
-迭代器有个缺点：只能一个方向向后走。如果需要访问已经走过元组，可以用流来实现。
-</p>
-
-<p>
-流是一个不可变的列表，但尾部的元素是被惰性求值的，只有用到时才会被计算。
-</p>
-
-<p>
-操作符<code>#::</code>用于构造一个流，例：
-</p>
-
-<pre class="brush: scala">
-scala&gt; def numsFrom(n: BigInt): Stream[BigInt] = n #:: numsFrom(n + 1)
-numsFrom: (n: BigInt)Stream[BigInt]
-</pre>
-
-<p>
-它所产生的流对象尾部的内容都是未知的：
-</p>
-
-<pre class="brush: scala">
-scala&gt; val tenOrMore = numsFrom(10)
-tenOrMore: Stream[BigInt] = Stream(10, ?)
-</pre>
-
-<p>
-在被使用到时才会求值，如用<code>tail</code>来取下一个值：
-</p>
-
-<pre class="brush: scala">
-scala&gt; tenOrMore.tail.tail.tail
-res0: scala.collection.immutable.Stream[BigInt] = Stream(13, ?)
-</pre>
-
-<p>
-对应的操作也是惰性求值的：
-</p>
-
-<pre class="brush: scala">
-scala&gt; val squares = numsFrom(1).map(x =&gt; x * x)
-squares: scala.collection.immutable.Stream[scala.math.BigInt] = Stream(1, ?)
-</pre>
-
-<p>
-可用<code>tail</code>来取下一个元素，也可用<code>take(num)</code>来取多个元素，再用<code>force</code>强制计算这些
-结果：
-</p>
-
-<pre class="brush: scala">
-scala&gt; squares.take(5).force
-res0: scala.collection.immutable.Stream[scala.math.BigInt] = Stream(1, 4, 9, 16, 25)
-</pre>
-
-<p>
-警告：因为之前定义的<code>numsFrom()</code>方法是一个无限递归的方法，所以是一定要在<code>force</code>
-前加上<code>take(num)</code>限制个数。
-</p>
-
-<h3 id="toc_4.7.3">用迭代器创建流</h3>
-
-<p>
-<code>Iterator.toStream</code>方法可以创建一个流，例：
-</p>
-
-<p>
-文本文件：
-</p>
-
-<pre class="brush: bash">
-11111
-22222
-33333
-44444
-55555
-66666
-77777
-88888
-</pre>
-
-<pre class="brush: scala">
-scala&gt; val words = Source.fromFile("tmp/test.txt").getLines.toStream
-words: scala.collection.immutable.Stream[String] = Stream(11111, ?)
-
-scala&gt; words
-res3: scala.collection.immutable.Stream[String] = Stream(11111, ?)
-
-scala&gt; words(5)
-res4: String = 66666
-
-scala&gt; words
-res5: scala.collection.immutable.Stream[String] = Stream(11111, 22222, 33333, 44444, 55555, 66666, ?)
-</pre>
-
-<h3 id="toc_4.7.4">懒视图</h3>
-
-<p>
-对于集合类型，可以使用它们的<code>view</code>方法来取得一个懒求值的集合版本。
-</p>
-
-<p>
-例：
-</p>
-
-<pre class="brush: scala">
-scala&gt; import scala.math._
-import scala.math._
-
-scala&gt; val powers = (0 until 1000).view.map(pow(10, _))
-powers: scala.collection.SeqView[Double,Seq[_]] = SeqViewM(...)
-</pre>
-
-<p>
-对于流来说，第一个元素会求出值，而上面的视图中连第一个值也没有求出。
-</p>
-
-<p>
-下面的代码求出的是<code>pow(10,100)</code>：
-</p>
-
-<pre class="brush: scala">
-scala&gt; powers(100)
-res0: Double = 1.0E100
-</pre>
-
-<p>
-集合中其他的值并没有被计算。注意这里和流不一样，得到的结果不会被缓存，如果再次
-调用，得到的值还是一样的：
-</p>
-
-<pre class="brush: scala">
-scala&gt; powers(100)
-res0: Double = 1.0E100
-</pre>
-
-<p>
-和流一样可用<code>force</code>方法强制求值。
-</p>
-
-<h4 id="toc_4.7.4.1">应用场景</h4>
-
-<p>
-懒集合常见的应用场景是当需要以多种方式进行变换的大型集合，因为它省去了构建大型
-中间集合的操作。
-</p>
-
-<p>
-例：
-</p>
-
-<pre class="brush: scala">
-scala&gt; (0 to 1000).map(pow(10, _)).map(1 / _)
-res2: scala.collection.immutable.IndexedSeq[Double] = Vector(1.0, 0.1, ... 
-</pre>
-
-<p>
-这里会先对每个元素按\(10^n\)建立一个集合，在这个集合的基础上再对每个元素执行
-\(\frac{1}{n}\)。
-</p>
-
-<p>
-如果是以懒视图，就只会在用到中间值时才会计算中间值。相当于就是对每个元素连续执行
-两个操作：
-</p>
-
-<pre class="brush: scala">
-scala&gt; (0 to 1000).view.map(pow(10, _)).map(1 / _).force
-res3: Seq[Double] = Vector(1.0, 0.1, 0.01, 0.001, 1.0E-4, 1.0E-5 ...
-</pre>
-
-<h2 id="toc_4.8">与Java集合互操作</h2>
-
-<p>
-<code>JavaConversions</code>对象提供了很多工具：
-</p>
-
-<pre class="brush: scala">
-scala&gt; import scala.collection.JavaConversions._
-</pre>
-
-<p>
-也可以只导入指定的转换方法：
-</p>
-
-<pre class="brush: scala">
-scala&gt; import scala.collection.JavaConversions.propertiesAsScalaMap
-import scala.collection.JavaConversions.propertiesAsScalaMap
-
-scala&gt; val props: scala.collection.mutable.Map[String, String] =
-     | System.getProperties()
-props: scala.collection.mutable.Map[String,String] = 
-</pre>
-
-<p>
-这里转换出来的<code>props</code>是包装器。它会调用Java对象的接口。
-</p>
-
-<pre class="brush: scala">
-props("com.horstmann.scala") = "impatient"
-</pre>
-
-<p>
-实际会调用Java中<code>Properties</code>对象的方法<code>put("com.horstmann.scala","impatient")</code>。
-</p>
-
-<p>
-Scala集合转Java
-</p>
-
-<table>
-<tr>
-<td>
-隐式转换函数
-</td>
-<td>
-从scala.collection
-</td>
-<td>
-到java.util
-</td>
-</tr>
-<tr>
-<td>
-asJavaCollection
-</td>
-<td>
-Iterable
-</td>
-<td>
-Collection
-</td>
-</tr>
-<tr>
-<td>
-asJavaIterable
-</td>
-<td>
-Iterable
-</td>
-<td>
-iterable
-</td>
-</tr>
-<tr>
-<td>
-asjavaIterator
-</td>
-<td>
-Iterator
-</td>
-<td>
-Iterator
-</td>
-</tr>
-<tr>
-<td>
-asJavaEnumeration
-</td>
-<td>
-Iterator
-</td>
-<td>
-Enumeration
-</td>
-</tr>
-<tr>
-<td>
-seqAsJavaList
-</td>
-<td>
-Seq
-</td>
-<td>
-List
-</td>
-</tr>
-<tr>
-<td>
-mutableSeqAsjavaList
-</td>
-<td>
-mutable.Seq
-</td>
-<td>
-List
-</td>
-</tr>
-<tr>
-<td>
-bufferAsJavaList
-</td>
-<td>
-mutable.Buffer
-</td>
-<td>
-List
-</td>
-</tr>
-<tr>
-<td>
-setAsJavaSet
-</td>
-<td>
-Set
-</td>
-<td>
-Set
-</td>
-</tr>
-<tr>
-<td>
-mutableSetAsJavaMap
-</td>
-<td>
-mutable.Set
-</td>
-<td>
-Set
-</td>
-</tr>
-<tr>
-<td>
-mapAsJavaMap
-</td>
-<td>
-Map
-</td>
-<td>
-Map
-</td>
-</tr>
-<tr>
-<td>
-mutableMapAsJavaMap
-</td>
-<td>
-mutable.Map
-</td>
-<td>
-Map
-</td>
-</tr>
-<tr>
-<td>
-asJavaDirectionary
-</td>
-<td>
-Map
-</td>
-<td>
-Dictionary
-</td>
-</tr>
-<tr>
-<td>
-asJavaCurrentMap
-</td>
-<td>
-mutable.CurrentMap
-</td>
-<td>
-concurrent.ConcurrentMap
-</td>
-</tr>
-</table>
-
-<p>
-从Java集合到Scala集合
-</p>
-
-<table>
-<tr>
-<td>
-方法
-</td>
-<td>
-从java.util
-</td>
-<td>
-到scala.collection
-</td>
-</tr>
-<tr>
-<td>
-collectionAsScalaIterable
-</td>
-<td>
-Collection
-</td>
-<td>
-Iterable
-</td>
-</tr>
-<tr>
-<td>
-iterableAsScalaIterable
-</td>
-<td>
-Iterable
-</td>
-<td>
-Iterable
-</td>
-</tr>
-<tr>
-<td>
-asScalaIterator
-</td>
-<td>
-Iterator
-</td>
-<td>
-Iterator
-</td>
-</tr>
-<tr>
-<td>
-enumerationAsScalaIterator
-</td>
-<td>
-Enumeration
-</td>
-<td>
-Iterator
-</td>
-</tr>
-<tr>
-<td>
-asScalaBuffer
-</td>
-<td>
-List
-</td>
-<td>
-mutable.Buffer
-</td>
-</tr>
-<tr>
-<td>
-asScalaSet
-</td>
-<td>
-Set
-</td>
-<td>
-mutable.Set
-</td>
-</tr>
-<tr>
-<td>
-mapAsScalaMap
-</td>
-<td>
-Map
-</td>
-<td>
-mutable.Map
-</td>
-</tr>
-<tr>
-<td>
-dictionaryAsScalaMap
-</td>
-<td>
-Dictionary
-</td>
-<td>
-mutable.Map
-</td>
-</tr>
-<tr>
-<td>
-propertiesAsScalaMap
-</td>
-<td>
-Properties
-</td>
-<td>
-mutable.Map
-</td>
-</tr>
-<tr>
-<td>
-asScalaConcurrentMap
-</td>
-<td>
-concurrent.ConcurrentMap
-</td>
-<td>
-mutable.ConcurrentMap
-</td>
-</tr>
-</table>
-
-<h2 id="toc_4.9">线程安全的集合</h2>
-
-<p>
-Scala类库提供的六个特质，混入它们就可以让集合操作变成同步：
-</p>
-
-<ul>
-<li>
-SynchronizedBuffer
-
-<li>
-SynchronizedMap
-
-<li>
-SynchronizedPriorityQueue
-
-<li>
-SynchronizedQueue
-
-<li>
-SynchronizedSet
-
-<li>
-SynchronizedStack
-
-</ul>
-
-<p>
-例，得到一个同步的对象：
-</p>
-
-<pre class="brush: scala">
-scala&gt; val scores = new scala.collection.mutable.HashMap[String, Int] with
-     | scala.collection.mutable.SynchronizedMap[String, Int]
-scores: scala.collection.mutable.HashMap[String,Int] with scala.collection.mutable.SynchronizedMap[String,Int] = Map()
-</pre>
-
-<h2 id="toc_4.10">并发操作集合</h2>
-
-<p>
-<code>par</code>方法会把一个集合的遍历操作分成多个段并行操作，多个段的结果汇总在一起。
-</p>
-
-<p>
-如，统计偶数个数：
-</p>
-
-<pre class="brush: scala">
-scala&gt; val coll = 0 until 100
-
-scala&gt; coll.par.count(_ % 2 == 0)
-res6: Int = 50
-</pre>
-
-<p>
-通过下面的例子可以看出，顺序是并行执行的：
-</p>
-
-<pre class="brush: scala">
-scala&gt; for (i &lt;- (0 until 100).par) print( i + ", ")
-0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 
-22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41,
-42, 43, 44, 45, 46, 47, 48, 49, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86,
-87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 62, 63, 64, 65, 66, 67, 68,
-69, 70, 71, 72, 73, 74, 56, 57, 58, 59, 60, 61, 50, 51, 52, 53, 54, 55, 
-</pre>
-
-
-<h3 id="toc_4.10.1"><code>for-yield</code>循环按顺序执行</h3>
-
-<p>
-但是在<code>for-yield</code>循环中是按顺序执行的：
-</p>
-
-<pre class="brush: scala">
-scala&gt; for (i &lt;- (0 until 100).par) yield i
-res8: scala.collection.parallel.immutable.ParSeq[Int] = ParVector(0, 1, 2, 3, 
-		4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 
-		24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 
-		43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 
-		62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 
-		81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99)
-</pre>
-
-<h3 id="toc_4.10.2">不要用共享变量</h3>
-
-<p>
-绝对不要这样写，结果不要预知：
-</p>
-
-<pre class="brush: scala">
-var count = 0
-for (c &lt;- coll.par) { if (c % 2 == 0) count += 1 }
-</pre>
-
-<h3 id="toc_4.10.3">ParIterable接口</h3>
-
-<p>
-<code>par</code>方法返回的并行集合类型扩展自<code>ParIterable</code>接口的子接口，如<code>ParSeq</code>、<code>ParSet</code>
-或<code>ParMap</code>特质。
-</p>
-
-<p>
-注意<code>Parable</code>不是<code>Iterable</code>的子类型，所以不能把并行集合传递给<code>Iterable</code>、<code>Seq</code>
-、<code>set</code>与<code>Map</code>，但可以用<code>ser</code>方法转过去。还可以传递给通用的类型<code>GenIterable</code>、
-<code>GenSeq</code>、<code>GenSet</code>、<code>GenMap</code>
-</p>
-
-<h3 id="toc_4.10.4">适用范围</h3>
-
-<p>
-并不是所有的方法都可以并行化，因为有些操作关系到操作顺序。
-</p>
-
-<h4 id="toc_4.10.4.1">reduce</h4>
-
-<p>
-<code>reduceLeft</code>和<code>reduceRight</code>是顺序相关的。
-</p>
-
-<p>
-<code>reduce</code>方法无关顺序，但具体执行的操作可能与顺序相关。如：\((a+b)+c = a+(b+c)\)，
-但是\((a-b)-c \neq a-(b-c)\)。
-</p>
-
-<h4 id="toc_4.10.4.2">fold</h4>
-
-<p>
-<code>fold</code>方法的两个操作参数必须都是当前集合的成员，如：<code>coll.par.fold(0)(_ + _)</code>，
-不能进行如<code>foldLeft</code>和<code>foldRight</code>该当那样更加复杂的折叠操作。
-</p>
-
-<h4 id="toc_4.10.4.3">aggregate</h4>
-
-<p>
-解决方案是用<code>aggregate</code>方法将操作应用于于集合的不同部分，然后再用另一个操作符
-组合各部分的结果。例：
-</p>
-
-<pre class="brush: scala">
-str.par.aggregate(Set[Char]())(_ + _, _ ++ _)
-</pre>
-
-<p>
-等同于：
-</p>
-
-<pre class="brush: scala">
-str.foldLeft(Set[Char]())(_ + _)
-</pre>
-
-<p>
-产出的结果是一个<code>str</code>里所有不同的字符集。
-</p>
  </div>
 </body>
 </html>
