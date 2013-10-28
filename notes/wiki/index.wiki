@@ -180,3 +180,5 @@ pidgin：[[pidgin]]
 [[linus.said]]
 
 [[google.android]]
+
+[[amazone.revenue]]
