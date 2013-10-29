@@ -314,6 +314,9 @@ Predef对象包含了许多Scala程序中常用到的类型，方法和隐式转
 `scala.StringBuilder`，而不是`java.lang.StringBuilder`。
 
 
+
+
+
 = 访问修饰符 =
 
 Scala与Java对访问修饰符的对待方式有一些重要的差异。
@@ -406,6 +409,7 @@ Scala里的访问修饰符可以通过使用修饰词增加。格式为`private[
 这样的例子。这种访问修饰符等价于Java的包私有访问。
 
 | 没有修饰符            | 公开访问                     |
+|-----------------------|------------------------------|
 | Private[bobsrockets]  | 在外部包中访问               |
 | Private[navigation]   | 与Java的包可见度相同         |
 | Private[Navigator]    | 与Java的private相同          |

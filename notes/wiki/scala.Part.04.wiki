@@ -1476,6 +1476,7 @@ Set的关键在于用对象的`==`检查唯一性。
 不可变的`scala.collection.immutable.Set()`工厂方法返回：
 
 | 元素的数量 | 实现                                |
+|------------|-------------------------------------|
 | 0          | scala.collection.immutable.EmptySet |
 | 1          | scala.collection.immutable.Set1     |
 | 2          | scala.collection.immutable.Set2     |
@@ -1486,6 +1487,7 @@ Set的关键在于用对象的`==`检查唯一性。
 不可变的`scala.collection.immutable.Map()`工厂方法返回：
 
 | 元素的数量 | 实现                                |
+|------------|-------------------------------------|
 | 0          | scala.collection.immutable.EmptyMap |
 | 1          | scala.collection.immutable.Map1     |
 | 2          | scala.collection.immutable.Map2     |
@@ -1989,6 +1991,7 @@ props("com.horstmann.scala") = "impatient"
 Scala集合转Java
 
 | 隐式转换函数         | 从scala.collection | 到java.util              |
+|----------------------|--------------------|--------------------------|
 | asJavaCollection     | Iterable           | Collection               |
 | asJavaIterable       | Iterable           | iterable                 |
 | asjavaIterator       | Iterator           | Iterator                 |
@@ -2006,6 +2009,7 @@ Scala集合转Java
 从Java集合到Scala集合
 
 | 方法                       | 从java.util              | 到scala.collection    |
+|----------------------------|--------------------------|-----------------------|
 | collectionAsScalaIterable  | Collection               | Iterable              |
 | iterableAsScalaIterable    | Iterable                 | Iterable              |
 | asScalaIterator            | Iterator                 | Iterator              |

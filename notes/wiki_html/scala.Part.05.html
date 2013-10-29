@@ -33,44 +33,44 @@
 <li><a href="#toc_1.1.2">泛型方法</a>
 <li><a href="#toc_1.1.3">泛型必须指定类型</a>
 </ul>
-<li><a href="#toc_1.2">类型变化</a>
+<li><a href="#toc_1.2">中置类型</a>
+<li><a href="#toc_1.3">类型变化</a>
 <ul>
-<li><a href="#toc_1.2.1">协变</a>
+<li><a href="#toc_1.3.1">协变</a>
 <ul>
-<li><a href="#toc_1.2.1.1">协变的问题</a>
-<li><a href="#toc_1.2.1.2">Java数组是协变的</a>
-<li><a href="#toc_1.2.1.3">Scala数组是非协变的</a>
+<li><a href="#toc_1.3.1.1">协变的问题</a>
+<li><a href="#toc_1.3.1.2">Java数组是协变的</a>
+<li><a href="#toc_1.3.1.3">Scala数组是非协变的</a>
 </ul>
-<li><a href="#toc_1.2.2">逆变</a>
+<li><a href="#toc_1.3.2">逆变</a>
 </ul>
-<li><a href="#toc_1.3">检查变化类型注解</a>
+<li><a href="#toc_1.4">检查变化类型注解</a>
 <ul>
-<li><a href="#toc_1.3.1">禁止方法参数协变</a>
-<li><a href="#toc_1.3.2">禁止可变的字段协变</a>
-<li><a href="#toc_1.3.3">型变类型反转</a>
-<li><a href="#toc_1.3.4">类型变化的验证规则</a>
+<li><a href="#toc_1.4.1">禁止方法参数协变</a>
+<li><a href="#toc_1.4.2">禁止可变的字段协变</a>
+<li><a href="#toc_1.4.3">型变类型反转</a>
+<li><a href="#toc_1.4.4">类型变化的验证规则</a>
 </ul>
-<li><a href="#toc_1.4">泛型变量的界定</a>
+<li><a href="#toc_1.5">泛型变量的界定</a>
 <ul>
-<li><a href="#toc_1.4.1">上界</a>
-<li><a href="#toc_1.4.2">下界</a>
+<li><a href="#toc_1.5.1">上界</a>
+<li><a href="#toc_1.5.2">下界</a>
 </ul>
-<li><a href="#toc_1.5">单例对象不能泛型</a>
-<li><a href="#toc_1.6">类型通配符</a>
+<li><a href="#toc_1.6">单例对象不能泛型</a>
+<li><a href="#toc_1.7">类型通配符</a>
 <ul>
-<li><a href="#toc_1.6.1">模拟协变</a>
-<li><a href="#toc_1.6.2">模拟逆变</a>
-<li><a href="#toc_1.6.3">缺陷</a>
-<li><a href="#toc_1.6.4">存在类型</a>
+<li><a href="#toc_1.7.1">模拟协变</a>
+<li><a href="#toc_1.7.2">模拟逆变</a>
+<li><a href="#toc_1.7.3">缺陷</a>
 </ul>
-<li><a href="#toc_1.7">例：开发纯函数式队列</a>
+<li><a href="#toc_1.8">例：开发纯函数式队列</a>
 <ul>
-<li><a href="#toc_1.7.1">信息隐藏</a>
+<li><a href="#toc_1.8.1">信息隐藏</a>
 <ul>
-<li><a href="#toc_1.7.1.1">私有构造器及工厂方法</a>
-<li><a href="#toc_1.7.1.2">可选方案：私有类</a>
+<li><a href="#toc_1.8.1.1">私有构造器及工厂方法</a>
+<li><a href="#toc_1.8.1.2">可选方案：私有类</a>
 </ul>
-<li><a href="#toc_1.7.2">对象私有数据</a>
+<li><a href="#toc_1.8.2">对象私有数据</a>
 </ul>
 </ul>
 <li><a href="#toc_2">隐式转换</a>
@@ -143,6 +143,19 @@
 <li><a href="#toc_3.4.2">归纳</a>
 <li><a href="#toc_3.4.3">使用</a>
 </ul>
+<li><a href="#toc_3.5">实例类型与单例类型</a>
+<li><a href="#toc_3.6">内部类</a>
+<ul>
+<li><a href="#toc_3.6.1">类中的类</a>
+<li><a href="#toc_3.6.2">伴生对象中的类</a>
+<li><a href="#toc_3.6.3">类型投影</a>
+<li><a href="#toc_3.6.4">外部类的引用</a>
+</ul>
+<li><a href="#toc_3.7">路径</a>
+<li><a href="#toc_3.8">类型别名</a>
+<li><a href="#toc_3.9">结构类型</a>
+<li><a href="#toc_3.10">复合类型</a>
+<li><a href="#toc_3.11">存在类型</a>
 </ul>
 </ul>
 </div>
@@ -262,9 +275,82 @@ ln: java.util.ArrayList[Nothing] = []
 </pre>
 
 
-<h2 id="toc_1.2">类型变化</h2>
 
-<h3 id="toc_1.2.1">协变</h3>
+<h2 id="toc_1.2">中置类型</h2>
+
+<p>
+带两个类型参数的类型可以用中置语法表示，如：
+</p>
+
+<pre class="brush: scala">
+Map[String, Int]
+</pre>
+
+<p>
+可以写为：
+</p>
+
+<pre class="brush: scala">
+String Map Int
+</pre>
+
+<p>
+以数学表达式：
+</p>
+
+\[
+A \times B = \{ (a,b) | a \in A, b \in B \}
+\]
+
+<p>
+为例，它表示从A与B两个范围中生成的对偶的集。Scala中对偶是用<code>(A,B)</code>表示的。如果
+想用更加数学的风格来表现对偶，可以定义：　
+</p>
+
+<pre class="brush: scala">
+type ×[A, B] = (A, B)
+</pre>
+
+<p>
+这样以后再写对偶时可以不写：
+</p>
+
+<pre class="brush: scala">
+(String, Int)
+</pre>
+
+<p>
+而是：
+</p>
+
+<pre class="brush: scala">
+String × Int
+</pre>
+
+<p>
+中置类型的优先级和普通的操作符一样，而且如果不是以<code>:</code>结尾，默认就是左结合：
+</p>
+
+<pre class="brush: scala">
+String × Int × Int
+</pre>
+
+<p>
+相当于：
+</p>
+
+<pre class="brush: scala">
+((String, Int), Int)
+</pre>
+
+<p>
+中置类型的名称可以是任何操作符的字符序列，但不可以是<code>*</code>。因为会和变长参数声明
+<code>T*</code>混淆。
+</p>
+
+<h2 id="toc_1.3">类型变化</h2>
+
+<h3 id="toc_1.3.1">协变</h3>
 
 <p>
 Scala的泛型在默认情况下是非协变的（nonvariant），即：对于泛型<code>Queue[T]</code>来说，
@@ -280,7 +366,7 @@ Scala的泛型在默认情况下是非协变的（nonvariant），即：对于�
   trait Queue[+T] { ... }
 </pre>
 
-<h4 id="toc_1.2.1.1">协变的问题</h4>
+<h4 id="toc_1.3.1.1">协变的问题</h4>
 
 <p>
 Scala默认禁止协变是因为协变会产生问题：
@@ -357,7 +443,7 @@ Scala默认禁止协变是因为协变会产生问题：
 <code>Cell[Any]</code>和<code>Cell[String]</code>的类型的协变引起了错误。
 </p>
 
-<h4 id="toc_1.2.1.2">Java数组是协变的</h4>
+<h4 id="toc_1.3.1.2">Java数组是协变的</h4>
 
 <p>
 以前面的<code>Cell</code>类为例与Java中的数组比较，Java中的数组是协变的：
@@ -396,7 +482,7 @@ Scala默认禁止协变是因为协变会产生问题：
 不再有用了，为了向以前老版本兼容才留着。
 </p>
 
-<h4 id="toc_1.2.1.3">Scala数组是非协变的</h4>
+<h4 id="toc_1.3.1.3">Scala数组是非协变的</h4>
 
 <p>
 Scala中数组是不可协变的：
@@ -426,7 +512,7 @@ Scala中数组是不可协变的：
 </pre>
 
 
-<h3 id="toc_1.2.2">逆变</h3>
+<h3 id="toc_1.3.2">逆变</h3>
 
 <p>
 与协变相反的<code>[-T]</code>表示逆变。这样<code>MyClass[AnyRef]</code>可以作为<code>MyClass[String]</code>的子类
@@ -503,15 +589,15 @@ Walden
 
 <table>
 <tr>
-<td>
+<th>
 &nbsp;
-</td>
-<td>
+</th>
+<th>
 参数
-</td>
-<td>
+</th>
+<th>
 结果
-</td>
+</th>
 </tr>
 <tr>
 <td>
@@ -582,9 +668,9 @@ Scala函数特质中对于<code>S =&gt; T</code>类型的函数会定义<code>tr
 </p>
 
 
-<h2 id="toc_1.3">检查变化类型注解</h2>
+<h2 id="toc_1.4">检查变化类型注解</h2>
 
-<h3 id="toc_1.3.1">禁止方法参数协变</h3>
+<h3 id="toc_1.4.1">禁止方法参数协变</h3>
 
 <p>
 前面已经看到了通常在函数的参数上采用逆变并在返回值上采用协变。概括地说：
@@ -646,7 +732,7 @@ Scala函数特质中对于<code>S =&gt; T</code>类型的函数会定义<code>tr
 上面的因为协变所以第一行是有效的，但第二行就有问题了，因为不能对字符串求平方根。
 </p>
 
-<h3 id="toc_1.3.2">禁止可变的字段协变</h3>
+<h3 id="toc_1.4.2">禁止可变的字段协变</h3>
 
 <p>
 不要对可重新赋值的字段使用<code>+</code>的协变类型参数。如<code>var x:T</code>在Scala里被看作自带
@@ -665,7 +751,7 @@ class UserName[+T](var first: T, var second: T) // error
 first_=(value: T)
 </pre>
 
-<h3 id="toc_1.3.3">型变类型反转</h3>
+<h3 id="toc_1.4.3">型变类型反转</h3>
 
 <p>
 如果函数的参数是函数，这个作为参数的函数型变是反转过来的：参数是协变面结果是
@@ -677,7 +763,7 @@ foldLeft[B](z: B)(op: (B, A) =&gt; B): B
                -       +  +     -   +
 </pre>
 
-<h3 id="toc_1.3.4">类型变化的验证规则</h3>
+<h3 id="toc_1.4.4">类型变化的验证规则</h3>
 
 <p>
 类型声明中可能会用到类型参数的地方被分为协变点、逆变点、中立。编译器检查类的类型
@@ -784,9 +870,9 @@ foldLeft[B](z: B)(op: (B, A) =&gt; B): B
 <code>Cat</code>类是协变的。
 </p>
 
-<h2 id="toc_1.4">泛型变量的界定</h2>
+<h2 id="toc_1.5">泛型变量的界定</h2>
 
-<h3 id="toc_1.4.1">上界</h3>
+<h3 id="toc_1.5.1">上界</h3>
 
 <p>
 上界把类型变化的范围限制为某一个类的子类，这样保证具体绑定的类有基本的功能。格式
@@ -895,7 +981,7 @@ foldLeft[B](z: B)(op: (B, A) =&gt; B): B
 实现更加通用的方案。
 </p>
 
-<h3 id="toc_1.4.2">下界</h3>
+<h3 id="toc_1.5.2">下界</h3>
 
 <p>
 下界限制协变的类型必须为指定类型的超类，格式：<code>U &gt;: T</code>。作为是为了在参数位置实现
@@ -1020,7 +1106,7 @@ def append[U &gt;: T](x: U) = new Queue(leading, x :: trailing)
 </p>
 
 
-<h2 id="toc_1.5">单例对象不能泛型</h2>
+<h2 id="toc_1.6">单例对象不能泛型</h2>
 
 <p>
 单例对象不能添加类型参数。
@@ -1096,7 +1182,7 @@ scala&gt; show(new Node(1729, lst))
 42
 </pre>
 
-<h2 id="toc_1.6">类型通配符</h2>
+<h2 id="toc_1.7">类型通配符</h2>
 
 <p>
 Java中类型类不可变，但提供了通配符。以对偶为例：
@@ -1107,7 +1193,7 @@ void func01(Pair&lt;? extends Person&gt; people) {} // Person的子类
 void func02(Pair&lt;? super   Person&gt; people) {} // Person的父类
 </pre>
 
-<h3 id="toc_1.6.1">模拟协变</h3>
+<h3 id="toc_1.7.1">模拟协变</h3>
 
 <p>
 在Scala中的协变类型用不着通配符，但是如果<code>Queue</code>类型是不可变的：
@@ -1156,7 +1242,7 @@ scala&gt; makeFriends(studentPair) // OK
 res2: String = Fred and Wilma are now friends.
 </pre>
 
-<h3 id="toc_1.6.2">模拟逆变</h3>
+<h3 id="toc_1.7.2">模拟逆变</h3>
 
 <p>
 结合<code>Comparator</code>特质与逆变，实现一个取对偶中较小元素的方法：
@@ -1216,7 +1302,7 @@ scala&gt; min(p)(sillyHashComp)
 res5: String = Fred
 </pre>
 
-<h3 id="toc_1.6.3">缺陷</h3>
+<h3 id="toc_1.7.3">缺陷</h3>
 
 <p>
 Scala的类型通配符还不是很完善，下面的声明在Scala 2.10以前都不行：
@@ -1280,14 +1366,13 @@ scala&gt; min(studentPair)
 res6: Student = Student Fred
 </pre>
 
-<h3 id="toc_1.6.4">存在类型</h3>
-
 <p>
-这里的类型通配符其实是“存在类型”的语法糖，其他章节具体讨论存在类型。
+这里的类型通配符其实是“存在类型”的语法糖，以后会具体讨论存在类型。
 </p>
 
 
-<h2 id="toc_1.7">例：开发纯函数式队列</h2>
+
+<h2 id="toc_1.8">例：开发纯函数式队列</h2>
 
 <p>
 函数式的队列是不可变的，添加元素操作会返回一个新的队列。三个基本方法：
@@ -1398,13 +1483,13 @@ i :: trailing
   }
 </pre>
 
-<h3 id="toc_1.7.1">信息隐藏</h3>
+<h3 id="toc_1.8.1">信息隐藏</h3>
 
 <p>
 前面的<code>Queue</code>实现暴露了太多实现细节，比如构造器的两个参数还有一个是反转的。
 </p>
 
-<h4 id="toc_1.7.1.1">私有构造器及工厂方法</h4>
+<h4 id="toc_1.8.1.1">私有构造器及工厂方法</h4>
 
 <p>
 为了不让外部了解构造器的实现，可以把构造器作为隐藏的：
@@ -1460,7 +1545,7 @@ i :: trailing
   }
 </pre>
 
-<h4 id="toc_1.7.1.2">可选方案：私有类</h4>
+<h4 id="toc_1.8.1.2">可选方案：私有类</h4>
 
 <p>
 除了私有构造器和私有成员，还可以直接隐藏掉类本身，只提供暴露类公共接口的特质：
@@ -1503,7 +1588,7 @@ i :: trailing
 </pre>
 
 
-<h3 id="toc_1.7.2">对象私有数据</h3>
+<h3 id="toc_1.8.2">对象私有数据</h3>
 
 <p>
 之前的<code>Queue</code>类待改进内容：当<code>leading</code>列表为空时如果重复调用<code>head</code>，那么<code>mirror</code>
@@ -2719,6 +2804,10 @@ scala&gt; val chars: List[Char] = "xyz"
   }
 </pre>
 
+
+
+
+
 <h1 id="toc_3">高级类型应用</h1>
 
 <h2 id="toc_3.1">多重界定</h2>
@@ -3351,6 +3440,844 @@ scala&gt;   val res = new Range(1, 10).map(sqrt(_))
 res: Buffer[Double] = Buffer@79111260
 
 scala&gt;   res.map(println(_))
+</pre>
+
+
+
+<h2 id="toc_3.5">实例类型与单例类型</h2>
+
+<p>
+如果一个方法返回当前对象的引用<code>this</code>，那就可以把方法的调用串起来写：
+</p>
+
+<pre class="brush: scala; highlight:[4,5,14]">
+scala&gt; class Document {
+     |   private var title = ""
+     |   private var author = ""
+     |   def setTitle(title: String) = { this.title = title; this }
+     |   def setAuthor(author: String) = { this.author = author; this }
+     |   override def toString = getClass.getName + "[title=" + title +
+     |     ",author=" + author + "]"
+     | }
+defined class Document
+
+scala&gt; val doc = new Document
+doc: Document = Document[title=,author=]
+
+scala&gt; doc.setTitle("Scala for the Impatient").setAuthor("Cay Horstmann")
+res0: Document = Document[title=Scala for the Impatient,author=Cay Horstmann]
+</pre>
+
+<p>
+但是如果<code>Document</code>的子类<code>Book</code>的话，那就会有问题了：
+</p>
+
+<pre class="brush: scala; highlight:[4]">
+scala&gt; class Book extends Document {
+     |   private var chapters = new scala.collection.mutable.ArrayBuffer[String]
+     |   def addChapter(chapter: String) = { chapters += chapter; this }
+     |   override def toString = super.toString + "[chapters=" + chapters + "]"
+     | }
+defined class Book
+
+scala&gt; val book = new Book
+book: Book = Book[title=,author=][chapters=ArrayBuffer()]
+
+scala&gt; book.setTitle("scala for the Impatient").addChapter("Chap I")
+&lt;console&gt;:11: error: value addChapter is not a member of Document
+              book.setTitle("scala for the Impatient").addChapter("Chap I")
+                                                       ^
+</pre>
+
+<p>
+因为方法<code>setTitle()</code>是父类<code>Document</code>的方法，返回类型也被绑定为父类。
+</p>
+
+
+<p>
+解决方法：对于任何引用<code>v</code>调用<code>v.type</code>可以取得引用的类型。值可能是<code>v</code>或<code>null</code>。
+这里声明<code>setTitle()</code>的返回类型为<code>this.type</code>：
+</p>
+
+
+<pre class="brush: scala; highlight: [4,5,18]">
+class Document {
+  private var title = ""
+  private var author = "" 
+  def setTitle(title: String): this.type = { this.title = title; this }
+  def setAuthor(author: String): this.type = { this.author = author; this }
+  override def toString = getClass.getName + "[title=" + title + ",author=" + 
+	  author + "]"
+}
+
+class Book extends Document {
+  private var chapters = new scala.collection.mutable.ArrayBuffer[String]
+  def addChapter(chapter: String) = { chapters += chapter; this }
+  override def toString = super.toString + "[chapters=" + chapters + "]"
+}
+
+object Main extends App {
+  val book = new Book
+  book.setTitle("Scala for the Impatient").addChapter("Chapter 1 ...") 
+  println(book)
+}
+</pre>
+
+<p>
+单例对象也可以通过<code>type</code>取得它的类型：
+</p>
+
+<pre class="brush: scala; highlight: [6]">
+object Title // This object is used an an argument for a fluent interface
+
+class Document {
+  private var title = ""
+  private var useNextArgAs: Any = null
+  def set(obj: Title.type): this.type = { useNextArgAs = obj; this }
+  def to(arg: String) = if (useNextArgAs == Title) title = arg;
+  override def toString = getClass.getName + "[title=" + title + "]"
+}
+
+val book = new Document
+</pre>
+
+<p>
+注意是<code>Title.type</code>而不是<code>Title</code>，<code>Title</code>是一个单例对象，不是类型。
+</p>
+
+<p>
+调用时：
+</p>
+
+<pre class="brush: scala">
+scala&gt; book.set(Title).to("Scala for the Impatient")
+
+scala&gt; println(book)
+$line4.$read$$iw$$iw$Document[title=Scala for the Impatient]
+</pre>
+
+<p>
+可以写在更加接近人类语言的：
+</p>
+
+<pre class="brush: scala">
+scala&gt; book set Title to "Scala for the Impatient"
+
+scala&gt; println(book)
+$line4.$read$$iw$$iw$Document[title=Scala for the Impatient]
+</pre>
+
+
+
+<h2 id="toc_3.6">内部类</h2>
+
+<p>
+Scala中几乎可以在任何语法中嵌套任何语法：可以在函数中定义函数，也可以在类中定义
+类。
+</p>
+
+<h3 id="toc_3.6.1">类中的类</h3>
+
+<p>
+内部类的一个例子：
+</p>
+
+<pre class="brush: scala">
+import scala.collection.mutable.ArrayBuffer
+
+class Network {
+  class Member(val name: String) {
+    val contacts = new ArrayBuffer[Member]
+  }
+
+  private val members = new ArrayBuffer[Member]
+
+  def join(name: String) = {
+    val m = new Member(name)
+    members += m
+    m
+  }
+}
+</pre>
+
+<p>
+对于两个不同的网络实例：
+</p>
+
+<pre class="brush: scala">
+val chatter = new Network
+val myFace = new Network
+</pre>
+
+<p>
+内部的<code>Member</code>是不同的，也就是说<code>chatter.Member</code>和<code>myFace.Member</code>是两个不同的类
+。这与Java不同，Java里同一个类的内部类是相同的。
+</p>
+
+<p>
+在新建实例时，Scala中：
+</p>
+
+<pre class="brush: scala">
+new chatter.Member
+</pre>
+
+<p>
+而在Java里，这个语法看起来有点别扭：
+</p>
+
+<pre class="brush: java">
+chatter.new Member()
+</pre>
+
+<p>
+以我们的例子来说，可以在各自的网络中添加成员，但不能跨网添加成员：
+</p>
+
+<pre class="brush: scala">
+val fred = chatter.join("Fred")
+val wilma = chatter.join("Wilma")
+fred.contacts += wilma // OK
+val barney = myFace.join("Barney") // Has type myFace.Member
+fred.contacts += barney // No
+  // Can’t add a myFace.Member to a buffer of chatter.Member elements
+</pre>
+
+<p>
+如果想要跨网加，可以有两个方案：
+</p>
+
+<ul>
+<li>
+用移到伴生对象中
+
+<li>
+类型投影
+
+</ul>
+
+<h3 id="toc_3.6.2">伴生对象中的类</h3>
+
+<pre class="brush: scala">
+import scala.collection.mutable.ArrayBuffer
+
+class Network {
+  private val members = new ArrayBuffer[Network.Member]
+
+  def join(name: String) = {
+    val m = new Network.Member(name)
+    members += m
+    m
+  }
+  def description = "a network with members " + 
+    (for (m &lt;- members) yield m.description).mkString(", ")
+}
+
+object Network {
+  class Member(val name: String) {
+    val contacts = new ArrayBuffer[Member]
+    def description = name + " with contacts " + 
+      (for (c &lt;- contacts) yield c.name).mkString(" ")
+  }
+}
+
+object Main extends App {
+  val chatter = new Network
+  val myFace = new Network
+
+  val fred = chatter.join("Fred")
+  val wilma = chatter.join("Wilma")
+  fred.contacts += wilma // OK
+  val barney = myFace.join("Barney")
+  fred.contacts += barney // Also OK
+  println("chatter is " + chatter.description)
+  println("myFace is " + myFace.description)
+}
+</pre>
+
+<h3 id="toc_3.6.3">类型投影</h3>
+
+<p>
+上面那样把内部类放在伴生对象中，所以的内部类都可以跨实例匹配了。如果只是想在指定
+的语句中跨实例，用类型投影的的方式<code>Network#Member</code>表示是任何<code>Network</code>的<code>Member</code>
+，如：
+</p>
+
+<pre class="brush: scala">
+class Network {
+  class Member(val name: String) {
+    val contacts = new ArrayBuffer[Network#Member]
+  }
+
+  private val members = new ArrayBuffer[Member]
+
+  def join(name: String) = {
+    val m = new Member(name)
+    members += m
+    m
+  }
+}
+
+val chatter = new Network
+val myFace = new Network
+
+val fred = chatter.join("Fred")
+val wilma = chatter.join("Wilma")
+fred.contacts += wilma // OK
+val barney = myFace.join("Barney") 
+fred.contacts += barney // Also OK
+</pre>
+
+<h3 id="toc_3.6.4">外部类的引用</h3>
+
+<p>
+像Java一样，在内部类中可以通过<code>外部类.this</code>的方式来得到外部类的<code>this</code>引用。
+</p>
+
+<p>
+如果有必要，还可以用下面这样的语法建立一个指向该引用的别名：
+</p>
+
+<pre class="brush: scala">
+class 外部类 { 别名 =&gt;
+	class 内部类 {
+	}
+}
+</pre>
+
+<p>
+例如：
+</p>
+
+<pre class="brush: scala">
+import scala.collection.mutable.ArrayBuffer
+
+class Network(val name: String) { outer =&gt;  
+  class Member(val name: String) {
+    val contacts = new ArrayBuffer[Member]
+    def description = name + " inside " + outer.name
+  }
+
+  private val members = new ArrayBuffer[Member]
+
+  def join(name: String) = {
+    val m = new Member(name)
+    members += m
+    m
+  }
+}
+
+object Main extends App {
+  val chatter = new Network("Chatter")
+  val myFace = new Network("MyFace")
+
+  val fred = chatter.join("Fred")
+  println(fred.description);
+  val barney = myFace.join("Barney")
+  println(barney.description);
+}
+</pre>
+
+<p>
+这里的<code>outer</code>指向的是<code>Ntework.this</code>，引用名可以是任何合法的标识符。当然推荐不要
+用<code>self</code>，这个名字在内部类中容易引起误解。
+</p>
+
+<p>
+这样的语法与自身类型语法相关，关于它后面有更多描述。
+</p>
+
+
+
+<h2 id="toc_3.7">路径</h2>
+
+<p>
+包名加上类名就形成了典型的路径。用具体的定义来说，路径必须是不可变的，内容可以
+是：
+</p>
+
+<ul>
+<li>
+包
+
+<li>
+对象
+
+<li>
+<code>val</code>
+
+<li>
+<code>this</code>、<code>super</code>、<code>super[S]</code>、<code>C.this</code>、<code>C.super</code>、<code>C.super[S]</code>
+
+</ul>
+
+<p>
+不可以是：
+</p>
+
+<ul>
+<li>
+路径的组成部分不可以是类，比如内部类是按个实例区分的不同类。
+
+<li>
+也不能是<code>var</code>，因为<code>var</code>的内容是可变的，而路径是不可变的。
+
+</ul>
+
+<p>
+以内部类为例：
+</p>
+
+<pre class="brush: scala">
+var personal = new Network
+val fred = new personal.Member  // error person是可变引用
+
+val wrok = new Network
+val fred = new work.Member  // OK
+</pre>
+
+<p>
+其实对于内部类，编译器会把嵌套的表达式转为投影<code>type#T</code>。如：<code>personal.Member</code>转
+为<code>personal.type#Member</code>，即<code>personal.type</code>单例对象中的<code>Member</code>。
+</p>
+
+<p>
+所以如果看到编译器报错<code>personal.type#Member</code>有问题，要明白所指的其实就是
+<code>personal.Member</code>。
+</p>
+
+
+
+<h2 id="toc_3.8">类型别名</h2>
+
+<p>
+关键字<code>type</code>可以给类型创建别名。别名必须放在类或对象中，不能出现在Scala顶层：
+</p>
+
+<pre class="brush: scala">
+class Document {
+  import scala.collection.mutable._
+
+  type Index = HashMap[String, (Int, Int)]
+
+}
+</pre>
+
+<p>
+不过在REPL环境中可以用别名，因为REPL已经在一个对象中了。
+</p>
+
+
+
+<h2 id="toc_3.9">结构类型</h2>
+
+<p>
+结构类型很像JavaScript或是Ruby中的鸭子类型：检查是否有指定的字段、方法。
+</p>
+
+<p>
+如下面的<code>appendLines()</code>方法用结构类型声明参数可以是任何含有
+<code>append(str: String): Any</code>方法的类型：
+</p>
+
+<pre class="brush: scala">
+def appendLines(target: { def append(str: String): Any }, 
+		lines: Iterable[String]) 
+{
+  for (l &lt;- lines) { target.append(l); target.append("\n") }
+}
+
+val lines = Array("Mary", "had", "a", "little", "lamb")
+
+val builder = new StringBuilder
+appendLines(builder, lines)
+println(builder)
+</pre>
+
+<p>
+由于在底层实现时是通过反射来调用<code>target.append()</code>方法，为了性能考虑只有在无法用
+共同特质描述的情况下才用结构类型。
+</p>
+
+
+
+<h2 id="toc_3.10">复合类型</h2>
+
+<p>
+用<code>Type1 with Type2 with Type</code>声明同时满足多个类型，如：
+</p>
+
+<pre class="brush: scala">
+val image = new ArrayBuffer[java.awt.Shape with java.io.Serializable]
+</pre>
+
+<p>
+存放的成员必须是满足这两个条件的类型，如<code>Rectangle</code>
+</p>
+
+<pre class="brush: scala">
+image += new Rectangle(5, 10, 20, 30) // OK
+image += new Area(rect)               // error Area类型不是Serializable的
+</pre>
+
+<p>
+结构类型也可添加到简单类型或是复合类型的声明中：
+</p>
+
+<pre class="brush: scala">
+val image = new ArrayBuffer[Shape with Serializable { def contains(p: Point): Boolean } ]
+</pre>
+
+<p>
+上面的定义不仅要是<code>Shape</code>和<code>Serializable</code>，还要有一个<code>contains()</code>方法。
+</p>
+
+<p>
+从技术上来说，如下的结构类型：
+</p>
+
+<pre class="brush: scala">
+AnyRef { def append(str: String): Any }
+</pre>
+
+<p>
+可以简写为：
+</p>
+
+<pre class="brush: scala">
+{ def append(str: String): Any }
+</pre>
+
+<p>
+这样的复合类型：
+</p>
+
+<pre class="brush: scala">
+Shape with Serializable {}
+</pre>
+
+<p>
+可以简写为：
+</p>
+
+<pre class="brush: scala">
+Shape with Serializable
+</pre>
+
+
+
+<h2 id="toc_3.11">存在类型</h2>
+
+<p>
+所有Java类型在Scala中都有对等的概念。一般的类型可以用同名的类型表示，如：
+</p>
+
+<ul>
+<li>
+Java中的<code>Pattern</code>对应Scala里的<code>Pattern</code>
+
+<li>
+Java中的<code>Iterator&lt;Component&gt;</code>对应Scala里的<code>Iterator[Component]</code>
+
+</ul>
+
+<p>
+但是像是Java里的<code>Iterator&lt;?&gt;</code>或<code>Iterator&lt;? extends Component&gt;</code>这样的通配符类型
+或是<code>Iterator</code>这样没有参数的原始类型要用到一种额外的叫作“存在类型”的类型来表示。
+</p>
+
+<p>
+存在类型是Scala语言所支持的特性，但实际上它的作用是用于从Scala访问Java类型。主要
+用途是当Scala访问Java时能够理解编译器报错的信息。存在类型的通用形式如下：
+</p>
+
+<pre class="brush: scala">
+  type forSome { declarations }
+</pre>
+
+<p>
+<code>type</code>是任意的Scala类型，<code>declarations</code>是一个抽象的<code>val</code>和<code>type</code>列表。这个定义
+可以解读为：声明的变量和类型是存在但未知的，正如类中的抽象成员那样。这个类型进而
+被允许引用这些声明的变量和类型，虽然编译器不知道具体是什么类。
+</p>
+
+<p>
+看一个具体的例子，Java中的<code>Iterator&lt;?&gt;</code>可以在Scala中写为：
+</p>
+
+<pre class="brush: scala">
+Iterator[T] forSome { type T }
+</pre>
+
+<p>
+相当于前面的类型通配符：
+</p>
+
+<pre class="brush: scala">
+Iterator[_]
+</pre>
+
+<p>
+其实类型通配符就是存在类型的一个语法糖。
+</p>
+
+<p>
+Java中的：
+</p>
+
+<pre class="brush: java">
+Iterator&lt;? extends Component&gt;
+</pre>
+
+<p>
+在Scala中写为存在类型结合指定上界和下界的方式：
+</p>
+
+<pre class="brush: scala">
+Iterator[T] forSome { type T &lt;: Component }
+</pre>
+
+<p>
+相当于前面的类型通配符：
+</p>
+
+<pre class="brush: scala">
+Iterator[_ &lt;: Component]
+</pre>
+
+<p>
+还可以有更加复杂的表示法，如：
+</p>
+
+<pre class="brush: scala">
+map[T, U] forSome { type T; type U &lt;: T }
+</pre>
+
+<p>
+还可以在<code>forSome</code>块中使用<code>val</code>声明因为<code>val</code>是可以有内部类的。以类型：
+</p>
+
+<pre class="brush: scala">
+import scala.collection.mutable.ArrayBuffer
+
+class Network {
+
+  class Member(val name: String) {
+    // ...
+  }
+  
+  // ...
+  
+}
+</pre>
+
+<p>
+为例，可以用这样的形式：
+</p>
+
+<pre class="brush: scala">
+m.Member forSome { val n: Network }
+</pre>
+
+<p>
+这里就完全等同于类型投影：
+</p>
+
+<pre class="brush: scala">
+Network#member
+</pre>
+
+<p>
+但也会有更复杂的情况：
+</p>
+
+<pre class="brush: scala">
+def process[M &lt;: n.Member forSome { val n: Network }](m1: M, m2: M) = (m1, m2)
+</pre>
+
+<p>
+这个方法只接收同一实例子类的成员：
+</p>
+
+<pre class="brush: scala">
+val chatter = new Network
+val myFace = new Network
+val fred = chatter.join("Fred")
+val wilma = chatter.join("Wilma")
+val barney = myFace.join("Barney")
+process(fred, wilma) // Ok
+process(fred, barney) // Error
+</pre>
+
+<p>
+存在类型对于对于简单的用例来说，可以当<code>forSome</code>不存在。虽然<code>forSome</code>语句中的类型
+和值是未知的，Scala还是会检查程序是否完备。举例来说，对于以下的Java类：
+</p>
+
+<pre class="brush: java">
+  // This is a Java class with wildcards
+  public class Wild {
+    Collection&lt;?&gt; contents() {
+      Collection&lt;String&gt; stuff = new Vector&lt;String&gt;();
+      stuff.add("a");
+      stuff.add("b");
+      stuff.add("see");
+      return stuff;
+    }
+  }
+</pre>
+
+<p>
+如果在Scala中访问这个类，会看到它有一个存在类型：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val contents = (new Wild).contents
+  contents: java.util.Collection[?0] forSome { type ?0 } =
+     [a, b, see]
+</pre>
+
+<p>
+要看这个集合里有多少元素，可以简单忽略存在定义部分，像平常一样调用<code>size</code>方法：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; contents.size()
+  res0: Int = 3
+</pre>
+
+<p>
+对于复杂的类型的情况，存在类型会显得笨拙一些。因为没有办法给存在类型命名。以创建
+一个可变Scala类型为例，需要用<code>contents</code>的元素初始化它：
+</p>
+
+<pre class="brush: scala">
+  import scala.collection.mutable.Set
+  val iter = (new Wild).contents.iterator
+  val set = Set.empty[???]     // what type goes here? 这里要用什么类型？
+  while (iter.hasMore)
+    set += iter.next()
+</pre>
+
+<p>
+第三行里没有办法给出Java集合里的元素类型名称，所以不能给出<code>set</code>方法的满足类型。
+为了绕过此问题，应该考试如下两种技巧：
+</p>
+
+<p>
+1）将存在的类型传入方法时，把类型参数从<code>forSome</code>语句移到方法的类型参数中。
+在方法体内，可以用这个类型参数来指定本来在<code>forSome</code>语句中的类型。
+</p>
+
+<p>
+2）不要从方法返回存在的类型，而是返回一个带有<code>forSome</code>语句中的每个类型的抽象成员
+的对象（参见抽象对象一章）。
+</p>
+
+<p>
+使用这两个技巧，之前的代码写成这个样子：
+</p>
+
+<pre class="brush: scala">
+  import scala.collection.mutable.Set
+  import java.util.Collection
+
+  abstract class SetAndType {
+    type Elem
+    val set: Set[Elem]
+  }
+
+  def javaSet2ScalaSet[T](jset: Collection[T]): SetAndType = {
+    val sset = Set.empty[T]  // now T can be named!
+
+    val iter = jset.iterator
+    while (iter.hasNext)
+      sset += iter.next()
+
+    return new SetAndType {
+      type Elem = T
+      val set = sset
+    }
+  }
+</pre>
+
+<p>
+综上所棕，对于Scala来说，用存在类型实现的这么复杂的东西用Scala的抽象类都聚脂实现
+。所以Scala中几乎不用存在类型。
+</p>
+
+
+<table>
+<tr>
+<th>
+title 1
+</th>
+<th>
+title 2
+</th>
+</tr>
+<tr>
+<td>
+value
+</td>
+<td>
+go
+</td>
+</tr>
+<tr>
+<td>
+value
+</td>
+<td>
+go
+</td>
+</tr>
+<tr>
+<td>
+value
+</td>
+<td>
+go
+</td>
+</tr>
+<tr>
+<td>
+value
+</td>
+<td>
+go
+</td>
+</tr>
+</table>
+
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
 </pre>
  </div>
 </body>

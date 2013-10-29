@@ -929,6 +929,7 @@ Scala中字段与方法都可以用`final`修饰为不可重写（因为Scala的
 == 类型检查和转换 ==
 
 | Scala                   | Java                 |
+|-------------------------|----------------------|
 | obj.isInstanceOf[Clazz] | obj instanceof Clazz |
 | obj.asInstanceOf[Clazz] | (Clazz) obj          |
 | classOf[Clazz]          | Clazz.class          |
