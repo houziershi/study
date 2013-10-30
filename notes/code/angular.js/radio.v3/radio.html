@@ -1,0 +1,18 @@
+<!doctype html>
+<html ng-app="myApp">
+<head>
+<script src="../angular.min.js"></script>
+<script src="radio.js"></script>
+</head>
+<body>
+
+	<div ng-controller="PlayerController">
+		<ul id="programs_list" class="">
+			<li ng-repeat="program in programs" ng-click="play(program)">
+				<span class="large-12">{{ program.title.$text }}</span>
+			</li>
+		</ul>
+	</div>
+
+</body>
+</html>
