@@ -905,14 +905,14 @@ PlayerController里创建这个play动作函数，然后我们就有了一个功
 </p>
 
 <pre class="brush: javascript" title="">
-// format.mp4.$text是NPR API给我们的到这个音频mp4文件的路径
+// format.mp4.$text is the route to the mp4 file from the NPR api
 $scope.play = function(program) {
-   if ($scope.playing) audio.pause();
-   var url = program.audio[0].format.mp4.$text;
-   audio.src = url;
-   audio.play();
-   // 储存播放器的状态为正在播放
-   $scope.playing = true;
+	if ($scope.playing) $scope.audio.pause();
+	var url = program.audio[0].format.mp4.$text;
+	$scope.audio.src = url;
+	$scope.audio.play();
+	// Store the state of the player as playing
+	$scope.playing = true;
 }
 </pre>
 
