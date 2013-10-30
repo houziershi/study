@@ -182,3 +182,5 @@ pidgin：[[pidgin]]
 [[google.android]]
 
 [[amazone.revenue]]
+
+[[char.face]]
