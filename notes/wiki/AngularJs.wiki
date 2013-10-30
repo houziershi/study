@@ -740,6 +740,246 @@ app.directive('nprLink', function() {
 [[../code/angular.js/radio.v3/radio|查看效果]]
 
 
+= 服务 =
+
+目前为止，我们把注意力都放在了如何把视图绑定到$scope和如何用controller管理数据，
+从内存和效率角度出发，controllers仅当需要的时候才会被实例化并在不需要的时候
+被丢弃掉，这就意味着每一次我们使用route跳转或者重载视图（我们会在下一篇讨论
+routing），当前的controller会被销毁。
+
+Services可以让我们在整个应用的生命周期中保存数据并且可以让controllers之间共享
+数据。
+
+Services都是单例的，就是说在一个应用中，每一个Serice对象只会被实例化一次（用
+`$injector`服务)，主要负责提供一个接口把特定函数需要的方法放在一起，我们就拿
+上一章见过的`$http`Service来举例，他就提供了访问底层浏览器的XMLHttpRequest对象的
+方法，相较于调用底层的XMLHttpRequest对象，`$http`API使用起来相当的简单。
+
+Angular内建了很多服务供我们日常使用，这些服务对于在复杂应用中建立自己的Services
+都是相当有用的。
+
+AngularJS让我们可以轻松的创建自己的services，仅仅注册service即可，一旦注册，
+Angular编译器就可以找到并加载他作为依赖供程序运行时使用。
+
+最常见的创建方法就是用`angular.module`API的factory模式：
+
+{{{class="brush: javascript"  title="quickview/service.js"
+angular.module('myApp.services', []).factory('githubService', function() {
+	var serviceInstance = {};
+	// 我们的第一个服务
+	return serviceInstance;
+});
+}}}
+
+当然，我们也可以使用内建的`$provide`service来创建service。
+
+这个服务并没有做实际的事情，但是他向我们展示了如何去定义一个service。创建一个
+service就是简单的返回一个函数，这个函数返回一个对象。这个对象是在创建应用实例的
+时候创建的（记住，这个对象是单例对象）
+
+我们可以在这个纵贯整个应用的单例对象里处理特定的需求，在上面的例子中，我们开始
+创建了GitHub service，接下来让我们添加一些有实际意义的代码去调用GitHub的API：
+
+{{{class="brush: javascript"  title="quickview/service.js"
+angular.module('myApp.services', []).factory('githubService', ['$http', 
+	function($http) {
+		var doRequest = function(username, path) {
+			return $http({
+				method: 'JSONP',
+				url: 'https://api.github.com/users/' + username + '/' + path 
+					+ '?callback=JSON_CALLBACK'
+			});
+		}
+		return {
+			events: function(username) {
+				return doRequest(username, 'events'); 
+			},
+		};
+}]);
+}}}
+
+我们创建了一个只有一个方法的GitHub Service，`events`可以获取到给定的GitHub用户
+最新的GitHub事件，为了把这个服务添加到我们的controller中。我们建立一个controller
+并加载（或者注入）githubService作为运行时依赖，我们把service的名字作为参数传递给
+controller 函数（使用中括号`[]`)：
+
+{{{class="brush: javascript"  title="quickview/service.js"
+app.controller('ServiceController', ['$scope', 'githubService', 
+	function($scope, githubService) { }
+]);
+}}}
+
+请注意，这种依赖注入的写法对于js压缩是安全的，我们会在以后的章节中深入导论这件
+事情。
+
+我们的`githubService`注入到我们的`ServiceController`后，我们就可以像使用其他服务
+（我们前面提到的`$http`服务）一样的使用`githubService`了。
+
+我们来修改一下我们的示例代码，对于我们视图中给出的GitHub用户名，调用GitHub API，
+就像我们在数据绑定第三章节看到的，我们绑定`username`属性到视图中
+
+{{{class="brush: html"  title="quickview/service.html"
+<div ng-controller="ServiceController">
+	<label for="username">Type in a GitHub username</label>
+	<input type="text" ng-model="username" 
+		placeholder="Enter a GitHub username, like auser" />
+	<pre ng-show="username">{{ events }}</pre>
+</div>
+}}}
+
+现在我们可以监视`$scope.username`属性，基于双向数据绑定，只要我们修改了视图，
+对应的model数据也会修改：
+
+{{{class="brush: javascript"  title="quickview/service.js"
+app.controller('ServiceController', ['$scope', 'githubService', 
+	function($scope, githubService) {
+    // Watch for changes on the username property.
+    // If there is a change, run the function
+    $scope.$watch('username', function(newUsername) {
+			// uses the $http service to call the GitHub API
+			// and returns the resulting promise
+			githubService.events(newUsername).success(
+				function(data, status, headers) {
+					// the success function wraps the response in data
+					// so we need to call data.data to fetch the raw data
+					$scope.events = data.data;
+				}
+			)
+    });
+	}
+]);
+}}}
+
+因为返回了`$http`promise(像我们上一章一样），我们可以像直接调用
+`$http`service一样的去调用`.success`方法。
+
+[[../code/angular.js/quickview/service|查看效果]]
+
+{{{class="brush: javascript"  title="quickview/service.js"
+
+}}}
+
+
+{{{class="brush: html" title=""
+}}}
+
+
+{{{class="brush: html" title=""
+}}}
+
+
+{{{class="brush: html" title=""
+}}}
+
+
+{{{class="brush: html" title=""
+}}}
+
+
+{{{class="brush: html" title=""
+}}}
+
+
+{{{class="brush: html" title=""
+}}}
+
+
+{{{class="brush: html" title=""
+}}}
+
+
+{{{class="brush: html" title=""
+}}}
+
+
+{{{class="brush: html" title=""
+}}}
+
+
+{{{class="brush: html" title=""
+}}}
+
+
+{{{class="brush: html" title=""
+}}}
+
+
+{{{class="brush: html" title=""
+}}}
+
+
+{{{class="brush: html" title=""
+}}}
+
+
+{{{class="brush: html" title=""
+}}}
+
+
+{{{class="brush: html" title=""
+}}}
+
+
+{{{class="brush: html" title=""
+}}}
+
+
+{{{class="brush: html" title=""
+}}}
+
+
+{{{class="brush: html" title=""
+}}}
+
+
+{{{class="brush: html" title=""
+}}}
+
+
+{{{class="brush: html" title=""
+}}}
+
+
+{{{class="brush: html" title=""
+}}}
+
+
+{{{class="brush: html" title=""
+}}}
+
+
+{{{class="brush: html" title=""
+}}}
+
+
+{{{class="brush: html" title=""
+}}}
+
+
+{{{class="brush: html" title=""
+}}}
+
+
+{{{class="brush: html" title=""
+}}}
+
+
+{{{class="brush: html" title=""
+}}}
+
+
+{{{class="brush: html" title=""
+}}}
+
+
+{{{class="brush: html" title=""
+}}}
+
+
+{{{class="brush: html" title=""
+}}}
+
+
 {{{class="brush: html" title=""
 }}}
 
