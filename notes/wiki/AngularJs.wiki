@@ -7,6 +7,9 @@
 
 == Hello World ==
 
+[[../code/angular.js/00.startup/basic|例子]]
+。代码如下：
+
 {{{class="brush: html; highlight:[2,4,8,9]"  title="00.startup/basic.html"
 <!doctype html>
 <html ng-app>
@@ -78,7 +81,7 @@ context。
 `name`属性。把这个函数放进`app.run`函数里执行，我们就保证了它能在应用的其他部分
 之前被执行。你可以把`app.run`函数看作是Angular应用的`main`方法。
 
-{{{class="brush: javascript"  title="00.startup/js/main.js"
+{{{class="brush: javascript"  title="00.startup/js/showscop01.js"
 app.run(function($rootScope) {
   $rootScope.name = "Ari Lerner";
 });
@@ -87,15 +90,12 @@ app.run(function($rootScope) {
 现在，我们可以在`view`的任何地方访问这个`name`属性，使用模版表达式`{{}}`，像这样
 ：
 
-{{{class="brush: html"  title="00.startup/index.html"
+{{{class="brush: html"  title="00.startup/showscop.01.html"
 {{ name }}
 }}}
 
 页面上显示的结果就是：
-
-{{{class="brush: html"
-Ari Lerner
-}}}
+[[../code/angular.js/00.startup/showscop.01|查看效果]]
 
 
 === Controller连接Scope ===
@@ -133,8 +133,7 @@ app.controller('MyController', function($scope) {
 这个`person`对象，因为它在`$scope`上。
 
 页面上显示出：
-
-Ari Lerner
+[[../code/angular.js/00.startup/showscop.02|查看效果]]
 
 === scope继承层级 ===
 
@@ -179,8 +178,10 @@ scope中的属性一样：
 <img src="images/AngularJS/02.png" />
 
 页面效果为：
+[[../code/angular.js/00.startup/showscop.03|查看效果]]
 
-<img src="images/AngularJS/ek03.jpg" />
+结合上面所有的内容：
+[[../code/angular.js/00.startup/index|查看效果]]
 
 === 结合进myApp ===
 
@@ -330,6 +331,9 @@ app.controller('MyController', function($scope) {
 </html>
 }}}
 
+
+[[../code/angular.js/00.startup/bind.model|查看效果]]
+
 === 绑定函数 ===
 
 不光是把数据绑定到用于显示的view上，还可以把函数绑定到DOM元素上。不仅是按钮，
@@ -357,6 +361,8 @@ app.controller('DemoController', function($scope) {
 });
 }}}
 
+[[../code/angular.js/00.startup/bind.func|查看效果]]
+
 === Ajax ===
 
 Angular.js通过一个`$http`服务提供了多种方式来调用AJAX。
@@ -379,13 +385,13 @@ app.controller('PlayerController', function($scope, $http) {
 注意， 像上面例子中那样，原封不动加上以下字符串`callback=JSON_CALLBACK`，
 Angular.js就会负责为你处理JSONP请求，将`JSON_CALLBACK`替换成一个合适的回调函数。
 
-页面上显示结果：
-
 {{{class="brush: html" title="bind.html"
 <div ng-controller="PlayerController">
 {{ programs }}
 </div>
 }}}
+
+[[../code/angular.js/00.startup/bind|查看效果]]
 
 == 指令属性 ==
 

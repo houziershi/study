@@ -1,0 +1,18 @@
+<!doctype html>
+<html ng-app="myApp">
+  <head>
+    <script src="../angular.min.js"></script>
+    <script src="js/bind.js"></script>
+  </head>
+  <body>
+
+		<div ng-controller="ParentController">
+			<div ng-controller="ChildController">
+				<input type="text" ng-model="person.name" placeholder="Name"></input>
+				<a ng-click="sayHello()">Say hello</a>
+			</div>
+			{{ person }}
+		</div>
+
+  </body>
+</html>

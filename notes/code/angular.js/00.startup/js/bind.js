@@ -1,5 +1,9 @@
 
 var app = angular.module('myApp', []);
+
+app.run(function($rootScope) {
+  $rootScope.name = "Ari Lerner";
+});
  
 app.controller('MyController', function($scope) {
 	$scope.person = { name: "Ari Lerner" };
@@ -24,9 +28,10 @@ app.controller('DemoController', function($scope) {
   $scope.subtract = function(amount) { $scope.counter -= amount; };
 });
 
+var radioJsonPath = 'http://api.openbeerdatabase.com/v1/beers.json?callback=JSON_CALLBACK';
+var radioJsonPath = 'http://api.openbeerdatabase.com/v1/beers.json?callback=JSON_CALLBACK';
 app.controller('PlayerController', function($scope, $http) {
-	$http({ method: 'JSONP', 
-    url: 'http://api.openbeerdatabase.com/v1/beers.json?callback=JSON_CALLBACK'
+	$http({ method: 'JSONP', url: radioJsonPath 
 	}).success(function(data, status, headers, config) { 
 		/*
 		 * data contains the response  
@@ -34,6 +39,6 @@ app.controller('PlayerController', function($scope, $http) {
 		 * headers is the header getter function  
 		 * config is the object that was used to create the HTTP request
 		 */
-		// $scope.programs = data;
+		$scope.programs = data;
 	}).error(function(data, status, headers, config) {});
 });

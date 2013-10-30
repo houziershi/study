@@ -69,6 +69,11 @@
 
 <h2 id="toc_1.1">Hello World</h2>
 
+<p>
+<a href="../code/angular.js/00.startup/basic.html">例子</a>
+。代码如下：
+</p>
+
 <pre class="brush: html; highlight:[2,4,8,9]"  title="00.startup/basic.html">
 &lt;!doctype html&gt;
 &lt;html ng-app&gt;
@@ -168,7 +173,7 @@ context。
 之前被执行。你可以把<code>app.run</code>函数看作是Angular应用的<code>main</code>方法。
 </p>
 
-<pre class="brush: javascript"  title="00.startup/js/main.js">
+<pre class="brush: javascript"  title="00.startup/js/showscop01.js">
 app.run(function($rootScope) {
   $rootScope.name = "Ari Lerner";
 });
@@ -179,17 +184,14 @@ app.run(function($rootScope) {
 ：
 </p>
 
-<pre class="brush: html"  title="00.startup/index.html">
+<pre class="brush: html"  title="00.startup/showscop.01.html">
 {{ name }}
 </pre>
 
 <p>
 页面上显示的结果就是：
+<a href="../code/angular.js/00.startup/showscop.01.html">查看效果</a>
 </p>
-
-<pre class="brush: html">
-Ari Lerner
-</pre>
 
 
 <h3 id="toc_2.2.2">Controller连接Scope</h3>
@@ -240,10 +242,7 @@ app.controller('MyController', function($scope) {
 
 <p>
 页面上显示出：
-</p>
-
-<p>
-Ari Lerner
+<a href="../code/angular.js/00.startup/showscop.02.html">查看效果</a>
 </p>
 
 <h3 id="toc_2.2.3">scope继承层级</h3>
@@ -300,10 +299,12 @@ scope中的属性一样：
 
 <p>
 页面效果为：
+<a href="../code/angular.js/00.startup/showscop.03.html">查看效果</a>
 </p>
 
 <p>
-<img src="images/AngularJS/ek03.jpg" />
+结合上面所有的内容：
+<a href="../code/angular.js/00.startup/index.html">查看效果</a>
 </p>
 
 <h3 id="toc_2.2.5">结合进myApp</h3>
@@ -490,6 +491,11 @@ app.controller('MyController', function($scope) {
 &lt;/html&gt;
 </pre>
 
+
+<p>
+<a href="../code/angular.js/00.startup/bind.model.html">查看效果</a>
+</p>
+
 <h3 id="toc_2.3.3">绑定函数</h3>
 
 <p>
@@ -523,6 +529,10 @@ app.controller('DemoController', function($scope) {
 });
 </pre>
 
+<p>
+<a href="../code/angular.js/00.startup/bind.func.html">查看效果</a>
+</p>
+
 <h3 id="toc_2.3.4">Ajax</h3>
 
 <p>
@@ -549,15 +559,15 @@ app.controller('PlayerController', function($scope, $http) {
 Angular.js就会负责为你处理JSONP请求，将<code>JSON_CALLBACK</code>替换成一个合适的回调函数。
 </p>
 
-<p>
-页面上显示结果：
-</p>
-
 <pre class="brush: html" title="bind.html">
 &lt;div ng-controller="PlayerController"&gt;
 {{ programs }}
 &lt;/div&gt;
 </pre>
+
+<p>
+<a href="../code/angular.js/00.startup/bind.html">查看效果</a>
+</p>
 
 <h2 id="toc_2.4">指令属性</h2>
 
