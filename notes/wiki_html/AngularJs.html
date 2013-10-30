@@ -65,6 +65,9 @@
 <li><a href="#toc_5.5">使用模板</a>
 </ul>
 <li><a href="#toc_6">服务</a>
+<ul>
+<li><a href="#toc_6.1">结合应用</a>
+</ul>
 </ul>
 </div>
 
@@ -1164,18 +1167,92 @@ app.controller('ServiceController', ['$scope', 'githubService',
 <a href="../code/angular.js/quickview/service.html">查看效果</a>
 </p>
 
+<p>
+在这个示例中，我们注意到输入框内容改变前有一些延迟，如果我们不设置延迟，那么我们
+就会对键入输入框的每一个字符调用GitHub API，这并不是我们想要的，我们可以使用内建
+的<code>$timeout</code>服务来实现这种延迟。
+</p>
+
+<p>
+如果想使用<code>$timeout</code>服务，我们只要简单的把他注入到我们的<code>githubService</code>中就可以
+了：
+</p>
+
 <pre class="brush: javascript"  title="quickview/service.js">
-
+app.controller('ServiceController', ['$scope', '$timeout', 'githubService',
+    function($scope, $timeout, githubService) {
+}]);
 </pre>
 
+<p>
+注意我们要遵守Angular services依赖注入的规范：
+</p>
+
+<p>
+自定义的service要写在内建的Angular services之后，自定义的service之间是没有先后
+顺序的。
+</p>
+
+<p>
+我们现在就可以使用<code>$timeout</code>服务了，在本例中，在输入框内容的改变间隔如果没有超过
+350毫秒，<code>$timeout</code>service不会发送任何网络请求。换句话说，如果在键盘输入时超过
+350毫秒，我们就假定用户已经完成输入，我们就可以开始向GitHub发送请求
+</p>
+
+<pre class="brush: javascript"  title="quickview/service.js">
+app.controller('ServiceController', ['$scope', '$timeout', 'githubService',
+  function($scope, $timeout, githubService) {
+    // The same example as above, plus the $timeout service
+    var timeout;
+    $scope.$watch('username', function(newVal) {
+      if (newVal) {
+        if (timeout) $timeout.cancel(timeout);
+        timeout = $timeout(function() {
+          githubService.events(newVal)
+          .success(function(data, status) {
+            $scope.events = data.data;
+          });
+        }, 350);
+      }
+    });
+  }]);
+</pre>
+
+<p>
+从这应用开始，我们只看到了Services是如何把简单的功能整合在一起，Services还可以在
+多个controllers之间共享数据。比如，如果我们的应用有一个设置页面供用户设置他们的
+GitHub username，那么我们就要需要把<code>username</code>与其他controllers共享。
+</p>
+
+<p>
+这个系列的最后一章我们会讨论路由以及如何在多页面中跳转。
+</p>
+
+<p>
+为了在controllers之间共享<code>username</code>，我们需要在service中存储<code>username</code>，记住，在
+应用的生命周期中Service是一直存在的，所以可以把<code>username</code>安全的存储在这里：
+</p>
 
 <pre class="brush: html" title="">
+angular.module('myApp.services', []).factory('githubService', ['$http', 
+	function($http) {
+		var githubUsername;
+		var doRequest = function(path) {
+			return $http({
+				method: 'JSONP',
+				url: 'https://api.github.com/users/' + githubUsername + '/' + path 
+					+ '?callback=JSON_CALLBACK'
+			});
+		}
+		return {
+			events: function() { return doRequest('events'); },
+			setUsername: function(newUsername) { githubUsername = newUsername; }
+		};
+	}
+]);
 </pre>
 
-
-<pre class="brush: html" title="">
-</pre>
-
+<h2 id="toc_6.1">结合应用</h2>
 
 <pre class="brush: html" title="">
 </pre>
