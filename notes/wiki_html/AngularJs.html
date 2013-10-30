@@ -32,35 +32,36 @@
 <li><a href="#toc_2">应用实例</a>
 <ul>
 <li><a href="#toc_2.1">定义模块</a>
-<li><a href="#toc_2.2">Scopes</a>
-<ul>
-<li><a href="#toc_2.2.1">rootScope</a>
-<li><a href="#toc_2.2.2">Controller连接Scope</a>
-<li><a href="#toc_2.2.3">scope继承层级</a>
-<li><a href="#toc_2.2.4">独立的scop</a>
-<li><a href="#toc_2.2.5">结合进myApp</a>
-<li><a href="#toc_2.2.6">音频</a>
 </ul>
-<li><a href="#toc_2.3">数据绑定</a>
+<li><a href="#toc_3">Scopes</a>
 <ul>
-<li><a href="#toc_2.3.1">双向绑定</a>
-<li><a href="#toc_2.3.2">视图与后端代码绑定</a>
-<li><a href="#toc_2.3.3">绑定函数</a>
-<li><a href="#toc_2.3.4">Ajax</a>
+<li><a href="#toc_3.1">rootScope</a>
+<li><a href="#toc_3.2">Controller连接Scope</a>
+<li><a href="#toc_3.3">scope继承层级</a>
+<li><a href="#toc_3.4">独立的scop</a>
+<li><a href="#toc_3.5">结合进myApp</a>
+<li><a href="#toc_3.6">音频</a>
 </ul>
-<li><a href="#toc_2.4">指令属性</a>
+<li><a href="#toc_4">数据绑定</a>
 <ul>
-<li><a href="#toc_2.4.1">表达式简介</a>
-<li><a href="#toc_2.4.2">常见指令属性</a>
+<li><a href="#toc_4.1">双向绑定</a>
+<li><a href="#toc_4.2">视图与后端代码绑定</a>
+<li><a href="#toc_4.3">绑定函数</a>
+<li><a href="#toc_4.4">Ajax</a>
+<li><a href="#toc_4.5">结合电台程序</a>
+</ul>
+<li><a href="#toc_5">指令属性</a>
 <ul>
-<li><a href="#toc_2.4.2.1">ng-init</a>
-<li><a href="#toc_2.4.2.2">ng-click</a>
-<li><a href="#toc_2.4.2.3">ng-show / ng-hide</a>
-<li><a href="#toc_2.4.2.4">ng-repeat</a>
+<li><a href="#toc_5.1">表达式简介</a>
+<li><a href="#toc_5.2">常见指令属性</a>
+<ul>
+<li><a href="#toc_5.2.1">ng-init</a>
+<li><a href="#toc_5.2.2">ng-click</a>
+<li><a href="#toc_5.2.3">ng-show / ng-hide</a>
+<li><a href="#toc_5.2.4">ng-repeat</a>
 </ul>
-<li><a href="#toc_2.4.3">指令属性创建指南</a>
-<li><a href="#toc_2.4.4">收音机应用实例</a>
-</ul>
+<li><a href="#toc_5.3">指令属性创建指南</a>
+<li><a href="#toc_5.4">收音机应用实例</a>
 </ul>
 </ul>
 </div>
@@ -112,7 +113,7 @@
 <h1 id="toc_2">应用实例</h1>
 
 <p>
-通过实践创建一个项目<code>myApp</code>来学习，把js代码都放在<code>js/main.js</code>中。
+通过实践创建一个项目<code>myApp</code>来学习，把js代码都放在<code>js/radio.js</code>中。
 </p>
 
 <h2 id="toc_2.1">定义模块</h2>
@@ -121,7 +122,7 @@
 通过<code>angular.module</code>方法定义模块，
 </p>
 
-<pre class="brush: js"  title="00.startup/js/main.js">
+<pre class="brush: js"  title="00.startup/js/radio.js">
 var app = angular.module('myApp', []);
 </pre>
 
@@ -129,12 +130,12 @@ var app = angular.module('myApp', []);
 这样在页面上可以声明把模块绑定到指定的DOM中：
 </p>
 
-<pre class="brush: html; highlight:[2]"  title="00.startup/index.html">
+<pre class="brush: html; highlight:[2]"  title="00.startup/radio.html">
 &lt;!doctype html&gt;
 &lt;html ng-app="myApp"&gt;
   &lt;head&gt;
     &lt;script src="../angular.min.js"&gt;&lt;/script&gt;
-    &lt;script src="js/main.js"&gt;&lt;/script&gt;
+    &lt;script src="js/radio.js"&gt;&lt;/script&gt;
   &lt;/head&gt;
   &lt;body&gt;
   &lt;/body&gt;
@@ -145,7 +146,7 @@ var app = angular.module('myApp', []);
 绑定的地方就是AngularJs运行应用的地方。
 </p>
 
-<h2 id="toc_2.2">Scopes</h2>
+<h1 id="toc_3">Scopes</h1>
 
 <p>
 <code>$scope</code>是一个把view（一个DOM元素）连结到controller上的对象。在我们的MVC结构里，
@@ -159,7 +160,7 @@ context。
 数据，又存储将要运行在view上的函数。
 </p>
 
-<h3 id="toc_2.2.1">rootScope</h3>
+<h2 id="toc_3.1">rootScope</h2>
 
 <p>
 每一个Angular应用都会有一个<code>$rootScope</code>。
@@ -172,7 +173,7 @@ context。
 </p>
 
 <p>
-在这个例子里，我们将使用<code>$rootScope</code>。在<code>main.js</code>文件里，我们给这个<code>scope</code>加一个
+在这个例子里，我们将使用<code>$rootScope</code>。在<code>radio.js</code>文件里，我们给这个<code>scope</code>加一个
 <code>name</code>属性。把这个函数放进<code>app.run</code>函数里执行，我们就保证了它能在应用的其他部分
 之前被执行。你可以把<code>app.run</code>函数看作是Angular应用的<code>main</code>方法。
 </p>
@@ -192,7 +193,7 @@ app.run(function($rootScope) {
 {{ name }}
 </pre>
 
-<h3 id="toc_2.2.2">Controller连接Scope</h3>
+<h2 id="toc_3.2">Controller连接Scope</h2>
 
 <p>
 要真正看到scope的强大功能，让我们给一个DOM元素加上controller，它将创建这个元素的
@@ -222,10 +223,10 @@ app.run(function($rootScope) {
 
 <p>
 现在，<code>MyController</code>给我们建立了一个可以从DOM元素内部直接访问的scope对象。下面
-我们在的这个scope里创建一个<code>person</code>对象，在<code>main.js</code>中：
+我们在的这个scope里创建一个<code>person</code>对象，在<code>radio.js</code>中：
 </p>
 
-<pre class="brush: js"  title="00.startup/js/main.js">
+<pre class="brush: js"  title="00.startup/js/radio.js">
 app.controller('MyController', function($scope) {
   $scope.person = {
     name: "Ari Lerner"
@@ -242,7 +243,7 @@ app.controller('MyController', function($scope) {
 页面上显示出：
 </p>
 
-<h3 id="toc_2.2.3">scope继承层级</h3>
+<h2 id="toc_3.3">scope继承层级</h2>
 
 <p>
 所有scope都遵循原型继承（prototypal inheritance），这意味着它们
@@ -250,7 +251,7 @@ app.controller('MyController', function($scope) {
 scope上去找，如果在父scope上也没找到，就会继续向上回溯，一直到<code>$rootScope</code>上。
 </p>
 
-<h3 id="toc_2.2.4">独立的scop</h3>
+<h2 id="toc_3.4">独立的scop</h2>
 
 <p>
 唯一的例外：有些指令属性可以选择性地创建一个独立的scope，让这个scope不继承它的
@@ -298,7 +299,7 @@ scope中的属性一样：
 <a href="../code/angular.js/00.startup/scop.html">查看效果</a>
 </p>
 
-<h3 id="toc_2.2.5">结合进myApp</h3>
+<h2 id="toc_3.5">结合进myApp</h2>
 
 <p>
 现在，我们把scope用在我们的NPR应用上。在上一篇结尾我们定义了<code>app module</code>，现在
@@ -312,17 +313,17 @@ scope中的属性一样：
 </p>
 
 <p>
-回到<code>main.js</code>，现在我们就来创建这两个controller：
+回到<code>radio.js</code>，现在我们就来创建这两个controller：
 </p>
 
-<pre class="brush: js"  title="00.startup/js/main.js">
+<pre class="brush: js" title="radio.v1/radio.js">
 var app = angular.module('myApp', []);
  
 app.controller('PlayerController', ['$scope', function($scope) { }]);
 app.controller('RelatedController', ['$scope', function($scope) { }]);
 </pre>
 
-<h3 id="toc_2.2.6">音频</h3>
+<h2 id="toc_3.6">音频</h2>
 
 <p>
 这两个controller现在还没什么功能，那么，让我们给应用先加上点声音吧。在这个教程里
@@ -340,7 +341,7 @@ Chrome）。
 然后像你已经学过的那样——通过<code>$scope</code>对象把view和controller连接起来。
 </p>
 
-<pre class="brush: js"  title="00.startup/js/main.js">
+<pre class="brush: js" title="radio.v1/radio.js">
 app.controller('PlayerController', ['$scope', function($scope) {
   $scope.audio = document.createElement('audio');
 }]);
@@ -357,11 +358,11 @@ fetching）数据，现在我们先使用一个指定的<code>.mp4</code>网址�
 你可以指向任何网址。现在设定你的音频<code>src</code>地址如下：
 </p>
 
-<pre class="brush: js"  title="00.startup/js/main.js">
+<pre class="brush: js" title="radio.v1/radio.js">
 app.controller('PlayerController', ['$scope', function($scope) {
   $scope.playing = false;
   $scope.audio = document.createElement('audio');
-  $scope.audio.src = '/media/npr.mp4';
+  $scope.audio.src = 'http://r3.soundowl.com/3t10.mp3';
 }]);
 </pre>
 
@@ -375,7 +376,7 @@ app.controller('PlayerController', ['$scope', function($scope) {
 在下一篇里我们会更深入地介绍这一块，不过先看看上面例子里view的HTML：
 </p>
 
-<pre class="brush: html">
+<pre class="brush: html" title="radio.v1/radio.html">
 &lt;div ng-controller="PlayerController"&gt;
   &lt;button ng-click="play()" class="button" ng-show="!playing"&gt;Play&lt;/button&gt;
   &lt;button ng-click="stop()" class="button alert" ng-show="playing"&gt;Stop&lt;/button&gt;
@@ -396,24 +397,27 @@ app.controller('PlayerController', ['$scope', function($scope) {
 担心：
 </p>
 
-<pre class="brush: js">
+<pre class="brush: js" title="radio.v1/radio.js">
 app.controller('PlayerController', ['$scope', function($scope) {
-  $scope.playing = false;
-  $scope.audio = document.createElement('audio');
-  $scope.audio.src = '/media/npr.mp4';
-  $scope.play = function() {
-    $scope.audio.play();
-    $scope.playing = true;
-  };
-  $scope.stop = function() {
-    $scope.audio.pause();
-    $scope.playing = false;
-  };
-  $scope.audio.addEventListener('ended', function() {
-    $scope.$apply(function() {
-      $scope.stop()
-    });
-  });
+	$scope.audio = document.createElement('audio');
+	$scope.audio.src = 'http://r3.soundowl.com/3t10.mp3';
+
+	$scope.playing = false;
+
+	$scope.play = function() {
+		$scope.audio.play();
+		$scope.playing = true;
+	};
+	$scope.stop = function() {
+		$scope.audio.pause();
+		$scope.playing = false;
+	};
+
+	$scope.audio.addEventListener('ended', function() {
+		$scope.$apply(function() {
+			$scope.stop()
+		});
+	});
 }]);
 </pre>
 
@@ -422,9 +426,13 @@ app.controller('PlayerController', ['$scope', function($scope) {
 数据绑定。
 </p>
 
-<h2 id="toc_2.3">数据绑定</h2>
+<p>
+<a href="../code/angular.js/radio.v1/radio.html">查看效果</a>
+</p>
 
-<h3 id="toc_2.3.1">双向绑定</h3>
+<h1 id="toc_4">数据绑定</h1>
+
+<h2 id="toc_4.1">双向绑定</h2>
 
 <p>
 view与model双向绑定的意思是：view变了，model的内容也会变；model变了，view也跟着
@@ -446,7 +454,7 @@ view与model双向绑定的意思是：view变了，model的内容也会变；mo
 &lt;/div&gt;
 </pre>
 
-<h3 id="toc_2.3.2">视图与后端代码绑定</h3>
+<h2 id="toc_4.2">视图与后端代码绑定</h2>
 
 <p>
 现在我们把model的值放在后端的js文件里，每秒刷新：
@@ -482,7 +490,7 @@ app.controller('MyController', function($scope) {
 &lt;/html&gt;
 </pre>
 
-<h3 id="toc_2.3.3">绑定函数</h3>
+<h2 id="toc_4.3">绑定函数</h2>
 
 <p>
 不光是把数据绑定到用于显示的view上，还可以把函数绑定到DOM元素上。不仅是按钮，
@@ -516,7 +524,7 @@ app.controller('DemoController', function($scope) {
 </pre>
 
 
-<h3 id="toc_2.3.4">Ajax</h3>
+<h2 id="toc_4.4">Ajax</h2>
 
 <p>
 Angular.js通过一个<code>$http</code>服务提供了多种方式来调用AJAX。
@@ -553,7 +561,56 @@ Angular.js就会负责为你处理JSONP请求，将<code>JSON_CALLBACK</code>替
 </p>
 
 
-<h2 id="toc_2.4">指令属性</h2>
+<h2 id="toc_4.5">结合电台程序</h2>
+
+<p>
+要调用NPR电脑的API要先注册申请一个API Key：<a href="http://www.npr.org/templates/reg/">http://www.npr.org/templates/reg/</a>
+</p>
+
+<p>
+然后就可以取得节目列表：
+</p>
+
+<pre class="brush: js" title="radio.v1/radio.js">
+var apiKey = 'MDEyNDkyMTc4MDEzODMxMTI3MTkxMjU5OQ001';
+var nprUrl = 'http://api.npr.org/query?id=61&amp;fields=relatedLink,title,byline,text,audio,image,pullQuote,all&amp;output=JSON';
+ 
+app.controller('PlayerController', function($scope, $http) {
+	// Hidden our previous section's content
+	// construct our http request
+	$http({
+		method: 'JSONP',
+		url: nprUrl + '&amp;apiKey=' + apiKey + '&amp;callback=JSON_CALLBACK'
+	}).success(function(data, status) {
+		// Now we have a list of the stories (data.list.story)
+		// in the data object that the NPR API
+		// returns in JSON that looks like:
+		// data: { "list": {
+		//	 "title": ...
+		//	 "story": [
+		//		 { "id": ...
+		//			 "title": ...
+		$scope.programs = data.list.story;
+	}).error(function(data, status) {
+		// Some error occurred
+	});
+});
+</pre>
+
+<p>
+页面上显示：
+</p>
+
+<pre class="brush: js" title="radio.v1/radio.js">
+&lt;div ng-controller="PlayerController"&gt;{{ programs }}&lt;/div&gt;
+</pre>
+
+<p>
+<a href="../code/angular.js/radio.v2/radio.html">查看效果</a>
+</p>
+
+
+<h1 id="toc_5">指令属性</h1>
 
 <p>
 目前为止，我们已提到过几次“指令属性”的概念，但从未深入探讨过它到底是什么。实际上
@@ -609,7 +666,7 @@ Angular.js应用的动态性和响应能力，都要归功于指令属性。之�
 一个应用能否拥有动态性、响应能力的关键。
 </p>
 
-<h3 id="toc_2.4.1">表达式简介</h3>
+<h2 id="toc_5.1">表达式简介</h2>
 
 <pre class="brush: html" title="directives.html">
 {{ 表达式 }}
@@ -662,9 +719,9 @@ Angular.js应用的动态性和响应能力，都要归功于指令属性。之�
 scope里的函数，或者对scope中的变量进行数学运算。
 </p>
 
-<h3 id="toc_2.4.2">常见指令属性</h3>
+<h2 id="toc_5.2">常见指令属性</h2>
 
-<h4 id="toc_2.4.2.1">ng-init</h4>
+<h3 id="toc_5.2.1">ng-init</h3>
 
 <p>
 ng-init指令属性是一个在启动时运行的函数（在程序进入运行阶段之前）。它让我们能够
@@ -675,7 +732,7 @@ ng-init指令属性是一个在启动时运行的函数（在程序进入运行�
 &lt;b ng-init='name = "Ari Lerner"'&gt;Hello, {{ name }}&lt;/b&gt;
 </pre>
 
-<h4 id="toc_2.4.2.2">ng-click</h4>
+<h3 id="toc_5.2.2">ng-click</h3>
 
 <p>
 ng-click指令属性给DOM元素注册了一个点击事件的监听器。当此DOM元素上有点击事件发生
@@ -710,7 +767,7 @@ app.controller('MyController', function($scope) {
  });
 </pre>
 
-<h4 id="toc_2.4.2.3">ng-show / ng-hide</h4>
+<h3 id="toc_5.2.3">ng-show / ng-hide</h3>
 
 <p>
 ng-show和ng-hide指令，根据赋予它们的表达式的值的真假性(truthy)，来显示和隐藏它们
@@ -733,7 +790,7 @@ ng-show和ng-hide指令，根据赋予它们的表达式的值的真假性(truth
 &lt;/div&gt;
 </pre>
 
-<h4 id="toc_2.4.2.4">ng-repeat</h4>
+<h3 id="toc_5.2.4">ng-repeat</h3>
 
 <p>
 ng-repeat指令遍历一个数据集合中的每个数据元素，加载HTML模版把数据渲染出来。被
@@ -793,7 +850,7 @@ $scope.people = {
 </p>
 
 
-<h3 id="toc_2.4.3">指令属性创建指南</h3>
+<h2 id="toc_5.3">指令属性创建指南</h2>
 
 <p>
 Angular.js提供的直接可用的指令属性并不多，但它让我们可以很容易地创建自己的指令
@@ -801,8 +858,7 @@ Angular.js提供的直接可用的指令属性并不多，但它让我们可以�
 <a href="http://www.ng-newsletter.com/posts/directives.html">指令属性创建指南</a>
 </p>
 
-<h3 id="toc_2.4.4">收音机应用实例</h3>
-
+<h2 id="toc_5.4">收音机应用实例</h2>
 
 <p>
 在上一篇中，我们的收音机应用只从NPR API取回了最新的音频节目列表：
@@ -939,6 +995,11 @@ app.directive('nprLink', function() {
    &lt;/li&gt;
 &lt;/ul&gt;
 </pre>
+
+
+<p>
+<a href="../code/angular.js/radio.v3/radio.html">查看效果</a>
+</p>
 
 
 <pre class="brush: html" title="">

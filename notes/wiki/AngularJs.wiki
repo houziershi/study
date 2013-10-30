@@ -35,24 +35,24 @@
 
 = 应用实例 =
 
-通过实践创建一个项目`myApp`来学习，把js代码都放在`js/main.js`中。
+通过实践创建一个项目`myApp`来学习，把js代码都放在`js/radio.js`中。
 
 == 定义模块 ==
 
 通过`angular.module`方法定义模块，
 
-{{{class="brush: js"  title="00.startup/js/main.js"
+{{{class="brush: js"  title="00.startup/js/radio.js"
 var app = angular.module('myApp', []);
 }}}
 
 这样在页面上可以声明把模块绑定到指定的DOM中：
 
-{{{class="brush: html; highlight:[2]"  title="00.startup/index.html"
+{{{class="brush: html; highlight:[2]"  title="00.startup/radio.html"
 <!doctype html>
 <html ng-app="myApp">
   <head>
     <script src="../angular.min.js"></script>
-    <script src="js/main.js"></script>
+    <script src="js/radio.js"></script>
   </head>
   <body>
   </body>
@@ -61,7 +61,7 @@ var app = angular.module('myApp', []);
 
 绑定的地方就是AngularJs运行应用的地方。
 
-== Scopes ==
+= Scopes =
 
 `$scope`是一个把view（一个DOM元素）连结到controller上的对象。在我们的MVC结构里，
 这个`$scope`将成为model，它提供一个绑定到DOM元素（以及其子元素）上的excecution 
@@ -71,7 +71,7 @@ context。
 可以访问它，所以我们可以利用它在两者间传递信息。在这个`$scope`对象里，我们既存储
 数据，又存储将要运行在view上的函数。
 
-=== rootScope ===
+== rootScope ==
 
 每一个Angular应用都会有一个`$rootScope`。
 这个`$rootScope`是最顶级的scope，它对应着含有`ng-app`指令属性的那个DOM元素。
@@ -79,7 +79,7 @@ context。
 如果页面上没有明确设定`$scope`，Angular就会把数据和函数都绑定到这里，第一部分中
 的例子就是靠这一点成功运行的。
 
-在这个例子里，我们将使用`$rootScope`。在`main.js`文件里，我们给这个`scope`加一个
+在这个例子里，我们将使用`$rootScope`。在`radio.js`文件里，我们给这个`scope`加一个
 `name`属性。把这个函数放进`app.run`函数里执行，我们就保证了它能在应用的其他部分
 之前被执行。你可以把`app.run`函数看作是Angular应用的`main`方法。
 
@@ -96,7 +96,7 @@ app.run(function($rootScope) {
 {{ name }}
 }}}
 
-=== Controller连接Scope ===
+== Controller连接Scope ==
 
 要真正看到scope的强大功能，让我们给一个DOM元素加上controller，它将创建这个元素的
 `$scope` ，让我们跟这个元素互动。
@@ -117,9 +117,9 @@ app.run(function($rootScope) {
 <img src="images/AngularJS/01.png" />
 
 现在，`MyController`给我们建立了一个可以从DOM元素内部直接访问的scope对象。下面
-我们在的这个scope里创建一个`person`对象，在`main.js`中：
+我们在的这个scope里创建一个`person`对象，在`radio.js`中：
 
-{{{class="brush: js"  title="00.startup/js/main.js"
+{{{class="brush: js"  title="00.startup/js/radio.js"
 app.controller('MyController', function($scope) {
   $scope.person = {
     name: "Ari Lerner"
@@ -132,13 +132,13 @@ app.controller('MyController', function($scope) {
 
 页面上显示出：
 
-=== scope继承层级 ===
+== scope继承层级 ==
 
 所有scope都遵循原型继承（prototypal inheritance），这意味着它们
 都能访问父scope们。对任何属性和方法，如果AngularJS在当前scope上找不到，就会到父
 scope上去找，如果在父scope上也没找到，就会继续向上回溯，一直到`$rootScope`上。
 
-=== 独立的scop ===
+== 独立的scop ==
 
 唯一的例外：有些指令属性可以选择性地创建一个独立的scope，让这个scope不继承它的
 父scope们。
@@ -176,7 +176,7 @@ scope中的属性一样：
 
 [[../code/angular.js/00.startup/scop|查看效果]]
 
-=== 结合进myApp ===
+== 结合进myApp ==
 
 现在，我们把scope用在我们的NPR应用上。在上一篇结尾我们定义了`app module`，现在
 我们开始深入DOM结构，创建基本功能。
@@ -185,16 +185,16 @@ scope中的属性一样：
 `PlayerController`。还有一个`RelatedController`，它将负责管理音频DOM元素、和为
 我们取回NPR节目的列表。
 
-回到`main.js`，现在我们就来创建这两个controller：
+回到`radio.js`，现在我们就来创建这两个controller：
 
-{{{class="brush: js"  title="00.startup/js/main.js"
+{{{class="brush: js" title="radio.v1/radio.js"
 var app = angular.module('myApp', []);
  
 app.controller('PlayerController', ['$scope', function($scope) { }]);
 app.controller('RelatedController', ['$scope', function($scope) { }]);
 }}}
 
-=== 音频 ===
+== 音频 ==
 
 这两个controller现在还没什么功能，那么，让我们给应用先加上点声音吧。在这个教程里
 我们将使用HTML5的音频DOM元素，所以首先你得有个支持HTML5的浏览器（我们推荐Google 
@@ -206,7 +206,7 @@ Chrome）。
 现在我们就在`PlayerController`里创建一个音频DOM元素。我们要把它储存在scope上，
 然后像你已经学过的那样——通过`$scope`对象把view和controller连接起来。
 
-{{{class="brush: js"  title="00.startup/js/main.js"
+{{{class="brush: js" title="radio.v1/radio.js"
 app.controller('PlayerController', ['$scope', function($scope) {
   $scope.audio = document.createElement('audio');
 }]);
@@ -219,11 +219,11 @@ fetching）数据，现在我们先使用一个指定的`.mp4`网址。
 网址。方便起见，我们在这里使用一个储存在我们自己服务器上的NPR音频文件，不过其实
 你可以指向任何网址。现在设定你的音频`src`地址如下：
 
-{{{class="brush: js"  title="00.startup/js/main.js"
+{{{class="brush: js" title="radio.v1/radio.js"
 app.controller('PlayerController', ['$scope', function($scope) {
   $scope.playing = false;
   $scope.audio = document.createElement('audio');
-  $scope.audio.src = '/media/npr.mp4';
+  $scope.audio.src = 'http://r3.soundowl.com/3t10.mp3';
 }]);
 }}}
 
@@ -233,7 +233,7 @@ app.controller('PlayerController', ['$scope', function($scope) {
 我们可以给用户提供一个互动元素：创建一个按钮，把它绑定到scope里的一个动作上。
 在下一篇里我们会更深入地介绍这一块，不过先看看上面例子里view的HTML：
 
-{{{class="brush: html"
+{{{class="brush: html" title="radio.v1/radio.html"
 <div ng-controller="PlayerController">
   <button ng-click="play()" class="button" ng-show="!playing">Play</button>
   <button ng-click="stop()" class="button alert" ng-show="playing">Stop</button>
@@ -250,33 +250,38 @@ app.controller('PlayerController', ['$scope', function($scope) {
 概念，这些在本系列之后的教程里才会详细介绍，所以如果你不能一下子全看明白也不用
 担心：
 
-{{{class="brush: js"
+{{{class="brush: js" title="radio.v1/radio.js"
 app.controller('PlayerController', ['$scope', function($scope) {
-  $scope.playing = false;
-  $scope.audio = document.createElement('audio');
-  $scope.audio.src = '/media/npr.mp4';
-  $scope.play = function() {
-    $scope.audio.play();
-    $scope.playing = true;
-  };
-  $scope.stop = function() {
-    $scope.audio.pause();
-    $scope.playing = false;
-  };
-  $scope.audio.addEventListener('ended', function() {
-    $scope.$apply(function() {
-      $scope.stop()
-    });
-  });
+	$scope.audio = document.createElement('audio');
+	$scope.audio.src = 'http://r3.soundowl.com/3t10.mp3';
+
+	$scope.playing = false;
+
+	$scope.play = function() {
+		$scope.audio.play();
+		$scope.playing = true;
+	};
+	$scope.stop = function() {
+		$scope.audio.pause();
+		$scope.playing = false;
+	};
+
+	$scope.audio.addEventListener('ended', function() {
+		$scope.$apply(function() {
+			$scope.stop()
+		});
+	});
 }]);
 }}}
 
 以上就是对Angular.js的`$scope`功能的介绍。在下一章，我们会介绍Angular.js的双向
 数据绑定。
 
-== 数据绑定 ==
+[[../code/angular.js/radio.v1/radio|查看效果]]
 
-=== 双向绑定 ===
+= 数据绑定 =
+
+== 双向绑定 ==
 
 view与model双向绑定的意思是：view变了，model的内容也会变；model变了，view也跟着
 变。
@@ -292,7 +297,7 @@ view与model双向绑定的意思是：view变了，model的内容也会变；mo
 </div>
 }}}
 
-=== 视图与后端代码绑定 ===
+== 视图与后端代码绑定 ==
 
 现在我们把model的值放在后端的js文件里，每秒刷新：
 
@@ -324,7 +329,7 @@ app.controller('MyController', function($scope) {
 </html>
 }}}
 
-=== 绑定函数 ===
+== 绑定函数 ==
 
 不光是把数据绑定到用于显示的view上，还可以把函数绑定到DOM元素上。不仅是按钮，
 链接等，任何DOM元素都可以通过`ng-click`绑定鼠标点击事件调用的函数（即浏览器通用
@@ -352,7 +357,7 @@ app.controller('DemoController', function($scope) {
 }}}
 
 
-=== Ajax ===
+== Ajax ==
 
 Angular.js通过一个`$http`服务提供了多种方式来调用AJAX。
 所有Angular.js的核心服务都用`$`前缀。
@@ -383,7 +388,48 @@ Angular.js就会负责为你处理JSONP请求，将`JSON_CALLBACK`替换成一�
 [[../code/angular.js/00.startup/bind|查看效果]]
 
 
-== 指令属性 ==
+== 结合电台程序 ==
+
+要调用NPR电脑的API要先注册申请一个API Key：http://www.npr.org/templates/reg/
+
+然后就可以取得节目列表：
+
+{{{class="brush: js" title="radio.v1/radio.js"
+var apiKey = 'MDEyNDkyMTc4MDEzODMxMTI3MTkxMjU5OQ001';
+var nprUrl = 'http://api.npr.org/query?id=61&fields=relatedLink,title,byline,text,audio,image,pullQuote,all&output=JSON';
+ 
+app.controller('PlayerController', function($scope, $http) {
+	// Hidden our previous section's content
+	// construct our http request
+	$http({
+		method: 'JSONP',
+		url: nprUrl + '&apiKey=' + apiKey + '&callback=JSON_CALLBACK'
+	}).success(function(data, status) {
+		// Now we have a list of the stories (data.list.story)
+		// in the data object that the NPR API
+		// returns in JSON that looks like:
+		// data: { "list": {
+		//	 "title": ...
+		//	 "story": [
+		//		 { "id": ...
+		//			 "title": ...
+		$scope.programs = data.list.story;
+	}).error(function(data, status) {
+		// Some error occurred
+	});
+});
+}}}
+
+页面上显示：
+
+{{{class="brush: js" title="radio.v1/radio.js"
+<div ng-controller="PlayerController">{{ programs }}</div>
+}}}
+
+[[../code/angular.js/radio.v2/radio|查看效果]]
+
+
+= 指令属性 =
 
 目前为止，我们已提到过几次“指令属性”的概念，但从未深入探讨过它到底是什么。实际上
 ，“指令属性”就是绑定在DOM元素上的函数，它可以调用方法、定义行为、绑定controller
@@ -421,7 +467,7 @@ Angular.js应用的动态性和响应能力，都要归功于指令属性。之�
 在Angular.js应用的开发中，我们用指令属性来将行为绑定到DOM上。指令属性的使用，是
 一个应用能否拥有动态性、响应能力的关键。
 
-=== 表达式简介 ===
+== 表达式简介 ==
 
 {{{class="brush: html" title="directives.html"
 {{ 表达式 }}
@@ -454,9 +500,9 @@ Angular.js应用的动态性和响应能力，都要归功于指令属性。之�
 ，你可以使用表达式遍历其scope的属性（我们在`ng-repeat`中会看到这一应用）、调用
 scope里的函数，或者对scope中的变量进行数学运算。
 
-=== 常见指令属性 ===
+== 常见指令属性 ==
 
-==== ng-init ====
+=== ng-init ===
 
 ng-init指令属性是一个在启动时运行的函数（在程序进入运行阶段之前）。它让我们能够
 在程序运行前设定初始变量的值：
@@ -465,7 +511,7 @@ ng-init指令属性是一个在启动时运行的函数（在程序进入运行�
 <b ng-init='name = "Ari Lerner"'>Hello, {{ name }}</b>
 }}}
 
-==== ng-click ====
+=== ng-click ===
 
 ng-click指令属性给DOM元素注册了一个点击事件的监听器。当此DOM元素上有点击事件发生
 （即当此button或link被点击时），Angular.js就会执行表达式的内容，并相应地更新view
@@ -494,7 +540,7 @@ app.controller('MyController', function($scope) {
  });
 }}}
 
-==== ng-show / ng-hide ====
+=== ng-show / ng-hide ===
 
 ng-show和ng-hide指令，根据赋予它们的表达式的值的真假性(truthy)，来显示和隐藏它们
 所属的那一部分DOM。
@@ -513,7 +559,7 @@ ng-show和ng-hide指令，根据赋予它们的表达式的值的真假性(truth
 </div>
 }}}
 
-==== ng-repeat ====
+=== ng-repeat ===
 
 ng-repeat指令遍历一个数据集合中的每个数据元素，加载HTML模版把数据渲染出来。被
 重复使用的模版元素，就是我们绑定了这个指令属性的DOM元素。每一个使用模版渲染的DOM
@@ -563,14 +609,13 @@ $scope.people = {
 [[../code/angular.js/00.startup/directives|查看效果]]
 
 
-=== 指令属性创建指南 ===
+== 指令属性创建指南 ==
 
 Angular.js提供的直接可用的指令属性并不多，但它让我们可以很容易地创建自己的指令
 属性。请到这里查看我们的
 [[http://www.ng-newsletter.com/posts/directives.html|指令属性创建指南]]
 
-=== 收音机应用实例 ===
-
+== 收音机应用实例 ==
 
 在上一篇中，我们的收音机应用只从NPR API取回了最新的音频节目列表：
 
@@ -683,6 +728,9 @@ app.directive('nprLink', function() {
    </li>
 </ul>
 }}}
+
+
+[[../code/angular.js/radio.v3/radio|查看效果]]
 
 
 {{{class="brush: html" title=""
