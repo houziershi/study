@@ -62,6 +62,7 @@
 </ul>
 <li><a href="#toc_5.3">指令属性创建指南</a>
 <li><a href="#toc_5.4">收音机应用实例</a>
+<li><a href="#toc_5.5">使用模板</a>
 </ul>
 </ul>
 </div>
@@ -72,14 +73,14 @@
 
 <p>
 实现了内容与文本框一起改变的功能：
-<a href="../code/angular.js/00.startup/index.html">查看效果</a>
+<a href="../code/angular.js/quickview/index.html">查看效果</a>
 </p>
 
 <p>
 代码如下：
 </p>
 
-<pre class="brush: html; highlight:[2,4,8,9]"  title="00.startup/basic.html">
+<pre class="brush: html; highlight:[2,4,8,9]"  title="quickview/basic.html">
 &lt;!doctype html&gt;
 &lt;html ng-app&gt;
   &lt;head&gt;
@@ -122,7 +123,7 @@
 通过<code>angular.module</code>方法定义模块，
 </p>
 
-<pre class="brush: js"  title="00.startup/js/radio.js">
+<pre class="brush: js"  title="radio.v1/radio.js">
 var app = angular.module('myApp', []);
 </pre>
 
@@ -130,7 +131,7 @@ var app = angular.module('myApp', []);
 这样在页面上可以声明把模块绑定到指定的DOM中：
 </p>
 
-<pre class="brush: html; highlight:[2]"  title="00.startup/radio.html">
+<pre class="brush: html; highlight:[2]"  title="radio.v1/radio.html">
 &lt;!doctype html&gt;
 &lt;html ng-app="myApp"&gt;
   &lt;head&gt;
@@ -178,7 +179,7 @@ context。
 之前被执行。你可以把<code>app.run</code>函数看作是Angular应用的<code>main</code>方法。
 </p>
 
-<pre class="brush: javascript"  title="00.startup/js/showscop01.js">
+<pre class="brush: javascript"  title="quickview/js/showscop01.js">
 app.run(function($rootScope) {
   $rootScope.name = "Ari Lerner";
 });
@@ -189,7 +190,7 @@ app.run(function($rootScope) {
 ：
 </p>
 
-<pre class="brush: html"  title="00.startup/showscop.01.html">
+<pre class="brush: html"  title="quickview/showscop.01.html">
 {{ name }}
 </pre>
 
@@ -226,7 +227,7 @@ app.run(function($rootScope) {
 我们在的这个scope里创建一个<code>person</code>对象，在<code>radio.js</code>中：
 </p>
 
-<pre class="brush: js"  title="00.startup/js/radio.js">
+<pre class="brush: js"  title="radio.v1/radio.js">
 app.controller('MyController', function($scope) {
   $scope.person = {
     name: "Ari Lerner"
@@ -296,7 +297,7 @@ scope中的属性一样：
 </p>
 
 <p>
-<a href="../code/angular.js/00.startup/scop.html">查看效果</a>
+<a href="../code/angular.js/quickview/scop.html">查看效果</a>
 </p>
 
 <h2 id="toc_3.5">结合进myApp</h2>
@@ -460,7 +461,7 @@ view与model双向绑定的意思是：view变了，model的内容也会变；mo
 现在我们把model的值放在后端的js文件里，每秒刷新：
 </p>
 
-<pre class="brush: js" title="js/bind.js">
+<pre class="brush: js" title="quickview/js/bind.js">
 var app = angular.module('myApp', []);
  
 app.controller('MyController', function($scope) {
@@ -475,7 +476,7 @@ app.controller('MyController', function($scope) {
 显示的view在页面上：
 </p>
 
-<pre class="brush: html" title="bind.html">
+<pre class="brush: html" title="quickview/bind.html">
 &lt;!doctype html&gt;
 &lt;html ng-app="myApp"&gt;
 &lt;head&gt;
@@ -502,7 +503,7 @@ app.controller('MyController', function($scope) {
 方法被绑定到controller所有的<code>$scope</code>对象上。注意要将方法名写进带引号的字符串里：
 </p>
 
-<pre class="brush: html; highlight=[3,4]" title="bind.html">
+<pre class="brush: html; highlight=[3,4]" title="quickview/bind.html">
 &lt;div ng-controller="DemoController"&gt;
   &lt;h4&gt;The simplest adding machine ever&lt;/h4&gt;
   &lt;button ng-click="add(1)" class="button"&gt;Add&lt;/button&gt;
@@ -515,7 +516,7 @@ app.controller('MyController', function($scope) {
 调用的方法：
 </p>
 
-<pre class="brush: js" title="js/bind.js">
+<pre class="brush: js" title="quickview/js/bind.js">
 app.controller('DemoController', function($scope) {
   $scope.counter = 0;
   $scope.add = function(amount) { $scope.counter += amount; };
@@ -531,7 +532,7 @@ Angular.js通过一个<code>$http</code>服务提供了多种方式来调用AJAX
 所有Angular.js的核心服务都用<code>$</code>前缀。
 </p>
 
-<pre class="brush: js" title="js/bind.js">
+<pre class="brush: js" title="quickview/js/bind.js">
 app.controller('PlayerController', function($scope, $http) {
 	$http({ method: 'JSONP',  
 		url: 'http://api.openbeerdatabase.com/v1/beers.json?callback=JSON_CALLBACK'
@@ -550,14 +551,14 @@ app.controller('PlayerController', function($scope, $http) {
 Angular.js就会负责为你处理JSONP请求，将<code>JSON_CALLBACK</code>替换成一个合适的回调函数。
 </p>
 
-<pre class="brush: html" title="bind.html">
+<pre class="brush: html" title="quickview/bind.html">
 &lt;div ng-controller="PlayerController"&gt;
 {{ programs }}
 &lt;/div&gt;
 </pre>
 
 <p>
-<a href="../code/angular.js/00.startup/bind.html">查看效果</a>
+<a href="../code/angular.js/quickview/bind.html">查看效果</a>
 </p>
 
 
@@ -644,7 +645,7 @@ Angular.js应用的动态性和响应能力，都要归功于指令属性。之�
 属性的用例，如<code>ng-model</code>让标题中的文本与输入框绑定：
 </p>
 
-<pre class="brush: html" title="directives.html">
+<pre class="brush: html" title="quickview/directives.html">
 &lt;input ng-model="name" name="Name" placeholder="Enter your name"/&gt;
 &lt;h4&gt;Your name: {{ name }}&lt;/h4&gt;
 </pre>
@@ -668,7 +669,7 @@ Angular.js应用的动态性和响应能力，都要归功于指令属性。之�
 
 <h2 id="toc_5.1">表达式简介</h2>
 
-<pre class="brush: html" title="directives.html">
+<pre class="brush: html" title="quickview/directives.html">
 {{ 表达式 }}
 </pre>
 
@@ -682,7 +683,7 @@ Angular.js应用的动态性和响应能力，都要归功于指令属性。之�
 例如<code>{{ person.name }}</code>和<code>{{ clock }}</code>。
 </p>
 
-<pre class="brush: html" title="directives.html">
+<pre class="brush: html" title="quickview/directives.html">
 {{ 8 + 1 }}                // 9
 {{ person }}               // {"name":"Ari Lerner"}
 {{ 10 * 3.3 | currency }}  // $33.00
@@ -728,7 +729,7 @@ ng-init指令属性是一个在启动时运行的函数（在程序进入运行�
 在程序运行前设定初始变量的值：
 </p>
 
-<pre class="brush: html" title="directives.html">
+<pre class="brush: html" title="quickview/directives.html">
 &lt;b ng-init='name = "Ari Lerner"'&gt;Hello, {{ name }}&lt;/b&gt;
 </pre>
 
@@ -740,7 +741,7 @@ ng-click指令属性给DOM元素注册了一个点击事件的监听器。当此
 。
 </p>
 
-<pre class="brush: html" title="directives.html">
+<pre class="brush: html" title="quickview/directives.html">
 &lt;button ng-click="counter = counter + 1"&gt;Add one&lt;/button&gt;
 Current counter: {{ counter }}
 </pre>
@@ -749,7 +750,7 @@ Current counter: {{ counter }}
 我们也可以用ng-click来调用在controller里写好并绑定在$scope上的函数，例如：
 </p>
 	
-<pre class="brush: html" title="directives.html">
+<pre class="brush: html" title="quickview/directives.html">
 &lt;div ng-controller="MyController"&gt;
 	&lt;button ng-click="sayHello()"&gt;Say hello&lt;/button&gt;
 &lt;/div&gt;
@@ -759,7 +760,7 @@ Current counter: {{ counter }}
 controller 里的函数:
 </p>
 
-<pre class="brush: javascript" title="js/directives.js">
+<pre class="brush: javascript" title="quickview/js/directives.js">
 app.controller('MyController', function($scope) {
    $scope.sayHello = function() {
      alert("hello!");
@@ -778,7 +779,7 @@ ng-show和ng-hide指令，根据赋予它们的表达式的值的真假性(truth
 我们在这里不会深入，但你应该熟悉JavaScript中变量值的<code>truthy</code>和<code>falsy</code>概念。
 </p>
 
-<pre class="brush: html" title="directives.html">
+<pre class="brush: html" title="quickview/directives.html">
 &lt;button ng-init="shouldShow = true" ng-click="shouldShow = !shouldShow"&gt;
 	Flip the shouldShow variable
 &lt;/button&gt;
@@ -803,7 +804,7 @@ ng-repeat指令遍历一个数据集合中的每个数据元素，加载HTML模�
 数组：
 </p>
 
-<pre class="brush: javascript" title="js/directives.js">
+<pre class="brush: javascript" title="quickview/js/directives.js">
 $scope.roommates = [
 	{ name: 'Ari'},
 	{ name: 'Q'},
@@ -813,7 +814,7 @@ $scope.roommates = [
 </pre>
 
 
-<pre class="brush: html" title="directives.html">
+<pre class="brush: html" title="quickview/directives.html">
 &lt;ul&gt;
 	&lt;li ng-repeat="person in roommates"&gt;{{ person.name }}&lt;/li&gt;
 &lt;/ul&gt;
@@ -824,7 +825,7 @@ $scope.roommates = [
 的集合。例如，假设我们有一个人名和他们最喜欢的颜色的数据集合：
 </p>
 
-<pre class="brush: javascript" title="js/directives.js">
+<pre class="brush: javascript" title="quickview/js/directives.js">
 $scope.people = {
    'Ari': 'orange',
    'Q': 'purple',
@@ -836,7 +837,7 @@ $scope.people = {
 要遍历它，我们可以给ng-repeat指令属性赋予这个表达式: <code>(key, value) in object</code>:
 </p>
 
-<pre class="brush: html" title="directives.html">
+<pre class="brush: html" title="quickview/directives.html">
 &lt;ul&gt;
    &lt;li ng-repeat="(name, color) in people"&gt;
 		{{ name }}'s favorite color is {{ color }}
@@ -846,7 +847,7 @@ $scope.people = {
 
 
 <p>
-<a href="../code/angular.js/00.startup/directives.html">查看效果</a>
+<a href="../code/angular.js/quickview/directives.html">查看效果</a>
 </p>
 
 
@@ -864,7 +865,7 @@ Angular.js提供的直接可用的指令属性并不多，但它让我们可以�
 在上一篇中，我们的收音机应用只从NPR API取回了最新的音频节目列表：
 </p>
 
-<pre class="brush: javascript" title="">
+<pre class="brush: javascript" title="radio.v3/radio.html">
 $scope.programs = data.list.story;
 </pre>
 
@@ -873,7 +874,7 @@ $scope.programs = data.list.story;
 ng-repeat来遍历这个节目列表了：
 </p>
 
-<pre class="brush: html" title="">
+<pre class="brush: html" title="radio.v3/radio.js">
 &lt;ul id="programs_list" class=""&gt;
    &lt;li ng-repeat="program in programs"&gt;
      &lt;span class="large-12"&gt;{{ program.title.$text }}&lt;/span&gt;
@@ -891,7 +892,7 @@ Angular.js的。
 元素加上一个点击功能：
 </p>
 
-<pre class="brush: html" title="">
+<pre class="brush: html" title="radio.v3/radio.html">
 &lt;ul id="programs_list" class=""&gt;
    &lt;li ng-repeat="program in programs" ng-click="play(program)"&gt;
      &lt;span class="large-12"&gt;{{ program.title.$text }}&lt;/span&gt;
@@ -904,7 +905,7 @@ Angular.js的。
 PlayerController里创建这个play动作函数，然后我们就有了一个功能完备的音频应用：
 </p>
 
-<pre class="brush: javascript" title="">
+<pre class="brush: javascript" title="radio.v3/radio.js">
 // format.mp4.$text is the route to the mp4 file from the NPR api
 $scope.play = function(program) {
 	if ($scope.playing) $scope.audio.pause();
@@ -926,56 +927,69 @@ $scope.play = function(program) {
 <a href="http://www.ng-newsletter.com/posts/directives.html">深入探讨指令属性的文章</a>
 </p>
 
+<h2 id="toc_5.5">使用模板</h2>
+
 <p>
 创建自定义指令属性，我们使用<code>app</code>对象的<code>directive</code>方法：
 </p>
 
-<pre class="brush: javascript" title="">
+<pre class="brush: javascript; highlight: [1,10]" title="radio.v3/radio.js">
 app.directive('nprLink', function() {
-   return {
-     restrict: 'EA',
-     require: ['^ngModel'],
-     replace: true,
-     scope: {
-       ngModel: '=',
-       play: '&amp;'
-     },
-     templateUrl: '/views/nprListItem.html',
-     link: function(scope, ele, attr) {
-       scope.duration = scope.ngModel.audio[0].duration.$text;
-     }
-   }
+  return {
+    restrict: 'EA',
+    require: ['^ngModel'],
+    replace: true,
+    scope: {
+      ngModel: '=',
+      play: '&amp;'
+    },
+    templateUrl: 'views/nprListItem.html',
+    link: function(scope, ele, attr) {
+      scope.duration = scope.ngModel.audio[0].duration.$text;
+    }
+  }
 });
 </pre>
 
 <p>
 我们不会逐个解释每个选项的意义，因为我们有一篇
 <a href="http://www.ng-newsletter.com/posts/directives.html">专门的深入文章</a>
-来介绍它们。这里我们只需要明白，现在我们就能在HTML里使用这个自定义的指令属性了，
-它会将它所在的DOM元素替换为我们给定的<code>templateUrl</code>所指向的模版里的内容（在
-<code>/views/nprListItem</code>中）。
+来介绍它们。这里我们只需要明白：
 </p>
+
+<ul>
+<li>
+这个指使名为<code>nprLink</code>
+
+<li>
+指向的模版<code>templateUrl</code>对应<code>views/nprListItem.html</code>
+
+</ul>
 
 <p>
 现在，我们的主HTML文件可以保持整洁，而将用来渲染列表内容的view，创建在这个单独
 提取出来的模版文件里：
 </p>
 
-<pre class="brush: html" title="">
+<pre class="brush: html" title="radio.v3/radio.html">
 &lt;div class="nprLink row" ng-click="play(ngModel)"&gt;
-   &lt;span class="name large-8 columns"&gt;
-     &lt;button class="large-2 small-2 playButton columns"&gt;&lt;div class="triangle"&gt;&lt;/div&gt;&lt;/button&gt;
-     &lt;div class="large-10 small-10 columns"&gt;
-       &lt;div class="row"&gt;
-         &lt;span class="large-12"&gt;{{ ngModel.title.$text }}&lt;/span&gt;
-       &lt;/div&gt;
-       &lt;div class="row"&gt;
-         &lt;div class="small-1 columns"&gt;&lt;/div&gt;
-         &lt;div class="small-2 columns push-8"&gt;&lt;a href="{{ ngModel.link[0].$text }}"&gt;Link&lt;/a&gt;&lt;/div&gt;
-       &lt;/div&gt;
-     &lt;/div&gt;
-   &lt;/span&gt;
- &lt;/div&gt;
+	&lt;span class="name large-8 columns"&gt;
+		&lt;button class="large-2 small-2 playButton columns"&gt;
+			&lt;div class="triangle"&gt;play&lt;/div&gt;
+		&lt;/button&gt;
+		&lt;div class="large-10 small-10 columns"&gt;
+			&lt;div class="row"&gt;
+				&lt;span class="large-12"&gt;{{ ngModel.title.$text }}&lt;/span&gt;
+			&lt;/div&gt;
+			&lt;div class="row"&gt;
+				&lt;div class="small-1 columns"&gt;Go Page:&lt;/div&gt;
+				&lt;div class="small-2 columns push-8"&gt;
+					&lt;a href="{{ ngModel.link[0].$text }}"&gt;Link&lt;/a&gt;
+				&lt;/div&gt;
+			&lt;/div&gt;
+		&lt;/div&gt;
+	&lt;/span&gt;
+&lt;/div&gt;
 </pre>
 
 <p>
@@ -985,14 +999,14 @@ app.directive('nprLink', function() {
 
 <p>
 现在，我们在主HTML文件里就不用再写上面那么多HTML，而只要简单地换上我们的自定义
-指令属性npr-link：
+指令属性<code>npr-link</code>：
 </p>
 
-<pre class="brush: html" title="">
+<pre class="brush: html" title="radio.v3/radio.html">
 &lt;ul id="programs_list" class=""&gt;
-   &lt;li ng-repeat="program in programs"&gt;
-     &lt;span npr-link play='play(program)' ng-model="program"&gt;&lt;/span&gt;
-   &lt;/li&gt;
+	&lt;li ng-repeat="program in programs"&gt;
+		&lt;span npr-link play='play(program)' ng-model="program"&gt;&lt;/span&gt;
+	&lt;/li&gt;
 &lt;/ul&gt;
 </pre>
 

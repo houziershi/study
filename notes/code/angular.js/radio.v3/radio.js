@@ -1,17 +1,13 @@
 var app = angular.module('myApp', []);
 
 app.controller('RelatedController', ['$scope', function($scope) { }]);
-
- 
 app.controller('PlayerController', function($scope, $http) {
-
 	$scope.audio = document.createElement('audio');
 	$scope.playing = false;
 
+	// construct our http request
 	var apiKey = 'MDEyNDkyMTc4MDEzODMxMTI3MTkxMjU5OQ001';
 	var nprUrl = 'http://api.npr.org/query?id=61&fields=relatedLink,title,byline,text,audio,image,pullQuote,all&output=JSON';
-	// Hidden our previous section's content
-	// construct our http request
 	$http({
 		method: 'JSONP',
 		url: nprUrl + '&apiKey=' + apiKey + '&callback=JSON_CALLBACK'
@@ -38,6 +34,22 @@ app.controller('PlayerController', function($scope, $http) {
 		// Store the state of the player as playing
 		$scope.playing = true;
 	}
-
 });
+
+app.directive('nprLink', function() {
+  return {
+    restrict: 'EA',
+    require: ['^ngModel'],
+    replace: true,
+    scope: {
+      ngModel: '=',
+      play: '&'
+    },
+    templateUrl: 'views/nprListItem.html',
+    link: function(scope, ele, attr) {
+      scope.duration = scope.ngModel.audio[0].duration.$text;
+    }
+  }
+});
+
 
