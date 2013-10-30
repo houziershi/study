@@ -7,8 +7,10 @@
 
 == Hello World ==
 
-[[../code/angular.js/00.startup/basic|例子]]
-。代码如下：
+实现了内容与文本框一起改变的功能：
+[[../code/angular.js/00.startup/index|查看效果]]
+
+代码如下：
 
 {{{class="brush: html; highlight:[2,4,8,9]"  title="00.startup/basic.html"
 <!doctype html>
@@ -94,10 +96,6 @@ app.run(function($rootScope) {
 {{ name }}
 }}}
 
-页面上显示的结果就是：
-[[../code/angular.js/00.startup/showscop.01|查看效果]]
-
-
 === Controller连接Scope ===
 
 要真正看到scope的强大功能，让我们给一个DOM元素加上controller，它将创建这个元素的
@@ -133,7 +131,6 @@ app.controller('MyController', function($scope) {
 这个`person`对象，因为它在`$scope`上。
 
 页面上显示出：
-[[../code/angular.js/00.startup/showscop.02|查看效果]]
 
 === scope继承层级 ===
 
@@ -177,11 +174,7 @@ scope中的属性一样：
 
 <img src="images/AngularJS/02.png" />
 
-页面效果为：
-[[../code/angular.js/00.startup/showscop.03|查看效果]]
-
-结合上面所有的内容：
-[[../code/angular.js/00.startup/index|查看效果]]
+[[../code/angular.js/00.startup/scop|查看效果]]
 
 === 结合进myApp ===
 
@@ -331,9 +324,6 @@ app.controller('MyController', function($scope) {
 </html>
 }}}
 
-
-[[../code/angular.js/00.startup/bind.model|查看效果]]
-
 === 绑定函数 ===
 
 不光是把数据绑定到用于显示的view上，还可以把函数绑定到DOM元素上。不仅是按钮，
@@ -361,7 +351,6 @@ app.controller('DemoController', function($scope) {
 });
 }}}
 
-[[../code/angular.js/00.startup/bind.func|查看效果]]
 
 === Ajax ===
 
@@ -392,6 +381,7 @@ Angular.js就会负责为你处理JSONP请求，将`JSON_CALLBACK`替换成一�
 }}}
 
 [[../code/angular.js/00.startup/bind|查看效果]]
+
 
 == 指令属性 ==
 
@@ -568,6 +558,10 @@ $scope.people = {
    </li>
 </ul>
 }}}
+
+
+[[../code/angular.js/00.startup/directives|查看效果]]
+
 
 === 指令属性创建指南 ===
 

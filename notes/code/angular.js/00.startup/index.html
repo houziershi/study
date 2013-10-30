@@ -1,24 +1,12 @@
 <!doctype html>
-<html ng-app="myApp">
+<html ng-app>
   <head>
     <script src="../angular.min.js"></script>
-    <script src="js/bind.js"></script>
   </head>
   <body>
-
-		{{ name }}
-
-		<div ng-controller="MyController">
-			{{ person.name }}
-		</div>
-
-		<div ng-controller="ParentController">
-			<div ng-controller="ChildController">
-				<input type="text" ng-model="person.name" placeholder="Name"></input>
-				<a ng-click="sayHello()">Say hello</a>
-			</div>
-			{{ person }}
-		</div>
-
+    <div>
+      <input type="text" ng-model="yourName" placeholder="Enter a name here">
+      <h1>Hello, {{ yourName }}!</h1>
+    </div>
   </body>
 </html>

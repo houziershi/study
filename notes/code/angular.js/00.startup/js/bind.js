@@ -1,25 +1,9 @@
-
 var app = angular.module('myApp', []);
-
-app.run(function($rootScope) {
-  $rootScope.name = "Ari Lerner";
-});
  
 app.controller('MyController', function($scope) {
-	$scope.person = { name: "Ari Lerner" };
 	var updateClock = function() { $scope.clock = new Date(); };
 	var timer = setInterval(function() { $scope.$apply(updateClock); }, 1000);  
-	updateClock();}
-);
-
-app.controller('ParentController', function($scope) {
-  $scope.person = {greeted: false};
-});
-  
-app.controller('ChildController', function($scope) {
-  $scope.sayHello = function() {
-    $scope.person.greeted = true;
-  }
+	updateClock();
 });
 
 app.controller('DemoController', function($scope) {
@@ -28,7 +12,6 @@ app.controller('DemoController', function($scope) {
   $scope.subtract = function(amount) { $scope.counter -= amount; };
 });
 
-var radioJsonPath = 'http://api.openbeerdatabase.com/v1/beers.json?callback=JSON_CALLBACK';
 var radioJsonPath = 'http://api.openbeerdatabase.com/v1/beers.json?callback=JSON_CALLBACK';
 app.controller('PlayerController', function($scope, $http) {
 	$http({ method: 'JSONP', url: radioJsonPath 

@@ -2,9 +2,15 @@
 <html ng-app="myApp">
   <head>
     <script src="../angular.min.js"></script>
-    <script src="js/bind.js"></script>
+    <script src="js/scop.js"></script>
   </head>
   <body>
+
+		{{ name }}
+
+		<div ng-controller="MyController">
+			{{ person.name }}
+		</div>
 
 		<div ng-controller="ParentController">
 			<div ng-controller="ChildController">
