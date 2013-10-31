@@ -1,0 +1,20 @@
+<!doctype html>
+<html ng-app="myApp">
+<head>
+<script src="../angular.min.js"></script>
+<script src="js/route.js"></script>
+</head>
+<body>
+
+  <div>
+      <ul class="inline-list">
+        <li><a href="#/">Go to home route</a></li>
+        <li><a href="#/person/42">Go to person route (id: 42)</a></li>
+      </ul>
+      <div class="clear">&nbsp;</div>
+      <div class="content">
+        <div ng-view></div>
+      </div>
+  </div>
+</body>
+</html>

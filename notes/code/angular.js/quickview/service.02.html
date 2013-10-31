@@ -1,0 +1,20 @@
+<!doctype html>
+<html ng-app="myApp">
+<head>
+<script src="../angular.min.js"></script>
+<script src="js/service.02.js"></script>
+</head>
+<body>
+
+<div ng-controller="DemoPlayerController1">
+<button ng-show="!player.playing" ng-click="player.play(program)">Play</button>
+<button ng-show="player.playing" ng-click="player.stop()">Stop</button>
+<ul>
+  <li>Player playing: {{ player.playing }}</li>
+  <li>Player duration: {{ player.currentDuration() }} seconds</li>
+  <li>Player progress: {{ player.progress }} seconds {{ player.progress_percent | number:1 }}%</li>
+</ul>
+</div>
+
+</body>
+</html>

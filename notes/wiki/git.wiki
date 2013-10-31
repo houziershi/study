@@ -4,6 +4,7 @@
 %toc Git入门
 
 
+
 = 配置 =
 
 == 初始化个人信息 ==
@@ -724,5 +725,5 @@ gitk –since=”2 weeks ago” drivers/
 
 长期分支建议开`rerere`，`git config rerere.enable true`详情`man git-rerere`
 
-
+github上高亮指定代码段，在代码页面URL后面加上行号范围，如：`#L89-L121`
 

@@ -68,6 +68,21 @@
 <ul>
 <li><a href="#toc_6.1">结合应用</a>
 </ul>
+<li><a href="#toc_7">Routing</a>
+<ul>
+<li><a href="#toc_7.1">布局位置</a>
+<li><a href="#toc_7.2">路由信息</a>
+<ul>
+<li><a href="#toc_7.2.1">when</a>
+<ul>
+<li><a href="#toc_7.2.1.1">controller</a>
+<li><a href="#toc_7.2.1.2">Template</a>
+<li><a href="#toc_7.2.1.3">templateUrl</a>
+<li><a href="#toc_7.2.1.4">添加路由</a>
+</ul>
+<li><a href="#toc_7.2.2">otherwise</a>
+</ul>
+</ul>
 </ul>
 </div>
 
@@ -1254,6 +1269,593 @@ angular.module('myApp.services', []).factory('githubService', ['$http',
 
 <h2 id="toc_6.1">结合应用</h2>
 
+<p>
+在我们的应用里，我们需要为3个元素创建对应的服务：<code>audio</code>元素，<code>player</code>元素，
+<code>nprService</code>。最简单的就是<code>audio</code> service，切记，不要在controller中有任何的操控
+DOM的行为，如果这么做会污染你的controller并留下潜在的隐患。
+</p>
+
+<p>
+在我们的应用中，<code>PlayerController</code>中有一个<code>audio</code>element元素的实例：
+</p>
+
+<pre class="brush: javascript;" title="radio.v4/radio.js">
+app.controller('PlayerController', ['$scope', '$http', 
+  function($scope, $http) {
+  var audio = document.createElement('audio');
+  $scope.audio = audio;
+  // ...
+</pre>
+
+<p>
+我们可以建立一个单例audio service，而不是在controller中设置audio元素
+</p>
+
+<pre class="brush: javascript;" title="radio.v4/radio.js">
+app.factory('audio', ['$document', function($document) {
+  var audio = $document[0].createElement('audio');
+  return audio;
+}]);
+</pre>
+
+<p>
+注意：我们使用了另一个内建服务<code>$document</code>，这个服务就是<code>window.document</code>元素（
+所有html页面里javascript的根对象）的引用。
+</p>
+
+<p>
+为了看到效果，我们来建立下一个服务：<code>player</code>，在我们的当前循环中，我们附加了
+<code>play()</code>和<code>stop()</code>方法到<code>PlayController</code>中。这些方法只跟playing audio有关，所以
+并没有必要绑定到<code>PlayController</code>，总之，使用<code>PlayController</code>调用player API来操作
+播放器，而并不需要知道操作细节是最好不过的了。
+</p>
+
+<p>
+让我们来创建<code>player</code>service，我们需要注入我们刚刚创建的还热乎的<code>audio</code> service 
+到<code>player</code>service：
+</p>
+
+<pre class="brush: javascript;" title="radio.v4/radio.js">
+app.factory('player', ['audio', function(audio) {
+  var player = {};
+  return player;
+}]);
+</pre>
+
+<p>
+现在我们可以把原先定义在<code>PlayerController</code>中<code>play()</code>方法挪到<code>player</code>service中了
+，我们还需要添加<code>stop</code>方法并存储播放器状态：
+</p>
+
+<pre class="brush: javascript;" title="radio.v4/radio.js">
+app.factory('player', ['audio', function(audio) {
+  var player = {
+    playing: false,
+    current: null,
+    ready: false,
+
+    play: function(program) {
+      // If we are playing, stop the current playback
+      if (player.playing) player.stop();
+      var url = program.audio[0].format.mp4.$text; // from the npr API
+      player.current = program; // Store the current program
+      audio.src = url;
+      audio.play(); // Start playback of the url
+      player.playing = true
+    },
+
+    stop: function() {
+      if (player.playing) {
+        audio.pause(); // stop playback
+        // Clear the state of the player
+        player.ready = player.playing = false; 
+        player.current = null;
+      }
+    }
+  };
+  return player;
+}]);
+</pre>
+
+<p>
+现在我们已经拥有功能完善的<code>play()</code>和<code>stop()</code>方法，
+我们不需要使用<code>PlayerController</code>来管理跟播放相关的操作，只需要把控制权交给
+<code>PlayController</code>里的<code>player</code> service即可：
+</p>
+
+<pre class="brush: javascript;" title="radio.v4/radio.js">
+app.controller('PlayerController', ['$scope', 'player',
+  function($scope, player) {
+  $scope.player = player;
+}]);
+</pre>
+
+<p>
+<a href="../code/angular.js/quickview/service.02.html">查看效果</a>
+</p>
+
+<p>
+注意：使用<code>player</code> service的时候，我们不需要去考虑<code>audio</code> service，因为<code>player</code>
+会帮我们处理audio service。
+</p>
+
+<p>
+注意：当<code>audio</code>播放结束，我们没有重置播放器的状态，播放器会认为他自己一直在播放
+。
+</p>
+
+<p>
+为了解决这个问题，我们需要使用<code>$rootScope</code>服务（另一个Angular的内建服务）来捕获
+<code>audio</code>元素的<code>ended</code>事件，我们注入<code>$rootScope</code>服务并创建<code>audio</code>元素的事件监听器
+：
+</p>
+
+<pre class="brush: javascript;" title="radio.v4/radio.js">
+app.factory('player', ['audio', '$rootScope', 
+  function(audio, $rootScope) {
+  var player = {
+    playing: false,
+    ready: true,
+    // ...
+  };
+  audio.addEventListener('ended', function() {
+    $rootScope.$apply(player.stop());
+  });
+  return player;
+}]);
+</pre>
+
+<p>
+在这种情况下，为了需要捕获事件而使用了<code>$rootScope</code>service，注意我们调用了
+<code>\(rootScope.\)apply()</code>。 因为<code>ended</code>事件会触发外围Angular event loop.我们会在后续
+的文章中讨论event loop。
+</p>
+
+<p>
+最后，我们可以获取当前播放节目的详细信息，比如，我们创建一个方法获取当前事件和
+当前audio的播放间隔（我们会用这个参数显示当前的播放进度）。
+</p>
+
+<pre class="brush: javascript;" title="radio.v4/radio.js">
+app.factory('player', ['audio', '$rootScope',
+  function(audio, $rootScope) {
+  var player = {
+    playing: false,
+    // ...
+    currentTime: function() {
+      return audio.currentTime;
+    },
+    currentDuration: function() {
+      return parseInt(audio.duration);
+    }
+  }
+  };
+  return player;
+}]);
+</pre>
+
+<p>
+在audio元素中存在<code>timeupdate</code>事件，我们可以根据这个事件更新播放进度：
+</p>
+
+<pre class="brush: javascript;" title="radio.v4/radio.js">
+audio.addEventListener('timeupdate', function(evt) {
+  $rootScope.$apply(function() {
+    player.progress = player.currentTime();
+    player.progress_percent = player.progress / player.currentDuration();
+  });
+});
+</pre>
+
+<p>
+最后，我们一个添加<code>canplay</code>事件来表示视图中的audio是否准备就绪
+</p>
+
+<pre class="brush: javascript;" title="radio.v4/radio.js">
+app.factory('player', ['audio', '$rootScope', 
+  function(audio, $rootScope) {
+  var player = {
+    playing: false,
+    ready: false,
+    // ...
+  }
+  audio.addEventListener('canplay', function(evt) {
+    $rootScope.$apply(function() {
+      player.ready = true;
+    });
+  });
+  return player;
+}]);
+</pre>
+
+<p>
+现在，我们有了<code>player</code> service，我们需要操作nprLink directive来让播放器<code>play</code>，
+而不是用<code>$scope</code>（注意，这么做是可选的，我们也可以在<code>PlayerController</code>中创建
+<code>play()</code>和<code>stop()</code>方法）。
+</p>
+
+<p>
+在directive中，我们需要引用本地scope的player，代码如下：
+</p>
+
+<pre class="brush: javascript;" title="radio.v4/radio.js">
+app.directive('nprLink', function() {
+  return {
+    restrict: 'EA',
+    require: ['^ngModel'],
+    replace: true,
+    scope: {
+      ngModel: '=',
+      player: '='
+    },
+    templateUrl: '/code/views/nprListItem',
+    link: function(scope, ele, attr) {
+      scope.duration = scope.ngModel.audio[0].duration.$text;
+    }
+  }
+});
+</pre>
+
+<p>
+现在，为了跟我们已有的模板整合，我们需要更新<code>index.html</code>的<code>npr-link</code>调用方式：
+</p>
+
+<pre class="brush: html;" title="radio.v4/radio.html">
+&lt;npr-link ng-model="program" player="player"&gt;&lt;/npr-link&gt;
+</pre>
+
+<p>
+在视图界面，我们调用<code>play.play(ngModel)</code>，而不是<code>play(ngModel)</code>：
+</p>
+
+<pre class="brush: html;" title="radio.v4/radio.html">
+&lt;div class="nprLink row" player="player" ng-click="player.play(ngModel)"&gt;
+</pre>
+
+<p>
+模板的完整代码：
+</p>
+
+<pre class="brush: html;" title="radio.v4/radio.html">
+&lt;div class="nprLink row" player="player" ng-click="player.play(ngModel)"&gt;
+	&lt;span class="name large-8 columns"&gt;
+	&lt;button class="large-2 small-2 playButton columns" 
+		ng-click="ngModel.play(ngModel)"&gt;
+		&lt;div class="triangle"&gt;&lt;/div&gt;
+	&lt;/button&gt;
+	&lt;div class="large-10 small-10 columns"&gt;
+		&lt;div class="row"&gt;
+			&lt;span class="large-12"&gt;{{ ngModel.title.$text }}&lt;/span&gt;
+		&lt;/div&gt;
+		&lt;div class="row"&gt;
+			&lt;div class="small-1 columns"&gt;&lt;/div&gt;
+			&lt;div class="small-2 columns push-8"&gt;
+				&lt;a href="{{ ngModel.link[0].$text }}"&gt;Link&lt;/a&gt;
+			&lt;/div&gt;
+		&lt;/div&gt;
+	&lt;/div&gt;
+	&lt;/span&gt;
+&lt;/div&gt;
+</pre>
+
+<p>
+逻辑上，我们需要添加播放器视图到总体视图上，因为我们可以封装player数据和状态，
+如下面两个文件<code>playerView</code>定义与<code>playerView.html</code>模板：
+</p>
+
+<pre class="brush: html;" title="playerView.html">
+&lt;div class="row" ng-model="player"&gt;
+  &lt;div class="small-2 columns"&gt;
+    &lt;button class="stopButton" ng-click="stop();"&gt;
+			&lt;div class="square"&gt;&lt;/div&gt;
+		&lt;/button&gt;
+  &lt;/div&gt;
+  &lt;div class="player small-10 columns"&gt;
+    &lt;div class="title"&gt;{{ title }}&lt;/div&gt;
+    &lt;div class="row"&gt;
+      &lt;div class=""&gt;
+        &lt;input type="range" id="seek" value="{{ secondsProgress }}" 
+					max="{{ duration }}" ng-model="secondsProgress" 
+					ng-init="secondsProgress=0" /&gt;
+      &lt;/div&gt;&lt;!-- / player --&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+</pre>
+
+<pre class="brush: javascript;" title="playerView">
+app.directive('playerView', [function(){
+  return {
+    restrict: 'EA',
+    require: ['^ngModel'],
+    scope: {
+      ngModel: '='
+    },
+    templateUrl: 'views/playerView.html',
+    link: function(scope, iElm, iAttrs, controller) {
+      scope.$watch('ngModel.current', function(newVal) {
+        if (newVal) {
+          scope.playing = true;
+          scope.title = scope.ngModel.current.title.$text;
+          scope.$watch('ngModel.ready', function(newVal) {
+            if (newVal) {
+              scope.duration = scope.ngModel.currentDuration();
+            }
+          });
+
+          scope.$watch('ngModel.progress', function(newVal) {
+            scope.secondsProgress = scope.ngModel.progress;
+            scope.percentComplete = scope.ngModel.progress_percent;
+          });
+        }
+      });
+      scope.stop = function() {
+        scope.ngModel.stop();
+        scope.playing = false;
+      }
+    }
+  };
+}]);
+</pre>
+
+<p>
+我们来创建最后一个service：<code>nprService</code>。这个service很像<code>githubService</code>，我们用
+<code>$http</code>service来获取NPR的最新节目：
+</p>
+
+<pre class="brush: javascript;" title="radio.v4/radio.js">
+app.factory('nprService', ['$http', function($http) {
+  var doRequest = function(apiKey) {
+    return $http({
+      method: 'JSONP',
+      url: nprUrl + '&amp;apiKey=' + apiKey + '&amp;callback=JSON_CALLBACK'
+    });
+  }
+
+  return {
+    programs: function(apiKey) { return doRequest(apiKey); }
+  };
+}]);
+</pre>
+
+<p>
+在<code>PlayerController</code>，我们调用<code>nprService</code>的<code>programs()</code>（调用<code>$http service</code>）
+：
+</p>
+
+<pre class="brush: javascript;" title="radio.v4/radio.js">
+app.controller('PlayerController', ['$scope', 'nprService', 'player', 
+  function($scope, nprService, player) {
+  $scope.player = player;
+  nprService.programs(apiKey)
+    .success(function(data, status) {
+      $scope.programs = data.list.story;
+    });
+}]);
+</pre>
+
+<p>
+我们建议使用promises来简化API，但是为了展示的目的，我们在下一个章节会简单介绍
+<code>promises</code>。
+</p>
+
+<p>
+当<code>PlayerController</code>初始化后，我们的<code>nprService</code>会获取最新节目，这样我们在
+<code>nprService</code> service中就成功封装了获取NPR节目的功能。另外，我们添加
+<code>RelatedController</code>在侧边栏显示当前播放节目的相关内容。当我们的<code>player</code> service
+中获取到最新节目时，我们将<code>$watc</code>这个<code>player.current</code>属性并显示跟这个属性相关的
+内容。
+</p>
+
+<pre class="brush: javascript;" title="radio.v4/radio.js">
+app.controller('RelatedController', ['$scope', 'player',
+  function($scope, player) {
+  $scope.player = player;
+
+  $scope.$watch('player.current', function(program) {
+    if (program) {
+      $scope.related = [];
+      angular.forEach(program.relatedLink, function(link) {
+        $scope.related.push({
+          link: link.link[0].$text, 
+          caption: link.caption.$text
+        });
+      });
+    }
+  });
+}]);
+</pre>
+
+<p>
+在HTML代码中，只要关联<code>ng-repeat</code>加载多个项目：
+</p>
+
+<pre class="brush: html;" title="radio.v4/radio.html">
+&lt;div class="large-4 small-4 columns" ng-controller="RelatedController"&gt;
+  &lt;h2&gt;Related content&lt;/h2&gt;
+  &lt;ul id="related"&gt;
+    &lt;li ng-repeat="s in related"&gt;&lt;a href="{{ s.link }}"&gt;{{ s.caption }}&lt;/a&gt;&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/div&gt;
+</pre>
+
+<p>
+只要<code>player.current</code>内容改变，显示的相关内容也会改变。
+</p>
+
+
+<h1 id="toc_7">Routing</h1>
+
+<p>
+在单页面应用中，视图之间的跳转就显尤为重要的，随着应用越来越复杂，我们需要用一种
+方法来精确控制什么时候该呈现怎样的页面给用户。
+</p>
+
+<p>
+咱们可以通过在主页面中引入不同的模板来支持不同页面的切换，但是这么做的缺点就是，
+越来越多的内嵌代码导致最后难以管理。
+</p>
+
+<p>
+通过<code>ng-include</code>指令我们可以把很多的模板整合在视图中，但是我们有更好的方法来处理
+这种情况，我们可以把视图打散成layout和模板视图，然后根据用户访问的特定的URL来
+显示需要的视图。我们可以将这些碎片在一个布局模板中拼接起来。
+</p>
+
+<p>
+AngularJS通过在<code>$routeProvider</code>(route服务的提供者)上声明routes来实现上面的构想。
+</p>
+
+<p>
+使用<code>$routeProvider</code>，我们可以更好的利用浏览历史的API并且可以让用户可以把当前
+路径存成书签以方便以后的使用。
+</p>
+
+<p>
+在我们的应用中设定路由，我们需要确定布局位置和路由信息。
+</p>
+
+<h2 id="toc_7.1">布局位置</h2>
+
+<p>
+第一，我们需要指出我们存放将要存放新页面内容的布局模板在哪里。比如，如果我们想在
+所有页面都配上header和footer，我们可以这样设计布局模板：
+</p>
+
+<pre class="brush: html" title="">
+&lt;header&gt;
+  &lt;h1&gt;Header&lt;/h1&gt;
+&lt;/header&gt;
+&lt;div class="content"&gt;
+  &lt;div ng-view&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;footer&gt;
+  &lt;h5&gt;Footer&lt;/h5&gt;
+&lt;/footer&gt;
+</pre>
+
+<p>
+<code>ng-view</code>指令将说明<code>$routeProvider</code>在哪里渲染模板。
+</p>
+
+<h2 id="toc_7.2">路由信息</h2>
+
+<p>
+第二，我们需要配置我们的路由信息，我们将在应用中配置<code>$routeProvider</code>：
+</p>
+
+<p>
+<code>$routeProvider</code>提供了两种方法处理路由：when和otherwise。
+</p>
+
+<h3 id="toc_7.2.1">when</h3>
+
+<p>
+方法when接收两个参数，第一个设置<code>$location.path()</code>（直接用<code>//</code>也没有问题）；
+第二个参数是配置对象，这个可以包含不同的键，我们可以简单的说几个：
+</p>
+
+<h4 id="toc_7.2.1.1">controller</h4>
+
+<pre class="brush: javascript;" title="">
+controller: 'MyController'
+// or
+controller: function($scope) {
+  // ...
+}
+</pre>
+
+<p>
+如果在配置对象中设置了controller属性，那这个controller会在route加载的时候实例化
+，这个属性可以是一个字符串(必须在module中注册过的controller)也可以是controller 
+function
+</p>
+
+<h4 id="toc_7.2.1.2">Template</h4>
+
+<pre class="brush: javascript;" title="">
+template: '&lt;div&gt;&lt;h2&gt;Route&lt;/h2&gt;&lt;/div&gt;'
+</pre>
+
+<p>
+如果我们在配置对象的template属性设置了值，那么模板就会被渲染到DOM中的<code>ng-view</code>。
+</p>
+
+<h4 id="toc_7.2.1.3">templateUrl</h4>
+
+<pre class="brush: javascript;" title="">
+templateUrl: 'views/template_name.html'
+</pre>
+
+<p>
+如果我们在配置对象的templateUrl属性中设置了值，AngularJS将通过XHR来获取该模板并
+把模板内容渲染到DOM中的<code>ng-view</code>处。
+</p>
+
+<p>
+值得注意的是：<code>templateUrl</code>属性跟其他AngularJS XHR请求的处理流程是一样的，也就
+是说，即使用户从这个页面离开，等他再回到这个页面，应用不会再去请求这个模板页面，
+因为<code>$templateCache</code>已经缓存了这个模板。
+</p>
+
+<h4 id="toc_7.2.1.4">添加路由</h4>
+
+<pre class="brush: javascript;" title="">
+angular.module('myApp', []).
+config(['$routeProvider', function($routeProvider) {
+  $routeProvider.when('/', {
+    controller: 'HomeController',
+    template: '&lt;h2&gt;We are home&lt;/h2&gt;'
+  })
+  .otherwise({redirectTo: '/'});
+}]);
+</pre>
+
+<p>
+<code>$routeProvider</code>还可以处理URL里的传递的参数（比如，<code>/people/42</code>, 假设<code>42</code>是我们
+要找的people的id号）只需要简单在字符串前加上<code>:</code>，<code>$routeProvider</code>会尝试匹配URL中
+id并把id作为key在<code>$routeParams</code>服务中使用：
+</p>
+
+<pre class="brush: javascript;" title="">
+$routeProvider.when('/person/:id', {
+  controller: 'PeopleController',
+  template: '&lt;div&gt;Person show page: {{ name }}&lt;/div&gt;'
+})
+</pre>
+
+<p>
+在PeopleController中，我们检索路由中指定的people的id：
+</p>
+
+<pre class="brush: javascript;" title="">
+app.controller('PeopleController', function($scope, $routeParams) {
+  // We now have access to the $routeParams
+  // At the route /person/42, our $routeParams will look like:
+  // { id: 42 }
+});
+</pre>
+
+<p>
+<a href="../code/angular.js/quickview/route.html">查看效果</a>
+</p>
+
+<pre class="brush: javascript;" title="">
+</pre>
+
+
+<pre class="brush: javascript;" title="">
+</pre>
+
+
+<pre class="brush: javascript;" title="">
+</pre>
+
+<h3 id="toc_7.2.2">otherwise</h3>
+
+<pre class="brush: javascript;" title="">
+</pre>
+
 <pre class="brush: html" title="">
 </pre>
 
@@ -1366,27 +1968,25 @@ angular.module('myApp.services', []).factory('githubService', ['$http',
 </pre>
 
 
-<pre class="brush: html" title="">
-</pre>
 
 
-<pre class="brush: html" title="">
-</pre>
 
 
-<pre class="brush: html" title="">
-</pre>
 
 
-<pre class="brush: html" title="">
-</pre>
 
 
-<pre class="brush: html" title="">
-</pre>
+<p>
+要将这个代码库保存到本地，请先确保安装了git，clone此代码库，然后check out其中的
+<code>part6</code>分支：
+</p>
 
-
-<pre class="brush: html" title="">
+<pre class="brush: javascript;" title="radio.v4/radio.js">
+git clone https://github.com/auser/ng-newsletter-beginner-series.git
+cd ng-newsletter-beginner-series
+git checkout -b part6
+git pull
+./bin/server.sh
 </pre>
  </div>
 </body>
