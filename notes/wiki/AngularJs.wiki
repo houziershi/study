@@ -1285,6 +1285,20 @@ app.controller('RelatedController', ['$scope', 'player',
 只要`player.current`内容改变，显示的相关内容也会改变。
 
 
+= 电台项目完整代码 =
+
+要将这个代码库保存到本地，请先确保安装了git，clone此代码库，然后check out其中的
+`part6`分支：
+
+{{{class="brush: javascript;" title="radio.v4/radio.js"
+git clone https://github.com/auser/ng-newsletter-beginner-series.git
+cd ng-newsletter-beginner-series
+git checkout -b part6
+git pull
+./bin/server.sh
+}}}
+
+
 = Routing =
 
 在单页面应用中，视图之间的跳转就显尤为重要的，随着应用越来越复杂，我们需要用一种
@@ -1327,14 +1341,14 @@ AngularJS通过在`$routeProvider`(route服务的提供者)上声明routes来实
 
 第二，我们需要配置我们的路由信息，我们将在应用中配置`$routeProvider`：
 
-`$routeProvider`提供了两种方法处理路由：when和otherwise。
+`$routeProvider`提供了两种方法处理路由：when和otherwise，相当于逻辑控制中的
+if-else。方法when接收两个参数：
 
-=== when ===
+第一个设置`$location.path()`（直接用`//`也没有问题）；
 
-方法when接收两个参数，第一个设置`$location.path()`（直接用`//`也没有问题）；
 第二个参数是配置对象，这个可以包含不同的键，我们可以简单的说几个：
 
-==== controller ====
+=== controller ===
 
 {{{class="brush: javascript;" title=""
 controller: 'MyController'
@@ -1348,7 +1362,7 @@ controller: function($scope) {
 ，这个属性可以是一个字符串(必须在module中注册过的controller)也可以是controller 
 function
 
-==== Template ====
+=== Template ===
 
 {{{class="brush: javascript;" title=""
 template: '<div><h2>Route</h2></div>'
@@ -1356,7 +1370,7 @@ template: '<div><h2>Route</h2></div>'
 
 如果我们在配置对象的template属性设置了值，那么模板就会被渲染到DOM中的`ng-view`。
 
-==== templateUrl ====
+=== templateUrl ===
 
 {{{class="brush: javascript;" title=""
 templateUrl: 'views/template_name.html'
@@ -1369,7 +1383,7 @@ templateUrl: 'views/template_name.html'
 是说，即使用户从这个页面离开，等他再回到这个页面，应用不会再去请求这个模板页面，
 因为`$templateCache`已经缓存了这个模板。
 
-==== 添加路由 ====
+=== 添加路由 ===
 
 {{{class="brush: javascript;" title=""
 angular.module('myApp', []).
@@ -1405,149 +1419,369 @@ app.controller('PeopleController', function($scope, $routeParams) {
 
 [[../code/angular.js/quickview/route|查看效果]]
 
+= 过滤器 =
+
+在AngularJS的世界里，filter提供了一种格式化数据的方法，Angular也提供给我们了很多
+内建的过滤器，并且建立自定义过滤器也是相当的简单
+
+在HTML的模板绑定`{{}}`中，我们使用`|`来调用过滤器。
+
+比如，我们想让字符串全部大写字符显示：
+	
 {{{class="brush: javascript;" title=""
+{{ name | uppercase }}
 }}}
 
+[[../code/angular.js/quickview/filter|查看效果]]
+
+当然了，我们也可以在JavaScript中使用`$filter`服务来调用过滤器，还拿字符串大写来
+举例：
 
 {{{class="brush: javascript;" title=""
+app.controller('DemoController', ['$scope', '$filter', 
+  function($scope, $filter) {
+
+    $scope.name = $filter('lowercase')('Ari');
+}]);
 }}}
 
+如何传递参数到filter呢？只需要把参数放在filter之后，中间加个冒号（如果有多个参数
+要传递，在每个参数后加上冒号）。数字过滤器可以帮助我们限制数字的位数，如果想显示
+两位小数，加上`number:2`就可以了：
 
 {{{class="brush: javascript;" title=""
+{{ 123.456789 | number:2 }}
 }}}
 
-=== otherwise ===
+== 常用过滤器 ==
+
+=== currency ===
+
+Currency过滤器主要是把数字格式化成货币，意思就是123格式化以后就成了$123.00
+
+可以根据需要选择适当的货币符号。默认的是根据当前操作系统的locale来转换的
 
 {{{class="brush: javascript;" title=""
-}}}
+{{ 123 | currency }}         // $123.00
 
-{{{class="brush: html" title=""
-}}}
-
-
-{{{class="brush: html" title=""
+{{ 456 | currency:'USD $' }} // USD $456.00
 }}}
 
 
-{{{class="brush: html" title=""
+=== date ===
+
+日期过滤器主要根据我们提供的格式化形式来格式化日期，他提供了很多内建的选项，如果
+没有指定格式，默认显示mediumDate形式
+
+{{{class="brush: javascript;" title=""
+{{ today | date:'medium' }}     // Oct 31, 2013 4:02:09 PM
+
+{{ today | date:'short' }}      // 10/31/13 4:02 PM
+
+{{ today | date:'fullDate' }}   // Thursday, October 31, 2013
+
+{{ today | date:'longDate' }}   // October 31, 2013
+
+{{ today | date:'mediumDate' }} // Oct 31, 2013
+
+{{ today | date:'shortDate' }}  // 10/31/13
+
+{{ today | date:'mediumTime' }} // 4:02:09 PM
+
+{{ today | date:'shortTime' }}  // 4:02 PM
 }}}
 
 
-{{{class="brush: html" title=""
+下面是一些自带的日期格式化形式，我们可以通过把不同的格式化选项组合使用来创建
+自定义的日期格式化形式
+
+{{{class="brush: javascript;" title=""
+4 digit year
+{{ today | date:'yyyy' }} // 2013
+
+2 digit padded year
+{{ today | date:'yy' }} // 13
+
+1 digit year
+{{ today | date:'y' }} // 2013
+
+month in year
+{{ today | date:'MMMM' }} // October
+
+month in year
+{{ today | date:'MMM' }} // Oct
+
+padded month in year
+{{ today | date:'MM' }} // 10
+
+month in year
+{{ today | date:'M' }} // 10
+
+padded day in month
+{{ today | date:'dd' }} // 31
+
+day in month
+{{ today | date:'d' }} // 31
+
+day in week
+{{ today | date:'EEEE' }} // Thursday
+
+day in week
+{{ today | date:'EEE' }} // Thu
+
+padded hour in day
+{{ today | date:'HH' }} // 16
+
+hour in day
+{{ today | date:'H' }} // 16
+
+padded hour in am/pm
+{{ today | date:'hh' }} // 04
+
+hour in am/pm
+{{ today | date:'h' }} // 4
+
+padded minute in hour
+{{ today | date:'mm' }} // 02
+
+minute in hour
+{{ today | date:'m' }} // 2
+
+padded second in minute
+{{ today | date:'ss' }} // 09
+
+second in minute
+{{ today | date:'s' }} // 9
+
+Padded millisecond in second
+{{ today | date:'.sss' }} // .448
+
+am/pm character
+{{ today | date:'a' }} // PM
+
+4 digit representation of timezone offset
+{{ today | date:'Z' }} // +0800
 }}}
 
 
-{{{class="brush: html" title=""
+=== filter ===
+
+filter过滤器主要用来过滤一个数组数据并返回一个包含子数组数据的新数组
+
+比如，在客户端搜索时，我们可以快速的从数组中过滤出我们想要的结果
+
+这个filter方法接收一个string，object，或者function参数用来选择/移除数组元素
+
+如果第一个参数是：
+
+String 	接收匹配这个字符串的元素，如果想排除某些字符串，在前面加上`!`就行了
+
+Object 	如果只传入一个字符串，会作为这个对象的属性名称进行类似substring类似的
+匹配，如果想匹配所有属性，使用`$`作为键即可
+
+Function 	对数组中每个元素执行这个function，执行后得到的结果会放在一个新的数组中
+
+You can also pass a second parameter into the filter method that will be used 
+to determine if the expected value and the actual 你也可以传入第二个参数到filter
+方法中，他讲用于决定如果期望值和实际值是否考虑匹配的问题
+
+如果第二个参数是：
+
+true 	执行严格的匹配比较（跟`angular.equals(expected,actual)`一样）
+
+false 	执行大小写敏感的substring匹配
+
+Function 	执行function并接受一个元素，前提是这个function的返回结果是真
+
+例子：
+
+{{{class="brush: javascript;" title=""
+All words that have an `e` in them
+{{ ['Ari', 'Lerner', 'Likes', 'To', 'Eat', 'Pizza'] | filter:'e' }}
+["Lerner","Likes","Eat"]
+
+All people that like pizza
+{{ [{'name': 'Ari', 'City': 'San Francisco', 'favorite food': 'Pizza'}, {'name': 'Nate', 'City': 'San Francisco', 'favorite food': 'indian food'}] | filter:{'favorite food': 'Pizza'} }}
+[{"name":"Ari","City":"San Francisco","favorite food":"Pizza"}]
+
+Filter with a function that returns true if the first letter is capitalized
+{{ ['Ari', 'likes', 'to', 'travel'] | filter:isCapitalized }}
+["Ari"]
+}}}
+
+`isCapitalized`函数如下：
+
+{{{class="brush: javascript;" title=""
+$scope.isCapitalized = function(str) { return str[0] == str[0].toUpperCase(); }
+}}}
+
+=== json ===
+
+json 过滤器接收JSON或者JavaScript对象，然后转换成字符串，这个功能在调试程序的
+时候非常有用！译者感受：妈妈再也不用担心我的debug，方便的令人发指：
+
+{{{class="brush: javascript;" title=""
+{{ {'name': 'Ari', 'City': 'San Francisco'} | json }}
+
+{
+  "name": "Ari",
+  "City": "San Francisco"
+}
+}}}
+
+=== limitTo ===
+
+limitTo过滤器会根据传递的参数值来生成新的数组或字符串，参数值为整数，从开头截取
+，参数为负值，从最后开始截取。
+
+如果限定值超过了字符串长度，返回整个数组或字符串
+
+{{{class="brush: javascript;" title=""
+Take the first 4 letters of the string
+{{ "San Francisco is often cloudy" | limitTo:4 }}
+San 
+
+Take the last 6 characters of the string
+{{ "San Francisco is often cloudy" | limitTo:-6 }}
+cloudy
+
+Only return the first result of the array
+{{ ['a', 'b', 'c', 'd', 'e', 'f'] | limitTo:1 }}
+["a"]
 }}}
 
 
-{{{class="brush: html" title=""
+=== lowercase uppercase ===
+
+lowercase过滤器很明显，将整个字符串编程小写形式
+Uppercase过滤器就是把整个字符串变成大写形式
+
+{{{class="brush: javascript;" title=""
+Lowercase string
+{{ "San Francisco is often cloudy" | lowercase }}
+san francisco is often cloudy
+
+Uppercase string
+{{ "San Francisco is often cloudy" | uppercase }}
+SAN FRANCISCO IS OFTEN CLOUDY
 }}}
 
 
-{{{class="brush: html" title=""
+=== number ===
+
+Number过滤器格式化文本成数字，可以接受参数（可选）来决定格式化后数字的位数
+
+如果参数是非数字，将返回空字符串
+
+{{{class="brush: javascript;" title=""
+Simple number formatting
+{{ 1234567890 | number }}
+1,234,567,890
+
+Format a number with only 1 decimal place
+{{ 1.234567 | number:1 }}
+1.2
+}}}
+
+=== orderBy ===
+
+orderBy过滤器主要是根据给定的表达式对数组进行排序
+
+orderBy函数可以接受两个参数：第一个是必须要提供的，第二个是可选参数
+
+第一个参数决定了如何对数组进行排序如果传进来的第一个参数是：
+
+function 	将被用作这个对象的getter函数
+
+string 	字符串会被作为key来对数组元素进行排序，你也可以传进来`+`或者`-`来决定是
+升序还是降序
+
+array 	使用这个数组里的元素作为排序表达式的判断依据，使用第一个不严格相等表达式
+的结果的元素作为其他元素的判断依据
+
+第二个参数决定排序：
+
+{{{class="brush: javascript;" title=""
+Sorted people by name
+{{ [{'name': 'Ari', 'status': 'awake'}, {'name': 'Nate', 'status': 'awake'}, {'name': 'Q', 'status': 'sleeping'}] | orderBy: '+name' }}
+[{"name":"Ari","status":"awake"},{"name":"Nate","status":"awake"},{"name":"Q","status":"sleeping"}]
+
+Reverse sorted people by status
+{{ [{'name': 'Ari', 'status': 'awake'}, {'name': 'Nate', 'status': 'awake'}, {'name': 'Q', 'status': 'sleeping'}] | orderBy:'status':true }}
+[{"name":"Q","status":"sleeping"},{"name":"Ari","status":"awake"},{"name":"Nate","status":"awake"}]
 }}}
 
 
-{{{class="brush: html" title=""
+== 创建自定义的过滤器 ==
+
+正如我们前面看到的，创建自定义过滤器相当简单，我们只要把他配置到我们的module下就
+可以了，让我们一起来创建一个首字母大写的过滤器吧
+
+首先，我们创建一个module
+
+{{{class="brush: javascript;" title=""
+angular.module('myApp.filters', []).filter('capitalize', function() {
+  return function(input) {}  
+});
 }}}
 
+Fliters其实就是一个function，接收`input`字符串，我们可以函数里做一些错误检查
 
-{{{class="brush: html" title=""
+{{{class="brush: javascript;" title=""
+angular.module('myApp.filters', []).filter('capitalize', function() {
+  return function(input) {
+    // input will be ginger in the usage below
+    if (input) 
+      return input[0].toUpperCase() + input.slice(1);
+  }  
+});
 }}}
 
+效果：
 
-{{{class="brush: html" title=""
+{{{class="brush: javascript;" title=""
+{{ 'ginger loves dog bones' | lowercase | capitalize }}
+Ginger loves dog bones
 }}}
 
-
-{{{class="brush: html" title=""
-}}}
+[[../code/angular.js/quickview/filter|查看效果]]
 
 
-{{{class="brush: html" title=""
-}}}
+= 其他内容 =
 
 
-{{{class="brush: html" title=""
-}}}
+在这个系列教程中，我们介绍了很多可以让你轻松上手AngularJS的知识点，当然了，还有
+很多要点没有机会谈到，都列在下面：
+
+* Promises（可以让多个异步请求更加的有条理）
+* Building custom directives（自定义指令）
+* `$resource`service（非常好用的一个服务，底层是调用了http Service）
+* Unit testing(单元测试，这个尤为重要，甚至可以单拿出来讲很多，推荐jasmine)
+* End-to-end testing（同上）
+* Midway testing（介于前面两者的测试）
+* i18n and I10n language translation/localization（多语言）
+* Authentication and customizing XHR requests（验证和自定义XHR请求）
+* 使用`$provider`服务来创建自定义服务
+* Forms and validations（表单和验证）
+* IE compatibility（IE兼容性）
 
 
-{{{class="brush: html" title=""
-}}}
+= 学习资源列表 =
 
+关于AngularJS的更多，更深的知识请访问如下站点：
 
-{{{class="brush: html" title=""
-}}}
+[[http://egghead.io|egghead.io]]
+[[https://plus.google.com/communities/115368820700870330756|Google+ community]]
+[[http://weblogs.asp.net/dwahlin/|Dan Wahlin&rsquo;s blog]]
+[[http://joelhooks.com/|joel hook&rsquo;s blog]]
+[[http://deansofer.com/blog|Dean Sofer&rsquo;s blog]]
+[[http://www.yearofmoo.com|yearofmoo.com]]
 
+这里是一些有趣的Angular 程序供大家把玩
 
-{{{class="brush: html" title=""
-}}}
+[[https://github.com/angular-app/angular-app|angular-app]]
+[[https://github.com/joshdmiller/ng-boilerplate|ng-boilerplace]]
+[[https://github.com/testdouble/lineman|The very awesome lineman project]]
+[[http://angular-ui.github.io/|angular-ui]]
+[[http://angular-ui.github.io/bootstrap/|angular-bootstrap]]
 
-
-{{{class="brush: html" title=""
-}}}
-
-
-{{{class="brush: html" title=""
-}}}
-
-
-{{{class="brush: html" title=""
-}}}
-
-
-{{{class="brush: html" title=""
-}}}
-
-
-{{{class="brush: html" title=""
-}}}
-
-
-{{{class="brush: html" title=""
-}}}
-
-
-{{{class="brush: html" title=""
-}}}
-
-
-{{{class="brush: html" title=""
-}}}
-
-
-{{{class="brush: html" title=""
-}}}
-
-
-{{{class="brush: html" title=""
-}}}
-
-
-{{{class="brush: html" title=""
-}}}
-
-
-{{{class="brush: html" title=""
-}}}
-
-
-
-
-
-
-
-
-
-
-要将这个代码库保存到本地，请先确保安装了git，clone此代码库，然后check out其中的
-`part6`分支：
-
-{{{class="brush: javascript;" title="radio.v4/radio.js"
-git clone https://github.com/auser/ng-newsletter-beginner-series.git
-cd ng-newsletter-beginner-series
-git checkout -b part6
-git pull
-./bin/server.sh
-}}}

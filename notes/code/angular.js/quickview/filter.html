@@ -1,0 +1,200 @@
+<!doctype html>
+<html ng-app="myApp">
+<head>
+<meta charset="UTF-8">
+<script src="../angular.min.js"></script>
+<script src="js/filter.js"></script>
+</head>
+<body>
+
+<div ng-controller="LastController">
+  <input type="text" ng-model="name" placeholder="Set name to uppercase" />
+  {{ name | uppercase }}
+
+	<br/>
+	<h1>数字小数位</h1>	
+	<br/>
+	<br/> {{ 123.456789 | number:2 }}
+	<br/>
+	<br/>
+	<br/>
+	<h1>货币</h1>	
+	<br/> {{ 123 | currency }}         // $123.00
+	<br/>
+	<br/> {{ 456 | currency:'USD $' }} // USD $456.00
+	<br/>
+	<h1>日期</h1>	
+	<br/>
+	<h2>简单</h2>	
+	<br/>{{ today | date:'medium' }}     // Oct 31, 2013 4:02:09 PM
+	<br/>
+	<br/>{{ today | date:'short' }}      // 10/31/13 4:02 PM
+	<br/>
+	<br/>{{ today | date:'fullDate' }}   // Thursday, October 31, 2013
+	<br/>
+	<br/>{{ today | date:'longDate' }}   // October 31, 2013
+	<br/>
+	<br/>{{ today | date:'mediumDate' }} // Oct 31, 2013
+	<br/>
+	<br/>{{ today | date:'shortDate' }}  // 10/31/13
+	<br/>
+	<br/>{{ today | date:'mediumTime' }} // 4:02:09 PM
+	<br/>
+	<br/>{{ today | date:'shortTime' }}  // 4:02 PM
+	<br/>
+	<h2>详细</h2>	
+	<br/>4 digit year
+	<br/>{{ today | date:'yyyy' }} // 2013
+	<br/>
+	<br/>2 digit padded year
+	<br/>{{ today | date:'yy' }} // 13
+	<br/>
+	<br/>1 digit year
+	<br/>{{ today | date:'y' }} // 2013
+	<br/>
+	<br/>month in year
+	<br/>{{ today | date:'MMMM' }} // October
+	<br/>
+	<br/>month in year
+	<br/>{{ today | date:'MMM' }} // Oct
+	<br/>
+	<br/>padded month in year
+	<br/>{{ today | date:'MM' }} // 10
+	<br/>
+	<br/>month in year
+	<br/>{{ today | date:'M' }} // 10
+	<br/>
+	<br/>padded day in month
+	<br/>{{ today | date:'dd' }} // 31
+	<br/>
+	<br/>day in month
+	<br/>{{ today | date:'d' }} // 31
+	<br/>
+	<br/>day in week
+	<br/>{{ today | date:'EEEE' }} // Thursday
+	<br/>
+	<br/>day in week
+	<br/>{{ today | date:'EEE' }} // Thu
+	<br/>
+	<br/>padded hour in day
+	<br/>{{ today | date:'HH' }} // 16
+	<br/>
+	<br/>hour in day
+	<br/>{{ today | date:'H' }} // 16
+	<br/>
+	<br/>padded hour in am/pm
+	<br/>{{ today | date:'hh' }} // 04
+	<br/>
+	<br/>hour in am/pm
+	<br/>{{ today | date:'h' }} // 4
+	<br/>
+	<br/>padded minute in hour
+	<br/>{{ today | date:'mm' }} // 02
+	<br/>
+	<br/>minute in hour
+	<br/>{{ today | date:'m' }} // 2
+	<br/>
+	<br/>padded second in minute
+	<br/>{{ today | date:'ss' }} // 09
+	<br/>
+	<br/>second in minute
+	<br/>{{ today | date:'s' }} // 9
+	<br/>
+	<br/>Padded millisecond in second
+	<br/>{{ today | date:'.sss' }} // .448
+	<br/>
+	<br/>am/pm character
+	<br/>{{ today | date:'a' }} // PM
+	<br/>
+	<br/>4 digit representation of timezone offset
+	<br/>{{ today | date:'Z' }} // +0800
+	<br/>
+	<br/>
+	<br/>
+	<br/>
+	<br/>
+	<h1>过滤</h1>
+	<br/>
+	<br/>All words that have an `e` in them
+	<br/>{{ ['Ari', 'Lerner', 'Likes', 'To', 'Eat', 'Pizza'] | filter:'e' }}
+	<br/>["Lerner","Likes","Eat"]
+	<br/>
+	<br/>All people that like pizza
+	<br/>{{ [{'name': 'Ari', 'City': 'San Francisco', 'favorite food': 'Pizza'}, {'name': 'Nate', 'City': 'San Francisco', 'favorite food': 'indian food'}] | filter:{'favorite food': 'Pizza'} }}
+	<br/>[{"name":"Ari","City":"San Francisco","favorite food":"Pizza"}]
+	<br/>
+	<br/>Filter with a function that returns true if the first letter is capitalized
+	<br/>{{ ['Ari', 'likes', 'to', 'travel'] | filter:isCapitalized }}
+	<br/>["Ari"]
+	<br/>
+	<br/>
+	<br/>
+	<br/>
+	<br/>
+	<h1>Json</h1>
+	<br/>{{ {'name': 'Ari', 'City': 'San Francisco'} | json }}
+	<br/>
+	<br/>
+	<br/>
+	<h1>limitTo</h1>
+	<br/>
+	<br/> Take the first 4 letters of the string
+	<br/> {{ "San Francisco is often cloudy" | limitTo:4 }}
+	<br/> San 
+	<br/> 
+	<br/> Take the last 6 characters of the string
+	<br/> {{ "San Francisco is often cloudy" | limitTo:-6 }}
+	<br/> cloudy
+	<br/> 
+	<br/> Only return the first result of the array
+	<br/> {{ ['a', 'b', 'c', 'd', 'e', 'f'] | limitTo:1 }}
+	<br/> ["a"]
+	<br/>
+	<br/>
+	<br/>
+	<h1>lowercase / uppercase</h1>
+	<br/>Lowercase string
+	<br/>{{ "San Francisco is often cloudy" | lowercase }}
+	<br/>san francisco is often cloudy
+	<br/>
+	<br/>Uppercase string
+	<br/>{{ "San Francisco is often cloudy" | uppercase }}
+	<br/>SAN FRANCISCO IS OFTEN CLOUDY
+	<br/>
+	<br/>
+	<br/>
+	<br/>
+	<h1>数字</h1>
+	<br/>
+	<br/>Simple number formatting
+	<br/>{{ 1234567890 | number }}
+	<br/>1,234,567,890
+	<br/>
+	<br/>Format a number with only 1 decimal place
+	<br/>{{ 1.234567 | number:1 }}
+	<br/>1.2
+	<br/>
+	<br/>
+	<br/>
+	<h1>排序</h1>
+	<br/>Sorted people by name
+	<br/>{{ [{'name': 'Ari', 'status': 'awake'}, {'name': 'Nate', 'status': 'awake'}, {'name': 'Q', 'status': 'sleeping'}] | orderBy: '+name' }}
+	<br/>[{"name":"Ari","status":"awake"},{"name":"Nate","status":"awake"},{"name":"Q","status":"sleeping"}]
+	<br/>
+	<br/>Reverse sorted people by status
+	<br/>{{ [{'name': 'Ari', 'status': 'awake'}, {'name': 'Nate', 'status': 'awake'}, {'name': 'Q', 'status': 'sleeping'}] | orderBy:'status':true }}
+	<br/>[{"name":"Q","status":"sleeping"},{"name":"Ari","status":"awake"},{"name":"Nate","status":"awake"}]
+	<br/>
+	<br/>
+	<br/>
+	<br/>
+	<h1>自定义过滤器</h1>
+	<br/>
+	<br/>{{ 'ginger loves dog bones' | lowercase | capitalize}}
+	<br/>Ginger loves dog bones
+
+
+</div>
+
+</body>
+</html>
