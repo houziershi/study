@@ -17,5 +17,7 @@
 
 常见问题：[[java.jvm.problems]]
 
+类加载器：[[java.jvm.classloader]]
+
 其他：[[java.jvm.other]]
 
