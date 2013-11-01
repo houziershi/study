@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>学习计划</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>学习计划</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">数学</a>
+<li><a href="#toc_2">协议</a>
+<ul>
+<li><a href="#toc_2.1">HTTP</a>
+<li><a href="#toc_2.2">TCP/IP</a>
+<li><a href="#toc_2.3">EMail</a>
+</ul>
+<li><a href="#toc_3">编程方法</a>
+<ul>
+<li><a href="#toc_3.1">设计模式</a>
+</ul>
+<li><a href="#toc_4">语言</a>
+<ul>
+<li><a href="#toc_4.1">Java</a>
+</ul>
+<li><a href="#toc_5">工具</a>
+<ul>
+<li><a href="#toc_5.1">自动测试与软件配置管理(SCM)实现</a>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">数学</h1>
+
+<p>
+《算法导论》，《编程珠玑》等书绝对值得读十遍。
+</p>
+
+<h1 id="toc_2">协议</h1>
+
+<h2 id="toc_2.1">HTTP</h2>
+
+<p>
+对HTTP协议，知道POST, GET的区别是什么，阅读过HTTP相关的RFC文档。学会使用sniffer
+工具查看数据包，帮助查找与调试程序，
+</p>
+
+<h2 id="toc_2.2">TCP/IP</h2>
+
+<p>
+知道TCP与UDP的区别，知道组播是怎么回事情。
+</p>
+
+<h2 id="toc_2.3">EMail</h2>
+
+<p>
+知道并理解E-Mail发送与接受的协议如SMTP， POP3，IMAP等协议，了解MIME与Base64编码
+。
+</p>
+
+
+<h1 id="toc_3">编程方法</h1>
+
+<h2 id="toc_3.1">设计模式</h2>
+
+<p>
+里氏替换原则， 开闭原则，合成复用原则，依赖倒置原则有很好的理解，并能举例说明。
+</p>
+
+<p>
+对常用的设计模式如工厂模式，单例模式，观察者模式，责任链模式，桥接模式等知道灵活
+运用，明白什么是回调(Callback)。
+</p>
+
+<p>
+设计模式是关于交流，不关于代码。切忌滥用设计模式。
+</p>
+
+<p>
+设计为了让软件更容易被别人读懂，更容易维护而产生，设计模式本质是程序员之间的交流
+，如果A用工厂模式设计一个模块B来接替，A只要说该模块是工厂模式实现，B维护起来应该
+容易得多。
+</p>
+
+
+<h1 id="toc_4">语言</h1>
+
+<h2 id="toc_4.1">Java</h2>
+
+<p>
+对线程(thread)，串行化，反射，网络编程，JNI技术，容器(Map,List, Iterator), 
+类加载器(ClassLoader)，输入输出流，垃圾回收机制， 
+</p>
+
+<p>
+有过Java项目的性能优化经验，最起码掌握一种性能监视工具的使用，熟悉JVM参数，
+最起码知道可以在JVM启动时指定不同垃圾回收机制，以及不同垃圾回收机制之间的差别，
+熟悉JVM参数优化。
+</p>
+
+<p>
+最好知道JDBC规范是怎么回事情，面对Oracle数据库如果告诉你JDBC驱动不能用了，你还
+知道有OCI驱动可以。掌握常见的SQL语句，熟悉JMS， JNDI等组件，掌握一套web开发模式
+，从前台到后台，有能力整合好这样的框架。理解并掌握MVC思想，像SSH已经实现了MVC的
+分层，几乎不需要你自己再实现，假设你开发一个简单的Swing程序，你能MVC就说明你真的
+掌握了MVC的精髓。有能力在J2EE前端开发中构建自己的MVC模式，知道什么是WEB2.0，知道
+什么是SOA， SaaS， SaaP等含义
+</p>
+
+
+<h1 id="toc_5">工具</h1>
+
+<h2 id="toc_5.1">自动测试与软件配置管理(SCM)实现</h2>
+
+<p>
+知道什么是软件配置管理，知道<a href="http://java.net/projects/hudson/">Hudson</a>运用
+该工具SCM。
+</p>
+
+<p>
+知道怎么获取测试代码覆盖率，Java有效代码行数(NCSS)，完成firebug，
+JDepend等工具集成ant/maven。熟悉并注重在开发过程中使用JUnit单元测试，
+理解白盒测试规范。
+</p>
+ </div>
+</body>
+</html>

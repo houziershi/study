@@ -173,6 +173,10 @@ pidgin：[[pidgin]]
 
 网络标准：[[stand.net]]
 
+=  学习计划 =
+
+[[study.plan]]
+
 = 吐槽 =
 
 [[Joke]]

@@ -31,6 +31,7 @@
 <li><a href="#toc_2.1">HTTP代理</a>
 </ul>
 <li><a href="#toc_3">建立工程</a>
+<li><a href="#toc_4">配置工程目录结构</a>
 </ul>
 </div>
 
@@ -102,6 +103,27 @@ mvn help:system
 
 <pre class="brush: bash">
 mvn archetype:generate
+</pre>
+
+<h1 id="toc_4">配置工程目录结构</h1>
+
+<p>
+如果不用默认的目录结构，要自定义的话：
+</p>
+
+<pre class="brush: xml">
+&lt;build&gt;
+     &lt;!-- Java 源代码的路径配置 --&gt;
+     &lt;sourceDirectory&gt;src/main/java&lt;/sourceDirectory&gt;
+     &lt;scriptSourceDirectory&gt;src/main/scripts&lt;/scriptSourceDirectory&gt;
+     &lt;!-- 测试代码的路径配置 --&gt;
+     &lt;testSourceDirectory&gt;src/test/java&lt;/testSourceDirectory&gt;
+     &lt;!-- 源码编译后的 class 文件的路径配置 --&gt;
+     &lt;outputDirectory&gt;target/classes&lt;/outputDirectory&gt;
+     &lt;!-- 测试源码编译后的 class 文件的路径配置 --&gt;
+     &lt;testOutputDirectory&gt;target/test-classes&lt;/testOutputDirectory&gt;
+     &lt;plugin&gt; .... &lt;/plugin&gt;
+ &lt;/build&gt;
 </pre>
  </div>
 </body>
