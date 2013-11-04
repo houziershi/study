@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=cp936">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
 <script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
 
@@ -20,15 +20,51 @@
 </head>
 <body  onresize='changeTocSize()'>
 	<div class="note-main"> 
-<p>
+
+<h1 id="toc_1">环境文件</h1>
+
+<ul>
+<li>
+配置文件直接从工程代码中删除，包括dev版本文件。
+
+<li>
+只处理环境相关的prop文件，如error.properties文件，不涉及到环境的，不做处理。
+
+<li>
+如果代码中还需要移植出去的配置文件中的部分属性，还是按照原来的文件名，只保留不和环境相关的内容。如merchant.properties ，需要保留hornetq相关的连接工厂属性。最终的处理结果为：在hpmerchantService中保留 /src/main/resources/merchant.properties, 去掉和环境相关的所有值即可。
+
+<li>
+拆分后的prop文件，统一放在svn地址：<a href="https://hpfs01.handpay.com.cn:8443/svn/prop_server/newbranches">https://hpfs01.handpay.com.cn:8443/svn/prop_server/newbranches</a>
+
+</ul>
+
+<pre class="brush: bash">
+</pre>
+
+<h1 id="toc_2">依赖工程包</h1>
+
+<pre class="brush: bash">
 scp dsdev15@dev1.hpdev.com:~/server/default/deploy/handpay/merchantService.war
 scp dsdev15@dev1.hpdev.com:~/server/default/deploy/handpay/hpMerchandise4.0-0.0.1-SNAPSHOT.jar .
 scp dsdev15@dev1.hpdev.com:~/server/default/deploy/handpay/hpSupplier-0.0.1-SNAPSHOT.jar
-</p>
 
-<p>
 dsdev20@dev1.hpdev.com:~/server/default/deploy/ROOT.war/lmbao/config/hpTrafficWap/hpwap.properties
-</p>
+</pre>
+
+
+
+
+<pre class="brush: bash">
+</pre>
+
+<pre class="brush: bash">
+</pre>
+
+
+
+
+<pre class="brush: bash">
+</pre>
  </div>
 </body>
 </html>
