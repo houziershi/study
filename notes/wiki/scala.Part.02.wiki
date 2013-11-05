@@ -2330,6 +2330,90 @@ trait FileLogger extends Logger {
 
 初始化输出流的操作只有在用到`out`时才执行。
 
+
+
+== 保证特质能调用到需要的方法 ==
+
+以记录异常log为例：
+
+{{{class="brush: scala"
+trait LoggedException {
+		def log() { log(getMessage()) }   // error
+}
+}}}
+
+我们要保证`LoggerException`混入的类要有`getMessage()`方法，因为在`log()`方法中
+会调用到它。
+
+
+为了保证特质一定能调用到指定的方法（如：`getMessage`)，可以有两种方案：
+
+* 特质扩展自指定的类（如：`Exception`）
+* 用自身类型限制只能混入指定的类（如：`Exception`）
+
+如果特质是扩展子一个类`B`，那么所以混入这个特质的类都可以作为`B`的子类。
+
+=== 自身类型 ===
+
+Scala还可以通过自身类型（self type），限制只能被混入到指定的类中：
+
+{{{class="brush: scala"
+this: MyType =>
+}}}
+
+保证特质只能被混入`MyType`的子类中。
+
+例如，要根据现有的日志工具类`Logged`扩展出一个适用于异常日志的`LoggedException`
+：
+
+{{{class="brush: scala"
+trait LoggedException extends Logged {
+	this: Exception =>
+		def log() { log(getMessage()) }
+}
+}}}
+
+因为限制在`Exception`的子类中，所以可以保证肯定会有`getMessage()`方法。
+
+自身类型也可以不给出类名，而用结构类型(structural type)来说明要有指定方法：
+
+{{{class="brush: scala"
+trait LoggedException extends Logged {
+	this: { def getMessage(): String} =>
+		def log() { log(getMessage()) }
+}
+}}}
+
+这样就可以混入任何有`getMessage`方法的类了。
+
+=== 自身类型不会继承 ===
+
+前面的`LoggedException`的自身类型并不会继承给子类，如果它有子类要再次声明自身
+类型：
+
+{{{class="brush: scala"
+trait ManagedException extends LoggedException {
+	this: Exception =>
+		...
+}
+}}}
+
+=== this的别名 ===
+
+如果把`this`改成别的名字那么在子类中还可以使用这个别名。如：
+
+{{{class="brush: scala"
+trait Group {
+	outer: Network =>
+		class Member { ... }
+}
+}}}
+
+这里把`this`改成`outer`。`Grout`特质只能在`Network`的子类中，而在`Member`中，
+可以用`outer`来代替`Group.this`。
+
+
+
 == Scala特质生成Java接口 ==
 
 === 只有抽象方法 ===

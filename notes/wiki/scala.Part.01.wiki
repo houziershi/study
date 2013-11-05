@@ -1663,12 +1663,611 @@ Array(Array(1,7), Array(2,9))
 
 == 与Java的区别 ==
 
-总结一下，Scala中的类如果对应到Java的类的话，
-Scala的对象和Java中的对象不是同一回事情，是另一个新的概念。
+总结一下，Scala中的类如果对应到Java的类的话，Scala的对象和Java中的对象不是同一回
+事情，是另一个新的概念。
 
 为了表达统一，我们把对应Java里对象的概念叫作“类的实例”。
 
+| Scala              | java |
+|--------------------|------|
+| 类                 | 类   |
+| 类的实例           | 对象 |
+| 单例对象与伴生对象 | 无   |
+
 这样“类”，“对象”,“类的实例”三个概念都有了明确的定义。
+
+
+
+= 类与对象高级应用 =
+
+== 结构类型 ==
+
+结构类型很像JavaScript或是Ruby中的鸭子类型：检查是否有指定的字段、方法。
+
+如下面的`appendLines()`方法用结构类型声明参数可以是任何含有
+`append(str: String): Any`方法的类型：
+
+{{{class="brush: scala"
+def appendLines(target: { def append(str: String): Any }, 
+		lines: Iterable[String]) 
+{
+  for (l <- lines) { target.append(l); target.append("\n") }
+}
+
+val lines = Array("Mary", "had", "a", "little", "lamb")
+
+val builder = new StringBuilder
+appendLines(builder, lines)
+println(builder)
+}}}
+
+由于在底层实现时是通过反射来调用`target.append()`方法，为了性能考虑只有在无法用
+共同特质描述的情况下才用结构类型。
+
+
+== 类型别名 ==
+
+关键字`type`可以给类型创建别名。别名必须放在类或对象中，不能出现在Scala顶层：
+
+{{{class="brush: scala"
+class Document {
+  import scala.collection.mutable._
+
+  type Index = HashMap[String, (Int, Int)]
+
+}
+}}}
+
+不过在REPL环境中可以用别名，因为REPL已经在一个对象中了。
+
+
+
+== 内部类 ==
+
+Scala中几乎可以在任何语法中嵌套任何语法：可以在函数中定义函数，也可以在类中定义
+类。
+
+=== 类中的类 ===
+
+内部类的一个例子：
+
+{{{class="brush: scala"
+import scala.collection.mutable.ArrayBuffer
+
+class Network {
+  class Member(val name: String) {
+    val contacts = new ArrayBuffer[Member]
+  }
+
+  private val members = new ArrayBuffer[Member]
+
+  def join(name: String) = {
+    val m = new Member(name)
+    members += m
+    m
+  }
+}
+}}}
+
+对于两个不同的网络实例：
+
+{{{class="brush: scala"
+val chatter = new Network
+val myFace = new Network
+}}}
+
+内部的`Member`是不同的，也就是说`chatter.Member`和`myFace.Member`是两个不同的类
+。这与Java不同，Java里同一个类的内部类是相同的。
+
+在新建实例时，Scala中：
+
+{{{class="brush: scala"
+new chatter.Member
+}}}
+
+而在Java里，这个语法看起来有点别扭：
+
+{{{class="brush: java"
+chatter.new Member()
+}}}
+
+以我们的例子来说，可以在各自的网络中添加成员，但不能跨网添加成员：
+
+{{{class="brush: scala"
+val fred = chatter.join("Fred")
+val wilma = chatter.join("Wilma")
+fred.contacts += wilma // OK
+val barney = myFace.join("Barney") // Has type myFace.Member
+fred.contacts += barney // No
+  // Can’t add a myFace.Member to a buffer of chatter.Member elements
+}}}
+
+如果想要跨网加，可以有两个方案：
+
+* 用移到伴生对象中
+* 类型投影
+
+=== 伴生对象中的类 ===
+
+{{{class="brush: scala"
+import scala.collection.mutable.ArrayBuffer
+
+class Network {
+  private val members = new ArrayBuffer[Network.Member]
+
+  def join(name: String) = {
+    val m = new Network.Member(name)
+    members += m
+    m
+  }
+  def description = "a network with members " + 
+    (for (m <- members) yield m.description).mkString(", ")
+}
+
+object Network {
+  class Member(val name: String) {
+    val contacts = new ArrayBuffer[Member]
+    def description = name + " with contacts " + 
+      (for (c <- contacts) yield c.name).mkString(" ")
+  }
+}
+
+object Main extends App {
+  val chatter = new Network
+  val myFace = new Network
+
+  val fred = chatter.join("Fred")
+  val wilma = chatter.join("Wilma")
+  fred.contacts += wilma // OK
+  val barney = myFace.join("Barney")
+  fred.contacts += barney // Also OK
+  println("chatter is " + chatter.description)
+  println("myFace is " + myFace.description)
+}
+}}}
+
+=== 类型投影 ===
+
+上面那样把内部类放在伴生对象中，所以的内部类都可以跨实例匹配了。如果只是想在指定
+的语句中跨实例，用类型投影的的方式`Network#Member`表示是任何`Network`的`Member`
+，如：
+
+{{{class="brush: scala"
+class Network {
+  class Member(val name: String) {
+    val contacts = new ArrayBuffer[Network#Member]
+  }
+
+  private val members = new ArrayBuffer[Member]
+
+  def join(name: String) = {
+    val m = new Member(name)
+    members += m
+    m
+  }
+}
+
+val chatter = new Network
+val myFace = new Network
+
+val fred = chatter.join("Fred")
+val wilma = chatter.join("Wilma")
+fred.contacts += wilma // OK
+val barney = myFace.join("Barney") 
+fred.contacts += barney // Also OK
+}}}
+
+=== 外部类的引用 ===
+
+像Java一样，在内部类中可以通过`外部类.this`的方式来得到外部类的`this`引用。
+
+如果有必要，还可以用下面这样的语法建立一个指向该引用的别名：
+
+{{{class="brush: scala"
+class 外部类 { 别名 =>
+	class 内部类 {
+	}
+}
+}}}
+
+例如：
+
+{{{class="brush: scala"
+import scala.collection.mutable.ArrayBuffer
+
+class Network(val name: String) { outer =>  
+  class Member(val name: String) {
+    val contacts = new ArrayBuffer[Member]
+    def description = name + " inside " + outer.name
+  }
+
+  private val members = new ArrayBuffer[Member]
+
+  def join(name: String) = {
+    val m = new Member(name)
+    members += m
+    m
+  }
+}
+
+object Main extends App {
+  val chatter = new Network("Chatter")
+  val myFace = new Network("MyFace")
+
+  val fred = chatter.join("Fred")
+  println(fred.description);
+  val barney = myFace.join("Barney")
+  println(barney.description);
+}
+}}}
+
+这里的`outer`指向的是`Ntework.this`，引用名可以是任何合法的标识符。当然推荐不要
+用`self`，这个名字在内部类中容易引起误解。
+
+这样的语法与自身类型语法相关，关于它后面有更多描述。
+
+
+
+== 路径 ==
+
+包名加上类名就形成了典型的路径。用具体的定义来说，路径必须是不可变的，内容可以
+是：
+
+* 包
+* 对象
+* `val`
+* `this`、`super`、`super[S]`、`C.this`、`C.super`、`C.super[S]`
+
+不可以是：
+
+* 路径的组成部分不可以是类。如：内部类是按个实例区分的不同类，所以不能用类表示。
+* 也不能是`var`，因为`var`的内容是可变的，而路径是不可变的。
+
+以内部类为例：
+
+{{{class="brush: scala"
+var personal = new Network
+val fred = new personal.Member  // error person是可变引用
+
+val wrok = new Network
+val fred = new work.Member  // OK
+}}}
+
+其实对于内部类，编译器会把嵌套的表达式转为投影`type#T`。如：`personal.Member`转
+为`personal.type#Member`，即`personal.type`单例对象中的`Member`。
+
+所以如果看到编译器报错`personal.type#Member`有问题，要明白所指的其实就是
+`personal.Member`。
+
+
+=== 与Java内部类的区别 ===
+
+路径依赖有点像Java里的内部类，但区别是：
+
+* 路径依赖表达了外在的对象
+* Java内部类表达了外在的类。
+
+Java的内部类在Scala表达为两个类：
+
+{{{class="brush: scala"
+  class Outer {
+    class Inner
+  }
+}}}
+
+与Java的`Outer.Inner`不同，Scala中表达为`Outer#Inner`。
+
+总之，要注意。路径依赖是在对象中的类，而不是Java那样类中的类。
+
+`.`语法留给对象使用：
+
+{{{class="brush: scala"
+  val o1 = new Outer
+  val o2 = new Outer
+}}}
+
+虽然`o1.Inner`和`o2.Inner`是不同的两个路径依赖类型，但两个都能匹配更加通用的
+`Outer#Inner`。
+
+和Java中一样，Scala的内部类实例也有对外部类实例的引用。所以不能只有内部类实例而
+没有外部类实例。有两个方式实例化内部类：
+
+* 直接在外部类方法体中实例化，这样可以用`this`引用外部类对象。
+* 使用路径依赖类型。如`o1.Inner`。返回的内部类有对`01`的引用。例子如下：
+
+{{{class="brush: scala"
+  scala> new o1.Inner
+  res1: o1.Inner = Outer$Inner@13727f
+}}}
+
+相对的，类型`Outer#Inner`是没有指向对象的引用的，所以不能创建它的实例：
+
+{{{class="brush: scala"
+  scala> new Outer#Inner
+  <console>:6: error: Outer is not a legal prefix for
+    a constructor
+         new Outer#Inner
+                   ^
+}}}
+
+
+
+== 枚举对象 ==
+
+Scala没有枚举类，而是用标准库中的工具类`scala.Enumeration`用来扩展实现枚举对象：
+
+{{{class="brush: scala"
+  object Color extends Enumeration {
+    val Red = Value
+    val Green = Value
+    val Blue = Value
+  }
+}}}
+
+注意：枚举是和路径依赖一样，是对象中的类，不是类中的类。
+
+还可以简化：
+
+{{{class="brush: scala"
+  object Color extends Enumeration {
+    val Red, Green, Blue = Value
+  }
+}}}
+
+可以`Color`的全部成员，然后直接写颜色名：
+
+{{{class="brush: scala"
+  import Color._
+}}}
+
+前面定义的`Red`、`Green`和`Blue`这些值的类型为`Enumeration`定义的内部类，名为
+`Value`。同名无参数方法`Value`返回该类的新对象，即`Color.Red`类的值类型是
+`Color.Value`。而且是依赖路径的。如：
+
+{{{class="brush: scala"
+  object Direction extends Enumeration {
+    val North, East, South, West = Value
+  }
+}}}
+
+上面就定义了一个完全不同的类型，因为路径不同。`Direction`与`Color`的`Value`也是
+不同的类。
+
+=== 枚举的类型 ===
+
+注意枚举的类型是`Direction.Value`而不是`Direction`。`Direction`是持有这些值的
+单例对象。有些人推荐增加一个类型的别名：
+
+{{{class="brush: scala"
+  object Direction extends Enumeration {
+		type Direction = Value
+    val North, East, South, West = Value
+  }
+}}}
+
+这样类型就从`Direction.Value`增加一个别名`Direction.Direction`。虽然还是又长又
+啰嗦，但是在`import Direction._`以后可以只写`Direction`：
+
+{{{class="brush: scala"
+import Direction._
+
+def func01(direction: Direction) = {
+	if (direction == West)
+		"stop"
+	else
+		"keep moving"
+}
+}}}
+
+=== 枚举值 ===
+
+枚举的值默认从`0`开始增加，用成员方法`id`可以取出值：
+
+{{{class="brush: scala"
+  scala> Direction.East.id
+  res5: Int = 1
+}}}
+
+反过来也可以通过非零整数取得`id`：
+
+{{{class="brush: scala"
+  scala> Direction(1)
+  res6: Direction.Value = East
+}}}
+
+当然想指定`id`也可以：
+
+{{{class="brush: scala"
+object Direction extends Enumeration {
+  val North = Value(10)
+  val East = Value(20)
+  val South = Value(30)
+  val West = Value(40)
+}
+}}}
+
+还可以重载`Value`方法把名称与值对应起来：
+
+{{{class="brush: scala"
+object Direction extends Enumeration {
+  val North = Value(10,"North")
+  val East = Value(20,"East")
+  val South = Value(30,"South")
+  val West = Value(40,"West")
+}
+}}}
+
+直接通过`toString`方法就可以取得枚举的名称：
+
+{{{class="brush: scala"
+  scala> for (d <- Direction) print(d +" ")
+  North East South West 
+}}}
+
+也可以通过`withName`方法通过名称得到枚举：
+
+{{{class="brush: scala"
+Direction.withName("West")
+}}}
+
+
+
+== 复合类型 ==
+
+用`Type1 with Type2 with Type`声明同时满足多个类型，如：
+
+{{{class="brush: scala"
+val image = new ArrayBuffer[java.awt.Shape with java.io.Serializable]
+}}}
+
+存放的成员必须是满足这两个条件的类型，如`Rectangle`
+
+{{{class="brush: scala"
+image += new Rectangle(5, 10, 20, 30) // OK
+image += new Area(rect)               // error Area类型不是Serializable的
+}}}
+
+结构类型也可添加到简单类型或是复合类型的声明中：
+
+{{{class="brush: scala"
+val image = new ArrayBuffer[Shape with Serializable { def contains(p: Point): Boolean } ]
+}}}
+
+上面的定义不仅要是`Shape`和`Serializable`，还要有一个`contains()`方法。
+
+从技术上来说，如下的结构类型：
+
+{{{class="brush: scala"
+AnyRef { def append(str: String): Any }
+}}}
+
+可以简写为：
+
+{{{class="brush: scala"
+{ def append(str: String): Any }
+}}}
+
+这样的复合类型：
+
+{{{class="brush: scala"
+Shape with Serializable {}
+}}}
+
+可以简写为：
+
+{{{class="brush: scala"
+Shape with Serializable
+}}}
+
+
+
+== 实例类型与单例类型 ==
+
+如果一个方法返回当前对象的引用`this`，那就可以把方法的调用串起来写：
+
+{{{class="brush: scala; highlight:[4,5,14]"
+scala> class Document {
+     |   private var title = ""
+     |   private var author = ""
+     |   def setTitle(title: String) = { this.title = title; this }
+     |   def setAuthor(author: String) = { this.author = author; this }
+     |   override def toString = getClass.getName + "[title=" + title +
+     |     ",author=" + author + "]"
+     | }
+defined class Document
+
+scala> val doc = new Document
+doc: Document = Document[title=,author=]
+
+scala> doc.setTitle("Scala for the Impatient").setAuthor("Cay Horstmann")
+res0: Document = Document[title=Scala for the Impatient,author=Cay Horstmann]
+}}}
+
+但是如果`Document`的子类`Book`的话，那就会有问题了：
+
+{{{class="brush: scala; highlight:[4]"
+scala> class Book extends Document {
+     |   private var chapters = new scala.collection.mutable.ArrayBuffer[String]
+     |   def addChapter(chapter: String) = { chapters += chapter; this }
+     |   override def toString = super.toString + "[chapters=" + chapters + "]"
+     | }
+defined class Book
+
+scala> val book = new Book
+book: Book = Book[title=,author=][chapters=ArrayBuffer()]
+
+scala> book.setTitle("scala for the Impatient").addChapter("Chap I")
+<console>:11: error: value addChapter is not a member of Document
+              book.setTitle("scala for the Impatient").addChapter("Chap I")
+                                                       ^
+}}}
+
+因为方法`setTitle()`是父类`Document`的方法，返回类型也被绑定为父类。
+
+
+解决方法：对于任何引用`v`，调用`v.type`可以取得引用的类型。值可能是`v`或`null`。
+这里声明`setTitle()`的返回类型为`this.type`：
+
+
+{{{class="brush: scala; highlight: [4,5,18]"
+class Document {
+  private var title = ""
+  private var author = "" 
+  def setTitle(title: String): this.type = { this.title = title; this }
+  def setAuthor(author: String): this.type = { this.author = author; this }
+  override def toString = getClass.getName + "[title=" + title + ",author=" + 
+	  author + "]"
+}
+
+class Book extends Document {
+  private var chapters = new scala.collection.mutable.ArrayBuffer[String]
+  def addChapter(chapter: String) = { chapters += chapter; this }
+  override def toString = super.toString + "[chapters=" + chapters + "]"
+}
+
+object Main extends App {
+  val book = new Book
+  book.setTitle("Scala for the Impatient").addChapter("Chapter 1 ...") 
+  println(book)
+}
+}}}
+
+单例对象也可以通过`type`取得它的类型：
+
+{{{class="brush: scala; highlight: [6]"
+object Title // This object is used an an argument for a fluent interface
+
+class Document {
+  private var title = ""
+  private var useNextArgAs: Any = null
+  def set(obj: Title.type): this.type = { useNextArgAs = obj; this }
+  def to(arg: String) = if (useNextArgAs == Title) title = arg;
+  override def toString = getClass.getName + "[title=" + title + "]"
+}
+
+val book = new Document
+}}}
+
+注意是`Title.type`而不是`Title`，`Title`是一个单例对象，不是类型。
+
+调用时：
+
+{{{class="brush: scala"
+scala> book.set(Title).to("Scala for the Impatient")
+
+scala> println(book)
+$line4.$read$$iw$$iw$Document[title=Scala for the Impatient]
+}}}
+
+可以写在更加接近人类语言的：
+
+{{{class="brush: scala"
+scala> book set Title to "Scala for the Impatient"
+
+scala> println(book)
+$line4.$read$$iw$$iw$Document[title=Scala for the Impatient]
+}}}
+
 
 
 
@@ -2367,6 +2966,10 @@ tail-call位置，编译器会产生出与while循环类似的代码。
 所以表达式的结果就是行字串的序列。现在仅剩下的工作就是把字串序列转变为单一字串。
 mkString的调用完成这个工作，并且由于我们传递进去"\n"，因此每个字串结尾插入了
 换行符。
+
+
+
+
 
 
 

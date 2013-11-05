@@ -16,6 +16,7 @@
 
 [[javascript.base.array]]
 
+[[javascript.base.string]]
 
 
 = 匿名函数和模块化 =

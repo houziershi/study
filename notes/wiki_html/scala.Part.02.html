@@ -141,23 +141,29 @@
 </ul>
 <li><a href="#toc_5.6.4">懒加载</a>
 </ul>
-<li><a href="#toc_5.7">Scala特质生成Java接口</a>
+<li><a href="#toc_5.7">保证特质能调用到需要的方法</a>
 <ul>
-<li><a href="#toc_5.7.1">只有抽象方法</a>
-<li><a href="#toc_5.7.2">有方法实现的情况</a>
-<li><a href="#toc_5.7.3">特质中的字段</a>
+<li><a href="#toc_5.7.1">自身类型</a>
+<li><a href="#toc_5.7.2">自身类型不会继承</a>
+<li><a href="#toc_5.7.3">this的别名</a>
 </ul>
-<li><a href="#toc_5.8">特质与类的差异</a>
-<li><a href="#toc_5.9">应用场景</a>
+<li><a href="#toc_5.8">Scala特质生成Java接口</a>
 <ul>
-<li><a href="#toc_5.9.1">为什么不是多重继承</a>
-<li><a href="#toc_5.9.2">比较瘦接口与胖接口</a>
-<li><a href="#toc_5.9.3">什么情况下要用特质</a>
+<li><a href="#toc_5.8.1">只有抽象方法</a>
+<li><a href="#toc_5.8.2">有方法实现的情况</a>
+<li><a href="#toc_5.8.3">特质中的字段</a>
 </ul>
-<li><a href="#toc_5.10">例子</a>
+<li><a href="#toc_5.9">特质与类的差异</a>
+<li><a href="#toc_5.10">应用场景</a>
 <ul>
-<li><a href="#toc_5.10.1">样例：长方形实例</a>
-<li><a href="#toc_5.10.2">实现Ordered特质来排序</a>
+<li><a href="#toc_5.10.1">为什么不是多重继承</a>
+<li><a href="#toc_5.10.2">比较瘦接口与胖接口</a>
+<li><a href="#toc_5.10.3">什么情况下要用特质</a>
+</ul>
+<li><a href="#toc_5.11">例子</a>
+<ul>
+<li><a href="#toc_5.11.1">样例：长方形实例</a>
+<li><a href="#toc_5.11.2">实现Ordered特质来排序</a>
 </ul>
 </ul>
 </ul>
@@ -3212,9 +3218,125 @@ trait FileLogger extends Logger {
 初始化输出流的操作只有在用到<code>out</code>时才执行。
 </p>
 
-<h2 id="toc_5.7">Scala特质生成Java接口</h2>
 
-<h3 id="toc_5.7.1">只有抽象方法</h3>
+
+<h2 id="toc_5.7">保证特质能调用到需要的方法</h2>
+
+<p>
+以记录异常log为例：
+</p>
+
+<pre class="brush: scala">
+trait LoggedException {
+		def log() { log(getMessage()) }   // error
+}
+</pre>
+
+<p>
+我们要保证<code>LoggerException</code>混入的类要有<code>getMessage()</code>方法，因为在<code>log()</code>方法中
+会调用到它。
+</p>
+
+
+<p>
+为了保证特质一定能调用到指定的方法（如：<code>getMessage</code>)，可以有两种方案：
+</p>
+
+<ul>
+<li>
+特质扩展自指定的类（如：<code>Exception</code>）
+
+<li>
+用自身类型限制只能混入指定的类（如：<code>Exception</code>）
+
+</ul>
+
+<p>
+如果特质是扩展子一个类<code>B</code>，那么所以混入这个特质的类都可以作为<code>B</code>的子类。
+</p>
+
+<h3 id="toc_5.7.1">自身类型</h3>
+
+<p>
+Scala还可以通过自身类型（self type），限制只能被混入到指定的类中：
+</p>
+
+<pre class="brush: scala">
+this: MyType =&gt;
+</pre>
+
+<p>
+保证特质只能被混入<code>MyType</code>的子类中。
+</p>
+
+<p>
+例如，要根据现有的日志工具类<code>Logged</code>扩展出一个适用于异常日志的<code>LoggedException</code>
+：
+</p>
+
+<pre class="brush: scala">
+trait LoggedException extends Logged {
+	this: Exception =&gt;
+		def log() { log(getMessage()) }
+}
+</pre>
+
+<p>
+因为限制在<code>Exception</code>的子类中，所以可以保证肯定会有<code>getMessage()</code>方法。
+</p>
+
+<p>
+自身类型也可以不给出类名，而用结构类型(structural type)来说明要有指定方法：
+</p>
+
+<pre class="brush: scala">
+trait LoggedException extends Logged {
+	this: { def getMessage(): String} =&gt;
+		def log() { log(getMessage()) }
+}
+</pre>
+
+<p>
+这样就可以混入任何有<code>getMessage</code>方法的类了。
+</p>
+
+<h3 id="toc_5.7.2">自身类型不会继承</h3>
+
+<p>
+前面的<code>LoggedException</code>的自身类型并不会继承给子类，如果它有子类要再次声明自身
+类型：
+</p>
+
+<pre class="brush: scala">
+trait ManagedException extends LoggedException {
+	this: Exception =&gt;
+		...
+}
+</pre>
+
+<h3 id="toc_5.7.3">this的别名</h3>
+
+<p>
+如果把<code>this</code>改成别的名字那么在子类中还可以使用这个别名。如：
+</p>
+
+<pre class="brush: scala">
+trait Group {
+	outer: Network =&gt;
+		class Member { ... }
+}
+</pre>
+
+<p>
+这里把<code>this</code>改成<code>outer</code>。<code>Grout</code>特质只能在<code>Network</code>的子类中，而在<code>Member</code>中，
+可以用<code>outer</code>来代替<code>Group.this</code>。
+</p>
+
+
+
+<h2 id="toc_5.8">Scala特质生成Java接口</h2>
+
+<h3 id="toc_5.8.1">只有抽象方法</h3>
 
 <p>
 只有抽象方法的特质简单地转为Java接口。
@@ -3240,7 +3362,7 @@ public interface Logger {
 }
 </pre>
 
-<h3 id="toc_5.7.2">有方法实现的情况</h3>
+<h3 id="toc_5.8.2">有方法实现的情况</h3>
 
 <p>
 会创建一个伴生类，它的静态方法里存放特质的方法。
@@ -3276,7 +3398,7 @@ public class ConsoleLogger$class {
 }
 </pre>
 
-<h3 id="toc_5.7.3">特质中的字段</h3>
+<h3 id="toc_5.8.3">特质中的字段</h3>
 
 <p>
 伴生类中不会有字段，字段对应的<code>getter</code>和<code>setter</code>方法加入到实现了特质的类中：
@@ -3327,7 +3449,7 @@ public class ShortLogger$class {
 继承。
 </p>
 
-<h2 id="toc_5.8">特质与类的差异</h2>
+<h2 id="toc_5.9">特质与类的差异</h2>
 
 <p>
 特质就像是带有具体方法的Java接口，不过其实它能做的更多。比方说，特质可以声明字段
@@ -3356,9 +3478,9 @@ public class ShortLogger$class {
 </pre>
 
 
-<h2 id="toc_5.9">应用场景</h2>
+<h2 id="toc_5.10">应用场景</h2>
 
-<h3 id="toc_5.9.1">为什么不是多重继承</h3>
+<h3 id="toc_5.10.1">为什么不是多重继承</h3>
 
 <p>
 特质是一种继承多个类似于类的结构的方式，但是它与许多语言中的多重继承有很重要的
@@ -3499,7 +3621,7 @@ FourLegged : Any &lt; AnyRef &lt; Animal &lt; HasLegs &lt; FourLegged
 </pre>
 
 
-<h3 id="toc_5.9.2">比较瘦接口与胖接口</h3>
+<h3 id="toc_5.10.2">比较瘦接口与胖接口</h3>
 
 <p>
 瘦接口与胖接口的对阵体现了面向对象设计中常会面临的在实现者与接口用户之间的权衡。
@@ -3548,7 +3670,7 @@ Scala中添加具体方法是一次性的劳动。你只要在特质中实现方
 到类中，实现接口的瘦部分，并最终获得具有全部胖接口内容的类。
 </p>
 
-<h3 id="toc_5.9.3">什么情况下要用特质</h3>
+<h3 id="toc_5.10.3">什么情况下要用特质</h3>
 
 <p>
 没有固定的规律，但是包含了几条可供考虑的导则。
@@ -3584,9 +3706,9 @@ Scala中添加具体方法是一次性的劳动。你只要在特质中实现方
 </p>
 
 
-<h2 id="toc_5.10">例子</h2>
+<h2 id="toc_5.11">例子</h2>
 
-<h3 id="toc_5.10.1">样例：长方形实例</h3>
+<h3 id="toc_5.11.1">样例：长方形实例</h3>
 
 <p>
 为了使这些长方形实例便于使用，如果库能够提供诸如<code>width</code>，<code>height</code>，<code>left</code>，
@@ -3681,7 +3803,7 @@ Scala中添加具体方法是一次性的劳动。你只要在特质中实现方
 </pre>
 
 
-<h3 id="toc_5.10.2">实现Ordered特质来排序</h3>
+<h3 id="toc_5.11.2">实现Ordered特质来排序</h3>
 
 <p>
 以前面我们实现的实数类型来说，原来已经有了四个比较大小的方法：
