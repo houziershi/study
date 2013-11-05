@@ -47,8 +47,13 @@
 <li><a href="#toc_1.4.2">归纳</a>
 <li><a href="#toc_1.4.3">使用</a>
 </ul>
-<li><a href="#toc_1.5">存在类型</a>
-<li><a href="#toc_1.6">Scala类型小结</a>
+<li><a href="#toc_1.5">依赖于其他类型的类型的类型</a>
+<ul>
+<li><a href="#toc_1.5.1">小结</a>
+</ul>
+<li><a href="#toc_1.6">存在类型</a>
+<li><a href="#toc_1.7">Scala类型小结</a>
+<li><a href="#toc_1.8">家族多态</a>
 </ul>
 <li><a href="#toc_2">有状态的对象</a>
 <ul>
@@ -744,7 +749,189 @@ scala&gt;   res.map(println(_))
 
 
 
-<h2 id="toc_1.5">存在类型</h2>
+
+<h2 id="toc_1.5">依赖于其他类型的类型的类型</h2>
+
+<p>
+与上面的<code>CanBuildFrom</code>类似的，还有一个通过依赖其他类型的实现方案.
+</p>
+
+<p>
+<code>List[T]</code>依赖于类型<code>T</code>生成一个特定类型的实例，如<code>List[Int]</code>。有时称这样的泛型
+类型为类型构造器（type constructor）。不仅如此，Scala中还可以定义出依赖于其他
+类型的类型的类型。
+</p>
+
+<p>
+为了明白这样做的意义，我们用一个简化版的<code>Iterable</code>特质来说明：
+</p>
+
+<pre class="brush: scala">
+trait Iterable[E] {
+	def iterator(): Iterator[E]
+	def map[F](f: (E) =&gt; F): Iterable[F]
+}
+</pre>
+
+<p>
+如果有一个类实现该特质：
+</p>
+
+<pre class="brush: scala">
+class Buffer[E] extends Iterable[E] {
+	def iterator(): Iterator[E] = ....
+	def map[F](f: (E) =&gt; f): Buffer[F] = ...
+}
+</pre>
+
+<p>
+因为需要在<code>Buffer</code>类的<code>map()</code>方法中返回的是<code>Buffer</code>类型自己而不是<code>Iterable</code>，
+所以为了<code>Iterable</code>特质中实现这个<code>map()</code>方法，我们必须用一个东西来代表<code>Buffer[E]</code>
+或是其他的子类：
+</p>
+
+<pre class="brush: scala">
+trait Iterable[E, C[_]] {
+	def iterator(): Iterator[E]
+	def build[F](): C[F]
+	def map[F](f: (E) =&gt; F): Iterable[F]
+}
+</pre>
+
+<p>
+这里的参数类型<code>C[_]</code>自己也是一个参数类型，所以像高阶函数一样<code>Iterable</code>成为了一个
+高阶类型。
+</p>
+
+<p>
+对于<code>map()</code>方法返回的类型并不一定和实例原来的类型一样，比如：<code>Buffer</code>类的<code>map()</code>
+方法的返回类型也是<code>Buffer</code>；但是<code>Range</code>执行<code>map()</code>方法的结果通常不会也是一个
+<code>Range</code>（比如可能是一个<code>Buffer[F]</code>）。所以对于<code>Range</code>类型声明的可能是这样的：
+</p>
+
+<pre class="brush: scala">
+class Range extends Iterable[Int, Buffer]
+</pre>
+
+<p>
+这里的<code>Int, Buffer</code>对应<code>Iterable</code>声明中的<code>E, C[_]</code>，显然<code>C[_]</code>对应的是<code>Buffer</code>。
+</p>
+
+<p>
+现在因为<code>map()</code>方法返回的类可以是存放任何<code>F</code>类型的容器，所以我们需要一个类来表示
+存放任何<code>F</code>类型的容器的类<code>Container</code>：
+</p>
+
+<pre class="brush: scala">
+trait Container[E] {
+  def +=(e: E): Unit
+}
+</pre>
+
+<p>
+它正好适合作为<code>Iterable</code>的<code>build()</code>方法的返回类型：
+</p>
+
+<pre class="brush: scala">
+trait Iterable[E, C[X] &lt;: Container[X]] {
+	def build[F](): C[F]
+	...
+}
+</pre>
+
+<p>
+这里限制的容器<code>C</code>和<code>Container</code>的内容必须是相同类型的。
+</p>
+
+<p>
+这样就可以在<code>Iterable</code>中实现<code>map()</code>方法了：
+</p>
+
+<pre class="brush: scala">
+trait Iterable[E, C[X] &lt;: Container[X]] {
+  def iterator(): Iterator[E]
+  def build[F : Manifest](): C[F]
+  
+  def map[F : Manifest](f: (E) =&gt; F): C[F] = {
+    val res = build[F]()
+    val iter = iterator()
+    while (iter.hasNext) res += f(iter.next())
+    res
+  }
+}
+</pre>
+
+<p>
+这样子类中就不用实现<code>map()</code>方法了。
+</p>
+
+<p>
+下面是<code>Range</code>类的定义：
+</p>
+
+<pre class="brush: scala">
+// An iterable, but not a container
+class Range(val low: Int, val high: Int) extends Iterable[Int, Buffer] {
+  def iterator() = new Iterator[Int] {
+    private var i = low
+    def hasNext = i &lt;= high
+    def next() = { i += 1; i - 1 }
+  }  
+  def build[F : Manifest]() = new Buffer[F]
+    // Produced collection need not be the same type
+}
+</pre>
+
+<p>
+它只混入了<code>Iterable</code>接口：可以遍历内容，但不能添加内容。
+</p>
+
+<p>
+<code>Buffer</code>则混入了<code>Iterable</code>与<code>Container</code>：
+</p>
+
+<pre class="brush: scala">
+class Buffer[E : Manifest] extends Iterable[E, Buffer] with Container[E] {
+  private var capacity = 10
+  private var length = 0
+  private var elems = new Array[E](capacity) // See note
+  def iterator() = new Iterator[E] {
+    private var i = 0
+    def hasNext = i &lt; length
+    def next() = { i += 1; elems(i - 1) }
+  }
+  def build[F : Manifest]() = new Buffer[F]
+  def +=(e: E) {
+    if (length == capacity) {
+      capacity = 2 * capacity
+      val nelems = new Array[E](capacity) // See note
+      for (i &lt;- 0 until length) nelems(i) = elems(i)
+      elems = nelems
+    }
+    elems(length) = e
+    length += 1
+  }
+}
+</pre>
+
+<p>
+<code>Manifest</code>上下文界定是为了构造<code>Array[E]</code>所必须的，这和高等类型没有什么关系。
+</p>
+
+<h3 id="toc_1.5.1">小结</h3>
+
+<p>
+这是一个典型的例子：<code>Iterator</code>依赖<code>Container</code>。但<code>Container</code>不是一个普通的类型，
+而是一个制件类型的机制。
+</p>
+
+<p>
+在实际应用中，Scala的<code>Iterable</code>并不是高级类型来实现的，而是用隐式转换实现的一个
+对象用于构造目标集合。
+</p>
+
+
+<h2 id="toc_1.6">存在类型</h2>
 
 <p>
 所有Java类型在Scala中都有对等的概念。一般的类型可以用同名的类型表示，如：
@@ -986,7 +1173,7 @@ process(fred, barney) // Error
 不用存在类型。
 </p>
 
-<h2 id="toc_1.6">Scala类型小结</h2>
+<h2 id="toc_1.7">Scala类型小结</h2>
 
 
 <table>
@@ -1163,6 +1350,274 @@ scala&gt; square _
 res0: Int =&gt; Int = &lt;function1&gt;
 </pre>
 
+
+
+<h2 id="toc_1.8">家族多态</h2>
+
+<p>
+就是许多个相关的类，又要共用代码、又要保护类型安全，这个比较难搞。Java的事件处理
+是一个典型的例子：
+</p>
+
+<ul>
+<li>
+有多个不同的事件（如：<code>ActionEvent</code>、<code>ChangeEvent</code>等……）
+
+<li>
+每个事件有单独的监听器接口（如：<code>ActionListener</code>、<code>ChangeListener</code>等……）
+
+</ul>
+
+<p>
+为了设计一套管理监听器的通用机制，我们先用泛型类型，然后再切换到抽象类型。
+</p>
+
+<p>
+Java中每个监听器接口有不同的方法对应事件：<code>actionPerformed</code>、<code>stateChanged</code>、
+<code>itemStateChanged</code>等。先把这些方法统一起来：
+</p>
+
+<pre class="brush: scala">
+// Version 1: The event source is an Object
+
+import scala.collection.mutable.ArrayBuffer
+import java.awt.event.ActionEvent
+
+trait Listener[E] {
+  def occurred(e: E): Unit
+}
+</pre>
+
+<p>
+事件源要有一个监听器的集合，和一个触发这些监听器的方法：
+</p>
+
+<pre class="brush: scala">
+trait Source[E, L &lt;: Listener[E]] {
+  private val listeners = new ArrayBuffer[L]
+  def add(l: L) { listeners += l }
+  def remove(l: L) { listeners -= l }
+  def fire(e: E) { for (l &lt;- listeners) l.occurred(e) }
+}
+</pre>
+
+<p>
+在这个基础上，以按钮事件<code>ActionEvent</code>为例，生成对应的监听器：
+</p>
+
+<pre class="brush: scala">
+trait ActionListener extends Listener[ActionEvent]
+</pre>
+
+<p>
+<code>Button</code>类可以混入<code>Source</code>特质：
+</p>
+
+<pre class="brush: scala">
+class Button extends Source[ActionEvent, ActionListener] {
+  def click() {
+    fire(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "click"))
+  }
+}
+</pre>
+
+<p>
+现在<code>Button</code>类不需要重复监听器管理代码，并且监听器的类型是安全的：只能给按钮加上
+<code>ActionEvent</code>，<code>ChangeListener</code>。
+</p>
+
+<p>
+调用：
+</p>
+
+<pre class="brush: scala">
+scala&gt; val b = new Button
+b: Button = Button@b11fcc2
+
+scala&gt; b.add(new ActionListener {
+     |   def occurred(e: ActionEvent) {
+     |     println(e)
+     |   }
+     | })
+
+scala&gt; b.click()
+java.awt.event.ActionEvent[ACTION_PERFORMED,cmd=click,when=0,modifiers=] on 
+$line14.$read$$iw$$iw$$iw$Button@b11fcc2
+</pre>
+
+<p>
+根据Java中<code>ActionEvent</code>类的定义，它把事件源设置为<code>this</code>，但事件源的类型为
+<code>Object</code>。这里可以用自身类型让它也是类型安全的：
+</p>
+
+<pre class="brush: scala; highlight: [10]">
+trait Event[S] {
+  var source: S = _
+}
+
+trait Listener[S, E &lt;: Event[S]] {
+  def occurred(e: E): Unit
+}
+
+trait Source[S, E &lt;: Event[S], L &lt;: Listener[S, E]] {
+  this: S =&gt;
+  private val listeners = new ArrayBuffer[L]
+  def add(l: L) { listeners += l }
+  def remove(l: L) { listeners -= l }
+  def fire(e: E) {
+    e.source = this // Self-type needed here
+    for (l &lt;- listeners) l.occurred(e)
+  }
+}
+</pre>
+
+<p>
+自身类型<code>this: S =&gt;</code>把事件源都设为<code>this</code>，不然<code>this</code>只能是某种<code>Source</code>，而不一定
+是<code>Event[S]</code>所要求的类型。
+</p>
+
+<p>
+定义按钮的例子：
+</p>
+
+<pre class="brush: scala">
+class ButtonEvent extends Event[Button]
+
+trait ButtonListener extends Listener[Button, ButtonEvent]
+
+class Button extends Source[Button, ButtonEvent, ButtonListener] {
+  def click() { fire(new ButtonEvent) }
+}
+</pre>
+
+<p>
+调用：
+</p>
+
+<pre class="brush: scala">
+val b = new Button
+b.add(new ButtonListener {
+  def occurred(e: ButtonEvent) {
+    println(e + " from " + e.source)
+  }
+})
+b.click()
+</pre>
+
+<p>
+这里的参数类型太多了，看起来不是很简洁。而且类型<code>Button</code>是循环依赖的。
+</p>
+
+<p>
+如果用抽象类型的话，会好很多：
+</p>
+
+<pre class="brush: scala">
+import scala.collection.mutable.ArrayBuffer
+import java.awt.event.ActionEvent
+
+trait ListenerSupport {
+  type S &lt;: Source
+  type E &lt;: Event
+  type L &lt;: Listener
+
+  trait Event {
+    var source: S = _
+  }
+
+  trait Listener {
+    def occurred(e: E): Unit
+  }
+
+  trait Source {
+    this: S =&gt;
+
+    private val listeners = new ArrayBuffer[L]
+    def add(l: L) { listeners += l }
+    def remove(l: L) { listeners -= l }
+    def fire(e: E) {
+      e.source = this
+      for (l &lt;- listeners) l.occurred(e)
+    }
+  }
+}
+</pre>
+
+<p>
+这样也有限制：不能声明顶级类型。所以这里把所有的类型都放在一个<code>ListenerSupport</code>
+类型里面。
+</p>
+
+<p>
+然后定义按钮事件与按钮监听器时，就可以把定义包含在一个扩展该特质的模块当中：
+</p>
+
+<pre class="brush: scala">
+object ButtonModule extends ListenerSupport {
+  type S = Button
+  type E = ButtonEvent
+  type L = ButtonListener
+
+  class ButtonEvent extends Event
+
+  trait ButtonListener extends Listener
+
+  class Button extends Source {
+    def click() { fire(new ButtonEvent) }
+  }
+}
+</pre>
+
+<p>
+调用的例子，注意要使用时必须引入这个模块：
+</p>
+
+<pre class="brush: scala">
+scala&gt; import ButtonModule._
+import ButtonModule._
+
+scala&gt; val b = new Button
+b: ButtonModule.Button = ButtonModule$Button@48250355
+
+scala&gt;   b.add(new ButtonListener {
+     |     def occurred(e: ButtonEvent) {
+     |       println(e + " from " + e.source)
+     |     }
+     |   })
+
+scala&gt; b.click()
+$line6.$read$$iw$$iw$ButtonModule$ButtonEvent@65d0e7e9 from 
+$line6.$read$$iw$$iw$ButtonModule$Button@48250355
+</pre>
+
+<p>
+注意：虽然这里类型名只用了一个字母：
+</p>
+
+<pre class="brush: scala">
+  type S = Button
+  type E = ButtonEvent
+  type L = ButtonListener
+</pre>
+
+<p>
+但实际上标识符都可以用，而且应该是具有可读性的：
+</p>
+
+<pre class="brush: scala">
+  type SourceType = Button
+  type EventType = ButtonEvent
+  type ListenerType = ButtonListener
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
 
 
 
