@@ -119,33 +119,32 @@
 <ul>
 <li><a href="#toc_5.4.4.1">只能有一个超类</a>
 </ul>
-<li><a href="#toc_5.4.5"><code>this</code>限制混入类</a>
+</ul>
+<li><a href="#toc_5.5">保证特质能调用到需要的方法</a>
 <ul>
-<li><a href="#toc_5.4.5.1">结构类型</a>
+<li><a href="#toc_5.5.1">自身类型</a>
+<li><a href="#toc_5.5.2">自身类型不会继承</a>
+<li><a href="#toc_5.5.3">this的别名</a>
+<ul>
+<li><a href="#toc_5.5.3.1">结构类型</a>
 </ul>
 </ul>
-<li><a href="#toc_5.5">混入多个特质</a>
+<li><a href="#toc_5.6">混入多个特质</a>
 <ul>
-<li><a href="#toc_5.5.1">特质的<code>super</code>引用是动态的</a>
-<li><a href="#toc_5.5.2">特质的叠加栈</a>
-<li><a href="#toc_5.5.3">指定调用特质栈</a>
+<li><a href="#toc_5.6.1">特质的<code>super</code>引用是动态的</a>
+<li><a href="#toc_5.6.2">特质的叠加栈</a>
+<li><a href="#toc_5.6.3">指定调用特质栈</a>
 </ul>
-<li><a href="#toc_5.6">特质的构造过程</a>
+<li><a href="#toc_5.7">特质的构造过程</a>
 <ul>
-<li><a href="#toc_5.6.1">特质构造器</a>
-<li><a href="#toc_5.6.2">特质不能有构造器参数</a>
-<li><a href="#toc_5.6.3">预初始化字段</a>
+<li><a href="#toc_5.7.1">特质构造器</a>
+<li><a href="#toc_5.7.2">特质不能有构造器参数</a>
+<li><a href="#toc_5.7.3">预初始化字段</a>
 <ul>
-<li><a href="#toc_5.6.3.1">应用于实例</a>
-<li><a href="#toc_5.6.3.2">应用于类</a>
+<li><a href="#toc_5.7.3.1">应用于实例</a>
+<li><a href="#toc_5.7.3.2">应用于类</a>
 </ul>
-<li><a href="#toc_5.6.4">懒加载</a>
-</ul>
-<li><a href="#toc_5.7">保证特质能调用到需要的方法</a>
-<ul>
-<li><a href="#toc_5.7.1">自身类型</a>
-<li><a href="#toc_5.7.2">自身类型不会继承</a>
-<li><a href="#toc_5.7.3">this的别名</a>
+<li><a href="#toc_5.7.4">懒加载</a>
 </ul>
 <li><a href="#toc_5.8">Scala特质生成Java接口</a>
 <ul>
@@ -2946,10 +2945,59 @@ class UnhappyFrame extends JFrame with LoggedException
 class UnhappyException extends IOException with LoggedException
 </pre>
 
-<h3 id="toc_5.4.5"><code>this</code>限制混入类</h3>
+
+<h2 id="toc_5.5">保证特质能调用到需要的方法</h2>
 
 <p>
-<code>this: Type =&gt;</code>限制特质只能被混入指定类型的子类：
+以记录异常log为例：
+</p>
+
+<pre class="brush: scala">
+trait LoggedException {
+		def log() { log(getMessage()) }   // error
+}
+</pre>
+
+<p>
+我们要保证<code>LoggerException</code>混入的类要有<code>getMessage()</code>方法，因为在<code>log()</code>方法中
+会调用到它。
+</p>
+
+
+<p>
+为了保证特质一定能调用到指定的方法（如：<code>getMessage</code>)，可以有两种方案：
+</p>
+
+<ul>
+<li>
+特质扩展自指定的类（如：<code>Exception</code>）
+
+<li>
+用自身类型限制只能混入指定的类（如：<code>Exception</code>）
+
+</ul>
+
+<p>
+如果特质是扩展子一个类<code>B</code>，那么所以混入这个特质的类都可以作为<code>B</code>的子类。
+</p>
+
+<h3 id="toc_5.5.1">自身类型</h3>
+
+<p>
+Scala还可以通过自身类型（self type），限制只能被混入到指定的类中：
+</p>
+
+<pre class="brush: scala">
+this: MyType =&gt;
+</pre>
+
+<p>
+保证特质只能被混入<code>MyType</code>的子类中。
+</p>
+
+<p>
+例如，要根据现有的日志工具类<code>Logged</code>扩展出一个适用于异常日志的<code>LoggedException</code>
+：
 </p>
 
 <pre class="brush: scala">
@@ -2960,13 +3008,68 @@ trait LoggedException extends Logged {
 </pre>
 
 <p>
-这里不继承自<code>Exception</code>类，但限制只能混入<code>Exception</code>的子类。而且可以合法地调用
-<code>getMessage()</code>方法，因为它只会被混入<code>Exception</code>的子类。
+因为限制在<code>Exception</code>的子类中，所以可以保证肯定会有<code>getMessage()</code>方法。
 </p>
+
 
 <p>
 通过<code>this: Type</code>来限制类型比继承超类的版本更加灵活。可以避免两个彼此需要的特质
 循环依赖。
+</p>
+
+<h3 id="toc_5.5.2">自身类型不会继承</h3>
+
+<p>
+前面的<code>LoggedException</code>的自身类型并不会继承给子类，如果它有子类要再次声明自身
+类型：
+</p>
+
+<pre class="brush: scala">
+trait ManagedException extends LoggedException {
+	this: Exception =&gt;
+		...
+}
+</pre>
+
+<h3 id="toc_5.5.3">this的别名</h3>
+
+<p>
+如果把<code>this</code>改成别的名字那么在子类中还可以使用这个别名。如：
+</p>
+
+<pre class="brush: scala">
+trait Group {
+	outer: Network =&gt;
+		class Member { ... }
+}
+</pre>
+
+<p>
+这里把<code>this</code>改成<code>outer</code>。<code>Grout</code>特质只能在<code>Network</code>的子类中，而在<code>Member</code>中，
+可以用<code>outer</code>来代替<code>Group.this</code>。
+</p>
+
+
+<h4 id="toc_5.5.3.1">结构类型</h4>
+
+<p>
+结构类型（structural type）只给出类必须拥有的方法，而不是类的名称。这种场景下用
+<code>this: Type</code>处理更加方便：
+</p>
+
+<p>
+自身类型也可以不给出类名，而用结构类型(structural type)来说明要有指定方法：
+</p>
+
+<pre class="brush: scala">
+trait LoggedException extends Logged {
+	this: { def getMessage(): String} =&gt;
+		def log() { log(getMessage()) }
+}
+</pre>
+
+<p>
+这样就可以混入任何有<code>getMessage</code>方法的类了。
 </p>
 
 <pre class="brush: scala">
@@ -2976,21 +3079,12 @@ trait LoggedException extends Logged {
 }
 </pre>
 
-<p>
-所有拥有<code>getMessage()</code>方法的类都可以混入<code>LoggedException</code>物质。
-</p>
 
-<h4 id="toc_5.4.5.1">结构类型</h4>
+<h2 id="toc_5.6">混入多个特质</h2>
 
 <p>
-结构类型（structural type）只给出类必须拥有的方法，而不是类的名称。这种场景下用
-<code>this: Type</code>处理更加方便：
-</p>
-
-<h2 id="toc_5.5">混入多个特质</h2>
-
-<p>
-如果想混入多个特质，都加在<code>with</code>子句里就可以了：
+混入多个特质的类型被称作复合类型。如果想混入多个特质，都加在<code>with</code>子句里就可以了
+：
 </p>
 
 <pre class="brush: scala">
@@ -3002,7 +3096,68 @@ trait LoggedException extends Logged {
   }
 </pre>
 
-<h3 id="toc_5.5.1">特质的<code>super</code>引用是动态的</h3>
+<p>
+在容器的类型参数里也可以这样用：
+</p>
+
+<pre class="brush: scala">
+val image = new ArrayBuffer[java.awt.Shape with java.io.Serializable]
+</pre>
+
+<p>
+存放的成员必须是满足这两个条件的类型，如<code>Rectangle</code>
+</p>
+
+<pre class="brush: scala">
+image += new Rectangle(5, 10, 20, 30) // OK
+image += new Area(rect)               // error Area类型不是Serializable的
+</pre>
+
+<p>
+结构类型也可添加到简单类型或是复合类型的声明中：
+</p>
+
+<pre class="brush: scala">
+val image = new ArrayBuffer[Shape with Serializable { def contains(p: Point): Boolean } ]
+</pre>
+
+<p>
+上面的定义不仅要是<code>Shape</code>和<code>Serializable</code>，还要有一个<code>contains()</code>方法。
+</p>
+
+<p>
+从技术上来说，如下的结构类型：
+</p>
+
+<pre class="brush: scala">
+AnyRef { def append(str: String): Any }
+</pre>
+
+<p>
+可以简写为：
+</p>
+
+<pre class="brush: scala">
+{ def append(str: String): Any }
+</pre>
+
+<p>
+这样的复合类型：
+</p>
+
+<pre class="brush: scala">
+Shape with Serializable {}
+</pre>
+
+<p>
+可以简写为：
+</p>
+
+<pre class="brush: scala">
+Shape with Serializable
+</pre>
+
+<h3 id="toc_5.6.1">特质的<code>super</code>引用是动态的</h3>
 
 <p>
 类和特质的另一个差别在于：在类中任何地方，<code>super</code>调用都是静态绑定的，在特质中
@@ -3014,7 +3169,7 @@ trait LoggedException extends Logged {
 </p>
 
 
-<h3 id="toc_5.5.2">特质的叠加栈</h3>
+<h3 id="toc_5.6.2">特质的叠加栈</h3>
 
 <p>
 有两个特质，一个在入队时把值加1；另一个过滤掉负数：
@@ -3081,7 +3236,7 @@ trait LoggedException extends Logged {
   res19: Int = 2
 </pre>
 
-<h3 id="toc_5.5.3">指定调用特质栈</h3>
+<h3 id="toc_5.6.3">指定调用特质栈</h3>
 
 <p>
 除了用<code>super.method()</code>调用下个特质，还可以用<code>super[traid].method()</code>来调用指定
@@ -3089,9 +3244,9 @@ trait LoggedException extends Logged {
 </p>
 
 
-<h2 id="toc_5.6">特质的构造过程</h2>
+<h2 id="toc_5.7">特质的构造过程</h2>
 
-<h3 id="toc_5.6.1">特质构造器</h3>
+<h3 id="toc_5.7.1">特质构造器</h3>
 
 <p>
 特质构造器是由字段初始化和其他特质体中的语句构成的。特质所混入对象被构造时，这些
@@ -3116,7 +3271,7 @@ trait LoggedException extends Logged {
 
 </ul>
 
-<h3 id="toc_5.6.2">特质不能有构造器参数</h3>
+<h3 id="toc_5.7.2">特质不能有构造器参数</h3>
 
 <p>
 特质不能有任何“类”参数，也就是说，传递给类的主构造器的参数。换句话说，
@@ -3127,7 +3282,7 @@ trait LoggedException extends Logged {
   class Point(x: Int, y: Int)
 </pre>
 
-<h3 id="toc_5.6.3">预初始化字段</h3>
+<h3 id="toc_5.7.3">预初始化字段</h3>
 
 <p>
 由于特质不能有参数，所以要用别的方法在初始化时传入值。
@@ -3174,7 +3329,7 @@ trait FileLogger extends Logger {
 
 </ul>
 
-<h4 id="toc_5.6.3.1">应用于实例</h4>
+<h4 id="toc_5.7.3.1">应用于实例</h4>
 
 <p>
 把初始化块放在<code>new</code>之后：
@@ -3186,7 +3341,7 @@ val acct = new {
 } with SavingAccount whith FileLogger
 </pre>
 
-<h4 id="toc_5.6.3.2">应用于类</h4>
+<h4 id="toc_5.7.3.2">应用于类</h4>
 
 <p>
 初始化块放在<code>extends</code>前：
@@ -3200,7 +3355,7 @@ clas SavingAccount extends {
 }
 </pre>
 
-<h3 id="toc_5.6.4">懒加载</h3>
+<h3 id="toc_5.7.4">懒加载</h3>
 
 <p>
 除了预初始化外的另一个方案是懒加载：
@@ -3218,119 +3373,6 @@ trait FileLogger extends Logger {
 初始化输出流的操作只有在用到<code>out</code>时才执行。
 </p>
 
-
-
-<h2 id="toc_5.7">保证特质能调用到需要的方法</h2>
-
-<p>
-以记录异常log为例：
-</p>
-
-<pre class="brush: scala">
-trait LoggedException {
-		def log() { log(getMessage()) }   // error
-}
-</pre>
-
-<p>
-我们要保证<code>LoggerException</code>混入的类要有<code>getMessage()</code>方法，因为在<code>log()</code>方法中
-会调用到它。
-</p>
-
-
-<p>
-为了保证特质一定能调用到指定的方法（如：<code>getMessage</code>)，可以有两种方案：
-</p>
-
-<ul>
-<li>
-特质扩展自指定的类（如：<code>Exception</code>）
-
-<li>
-用自身类型限制只能混入指定的类（如：<code>Exception</code>）
-
-</ul>
-
-<p>
-如果特质是扩展子一个类<code>B</code>，那么所以混入这个特质的类都可以作为<code>B</code>的子类。
-</p>
-
-<h3 id="toc_5.7.1">自身类型</h3>
-
-<p>
-Scala还可以通过自身类型（self type），限制只能被混入到指定的类中：
-</p>
-
-<pre class="brush: scala">
-this: MyType =&gt;
-</pre>
-
-<p>
-保证特质只能被混入<code>MyType</code>的子类中。
-</p>
-
-<p>
-例如，要根据现有的日志工具类<code>Logged</code>扩展出一个适用于异常日志的<code>LoggedException</code>
-：
-</p>
-
-<pre class="brush: scala">
-trait LoggedException extends Logged {
-	this: Exception =&gt;
-		def log() { log(getMessage()) }
-}
-</pre>
-
-<p>
-因为限制在<code>Exception</code>的子类中，所以可以保证肯定会有<code>getMessage()</code>方法。
-</p>
-
-<p>
-自身类型也可以不给出类名，而用结构类型(structural type)来说明要有指定方法：
-</p>
-
-<pre class="brush: scala">
-trait LoggedException extends Logged {
-	this: { def getMessage(): String} =&gt;
-		def log() { log(getMessage()) }
-}
-</pre>
-
-<p>
-这样就可以混入任何有<code>getMessage</code>方法的类了。
-</p>
-
-<h3 id="toc_5.7.2">自身类型不会继承</h3>
-
-<p>
-前面的<code>LoggedException</code>的自身类型并不会继承给子类，如果它有子类要再次声明自身
-类型：
-</p>
-
-<pre class="brush: scala">
-trait ManagedException extends LoggedException {
-	this: Exception =&gt;
-		...
-}
-</pre>
-
-<h3 id="toc_5.7.3">this的别名</h3>
-
-<p>
-如果把<code>this</code>改成别的名字那么在子类中还可以使用这个别名。如：
-</p>
-
-<pre class="brush: scala">
-trait Group {
-	outer: Network =&gt;
-		class Member { ... }
-}
-</pre>
-
-<p>
-这里把<code>this</code>改成<code>outer</code>。<code>Grout</code>特质只能在<code>Network</code>的子类中，而在<code>Member</code>中，
-可以用<code>outer</code>来代替<code>Group.this</code>。
-</p>
 
 
 

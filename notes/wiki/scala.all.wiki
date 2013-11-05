@@ -1464,6 +1464,8 @@ res16: Rational = 4/3
 隐式转换只能在定义的作用范围内起作用，如果隐式方法被定义在`Rational`类中，
 就不在解释器的作用范围内，所以要把它定义在解释器内。
 
+
+
 == 完整的Rational代码 ==
 
 {{{class="brush: scala"
@@ -1524,6 +1526,7 @@ print("x * 2 = ");  println(x * 2)
 implicit def intToRational(x: Int) = new Rational(x)
 print("2 * x = ");  println(2 * x)
 }}}
+
 
 
 
@@ -1660,12 +1663,611 @@ Array(Array(1,7), Array(2,9))
 
 == 与Java的区别 ==
 
-总结一下，Scala中的类如果对应到Java的类的话，
-Scala的对象和Java中的对象不是同一回事情，是另一个新的概念。
+总结一下，Scala中的类如果对应到Java的类的话，Scala的对象和Java中的对象不是同一回
+事情，是另一个新的概念。
 
 为了表达统一，我们把对应Java里对象的概念叫作“类的实例”。
 
+| Scala              | java |
+|--------------------|------|
+| 类                 | 类   |
+| 类的实例           | 对象 |
+| 单例对象与伴生对象 | 无   |
+
 这样“类”，“对象”,“类的实例”三个概念都有了明确的定义。
+
+
+
+= 类与对象高级应用 =
+
+== 结构类型 ==
+
+结构类型很像JavaScript或是Ruby中的鸭子类型：检查是否有指定的字段、方法。
+
+如下面的`appendLines()`方法用结构类型声明参数可以是任何含有
+`append(str: String): Any`方法的类型：
+
+{{{class="brush: scala"
+def appendLines(target: { def append(str: String): Any }, 
+		lines: Iterable[String]) 
+{
+  for (l <- lines) { target.append(l); target.append("\n") }
+}
+
+val lines = Array("Mary", "had", "a", "little", "lamb")
+
+val builder = new StringBuilder
+appendLines(builder, lines)
+println(builder)
+}}}
+
+由于在底层实现时是通过反射来调用`target.append()`方法，为了性能考虑只有在无法用
+共同特质描述的情况下才用结构类型。
+
+
+== 类型别名 ==
+
+关键字`type`可以给类型创建别名。别名必须放在类或对象中，不能出现在Scala顶层：
+
+{{{class="brush: scala"
+class Document {
+  import scala.collection.mutable._
+
+  type Index = HashMap[String, (Int, Int)]
+
+}
+}}}
+
+不过在REPL环境中可以用别名，因为REPL已经在一个对象中了。
+
+
+
+== 内部类 ==
+
+Scala中几乎可以在任何语法中嵌套任何语法：可以在函数中定义函数，也可以在类中定义
+类。
+
+=== 类中的类 ===
+
+内部类的一个例子：
+
+{{{class="brush: scala"
+import scala.collection.mutable.ArrayBuffer
+
+class Network {
+  class Member(val name: String) {
+    val contacts = new ArrayBuffer[Member]
+  }
+
+  private val members = new ArrayBuffer[Member]
+
+  def join(name: String) = {
+    val m = new Member(name)
+    members += m
+    m
+  }
+}
+}}}
+
+对于两个不同的网络实例：
+
+{{{class="brush: scala"
+val chatter = new Network
+val myFace = new Network
+}}}
+
+内部的`Member`是不同的，也就是说`chatter.Member`和`myFace.Member`是两个不同的类
+。这与Java不同，Java里同一个类的内部类是相同的。
+
+在新建实例时，Scala中：
+
+{{{class="brush: scala"
+new chatter.Member
+}}}
+
+而在Java里，这个语法看起来有点别扭：
+
+{{{class="brush: java"
+chatter.new Member()
+}}}
+
+以我们的例子来说，可以在各自的网络中添加成员，但不能跨网添加成员：
+
+{{{class="brush: scala"
+val fred = chatter.join("Fred")
+val wilma = chatter.join("Wilma")
+fred.contacts += wilma // OK
+val barney = myFace.join("Barney") // Has type myFace.Member
+fred.contacts += barney // No
+  // Can’t add a myFace.Member to a buffer of chatter.Member elements
+}}}
+
+如果想要跨网加，可以有两个方案：
+
+* 用移到伴生对象中
+* 类型投影
+
+=== 伴生对象中的类 ===
+
+{{{class="brush: scala"
+import scala.collection.mutable.ArrayBuffer
+
+class Network {
+  private val members = new ArrayBuffer[Network.Member]
+
+  def join(name: String) = {
+    val m = new Network.Member(name)
+    members += m
+    m
+  }
+  def description = "a network with members " + 
+    (for (m <- members) yield m.description).mkString(", ")
+}
+
+object Network {
+  class Member(val name: String) {
+    val contacts = new ArrayBuffer[Member]
+    def description = name + " with contacts " + 
+      (for (c <- contacts) yield c.name).mkString(" ")
+  }
+}
+
+object Main extends App {
+  val chatter = new Network
+  val myFace = new Network
+
+  val fred = chatter.join("Fred")
+  val wilma = chatter.join("Wilma")
+  fred.contacts += wilma // OK
+  val barney = myFace.join("Barney")
+  fred.contacts += barney // Also OK
+  println("chatter is " + chatter.description)
+  println("myFace is " + myFace.description)
+}
+}}}
+
+=== 类型投影 ===
+
+上面那样把内部类放在伴生对象中，所以的内部类都可以跨实例匹配了。如果只是想在指定
+的语句中跨实例，用类型投影的的方式`Network#Member`表示是任何`Network`的`Member`
+，如：
+
+{{{class="brush: scala"
+class Network {
+  class Member(val name: String) {
+    val contacts = new ArrayBuffer[Network#Member]
+  }
+
+  private val members = new ArrayBuffer[Member]
+
+  def join(name: String) = {
+    val m = new Member(name)
+    members += m
+    m
+  }
+}
+
+val chatter = new Network
+val myFace = new Network
+
+val fred = chatter.join("Fred")
+val wilma = chatter.join("Wilma")
+fred.contacts += wilma // OK
+val barney = myFace.join("Barney") 
+fred.contacts += barney // Also OK
+}}}
+
+=== 外部类的引用 ===
+
+像Java一样，在内部类中可以通过`外部类.this`的方式来得到外部类的`this`引用。
+
+如果有必要，还可以用下面这样的语法建立一个指向该引用的别名：
+
+{{{class="brush: scala"
+class 外部类 { 别名 =>
+	class 内部类 {
+	}
+}
+}}}
+
+例如：
+
+{{{class="brush: scala"
+import scala.collection.mutable.ArrayBuffer
+
+class Network(val name: String) { outer =>  
+  class Member(val name: String) {
+    val contacts = new ArrayBuffer[Member]
+    def description = name + " inside " + outer.name
+  }
+
+  private val members = new ArrayBuffer[Member]
+
+  def join(name: String) = {
+    val m = new Member(name)
+    members += m
+    m
+  }
+}
+
+object Main extends App {
+  val chatter = new Network("Chatter")
+  val myFace = new Network("MyFace")
+
+  val fred = chatter.join("Fred")
+  println(fred.description);
+  val barney = myFace.join("Barney")
+  println(barney.description);
+}
+}}}
+
+这里的`outer`指向的是`Ntework.this`，引用名可以是任何合法的标识符。当然推荐不要
+用`self`，这个名字在内部类中容易引起误解。
+
+这样的语法与自身类型语法相关，关于它后面有更多描述。
+
+
+
+== 路径 ==
+
+包名加上类名就形成了典型的路径。用具体的定义来说，路径必须是不可变的，内容可以
+是：
+
+* 包
+* 对象
+* `val`
+* `this`、`super`、`super[S]`、`C.this`、`C.super`、`C.super[S]`
+
+不可以是：
+
+* 路径的组成部分不可以是类。如：内部类是按个实例区分的不同类，所以不能用类表示。
+* 也不能是`var`，因为`var`的内容是可变的，而路径是不可变的。
+
+以内部类为例：
+
+{{{class="brush: scala"
+var personal = new Network
+val fred = new personal.Member  // error person是可变引用
+
+val wrok = new Network
+val fred = new work.Member  // OK
+}}}
+
+其实对于内部类，编译器会把嵌套的表达式转为投影`type#T`。如：`personal.Member`转
+为`personal.type#Member`，即`personal.type`单例对象中的`Member`。
+
+所以如果看到编译器报错`personal.type#Member`有问题，要明白所指的其实就是
+`personal.Member`。
+
+
+=== 与Java内部类的区别 ===
+
+路径依赖有点像Java里的内部类，但区别是：
+
+* 路径依赖表达了外在的对象
+* Java内部类表达了外在的类。
+
+Java的内部类在Scala表达为两个类：
+
+{{{class="brush: scala"
+  class Outer {
+    class Inner
+  }
+}}}
+
+与Java的`Outer.Inner`不同，Scala中表达为`Outer#Inner`。
+
+总之，要注意。路径依赖是在对象中的类，而不是Java那样类中的类。
+
+`.`语法留给对象使用：
+
+{{{class="brush: scala"
+  val o1 = new Outer
+  val o2 = new Outer
+}}}
+
+虽然`o1.Inner`和`o2.Inner`是不同的两个路径依赖类型，但两个都能匹配更加通用的
+`Outer#Inner`。
+
+和Java中一样，Scala的内部类实例也有对外部类实例的引用。所以不能只有内部类实例而
+没有外部类实例。有两个方式实例化内部类：
+
+* 直接在外部类方法体中实例化，这样可以用`this`引用外部类对象。
+* 使用路径依赖类型。如`o1.Inner`。返回的内部类有对`01`的引用。例子如下：
+
+{{{class="brush: scala"
+  scala> new o1.Inner
+  res1: o1.Inner = Outer$Inner@13727f
+}}}
+
+相对的，类型`Outer#Inner`是没有指向对象的引用的，所以不能创建它的实例：
+
+{{{class="brush: scala"
+  scala> new Outer#Inner
+  <console>:6: error: Outer is not a legal prefix for
+    a constructor
+         new Outer#Inner
+                   ^
+}}}
+
+
+
+== 枚举对象 ==
+
+Scala没有枚举类，而是用标准库中的工具类`scala.Enumeration`用来扩展实现枚举对象：
+
+{{{class="brush: scala"
+  object Color extends Enumeration {
+    val Red = Value
+    val Green = Value
+    val Blue = Value
+  }
+}}}
+
+注意：枚举是和路径依赖一样，是对象中的类，不是类中的类。
+
+还可以简化：
+
+{{{class="brush: scala"
+  object Color extends Enumeration {
+    val Red, Green, Blue = Value
+  }
+}}}
+
+可以`Color`的全部成员，然后直接写颜色名：
+
+{{{class="brush: scala"
+  import Color._
+}}}
+
+前面定义的`Red`、`Green`和`Blue`这些值的类型为`Enumeration`定义的内部类，名为
+`Value`。同名无参数方法`Value`返回该类的新对象，即`Color.Red`类的值类型是
+`Color.Value`。而且是依赖路径的。如：
+
+{{{class="brush: scala"
+  object Direction extends Enumeration {
+    val North, East, South, West = Value
+  }
+}}}
+
+上面就定义了一个完全不同的类型，因为路径不同。`Direction`与`Color`的`Value`也是
+不同的类。
+
+=== 枚举的类型 ===
+
+注意枚举的类型是`Direction.Value`而不是`Direction`。`Direction`是持有这些值的
+单例对象。有些人推荐增加一个类型的别名：
+
+{{{class="brush: scala"
+  object Direction extends Enumeration {
+		type Direction = Value
+    val North, East, South, West = Value
+  }
+}}}
+
+这样类型就从`Direction.Value`增加一个别名`Direction.Direction`。虽然还是又长又
+啰嗦，但是在`import Direction._`以后可以只写`Direction`：
+
+{{{class="brush: scala"
+import Direction._
+
+def func01(direction: Direction) = {
+	if (direction == West)
+		"stop"
+	else
+		"keep moving"
+}
+}}}
+
+=== 枚举值 ===
+
+枚举的值默认从`0`开始增加，用成员方法`id`可以取出值：
+
+{{{class="brush: scala"
+  scala> Direction.East.id
+  res5: Int = 1
+}}}
+
+反过来也可以通过非零整数取得`id`：
+
+{{{class="brush: scala"
+  scala> Direction(1)
+  res6: Direction.Value = East
+}}}
+
+当然想指定`id`也可以：
+
+{{{class="brush: scala"
+object Direction extends Enumeration {
+  val North = Value(10)
+  val East = Value(20)
+  val South = Value(30)
+  val West = Value(40)
+}
+}}}
+
+还可以重载`Value`方法把名称与值对应起来：
+
+{{{class="brush: scala"
+object Direction extends Enumeration {
+  val North = Value(10,"North")
+  val East = Value(20,"East")
+  val South = Value(30,"South")
+  val West = Value(40,"West")
+}
+}}}
+
+直接通过`toString`方法就可以取得枚举的名称：
+
+{{{class="brush: scala"
+  scala> for (d <- Direction) print(d +" ")
+  North East South West 
+}}}
+
+也可以通过`withName`方法通过名称得到枚举：
+
+{{{class="brush: scala"
+Direction.withName("West")
+}}}
+
+
+
+== 复合类型 ==
+
+用`Type1 with Type2 with Type`声明同时满足多个类型，如：
+
+{{{class="brush: scala"
+val image = new ArrayBuffer[java.awt.Shape with java.io.Serializable]
+}}}
+
+存放的成员必须是满足这两个条件的类型，如`Rectangle`
+
+{{{class="brush: scala"
+image += new Rectangle(5, 10, 20, 30) // OK
+image += new Area(rect)               // error Area类型不是Serializable的
+}}}
+
+结构类型也可添加到简单类型或是复合类型的声明中：
+
+{{{class="brush: scala"
+val image = new ArrayBuffer[Shape with Serializable { def contains(p: Point): Boolean } ]
+}}}
+
+上面的定义不仅要是`Shape`和`Serializable`，还要有一个`contains()`方法。
+
+从技术上来说，如下的结构类型：
+
+{{{class="brush: scala"
+AnyRef { def append(str: String): Any }
+}}}
+
+可以简写为：
+
+{{{class="brush: scala"
+{ def append(str: String): Any }
+}}}
+
+这样的复合类型：
+
+{{{class="brush: scala"
+Shape with Serializable {}
+}}}
+
+可以简写为：
+
+{{{class="brush: scala"
+Shape with Serializable
+}}}
+
+
+
+== 实例类型与单例类型 ==
+
+如果一个方法返回当前对象的引用`this`，那就可以把方法的调用串起来写：
+
+{{{class="brush: scala; highlight:[4,5,14]"
+scala> class Document {
+     |   private var title = ""
+     |   private var author = ""
+     |   def setTitle(title: String) = { this.title = title; this }
+     |   def setAuthor(author: String) = { this.author = author; this }
+     |   override def toString = getClass.getName + "[title=" + title +
+     |     ",author=" + author + "]"
+     | }
+defined class Document
+
+scala> val doc = new Document
+doc: Document = Document[title=,author=]
+
+scala> doc.setTitle("Scala for the Impatient").setAuthor("Cay Horstmann")
+res0: Document = Document[title=Scala for the Impatient,author=Cay Horstmann]
+}}}
+
+但是如果`Document`的子类`Book`的话，那就会有问题了：
+
+{{{class="brush: scala; highlight:[4]"
+scala> class Book extends Document {
+     |   private var chapters = new scala.collection.mutable.ArrayBuffer[String]
+     |   def addChapter(chapter: String) = { chapters += chapter; this }
+     |   override def toString = super.toString + "[chapters=" + chapters + "]"
+     | }
+defined class Book
+
+scala> val book = new Book
+book: Book = Book[title=,author=][chapters=ArrayBuffer()]
+
+scala> book.setTitle("scala for the Impatient").addChapter("Chap I")
+<console>:11: error: value addChapter is not a member of Document
+              book.setTitle("scala for the Impatient").addChapter("Chap I")
+                                                       ^
+}}}
+
+因为方法`setTitle()`是父类`Document`的方法，返回类型也被绑定为父类。
+
+
+解决方法：对于任何引用`v`，调用`v.type`可以取得引用的类型。值可能是`v`或`null`。
+这里声明`setTitle()`的返回类型为`this.type`：
+
+
+{{{class="brush: scala; highlight: [4,5,18]"
+class Document {
+  private var title = ""
+  private var author = "" 
+  def setTitle(title: String): this.type = { this.title = title; this }
+  def setAuthor(author: String): this.type = { this.author = author; this }
+  override def toString = getClass.getName + "[title=" + title + ",author=" + 
+	  author + "]"
+}
+
+class Book extends Document {
+  private var chapters = new scala.collection.mutable.ArrayBuffer[String]
+  def addChapter(chapter: String) = { chapters += chapter; this }
+  override def toString = super.toString + "[chapters=" + chapters + "]"
+}
+
+object Main extends App {
+  val book = new Book
+  book.setTitle("Scala for the Impatient").addChapter("Chapter 1 ...") 
+  println(book)
+}
+}}}
+
+单例对象也可以通过`type`取得它的类型：
+
+{{{class="brush: scala; highlight: [6]"
+object Title // This object is used an an argument for a fluent interface
+
+class Document {
+  private var title = ""
+  private var useNextArgAs: Any = null
+  def set(obj: Title.type): this.type = { useNextArgAs = obj; this }
+  def to(arg: String) = if (useNextArgAs == Title) title = arg;
+  override def toString = getClass.getName + "[title=" + title + "]"
+}
+
+val book = new Document
+}}}
+
+注意是`Title.type`而不是`Title`，`Title`是一个单例对象，不是类型。
+
+调用时：
+
+{{{class="brush: scala"
+scala> book.set(Title).to("Scala for the Impatient")
+
+scala> println(book)
+$line4.$read$$iw$$iw$Document[title=Scala for the Impatient]
+}}}
+
+可以写在更加接近人类语言的：
+
+{{{class="brush: scala"
+scala> book set Title to "Scala for the Impatient"
+
+scala> println(book)
+$line4.$read$$iw$$iw$Document[title=Scala for the Impatient]
+}}}
+
 
 
 
@@ -2364,6 +2966,10 @@ tail-call位置，编译器会产生出与while循环类似的代码。
 所以表达式的结果就是行字串的序列。现在仅剩下的工作就是把字串序列转变为单一字串。
 mkString的调用完成这个工作，并且由于我们传递进去"\n"，因此每个字串结尾插入了
 换行符。
+
+
+
+
 
 
 
@@ -3211,6 +3817,7 @@ operation 3
 operation 1
 Ending transaction...
 }}}
+
 
 
 
@@ -4148,6 +4755,7 @@ Scala中字段与方法都可以用`final`修饰为不可重写（因为Scala的
 == 类型检查和转换 ==
 
 | Scala                   | Java                 |
+|-------------------------|----------------------|
 | obj.isInstanceOf[Clazz] | obj instanceof Clazz |
 | obj.asInstanceOf[Clazz] | (Clazz) obj          |
 | classOf[Clazz]          | Clazz.class          |
@@ -5548,6 +6156,90 @@ trait FileLogger extends Logger {
 
 初始化输出流的操作只有在用到`out`时才执行。
 
+
+
+== 保证特质能调用到需要的方法 ==
+
+以记录异常log为例：
+
+{{{class="brush: scala"
+trait LoggedException {
+		def log() { log(getMessage()) }   // error
+}
+}}}
+
+我们要保证`LoggerException`混入的类要有`getMessage()`方法，因为在`log()`方法中
+会调用到它。
+
+
+为了保证特质一定能调用到指定的方法（如：`getMessage`)，可以有两种方案：
+
+* 特质扩展自指定的类（如：`Exception`）
+* 用自身类型限制只能混入指定的类（如：`Exception`）
+
+如果特质是扩展子一个类`B`，那么所以混入这个特质的类都可以作为`B`的子类。
+
+=== 自身类型 ===
+
+Scala还可以通过自身类型（self type），限制只能被混入到指定的类中：
+
+{{{class="brush: scala"
+this: MyType =>
+}}}
+
+保证特质只能被混入`MyType`的子类中。
+
+例如，要根据现有的日志工具类`Logged`扩展出一个适用于异常日志的`LoggedException`
+：
+
+{{{class="brush: scala"
+trait LoggedException extends Logged {
+	this: Exception =>
+		def log() { log(getMessage()) }
+}
+}}}
+
+因为限制在`Exception`的子类中，所以可以保证肯定会有`getMessage()`方法。
+
+自身类型也可以不给出类名，而用结构类型(structural type)来说明要有指定方法：
+
+{{{class="brush: scala"
+trait LoggedException extends Logged {
+	this: { def getMessage(): String} =>
+		def log() { log(getMessage()) }
+}
+}}}
+
+这样就可以混入任何有`getMessage`方法的类了。
+
+=== 自身类型不会继承 ===
+
+前面的`LoggedException`的自身类型并不会继承给子类，如果它有子类要再次声明自身
+类型：
+
+{{{class="brush: scala"
+trait ManagedException extends LoggedException {
+	this: Exception =>
+		...
+}
+}}}
+
+=== this的别名 ===
+
+如果把`this`改成别的名字那么在子类中还可以使用这个别名。如：
+
+{{{class="brush: scala"
+trait Group {
+	outer: Network =>
+		class Member { ... }
+}
+}}}
+
+这里把`this`改成`outer`。`Grout`特质只能在`Network`的子类中，而在`Member`中，
+可以用`outer`来代替`Group.this`。
+
+
+
 == Scala特质生成Java接口 ==
 
 === 只有抽象方法 ===
@@ -5971,6 +6663,7 @@ Scala专门提供了`Ordered`特质来简化比较工作。只要实现`Ordered`
 
 
 
+
 = 包和引用 =
 
 == 定义包 ==
@@ -6279,6 +6972,9 @@ Predef对象包含了许多Scala程序中常用到的类型，方法和隐式转
 `scala.StringBuilder`，而不是`java.lang.StringBuilder`。
 
 
+
+
+
 = 访问修饰符 =
 
 Scala与Java对访问修饰符的对待方式有一些重要的差异。
@@ -6371,6 +7067,7 @@ Scala里的访问修饰符可以通过使用修饰词增加。格式为`private[
 这样的例子。这种访问修饰符等价于Java的包私有访问。
 
 | 没有修饰符            | 公开访问                     |
+|-----------------------|------------------------------|
 | Private[bobsrockets]  | 在外部包中访问               |
 | Private[navigation]   | 与Java的包可见度相同         |
 | Private[Navigator]    | 与Java的private相同          |
@@ -8894,6 +9591,8 @@ Scala所有的正则表达式都定义了抽取器，可以用来鉴别匹配于
 
 
 
+
+
 = 使用列表 =
 
 == 列表字面量 ==
@@ -10365,6 +11064,7 @@ Set的关键在于用对象的`==`检查唯一性。
 不可变的`scala.collection.immutable.Set()`工厂方法返回：
 
 | 元素的数量 | 实现                                |
+|------------|-------------------------------------|
 | 0          | scala.collection.immutable.EmptySet |
 | 1          | scala.collection.immutable.Set1     |
 | 2          | scala.collection.immutable.Set2     |
@@ -10375,6 +11075,7 @@ Set的关键在于用对象的`==`检查唯一性。
 不可变的`scala.collection.immutable.Map()`工厂方法返回：
 
 | 元素的数量 | 实现                                |
+|------------|-------------------------------------|
 | 0          | scala.collection.immutable.EmptyMap |
 | 1          | scala.collection.immutable.Map1     |
 | 2          | scala.collection.immutable.Map2     |
@@ -10878,6 +11579,7 @@ props("com.horstmann.scala") = "impatient"
 Scala集合转Java
 
 | 隐式转换函数         | 从scala.collection | 到java.util              |
+|----------------------|--------------------|--------------------------|
 | asJavaCollection     | Iterable           | Collection               |
 | asJavaIterable       | Iterable           | iterable                 |
 | asjavaIterator       | Iterator           | Iterator                 |
@@ -10895,6 +11597,7 @@ Scala集合转Java
 从Java集合到Scala集合
 
 | 方法                       | 从java.util              | 到scala.collection    |
+|----------------------------|--------------------------|-----------------------|
 | collectionAsScalaIterable  | Collection               | Iterable              |
 | iterableAsScalaIterable    | Iterable                 | Iterable              |
 | asScalaIterator            | Iterator                 | Iterator              |
@@ -11116,6 +11819,61 @@ ln: java.util.ArrayList[Nothing] = []
 }}}
 
 
+
+== 中置类型 ==
+
+带两个类型参数的类型可以用中置语法表示，如：
+
+{{{class="brush: scala"
+Map[String, Int]
+}}}
+
+可以写为：
+
+{{{class="brush: scala"
+String Map Int
+}}}
+
+以数学表达式：
+
+{{$
+A \times B = \{ (a,b) | a \in A, b \in B \}
+}}$
+
+为例，它表示从A与B两个范围中生成的对偶的集。Scala中对偶是用`(A,B)`表示的。如果
+想用更加数学的风格来表现对偶，可以定义：　
+
+{{{class="brush: scala"
+type ×[A, B] = (A, B)
+}}}
+
+这样以后再写对偶时可以不写：
+
+{{{class="brush: scala"
+(String, Int)
+}}}
+
+而是：
+
+{{{class="brush: scala"
+String × Int
+}}}
+
+中置类型的优先级和普通的操作符一样，而且如果不是以`:`结尾，默认就是左结合：
+
+{{{class="brush: scala"
+String × Int × Int
+}}}
+
+相当于：
+
+{{{class="brush: scala"
+((String, Int), Int)
+}}}
+
+中置类型的名称可以是任何操作符的字符序列，但不可以是`*`。因为会和变长参数声明
+`T*`混淆。
+
 == 类型变化 ==
 
 === 协变 ===
@@ -11300,6 +12058,7 @@ Walden
 * 结果必须是`AnyRef`的子类；
 
 |          | 参数        | 结果   |
+|----------|-------------|--------|
 | 实参     | Publication | String |
 | 类型变化 | 逆变        | 协变   |
 | 形参     | Book        | AnyRef |
@@ -11858,9 +12617,8 @@ scala> min(studentPair)
 res6: Student = Student Fred
 }}}
 
-=== 存在类型 ===
+这里的类型通配符其实是“存在类型”的语法糖，以后会具体讨论存在类型。
 
-这里的类型通配符其实是“存在类型”的语法糖，其他章节具体讨论存在类型。
 
 
 == 例：开发纯函数式队列 ==
@@ -12098,6 +12856,968 @@ i :: trailing
 上面分别报错的原因是：协变类型`T`出现在setter函数`leading_=`类型参数`List[T]`的
 逆变位置上；协变类型`T`出现在setter函数`trailing_=`类型参数`List[T]`的逆变位置
 上。
+
+
+
+
+
+
+= 抽象成员 =
+
+Scala中不仅可以指定方法为抽象，还可以声明字段甚至抽象类型为类和特质的成员。
+
+== 抽象成员的快速浏览 ==
+
+在特质中分别对类型（T）、方法（transform）、val（initial）、var（current）的
+抽象声明做出了一个例子：
+
+{{{class="brush: scala"
+  trait Abstract {
+    type T
+    def transform(x: T): T
+    val initial: T
+    var current: T
+  }
+}}}
+
+实现：
+
+{{{class="brush: scala"
+  class Concrete extends Abstract {
+    type T = String
+    def transform(x: String) = x + x
+    val initial = "hi"
+    var current = initial
+  }
+}}}
+
+== 类型成员 ==
+
+（略）
+
+== 抽象val ==
+
+val是不可变的，抽象的val指定了类型与变量名，不指定值：
+
+{{{class="brush: scala"
+  val initial: String
+}}}
+
+实现时指定值：
+
+{{{class="brush: scala"
+  val initial = "hi"
+}}}
+
+如果不知道类中定义的确切内容，但是确定对于每个实例来说值都是不可变的。在这样的
+情况下可以使用抽象的val声明。
+
+可以注意到，抽象val的格式非常类似于下面的抽象无参数方法声明：
+
+{{{class="brush: scala"
+  def initial: String
+}}}
+
+客户代码将使用统一的`obj.initial`方法引用val及方法。如果`initial`是抽象val，那么
+客户就可以保证每次引用都将得到同样的值。如果`initial`是抽象方法那就无法保证，
+因为在不同的实现中`initial`可以被实现为每次调用都返回不同的值。
+
+换句话说抽象的val限制了合法实现的方式：任何实现都必须是`val`类型的定义不可以是
+`var`。另一方面，抽象方法声明可以被实现为具体的方法定义或具体的`val`定义。
+
+所以在下面的代码中，`Apple`是合法的子类而`BadApple`不是：
+
+{{{class="brush: scala"
+  abstract class Fruit {
+    val v: String // `v' for value
+    def m: String // `m' for method
+  }
+
+  abstract class Apple extends Fruit {
+    val v: String
+    val m: String // OK to override a `def' with a `val'
+  }
+
+  abstract class BadApple extends Fruit {
+    def v: String // ERROR: cannot override a `val' with a `def'
+    def m: String
+  }
+}}}
+
+== 抽象var ==
+
+在特质里使用，只声明类型与名称，没有初始值：
+
+{{{class="brush: scala"
+  trait AbstractTime {
+    var hour: Int
+    var minute: Int
+  }
+}}}
+
+也会有自动扩展的`getter`与`setter`方法，上面的代码相当于：
+
+{{{class="brush: scala"
+  trait AbstractTime {
+    def hour: Int          // getter for `hour'
+    def hour_=(x: Int)     // setter for `hour'
+    def minute: Int        // getter for `minute'
+    def minute_=(x: Int)   // setter for `minute'
+  }
+}}}
+
+== 初始化抽象val ==
+
+结合特质来使用，抽象val可以让子类扩展提供父类没有的参数与细节。因为特质缺省能
+用来传递参数的构造器。
+
+拿前面的实数类来作例子，以下特质：
+
+{{{class="brush: scala"
+  trait RationalTrait { 
+    val numerArg: Int 
+    val denomArg: Int 
+  } 
+}}}
+
+为了实例化这个特质，先要实现val。在这里我们要用到新的`new`语法结构：
+
+{{{class="brush: scala"
+  new RationalTrait {
+    val numerArg = 1
+    val denomArg = 2
+  }
+}}}
+
+上面的代码会产混入了特质的匿名类实例，类似于`new Rational(1, 2)`。当然区别还是
+有的：
+
+{{{class="brush: scala"
+  new Rational(expr1, expr2)
+}}}
+
+上面的两个表达式会在类初始化前计算，而相反的：
+
+{{{class="brush: scala"
+  new RationalTrait {
+    val numerArg = expr1
+    val denomArg = expr2
+  }
+}}}
+
+上面的两个表达式会作为匿名类初始化的一部分计算。而匿名类初始化在`RationalTrait`
+之后执行，所以`numerArg`和`denomArg`的值在`RationalTrait`初始化期间还没有准备好
+，都是`Int`类型的默认值`0`。
+
+所以对下面的代码来说，这会成为一个问题，因为其中定义了经过约分后的分子与分母：
+
+{{{class="brush: scala"
+  trait RationalTrait { 
+    val numerArg: Int 
+    val denomArg: Int 
+    require(denomArg != 0)
+    private val g = gcd(numerArg, denomArg)
+    val numer = numerArg / g
+    val denom = denomArg / g
+    private def gcd(a: Int, b: Int): Int = 
+      if (b == 0) a else gcd(b, a % b)
+    override def toString = numer +"/"+ denom
+  }
+}}}
+
+如果尝试使用某种分子和分母的表达式而不是简单的字面量实例化这个特质，会引起以下
+错误：
+
+{{{class="brush: scala"
+  scala> val x = 2
+  x: Int = 2
+
+  scala> new RationalTrait {
+       |   val numerArg = 1 * x
+       |   val denomArg = 2 * x
+       | }
+  java.lang.IllegalArgumentException: requirement failed
+          at scala.Predef$.require(Predef.scala:107)
+          at RationalTrait$class.$init$(<console>:7)
+          at $anon$1.<init>(<console>:7)
+          ....
+}}}
+
+解决方案有两个，分别是预初始化字段和懒加载val。
+
+
+=== 预初始化字段 ===
+
+==== 用于匿名类实例 ====
+
+给字段定义加上花括号，放在超类的构造器之前：
+
+{{{class="brush: scala"
+  scala> new { 
+       |   val numerArg = 1 * x
+       |   val denomArg = 2 * x 
+       | } with RationalTrait
+  res15: java.lang.Object with RationalTrait = 1/2
+}}}
+
+==== 用于类 ====
+
+不仅匿名类可以用预加载，有名称的类和单例对象也可以。
+
+注意要放在关键字`extends`后面：
+
+{{{class="brush: scala"
+  object twoThirds extends {
+    val numerArg = 2
+    val denomArg = 3
+  } with RationalTrait
+}}}
+
+由于预初始化的字段的超类构造器调用前被初始化，所以不能引用正在被构造的对象。所以
+对于`this`实际指向的是正被构造的类或对象的对象，而来是被构造的对象本身：
+
+{{{class="brush: scala"
+  scala> new {
+     |   val numerArg = 1
+     |   val denomArg = this.numerArg * 2
+     | } with RationalTrait
+  <console>:8: error: value numerArg is not a
+       member of object $iw
+           val denomArg = this.numerArg * 2
+                               ^
+}}}
+
+因为实例还没有构建完成，所以会报错。`$iw`是合成对象，解释器把用户输出语句放在
+这个对象中。
+
+{{{class="brush: scala"
+  class RationalClass(n: Int, d: Int) extends {
+    val numerArg = n
+    val denomArg = d
+  } with RationalTrait {
+    def + (that: RationalClass) = new RationalClass(
+      numer * that.denom + that.numer * denom,
+      denom * that.denom
+    )
+  }
+}}}
+
+
+
+=== 懒加载val ===
+
+懒加载让表达式在`val`第一次被使用的时候才计算机。格式为把`lazy`修饰加在`val`上。
+
+普通情况下初始化与类初始化一起的：
+
+{{{class="brush: scala"
+  scala> object Demo {
+       |   val x = { println("initializing x"); "done" }
+       | }
+  defined module Demo
+
+
+  scala> Demo
+  initializing x
+  res19: Demo.type = Demo$@97d1ff
+
+  scala> Demo.x
+  res20: java.lang.String = done
+}}}
+
+使用了懒加载以后，`val`的初始化延迟到第一次使用时：
+
+{{{class="brush: scala"
+  scala> object Demo {
+       |   lazy val x = { println("initializing x"); "done" }
+       | }
+  defined module Demo
+
+  scala> Demo
+  res21: Demo.type = Demo$@d81341
+
+  scala> Demo.x
+  initializing x
+  res22: java.lang.String = done
+}}}
+
+上面的情况有点像是用`def`把`x`定义为一个无参的方法，不同于`def`的是计算只进行一次。
+
+通过上面两个例子可以看出，单例对象的初始化也很像懒加载。它们在第一次被使用时进行
+初始化。
+
+通过懒加载重新实现`RationalTrait`，与前一版本的主要变化是`require`子句从特质的
+方法体移动到了计算`numerArg`和`denomArg`最大公约数的私有字段`g`的初始化器中。
+所以这个版本中`LazyRationalTrait`初始化器已经用不干啥事儿了：
+
+{{{class="brush: scala"
+  trait LazyRationalTrait { 
+    val numerArg: Int 
+    val denomArg: Int 
+    lazy val numer = numerArg / g
+    lazy val denom = denomArg / g
+    override def toString = numer +"/"+ denom
+    private lazy val g = {
+      require(denomArg != 0)
+      gcd(numerArg, denomArg)
+    }
+    private def gcd(a: Int, b: Int): Int = 
+      if (b == 0) a else gcd(b, a % b)
+  }
+
+
+  scala> val x = 2
+  x: Int = 2
+
+  scala> new LazyRationalTrait {
+       |   val numerArg = 1 * x
+       |   val denomArg = 2 * x
+       | }
+  res1: java.lang.Object with LazyRationalTrait = 1/2
+}}}
+
+在特质中的两个懒加载对象`number`和`denom`是在`toString`方法调用时才初始化。计算
+它们的表达式要用到同样是懒加载的`g`。
+
+应用懒加载还是要注意副作用，在有副作用的情况下跟踪加载顺序是很重要的事情。
+无副作用的纯函数式应用配合懒加载是相当合适的。
+
+懒加载并不是没有额外的开销，对于每次访问都会有一个方法被调用。这个方法会以线程
+安全的方式检查该值是否已经被初始化。
+
+== 抽象类型 ==
+
+抽象类型声明`type T`应用在尚不可知的类型上，不同的子类可以提供不同的`T`实现。
+
+以一个动物食性的例子来解释应用环境，动物吃食物：
+
+{{{class="brush: scala"
+  class Food
+  abstract class Animal {
+    def eat(food: Food)
+  }
+}}}
+
+会在想让它们的子类牛吃草时遇到麻烦。`eat`方法不能重写，因为参数不能从`Food`转为
+子类`Grass`：
+
+{{{class="brush: scala"
+  class Grass extends Food
+  class Cow extends Animal {
+    override def eat(food: Grass) {} // This won't compile
+  }
+
+  BuggyAnimals.scala:7: error: class Cow needs to be
+  abstract, since method eat in class Animal of type
+      (Food)Unit is not defined
+  class Cow extends Animal {
+        ^
+  BuggyAnimals.scala:8: error: method eat overrides nothing
+    override def eat(food: Grass) {}
+                 ^
+}}}
+
+这样看来类型检查太严格了，应但是如果许子类的话又会失去类型检验保障。比如说喂牛
+吃鱼：
+
+{{{class="brush: scala"
+  class Food
+  abstract class Animal {
+    def eat(food: Food)
+  }
+  class Grass extends Food
+  class Cow extends Animal {
+    override def eat(food: Grass) {} // This won't compile,
+  }                                  // but if it did,...
+  class Fish extends Food
+  val bessy: Animal = new Cow
+  bessy eat (new Fish)     // ...you could feed fish to cows.
+}}}
+
+== 抽象类型也可以加上界与下界 ==
+
+更加精确的方式是能按不同的动物决定食物的种类，父类中指定动物只能吃食物：
+
+{{{class="brush: scala"
+  class Food
+  abstract class Animal {
+    type SuitableFood <: Food
+    def eat(food: SuitableFood)
+  }
+}}}
+
+`SuitableFood`被定义为抽象类，而且有上界`Food`。以后动物类中指定具体的食物子类：
+
+{{{class="brush: scala"
+  class Grass extends Food
+  class Cow extends Animal {
+    type SuitableFood = Grass
+    override def eat(food: Grass) {}
+  }
+}}}
+
+现在得到了比较合适的类型检查：
+
+{{{class="brush: scala"
+  scala> class Fish extends Food
+  defined class Fish
+
+  scala> val bessy: Animal = new Cow
+  bessy: Animal = Cow@674bf6
+
+  scala> bessy eat (new Fish)
+  <console>:10: error: type mismatch;
+   found   : Fish
+   required: bessy.SuitableFood
+         bessy eat (new Fish)
+                    ^
+}}}
+
+
+
+=== 注意路径依赖 ===
+
+看一下前面例子的最后一条错误信息。它说明需要的类型是`bessy.SuitableFood`，这里的
+`SuitableFood`是`bessy`引用的对象的成员。
+
+这样的类型被称为路径依赖类型（参见对象一章的路径部分），路径指的是对象的引用。
+不同路径将产不同的类型：
+
+{{{class="brush: scala"
+  class DogFood extends Food
+  class Dog extends Animal {
+    type SuitableFood = DogFood
+    override def eat(food: DogFood) {}
+  }
+
+  scala> val bessy = new Cow
+  bessy: Cow = Cow@10cd6d
+
+  scala> val lassie = new Dog
+  bootsie: Dog = Dog@d11fa6
+
+  scala> lassie eat (new bessy.SuitableFood)
+  <console>:13: error: type mismatch;
+   found   : Grass
+   required: DogFood
+         lassie eat (new bessy.SuitableFood)
+                     ^
+}}}
+
+`bessy.SuitableFood`不能匹配`lassie.SuitableFood`，但如果同样是`Dog`的话，情况又
+不同。因为`Dog`的`SuitableFood`被定义为`DogFood`类的别名，所以实际上是一样的：
+
+{{{class="brush: scala"
+  scala> val bootsie = new Dog
+  bootsie: Dog = Dog@54ca71
+
+  scala> lassie eat (new bootsie.SuitableFood)
+}}}
+
+
+
+== 抽象类型与泛型 ==
+
+抽象类型与泛型可能实现相同的功能。例：
+
+{{{class="brush: scala; highlight:[2]"
+trait Reader {
+  type Contents
+  def read(fileName: String): Contents
+}
+}}}
+
+子类中指定`Contents`类型为`String`：
+
+{{{class="brush: scala; highlight:[4, 13]"
+import scala.io._
+
+class StringReader extends Reader {
+  type Contents = String
+  def read(fileName: String) = Source.fromFile(fileName, "UTF-8").mkString
+}
+
+import java.awt.image._
+import java.io._
+import javax.imageio._
+
+class ImageReader extends Reader {
+  type Contents = BufferedImage
+  def read(fileName: String) = ImageIO.read(new File(fileName))
+}
+}}}
+
+用泛型也可以实现同样的功能：
+
+{{{class="brush: scala"
+trait Reader[C] {
+  def read(fileName: String): C
+}
+
+import scala.io._
+
+class StringReader extends Reader[String] {
+  def read(fileName: String) = Source.fromFile(fileName, "UTF-8").mkString
+}
+
+import java.awt.image._
+import java.io._
+import javax.imageio._
+
+class ImageReader extends Reader[BufferedImage] {
+  def read(fileName: String) = ImageIO.read(new File(fileName))
+}
+}}}
+
+用哪种好呢？一般经验是：
+
+* 如果类型是在创建实例时确定的，用泛型，如：`HashMap[String, Int]`
+* 如果是在子类中确定的，用抽象类型。如这里的`Reader`例子。
+
+虽然在子类中确定类型时也可以用泛型，但如果有多个类型参数会显得比较啰嗦，如：
+`Reader[File, BufferedImabe, .... ]`。
+
+而抽象类型不用带这么多参数：
+
+{{{class="brush: scala"
+trait Reader {
+  type In
+  type Contents
+  def read(in: In)
+}
+
+import scala.io._
+
+class StringReader extends Reader {
+  type In = String
+  type Contents = String
+  def read(fileName: String) = Source.fromFile(fileName, "UTF-8").mkString
+}
+
+import java.awt.image._
+import java.io._
+import javax.imageio._
+
+class ImageReader extends Reader {
+  type In = File
+  type Contents = BufferedImage
+  def read(file: In) = ImageIO.read(file)
+}
+}}}
+
+
+
+== 依赖注入 ==
+
+Scala中可以通过特质、抽象成员与自身类型实现简单的依赖注入效果。
+
+例子，带日志的登录功能：
+
+先是日志组件，有控制台与文件两个实现版本：
+
+{{{class="brush: scala; highlight:[5]"
+trait LoggerComponent {
+
+  trait Logger { def log(msg: String) }
+
+  val logger: Logger
+
+  class ConsoleLogger extends Logger {
+    def log(msg: String) { println(msg); }
+  }
+
+  class FileLogger(file: String) extends Logger { 
+    val out = new PrintWriter(file) 
+    def log(msg: String) { out.println(msg); out.flush() }
+  }
+ 
+}
+}}}
+
+注意`val logger: Logger`用一个抽象的日志工具，具体实现类用哪一个版本的以后再注入
+的时候再决定。
+
+再来看登录组件，它的内部只定义一个用来测试的`MockAuth`实现：
+
+{{{class="brush: scala; highlight:[3,16]"
+trait AuthComponent {
+
+  this: LoggerComponent => // Gives access to logger    
+
+  trait Auth { 
+    def login(id: String, password: String) = {
+      if (check(id, password)) true
+      else {
+        logger.log("login failure for " + id)
+        false
+      }
+    }
+    def check(id: String, password: String): Boolean 
+  }
+
+  val auth: Auth
+
+  class MockAuth(file: String) extends Auth { 
+    val props = new java.util.Properties()
+    props.load(new FileReader(file))
+    def check(id: String, password: String) = props.getProperty(id) == password
+  }
+}
+}}}
+
+
+这里除了`val auth: Auth`是抽象的成员以外，还用自身类型`this: LoggerComponent =>`
+说明了要依赖一个日志组件。
+
+在把这两个组件组成一个单对象时指定它们中抽象成员的具体类型：
+
+{{{class="brush: scala"
+object AppComponents extends LoggerComponent with AuthComponent {
+  val logger = new FileLogger("test.log")
+  val auth = new MockAuth("users.txt")
+}
+}}}
+
+建立一个文件`users.txt`来存用户名密码模拟数据库：
+
+{{{class="brush: bash"
+cay=secret
+}}}
+
+运行测试一下：
+
+{{{class="brush: scala"
+scala> import AppComponents._
+import AppComponents._
+
+scala> if (auth.login("cay", "secret"))
+     |   logger.log("cay is logged in")
+
+scala> println("Look inside test.log")
+Look inside test.log
+}}}
+
+日志内容输出在：`test.log`文件中。
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+== 案例研究：货币 ==
+
+设计一个货币类能处理不同的货币。定义抽象类可以扩展为具体不同的货币。当然第一个
+版本肯定是不完善的：
+
+{{{class="brush: scala"
+  // A first (faulty) design of the Currency class
+  abstract class Currency {
+    val amount: Long
+    def designation: String 
+    override def toString = amount +" "+ designation
+    def + (that: Currency): Currency = ...
+    def * (x: Double): Currency = ...
+  }
+}}}
+
+`amount`和`designation`分别代表金额和表示金额的符号。其他方法还有加法和乘法操作
+。这个版本的问题是，在语法上两个不同的子类可以相加：
+
+{{{class="brush: scala"
+  abstract class Dollar extends Currency {
+    def designation = "USD"
+  }
+  abstract class Euro extends Currency {
+    def designation = "Euro"
+  }
+}}}
+
+这样不同货币的相加是有问题的。所以下一个改进版本用抽象类型来标明末知的类型：
+
+{{{class="brush: scala"
+  abstract class AbstractCurrency {
+    type Currency <: AbstractCurrency
+    val amount: Long
+    def designation: String 
+    override def toString = amount +" "+ designation
+    def + (that: Currency): Currency = ...
+    def * (x: Double): Currency = ...
+  }
+}}}
+
+每个子类都要把`Currency`指定为这个类自身，扩展实现是类似于这样：
+
+{{{class="brush: scala"
+  abstract class Dollar extends AbstractCurrency {
+    type Currency = Dollar
+    def designation = "USD"
+  }
+}}}
+
+这个版本的问题在于加法与乘法的定义。首先想到的把金额转为正确类型的货币的方法可能
+是这样的：
+
+{{{class="brush: scala"
+  def + (that: Currency): Currency = new Currency {
+    val amount = this.amount + that.amount
+  }
+}}}
+
+但这通不过编译，因为Scala不能用抽象类型`new`出实例来，即使是作为其他类型的父类：
+
+{{{class="brush: scala"
+  error: class type required
+    def + (that: Currency): Currency = new Currency {
+}}}
+
+使用工厂方法是个解决方案：用声明抽象方法代替直接创建抽象类的实例：
+
+{{{class="brush: scala"
+  abstract class AbstractCurrency {
+    type Currency <: AbstractCurrency // abstract type
+    def make(amount: Long): Currency  // factory method
+    ...                               // rest of class
+  }
+}}}
+
+但这样有别的问题，因为这样不得不把工厂方法放到`AbstractCurrency`类中，所有的实例
+都可以调用`make`方法，也就都有了创建货币的能力：
+
+{{{class="brush: scala"
+  myDollar.make(100)  // here are a hundred more!
+}}}
+
+所以把工厂方法移到一个新的类中，新的类叫`CurrencyZone`。把`AbstractCurrency`和
+`Currency`也作为它的内部类：
+
+{{{class="brush: scala"
+  abstract class CurrencyZone {
+    type Currency <: AbstractCurrency
+    def make(x: Long): Currency
+    abstract class AbstractCurrency {
+      val amount: Long
+      def designation: String 
+      override def toString = amount +" "+ designation
+      def + (that: Currency): Currency = 
+        make(this.amount + that.amount)
+      def * (x: Double): Currency = 
+        make((this.amount * x).toLong)
+    }
+  }
+}}}
+
+这样按不同货币来扩展：
+
+{{{class="brush: scala"
+  object US extends CurrencyZone {
+    abstract class Dollar extends AbstractCurrency {
+      def designation = "USD"
+    }
+    type Currency = Dollar
+    def make(x: Long) = new Dollar { val amount = x }
+  }
+}}}
+
+`US`中定义了类`Dollar`。它的类型是`US.Dollar`。
+
+继续改进设计：关于单位，单位不仅是美元，还有美分。所以让`amount`以美分为单位比较
+合适。所以用多一个字段`CurrencyUnit`记录单位：
+
+{{{class="brush: scala"
+  class CurrencyZone { 
+    ... 
+    val CurrencyUnit: Currency 
+  } 
+}}}
+
+子类里再加上两个方法直接把1美元代表100美分的逻辑描述出来：
+
+{{{class="brush: scala"
+  object US extends CurrencyZone {
+    abstract class Dollar extends AbstractCurrency {
+      def designation = "USD"
+    }
+    type Currency = Dollar
+    def make(cents: Long) = new Dollar {
+      val amount = cents
+    }
+    val Cent = make(1)
+    val Dollar = make(100)
+    val CurrencyUnit = Dollar
+  }
+}}}
+
+还有显示问题，用多数内部类型上都带的`format`方法格式化美元与美分的小数显示，如
+`10.23 USD`：
+
+{{{class="brush: scala"
+    ((amount.toDouble / CurrencyUnit.amount.toDouble)
+     formatted ("%."+ decimals(CurrencyUnit.amount) +"f")
+     +" "+ designation)
+}}}
+
+输出字符的长度是通过`decimals`方法得出的。`decimals`方法返回十进制数字所要占用的
+字符长度。如对于`decimals(10)`代表0到9，会占用一个字符，而`decimals(100)`是0到99
+会占用两个字符。`decimals`方法通过简单递归实现：
+
+{{{class="brush: scala"
+  private def decimals(n: Long): Int = 
+    if (n == 1) 0 else 1 + decimals(n / 10)
+}}}
+
+相对的看一下欧元的实现：
+
+{{{class="brush: scala"
+  object Europe extends CurrencyZone {
+    abstract class Euro extends AbstractCurrency {
+      def designation = "EUR"
+    }
+    type Currency = Euro
+    def make(cents: Long) = new Euro {
+      val amount = cents
+    }
+    val Cent = make(1)
+    val Euro = make(100)
+    val CurrencyUnit = Euro
+  }
+
+  object Japan extends CurrencyZone {
+    abstract class Yen extends AbstractCurrency {
+      def designation = "JPY"
+    }
+    type Currency = Yen
+    def make(yen: Long) = new Yen {
+      val amount = yen
+    }
+    val Yen = make(1)
+    val CurrencyUnit = Yen
+  }
+}}}
+
+再改进一下，增加汇率的功能。先用一个新的对象来记录汇率：
+
+{{{class="brush: scala"
+  object Converter {
+    var exchangeRate = Map(
+      "USD" -> Map("USD" -> 1.0   , "EUR" -> 0.7596, 
+                   "JPY" -> 1.211 , "CHF" -> 1.223),
+      "EUR" -> Map("USD" -> 1.316 , "EUR" -> 1.0   , 
+                   "JPY" -> 1.594 , "CHF" -> 1.623),
+      "JPY" -> Map("USD" -> 0.8257, "EUR" -> 0.6272, 
+                   "JPY" -> 1.0   , "CHF" -> 1.018),
+      "CHF" -> Map("USD" -> 0.8108, "EUR" -> 0.6160, 
+                   "JPY" -> 0.982 , "CHF" -> 1.0  )
+    )
+  }
+}}}
+
+在货币中增加根据汇率来转换的功能。接收一个外币类型，把自己的金额转成这个外币的
+金额：
+
+{{{class="brush: scala"
+  def from(other: CurrencyZone#AbstractCurrency): Currency = 
+    make(Math.round(
+      other.amount.toDouble * Converter.exchangeRate
+        (other.designation)(this.designation)))
+}}}
+
+参数是末知的`CurrencyZone#AbstractCurrency`，所以能处理任意外币类型。
+
+全部的货币代码，假设都放在`org.stairwaybook.currencies`包中：
+
+{{{class="brush: scala"
+  abstract class CurrencyZone {
+
+    type Currency <: AbstractCurrency
+    def make(x: Long): Currency
+
+    abstract class AbstractCurrency {
+
+      val amount: Long
+      def designation: String 
+
+      def + (that: Currency): Currency = 
+        make(this.amount + that.amount)
+      def * (x: Double): Currency = 
+        make((this.amount * x).toLong)
+      def - (that: Currency): Currency = 
+        make(this.amount - that.amount)
+      def / (that: Double) = 
+        make((this.amount / that).toLong)
+      def / (that: Currency) = 
+        this.amount.toDouble / that.amount
+
+      def from(other: CurrencyZone#AbstractCurrency): Currency = 
+        make(Math.round(
+          other.amount.toDouble * Converter.exchangeRate
+            (other.designation)(this.designation)))
+
+      private def decimals(n: Long): Int = 
+        if (n == 1) 0 else 1 + decimals(n / 10)
+
+      override def toString = 
+        ((amount.toDouble / CurrencyUnit.amount.toDouble)
+         formatted ("%."+ decimals(CurrencyUnit.amount) +"f")
+         +" "+ designation)
+    }
+
+    val CurrencyUnit: Currency
+  }
+}}}
+
+调用的例子：
+
+{{{class="brush: scala"
+  scala> import org.stairwaybook.currencies._
+
+  scala> Japan.Yen from US.Dollar * 100
+  res16: Japan.Currency = 12110 JPY
+
+  scala> Europe.Euro from res16
+  res17: Europe.Currency = 75.95 EUR
+
+  scala> US.Dollar from res17
+  res18: US.Currency = 99.95 USD
+}}}
+
+相同类型的货币可以相加，不同类型的不可以相加：
+
+{{{class="brush: scala"
+  scala> US.Dollar * 100 + res18
+  res19: currencies.US.Currency = 199.95
+
+
+  scala> US.Dollar + Europe.Euro
+  <console>:7: error: type mismatch;
+   found   : currencies.Europe.Euro
+   required: currencies.US.Currency
+         US.Dollar + Europe.Euro
+                            ^
+}}}
+
+类型抽象实现了不同货币不能相加的功能。像是1999年9月23日，混用英制单位和公制单位
+引起的火星航天器坠毁事件不会再重演了。
+
 
 
 
@@ -12993,7 +14713,10 @@ scala> val chars: List[Char] = "xyz"
   }
 }}}
 
-= 高级类型应用 =
+
+
+
+= 泛型与类型转换高级应用 =
 
 == 多重界定 ==
 
@@ -13500,1133 +15223,190 @@ scala>   res.map(println(_))
 }}}
 
 
-== 实例类型 ==
 
-如果一个方法返回当前对象的引用`this`，那就可以把方法的调用串起来写：
+== 存在类型 ==
 
-{{{class="brush: scala; highlight:[4,5,14]"
-scala> class Document {
-     |   private var title = ""
-     |   private var author = ""
-     |   def setTitle(title: String) = { this.title = title; this }
-     |   def setAuthor(author: String) = { this.author = author; this }
-     |   override def toString = getClass.getName + "[title=" + title +
-     |     ",author=" + author + "]"
-     | }
-defined class Document
+所有Java类型在Scala中都有对等的概念。一般的类型可以用同名的类型表示，如：
 
-scala> val doc = new Document
-doc: Document = Document[title=,author=]
+* Java中的`Pattern`对应Scala里的`Pattern`
+* Java中的`Iterator<Component>`对应Scala里的`Iterator[Component]`
 
-scala> doc.setTitle("Scala for the Impatient").setAuthor("Cay Horstmann")
-res0: Document = Document[title=Scala for the Impatient,author=Cay Horstmann]
-}}}
+但是像是Java里的`Iterator<?>`或`Iterator<? extends Component>`这样的通配符类型
+或是`Iterator`这样没有参数的原始类型要用到一种额外的叫作“存在类型”的类型来表示。
 
-但是如果`Document`的子类`Book`的话，那就会有问题了：
-
-{{{class="brush: scala; highlight:[4]"
-scala> class Book extends Document {
-     |   private var chapters = new scala.collection.mutable.ArrayBuffer[String]
-     |   def addChapter(chapter: String) = { chapters += chapter; this }
-     |   override def toString = super.toString + "[chapters=" + chapters + "]"
-     | }
-defined class Book
-
-scala> val book = new Book
-book: Book = Book[title=,author=][chapters=ArrayBuffer()]
-
-scala> book.setTitle("scala for the Impatient").addChapter("Chap I")
-<console>:11: error: value addChapter is not a member of Document
-              book.setTitle("scala for the Impatient").addChapter("Chap I")
-                                                       ^
-}}}
-
-因为方法`setTitle()`是父类`Document`的方法，返回类型也被绑定为父类。
-
-
-解决方法：对于任何引用`v`调用`v.type`可以取得引用的类型。值可能是`v`或`null`。
-这里声明`setTitle()`的返回类型为`this.type`：
-
-
-{{{class="brush: scala; highlight: [4,5,18]"
-class Document {
-  private var title = ""
-  private var author = "" 
-  def setTitle(title: String): this.type = { this.title = title; this }
-  def setAuthor(author: String): this.type = { this.author = author; this }
-  override def toString = getClass.getName + "[title=" + title + ",author=" + 
-	  author + "]"
-}
-
-class Book extends Document {
-  private var chapters = new scala.collection.mutable.ArrayBuffer[String]
-  def addChapter(chapter: String) = { chapters += chapter; this }
-  override def toString = super.toString + "[chapters=" + chapters + "]"
-}
-
-object Main extends App {
-  val book = new Book
-  book.setTitle("Scala for the Impatient").addChapter("Chapter 1 ...") 
-  println(book)
-}
-}}}
-
-== 单例类型 ==
-
-单例对象也可以通过`type`取得它的类型：
-
-{{{class="brush: scala; highlight: [6]"
-object Title // This object is used an an argument for a fluent interface
-
-class Document {
-  private var title = ""
-  private var useNextArgAs: Any = null
-  def set(obj: Title.type): this.type = { useNextArgAs = obj; this }
-  def to(arg: String) = if (useNextArgAs == Title) title = arg;
-  override def toString = getClass.getName + "[title=" + title + "]"
-}
-
-val book = new Document
-}}}
-
-注意是`Title.type`而不是`Title`，`Title`是一个单例对象，不是类型。
-
-调用时：
+存在类型是Scala语言所支持的特性，但实际上它的作用是用于从Scala访问Java类型。主要
+用途是当Scala访问Java时能够理解编译器报错的信息。存在类型的通用形式如下：
 
 {{{class="brush: scala"
-scala> book.set(Title).to("Scala for the Impatient")
-
-scala> println(book)
-$line4.$read$$iw$$iw$Document[title=Scala for the Impatient]
+  type forSome { declarations }
 }}}
 
-可以写在更加接近人类语言的：
+`type`是任意的Scala类型，`declarations`是一个抽象的`val`和`type`列表。这个定义
+可以解读为：声明的变量和类型是存在但未知的，正如类中的抽象成员那样。这个类型进而
+被允许引用这些声明的变量和类型，虽然编译器不知道具体是什么类。
+
+看一个具体的例子，Java中的`Iterator<?>`可以在Scala中写为：
 
 {{{class="brush: scala"
-scala> book set Title to "Scala for the Impatient"
-
-scala> println(book)
-$line4.$read$$iw$$iw$Document[title=Scala for the Impatient]
+Iterator[T] forSome { type T }
 }}}
 
+相当于前面的类型通配符：
 
 {{{class="brush: scala"
+Iterator[_]
 }}}
 
+其实类型通配符就是存在类型的一个语法糖。
 
-{{{class="brush: scala"
+Java中的：
+
+{{{class="brush: java"
+Iterator<? extends Component>
 }}}
 
+在Scala中写为存在类型结合指定上界和下界的方式：
 
 {{{class="brush: scala"
+Iterator[T] forSome { type T <: Component }
 }}}
 
+相当于前面的类型通配符：
 
 {{{class="brush: scala"
+Iterator[_ <: Component]
 }}}
 
+还可以有更加复杂的表示法，如：
 
 {{{class="brush: scala"
+map[T, U] forSome { type T; type U <: T }
 }}}
 
+还可以在`forSome`块中使用`val`声明因为`val`是可以有内部类的。以类型：
 
 {{{class="brush: scala"
-}}}
+import scala.collection.mutable.ArrayBuffer
 
+class Network {
 
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-{{{class="brush: scala"
-}}}
-
-
-
-
-
-
-
-
-
-
-
-= 抽象成员 =
-
-Scala中不仅可以指定方法为抽象，还可以声明字段甚至抽象类型为类和特质的成员。
-
-== 抽象成员的快速浏览 ==
-
-在特质中分别对类型（T）、方法（transform）、val（initial）、var（current）的
-抽象声明做出了一个例子：
-
-{{{class="brush: scala"
-  trait Abstract {
-    type T
-    def transform(x: T): T
-    val initial: T
-    var current: T
+  class Member(val name: String) {
+    // ...
   }
-}}}
-
-实现：
-
-{{{class="brush: scala"
-  class Concrete extends Abstract {
-    type T = String
-    def transform(x: String) = x + x
-    val initial = "hi"
-    var current = initial
-  }
-}}}
-
-== 类型成员 ==
-
-（略）
-
-== 抽象val ==
-
-val是不可变的，抽象的val指定了类型与变量名，不指定值：
-
-{{{class="brush: scala"
-  val initial: String
-}}}
-
-实现时指定值：
-
-{{{class="brush: scala"
-  val initial = "hi"
-}}}
-
-如果不知道类中定义的确切内容，但是确定对于每个实例来说值都是不可变的。在这样的
-情况下可以使用抽象的val声明。
-
-可以注意到，抽象val的格式非常类似于下面的抽象无参数方法声明：
-
-{{{class="brush: scala"
-  def initial: String
-}}}
-
-客户代码将使用统一的`obj.initial`方法引用val及方法。如果`initial`是抽象val，那么
-客户就可以保证每次引用都将得到同样的值。如果`initial`是抽象方法那就无法保证，
-因为在不同的实现中`initial`可以被实现为每次调用都返回不同的值。
-
-换句话说抽象的val限制了合法实现的方式：任何实现都必须是`val`类型的定义不可以是
-`var`。另一方面，抽象方法声明可以被实现为具体的方法定义或具体的`val`定义。
-
-所以在下面的代码中，`Apple`是合法的子类而`BadApple`不是：
-
-{{{class="brush: scala"
-  abstract class Fruit {
-    val v: String // `v' for value
-    def m: String // `m' for method
-  }
-
-  abstract class Apple extends Fruit {
-    val v: String
-    val m: String // OK to override a `def' with a `val'
-  }
-
-  abstract class BadApple extends Fruit {
-    def v: String // ERROR: cannot override a `val' with a `def'
-    def m: String
-  }
-}}}
-
-== 抽象var ==
-
-在特质里使用，只声明类型与名称，没有初始值：
-
-{{{class="brush: scala"
-  trait AbstractTime {
-    var hour: Int
-    var minute: Int
-  }
-}}}
-
-也会有自动扩展的`getter`与`setter`方法，上面的代码相当于：
-
-{{{class="brush: scala"
-  trait AbstractTime {
-    def hour: Int          // getter for `hour'
-    def hour_=(x: Int)     // setter for `hour'
-    def minute: Int        // getter for `minute'
-    def minute_=(x: Int)   // setter for `minute'
-  }
-}}}
-
-== 初始化抽象val ==
-
-结合特质来使用，抽象val可以让子类扩展提供父类没有的参数与细节。因为特质缺省能
-用来传递参数的构造器。
-
-拿前面的实数类来作例子，以下特质：
-
-{{{class="brush: scala"
-  trait RationalTrait { 
-    val numerArg: Int 
-    val denomArg: Int 
-  } 
-}}}
-
-为了实例化这个特质，先要实现val。在这里我们要用到新的`new`语法结构：
-
-{{{class="brush: scala"
-  new RationalTrait {
-    val numerArg = 1
-    val denomArg = 2
-  }
-}}}
-
-上面的代码会产混入了特质的匿名类实例，类似于`new Rational(1, 2)`。当然区别还是
-有的：
-
-{{{class="brush: scala"
-  new Rational(expr1, expr2)
-}}}
-
-上面的两个表达式会在类初始化前计算，而相反的：
-
-{{{class="brush: scala"
-  new RationalTrait {
-    val numerArg = expr1
-    val denomArg = expr2
-  }
-}}}
-
-上面的两个表达式会作为匿名类初始化的一部分计算。而匿名类初始化在`RationalTrait`
-之后执行，所以`numerArg`和`denomArg`的值在`RationalTrait`初始化期间还没有准备好
-，都是`Int`类型的默认值`0`。
-
-所以对下面的代码来说，这会成为一个问题，因为其中定义了经过约分后的分子与分母：
-
-{{{class="brush: scala"
-  trait RationalTrait { 
-    val numerArg: Int 
-    val denomArg: Int 
-    require(denomArg != 0)
-    private val g = gcd(numerArg, denomArg)
-    val numer = numerArg / g
-    val denom = denomArg / g
-    private def gcd(a: Int, b: Int): Int = 
-      if (b == 0) a else gcd(b, a % b)
-    override def toString = numer +"/"+ denom
-  }
-}}}
-
-如果尝试使用某种分子和分母的表达式而不是简单的字面量实例化这个特质，会引起以下
-错误：
-
-{{{class="brush: scala"
-  scala> val x = 2
-  x: Int = 2
-
-  scala> new RationalTrait {
-       |   val numerArg = 1 * x
-       |   val denomArg = 2 * x
-       | }
-  java.lang.IllegalArgumentException: requirement failed
-          at scala.Predef$.require(Predef.scala:107)
-          at RationalTrait$class.$init$(<console>:7)
-          at $anon$1.<init>(<console>:7)
-          ....
-}}}
-
-解决方案有两个，分别是预初始化字段和懒加载val。
-
-
-=== 预初始化字段 ===
-
-==== 用于匿名类实例 ====
-
-给字段定义加上花括号，放在超类的构造器之前：
-
-{{{class="brush: scala"
-  scala> new { 
-       |   val numerArg = 1 * x
-       |   val denomArg = 2 * x 
-       | } with RationalTrait
-  res15: java.lang.Object with RationalTrait = 1/2
-}}}
-
-==== 用于类 ====
-
-不仅匿名类可以用预加载，有名称的类和单例对象也可以。
-
-注意要放在关键字`extends`后面：
-
-{{{class="brush: scala"
-  object twoThirds extends {
-    val numerArg = 2
-    val denomArg = 3
-  } with RationalTrait
-}}}
-
-由于预初始化的字段的超类构造器调用前被初始化，所以不能引用正在被构造的对象。所以
-对于`this`实际指向的是正被构造的类或对象的对象，而来是被构造的对象本身：
-
-{{{class="brush: scala"
-  scala> new {
-     |   val numerArg = 1
-     |   val denomArg = this.numerArg * 2
-     | } with RationalTrait
-  <console>:8: error: value numerArg is not a
-       member of object $iw
-           val denomArg = this.numerArg * 2
-                               ^
-}}}
-
-因为实例还没有构建完成，所以会报错。`$iw`是合成对象，解释器把用户输出语句放在
-这个对象中。
-
-{{{class="brush: scala"
-  class RationalClass(n: Int, d: Int) extends {
-    val numerArg = n
-    val denomArg = d
-  } with RationalTrait {
-    def + (that: RationalClass) = new RationalClass(
-      numer * that.denom + that.numer * denom,
-      denom * that.denom
-    )
-  }
-}}}
-
-
-
-=== 懒加载val ===
-
-懒加载让表达式在`val`第一次被使用的时候才计算机。格式为把`lazy`修饰加在`val`上。
-
-普通情况下初始化与类初始化一起的：
-
-{{{class="brush: scala"
-  scala> object Demo {
-       |   val x = { println("initializing x"); "done" }
-       | }
-  defined module Demo
-
-
-  scala> Demo
-  initializing x
-  res19: Demo.type = Demo$@97d1ff
-
-  scala> Demo.x
-  res20: java.lang.String = done
-}}}
-
-使用了懒加载以后，`val`的初始化延迟到第一次使用时：
-
-{{{class="brush: scala"
-  scala> object Demo {
-       |   lazy val x = { println("initializing x"); "done" }
-       | }
-  defined module Demo
-
-  scala> Demo
-  res21: Demo.type = Demo$@d81341
-
-  scala> Demo.x
-  initializing x
-  res22: java.lang.String = done
-}}}
-
-上面的情况有点像是用`def`把`x`定义为一个无参的方法，不同于`def`的是计算只进行一次。
-
-通过上面两个例子可以看出，单例对象的初始化也很像懒加载。它们在第一次被使用时进行
-初始化。
-
-通过懒加载重新实现`RationalTrait`，与前一版本的主要变化是`require`子句从特质的
-方法体移动到了计算`numerArg`和`denomArg`最大公约数的私有字段`g`的初始化器中。
-所以这个版本中`LazyRationalTrait`初始化器已经用不干啥事儿了：
-
-{{{class="brush: scala"
-  trait LazyRationalTrait { 
-    val numerArg: Int 
-    val denomArg: Int 
-    lazy val numer = numerArg / g
-    lazy val denom = denomArg / g
-    override def toString = numer +"/"+ denom
-    private lazy val g = {
-      require(denomArg != 0)
-      gcd(numerArg, denomArg)
-    }
-    private def gcd(a: Int, b: Int): Int = 
-      if (b == 0) a else gcd(b, a % b)
-  }
-
-
-  scala> val x = 2
-  x: Int = 2
-
-  scala> new LazyRationalTrait {
-       |   val numerArg = 1 * x
-       |   val denomArg = 2 * x
-       | }
-  res1: java.lang.Object with LazyRationalTrait = 1/2
-}}}
-
-在特质中的两个懒加载对象`number`和`denom`是在`toString`方法调用时才初始化。计算
-它们的表达式要用到同样是懒加载的`g`。
-
-应用懒加载还是要注意副作用，在有副作用的情况下跟踪加载顺序是很重要的事情。
-无副作用的纯函数式应用配合懒加载是相当合适的。
-
-懒加载并不是没有额外的开销，对于每次访问都会有一个方法被调用。这个方法会以线程
-安全的方式检查该值是否已经被初始化。
-
-== 抽象类型 ==
-
-抽象类型声明`type T`应用在尚不可知的类型上，不同的子类可以提供不同的`T`实现。
-
-以一个动物食性的例子来解释应用环境，动物吃食物：
-
-{{{class="brush: scala"
-  class Food
-  abstract class Animal {
-    def eat(food: Food)
-  }
-}}}
-
-会在想让它们的子类牛吃草时遇到麻烦。`eat`方法不能重写，因为参数不能从`Food`转为
-子类`Grass`：
-
-{{{class="brush: scala"
-  class Grass extends Food
-  class Cow extends Animal {
-    override def eat(food: Grass) {} // This won't compile
-  }
-
-  BuggyAnimals.scala:7: error: class Cow needs to be
-  abstract, since method eat in class Animal of type
-      (Food)Unit is not defined
-  class Cow extends Animal {
-        ^
-  BuggyAnimals.scala:8: error: method eat overrides nothing
-    override def eat(food: Grass) {}
-                 ^
-}}}
-
-这样看来类型检查太严格了，应但是如果许子类的话又会失去类型检验保障。比如说喂牛
-吃鱼：
-
-{{{class="brush: scala"
-  class Food
-  abstract class Animal {
-    def eat(food: Food)
-  }
-  class Grass extends Food
-  class Cow extends Animal {
-    override def eat(food: Grass) {} // This won't compile,
-  }                                  // but if it did,...
-  class Fish extends Food
-  val bessy: Animal = new Cow
-  bessy eat (new Fish)     // ...you could feed fish to cows.
-}}}
-
-更加精确的方式是能按不同的动物决定食物的种类，父类中指定动物只能吃食物：
-
-{{{class="brush: scala"
-  class Food
-  abstract class Animal {
-    type SuitableFood <: Food
-    def eat(food: SuitableFood)
-  }
-}}}
-
-`SuitableFood`被定义为抽象类，而且有上界`Food`。以后动物类中指定具体的食物子类：
-
-{{{class="brush: scala"
-  class Grass extends Food
-  class Cow extends Animal {
-    type SuitableFood = Grass
-    override def eat(food: Grass) {}
-  }
-}}}
-
-现在得到了比较合适的类型检查：
-
-{{{class="brush: scala"
-  scala> class Fish extends Food
-  defined class Fish
-
-  scala> val bessy: Animal = new Cow
-  bessy: Animal = Cow@674bf6
-
-  scala> bessy eat (new Fish)
-  <console>:10: error: type mismatch;
-   found   : Fish
-   required: bessy.SuitableFood
-         bessy eat (new Fish)
-                    ^
-}}}
-
-
-
-== 路径依赖类型 ==
-
-看一下前面例子的最后一条错误信息。它说明需要的类型是`bessy.SuitableFood`，这里的
-`SuitableFood`是`bessy`引用的对象的成员。
-
-这样的类型被称为路径依赖类型，路径指的是对象的引用。不同路径将产不同的类型：
-
-{{{class="brush: scala"
-  class DogFood extends Food
-  class Dog extends Animal {
-    type SuitableFood = DogFood
-    override def eat(food: DogFood) {}
-  }
-
-  scala> val bessy = new Cow
-  bessy: Cow = Cow@10cd6d
-
-  scala> val lassie = new Dog
-  bootsie: Dog = Dog@d11fa6
-
-  scala> lassie eat (new bessy.SuitableFood)
-  <console>:13: error: type mismatch;
-   found   : Grass
-   required: DogFood
-         lassie eat (new bessy.SuitableFood)
-                     ^
-}}}
-
-`bessy.SuitableFood`不能匹配`lassie.SuitableFood`，但如果同样是`Dog`的话，情况又
-不同。因为`Dog`的`SuitableFood`被定义为`DogFood`类的别名，所以实际上是一样的：
-
-{{{class="brush: scala"
-  scala> val bootsie = new Dog
-  bootsie: Dog = Dog@54ca71
-
-  scala> lassie eat (new bootsie.SuitableFood)
-}}}
-
-=== 与Java内部类的区别 ===
-
-路径依赖有点像Java里的内部类，但区别是：路径依赖表达了外在的对象，而内部类表达了
-外在的类。Java的内部类在Scala表达为两个类：
-
-{{{class="brush: scala"
-  class Outer {
-    class Inner
-  }
-}}}
-
-与Java的`Outer.Inner`不同，Scala中表达为`Outer#Inner`。
-
-总之，要注意。路径依赖是在对象中的类，而不是Java那样类中的类。
-
-`.`语法留给对象使用：
-
-{{{class="brush: scala"
-  val o1 = new Outer
-  val o2 = new Outer
-}}}
-
-虽然`o1.Inner`和`o2.Inner`是不同的两个路径依赖类型，但两个都能匹配更加通用的
-`Outer#Inner`。
-
-和Java中一样，Scala的内部类实例也有对外部类实例的引用。所以不能只有内部类实例而
-没有外部类实例。有两个方式实例化内部类：
-
-* 直接在外部类方法体中实例化，这样可以用`this`引用外部类对象。
-* 使用路径依赖类型。如`o1.Inner`。返回的内部类有对`01`的引用。例子如下：
-
-{{{class="brush: scala"
-  scala> new o1.Inner
-  res1: o1.Inner = Outer$Inner@13727f
-}}}
-
-相对的，类型`Outer#Inner`是没有指向对象的引用的，所以不能创建它的实例：
-
-{{{class="brush: scala"
-  scala> new Outer#Inner
-  <console>:6: error: Outer is not a legal prefix for
-    a constructor
-         new Outer#Inner
-                   ^
-}}}
-
-
-== 枚举对象 ==
-
-Scala没有枚举类，而是用标准库中的工具类`scala.Enumeration`用来扩展实现枚举对象：
-
-{{{class="brush: scala"
-  object Color extends Enumeration {
-    val Red = Value
-    val Green = Value
-    val Blue = Value
-  }
-}}}
-
-注意：枚举是和路径依赖一样，是对象中的类，不是类中的类。
-
-还可以简化：
-
-{{{class="brush: scala"
-  object Color extends Enumeration {
-    val Red, Green, Blue = Value
-  }
-}}}
-
-可以`Color`的全部成员，然后直接写颜色名：
-
-{{{class="brush: scala"
-  import Color._
-}}}
-
-前面定义的`Red`、`Green`和`Blue`这些值的类型为`Enumeration`定义的内部类，名为
-`Value`。同名无参数方法`Value`返回该类的新对象，即`Color.Red`类的值类型是
-`Color.Value`。而且是依赖路径的。如：
-
-{{{class="brush: scala"
-  object Direction extends Enumeration {
-    val North, East, South, West = Value
-  }
-}}}
-
-上面就定义了一个完全不同的类型，因为路径不同。`Direction`与`Color`的`Value`也是
-不同的类。
-
-=== 枚举的类型 ===
-
-注意枚举的类型是`Direction.Value`而不是`Direction`。`Direction`是持有这些值的
-单例对象。有些人推荐增加一个类型的别名：
-
-{{{class="brush: scala"
-  object Direction extends Enumeration {
-		type Direction = Value
-    val North, East, South, West = Value
-  }
-}}}
-
-这样类型就从`Direction.Value`增加一个别名`Direction.Direction`。虽然还是又长又
-啰嗦，但是在`import Direction._`以后可以只写`Direction`：
-
-{{{class="brush: scala"
-import Direction._
-
-def func01(direction: Direction) = {
-	if (direction == West)
-		"stop"
-	else
-		"keep moving"
+  
+  // ...
+  
 }
 }}}
 
-=== 枚举值 ===
-
-枚举的值默认从`0`开始增加，用成员方法`id`可以取出值：
+为例，可以用这样的形式：
 
 {{{class="brush: scala"
-  scala> Direction.East.id
-  res5: Int = 1
+m.Member forSome { val n: Network }
 }}}
 
-反过来也可以通过非零整数取得`id`：
+这里就完全等同于类型投影：
 
 {{{class="brush: scala"
-  scala> Direction(1)
-  res6: Direction.Value = East
+Network#member
 }}}
 
-当然想指定`id`也可以：
+但也会有更复杂的情况：
 
 {{{class="brush: scala"
-object Direction extends Enumeration {
-  val North = Value(10)
-  val East = Value(20)
-  val South = Value(30)
-  val West = Value(40)
-}
+def process[M <: n.Member forSome { val n: Network }](m1: M, m2: M) = (m1, m2)
 }}}
 
-还可以重载`Value`方法把名称与值对应起来：
+这个方法只接收同一实例子类的成员：
 
 {{{class="brush: scala"
-object Direction extends Enumeration {
-  val North = Value(10,"North")
-  val East = Value(20,"East")
-  val South = Value(30,"South")
-  val West = Value(40,"West")
-}
+val chatter = new Network
+val myFace = new Network
+val fred = chatter.join("Fred")
+val wilma = chatter.join("Wilma")
+val barney = myFace.join("Barney")
+process(fred, wilma) // Ok
+process(fred, barney) // Error
 }}}
 
-直接通过`toString`方法就可以取得枚举的名称：
+存在类型对于对于简单的用例来说，可以当`forSome`不存在。虽然`forSome`语句中的类型
+和值是未知的，Scala还是会检查程序是否完备。举例来说，对于以下的Java类：
 
-{{{class="brush: scala"
-  scala> for (d <- Direction) print(d +" ")
-  North East South West 
-}}}
-
-也可以通过`withName`方法通过名称得到枚举：
-
-{{{class="brush: scala"
-Direction.withName("West")
-}}}
-
-
-
-== 案例研究：货币 ==
-
-设计一个货币类能处理不同的货币。定义抽象类可以扩展为具体不同的货币。当然第一个
-版本肯定是不完善的：
-
-{{{class="brush: scala"
-  // A first (faulty) design of the Currency class
-  abstract class Currency {
-    val amount: Long
-    def designation: String 
-    override def toString = amount +" "+ designation
-    def + (that: Currency): Currency = ...
-    def * (x: Double): Currency = ...
-  }
-}}}
-
-`amount`和`designation`分别代表金额和表示金额的符号。其他方法还有加法和乘法操作
-。这个版本的问题是，在语法上两个不同的子类可以相加：
-
-{{{class="brush: scala"
-  abstract class Dollar extends Currency {
-    def designation = "USD"
-  }
-  abstract class Euro extends Currency {
-    def designation = "Euro"
-  }
-}}}
-
-这样不同货币的相加是有问题的。所以下一个改进版本用抽象类型来标明末知的类型：
-
-{{{class="brush: scala"
-  abstract class AbstractCurrency {
-    type Currency <: AbstractCurrency
-    val amount: Long
-    def designation: String 
-    override def toString = amount +" "+ designation
-    def + (that: Currency): Currency = ...
-    def * (x: Double): Currency = ...
-  }
-}}}
-
-每个子类都要把`Currency`指定为这个类自身，扩展实现是类似于这样：
-
-{{{class="brush: scala"
-  abstract class Dollar extends AbstractCurrency {
-    type Currency = Dollar
-    def designation = "USD"
-  }
-}}}
-
-这个版本的问题在于加法与乘法的定义。首先想到的把金额转为正确类型的货币的方法可能
-是这样的：
-
-{{{class="brush: scala"
-  def + (that: Currency): Currency = new Currency {
-    val amount = this.amount + that.amount
-  }
-}}}
-
-但这通不过编译，因为Scala不能用抽象类型`new`出实例来，即使是作为其他类型的父类：
-
-{{{class="brush: scala"
-  error: class type required
-    def + (that: Currency): Currency = new Currency {
-}}}
-
-使用工厂方法是个解决方案：用声明抽象方法代替直接创建抽象类的实例：
-
-{{{class="brush: scala"
-  abstract class AbstractCurrency {
-    type Currency <: AbstractCurrency // abstract type
-    def make(amount: Long): Currency  // factory method
-    ...                               // rest of class
-  }
-}}}
-
-但这样有别的问题，因为这样不得不把工厂方法放到`AbstractCurrency`类中，所有的实例
-都可以调用`make`方法，也就都有了创建货币的能力：
-
-{{{class="brush: scala"
-  myDollar.make(100)  // here are a hundred more!
-}}}
-
-所以把工厂方法移到一个新的类中，新的类叫`CurrencyZone`。把`AbstractCurrency`和
-`Currency`也作为它的内部类：
-
-{{{class="brush: scala"
-  abstract class CurrencyZone {
-    type Currency <: AbstractCurrency
-    def make(x: Long): Currency
-    abstract class AbstractCurrency {
-      val amount: Long
-      def designation: String 
-      override def toString = amount +" "+ designation
-      def + (that: Currency): Currency = 
-        make(this.amount + that.amount)
-      def * (x: Double): Currency = 
-        make((this.amount * x).toLong)
+{{{class="brush: java"
+  // This is a Java class with wildcards
+  public class Wild {
+    Collection<?> contents() {
+      Collection<String> stuff = new Vector<String>();
+      stuff.add("a");
+      stuff.add("b");
+      stuff.add("see");
+      return stuff;
     }
   }
 }}}
 
-这样按不同货币来扩展：
+如果在Scala中访问这个类，会看到它有一个存在类型：
 
 {{{class="brush: scala"
-  object US extends CurrencyZone {
-    abstract class Dollar extends AbstractCurrency {
-      def designation = "USD"
+  scala> val contents = (new Wild).contents
+  contents: java.util.Collection[?0] forSome { type ?0 } =
+     [a, b, see]
+}}}
+
+要看这个集合里有多少元素，可以简单忽略存在定义部分，像平常一样调用`size`方法：
+
+{{{class="brush: scala"
+  scala> contents.size()
+  res0: Int = 3
+}}}
+
+对于复杂的类型的情况，存在类型会显得笨拙一些。因为没有办法给存在类型命名。以创建
+一个可变Scala类型为例，需要用`contents`的元素初始化它：
+
+{{{class="brush: scala"
+  import scala.collection.mutable.Set
+  val iter = (new Wild).contents.iterator
+  val set = Set.empty[???]     // what type goes here? 这里要用什么类型？
+  while (iter.hasMore)
+    set += iter.next()
+}}}
+
+第三行里没有办法给出Java集合里的元素类型名称，所以不能给出`set`方法的满足类型。
+为了绕过此问题，应该考试如下两种技巧：
+
+1）将存在的类型传入方法时，把类型参数从`forSome`语句移到方法的类型参数中。
+在方法体内，可以用这个类型参数来指定本来在`forSome`语句中的类型。
+
+2）不要从方法返回存在的类型，而是返回一个带有`forSome`语句中的每个类型的抽象成员
+的对象（参见抽象对象一章）。
+
+使用这两个技巧，之前的代码写成这个样子：
+
+{{{class="brush: scala"
+  import scala.collection.mutable.Set
+  import java.util.Collection
+
+  abstract class SetAndType {
+    type Elem
+    val set: Set[Elem]
+  }
+
+  def javaSet2ScalaSet[T](jset: Collection[T]): SetAndType = {
+    val sset = Set.empty[T]  // now T can be named!
+
+    val iter = jset.iterator
+    while (iter.hasNext)
+      sset += iter.next()
+
+    return new SetAndType {
+      type Elem = T
+      val set = sset
     }
-    type Currency = Dollar
-    def make(x: Long) = new Dollar { val amount = x }
   }
 }}}
 
-`US`中定义了类`Dollar`。它的类型是`US.Dollar`。
-
-继续改进设计：关于单位，单位不仅是美元，还有美分。所以让`amount`以美分为单位比较
-合适。所以用多一个字段`CurrencyUnit`记录单位：
-
-{{{class="brush: scala"
-  class CurrencyZone { 
-    ... 
-    val CurrencyUnit: Currency 
-  } 
-}}}
-
-子类里再加上两个方法直接把1美元代表100美分的逻辑描述出来：
-
-{{{class="brush: scala"
-  object US extends CurrencyZone {
-    abstract class Dollar extends AbstractCurrency {
-      def designation = "USD"
-    }
-    type Currency = Dollar
-    def make(cents: Long) = new Dollar {
-      val amount = cents
-    }
-    val Cent = make(1)
-    val Dollar = make(100)
-    val CurrencyUnit = Dollar
-  }
-}}}
-
-还有显示问题，用多数内部类型上都带的`format`方法格式化美元与美分的小数显示，如
-`10.23 USD`：
-
-{{{class="brush: scala"
-    ((amount.toDouble / CurrencyUnit.amount.toDouble)
-     formatted ("%."+ decimals(CurrencyUnit.amount) +"f")
-     +" "+ designation)
-}}}
-
-输出字符的长度是通过`decimals`方法得出的。`decimals`方法返回十进制数字所要占用的
-字符长度。如对于`decimals(10)`代表0到9，会占用一个字符，而`decimals(100)`是0到99
-会占用两个字符。`decimals`方法通过简单递归实现：
-
-{{{class="brush: scala"
-  private def decimals(n: Long): Int = 
-    if (n == 1) 0 else 1 + decimals(n / 10)
-}}}
-
-相对的看一下欧元的实现：
-
-{{{class="brush: scala"
-  object Europe extends CurrencyZone {
-    abstract class Euro extends AbstractCurrency {
-      def designation = "EUR"
-    }
-    type Currency = Euro
-    def make(cents: Long) = new Euro {
-      val amount = cents
-    }
-    val Cent = make(1)
-    val Euro = make(100)
-    val CurrencyUnit = Euro
-  }
-
-  object Japan extends CurrencyZone {
-    abstract class Yen extends AbstractCurrency {
-      def designation = "JPY"
-    }
-    type Currency = Yen
-    def make(yen: Long) = new Yen {
-      val amount = yen
-    }
-    val Yen = make(1)
-    val CurrencyUnit = Yen
-  }
-}}}
-
-再改进一下，增加汇率的功能。先用一个新的对象来记录汇率：
-
-{{{class="brush: scala"
-  object Converter {
-    var exchangeRate = Map(
-      "USD" -> Map("USD" -> 1.0   , "EUR" -> 0.7596, 
-                   "JPY" -> 1.211 , "CHF" -> 1.223),
-      "EUR" -> Map("USD" -> 1.316 , "EUR" -> 1.0   , 
-                   "JPY" -> 1.594 , "CHF" -> 1.623),
-      "JPY" -> Map("USD" -> 0.8257, "EUR" -> 0.6272, 
-                   "JPY" -> 1.0   , "CHF" -> 1.018),
-      "CHF" -> Map("USD" -> 0.8108, "EUR" -> 0.6160, 
-                   "JPY" -> 0.982 , "CHF" -> 1.0  )
-    )
-  }
-}}}
-
-在货币中增加根据汇率来转换的功能。接收一个外币类型，把自己的金额转成这个外币的
-金额：
-
-{{{class="brush: scala"
-  def from(other: CurrencyZone#AbstractCurrency): Currency = 
-    make(Math.round(
-      other.amount.toDouble * Converter.exchangeRate
-        (other.designation)(this.designation)))
-}}}
-
-参数是末知的`CurrencyZone#AbstractCurrency`，所以能处理任意外币类型。
-
-全部的货币代码，假设都放在`org.stairwaybook.currencies`包中：
-
-{{{class="brush: scala"
-  abstract class CurrencyZone {
-
-    type Currency <: AbstractCurrency
-    def make(x: Long): Currency
-
-    abstract class AbstractCurrency {
-
-      val amount: Long
-      def designation: String 
-
-      def + (that: Currency): Currency = 
-        make(this.amount + that.amount)
-      def * (x: Double): Currency = 
-        make((this.amount * x).toLong)
-      def - (that: Currency): Currency = 
-        make(this.amount - that.amount)
-      def / (that: Double) = 
-        make((this.amount / that).toLong)
-      def / (that: Currency) = 
-        this.amount.toDouble / that.amount
-
-      def from(other: CurrencyZone#AbstractCurrency): Currency = 
-        make(Math.round(
-          other.amount.toDouble * Converter.exchangeRate
-            (other.designation)(this.designation)))
-
-      private def decimals(n: Long): Int = 
-        if (n == 1) 0 else 1 + decimals(n / 10)
-
-      override def toString = 
-        ((amount.toDouble / CurrencyUnit.amount.toDouble)
-         formatted ("%."+ decimals(CurrencyUnit.amount) +"f")
-         +" "+ designation)
-    }
-
-    val CurrencyUnit: Currency
-  }
-}}}
-
-调用的例子：
-
-{{{class="brush: scala"
-  scala> import org.stairwaybook.currencies._
-
-  scala> Japan.Yen from US.Dollar * 100
-  res16: Japan.Currency = 12110 JPY
-
-  scala> Europe.Euro from res16
-  res17: Europe.Currency = 75.95 EUR
-
-  scala> US.Dollar from res17
-  res18: US.Currency = 99.95 USD
-}}}
-
-相同类型的货币可以相加，不同类型的不可以相加：
-
-{{{class="brush: scala"
-  scala> US.Dollar * 100 + res18
-  res19: currencies.US.Currency = 199.95
-
-
-  scala> US.Dollar + Europe.Euro
-  <console>:7: error: type mismatch;
-   found   : currencies.Europe.Euro
-   required: currencies.US.Currency
-         US.Dollar + Europe.Euro
-                            ^
-}}}
-
-类型抽象实现了不同货币不能相加的功能。像是1999年9月23日，混用英制单位和公制单位
-引起的火星航天器坠毁事件不会再重演了。
-
-
-
-
-
-
-
+综上所棕，对于Scala来说，用存在类型实现的这么复杂的东西用Scala的抽象类都聚脂实现
+。所以Scala中几乎不用存在类型。
 
 
 
@@ -18731,6 +19511,8 @@ asdfa
 
 
 
+
+
 = 结合Scala与Java =
 
 == 在Java中使用Scala ==
@@ -19074,124 +19856,6 @@ Scala可以直接用：
 还要注意Java注解的限制，比如，注解的参数只能用常量不能用表达式。（可以用
 `@serial(1234)`而不能用`@serial(x*2)`）。
 
-== 存在类型 ==
-
-所有Java类型在Scala中都有对等的概念。一般的类型可以用同名的类型表示，如Java中的
-`Pattern`对应Scala里的`Pattern`、`Iterator<Component>`对应`Iterator[Component]`
-。但是像是Java里的`Iterator<?>`或`Iterator<? extends Component>`这样的通配符类型
-或是`Iterator`这样没有参数的原始类型要用到一种额外的叫作“存在类型”的类型来表示。
-
-存在类型是Scala语言所支持的特性，但实际上它的作用是用于从Scala访问Java类型。
-这一节里会介绍它的工作机制，但它的主要用途是当Scala访问Java时能够理解编译器报错
-的信息。存在类型的通用形式如下：
-
-{{{class="brush: scala"
-  type forSome { declarations }
-}}}
-
-`type`是任意的Scala类型，`declarations`是一个抽象的`val`和`type`列表。这个定义
-可以解读为：声明的变量和类型是存在但未知的，正如类中的抽象成员那样。这个类型进而
-被允许引用这些声明的变量和类型，虽然编译器不知道具体是什么类。
-
-看一个具体的例子，Java中的`Iterator<?>`可以在Scala中写为：
-
-{{{class="brush: scala"
-  Iterator[T] forSome { type T }
-}}}
-
-Java中的`Iterator<? extends Component>`在Scala中写为：
-
-{{{class="brush: scala"
-  Iterator[T] forSome { type T <: Component }
-}}}
-
-还有简写法，`Iterator[T] forSome{type T}`简写为`Iterator[_]`。像占位符一样用`_`
-来组成字面量来表示类型。
-
-指定上界和下界的方式也可以简写，`Iterator[_ <: Component]`相当于：
-
-{{{class="brush: scala"
-  Iterator[T] forSome { type T <: Component }
-}}}
-
-存在类型对于对于简单的用例来说，可以当`forSome`不存在。虽然`forSome`语句中的类型
-和值是未知的，Scala还是会检查程序是否完备。举例来说，对于以下的Java类：
-
-{{{class="brush: scala"
-  // This is a Java class with wildcards
-  public class Wild {
-    Collection<?> contents() {
-      Collection<String> stuff = new Vector<String>();
-      stuff.add("a");
-      stuff.add("b");
-      stuff.add("see");
-      return stuff;
-    }
-  }
-}}}
-
-如果在Scala中访问这个类，会看到它有一个存在类型：
-
-{{{class="brush: scala"
-  scala> val contents = (new Wild).contents
-  contents: java.util.Collection[?0] forSome { type ?0 } =
-     [a, b, see]
-}}}
-
-要看这个集合里有多少元素，可以简单忽略存在定义部分，像平常一样调用`size`方法：
-
-{{{class="brush: scala"
-  scala> contents.size()
-  res0: Int = 3
-}}}
-
-对于复杂的类型的情况，存在类型会显得笨拙一些。因为没有办法给存在类型命名。以创建
-一个可变Scala类型为例，需要用`contents`的元素初始化它：
-
-{{{class="brush: scala"
-  import scala.collection.mutable.Set
-  val iter = (new Wild).contents.iterator
-  val set = Set.empty[???]     // what type goes here? 这里要用什么类型？
-  while (iter.hasMore)
-    set += iter.next()
-}}}
-
-第三行里没有办法给出Java集合里的元素类型名称，所以不能给出`set`方法的满足类型。
-为了绕过此问题，应该考试如下两种技巧：
-
-1）将存在的类型传入方法时，把类型参数从`forSome`语句移到方法的类型参数中。
-在方法体内，可以用这个类型参数来指定本来在`forSome`语句中的类型。
-
-2）不要从方法返回存在的类型，而是返回一个带有`forSome`语句中的每个类型的抽象成员
-的对象（参见抽象对象一章）。
-
-使用这两个技巧，之前的代码写成这个样子：
-
-{{{class="brush: scala"
-  import scala.collection.mutable.Set
-  import java.util.Collection
-
-  abstract class SetAndType {
-    type Elem
-    val set: Set[Elem]
-  }
-
-  def javaSet2ScalaSet[T](jset: Collection[T]): SetAndType = {
-    val sset = Set.empty[T]  // now T can be named!
-
-    val iter = jset.iterator
-    while (iter.hasNext)
-      sset += iter.next()
-
-    return new SetAndType {
-      type Elem = T
-      val set = sset
-    }
-  }
-}}}
-
-综上所棕，对于Scala来说，用存在类型实现的这么复杂的东西用Scala的抽象类都聚脂实现
-。所以Scala中几乎不用存在类型。
 
 
 

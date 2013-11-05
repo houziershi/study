@@ -132,8 +132,7 @@
 <li><a href="#toc_7.5.1">枚举的类型</a>
 <li><a href="#toc_7.5.2">枚举值</a>
 </ul>
-<li><a href="#toc_7.6">复合类型</a>
-<li><a href="#toc_7.7">实例类型与单例类型</a>
+<li><a href="#toc_7.6">实例类型与单例类型</a>
 </ul>
 <li><a href="#toc_8">内建控制结构</a>
 <ul>
@@ -2841,72 +2840,7 @@ Direction.withName("West")
 
 
 
-<h2 id="toc_7.6">复合类型</h2>
-
-<p>
-用<code>Type1 with Type2 with Type</code>声明同时满足多个类型，如：
-</p>
-
-<pre class="brush: scala">
-val image = new ArrayBuffer[java.awt.Shape with java.io.Serializable]
-</pre>
-
-<p>
-存放的成员必须是满足这两个条件的类型，如<code>Rectangle</code>
-</p>
-
-<pre class="brush: scala">
-image += new Rectangle(5, 10, 20, 30) // OK
-image += new Area(rect)               // error Area类型不是Serializable的
-</pre>
-
-<p>
-结构类型也可添加到简单类型或是复合类型的声明中：
-</p>
-
-<pre class="brush: scala">
-val image = new ArrayBuffer[Shape with Serializable { def contains(p: Point): Boolean } ]
-</pre>
-
-<p>
-上面的定义不仅要是<code>Shape</code>和<code>Serializable</code>，还要有一个<code>contains()</code>方法。
-</p>
-
-<p>
-从技术上来说，如下的结构类型：
-</p>
-
-<pre class="brush: scala">
-AnyRef { def append(str: String): Any }
-</pre>
-
-<p>
-可以简写为：
-</p>
-
-<pre class="brush: scala">
-{ def append(str: String): Any }
-</pre>
-
-<p>
-这样的复合类型：
-</p>
-
-<pre class="brush: scala">
-Shape with Serializable {}
-</pre>
-
-<p>
-可以简写为：
-</p>
-
-<pre class="brush: scala">
-Shape with Serializable
-</pre>
-
-
-
-<h2 id="toc_7.7">实例类型与单例类型</h2>
+<h2 id="toc_7.6">实例类型与单例类型</h2>
 
 <p>
 如果一个方法返回当前对象的引用<code>this</code>，那就可以把方法的调用串起来写：

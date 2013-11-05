@@ -2112,55 +2112,6 @@ Direction.withName("West")
 
 
 
-== 复合类型 ==
-
-用`Type1 with Type2 with Type`声明同时满足多个类型，如：
-
-{{{class="brush: scala"
-val image = new ArrayBuffer[java.awt.Shape with java.io.Serializable]
-}}}
-
-存放的成员必须是满足这两个条件的类型，如`Rectangle`
-
-{{{class="brush: scala"
-image += new Rectangle(5, 10, 20, 30) // OK
-image += new Area(rect)               // error Area类型不是Serializable的
-}}}
-
-结构类型也可添加到简单类型或是复合类型的声明中：
-
-{{{class="brush: scala"
-val image = new ArrayBuffer[Shape with Serializable { def contains(p: Point): Boolean } ]
-}}}
-
-上面的定义不仅要是`Shape`和`Serializable`，还要有一个`contains()`方法。
-
-从技术上来说，如下的结构类型：
-
-{{{class="brush: scala"
-AnyRef { def append(str: String): Any }
-}}}
-
-可以简写为：
-
-{{{class="brush: scala"
-{ def append(str: String): Any }
-}}}
-
-这样的复合类型：
-
-{{{class="brush: scala"
-Shape with Serializable {}
-}}}
-
-可以简写为：
-
-{{{class="brush: scala"
-Shape with Serializable
-}}}
-
-
-
 == 实例类型与单例类型 ==
 
 如果一个方法返回当前对象的引用`this`，那就可以把方法的调用串起来写：

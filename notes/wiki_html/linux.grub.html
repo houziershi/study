@@ -29,6 +29,7 @@
 <ul>
 <li><a href="#toc_1.1">启动系统</a>
 <li><a href="#toc_1.2">更新安装Grub</a>
+<li><a href="#toc_1.3">设置默认启动项</a>
 </ul>
 </ul>
 </div>
@@ -78,6 +79,17 @@ $ sudo grub-install /dev/sda
 <p>
 重启应该就OK了。
 </p>
+
+
+<h2 id="toc_1.3">设置默认启动项</h2>
+
+<p>
+位置在：<code>/etc/default/grub</code>
+</p>
+
+<pre class="brush: bash">
+$ sudo update-grub
+</pre>
  </div>
 </body>
 </html>

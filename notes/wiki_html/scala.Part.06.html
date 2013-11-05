@@ -48,6 +48,7 @@
 <li><a href="#toc_1.4.3">使用</a>
 </ul>
 <li><a href="#toc_1.5">存在类型</a>
+<li><a href="#toc_1.6">Scala类型小结</a>
 </ul>
 <li><a href="#toc_2">有状态的对象</a>
 <ul>
@@ -941,15 +942,16 @@ process(fred, barney) // Error
 为了绕过此问题，应该考试如下两种技巧：
 </p>
 
-<p>
-1）将存在的类型传入方法时，把类型参数从<code>forSome</code>语句移到方法的类型参数中。
-在方法体内，可以用这个类型参数来指定本来在<code>forSome</code>语句中的类型。
-</p>
+<ol>
+<li>
+将存在的类型传入方法时，把类型参数从<code>forSome</code>语句移到方法的类型参数中。
+  在方法体内，可以用这个类型参数来指定本来在<code>forSome</code>语句中的类型。
 
-<p>
-2）不要从方法返回存在的类型，而是返回一个带有<code>forSome</code>语句中的每个类型的抽象成员
-的对象（参见抽象对象一章）。
-</p>
+<li>
+不要从方法返回存在的类型，而是返回一个带有<code>forSome</code>语句中的每个类型的抽象成员
+  的对象（参见抽象对象一章）。
+
+</ol>
 
 <p>
 使用这两个技巧，之前的代码写成这个样子：
@@ -978,10 +980,188 @@ process(fred, barney) // Error
   }
 </pre>
 
+
 <p>
-综上所棕，对于Scala来说，用存在类型实现的这么复杂的东西用Scala的抽象类都聚脂实现
-。所以Scala中几乎不用存在类型。
+综上所棕，对于Scala来说，用存在类型实现不如抽象成员实现更加方便。所以Scala中几乎
+不用存在类型。
 </p>
+
+<h2 id="toc_1.6">Scala类型小结</h2>
+
+
+<table>
+<tr>
+<td>
+类型
+</td>
+<td>
+语法
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+------------
+</td>
+<td>
+---------------------------------------
+</td>
+<td>
+--------------
+</td>
+</tr>
+<tr>
+<td>
+类 或 特质
+</td>
+<td>
+<code>class C ...</code> , <code>trait C ...</code>
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+元组
+</td>
+<td>
+<code>(T1, ... , Tn)</code>
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+函数类型
+</td>
+<td>
+<code>(T1, ... , Tn) =&gt; T</code>
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+方法类型
+</td>
+<td>
+<code>(T1, ... , Tn)T</code>
+</td>
+<td>
+编译器内部使用
+</td>
+</tr>
+<tr>
+<td>
+注解
+</td>
+<td>
+<code>T @A</code>
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+参数化类型
+</td>
+<td>
+<code>A[T1, ... , Tn]</code>
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+单例类型
+</td>
+<td>
+<code>value.type</code>
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+类型投影
+</td>
+<td>
+<code>O#I</code>
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+复合类型
+</td>
+<td>
+<code>T1 with T2 with ... with Tn { ... }</code>
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+中置类型
+</td>
+<td>
+<code>T1 A T2</code>
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+存在类型
+</td>
+<td>
+<code>T forSome { type and val }</code>
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+</table>
+
+<p>
+方法类型<code>(T1, ... , Tn)T</code>（与函数类型相比少了<code>=&gt;</code>）一般只在编译器内部使用。
+在REPL中输入函数类型：
+</p>
+
+<pre class="brush: scala">
+scala&gt; val triple = (x: Int) =&gt; 3 * x
+triple: Int =&gt; Int = &lt;function1&gt;
+</pre>
+
+<p>
+而方法类型是这样的：
+</p>
+
+<pre class="brush: scala">
+scala&gt; def square(x: Int) = x * x
+square: (x: Int)Int
+</pre>
+
+<p>
+可以在方法后面加上<code>_</code>可以转为函数类型：
+</p>
+
+<pre class="brush: scala">
+scala&gt; square _
+res0: Int =&gt; Int = &lt;function1&gt;
+</pre>
 
 
 

@@ -40,3 +40,12 @@ $ sudo grub-install /dev/sda
 重启应该就OK了。
 
 
+== 设置默认启动项 ==
+
+位置在：`/etc/default/grub`
+
+{{{class="brush: bash"
+$ sudo update-grub
+}}}
+
+

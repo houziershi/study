@@ -2126,9 +2126,40 @@ class UnhappyFrame extends JFrame with LoggedException
 class UnhappyException extends IOException with LoggedException
 }}}
 
-=== `this`限制混入类 ===
 
-`this: Type =>`限制特质只能被混入指定类型的子类：
+== 保证特质能调用到需要的方法 ==
+
+以记录异常log为例：
+
+{{{class="brush: scala"
+trait LoggedException {
+		def log() { log(getMessage()) }   // error
+}
+}}}
+
+我们要保证`LoggerException`混入的类要有`getMessage()`方法，因为在`log()`方法中
+会调用到它。
+
+
+为了保证特质一定能调用到指定的方法（如：`getMessage`)，可以有两种方案：
+
+* 特质扩展自指定的类（如：`Exception`）
+* 用自身类型限制只能混入指定的类（如：`Exception`）
+
+如果特质是扩展子一个类`B`，那么所以混入这个特质的类都可以作为`B`的子类。
+
+=== 自身类型 ===
+
+Scala还可以通过自身类型（self type），限制只能被混入到指定的类中：
+
+{{{class="brush: scala"
+this: MyType =>
+}}}
+
+保证特质只能被混入`MyType`的子类中。
+
+例如，要根据现有的日志工具类`Logged`扩展出一个适用于异常日志的`LoggedException`
+：
 
 {{{class="brush: scala"
 trait LoggedException extends Logged {
@@ -2137,11 +2168,54 @@ trait LoggedException extends Logged {
 }
 }}}
 
-这里不继承自`Exception`类，但限制只能混入`Exception`的子类。而且可以合法地调用
-`getMessage()`方法，因为它只会被混入`Exception`的子类。
+因为限制在`Exception`的子类中，所以可以保证肯定会有`getMessage()`方法。
+
 
 通过`this: Type`来限制类型比继承超类的版本更加灵活。可以避免两个彼此需要的特质
 循环依赖。
+
+=== 自身类型不会继承 ===
+
+前面的`LoggedException`的自身类型并不会继承给子类，如果它有子类要再次声明自身
+类型：
+
+{{{class="brush: scala"
+trait ManagedException extends LoggedException {
+	this: Exception =>
+		...
+}
+}}}
+
+=== this的别名 ===
+
+如果把`this`改成别的名字那么在子类中还可以使用这个别名。如：
+
+{{{class="brush: scala"
+trait Group {
+	outer: Network =>
+		class Member { ... }
+}
+}}}
+
+这里把`this`改成`outer`。`Grout`特质只能在`Network`的子类中，而在`Member`中，
+可以用`outer`来代替`Group.this`。
+
+
+==== 结构类型 ====
+
+结构类型（structural type）只给出类必须拥有的方法，而不是类的名称。这种场景下用
+`this: Type`处理更加方便：
+
+自身类型也可以不给出类名，而用结构类型(structural type)来说明要有指定方法：
+
+{{{class="brush: scala"
+trait LoggedException extends Logged {
+	this: { def getMessage(): String} =>
+		def log() { log(getMessage()) }
+}
+}}}
+
+这样就可以混入任何有`getMessage`方法的类了。
 
 {{{class="brush: scala"
 trait LoggedException extends Logged {
@@ -2150,16 +2224,11 @@ trait LoggedException extends Logged {
 }
 }}}
 
-所有拥有`getMessage()`方法的类都可以混入`LoggedException`物质。
-
-==== 结构类型 ====
-
-结构类型（structural type）只给出类必须拥有的方法，而不是类的名称。这种场景下用
-`this: Type`处理更加方便：
 
 == 混入多个特质 ==
 
-如果想混入多个特质，都加在`with`子句里就可以了：
+混入多个特质的类型被称作复合类型。如果想混入多个特质，都加在`with`子句里就可以了
+：
 
 {{{class="brush: scala"
   class Animal
@@ -2168,6 +2237,51 @@ trait LoggedException extends Logged {
   class Frog extends Animal with Philosophical with HasLegs {
     override def toString = "green"
   }
+}}}
+
+在容器的类型参数里也可以这样用：
+
+{{{class="brush: scala"
+val image = new ArrayBuffer[java.awt.Shape with java.io.Serializable]
+}}}
+
+存放的成员必须是满足这两个条件的类型，如`Rectangle`
+
+{{{class="brush: scala"
+image += new Rectangle(5, 10, 20, 30) // OK
+image += new Area(rect)               // error Area类型不是Serializable的
+}}}
+
+结构类型也可添加到简单类型或是复合类型的声明中：
+
+{{{class="brush: scala"
+val image = new ArrayBuffer[Shape with Serializable { def contains(p: Point): Boolean } ]
+}}}
+
+上面的定义不仅要是`Shape`和`Serializable`，还要有一个`contains()`方法。
+
+从技术上来说，如下的结构类型：
+
+{{{class="brush: scala"
+AnyRef { def append(str: String): Any }
+}}}
+
+可以简写为：
+
+{{{class="brush: scala"
+{ def append(str: String): Any }
+}}}
+
+这样的复合类型：
+
+{{{class="brush: scala"
+Shape with Serializable {}
+}}}
+
+可以简写为：
+
+{{{class="brush: scala"
+Shape with Serializable
 }}}
 
 === 特质的`super`引用是动态的 ===
@@ -2330,87 +2444,6 @@ trait FileLogger extends Logger {
 
 初始化输出流的操作只有在用到`out`时才执行。
 
-
-
-== 保证特质能调用到需要的方法 ==
-
-以记录异常log为例：
-
-{{{class="brush: scala"
-trait LoggedException {
-		def log() { log(getMessage()) }   // error
-}
-}}}
-
-我们要保证`LoggerException`混入的类要有`getMessage()`方法，因为在`log()`方法中
-会调用到它。
-
-
-为了保证特质一定能调用到指定的方法（如：`getMessage`)，可以有两种方案：
-
-* 特质扩展自指定的类（如：`Exception`）
-* 用自身类型限制只能混入指定的类（如：`Exception`）
-
-如果特质是扩展子一个类`B`，那么所以混入这个特质的类都可以作为`B`的子类。
-
-=== 自身类型 ===
-
-Scala还可以通过自身类型（self type），限制只能被混入到指定的类中：
-
-{{{class="brush: scala"
-this: MyType =>
-}}}
-
-保证特质只能被混入`MyType`的子类中。
-
-例如，要根据现有的日志工具类`Logged`扩展出一个适用于异常日志的`LoggedException`
-：
-
-{{{class="brush: scala"
-trait LoggedException extends Logged {
-	this: Exception =>
-		def log() { log(getMessage()) }
-}
-}}}
-
-因为限制在`Exception`的子类中，所以可以保证肯定会有`getMessage()`方法。
-
-自身类型也可以不给出类名，而用结构类型(structural type)来说明要有指定方法：
-
-{{{class="brush: scala"
-trait LoggedException extends Logged {
-	this: { def getMessage(): String} =>
-		def log() { log(getMessage()) }
-}
-}}}
-
-这样就可以混入任何有`getMessage`方法的类了。
-
-=== 自身类型不会继承 ===
-
-前面的`LoggedException`的自身类型并不会继承给子类，如果它有子类要再次声明自身
-类型：
-
-{{{class="brush: scala"
-trait ManagedException extends LoggedException {
-	this: Exception =>
-		...
-}
-}}}
-
-=== this的别名 ===
-
-如果把`this`改成别的名字那么在子类中还可以使用这个别名。如：
-
-{{{class="brush: scala"
-trait Group {
-	outer: Network =>
-		class Member { ... }
-}
-}}}
-
-这里把`this`改成`outer`。`Grout`特质只能在`Network`的子类中，而在`Member`中，
-可以用`outer`来代替`Group.this`。
 
 
 
