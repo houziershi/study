@@ -1,0 +1,288 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>vim.neocomplcache</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+<p>
+ Vim插件neocomplcache 配置心得
+</p>
+
+<p>
+对于Vimist 来说，neocomplcache 这个插件让人又爱又恨。主要是功能强大，配置复杂，而且喜欢跟各种插件冲突。
+</p>
+
+<p>
+我也是被他折腾了个半死。期间搜索无数次，却找不到详细的配置。在不断摸索和阅读帮助文档以及源代码后，终于有了一点心得。而且把这个插件配置的比较爽了，配合SNIPMATE使用后基本类似VISUAL STUDIO下的VISUAL ASSIST X的感觉。
+</p>
+
+<p>
+neocomplcache 其实不用配 SNIPMATE 也基本能用，但是SNIPMATE的snippets比较全，而且网上有加强版本的snippets，snippets的数目要大大超过neocomplcache 。而可悲的是neocomplcache 不能直接调用 SNIPMATE 的 snippets。所以没法去掉SNIPMATE。
+</p>
+
+<p>
+但是SNIPMATE把关键的TAB键给占用了（用TAB激活它的snippets，有方法可以改它的源代码来实现）。neocomplcache 选择候选字时就没法通过TAB来很爽的选择了，不过经过配置后我还是有几种方法可以用的比较爽：
+</p>
+
+<p>
+1、启用快速匹配：
+</p>
+
+<pre class="brush: bash">
+let g:neocomplcache_enable_quick_match = 1
+</pre>
+
+<p>
+For input-saving, this variable controls whether you can  choose a candidate with a alphabet or number displayed beside a candidate after '-'.  When you input 'ho-a',  neocomplcache will select candidate 'a'.
+</p>
+
+<p>
+打开这个开关后，每次补全菜单弹出时，可以再按一个”-“键，这是补全菜单中的每个候选词会被标上一个字母，只要再输入对应字母就可以马上完成选择。
+</p>
+
+<p>
+2、CTRL-N,CTRL-P：
+</p>
+
+<p>
+这两个组合键可以替代TAB的功能，向上或者向下选择你的候选字。
+</p>
+
+<p>
+3、使用SPACE:
+</p>
+
+
+<pre class="brush: bash">
+inoremap &lt;expr&gt;&lt;space&gt;  pumvisible() ? neocomplcache#close_popup() . "\&lt;SPACE&gt;" : "\&lt;SPACE&gt;"
+</pre>
+
+<p>
+用SPACE自动旋转当前的候选字，并附加一个空格。这个才是真正无阻碍的输入方式。在SPACE面前什么&lt;TAB&gt;,&lt;ENTER&gt;都是浮云。neocomplcache 的作者居然都没想到这点 。给出的推荐配置中还在纠结于 &lt;TAB&gt;,&lt;ENTER&gt;。这也是 VISUAL ASSIST X推荐的方式。
+</p>
+
+ 
+
+<p>
+当然研究这么久 neocomplcache 肯定不止这一点收获。还有几天TIPS：
+</p>
+
+<p>
+1、neocomplcache 可以根据文件类型选用 dict 词典，这个是EDITPLUS的首创吧，可以直接拷贝EDITPLUS的语法文件过来了，稍微整理一下就可以指定给neocomplcache去用：
+</p>
+
+<pre class="brush: bash">
+" Define dictionary.
+let g:neocomplcache_dictionary_filetype_lists = {
+    \ 'default' : '',
+    \ 'vimshell' : $HOME.'/.vimshell_hist',
+    \ 'scheme' : $HOME.'/.gosh_completions',
+    \ 'css' : $VIMFILES.'/dict/css.dic',
+    \ 'php' : $VIMFILES.'/dict/php.dic',
+    \ 'javascript' : $VIMFILES.'/dict/javascript.dic'
+    \ }
+</pre>
+
+<p>
+2、neocomplcache 默认的回车定义会跟 'auto-pairs' ，'endwise' 之类的通过回车补全的插件相冲突。这个BUG废掉我一个晚上。不过我也从中找出一个寻找冲突插件的配置方法。就是用 pathogen 的禁用功能： call add(g:pathogen_disabled, 目录名) 。先将bundle下的所有插件都用这个函数禁用掉。然后再分批在前面加”注释掉禁用--也就是打开插件。这样多测试几次，只用几分钟就能找到冲突的插件了。
+</p>
+
+
+<pre class="brush: bash">
+call add(g:pathogen_disabled, 'auto-pairs')  " conflict with neocomplcache
+call add(g:pathogen_disabled, 'endwise')     " conflict with neocomplcache
+</pre>
+
+<p>
+关于 pathogen ，这年头高手管理VIM插件都是用 pathogen 和  git 了。如果你还是将下载的插件混杂在一起，那就该考虑更新一下了。
+</p>
+
+<p>
+而GIT对于维护一个时刻保持更新的 网络版的 VIM 配置库是必不可少的。这方面需要严重参考这篇文章：<a href="http://blog.wu-boy.com/2011/09/introduction-to-git-submodule/">http://blog.wu-boy.com/2011/09/introduction-to-git-submodule/</a>
+</p>
+
+<p>
+也就是说，你基本只用维护你的VIMRC文件，以及插件列表，而将具体的插件，通过PATHOGEN配置到BUNDLE下的各个目录，然后通过GIT SUBMODULE指向各插件的原文件库，这样你就拥有了一个永远最新的VIM 发行版。
+</p>
+
+<p>
+有人说EMACS是一个伪装成编辑器的操作系统，VIM又何尝不是。。。启动引导，加载模块，桌面管理，这些概念在这些编辑器中都体现的淋漓尽致。
+</p>
+
+ 
+
+<p>
+关于键冲突的问题，这里有讨论：
+</p>
+
+<p>
+<a href="https://github.com/sjbach/lusty/issues/20">https://github.com/sjbach/lusty/issues/20</a>
+</p>
+
+<p>
+<a href="https://github.com/ervandew/supertab/issues/10">https://github.com/ervandew/supertab/issues/10</a>
+</p>
+
+<p>
+3、neocomplcache 配置文件中用到的一些函数说明：
+</p>
+
+<p>
+pumvisible（） 这个: 如果弹出菜单可见，返回非零，不然返回零。
+</p>
+
+<p>
+neocomplcache#undo_completion  这个看名字就知道，做一次undo，取消补全。
+</p>
+
+<p>
+neocomplcache#close_popup() 这个是用候选字补全后关闭弹出框
+</p>
+
+<p>
+neocomplcache#cancel_popup()  这个是什么也不做，直接关闭弹出框
+</p>
+
+<p>
+neocomplcache#smart_close_popup() 这个直接看函数定义吧。号称是智能的，但是我设置了半天 g:neocomplcache_enable_auto_select  还是无效，索性直接换成 neocomplcache#close_popup() 了。
+</p>
+
+
+<pre class="brush: bash">
+function! neocomplcache#smart_close_popup()
+  return g:neocomplcache_enable_auto_select ? neocomplcache#cancel_popup() : neocomplcache#close_popup()
+endfunction
+</pre>
+
+<p>
+最后是我的配置文件，由于配置文件太大，我是直接存了一个 neocomplcache.conf的文件，然后在vimrc中去调用它：
+</p>
+
+<pre class="brush: bash">
+" --- NeoComplcache  It's such a big config file that I split into a single file.
+source $VIM/vimfiles/neocomplcache.conf
+</pre>
+
+
+<pre class="brush: bash">
+" Disable AutoComplPop.
+let g:acp_enableAtStartup = 0
+" Use neocomplcache.
+let g:neocomplcache_enable_at_startup = 1
+" Use smartcase.
+let g:neocomplcache_enable_smart_case = 1
+" Use camel case completion.
+let g:neocomplcache_enable_camel_case_completion = 1
+" Use underbar completion.
+let g:neocomplcache_enable_underbar_completion = 1
+" Set minimum syntax keyword length.
+let g:neocomplcache_min_syntax_length = 3
+let g:neocomplcache_lock_buffer_name_pattern = '\*ku\*'
+
+" AutoComplPop like behavior.
+let g:neocomplcache_enable_auto_select = 0
+
+" When you input 'ho-a',neocomplcache will select candidate 'a'.
+let g:neocomplcache_enable_quick_match = 1
+
+
+" Define dictionary.
+let g:neocomplcache_dictionary_filetype_lists = {
+\ 'default' : '',
+\ 'vimshell' : $HOME.'/.vimshell_hist',
+\ 'scheme' : $HOME.'/.gosh_completions',
+\ 'css' : $VIMFILES.'/dict/css.dic',
+\ 'php' : $VIMFILES.'/dict/php.dic',
+\ 'javascript' : $VIMFILES.'/dict/javascript.dic'
+\ }
+
+let g:neocomplcache_snippets_dir=$VIMFILES."/snippets"
+
+inoremap &lt;expr&gt;&lt;S-TAB&gt;  pumvisible() ? "\&lt;C-p&gt;" : "\&lt;TAB&gt;"
+inoremap &lt;expr&gt;&lt;C-TAB&gt;  pumvisible() ? "\&lt;C-p&gt;" : "\&lt;TAB&gt;"
+
+
+" Define keyword.
+if !exists('g:neocomplcache_keyword_patterns')
+  let g:neocomplcache_keyword_patterns = {}
+endif
+
+let g:neocomplcache_keyword_patterns['default'] = '\h\w*'
+
+" Plugin key-mappings.
+imap &lt;C-k&gt;     &lt;Plug&gt;(neocomplcache_snippets_expand)
+smap &lt;C-k&gt;     &lt;Plug&gt;(neocomplcache_snippets_expand)
+inoremap &lt;expr&gt;&lt;C-g&gt;     neocomplcache#undo_completion()
+inoremap &lt;expr&gt;&lt;C-z&gt;     neocomplcache#undo_completion()
+inoremap &lt;expr&gt;&lt;C-l&gt;     neocomplcache#complete_common_string()
+
+
+" SuperTab like snippets behavior.
+"imap &lt;expr&gt;&lt;TAB&gt; neocomplcache#sources#snippets_complete#expandable() ? "\&lt;Plug&gt;(neocomplcache_snippets_expand)" : pumvisible() ? "\&lt;C-n&gt;" : "\&lt;TAB&gt;"
+
+
+" Recommended key-mappings.
+" &lt;CR&gt;: close popup and save indent.
+" inoremap &lt;expr&gt;&lt;CR&gt;  neocomplcache#close_popup() . "\&lt;CR&gt;"
+inoremap &lt;expr&gt;&lt;CR&gt; pumvisible() ? neocomplcache#close_popup() : "\&lt;CR&gt;"
+" &lt;TAB&gt;: completion. THIS HAS NO USE WHEN WITH SNIPMATE
+" inoremap &lt;expr&gt;&lt;TAB&gt;  pumvisible() ? "\&lt;C-n&gt;" : "\&lt;TAB&gt;"
+" &lt;SPACE&gt;: completion.
+inoremap &lt;expr&gt;&lt;space&gt;  pumvisible() ? neocomplcache#close_popup() . "\&lt;SPACE&gt;" : "\&lt;SPACE&gt;"
+
+" &lt;C-h&gt;, &lt;BS&gt;: close popup and delete backword char.
+inoremap &lt;expr&gt;&lt;C-h&gt; neocomplcache#close_popup()."\&lt;C-h&gt;"
+inoremap &lt;expr&gt;&lt;BS&gt; neocomplcache#close_popup()."\&lt;C-h&gt;"
+
+inoremap &lt;expr&gt;&lt;C-y&gt;  neocomplcache#close_popup()
+inoremap &lt;expr&gt;&lt;C-e&gt;  neocomplcache#cancel_popup()
+
+
+
+" Shell like behavior(not recommended).
+"set completeopt+=longest
+"let g:neocomplcache_enable_auto_select = 1
+"let g:neocomplcache_disable_auto_complete = 1
+"inoremap &lt;expr&gt;&lt;TAB&gt;  pumvisible() ? "\&lt;Down&gt;" : "\&lt;TAB&gt;"
+"inoremap &lt;expr&gt;&lt;CR&gt;  neocomplcache#close_popup() . "\&lt;CR&gt;"
+
+
+
+" Enable omni completion.
+autocmd FileType css setlocal omnifunc=csscomplete#CompleteCSS
+autocmd FileType html,markdown setlocal omnifunc=htmlcomplete#CompleteTags
+autocmd FileType javascript setlocal omnifunc=javascriptcomplete#CompleteJS
+autocmd FileType python setlocal omnifunc=pythoncomplete#Complete
+autocmd FileType xml setlocal omnifunc=xmlcomplete#CompleteTags
+autocmd FileType ruby setlocal omnifunc=rubycomplete#Complete
+
+
+" Enable heavy omni completion.
+if !exists('g:neocomplcache_omni_patterns')
+  let g:neocomplcache_omni_patterns = {}
+endif
+
+let g:neocomplcache_omni_patterns.ruby = '[^. *\t]\.\w*\|\h\w*::'
+let g:neocomplcache_omni_patterns.php = '[^. \t]-&gt;\h\w*\|\h\w*::'
+let g:neocomplcache_omni_patterns.c = '\%(\.\|-&gt;\)\h\w*'
+let g:neocomplcache_omni_patterns.cpp = '\h\w*\%(\.\|-&gt;\)\h\w*\|\h\w*::'
+</pre>
+ </div>
+</body>
+</html>

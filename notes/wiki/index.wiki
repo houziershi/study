@@ -51,6 +51,8 @@ reveal.js： [[reveal.js]]
 
 Vim：[[vim]]
 
+Vim neocomplcache：[[vim.neocomplcache]]
+
 Vim Java：[[vim.java]]
 
 VimWiki：[[vimwiki]]

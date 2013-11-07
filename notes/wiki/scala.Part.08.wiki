@@ -370,9 +370,12 @@ account.synchronized {
 
 == actor和消息传递 ==
 
-actor是一个类似线程的实体，它有一个接收消息的邮箱。Scala里实现actor的方法是混入
-`scala.actors.Actor`特质并实现其`act`方法。下面一个简单的例子都不检查它的邮箱，
-只是把一个消息打印五次然后退出：
+actor是一个类似线程的实体，它有一个接收消息的邮箱。
+
+=== 实现Actor特质 ===
+
+Scala里实现actor的方法是混入`scala.actors.Actor`特质并实现其`act()`方法。
+下面一个简单的例子都不检查它的邮箱，只是把一个消息打印五次然后退出：
 
 {{{class="brush: scala"
   import scala.actors._
@@ -389,7 +392,9 @@ actor是一个类似线程的实体，它有一个接收消息的邮箱。Scala�
 
 注意：如果没有继承任何类，可以用关键字`extends`来混入特质。
 
-启动方法和Java线程类似，也是调用`start`方法：
+=== start()方法启动 ===
+
+启动方法和Java线程类似，也是调用`start()`方法：
 
 {{{class="brush: scala"
   scala> SillyActor.start()
@@ -436,7 +441,9 @@ actor是一个类似线程的实体，它有一个接收消息的邮箱。Scala�
   I'm acting!
 }}}
 
-还可以用伴生对象`scala.actor.Actor`的`actor`方法来创建actor，它接收一个函数值/
+=== Actor.actor()方法 ===
+
+还可以用伴生对象`scala.actor.Actor`的`actor()`方法来创建actor，它接收一个函数值/
 闭包做参数：
 
 {{{class="brush: scala"
@@ -455,9 +462,11 @@ actor是一个类似线程的实体，它有一个接收消息的邮箱。Scala�
   That is the question.
 }}}
 
-注意上面用`actor`方法创建的actor在创建后是立即启动的。
+注意上面用`actor()`方法创建的actor在创建后是立即启动的。
 
-actor之间的协作方式是通过`!()`方法来发送消息：
+=== !()方法发送消息 ===
+
+actor之间的协作方式是通过`!()`方法来发送消息，发送操作是并发非阻塞的：
 
 {{{class="brush: scala"
   scala> SillyActor ! "hi there"
@@ -465,8 +474,10 @@ actor之间的协作方式是通过`!()`方法来发送消息：
 
 虽然消息`"hi there"`被发给了`SillyActor`，但消息只是放在邮箱里保持未读状态。
 
-下面的新版本会通过`receive()`方法来收消息，这个方法也可以接收一个闭包作为参数。
-如下面这样只是把消息打印出来：
+=== receive()方法接收消息 ===
+
+`receive()`方法从消息队列中取出一条消息来处理。它可以接收一个闭包作为参数。如
+下面这样只是把消息打印出来：
 
 {{{class="brush: scala"
   val echoActor = actor {
@@ -535,6 +546,8 @@ actor之间的协作方式是通过`!()`方法来发送消息：
   Got an Int: 12
 }}}
 
+=== exit()方法停止actor ===
+
 `exit()`方法会抛出异常，以试图停止当前线程的方式停止actor。它还有一个版本接收
 一个参数作为退出原因：
 
@@ -562,6 +575,8 @@ myAct ! "nice Day!"
 myAct ! "quit" 
 }}}
 
+=== actor未启动也会收到消息 ===
+
 如果actor还没有启动，收到的消息也会放在队列里，不是不会马上处理。在`start()`方法
 被调用后也会开始处理：
 
@@ -585,8 +600,20 @@ Actor子系统会管理线程，所以定义了actor以后开发人员不用操�
 是怎么样的。
 
 Java里可以用`Thread.current`得到当前线程的引用，类似地，Scala里`Actor`对象的
-`Actor.self`方法可以取得用当前线程生成的Actor的引用。这样在交互环境可以少写很多
-代码，如：
+`Actor.self()`方法可以取得用当前线程生成的Actor的引用。这样在交互环境可以少写
+很多代码，如：
+
+{{{class="brush: scala"
+scala> import scala.actors.Actor
+import scala.actors.Actor
+
+scala> Actor.self ! "hello"
+
+scala> Actor.self.receive { case x => x }
+res2: Any = hello
+}}}
+
+也可以直接引入`Actor._`，这样可以把`Actor.self`简写为`self`：
 
 {{{class="brush: scala"
   scala> import scala.actors.Actor._
@@ -598,11 +625,11 @@ Java里可以用`Thread.current`得到当前线程的引用，类似地，Scala�
   res6: Any = hello
 }}}
 
-上面的`receive`方法返回由传递给它的偏函数计算出的值。在本例中，偏函数返回消息
+上面的`receive()`方法返回由传递给它的偏函数计算出的值。在本例中，偏函数返回消息
 本身，所以消息被交互环境打印了出来。
 
-因为`receive`是阻塞的，所以不知道要等到啥时候。所以如果使用了这项技巧，最好是用
-`receive`的变种`receiveWithin`。因为它可以指定一个以毫秒计的超时时限：
+因为`receive()`是阻塞的，所以不知道要等到啥时候。所以如果使用了这项技巧，最好是
+用`receive()`的变种`receiveWithin()`。因为它可以指定一个以毫秒计的超时时限：
 
 {{{class="brush: scala"
   scala> self.receiveWithin(1000) { case x => x } // wait a sec!
@@ -632,16 +659,16 @@ def sumPart(floor:Int, top:Int) = {
 def sumAll(num:Int) = {
 	val RANGE = 10
 	val partCount = (num.toDouble / RANGE).ceil.toInt
-	val caller = self
+	val caller = self  // this is Actor.self()
 
 	for (i <- 0 until partCount) {
 		val floor = i * RANGE + 1;
 		val top = num min (i + 1) * RANGE
-		actor { caller ! sumPart(floor, top) }
+		actor { caller ! sumPart(floor, top) }  // Actor.actor() create new Actor
 	}
 
 	(0 /: (0 until partCount)) {
-		(allSum, i) => receive {
+		(allSum, i) => receive {    // this is Actor.receive()
 			case sumInRange:Int => { allSum + sumInRange }
 		}
 	}
@@ -727,20 +754,20 @@ val fortuneTeller = actor {
     for (i <- 1 to 4) {
         Thread.sleep(1000)
         receive {
-            case _ => sender ! "your day will rock! " + i
+            case _ => sender ! "your day will rock! " + i  // reply to sender
             // case _ => reply("your day will rock! " + i) // same as above
         }
     }
 }
 
-println( fortuneTeller !? (2000, "what's ahead") )
+println( fortuneTeller !? (2000, "what's ahead") ) // async send with timeout
 println( fortuneTeller !? (200,  "what's ahead") )
 
 val aPrinter = actor {
     receive { case msg => println("Ah, Fortune message for you: " + msg) }
 }
 
-fortuneTeller.send("what's up", aPrinter)
+fortuneTeller.send("what's up", aPrinter)  // use send() to send another actor
 fortuneTeller ! "How's my future?"
 
 Thread.sleep(3000)
@@ -776,14 +803,39 @@ Scala提供了`react`方法从线程池里取已经有的线程（还有一个�
 
 下面同时用了`receive`和`react`两个方法比较：
 
-{{{class="brush: scala; highlight:[4,8,14]"
+{{{class="brush: scala"
+import scala.actors.Actor._
 
+def info(msg: String) = println(msg + " received by " + Thread.currentThread())
+
+def receiveMessage(id : Int) {
+  for(i <- 1 to 2) {
+      receiveWithin(20000) { 
+        case msg : String => info("receive: " + id + msg) }
+  }
+}
+
+def reactMessage(id : Int) {              
+  react {
+    case msg : String => info("react:   " + id + msg)
+    reactMessage(id)
+  }
+}
+
+val actors = Array(
+  actor { info("react:   1 actor created"); reactMessage(1) },
+  actor { info("react:   2 actor created"); reactMessage(2) },
+  actor { info("receive: 3 actor created"); receiveMessage(3) },
+  actor { info("receive: 4 actor created"); receiveMessage(4) }
+  ) 
+  
+Thread.sleep(1000)               
+for(i <- 0 to 3) { actors(i) ! " hello"; Thread.sleep(2000) }
+Thread.sleep(2000)
+for(i <- 0 to 3) { actors(i) ! " hello"; Thread.sleep(2000) }
 }}}
 
-从输出可以看到，同一个actor的`receiveWithin`方法总是在同一个线程。如，actor3总是
-在线程`Thread[ForkJoinPool-1-worker-1,5,main]`中；actor4总是在同一个线程
-`Thread[ForkJoinPool-1-worker-3,5,main]`；相对的，`react`方法就不固定了，可能会
-多个actor共用一个线程，也可能会一个actor用多个线程：
+调用：
 
 {{{class="brush: bash; highlight:[7,11]"
 create actor by Thread[ForkJoinPool-1-worker-3,5,main]
@@ -799,6 +851,13 @@ receive: 4hello by Thread[ForkJoinPool-1-worker-3,5,main]
 receive: 3hello by Thread[ForkJoinPool-1-worker-1,5,main]
 receive: 4hello by Thread[ForkJoinPool-1-worker-3,5,main]
 }}}
+
+从输出可以看到，同一个actor的`receiveWithin`方法总是在同一个线程。如：
+
+* actor3总是在线程`Thread[ForkJoinPool-1-worker-1,5,main]`中；
+* actor4总是在同一个线程`Thread[ForkJoinPool-1-worker-3,5,main]`；
+* `react()`方法就不固定了，可能会多个actor共用一个线程，也可能会一个actor用多个
+  线程。
 
 因为`react`不返回所以接收消息处理器必须同时处理消息并执行actor所有剩下的工作。
 通常做法是用一个顶级的工作方法，比如`act`自身，以供处理器在完成时调用。下面的

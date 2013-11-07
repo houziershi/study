@@ -47,6 +47,10 @@
 <ul>
 <li><a href="#toc_3.1.1">相关表</a>
 <li><a href="#toc_3.1.2">修改付款流程</a>
+<li><a href="#toc_3.1.3">交叉支付时报错：未找到订单</a>
+<li><a href="#toc_3.1.4">新接入渠道支付时报错 (泰隆和锦州银行)</a>
+<li><a href="#toc_3.1.5">交罚查询问题</a>
+<li><a href="#toc_3.1.6">非现场单有滞纳金</a>
 </ul>
 <li><a href="#toc_3.2">报表</a>
 <li><a href="#toc_3.3">增加功能菜单与权限</a>
@@ -1389,6 +1393,78 @@ select * from merch_transaction_detail;
 </ul>
 </ul>
 		 
+
+<h3 id="toc_3.1.3">交叉支付时报错：未找到订单</h3>
+
+<p>
+原因 不同渠道用户ID可能不一致，导致支付时校验登录用户和订单用户一致性失败，从而无法完成支付
+</p>
+
+<p>
+方案 
+</p>
+<blockquote>
+1. 增加订单时限为24小时(瀚银默认订单失效时间)(去掉交罚中原有的订单时间设置)
+</blockquote>
+<blockquote>
+2. 在交罚明细及支付前 判断订单是否失效，失效则用户可以重新下单，否则判断用户是否一致，不一致则提醒用户 订单已锁定 一致则用户可使用原订单继续完成支付
+</blockquote>
+
+
+<h3 id="toc_3.1.4">新接入渠道支付时报错 (泰隆和锦州银行)</h3>
+
+<p>
+方案  
+</p>
+<blockquote>
+ViolationPayAction 根据BackendID判断 == tlcbwap || bojzwap 时，跳转到页面paymentnote.jsp(新增) 参考商城中的PaymentAction, iphone/payment/paymentnote.jsp 
+</blockquote>
+
+
+<h3 id="toc_3.1.5">交罚查询问题</h3>
+
+<p>
+方案 修改查询缓存逻辑，现有逻辑改为
+</p>
+<blockquote>
+先从traffic_violation_query_record查询罚单集合ViolationSN，后根据罚单集合查询traffic_violation, traffic_violation_query_record表增加字段carType province
+</blockquote>
+<p>
+新增traffic_violation_query_record记录时需存入罚单ID集合
+</p>
+
+<p>
+问题 13、交罚查询是否输入车架号或发动机号规则
+</p>
+
+<p>
+规则 zhiZun_Area.xml vin(车架号)&gt;=8, ein(发动机号)&gt;=8 需输入完整，无相关属性则不需要输入，小于8则输入后几位
+</p>
+
+<p>
+方案 
+</p>
+<blockquote>
+1. ViolationCityBean 中添加vin, ein属性
+</blockquote>
+<blockquote>
+2. 查询页选择违规城市后ajax请求是否需要输入车架号或发动机号，从而是否显示相关输入框
+</blockquote>
+
+<h3 id="toc_3.1.6">非现场单有滞纳金</h3>
+
+<p>
+罚单及罚单订单明细都是非现场单，生成的瀚银订单金额却加上了滞纳金
+</p>
+
+<p>
+方案 暂未找到原因，check是否现场单相关逻辑
+</p>
+
+
+<p>
+注：瀚银支付后状态为待办理，之后有批处理同步到至尊，至尊返回成功则改为处理成功，返回失败则改为处理失败，失败后走线下流程
+</p>
 
 <h2 id="toc_3.2">报表</h2>
 

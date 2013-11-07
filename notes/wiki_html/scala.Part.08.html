@@ -56,6 +56,15 @@
 <ul>
 <li><a href="#toc_2.1">多线程</a>
 <li><a href="#toc_2.2">actor和消息传递</a>
+<ul>
+<li><a href="#toc_2.2.1">实现Actor特质</a>
+<li><a href="#toc_2.2.2">start()方法启动</a>
+<li><a href="#toc_2.2.3">Actor.actor()方法</a>
+<li><a href="#toc_2.2.4">!()方法发送消息</a>
+<li><a href="#toc_2.2.5">receive()方法接收消息</a>
+<li><a href="#toc_2.2.6">exit()方法停止actor</a>
+<li><a href="#toc_2.2.7">actor未启动也会收到消息</a>
+</ul>
 <li><a href="#toc_2.3">把原生线程当作actor</a>
 <li><a href="#toc_2.4">简单的并行计算例子</a>
 <li><a href="#toc_2.5">小结</a>
@@ -546,9 +555,14 @@ account.synchronized {
 <h2 id="toc_2.2">actor和消息传递</h2>
 
 <p>
-actor是一个类似线程的实体，它有一个接收消息的邮箱。Scala里实现actor的方法是混入
-<code>scala.actors.Actor</code>特质并实现其<code>act</code>方法。下面一个简单的例子都不检查它的邮箱，
-只是把一个消息打印五次然后退出：
+actor是一个类似线程的实体，它有一个接收消息的邮箱。
+</p>
+
+<h3 id="toc_2.2.1">实现Actor特质</h3>
+
+<p>
+Scala里实现actor的方法是混入<code>scala.actors.Actor</code>特质并实现其<code>act()</code>方法。
+下面一个简单的例子都不检查它的邮箱，只是把一个消息打印五次然后退出：
 </p>
 
 <pre class="brush: scala">
@@ -568,8 +582,10 @@ actor是一个类似线程的实体，它有一个接收消息的邮箱。Scala�
 注意：如果没有继承任何类，可以用关键字<code>extends</code>来混入特质。
 </p>
 
+<h3 id="toc_2.2.2">start()方法启动</h3>
+
 <p>
-启动方法和Java线程类似，也是调用<code>start</code>方法：
+启动方法和Java线程类似，也是调用<code>start()</code>方法：
 </p>
 
 <pre class="brush: scala">
@@ -621,8 +637,10 @@ actor是一个类似线程的实体，它有一个接收消息的邮箱。Scala�
   I'm acting!
 </pre>
 
+<h3 id="toc_2.2.3">Actor.actor()方法</h3>
+
 <p>
-还可以用伴生对象<code>scala.actor.Actor</code>的<code>actor</code>方法来创建actor，它接收一个函数值/
+还可以用伴生对象<code>scala.actor.Actor</code>的<code>actor()</code>方法来创建actor，它接收一个函数值/
 闭包做参数：
 </p>
 
@@ -643,11 +661,13 @@ actor是一个类似线程的实体，它有一个接收消息的邮箱。Scala�
 </pre>
 
 <p>
-注意上面用<code>actor</code>方法创建的actor在创建后是立即启动的。
+注意上面用<code>actor()</code>方法创建的actor在创建后是立即启动的。
 </p>
 
+<h3 id="toc_2.2.4">!()方法发送消息</h3>
+
 <p>
-actor之间的协作方式是通过<code>!()</code>方法来发送消息：
+actor之间的协作方式是通过<code>!()</code>方法来发送消息，发送操作是并发非阻塞的：
 </p>
 
 <pre class="brush: scala">
@@ -658,9 +678,11 @@ actor之间的协作方式是通过<code>!()</code>方法来发送消息：
 虽然消息<code>"hi there"</code>被发给了<code>SillyActor</code>，但消息只是放在邮箱里保持未读状态。
 </p>
 
+<h3 id="toc_2.2.5">receive()方法接收消息</h3>
+
 <p>
-下面的新版本会通过<code>receive()</code>方法来收消息，这个方法也可以接收一个闭包作为参数。
-如下面这样只是把消息打印出来：
+<code>receive()</code>方法从消息队列中取出一条消息来处理。它可以接收一个闭包作为参数。如
+下面这样只是把消息打印出来：
 </p>
 
 <pre class="brush: scala">
@@ -746,6 +768,8 @@ actor之间的协作方式是通过<code>!()</code>方法来发送消息：
   Got an Int: 12
 </pre>
 
+<h3 id="toc_2.2.6">exit()方法停止actor</h3>
+
 <p>
 <code>exit()</code>方法会抛出异常，以试图停止当前线程的方式停止actor。它还有一个版本接收
 一个参数作为退出原因：
@@ -775,6 +799,8 @@ myAct ! "nice Day!"
 myAct ! "quit" 
 </pre>
 
+<h3 id="toc_2.2.7">actor未启动也会收到消息</h3>
+
 <p>
 如果actor还没有启动，收到的消息也会放在队列里，不是不会马上处理。在<code>start()</code>方法
 被调用后也会开始处理：
@@ -803,8 +829,22 @@ Actor子系统会管理线程，所以定义了actor以后开发人员不用操�
 
 <p>
 Java里可以用<code>Thread.current</code>得到当前线程的引用，类似地，Scala里<code>Actor</code>对象的
-<code>Actor.self</code>方法可以取得用当前线程生成的Actor的引用。这样在交互环境可以少写很多
-代码，如：
+<code>Actor.self()</code>方法可以取得用当前线程生成的Actor的引用。这样在交互环境可以少写
+很多代码，如：
+</p>
+
+<pre class="brush: scala">
+scala&gt; import scala.actors.Actor
+import scala.actors.Actor
+
+scala&gt; Actor.self ! "hello"
+
+scala&gt; Actor.self.receive { case x =&gt; x }
+res2: Any = hello
+</pre>
+
+<p>
+也可以直接引入<code>Actor._</code>，这样可以把<code>Actor.self</code>简写为<code>self</code>：
 </p>
 
 <pre class="brush: scala">
@@ -818,13 +858,13 @@ Java里可以用<code>Thread.current</code>得到当前线程的引用，类似�
 </pre>
 
 <p>
-上面的<code>receive</code>方法返回由传递给它的偏函数计算出的值。在本例中，偏函数返回消息
+上面的<code>receive()</code>方法返回由传递给它的偏函数计算出的值。在本例中，偏函数返回消息
 本身，所以消息被交互环境打印了出来。
 </p>
 
 <p>
-因为<code>receive</code>是阻塞的，所以不知道要等到啥时候。所以如果使用了这项技巧，最好是用
-<code>receive</code>的变种<code>receiveWithin</code>。因为它可以指定一个以毫秒计的超时时限：
+因为<code>receive()</code>是阻塞的，所以不知道要等到啥时候。所以如果使用了这项技巧，最好是
+用<code>receive()</code>的变种<code>receiveWithin()</code>。因为它可以指定一个以毫秒计的超时时限：
 </p>
 
 <pre class="brush: scala">
@@ -861,16 +901,16 @@ def sumPart(floor:Int, top:Int) = {
 def sumAll(num:Int) = {
 	val RANGE = 10
 	val partCount = (num.toDouble / RANGE).ceil.toInt
-	val caller = self
+	val caller = self  // this is Actor.self()
 
 	for (i &lt;- 0 until partCount) {
 		val floor = i * RANGE + 1;
 		val top = num min (i + 1) * RANGE
-		actor { caller ! sumPart(floor, top) }
+		actor { caller ! sumPart(floor, top) }  // Actor.actor() create new Actor
 	}
 
 	(0 /: (0 until partCount)) {
-		(allSum, i) =&gt; receive {
+		(allSum, i) =&gt; receive {    // this is Actor.receive()
 			case sumInRange:Int =&gt; { allSum + sumInRange }
 		}
 	}
@@ -986,20 +1026,20 @@ val fortuneTeller = actor {
     for (i &lt;- 1 to 4) {
         Thread.sleep(1000)
         receive {
-            case _ =&gt; sender ! "your day will rock! " + i
+            case _ =&gt; sender ! "your day will rock! " + i  // reply to sender
             // case _ =&gt; reply("your day will rock! " + i) // same as above
         }
     }
 }
 
-println( fortuneTeller !? (2000, "what's ahead") )
+println( fortuneTeller !? (2000, "what's ahead") ) // async send with timeout
 println( fortuneTeller !? (200,  "what's ahead") )
 
 val aPrinter = actor {
     receive { case msg =&gt; println("Ah, Fortune message for you: " + msg) }
 }
 
-fortuneTeller.send("what's up", aPrinter)
+fortuneTeller.send("what's up", aPrinter)  // use send() to send another actor
 fortuneTeller ! "How's my future?"
 
 Thread.sleep(3000)
@@ -1043,15 +1083,40 @@ Scala提供了<code>react</code>方法从线程池里取已经有的线程（还
 下面同时用了<code>receive</code>和<code>react</code>两个方法比较：
 </p>
 
-<pre class="brush: scala; highlight:[4,8,14]">
+<pre class="brush: scala">
+import scala.actors.Actor._
 
+def info(msg: String) = println(msg + " received by " + Thread.currentThread())
+
+def receiveMessage(id : Int) {
+  for(i &lt;- 1 to 2) {
+      receiveWithin(20000) { 
+        case msg : String =&gt; info("receive: " + id + msg) }
+  }
+}
+
+def reactMessage(id : Int) {              
+  react {
+    case msg : String =&gt; info("react:   " + id + msg)
+    reactMessage(id)
+  }
+}
+
+val actors = Array(
+  actor { info("react:   1 actor created"); reactMessage(1) },
+  actor { info("react:   2 actor created"); reactMessage(2) },
+  actor { info("receive: 3 actor created"); receiveMessage(3) },
+  actor { info("receive: 4 actor created"); receiveMessage(4) }
+  ) 
+  
+Thread.sleep(1000)               
+for(i &lt;- 0 to 3) { actors(i) ! " hello"; Thread.sleep(2000) }
+Thread.sleep(2000)
+for(i &lt;- 0 to 3) { actors(i) ! " hello"; Thread.sleep(2000) }
 </pre>
 
 <p>
-从输出可以看到，同一个actor的<code>receiveWithin</code>方法总是在同一个线程。如，actor3总是
-在线程<code>Thread[ForkJoinPool-1-worker-1,5,main]</code>中；actor4总是在同一个线程
-<code>Thread[ForkJoinPool-1-worker-3,5,main]</code>；相对的，<code>react</code>方法就不固定了，可能会
-多个actor共用一个线程，也可能会一个actor用多个线程：
+调用：
 </p>
 
 <pre class="brush: bash; highlight:[7,11]">
@@ -1068,6 +1133,23 @@ receive: 4hello by Thread[ForkJoinPool-1-worker-3,5,main]
 receive: 3hello by Thread[ForkJoinPool-1-worker-1,5,main]
 receive: 4hello by Thread[ForkJoinPool-1-worker-3,5,main]
 </pre>
+
+<p>
+从输出可以看到，同一个actor的<code>receiveWithin</code>方法总是在同一个线程。如：
+</p>
+
+<ul>
+<li>
+actor3总是在线程<code>Thread[ForkJoinPool-1-worker-1,5,main]</code>中；
+
+<li>
+actor4总是在同一个线程<code>Thread[ForkJoinPool-1-worker-3,5,main]</code>；
+
+<li>
+<code>react()</code>方法就不固定了，可能会多个actor共用一个线程，也可能会一个actor用多个
+  线程。
+
+</ul>
 
 <p>
 因为<code>react</code>不返回所以接收消息处理器必须同时处理消息并执行actor所有剩下的工作。
