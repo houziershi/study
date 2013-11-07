@@ -1,0 +1,48 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>linux.samba</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+
+<p>
+windows xp文件夹共享 取消用户名密码输入
+</p>
+
+
+<p>
+一，打开控制面板-》找到“WINDOWS防火墙”（双击进入）-》单击“列外”选项卡-》将文件和打印机共享前的钩钩打上-》确认退出。
+</p>
+
+<p>
+二，打开控制面板-》找到“用户账户”（双击进入）-》单击“GUEST账户”-》启用GUEST-》关闭退出
+</p>
+
+<p>
+三，打开控制面板-》找到“管理工具”（双击进入）-》双击“本地安全策略”进入-》在左侧单击“本地策略”前的“+”-》1，单击左侧“用户权利指派”。在右侧编辑区域找到“拒绝本地登陆”双击进入编辑状态，删除其中的GUEST，确认退出。找到“拒绝从网络访问这台计算机”双击进入编辑状态，删除其中的GUEST账户，确认退出。-》2，单击左侧“安全选项”，在右侧编辑区找到“网络访问：本地账户的共享和安全模式”双击进入编辑为“仅来宾-本地用户以来宾方式认证”。
+</p>
+
+<p>
+四，再次访问局域网共享文件就不需要密码了！
+</p>
+ </div>
+</body>
+</html>

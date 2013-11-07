@@ -131,6 +131,7 @@ DB2： [[DB2]]
 
 网络故障：[[linux.net.problem]]
 
+[[linux.samba]]
 
 
 = 常用工具 =
