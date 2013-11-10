@@ -1103,8 +1103,6 @@ Actor 3 running in Thread[ForkJoinPool-2-worker-7,5,main]
 }}}
 
 
-{{{class="brush: scala"
-}}}
 
 == 良好的actor风格 ==
 
