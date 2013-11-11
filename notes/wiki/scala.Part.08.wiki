@@ -2146,7 +2146,298 @@ actor和发往该actor的消息：
 
 
 
-= 连接符解析  =
+
+= 定界延续  =
+
+== 捕获并执行延续 ==
+
+延续可以让程序回到之间的一个位置上。比如IO操作异常时发现文件不存在：
+
+{{{class="brush: scala"
+contents = scala.io.Souce.fromFile(filename, "UTF-8").mkString
+}}}
+
+可以通过延续回到失败点然后重试。
+
+要实现这一效果，首先要通过`shift`结构捕获一个延续，然后指定对这个捕获到的延续
+进行什么操作。比如说，把这个延续保存下来：
+
+{{{class="brush: scala"
+var cont: (Unit => Unit) = null
+...
+shift { k: (Unit => Unit) => // 延续被传递给了shift
+	cont = k // 保存下来备用
+}
+}}}
+
+这里用到的延续是一个不带参数也不带返回值的函数（严格地说，参数和返回值都是`Unit`
+类型），以后会看到有带参数和返回值的延续。
+
+以后要回到`shift`这个位置，需要执行这个延续：做法就是简单地调用`cont`。
+
+== 定界 ==
+
+在Scala中，延续是定界的：它只能延展到指定的边界。这个边界由`reset {...}`标出：
+
+{{{class="brush: scala"
+reset {
+	...
+	shift { k: (Unit => Unit) =>
+		count = k
+	} // 对count的调用将从这里开始
+	...
+}   // 到这里结束
+}}}
+
+当调用`count`时，执行将从`shift`处开始，蒋一直延展到`reset`块的边界。
+
+例子，读一个文件并捕获延续：
+
+{{{class="brush: scala"
+import scala.util.continuations._
+
+object Main extends App {
+  var cont : (Unit => Unit) = null  
+  var filename = "myfile.txt"
+  var contents = ""
+
+  reset {
+    while (contents == "") {
+      try {
+        contents = scala.io.Source.fromFile(filename, "UTF-8").mkString
+      } catch { case _ => }
+      shift { k : (Unit => Unit) => 
+        cont = k 
+      }
+    }
+  }
+  
+	// 如果要重试的话，只要执行延续即可：
+  if (contents == "") {
+    println("Try another filename: ");
+    filename = readLine
+    cont()
+  }
+  println(contents)
+}
+}}}
+
+在Scala 2.9中，要启动延续插件才可以编译使用了延续的程序：
+
+{{{class="brush: scala"
+scalac -P:continuations:enable Continuations.scala
+}}}
+
+
+== 延续捕获的原理 ==
+
+可以把`shift`块想象成一个位于`reset`块中的洞。当执行延续时可以把一个值传到这个
+洞里，运算继续，就好像`shift`本身就是哪个值一样。
+
+例如：
+
+{{{class="brush: scala"
+  var cont : (Int => Double) = null  
+  reset {
+    0.5 * shift { k: (Int => Double) => { cont = k } } + 1
+  }
+}}}
+
+把整个`shift`替换成一个洞：
+
+{{{class="brush: scala"
+    0.5 * /* hole */ + 1
+}}}
+
+当调用`cont(3)`时，这个位置被填上值`3`。
+
+也就是说`cont`可以被看作这样一个函数：
+
+{{{class="brush: scala"
+x: Int => 0.5 * x + 1
+}}}
+
+延续的类型为`Int => Double`，因为填入的类型为`Int`并计算出`Double`。
+
+== reset和shift的控制流转 ==
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+{{{class="brush: scala"
+}}}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

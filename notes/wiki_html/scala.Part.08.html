@@ -114,7 +114,13 @@
 <li><a href="#toc_2.13.4">把所有内容结合在一起</a>
 </ul>
 </ul>
-<li><a href="#toc_3">连接符解析</a>
+<li><a href="#toc_3">定界延续</a>
+<ul>
+<li><a href="#toc_3.1">捕获并执行延续</a>
+<li><a href="#toc_3.2">定界</a>
+<li><a href="#toc_3.3">延续捕获的原理</a>
+<li><a href="#toc_3.4">reset和shift的控制流转</a>
+</ul>
 </ul>
 </div>
 
@@ -2731,7 +2737,316 @@ actor和发往该actor的消息：
 
 
 
-<h1 id="toc_3">连接符解析</h1>
+
+<h1 id="toc_3">定界延续</h1>
+
+<h2 id="toc_3.1">捕获并执行延续</h2>
+
+<p>
+延续可以让程序回到之间的一个位置上。比如IO操作异常时发现文件不存在：
+</p>
+
+<pre class="brush: scala">
+contents = scala.io.Souce.fromFile(filename, "UTF-8").mkString
+</pre>
+
+<p>
+可以通过延续回到失败点然后重试。
+</p>
+
+<p>
+要实现这一效果，首先要通过<code>shift</code>结构捕获一个延续，然后指定对这个捕获到的延续
+进行什么操作。比如说，把这个延续保存下来：
+</p>
+
+<pre class="brush: scala">
+var cont: (Unit =&gt; Unit) = null
+...
+shift { k: (Unit =&gt; Unit) =&gt; // 延续被传递给了shift
+	cont = k // 保存下来备用
+}
+</pre>
+
+<p>
+这里用到的延续是一个不带参数也不带返回值的函数（严格地说，参数和返回值都是<code>Unit</code>
+类型），以后会看到有带参数和返回值的延续。
+</p>
+
+<p>
+以后要回到<code>shift</code>这个位置，需要执行这个延续：做法就是简单地调用<code>cont</code>。
+</p>
+
+<h2 id="toc_3.2">定界</h2>
+
+<p>
+在Scala中，延续是定界的：它只能延展到指定的边界。这个边界由<code>reset {...}</code>标出：
+</p>
+
+<pre class="brush: scala">
+reset {
+	...
+	shift { k: (Unit =&gt; Unit) =&gt;
+		count = k
+	} // 对count的调用将从这里开始
+	...
+}   // 到这里结束
+</pre>
+
+<p>
+当调用<code>count</code>时，执行将从<code>shift</code>处开始，蒋一直延展到<code>reset</code>块的边界。
+</p>
+
+<p>
+例子，读一个文件并捕获延续：
+</p>
+
+<pre class="brush: scala">
+import scala.util.continuations._
+
+object Main extends App {
+  var cont : (Unit =&gt; Unit) = null  
+  var filename = "myfile.txt"
+  var contents = ""
+
+  reset {
+    while (contents == "") {
+      try {
+        contents = scala.io.Source.fromFile(filename, "UTF-8").mkString
+      } catch { case _ =&gt; }
+      shift { k : (Unit =&gt; Unit) =&gt; 
+        cont = k 
+      }
+    }
+  }
+  
+	// 如果要重试的话，只要执行延续即可：
+  if (contents == "") {
+    println("Try another filename: ");
+    filename = readLine
+    cont()
+  }
+  println(contents)
+}
+</pre>
+
+<p>
+在Scala 2.9中，要启动延续插件才可以编译使用了延续的程序：
+</p>
+
+<pre class="brush: scala">
+scalac -P:continuations:enable Continuations.scala
+</pre>
+
+
+<h2 id="toc_3.3">延续捕获的原理</h2>
+
+<p>
+可以把<code>shift</code>块想象成一个位于<code>reset</code>块中的洞。当执行延续时可以把一个值传到这个
+洞里，运算继续，就好像<code>shift</code>本身就是哪个值一样。
+</p>
+
+<p>
+例如：
+</p>
+
+<pre class="brush: scala">
+  var cont : (Int =&gt; Double) = null  
+  reset {
+    0.5 * shift { k: (Int =&gt; Double) =&gt; { cont = k } } + 1
+  }
+</pre>
+
+<p>
+把整个<code>shift</code>替换成一个洞：
+</p>
+
+<pre class="brush: scala">
+    0.5 * /* hole */ + 1
+</pre>
+
+<p>
+当调用<code>cont(3)</code>时，这个位置被填上值<code>3</code>。
+</p>
+
+<p>
+也就是说<code>cont</code>可以被看作这样一个函数：
+</p>
+
+<pre class="brush: scala">
+x: Int =&gt; 0.5 * x + 1
+</pre>
+
+<p>
+延续的类型为<code>Int =&gt; Double</code>，因为填入的类型为<code>Int</code>并计算出<code>Double</code>。
+</p>
+
+<h2 id="toc_3.4">reset和shift的控制流转</h2>
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
+
+
+<pre class="brush: scala">
+</pre>
  </div>
 </body>
 </html>
