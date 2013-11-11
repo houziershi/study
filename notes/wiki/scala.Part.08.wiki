@@ -508,12 +508,12 @@ actor之间的协作方式是通过`!()`方法来发送消息，发送操作是�
 表达式样子很像，而且不像match表达式一样要匹配所有的可能性，的会直接忽略掉没有
 匹配的情况（即偏函数没有定义）。
 
-正如“模式匹配”一章中“模式无处不在”这一节中所说的，偏函数（特质`PartialFunction`
-的实例）并不是完整的函数。所以它不对所有输入值有都定义。除了接受单个`apply`方法
+正如“模式匹配”一章中“模式无处不在”这一节中所说的，偏函数（可以表示为特质
+`PartialFunction[Any, T]`的实例。其中`T`是`case =>`语句右边表达式计算的结果类型
+）并不是完整的函数。所以它不对所有输入值有都定义。除了接受单个`apply`方法
 外，偏函数还提供一个`isDefineAt`方法，同样只接收单个参数。如果偏函数能处理传给
 `isDefineAt`函数的参数，那么`isDefineAt`返回`true`。把这个消息传递给偏函数的
 `apply`方法，`apply`方法就会处理这个消息。
-
 
 例如`echoActor`的`apply`方法会打印`"received message: "`，然后再输出消息对象的
 `toString`结果。如果邮箱里没有让`isDefineAt`返回`true`的消息，则被调用`receive`
@@ -546,34 +546,36 @@ actor之间的协作方式是通过`!()`方法来发送消息，发送操作是�
   Got an Int: 12
 }}}
 
-=== exit()方法停止actor ===
+==== 处理掉不匹配的消息 ====
 
-`exit()`方法会抛出异常，以试图停止当前线程的方式停止actor。它还有一个版本接收
-一个参数作为退出原因：
+注意：如果邮箱可能会被不能匹配`case`条件的消息挤满，可以用一个`case _`匹配所有
+情况来处理掉那些消息。
 
-{{{class="brush: scala; highlight:[8]"
-import scala.actors._
-import Actor._
+==== 处理消息是串行化的 ====
 
-class MyAct extends Actor {
-    def act() {
-        while (true) {
-            receive {
-                case "quit" => exit
-                case msg    => println(msg)
-            }
-        }
-    }
+因为消息处理是串行化的，所以不会有并发的竞争状况。比如下面的`balance`是安全的，
+不会出现同时加减：
+
+{{{class="brush: scala"
+class AccountActor extends Actor {
+	private var balance = 0.0
+	
+	def act() {
+		while (true) {
+			receive {
+				case Deposit(account)  => balance += amount
+				case Withdraw(account) => balance -= amount
+			}
+		}
+	}
+
 }
-
-val myAct = new MyAct
-
-myAct.start()
-
-myAct ! "Hello World!" 
-myAct ! "nice Day!" 
-myAct ! "quit" 
 }}}
+
+但是这只能保证同一个Actor对象中的成员安全。如果多个Actor共用的话，必然会有竞争
+状况。
+
+所以Actor *绝对不应该* 访问自身外部的状态对象，虽然Scala并没有强制。
 
 === actor未启动也会收到消息 ===
 
@@ -628,6 +630,8 @@ res2: Any = hello
 上面的`receive()`方法返回由传递给它的偏函数计算出的值。在本例中，偏函数返回消息
 本身，所以消息被交互环境打印了出来。
 
+=== receiveWithin() ===
+
 因为`receive()`是阻塞的，所以不知道要等到啥时候。所以如果使用了这项技巧，最好是
 用`receive()`的变种`receiveWithin()`。因为它可以指定一个以毫秒计的超时时限：
 
@@ -636,7 +640,23 @@ res2: Any = hello
   res7: Any = TIMEOUT
 }}}
 
-可以用`case TIMEOUT`来匹配超时的情况。
+可以用`case TIMEOUT`来匹配超时的情况，这里指的是`Actor.TIMEOUT`。
+
+=== future ===
+
+通过`!!()`方法表示接收一个Future对象，它表示一个未来会得到的结果，但现在先不
+计算它。类似于惰性求值：
+
+{{{class="brush: scala"
+val replyFuture = account !! Deposit(1000)
+}}}
+
+上面的代码因为不求出结果，所以可以看作是不阻塞的。在取出值时阻塞：
+
+{{{class="brush: scala"
+val reply = replyFuture()
+}}}
+
 
 == 简单的并行计算例子 ==
 
@@ -732,7 +752,7 @@ receive { case msg => println(msg) }
 
 如果在调用`receive`方法时消息队列里没有消息，那么`receive`方法会阻塞。
 
-=== 使用同步的方式传递消息 ===
+== 使用同步的方式传递消息 ==
 
 虽然异步方式能利用并发，但也有需要用同步的情况存在。这时可以用`!?()`方法，注意
 这样会导致阻塞，所以推荐用带超时参数的版本：`!?(timeout, msg)`。它在正常时返回
@@ -916,6 +936,41 @@ IP地址：
 
 返回类型`Nothing`表示永远不会正常返回的函数，相反，总是以一个异常方式完成。
 
+因为`react`会因为异常退出，所以不能把它放在`while`循环中。如：
+
+{{{class="brush: scala"
+def act() {
+	while (true) {
+		react {
+			case Withdraw(amount) => println("Withdrawing " + amount)
+		}
+	}
+}
+}}}
+
+因为`react()`方法的参数是一个没有返回对象的偏函数：
+
+{{{class="brush: scala"
+{ case Withdraw(amount) => println("Withdrawing " + amount) }
+}}}
+
+所以它不能返回到循环当中去，所以要实现循环的方法之一是在消息处理器中再次调用
+`act()`方法：
+
+{{{class="brush: scala"
+def act() {
+	react {
+		case Withdraw(amount) => {
+			println("Withdrawing " + amount)
+			act()
+		}
+	}
+}
+}}}
+
+这样的作法相当于用一个无穷的递归替换掉无穷的循环。但由于每次`react()`调用都会
+抛出异常，所以栈被清空，不会占用太大的栈空间。
+
 虽然不同版本中实现方式还在不断调整，但可以认为`react`是这样工作的：
 
 actor的`start`方法被调用时，`start`方法会以某种方式确保最终会有某个线程来调用
@@ -1021,6 +1076,31 @@ Total is 16
 
 还有带循环条件的版本`loopWhile(...)`。
 
+{{{class="brush: scala"
+loopWhile(count < max) {
+	react {
+		...
+	}
+}
+}}}
+
+还有`eventloop()`方法可以制作聘个无穷循套环`react()`的简化版本，不过前提是偏函数
+不会再次调用`react`：
+
+{{{class="brush: scala"
+def act() {
+	eventloop {
+		case Withdraw(amount) => println("Withdrawing " + amount)
+	}
+}
+}}}
+
+{{{class="brush: scala"
+}}}
+
+{{{class="brush: scala"
+}}}
+
 == 控制线程执行 ==
 
 Scala会让单例对象`Scheduler`去运行actor，通过设置`Scheduler.impl`的各种实现，
@@ -1104,6 +1184,232 @@ Actor 3 running in Thread[ForkJoinPool-2-worker-7,5,main]
 
 
 
+
+== 消息通道 ==
+
+除了共享Actor的引用，还可以通过共享消息通道的方式。消息通道有以下优点：
+
+* 消息通道是类型安全的，只能发送或接受某个特定类型的消息。
+* 防止调用到某个Actor的方法。
+
+消息通道可以是一个OutputChannel特质（带有`!`方法）或是一个InputChannel特技（带有
+`receive`或`react`方法）。也可以有`Channel`特质同时扩展这两个特质。
+
+消息通道的构造函数需要一个Actor作为参数：
+
+{{{class="brush: scala"
+val channel - new Channel[Int](someActor)
+}}}
+
+如果不提供参数，那就是绑定到当前执行的Actor上。
+
+通常，会指定Actor发送消息到一个输出消息通道：
+
+{{{class="brush: scala; highlight: [44]"
+import scala.actors._
+import scala.actors.Actor._
+
+case class Compute(data: Seq[Int], result: Channel[Int])
+
+class PrimeCounter extends Actor {
+  def isPrime(n: Int) = new java.math.BigInteger("" + n).isProbablePrime(20)
+
+  def act() {
+    while (true) {
+      receive {
+        case Compute(data, continuation) => {
+          val answer = data.count(isPrime)
+          continuation ! answer // Send the answer to the channel
+        }
+      }
+    }
+  }
+
+}
+
+object Main extends App {
+  val max = 100000 
+  // try with 1000000 
+  val nactors = 10
+  val groupSize = max / nactors / 10
+
+  val primeCounters = for (i <- 0 until nactors) yield new PrimeCounter
+  for (a <- primeCounters) a.start()
+
+  actor {
+    val c = new Channel[Int] // A channel to this actor
+    
+    val groups = (2 to max).grouped(groupSize).zipWithIndex.toSeq
+    var count = groups.length
+    var total = 0
+
+    for ((g, i) <- groups)  {
+      val a = primeCounters(i % primeCounters.length)
+      a ! Compute(g, c) // a is an actor, not a channel
+    }
+
+    while (count > 0) {
+      c.receive { 
+        case t => { // The channel receives an Int
+          total += t
+          count -= 1
+        }
+      }
+    }
+    println(total + " primes")
+    System.exit(0)
+  }
+}
+}}}
+
+注意这里调用的是消息通道的`receive()`方法而不是Actor自己的。如果要通过Actor来
+接收，可以匹配一个`!`样本类：
+
+{{{class="brush: scala"
+receive {
+	case !(channel, x) => ...
+}
+}}}
+
+== Actor的生命周期 ==
+
+Actor的`act()`方法在`start()`方法被调用时开始执行。然后通常情况下都是进入某个
+循环：
+
+{{{class="brush: scala"
+def act() {
+	while (...) {
+		receive {
+			...
+		}
+	}
+}
+}}}
+
+会让Actor终止的情况：
+
+# `act()`方法返回。
+# `act()`方法因异常终止。
+# `actor`调用`exit()`方法。
+
+=== exit()方法停止actor ===
+
+`exit()`方法是一个受保护的方法，只能被`Actor`的子类调用。`exit()`方法会抛出异常
+，以试图停止当前线程的方式停止actor。它还有一个版本接收一个参数作为退出原因：
+
+{{{class="brush: scala; highlight:[8]"
+import scala.actors._
+import Actor._
+
+class MyAct extends Actor {
+    def act() {
+        while (true) {
+            receive {
+                case "quit" => exit
+                case msg    => println(msg)
+            }
+        }
+    }
+}
+
+val myAct = new MyAct
+
+myAct.start()
+
+myAct ! "Hello World!" 
+myAct ! "nice Day!" 
+myAct ! "quit" 
+}}}
+
+如果不带原因，那就相当于`exit('normal)`。
+
+
+=== 因为异常停止 ===
+
+如果因为异常终止，退出原因就是`UncaughtException`样本类的一个实例。它有以下属性
+：
+
+* actor：抛出异常的Actor。
+* message：`Some(msg)`，其中的`msg`就是该Actor处理的最后一条消息；或为`None`，
+  表示Actor在没有来得及处理任何消息时就挂掉了。
+* sender：`Some(channel)`，最后一条消息发送方的输出通道；为`None`表示Actor在没有
+  来得及处理任何消息时就挂掉了。
+* thread：退出时所在的线程。
+* cause：相应的异常。
+
+默认情况下所有末处理的异常都会造成一个`UncaughtException`原因的退出。必要时可以
+重写`exceptionHandler()`方法来改变这个行为，它应该产出一个偏函数，类型为：
+
+{{{class="brush: scala"
+PartialFunction[Exception, Unit]
+}}}
+
+这样如果这个偏函数有效就被调用，Actor以`'normal`原因退出。
+
+例如在需要不把非受检异常当作非正常的话，可以提供以下处理器：
+
+{{{class="brush: scala"
+override def exceptionHandler = {
+	case e: RuntimeException => log(e)
+}
+}}}
+
+== 链接多个Actor ==
+
+通过`link()`方法链接多个Actor可以在一个Actor终止得通知另一个：
+
+{{{class="brush: scala"
+def act() {
+	link(master)
+	...
+}}}
+
+链接是双向的，一个终止会通知另外一个。但是并不是对称的，比如上面的：
+
+{{{class="brush: scala"
+link(master)
+}}}
+
+并不能用：
+
+{{{class="brush: scala"
+master.link(self)
+}}}
+
+来代替。`link()`方法必须由请求链接的Actor调用。
+
+默认情况下，只要链接到的Actor中有一个以非`'normal`原因退出，当前Actor就会终止。
+退出的原因和链接到的那个Actor一样。
+
+要改变这一行为的方法是设置`trapExit`为`true`。这样Acotr会收到一个类型为`Exit`的
+消息，包含了终止的Actor和退出的原因：
+
+{{{class="brush: scala"
+override def act() {
+	trapExit = true
+	link(worker)
+	while(...) {
+		recieve {
+			...
+			case Exit(linked, UncaughtException(_, _, _, _, cause)) => ...
+			case Exit(linked, reason) => ...
+		}
+	}
+}
+}}}
+
+让Actor挂掉是很正常的，但要连接到一个监管它的Actor来处理失败的处理方案，如：重新
+分配工作、或是重启。
+
+在大型的系统中，可以给Actor分成多个区域，各区域安排一个监管的actor。
+
+对于已经终止的Actor，它们依然保留内部状态与邮箱。可以用它的`restart()`方法重新
+启动。在这样做之前，可能会想要修复内部状态或设置一个标志来表示这个Actor正在以
+修复模式运行。另外还需要重新建立链接，因为终止时连接也被移除了。
+
+
+
+
 == 良好的actor风格 ==
 
 === actor不应该阻塞 ===
@@ -1172,6 +1478,10 @@ Actor 3 running in Thread[ForkJoinPool-2-worker-7,5,main]
 Scala可以混用actor模式与共享数据／锁模式两种方式。但第二种方式有锁死线程和线程
 不安全变量的风险。
 
+
+=== 不要调用Actor的方法 ===
+
+如果调用了Actor的方法那就等于引入所有传统并发的同步问题。
 
 === 优选不可变消息 ===
 
@@ -1243,6 +1553,20 @@ Scala可以混用actor模式与共享数据／锁模式两种方式。但第二�
     }
   }
 }}}
+
+
+=== 最小化回复 ===
+
+Actor的目的不是远程调用，任务应该被分发到一个Actor组成的网网络。每个Actor算出
+部分答案，发给一个知道如何合并出全部答案的Actor。
+
+
+=== 监管Actor的终止 ===
+
+Actor会终止是正常的。在大型的系统中，可以给Actor分成多个区域，各区域安排一个监管
+的actor。
+
+
 
 
 == 更加长的例子：并行离散事件模拟 ==

@@ -62,10 +62,17 @@
 <li><a href="#toc_2.2.3">Actor.actor()方法</a>
 <li><a href="#toc_2.2.4">!()方法发送消息</a>
 <li><a href="#toc_2.2.5">receive()方法接收消息</a>
-<li><a href="#toc_2.2.6">exit()方法停止actor</a>
-<li><a href="#toc_2.2.7">actor未启动也会收到消息</a>
+<ul>
+<li><a href="#toc_2.2.5.1">处理掉不匹配的消息</a>
+<li><a href="#toc_2.2.5.2">处理消息是串行化的</a>
+</ul>
+<li><a href="#toc_2.2.6">actor未启动也会收到消息</a>
 </ul>
 <li><a href="#toc_2.3">把原生线程当作actor</a>
+<ul>
+<li><a href="#toc_2.3.1">receiveWithin()</a>
+<li><a href="#toc_2.3.2">future</a>
+</ul>
 <li><a href="#toc_2.4">简单的并行计算例子</a>
 <li><a href="#toc_2.5">小结</a>
 <ul>
@@ -73,28 +80,38 @@
 <li><a href="#toc_2.5.2">发送不阻塞</a>
 <li><a href="#toc_2.5.3">接收消息不中断</a>
 <li><a href="#toc_2.5.4">接收消息阻塞</a>
-<li><a href="#toc_2.5.5">使用同步的方式传递消息</a>
 </ul>
-<li><a href="#toc_2.6">通过重用线程取得更好的性能</a>
+<li><a href="#toc_2.6">使用同步的方式传递消息</a>
+<li><a href="#toc_2.7">通过重用线程取得更好的性能</a>
 <ul>
-<li><a href="#toc_2.6.1">react工作原理</a>
-<li><a href="#toc_2.6.2">reactWithin</a>
-<li><a href="#toc_2.6.3">loop与loopWhile</a>
+<li><a href="#toc_2.7.1">react工作原理</a>
+<li><a href="#toc_2.7.2">reactWithin</a>
+<li><a href="#toc_2.7.3">loop与loopWhile</a>
 </ul>
-<li><a href="#toc_2.7">控制线程执行</a>
-<li><a href="#toc_2.8">良好的actor风格</a>
+<li><a href="#toc_2.8">控制线程执行</a>
+<li><a href="#toc_2.9">消息通道</a>
+<li><a href="#toc_2.10">Actor的生命周期</a>
 <ul>
-<li><a href="#toc_2.8.1">actor不应该阻塞</a>
-<li><a href="#toc_2.8.2">只通过消息与actor通信</a>
-<li><a href="#toc_2.8.3">优选不可变消息</a>
-<li><a href="#toc_2.8.4">让消息自包含</a>
+<li><a href="#toc_2.10.1">exit()方法停止actor</a>
+<li><a href="#toc_2.10.2">因为异常停止</a>
 </ul>
-<li><a href="#toc_2.9">更加长的例子：并行离散事件模拟</a>
+<li><a href="#toc_2.11">链接多个Actor</a>
+<li><a href="#toc_2.12">良好的actor风格</a>
 <ul>
-<li><a href="#toc_2.9.1">总体设计</a>
-<li><a href="#toc_2.9.2">实现模拟架构</a>
-<li><a href="#toc_2.9.3">实现一个电路模拟</a>
-<li><a href="#toc_2.9.4">把所有内容结合在一起</a>
+<li><a href="#toc_2.12.1">actor不应该阻塞</a>
+<li><a href="#toc_2.12.2">只通过消息与actor通信</a>
+<li><a href="#toc_2.12.3">不要调用Actor的方法</a>
+<li><a href="#toc_2.12.4">优选不可变消息</a>
+<li><a href="#toc_2.12.5">让消息自包含</a>
+<li><a href="#toc_2.12.6">最小化回复</a>
+<li><a href="#toc_2.12.7">监管Actor的终止</a>
+</ul>
+<li><a href="#toc_2.13">更加长的例子：并行离散事件模拟</a>
+<ul>
+<li><a href="#toc_2.13.1">总体设计</a>
+<li><a href="#toc_2.13.2">实现模拟架构</a>
+<li><a href="#toc_2.13.3">实现一个电路模拟</a>
+<li><a href="#toc_2.13.4">把所有内容结合在一起</a>
 </ul>
 </ul>
 <li><a href="#toc_3">连接符解析</a>
@@ -721,13 +738,13 @@ actor之间的协作方式是通过<code>!()</code>方法来发送消息，发�
 </p>
 
 <p>
-正如“模式匹配”一章中“模式无处不在”这一节中所说的，偏函数（特质<code>PartialFunction</code>
-的实例）并不是完整的函数。所以它不对所有输入值有都定义。除了接受单个<code>apply</code>方法
+正如“模式匹配”一章中“模式无处不在”这一节中所说的，偏函数（可以表示为特质
+<code>PartialFunction[Any, T]</code>的实例。其中<code>T</code>是<code>case =&gt;</code>语句右边表达式计算的结果类型
+）并不是完整的函数。所以它不对所有输入值有都定义。除了接受单个<code>apply</code>方法
 外，偏函数还提供一个<code>isDefineAt</code>方法，同样只接收单个参数。如果偏函数能处理传给
 <code>isDefineAt</code>函数的参数，那么<code>isDefineAt</code>返回<code>true</code>。把这个消息传递给偏函数的
 <code>apply</code>方法，<code>apply</code>方法就会处理这个消息。
 </p>
-
 
 <p>
 例如<code>echoActor</code>的<code>apply</code>方法会打印<code>"received message: "</code>，然后再输出消息对象的
@@ -768,38 +785,46 @@ actor之间的协作方式是通过<code>!()</code>方法来发送消息，发�
   Got an Int: 12
 </pre>
 
-<h3 id="toc_2.2.6">exit()方法停止actor</h3>
+<h4 id="toc_2.2.5.1">处理掉不匹配的消息</h4>
 
 <p>
-<code>exit()</code>方法会抛出异常，以试图停止当前线程的方式停止actor。它还有一个版本接收
-一个参数作为退出原因：
+注意：如果邮箱可能会被不能匹配<code>case</code>条件的消息挤满，可以用一个<code>case _</code>匹配所有
+情况来处理掉那些消息。
 </p>
 
-<pre class="brush: scala; highlight:[8]">
-import scala.actors._
-import Actor._
+<h4 id="toc_2.2.5.2">处理消息是串行化的</h4>
 
-class MyAct extends Actor {
-    def act() {
-        while (true) {
-            receive {
-                case "quit" =&gt; exit
-                case msg    =&gt; println(msg)
-            }
-        }
-    }
+<p>
+因为消息处理是串行化的，所以不会有并发的竞争状况。比如下面的<code>balance</code>是安全的，
+不会出现同时加减：
+</p>
+
+<pre class="brush: scala">
+class AccountActor extends Actor {
+	private var balance = 0.0
+	
+	def act() {
+		while (true) {
+			receive {
+				case Deposit(account)  =&gt; balance += amount
+				case Withdraw(account) =&gt; balance -= amount
+			}
+		}
+	}
+
 }
-
-val myAct = new MyAct
-
-myAct.start()
-
-myAct ! "Hello World!" 
-myAct ! "nice Day!" 
-myAct ! "quit" 
 </pre>
 
-<h3 id="toc_2.2.7">actor未启动也会收到消息</h3>
+<p>
+但是这只能保证同一个Actor对象中的成员安全。如果多个Actor共用的话，必然会有竞争
+状况。
+</p>
+
+<p>
+所以Actor <strong>绝对不应该</strong> 访问自身外部的状态对象，虽然Scala并没有强制。
+</p>
+
+<h3 id="toc_2.2.6">actor未启动也会收到消息</h3>
 
 <p>
 如果actor还没有启动，收到的消息也会放在队列里，不是不会马上处理。在<code>start()</code>方法
@@ -862,6 +887,8 @@ res2: Any = hello
 本身，所以消息被交互环境打印了出来。
 </p>
 
+<h3 id="toc_2.3.1">receiveWithin()</h3>
+
 <p>
 因为<code>receive()</code>是阻塞的，所以不知道要等到啥时候。所以如果使用了这项技巧，最好是
 用<code>receive()</code>的变种<code>receiveWithin()</code>。因为它可以指定一个以毫秒计的超时时限：
@@ -873,8 +900,28 @@ res2: Any = hello
 </pre>
 
 <p>
-可以用<code>case TIMEOUT</code>来匹配超时的情况。
+可以用<code>case TIMEOUT</code>来匹配超时的情况，这里指的是<code>Actor.TIMEOUT</code>。
 </p>
+
+<h3 id="toc_2.3.2">future</h3>
+
+<p>
+通过<code>!!()</code>方法表示接收一个Future对象，它表示一个未来会得到的结果，但现在先不
+计算它。类似于惰性求值：
+</p>
+
+<pre class="brush: scala">
+val replyFuture = account !! Deposit(1000)
+</pre>
+
+<p>
+上面的代码因为不求出结果，所以可以看作是不阻塞的。在取出值时阻塞：
+</p>
+
+<pre class="brush: scala">
+val reply = replyFuture()
+</pre>
+
 
 <h2 id="toc_2.4">简单的并行计算例子</h2>
 
@@ -998,7 +1045,7 @@ receive { case msg =&gt; println(msg) }
 如果在调用<code>receive</code>方法时消息队列里没有消息，那么<code>receive</code>方法会阻塞。
 </p>
 
-<h3 id="toc_2.5.5">使用同步的方式传递消息</h3>
+<h2 id="toc_2.6">使用同步的方式传递消息</h2>
 
 <p>
 虽然异步方式能利用并发，但也有需要用同步的情况存在。这时可以用<code>!?()</code>方法，注意
@@ -1064,7 +1111,7 @@ received belated message your day will rock! 2
 </pre>
 
 
-<h2 id="toc_2.6">通过重用线程取得更好的性能</h2>
+<h2 id="toc_2.7">通过重用线程取得更好的性能</h2>
 
 <p>
 Acter建立在普通的Java线程上，用之前的方法每actor的<code>receive</code>方法个都占一个线程。
@@ -1210,10 +1257,53 @@ IP地址：
 线程就可以运行所有的actor。实例应用中应该用少用几个<code>receive</code>，尽量多用<code>react</code>。
 </p>
 
-<h3 id="toc_2.6.1">react工作原理</h3>
+<h3 id="toc_2.7.1">react工作原理</h3>
 
 <p>
 返回类型<code>Nothing</code>表示永远不会正常返回的函数，相反，总是以一个异常方式完成。
+</p>
+
+<p>
+因为<code>react</code>会因为异常退出，所以不能把它放在<code>while</code>循环中。如：
+</p>
+
+<pre class="brush: scala">
+def act() {
+	while (true) {
+		react {
+			case Withdraw(amount) =&gt; println("Withdrawing " + amount)
+		}
+	}
+}
+</pre>
+
+<p>
+因为<code>react()</code>方法的参数是一个没有返回对象的偏函数：
+</p>
+
+<pre class="brush: scala">
+{ case Withdraw(amount) =&gt; println("Withdrawing " + amount) }
+</pre>
+
+<p>
+所以它不能返回到循环当中去，所以要实现循环的方法之一是在消息处理器中再次调用
+<code>act()</code>方法：
+</p>
+
+<pre class="brush: scala">
+def act() {
+	react {
+		case Withdraw(amount) =&gt; {
+			println("Withdrawing " + amount)
+			act()
+		}
+	}
+}
+</pre>
+
+<p>
+这样的作法相当于用一个无穷的递归替换掉无穷的循环。但由于每次<code>react()</code>调用都会
+抛出异常，所以栈被清空，不会占用太大的栈空间。
 </p>
 
 <p>
@@ -1234,7 +1324,7 @@ actor的<code>act</code>方法。如果<code>act</code>调用了<code>react</cod
 <code>act</code>方法，或使用其他手段让<code>react</code>再次被调用。
 </p>
 
-<h3 id="toc_2.6.2">reactWithin</h3>
+<h3 id="toc_2.7.2">reactWithin</h3>
 
 <p>
 <code>reactWithin</code>在超时没有收到消息时会匹配<code>case TIMEOUT</code>。下面有一个累加器的实现：
@@ -1313,7 +1403,7 @@ Timed out! Will send result now
 Total is 16
 </pre>
 
-<h3 id="toc_2.6.3">loop与loopWhile</h3>
+<h3 id="toc_2.7.3">loop与loopWhile</h3>
 
 <p>
 由于通过<code>react</code>重用线程的方案非常普遍，所以actor库对此有特别的支持。<code>actor.loop</code>
@@ -1339,7 +1429,34 @@ Total is 16
 还有带循环条件的版本<code>loopWhile(...)</code>。
 </p>
 
-<h2 id="toc_2.7">控制线程执行</h2>
+<pre class="brush: scala">
+loopWhile(count &lt; max) {
+	react {
+		...
+	}
+}
+</pre>
+
+<p>
+还有<code>eventloop()</code>方法可以制作聘个无穷循套环<code>react()</code>的简化版本，不过前提是偏函数
+不会再次调用<code>react</code>：
+</p>
+
+<pre class="brush: scala">
+def act() {
+	eventloop {
+		case Withdraw(amount) =&gt; println("Withdrawing " + amount)
+	}
+}
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<pre class="brush: scala">
+</pre>
+
+<h2 id="toc_2.8">控制线程执行</h2>
 
 <p>
 Scala会让单例对象<code>Scheduler</code>去运行actor，通过设置<code>Scheduler.impl</code>的各种实现，
@@ -1434,9 +1551,307 @@ Actor 3 running in Thread[ForkJoinPool-2-worker-7,5,main]
 
 
 
-<h2 id="toc_2.8">良好的actor风格</h2>
 
-<h3 id="toc_2.8.1">actor不应该阻塞</h3>
+<h2 id="toc_2.9">消息通道</h2>
+
+<p>
+除了共享Actor的引用，还可以通过共享消息通道的方式。消息通道有以下优点：
+</p>
+
+<ul>
+<li>
+消息通道是类型安全的，只能发送或接受某个特定类型的消息。
+
+<li>
+防止调用到某个Actor的方法。
+
+</ul>
+
+<p>
+消息通道可以是一个OutputChannel特质（带有<code>!</code>方法）或是一个InputChannel特技（带有
+<code>receive</code>或<code>react</code>方法）。也可以有<code>Channel</code>特质同时扩展这两个特质。
+</p>
+
+<p>
+消息通道的构造函数需要一个Actor作为参数：
+</p>
+
+<pre class="brush: scala">
+val channel - new Channel[Int](someActor)
+</pre>
+
+<p>
+如果不提供参数，那就是绑定到当前执行的Actor上。
+</p>
+
+<p>
+通常，会指定Actor发送消息到一个输出消息通道：
+</p>
+
+<pre class="brush: scala; highlight: [44]">
+import scala.actors._
+import scala.actors.Actor._
+
+case class Compute(data: Seq[Int], result: Channel[Int])
+
+class PrimeCounter extends Actor {
+  def isPrime(n: Int) = new java.math.BigInteger("" + n).isProbablePrime(20)
+
+  def act() {
+    while (true) {
+      receive {
+        case Compute(data, continuation) =&gt; {
+          val answer = data.count(isPrime)
+          continuation ! answer // Send the answer to the channel
+        }
+      }
+    }
+  }
+
+}
+
+object Main extends App {
+  val max = 100000 
+  // try with 1000000 
+  val nactors = 10
+  val groupSize = max / nactors / 10
+
+  val primeCounters = for (i &lt;- 0 until nactors) yield new PrimeCounter
+  for (a &lt;- primeCounters) a.start()
+
+  actor {
+    val c = new Channel[Int] // A channel to this actor
+    
+    val groups = (2 to max).grouped(groupSize).zipWithIndex.toSeq
+    var count = groups.length
+    var total = 0
+
+    for ((g, i) &lt;- groups)  {
+      val a = primeCounters(i % primeCounters.length)
+      a ! Compute(g, c) // a is an actor, not a channel
+    }
+
+    while (count &gt; 0) {
+      c.receive { 
+        case t =&gt; { // The channel receives an Int
+          total += t
+          count -= 1
+        }
+      }
+    }
+    println(total + " primes")
+    System.exit(0)
+  }
+}
+</pre>
+
+<p>
+注意这里调用的是消息通道的<code>receive()</code>方法而不是Actor自己的。如果要通过Actor来
+接收，可以匹配一个<code>!</code>样本类：
+</p>
+
+<pre class="brush: scala">
+receive {
+	case !(channel, x) =&gt; ...
+}
+</pre>
+
+<h2 id="toc_2.10">Actor的生命周期</h2>
+
+<p>
+Actor的<code>act()</code>方法在<code>start()</code>方法被调用时开始执行。然后通常情况下都是进入某个
+循环：
+</p>
+
+<pre class="brush: scala">
+def act() {
+	while (...) {
+		receive {
+			...
+		}
+	}
+}
+</pre>
+
+<p>
+会让Actor终止的情况：
+</p>
+
+<ol>
+<li>
+<code>act()</code>方法返回。
+
+<li>
+<code>act()</code>方法因异常终止。
+
+<li>
+<code>actor</code>调用<code>exit()</code>方法。
+
+</ol>
+
+<h3 id="toc_2.10.1">exit()方法停止actor</h3>
+
+<p>
+<code>exit()</code>方法是一个受保护的方法，只能被<code>Actor</code>的子类调用。<code>exit()</code>方法会抛出异常
+，以试图停止当前线程的方式停止actor。它还有一个版本接收一个参数作为退出原因：
+</p>
+
+<pre class="brush: scala; highlight:[8]">
+import scala.actors._
+import Actor._
+
+class MyAct extends Actor {
+    def act() {
+        while (true) {
+            receive {
+                case "quit" =&gt; exit
+                case msg    =&gt; println(msg)
+            }
+        }
+    }
+}
+
+val myAct = new MyAct
+
+myAct.start()
+
+myAct ! "Hello World!" 
+myAct ! "nice Day!" 
+myAct ! "quit" 
+</pre>
+
+<p>
+如果不带原因，那就相当于<code>exit('normal)</code>。
+</p>
+
+
+<h3 id="toc_2.10.2">因为异常停止</h3>
+
+<p>
+如果因为异常终止，退出原因就是<code>UncaughtException</code>样本类的一个实例。它有以下属性
+：
+</p>
+
+<ul>
+<li>
+actor：抛出异常的Actor。
+
+<li>
+message：<code>Some(msg)</code>，其中的<code>msg</code>就是该Actor处理的最后一条消息；或为<code>None</code>，
+  表示Actor在没有来得及处理任何消息时就挂掉了。
+
+<li>
+sender：<code>Some(channel)</code>，最后一条消息发送方的输出通道；为<code>None</code>表示Actor在没有
+  来得及处理任何消息时就挂掉了。
+
+<li>
+thread：退出时所在的线程。
+
+<li>
+cause：相应的异常。
+
+</ul>
+
+<p>
+默认情况下所有末处理的异常都会造成一个<code>UncaughtException</code>原因的退出。必要时可以
+重写<code>exceptionHandler()</code>方法来改变这个行为，它应该产出一个偏函数，类型为：
+</p>
+
+<pre class="brush: scala">
+PartialFunction[Exception, Unit]
+</pre>
+
+<p>
+这样如果这个偏函数有效就被调用，Actor以<code>'normal</code>原因退出。
+</p>
+
+<p>
+例如在需要不把非受检异常当作非正常的话，可以提供以下处理器：
+</p>
+
+<pre class="brush: scala">
+override def exceptionHandler = {
+	case e: RuntimeException =&gt; log(e)
+}
+</pre>
+
+<h2 id="toc_2.11">链接多个Actor</h2>
+
+<p>
+通过<code>link()</code>方法链接多个Actor可以在一个Actor终止得通知另一个：
+</p>
+
+<pre class="brush: scala">
+def act() {
+	link(master)
+	...
+</pre>
+
+<p>
+链接是双向的，一个终止会通知另外一个。但是并不是对称的，比如上面的：
+</p>
+
+<pre class="brush: scala">
+link(master)
+</pre>
+
+<p>
+并不能用：
+</p>
+
+<pre class="brush: scala">
+master.link(self)
+</pre>
+
+<p>
+来代替。<code>link()</code>方法必须由请求链接的Actor调用。
+</p>
+
+<p>
+默认情况下，只要链接到的Actor中有一个以非<code>'normal</code>原因退出，当前Actor就会终止。
+退出的原因和链接到的那个Actor一样。
+</p>
+
+<p>
+要改变这一行为的方法是设置<code>trapExit</code>为<code>true</code>。这样Acotr会收到一个类型为<code>Exit</code>的
+消息，包含了终止的Actor和退出的原因：
+</p>
+
+<pre class="brush: scala">
+override def act() {
+	trapExit = true
+	link(worker)
+	while(...) {
+		recieve {
+			...
+			case Exit(linked, UncaughtException(_, _, _, _, cause)) =&gt; ...
+			case Exit(linked, reason) =&gt; ...
+		}
+	}
+}
+</pre>
+
+<p>
+让Actor挂掉是很正常的，但要连接到一个监管它的Actor来处理失败的处理方案，如：重新
+分配工作、或是重启。
+</p>
+
+<p>
+在大型的系统中，可以给Actor分成多个区域，各区域安排一个监管的actor。
+</p>
+
+<p>
+对于已经终止的Actor，它们依然保留内部状态与邮箱。可以用它的<code>restart()</code>方法重新
+启动。在这样做之前，可能会想要修复内部状态或设置一个标志来表示这个Actor正在以
+修复模式运行。另外还需要重新建立链接，因为终止时连接也被移除了。
+</p>
+
+
+
+
+<h2 id="toc_2.12">良好的actor风格</h2>
+
+<h3 id="toc_2.12.1">actor不应该阻塞</h3>
 
 <p>
 当一个阻塞时，另一个actor可以会发出别的请求。多个actor等一个阻塞的actor会带来
@@ -1505,7 +1920,7 @@ Actor 3 running in Thread[ForkJoinPool-2-worker-7,5,main]
   I'm acting!
 </pre>
 
-<h3 id="toc_2.8.2">只通过消息与actor通信</h3>
+<h3 id="toc_2.12.2">只通过消息与actor通信</h3>
 
 <p>
 Scala可以混用actor模式与共享数据／锁模式两种方式。但第二种方式有锁死线程和线程
@@ -1513,7 +1928,13 @@ Scala可以混用actor模式与共享数据／锁模式两种方式。但第二�
 </p>
 
 
-<h3 id="toc_2.8.3">优选不可变消息</h3>
+<h3 id="toc_2.12.3">不要调用Actor的方法</h3>
+
+<p>
+如果调用了Actor的方法那就等于引入所有传统并发的同步问题。
+</p>
+
+<h3 id="toc_2.12.4">优选不可变消息</h3>
 
 <p>
 虽然actor模式对于线程来说数据是不共享的，但还是有共享数据的情况：就是消息会在
@@ -1524,7 +1945,7 @@ Scala可以混用actor模式与共享数据／锁模式两种方式。但第二�
 而且下面会说到，有些消息会有一个指向自己的引用。所以尽量使用不可变的消息。
 </p>
 
-<h3 id="toc_2.8.4">让消息自包含</h3>
+<h3 id="toc_2.12.5">让消息自包含</h3>
 
 <p>
 因为actor是非阻塞的，发出一个请求不等响应就做别的事情的。等响应回来都不知道是
@@ -1601,13 +2022,31 @@ Scala可以混用actor模式与共享数据／锁模式两种方式。但第二�
 </pre>
 
 
-<h2 id="toc_2.9">更加长的例子：并行离散事件模拟</h2>
+<h3 id="toc_2.12.6">最小化回复</h3>
+
+<p>
+Actor的目的不是远程调用，任务应该被分发到一个Actor组成的网网络。每个Actor算出
+部分答案，发给一个知道如何合并出全部答案的Actor。
+</p>
+
+
+<h3 id="toc_2.12.7">监管Actor的终止</h3>
+
+<p>
+Actor会终止是正常的。在大型的系统中，可以给Actor分成多个区域，各区域安排一个监管
+的actor。
+</p>
+
+
+
+
+<h2 id="toc_2.13">更加长的例子：并行离散事件模拟</h2>
 
 <p>
 把“有状态对象”一章的电路模拟强化成并行化的。
 </p>
 
-<h3 id="toc_2.9.1">总体设计</h3>
+<h3 id="toc_2.13.1">总体设计</h3>
 
 <p>
 核心思路是把每个模拟的对象都用actor，状态位于actor内部。这样实现并行性。
@@ -1725,7 +2164,7 @@ actor和发往该actor的消息：
 通过向时钟发送工作项增加到日程表的方式来和其他参与者们通信。
 </p>
 
-<h3 id="toc_2.9.2">实现模拟架构</h3>
+<h3 id="toc_2.13.2">实现模拟架构</h3>
 
 <p>
 <code>Clock</code>类的<code>running</code>初始为<code>false</code>。模拟初始化全都完成以后，会发<code>Start</code>消息给它，
@@ -1921,7 +2360,7 @@ actor和发往该actor的消息：
   }
 </pre>
 
-<h3 id="toc_2.9.3">实现一个电路模拟</h3>
+<h3 id="toc_2.13.3">实现一个电路模拟</h3>
 
 <p>
 电路类<code>Circuit</code>：
@@ -2208,7 +2647,7 @@ actor和发往该actor的消息：
       with MultiCoreProcessors
 </pre>
 
-<h3 id="toc_2.9.4">把所有内容结合在一起</h3>
+<h3 id="toc_2.13.4">把所有内容结合在一起</h3>
 
 <p>
 一切大功告成。简单地演示如下：
