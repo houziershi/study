@@ -1,0 +1,290 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>Perl.quickview</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>Perl.quickview</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">基础</a>
+<li><a href="#toc_2">数据类型</a>
+<li><a href="#toc_3">条件语句和循环语句</a>
+<li><a href="#toc_4">文件读/写</a>
+<li><a href="#toc_5">正则表达式</a>
+<li><a href="#toc_6">值传递或引用传递</a>
+<ul>
+<li><a href="#toc_6.1">Array</a>
+<li><a href="#toc_6.2">Hash</a>
+</ul>
+<li><a href="#toc_7">小技巧</a>
+<ul>
+<li><a href="#toc_7.1">通过字符串的每个字符进行循环</a>
+<li><a href="#toc_7.2">创建一个包含26个字母的数组</a>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">基础</h1>
+
+<p>
+与Java不同，Perl中没有main方法这样的入口点，要运行下面的Perl程序，比如：
+</p>
+
+
+<pre class="brush: perl">
+# comment starts with "#"
+# the name is hello.pl
+print "Hello Perl!";
+</pre>
+
+<p>
+只需执行：
+</p>
+
+<pre class="brush: bash">
+perl hello.pl
+</pre>
+
+
+<h1 id="toc_2">数据类型</h1>
+
+<p>
+Perl语言中的数据类型非常简单，只有3种类型：Scalar、Array和Hash。
+</p>
+
+<ul>
+<li>
+Scalar类型即标量，是单个的值，它基本上是除了Array和Hash类型的所有一切。
+
+<li>
+Array类型是一个数组，可以包含不同类型的元素，比如它可以同时包含整数元素和
+  字符串元素的数组。
+
+<li>
+Hash类型与Java语言的HashMap类相似。
+
+</ul>
+
+<p>
+下面的代码显示了它们的用法：
+</p>
+
+<pre class="brush: perl">
+#claim a hash and assign some values
+my %aHash;
+$aHash{'a'}=0;
+$aHash{'b'}=1;
+$aHash{'c'}=2;
+$aHash{'d'}=3;
+$aHash{'e'}=4;
+ 
+#put all keys to an array
+my @anArray = keys (%aHash);
+ 
+#loop array and output each scalar
+foreach my $aScalar (@anArray){
+	print $aScalar."\n";
+}
+</pre>
+
+<p>
+执行输出：
+</p>
+
+<pre class="brush: perl">
+e
+c
+a
+b
+d
+</pre>
+
+<p>
+如果想对数组排序，可以简单的使用sort函数，如下：
+</p>
+
+<pre class="brush: perl">
+foreach my $aScalar (sort @anArray){
+	print $aScalar."\n";
+}
+</pre>
+
+
+<h1 id="toc_3">条件语句和循环语句</h1>
+
+<p>
+Perl语言的条件语句和循环语句有if、while、for、foreach等关键字，它们和Java语法中
+的对应关键字很相似。
+</p>
+
+<p>
+下面的例子说明了这一点：
+</p>
+
+<pre class="brush: perl">
+#if
+my $condition = 0;
+if( $condition == 0){
+	print "=0\n";
+}elsif($condition == 1){
+	print "=1\n";
+}else{
+	print "others\n";
+}
+ 
+ 
+#while
+while($condition &lt; 5){
+	print $condition;
+	$condition++;
+}
+ 
+for(my $i=0; $i&lt; 5; $i++){
+	print $i;
+}
+ 
+#foreach
+my @anArray = ("a", 1, 'c');
+foreach my $aScalar (sort @anArray){
+	print $aScalar."\n";
+}
+</pre>
+
+<h1 id="toc_4">文件读/写</h1>
+
+<p>
+下面的例子说明了如何从文件中读取内容，以及如何向文件写入内容。
+</p>
+
+<p>
+要注意<code>&gt;</code>和<code>&gt;&gt;</code>的不同，前者是创建新文件，后者是向文件添加内容。
+</p>
+
+<pre class="brush: perl">
+#read from a file
+my $file = "input.txt";
+open(my $fh, "&lt;", $file) or die "cannot open &lt; $file!";
+while ( my $aline = &lt;$fh&gt; ) {
+	#chomp so no new line character
+	chomp($aline);
+	print $aline;
+}
+close $fh;
+ 
+# write to a file
+my $output = "output.txt";
+open (my $fhOutput, "&gt;", $output) or die("Error: Cannot open $output file!");
+print $fhOutput "something";
+close $fhOutput;
+</pre>
+
+
+<h1 id="toc_5">正则表达式</h1>
+
+<p>
+要使用正则表达式，主要会用到2个函数：<code>m</code>和<code>s</code>。
+</p>
+
+<p>
+下面的代码讲述了用正则表达式匹配字符串<code>$str</code>：
+</p>
+
+<pre class="brush: perl">
+$str =~ m/program(creek|river)/
+</pre>
+
+<p>
+假设字符串<code>$str</code>的值为<code>programcreek</code>，上面的表达式返回true，可用作条件表达式或
+循环的条件。
+</p>
+
+<h1 id="toc_6">值传递或引用传递</h1>
+
+<p>
+Perl程序中无需定义方法或函数，但是呢，定义方法或函数可以改进代码的质量，提高代码
+的重用性。因此，我们需要关心参数传递。
+</p>
+
+<p>
+可以直接传递标量Scalar，但是当涉及到数组或Hash时，需引起注意。
+</p>
+
+<h2 id="toc_6.1">Array</h2>
+
+<pre class="brush: perl">
+my @testArray = (1, 3, 2);
+ 
+#In sub
+sub processArrayByReference($) {
+	my $arrayref = shift;
+	my @array    = @$arrayref;
+	#...
+}
+ 
+#In sub processarray:
+sub processArrayByValue($){
+	my @array = @_;
+	#...
+}
+ 
+processArrayByValue(@testArray);
+ 
+processArrayByReference( \@testArray );
+</pre>
+
+<h2 id="toc_6.2">Hash</h2>
+
+<pre class="brush: perl">
+sub printHash($) {
+	my %hash = %{ shift() };
+	for my $key ( sort keys %hash ) {
+		my $value = $hash{$key};
+		print "$key =&gt; $value\n";
+	}
+}
+ 
+printHash(\%twoLettersCount);
+</pre>
+
+
+<h1 id="toc_7">小技巧</h1>
+
+<h2 id="toc_7.1">通过字符串的每个字符进行循环</h2>
+
+<pre class="brush: perl">
+my @lineCharArray = split('',$aline);
+ 
+foreach my $character (@lineCharArray){
+	print $character."\n";
+}
+</pre>
+
+
+<h2 id="toc_7.2">创建一个包含26个字母的数组</h2>
+
+<pre class="brush: perl">
+my @charArray = ('a'..'z' );
+my @twoCharArray = ('aa'..'zz');
+</pre>
+ </div>
+</body>
+</html>

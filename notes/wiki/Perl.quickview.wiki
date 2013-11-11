@@ -1,0 +1,211 @@
+
+%title Perl.quickview
+
+%toc Perl.quickview
+
+= 基础 =
+
+与Java不同，Perl中没有main方法这样的入口点，要运行下面的Perl程序，比如：
+
+
+{{{class="brush: perl"
+# comment starts with "#"
+# the name is hello.pl
+print "Hello Perl!";
+}}}
+
+只需执行：
+
+{{{class="brush: bash"
+perl hello.pl
+}}}
+
+
+= 数据类型 =
+
+Perl语言中的数据类型非常简单，只有3种类型：Scalar、Array和Hash。
+
+* Scalar类型即标量，是单个的值，它基本上是除了Array和Hash类型的所有一切。
+* Array类型是一个数组，可以包含不同类型的元素，比如它可以同时包含整数元素和
+  字符串元素的数组。
+* Hash类型与Java语言的HashMap类相似。
+
+下面的代码显示了它们的用法：
+
+{{{class="brush: perl"
+#claim a hash and assign some values
+my %aHash;
+$aHash{'a'}=0;
+$aHash{'b'}=1;
+$aHash{'c'}=2;
+$aHash{'d'}=3;
+$aHash{'e'}=4;
+ 
+#put all keys to an array
+my @anArray = keys (%aHash);
+ 
+#loop array and output each scalar
+foreach my $aScalar (@anArray){
+	print $aScalar."\n";
+}
+}}}
+
+执行输出：
+
+{{{class="brush: perl"
+e
+c
+a
+b
+d
+}}}
+
+如果想对数组排序，可以简单的使用sort函数，如下：
+
+{{{class="brush: perl"
+foreach my $aScalar (sort @anArray){
+	print $aScalar."\n";
+}
+}}}
+
+
+= 条件语句和循环语句 =
+
+Perl语言的条件语句和循环语句有if、while、for、foreach等关键字，它们和Java语法中
+的对应关键字很相似。
+
+下面的例子说明了这一点：
+
+{{{class="brush: perl"
+#if
+my $condition = 0;
+if( $condition == 0){
+	print "=0\n";
+}elsif($condition == 1){
+	print "=1\n";
+}else{
+	print "others\n";
+}
+ 
+ 
+#while
+while($condition < 5){
+	print $condition;
+	$condition++;
+}
+ 
+for(my $i=0; $i< 5; $i++){
+	print $i;
+}
+ 
+#foreach
+my @anArray = ("a", 1, 'c');
+foreach my $aScalar (sort @anArray){
+	print $aScalar."\n";
+}
+}}}
+
+= 文件读/写 =
+
+下面的例子说明了如何从文件中读取内容，以及如何向文件写入内容。
+
+要注意`>`和`>>`的不同，前者是创建新文件，后者是向文件添加内容。
+
+{{{class="brush: perl"
+#read from a file
+my $file = "input.txt";
+open(my $fh, "<", $file) or die "cannot open < $file!";
+while ( my $aline = <$fh> ) {
+	#chomp so no new line character
+	chomp($aline);
+	print $aline;
+}
+close $fh;
+ 
+# write to a file
+my $output = "output.txt";
+open (my $fhOutput, ">", $output) or die("Error: Cannot open $output file!");
+print $fhOutput "something";
+close $fhOutput;
+}}}
+
+
+= 正则表达式 =
+
+要使用正则表达式，主要会用到2个函数：`m`和`s`。
+
+下面的代码讲述了用正则表达式匹配字符串`$str`：
+
+{{{class="brush: perl"
+$str =~ m/program(creek|river)/
+}}}
+
+假设字符串`$str`的值为`programcreek`，上面的表达式返回true，可用作条件表达式或
+循环的条件。
+
+= 值传递或引用传递 =
+
+Perl程序中无需定义方法或函数，但是呢，定义方法或函数可以改进代码的质量，提高代码
+的重用性。因此，我们需要关心参数传递。
+
+可以直接传递标量Scalar，但是当涉及到数组或Hash时，需引起注意。
+
+== Array ==
+
+{{{class="brush: perl"
+my @testArray = (1, 3, 2);
+ 
+#In sub
+sub processArrayByReference($) {
+	my $arrayref = shift;
+	my @array    = @$arrayref;
+	#...
+}
+ 
+#In sub processarray:
+sub processArrayByValue($){
+	my @array = @_;
+	#...
+}
+ 
+processArrayByValue(@testArray);
+ 
+processArrayByReference( \@testArray );
+}}}
+
+== Hash ==
+
+{{{class="brush: perl"
+sub printHash($) {
+	my %hash = %{ shift() };
+	for my $key ( sort keys %hash ) {
+		my $value = $hash{$key};
+		print "$key => $value\n";
+	}
+}
+ 
+printHash(\%twoLettersCount);
+}}}
+
+
+= 小技巧 =
+
+== 通过字符串的每个字符进行循环 ==
+
+{{{class="brush: perl"
+my @lineCharArray = split('',$aline);
+ 
+foreach my $character (@lineCharArray){
+	print $character."\n";
+}
+}}}
+
+
+== 创建一个包含26个字母的数组 ==
+
+{{{class="brush: perl"
+my @charArray = ('a'..'z' );
+my @twoCharArray = ('aa'..'zz');
+}}}
+
+

@@ -41,6 +41,10 @@ reveal.js： [[reveal.js]]
 
 [[python.example]]
 
+=== Perl ===
+
+[[Perl.quickview]]
+
 = 基础 =
 
 数据结构与算法：[[Data.Structures.and.Algorithm]]
