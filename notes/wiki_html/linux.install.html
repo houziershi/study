@@ -405,6 +405,7 @@ admin       ALL = NOPASSWD : /etc/init.d/apache
 <pre class="brush: bash">
 Port 1234
 PermitRootLogin no
+AllowUsers user01
 </pre>
 
 <p>
@@ -413,6 +414,14 @@ PermitRootLogin no
 
 <pre class="brush: bash">
 service sshd restart
+</pre>
+
+<p>
+或是：
+</p>
+
+<pre class="brush: bash">
+sudo /etc/init.d/ssh restart
 </pre>
 
 <p>

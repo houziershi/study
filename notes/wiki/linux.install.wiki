@@ -245,12 +245,19 @@ admin       ALL = NOPASSWD : /etc/init.d/apache
 {{{class="brush: bash"
 Port 1234
 PermitRootLogin no
+AllowUsers user01
 }}}
 
 重启服务：
 
 {{{class="brush: bash"
 service sshd restart
+}}}
+
+或是：
+
+{{{class="brush: bash"
+sudo /etc/init.d/ssh restart
 }}}
 
 生成登录用的密钥

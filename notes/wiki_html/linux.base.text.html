@@ -32,8 +32,19 @@
 <ul>
 <li><a href="#toc_1.2.1">wc</a>
 <li><a href="#toc_1.2.2">paste</a>
+<li><a href="#toc_1.2.3">tr</a>
+<li><a href="#toc_1.2.4">colrm</a>
+<li><a href="#toc_1.2.5">expand 和 unexpand</a>
+<li><a href="#toc_1.2.6">fold</a>
+<li><a href="#toc_1.2.7">paste</a>
+<li><a href="#toc_1.2.8">uniq</a>
 </ul>
 <li><a href="#toc_1.3">比较</a>
+<ul>
+<li><a href="#toc_1.3.1">diff</a>
+<li><a href="#toc_1.3.2">comm</a>
+<li><a href="#toc_1.3.3">cmp</a>
+</ul>
 </ul>
 </ul>
 </div>
@@ -175,9 +186,267 @@ d
      d
 </pre>
 
+<h3 id="toc_1.2.3">tr</h3>
 
+<p>
+tr 命令用来转换来自 stdin 的字符，在 stdout 中显示。tr 一般接受两个字符集合，
+用第二个集合中的字符替换第一个集合中的字符。有许多预定义的字符类（集合）可供 tr 使用，还有其他命令可用。
+</p>
+
+<p>
+这些预定义的字符类是：
+</p>
+
+<ul>
+<li>
+alnum：字母数字字符
+
+<li>
+alpha：字母字符
+
+<li>
+blank：空白字符
+
+<li>
+cntrl：控制字符
+
+<li>
+digit：数字字符
+
+<li>
+graph：图形字符
+
+<li>
+lower：小写字母字符
+
+<li>
+print：可打印字符
+
+<li>
+punct：标点字符
+
+<li>
+space：空间字符
+
+<li>
+upper：大写字符
+
+<li>
+xdigit：16 进制字符
+
+</ul>
+
+<p>
+例：
+</p>
+
+<p>
+tr 命令够将字符串中的小写字符转换成大写。
+</p>
+
+<p>
+tr 示例：将字符串转换成大写
+</p>
+
+<pre class="brush: bash">
+$ echo "Who is the standard text editor?" |tr [:lower:] [:upper:]
+ WHO IS THE STANDARD TEXT EDITOR?
+</pre>
+
+<p>
+tr 可以用来从字符串中删除指定字符。
+</p>
+
+<p>
+tr 示例：从字符串中删除指定字符
+</p>
+
+<pre class="brush: bash">
+$ echo 'ed, of course!' |tr -d aeiou
+ d, f crs!
+</pre>
+
+<p>
+使用 tr 将字符串中任何指定字符转换成空格。在序列中遇到多个指定字符时，它们会转换
+成一个空格。
+</p>
+
+<p>
+<code>-s</code>选项标志的行为在不同系统中表现不同。
+</p>
+
+<p>
+tr 示例：将字符转变成空格
+</p>
+
+<pre class="brush: bash">
+$ echo 'The ed utility is the standard text editor.' |tr -s astu ' '
+ The ed ili y i he nd rd ex edi or.
+</pre>
+
+<p>
+<code>-s</code>选项标志可以用来取消字符串中多余的空格。
+</p>
+
+<pre class="brush: bash">
+$ echo 'extra spaces – 5’ | tr -s [:blank:]
+ extra spaces - 5
+ $ echo ‘extra tabs – 2’ | tr -s [:blank:]
+ extra tabs – 2
+</pre>
+
+<p>
+在基于 UNIX 和 Windows 系统之间转换文件时发生的常见问题就是行分隔符 
+(line delimiters)。在 UNIX 系统中，行分隔符为一个换行符，而在 Windows 系统中，
+则是用两个字符（即一个回车符和一个换行符）。使用 tr 配合某种重定向，可以解决这个
+格式问题。
+</p>
+
+<p>
+tr 示例：消除回车符
+</p>
+
+<pre class="brush: bash">
+$ tr -d '\r' &lt; dosfile.txt &gt; unixfile.txt
+</pre>
+
+<h3 id="toc_1.2.4">colrm</h3>
+
+<p>
+使用 colrm，可以从流中剪切出文本列。在第一个示例中，使用 colrm 命令从管道的每行
+文本中剪切出第 4 列到行尾。然后，将同一个文件发送至colrm，以删除第4列到第5列。
+</p>
+
+<p>
+使用 colrm 删除列的示例
+</p>
+
+<pre class="brush: bash">
+$ cat grocery.list |colrm 4
+ app
+ ban
+ plu
+ car
+ $ cat grocery.list |colrm 4 5
+ apps
+ banas
+ plu
+ carts
+</pre>
+
+<h3 id="toc_1.2.5">expand 和 unexpand</h3>
+
+<p>
+expand 命令将制表符变成空格，而 unexpand 将空格变成制表符。这两个命令都接受
+stdin 输入以及命令行指定文件的输入。使用<code>-t</code>选项可以设置一个或多个制表符停止位。
+</p>
+
+<p>
+expand 和 unexpand 示例：
+</p>
+
+<pre class="brush: bash">
+$ cat grocery.list|head -2|nl|nl
+ 1 1 apples
+ 2 2 bananas
+ $ cat grocery.list|head -2|nl|nl|expand -t 5
+ 1 1 apples
+ 2 2 bananas
+ $ cat grocery.list|head -2|nl|nl|expand -t 5,20
+ 1 1 apples
+ 2 2 bananas
+ $ cat grocery.list|head -2|nl|nl|expand -t 5,20|unexpand -t 1,5
+ 1 1 apples
+ 2 2 bananas
+</pre>
+
+<h3 id="toc_1.2.6">fold</h3>
+
+<p>
+使用 fold 命令可以将行拆分为指定的宽度。这个命令最初是用来对无法支持换行的定宽
+输出设备进行文本格式化。-w 选项标志允许使用指定行宽，而不是只使用默认的80列。
+</p>
+
+<h3 id="toc_1.2.7">paste</h3>
+
+<p>
+paste 命令用来合并文件，将每个文件的记录逐一合并。利用重定向，可以通过将一个文件
+中的每个记录与另一个文件的记录合并，来新建文件。
+</p>
+
+<p>
+使用分隔符
+</p>
+
+<pre class="brush: bash">
+$ paste -d, dummy1.txt dummy2.txt
+ IBM,174.99
+ INTC,22.69
+ SAP,59.37
+ VMW,102.92
+</pre>
+
+<h3 id="toc_1.2.8">uniq</h3>
+
+<p>
+uniq 命令通常用来惟一地列出输入源（通常是文件或 stdin）中的行。要正确操作，重复
+的行必须连续放置于输入中。uniq 命令的输入通常会进行排序，因此重复的行会进行合并
+。与 uniq 命令搭配使用的两个常用标志是：
+</p>
+<ul>
+<li>
+<code>-c</code>输出每行出现的次数，
+
+<li>
+<code>-d</code>用来显示重复行的一个实例。
+
+</ul>
 
 <h2 id="toc_1.3">比较</h2>
+
+<h3 id="toc_1.3.1">diff</h3>
+
+<p>
+diff 命令会对两个文件进行比较，报告两者之间的不同之处。diff 可接受多种选项标志。
+</p>
+
+<ul>
+<li>
+<code>-w</code>选项的忽略空格，
+
+<li>
+<code>-i</code>选项标志在比较中忽略大小写区别
+
+</ul>
+
+<h3 id="toc_1.3.2">comm</h3>
+
+<p>
+comm 命令会对两个文件进行比较，但比较的方式与 diff 差别很大。comm 产生三列输出，
+仅出现在第 1 个文件（第 1 列）的行，
+仅出现在第 2 个文件（第 2 列）的行，
+两个文件中都有的常见行（第 3 列）。
+</p>
+
+<p>
+可使用选项标志来取消输出列。此命令可能在取消第 1 列和第 2 列时最有用，
+只显示两个文件中常见的行，如下所示。
+</p>
+
+<pre class="brush: bash">
+$ comm dummy_file1.dat dummy_file2.dat
+ 011 IBM 174.99
+ 011 IBM 174.99
+ 012 INTC 22.69
+ 012 INTC 22.78
+ 013 SAP 59.37
+ 014 VMW 102.92
+ 014 vmw 102.92
+$ comm -12 dummy_file1.dat dummy_file2.dat
+ 013 SAP 59.37
+</pre>
+
+<h3 id="toc_1.3.3">cmp</h3>
 
 <p>
 <code>cmp</code>比较两个任意类型的文件并将结果输出至标准输出。如果两个文件相同， <code>cmp</code>默认

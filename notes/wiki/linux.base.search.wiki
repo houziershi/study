@@ -3,7 +3,9 @@
 
 %toc 查找
 
-= whereis =
+= 文件查找 =
+
+== whereis ==
 
 `whereis`的作用是用来定位命令的二进制文件、资源或者帮助页。举例来说，获得`ls`和
 `kill`命令的二进制文件/资源以及帮助页：
@@ -18,7 +20,7 @@ kill: /bin/kill /usr/share/man/man2/kill.2.gz /usr/share/man/man1/kill.1.gz
 
 注意：当需要知道二进制文件保存位置时有用。
 
-= find =
+== find ==
 
 {{{class="brush: bash"
 find / -name "*.conf" | xargs grep "alias" 
@@ -74,9 +76,9 @@ root@tecmint:~# find -name *.tar.gz
 注意：以上命令查找根目录下和所有文件夹以及加载的设备的子目录下的所有包含`tar.gz`
 的文件。
 
-== Basic Find Commands for Finding Files with Names ==
+=== Basic Find Commands for Finding Files with Names ===
 
-=== Find Files Using Name in Current Directory ===
+==== Find Files Using Name in Current Directory ====
 
 Find all the files whose name is tecmint.txt in a current working directory.
 
@@ -86,7 +88,7 @@ Find all the files whose name is tecmint.txt in a current working directory.
 ./tecmint.txt
 }}}
 
-=== Find Files Under Home Directory ===
+==== Find Files Under Home Directory ====
 
 Find all the files under `/home` directory with name `tecmint.txt`.
 
@@ -96,7 +98,7 @@ Find all the files under `/home` directory with name `tecmint.txt`.
 /home/tecmint.txt
 }}}
 
-=== Find Files Using Name and Ignoring Case ===
+==== Find Files Using Name and Ignoring Case ====
 
 Find all the files whose name is `tecmint.txt` and contains both capital and 
 small letters in `/home` directory.
@@ -108,7 +110,7 @@ small letters in `/home` directory.
 ./Tecmint.txt
 }}}
 
-=== Find Directories Using Name ===
+==== Find Directories Using Name ====
 
 Find all directories whose name is `Tecmint` in `/` directory.
 
@@ -118,7 +120,7 @@ Find all directories whose name is `Tecmint` in `/` directory.
 /Tecmint
 }}}
 
-=== Find PHP Files Using Name ===
+==== Find PHP Files Using Name ====
 
 Find all php files whose name is `tecmint.php` in a current working directory.
 
@@ -128,7 +130,7 @@ Find all php files whose name is `tecmint.php` in a current working directory.
 ./tecmint.php
 }}}
 
-=== Find all PHP Files in Directory ===
+==== Find all PHP Files in Directory ====
 
 Find all php files in a directory.
 
@@ -140,9 +142,9 @@ Find all php files in a directory.
 ./index.php
 }}}
 
-== Find Files Based on their Permissions ==
+=== Find Files Based on their Permissions ===
 
-=== Find Files With `777` Permissions ===
+==== Find Files With `777` Permissions ====
 
 Find all the files whose permissions are `777`.
 
@@ -150,7 +152,7 @@ Find all the files whose permissions are `777`.
 # find . -type f -perm 0777 -print
 }}}
 
-=== Find Files Without 777 Permissions ===
+==== Find Files Without 777 Permissions ====
 
 Find all the files without permission `777`.
 
@@ -158,7 +160,7 @@ Find all the files without permission `777`.
 # find / -type f ! -perm 777
 }}}
 
-=== Find SGID Files with 644 Permissions ===
+==== Find SGID Files with 644 Permissions ====
 
 Find all the SGID bit files whose permissions set to `644`.
 
@@ -166,7 +168,7 @@ Find all the SGID bit files whose permissions set to `644`.
 # find / -perm 2644
 }}}
 
-=== Find Sticky Bit Files with 551 Permissions ===
+==== Find Sticky Bit Files with 551 Permissions ====
 
 Find all the Sticky Bit set files whose permission are `551`.
 
@@ -174,7 +176,7 @@ Find all the Sticky Bit set files whose permission are `551`.
 # find / -perm 1551
 }}}
 
-=== Find SUID Files ===
+==== Find SUID Files ====
 
 Find all SUID set files.
 
@@ -182,7 +184,7 @@ Find all SUID set files.
 # find / -perm /u=s
 }}}
 
-=== Find SGID Files ===
+==== Find SGID Files ====
 
 Find all SGID set files.
 
@@ -190,7 +192,7 @@ Find all SGID set files.
 # find / -perm /g+s
 }}}
 
-=== Find Read Only Files ===
+==== Find Read Only Files ====
 
 Find all Read Only files.
 
@@ -198,7 +200,7 @@ Find all Read Only files.
 # find / -perm /u=r
 }}}
 
-=== Find Executable Files ===
+==== Find Executable Files ====
 
 Find all Executable files.
 
@@ -206,7 +208,7 @@ Find all Executable files.
 # find / -perm /a=x
 }}}
 
-=== Find Files with 777 Permissions and Chmod to 644 ===
+==== Find Files with 777 Permissions and Chmod to 644 ====
 
 Find all `777` permission files and use chmod command to set permissions to 
 `644`.
@@ -215,7 +217,7 @@ Find all `777` permission files and use chmod command to set permissions to
 # find / -type f -perm 0777 -print -exec chmod 644 {} \;
 }}}
 
-=== Find Directories with 777 Permissions and Chmod to 755 ===
+==== Find Directories with 777 Permissions and Chmod to 755 ====
 
 Find all `777` permission directories and use chmod command to set permissions 
 to `755`.
@@ -224,7 +226,7 @@ to `755`.
 # find / -type d -perm 777 -print -exec chmod 755 {} \;
 }}}
 
-=== Find and remove single File ===
+==== Find and remove single File ====
 
 To find a single file called `tecmint.txt` and remove it.
 
@@ -232,7 +234,7 @@ To find a single file called `tecmint.txt` and remove it.
 # find . -type f -name "tecmint.txt" -exec rm -f {} \;
 }}}
 
-=== Find and remove Multiple File ===
+==== Find and remove Multiple File ====
 
 To find and remove multiple files such as `.mp3` or `.txt`, then use.
 
@@ -246,7 +248,7 @@ OR
 # find . -type f -name "*.mp3" -exec rm -f {} \;
 }}}
 
-=== Find all Empty Files ===
+==== Find all Empty Files ====
 
 To file all empty files under certain path.
 
@@ -254,7 +256,7 @@ To file all empty files under certain path.
 # find /tmp -type f -empty
 }}}
 
-=== Find all Empty Directories ===
+==== Find all Empty Directories ====
 
 To file all empty directories under certain path.
 
@@ -262,7 +264,7 @@ To file all empty directories under certain path.
 # find /tmp -type d -empty
 }}}
 
-=== File all Hidden Files ===
+==== File all Hidden Files ====
 
 To find all hidden files, use below command.
 
@@ -270,9 +272,9 @@ To find all hidden files, use below command.
 # find /tmp -type f -name ".*"
 }}}
 
-== Search Files Based On Owners and Groups ==
+=== Search Files Based On Owners and Groups ===
 
-=== Find Single File Based on User ===
+==== Find Single File Based on User ====
 
 To find all or single file called `tecmint.txt` under `/` root directory of 
 owner root.
@@ -281,7 +283,7 @@ owner root.
 # find / -user root -name tecmint.txt
 }}}
 
-=== Find all Files Based on User ===
+==== Find all Files Based on User ====
 
 To find all files that belongs to user Tecmint under `/home` directory.
 
@@ -289,7 +291,7 @@ To find all files that belongs to user Tecmint under `/home` directory.
 # find /home -user tecmint
 }}}
 
-=== Find all Files Based on Group ===
+==== Find all Files Based on Group ====
 
 To find all files that belongs to group Developer under `/home` directory.
 
@@ -297,7 +299,7 @@ To find all files that belongs to group Developer under `/home` directory.
 # find /home -group developer
 }}}
 
-=== Find Particular Files of User ===
+==== Find Particular Files of User ====
 
 To find all `.txt` files of user Tecmint under `/home` directory.
 
@@ -306,9 +308,9 @@ To find all `.txt` files of user Tecmint under `/home` directory.
 }}}
 
 
-== Find Files and Directories Based on Date and Time ==
+=== Find Files and Directories Based on Date and Time ===
 
-=== Find Last 50 Days Modified Files ===
+==== Find Last 50 Days Modified Files ====
 
 To find all the files which are modified 50 days back.
 
@@ -316,7 +318,7 @@ To find all the files which are modified 50 days back.
 # find / -mtime 50
 }}}
 
-=== Find Last 50 Days Accessed Files ===
+==== Find Last 50 Days Accessed Files ====
 
 To find all the files which are accessed 50 days back.
 
@@ -324,7 +326,7 @@ To find all the files which are accessed 50 days back.
 # find / -atime 50
 }}}
 
-=== Find Last 50-100 Days Modified Files ===
+==== Find Last 50-100 Days Modified Files ====
 
 To find all the files which are modified more than 50 days back and less than 
 100 days.
@@ -333,7 +335,7 @@ To find all the files which are modified more than 50 days back and less than
 # find / -mtime +50 –mtime -100
 }}}
 
-=== Find Changed Files in Last 1 Hour ===
+==== Find Changed Files in Last 1 Hour ====
 
 To find all the files which are changed in last 1 hour.
 
@@ -341,7 +343,7 @@ To find all the files which are changed in last 1 hour.
 # find / -cmin -60
 }}}
 
-=== Find Modified Files in Last 1 Hour ===
+==== Find Modified Files in Last 1 Hour ====
 
 To find all the files which are modified in last 1 hour.
 
@@ -349,7 +351,7 @@ To find all the files which are modified in last 1 hour.
 # find / -mmin -60
 }}}
 
-=== Find Accessed Files in Last 1 Hour ===
+==== Find Accessed Files in Last 1 Hour ====
 
 To find all the files which are accessed in last 1 hour.
 
@@ -357,9 +359,9 @@ To find all the files which are accessed in last 1 hour.
 # find / -amin -60
 }}}
 
-== Find Files and Directories Based on Size ==
+=== Find Files and Directories Based on Size ===
 
-=== Find 50MB Files ===
+==== Find 50MB Files ====
 
 To find all 50MB files, use.
 
@@ -367,7 +369,7 @@ To find all 50MB files, use.
 # find / -size 50M
 }}}
 
-=== Find Size between 50MB – 100MB ===
+==== Find Size between 50MB – 100MB ====
 
 To find all the files which are greater than 50MB and less than 100MB.
 
@@ -375,7 +377,7 @@ To find all the files which are greater than 50MB and less than 100MB.
 # find / -size +50M -size -100M
 }}}
 
-=== Find and Delete 100MB Files ===
+==== Find and Delete 100MB Files ====
 
 To find all 100MB files and delete them using one single command.
 
@@ -383,7 +385,7 @@ To find all 100MB files and delete them using one single command.
 # find / -size +100M -exec rm -rf {} \;
 }}}
 
-=== Find Specific Files and Delete ===
+==== Find Specific Files and Delete ====
 
 Find all `.mp3` files with more than `10MB` and delete them using one single 
 command.
@@ -392,7 +394,7 @@ command.
 # find / -type f -name *.mp3 -size +10M -exec ls -l {} \;
 }}}
 
-== 另一套例子 ==
+=== 另一套例子 ===
 
 首先，在你的`home`目录下面创建下面的空文件，来测试下面的`find`命令示例：
 
@@ -418,7 +420,7 @@ chmod +x create_sample_files.sh
 }}}
 
 
-=== 用文件名查找文件 ===
+==== 用文件名查找文件 ====
 
 用`MyCProgram.c`作为查找名在当前目录及其子目录中查找文件的方法。
 
@@ -429,7 +431,7 @@ chmod +x create_sample_files.sh
 }}}
 
 
-=== 用文件名查找文件，忽略大小写 ===
+==== 用文件名查找文件，忽略大小写 ====
 
 用`MyCProgram.c`作为查找名在当前目录及其子目录中查找文件的方法，忽略了大小写。
 
@@ -441,7 +443,7 @@ chmod +x create_sample_files.sh
 ./MyCProgram.c
 }}}
 
-=== 限定搜索指定目录的深度 ===
+==== 限定搜索指定目录的深度 ====
 
 使用`mindepth`和`maxdepth`限定搜索指定目录的深度。
 
@@ -484,7 +486,7 @@ and two sub-directories — level 2 and 3 )
 }}}
 
 
-=== 在查找到的文件上执行命令 ===
+==== 在查找到的文件上执行命令 ====
 
 下面的例子展示了`find`命令来计算所有不区分大小写的文件名为`MyCProgram.c`的文件的
 MD5验证和。
@@ -503,7 +505,7 @@ d41d8cd98f00b204e9800998ecf8427e  ./MyCProgram.c
 }}}
 
 
-=== 相反匹配 ===
+==== 相反匹配 ====
 
 显示所有的名字不是`MyCProgram.c`的文件或者目录。由于`maxdepth`是1，所以只会显示
 当前目录下的文件和目录。
@@ -518,7 +520,7 @@ d41d8cd98f00b204e9800998ecf8427e  ./MyCProgram.c
 }}}
 
 
-=== 使用inode编号查找文件 ===
+==== 使用inode编号查找文件 ====
 
 任何一个文件都有一个独一无二的`inode`编号，借此我们可以区分文件。创建两个名字
 相似的文件，例如一个有空格结尾，一个没有。
@@ -584,7 +586,7 @@ file1.txt  file2.txt
 }}}
 
 
-=== 根据文件权限查找文件 ===
+==== 根据文件权限查找文件 ====
 
 下面的操作时合理的：
 
@@ -631,7 +633,7 @@ total 0
 }}}
 
 
-=== 找到目录及子目录下所有空文件 ===
+==== 找到目录及子目录下所有空文件 ====
 
 找到`home`目录及子目录下所有的空文件(0字节文件)
 
@@ -654,7 +656,7 @@ total 0
 }}}
 
 
-=== 查找最大的文件 ===
+==== 查找最大的文件 ====
 
 查找5个最大的文件
 
@@ -666,7 +668,7 @@ total 0
 }}}
 
 
-=== 查找最小的文件 ===
+==== 查找最小的文件 ====
 
 查找5个最小的文件
 
@@ -684,7 +686,7 @@ total 0
 }}}
 
 
-=== 查找指定文件类型的文件 ===
+==== 查找指定文件类型的文件 ====
 
 使用`-type`查找指定文件类型的文件
 
@@ -719,7 +721,7 @@ total 0
 }}}
 
 
-=== 通过和其他文件比较修改时间查找文件 ===
+==== 通过和其他文件比较修改时间查找文件 ====
 
 显示在指定文件之后做出修改的文件。下面的`find`命令将显示所有的在`ordinary_file`
 之后创建修改的文件。
@@ -743,7 +745,7 @@ total 0
 ./no_for_all
 }}}
 
-=== 通过文件大小查找文件 ===
+==== 通过文件大小查找文件 ====
 
 使用`-size`选项可以通过文件大小查找文件。`– `指比给定尺寸小，`+`指比给定尺寸大。
 没有符号代表和给定尺寸完全一样大。
@@ -767,7 +769,7 @@ total 0
 }}}
 
 
-=== 给常用find操作取别名 ===
+==== 给常用find操作取别名 ====
 
 若你发现有些东西很有用，你可以给他取别名。并且在任何你希望的地方执行。
 
@@ -786,7 +788,7 @@ total 0
 }}}
 
 
-=== 删除大型打包文件 ===
+==== 删除大型打包文件 ====
 
 下面的命令删除大于`100M`的`*.zip`文件。
 
@@ -810,7 +812,7 @@ total 0
 }}}
 
 
-== 基于访问/修改/更改时间查找文件 ==
+=== 基于访问/修改/更改时间查找文件 ===
 
 你可以找到基于以下三个文件的时间属性的文件。
 
@@ -827,7 +829,7 @@ total 0
 虽然这样做的24个小时计算，小数部分都将被忽略，所以25小时为24小时，和47小时取为24
 小时，仅48小时为48小时。要获得更清晰的参考`atime`的部分`find`命令的手册页。
 
-=== 找到在1个小时内被更改的文件 ===
+==== 找到在1个小时内被更改的文件 ====
 
 想要通过文件修改时间找出文件，可以使用参数`-mmin`与`-mtime`。下面是man手册中有关
 定义：
@@ -849,7 +851,7 @@ total 0
 # find / -mtime -1
 }}}
 
-=== 找到1个小时内被访问过的文件 ===
+==== 找到1个小时内被访问过的文件 ====
 
 想要通过文件访问时间找出文件，可以使用参数`-amin`与`-atime`。下面是man手册中有关
 定义：
@@ -871,7 +873,7 @@ total 0
 # find / -atime -1
 }}}
 
-=== 查找一个小时内状态被改变的文件 ===
+==== 查找一个小时内状态被改变的文件 ====
 
 （译者注：这里的改变更第1个例子的更改文件内容时间是不同概念，这里是更改的是文件
 `inode`的数据，比如文件的权限，所属人等等信息）
@@ -897,7 +899,7 @@ total 0
 # find / -ctime -1
 }}}
 
-=== 搜索仅仅限定于文件，不显示文件夹 ===
+==== 搜索仅仅限定于文件，不显示文件夹 ====
 
 上面的例子搜索出来不仅仅有文件，还会显示文件夹。因为当一个文件被访问的时候，它
 所处的文件夹也会被访问，如果你对文件夹不感兴趣，那么可以使用`-type f`选项：
@@ -932,7 +934,7 @@ total 0
 }}}
 
 
-=== 仅仅查找非隐藏的文件（不显示隐藏文件） ===
+==== 仅仅查找非隐藏的文件（不显示隐藏文件） ====
 
 如果我们查找的时候不想隐藏文件也显示出来，可以使用下面的正则式查找：
 
@@ -943,13 +945,13 @@ total 0
 # find . -mmin -15 \( ! -regex ".*/\..*" \)
 }}}
 
-== 基于文件比较的查找命令 ==
+=== 基于文件比较的查找命令 ===
 
 我们平时通过更别的东西进行比较，会更容易记住一些事情。比如说我想找出在我编辑
 `test`文件之后编辑过的文件。你可以通过`test`这个文件的编辑时间作为比较基准去查找
 之后编辑过的文件：
 
-=== 查找文件修改时间在某一文件修改后的文件 ===
+==== 查找文件修改时间在某一文件修改后的文件 ====
 
 {{{class="brush: bash"
 find -newer FILE
@@ -963,7 +965,7 @@ find -newer FILE
 # find -newer /etc/passwd
 }}}
 
-=== 查找文件访问时间在某一文件的修改时间之后的文件 ===
+==== 查找文件访问时间在某一文件的修改时间之后的文件 ====
 
 {{{class="brush: bash"
 # find -newer /etc/passwd
@@ -977,7 +979,7 @@ find -newer FILE
 # find -anewer /etc/hosts
 }}}
 
-=== 查找状态改变时间在某个文件修改时间之后的文件 ===
+==== 查找状态改变时间在某个文件修改时间之后的文件 ====
 
 {{{class="brush: bash"
 find -cnewer FILE
@@ -991,7 +993,7 @@ find -cnewer FILE
 # find -cnewer /etc/fstab
 }}}
 
-== 在查找到的文件列表结果上直接执行命令 ==
+=== 在查找到的文件列表结果上直接执行命令 ===
 
 这之前你已经看到了如果通过`find`命令去查找各种条件的文件列表。如果你对这些`find`
 命令还不熟悉，我建议你看完上面的第一部分。
@@ -1015,7 +1017,7 @@ find -cnewer FILE
 * 执行任何Unix的shell命令
 * 执行你自己写的shell脚本，参数就是每个查找出来的文件名
 
-=== 查看结果 ===
+==== 查看结果 ====
 
 在find命令输出上使用`ls -l`， 列举出1小时内被编辑过的文件的详细信息
 
@@ -1029,7 +1031,7 @@ find -cnewer FILE
 -rw-------  1 root root 831752 Jun 21 15:42 ./secure
 }}}
 
-=== 仅仅在当前文件系统中搜索 ===
+==== 仅仅在当前文件系统中搜索 ====
 
 系统管理员有时候仅仅想在`/`挂载的文件系统分区上搜索，而不想去搜索其他的挂载分区
 ，比如`/home/`挂载分区。如果你有多个分区被挂载了，你想在`/`下搜索，一般可以按
@@ -1052,7 +1054,7 @@ find -cnewer FILE
 # find / -xdev -name "*.log"
 }}}
 
-=== 在同一个命令中使用多个`{}` ===
+==== 在同一个命令中使用多个`{}` ====
 
 linux手册说命令中只能使用一个`{}`，不过你可以像下面这样在同一个命令中使用多个：
 
@@ -1067,7 +1069,7 @@ linux手册说命令中只能使用一个`{}`，不过你可以像下面这样�
 # find -name "*.txt" -exec mv {} `basename {} .htm`.html \;
 }}}
 
-=== 使用多个`{}`实例 ===
+==== 使用多个`{}`实例 ====
 
 你可以像下面这样写一个shell脚本去模拟上面那个重命名的例子
 
@@ -1086,7 +1088,7 @@ linux手册说命令中只能使用一个`{}`，不过你可以像下面这样�
 在find中通过`-exec`执行这个脚本，把文件名参数传递进去就行，这是最简单的办法
 
 
-=== 将错误重定向到`/dev/nul` ===
+==== 将错误重定向到`/dev/nul` ====
 
 重定向错误输出一般不是什么好的想法。一个有经验的程序员懂得在终端显示错误并及时
 修正它是很重要的。
@@ -1108,7 +1110,7 @@ $ find / -name "*.conf" 2>>/dev/null
 /boot/grub/grub.conf
 }}}
 
-=== 将文件名中的空格换成下划线 ===
+==== 将文件名中的空格换成下划线 ====
 
 你从网上下载下来的音频文件的文件名很多都带有空格。但是带有空格的文件名在linux
 (类Unix)系统里面是很不好的。你可以使用find然后后面加上`rename`命令的替换功能去
@@ -1118,7 +1120,7 @@ $ find / -name "*.conf" 2>>/dev/null
 $ find . -type f -iname “*.mp3″ -exec rename “s/ /_/g” {} \;
 }}}
 
-=== 在find结果中同时执行两条命令 ===
+==== 在find结果中同时执行两条命令 ====
 
 在find的man page页面中，下面是一次文件查找遍历中使用两条命令的语法举例
 
@@ -1131,8 +1133,9 @@ $ find . -type f -iname “*.mp3″ -exec rename “s/ /_/g” {} \;
 }}}
 
 
+= 文本内容查找 =
 
-= grep =
+== grep ==
 
 `grep`命令搜索指定文件中包含给定字符串或者单词的行。举例搜索`/etc/passwd`文件中
 的`tecmint`
@@ -1141,6 +1144,14 @@ $ find . -type f -iname “*.mp3″ -exec rename “s/ /_/g” {} \;
 root@tecmint:~# grep tecmint /etc/passwd
  
 tecmint:x:1000:1000:Tecmint,,,:/home/tecmint:/bin/bash
+}}}
+
+在多个文件中查找：
+
+{{{class="brush: bash"
+$ grep apple grocery.list grocery.list2
+ grocery.list:apples
+ grocery.list2:dry apples
 }}}
 
 使用`-i`选项将忽略大小写。
@@ -1176,11 +1187,23 @@ root@tecmint:~# grep -r "127.0.0.1" /etc/
 
 注意：您还可以使用以下选项：
 
-* `-w`搜索单词 (`egrep -w ‘word1|word2‘ /path/to/file`).
-* `-c`用于统计满足要求的行 (`grep -c ‘word‘ /path/to/file`).
+* `-i`不区分大小写。
+* `-n`带行号。
+* `-h`不显示文件名。
+* `-l`只显示文件名。
+* `-v`输出不匹配的行。
+* `-w`搜索单词 (`egrep -w 'word1|word2' /path/to/file`).
+* `-c`用于统计满足要求的行 (`grep -c 'word' /path/to/file`).
 * `–color`彩色输出 (`grep –color server /etc/passwd`).
 
+== 例子 ==
+
+单词匹配
+
 {{{class="brush: bash"
+$ grep -w apples grocery.list grocery.list2
+ grocery.list:apples
+ grocery.list2:dry apples
 }}}
 
 
