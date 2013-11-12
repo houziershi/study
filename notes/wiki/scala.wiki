@@ -20,6 +20,6 @@
                    
 [[scala.Part.07]]：注解、使用XML、使用对象的模块化编程、对象相等性
                    
-[[scala.Part.08]]：结合Scala与Java、Actor和并发、连接符解析
+[[scala.Part.08]]：结合Scala与Java、Actor和并发、定界延续
 
 
