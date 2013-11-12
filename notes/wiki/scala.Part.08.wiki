@@ -2231,8 +2231,8 @@ scalac -P:continuations:enable Continuations.scala
 
 == 延续捕获的原理 ==
 
-可以把`shift`块想象成一个位于`reset`块中的洞。当执行延续时可以把一个值传到这个
-洞里，运算继续，就好像`shift`本身就是哪个值一样。
+可以把`shift`块想象成一个位于`reset`块中的空位。当执行延续时可以把一个值传到这个
+空位里，运算继续，就好像`shift`本身就是哪个值一样。
 
 例如：
 
@@ -2243,7 +2243,7 @@ scalac -P:continuations:enable Continuations.scala
   }
 }}}
 
-把整个`shift`替换成一个洞：
+把整个`shift`替换成一个空位：
 
 {{{class="brush: scala"
     0.5 * /* hole */ + 1
@@ -2259,68 +2259,286 @@ x: Int => 0.5 * x + 1
 
 延续的类型为`Int => Double`，因为填入的类型为`Int`并计算出`Double`。
 
-== reset和shift的控制流转 ==
+== reset和shift的控制流程 ==
 
 {{{class="brush: scala"
+import scala.util.continuations._
+
+object Main extends App {
+  var cont : (Unit => Unit) = null  
+  reset { 
+    println("Before shift")
+    shift { 
+        k : (Unit => Unit) => { 
+          cont = k 
+          println("Inside shift")
+        } 
+    }
+    println("After shift")
+  }
+  println("After reset")
+  cont()
+}
 }}}
 
+执行的顺序：
 
 {{{class="brush: scala"
+Before shift  // reset执行时
+Inside shift
+After reset   // 退出reset块
+After shift   // 调用cont时，执行跳回reset
 }}}
 
+shift之前的代码不是延续的一部分。延续将从包含shift的表达式（该表达式会变成那个
+空位）开始，一直延展到reset的末尾。以来例来说就是：
 
 {{{class="brush: scala"
+/* hole */ : Unit => /* hole */ ;
+print("After shift")
 }}}
 
+`cont()`方法参数为`Unit`，这里的空位只是简单地被替换成了`()`。
+
+从这里可以看出，reset中的shift会立即跳出reset。当执行一个跳入reset的延续时，如果
+再次遇到shift（在循环中的话会遇到同一个shift），它同样会立即跳出reset。函数调用
+也会立即退出，返回shift的值。
+
+== reset表达式的值 ==
+
+如果是因为执行了shift而退出了reset，那么得到的值就是shift的值：
 
 {{{class="brush: scala"
+val result1 = reset { shift { k: (String => String) => "Exit" }; "End" }
+println(result1) // result is "Exit" 
 }}}
 
+如果没有执行到shift而是reset执行到结尾，值就是reset块的值（即块中的最后一个
+表达式）：
 
 {{{class="brush: scala"
+val result2 = reset { 
+	if (false)
+		shift { k: (String => String) => "Exit" };
+	else
+		"End" 
+}
+println(result2) // result is "End"
 }}}
 
+== reset和shift表达式的类型 ==
 
+类型分别是`reset[B, C]`和`shift[A, B, C]`。可以这样看：
 
 {{{class="brush: scala"
+reset {
+
+	// shift之前
+	
+	shift { k: (A => B) => // 由这里推断A与B
+
+		// shift中 类型C
+
+	} // shift代表的空位，类型为A
+
+	// shift之后的部分，必须产出类型B的值
+
+}
 }}}
 
+如果reset块可能返回一个类型为B或C的值（由于分支或循环的原因），那么B必须是C的
+子类型。
+
+这里如果编译器无法正确判断类型，会引发错误。
+
+正确的代码：
 
 {{{class="brush: scala"
+val result = reset { 
+  if (scala.util.Random.nextBoolean()) {
+    shift { 
+      k: (String => String) => { // A与B都是String
+        "Exit"                   // C是String
+      }
+    }                            // 空位的类型同是String
+  } 
+  else "End"                     // 和B一样是String
+}
 }}}
 
+错误的代码：
+
+{{{class="brush: scala; highlight:[4]"
+val result = reset { 
+  if (scala.util.Random.nextBoolean()) {
+    shift { 
+      k: (Unit => Unit) => {     // A与B都是Unit
+        "Exit"                   // C是String
+      }
+    }                            // 空位的类型同A一样是Unit
+  } 
+  else "End"                     // 错：应该和B一样是Unit，但这里是String
+}
+}}}
+
+提示：如果推断出的类型不符合期望，可以给reset与shift添加类型参数。如把延续类型
+改为`Unit => Any`，并用`reset[Any, Any]`来让上面的代码通过编译。
+
+当类型推断错误时报错信息可能会非常难以理解，很容易进入瞎改类型赶到能正确编译的
+状态中。尽量不要这样做，仔细考虑延续发生时，希望的行为是什么。虽然说起来很抽象，
+但是在解决实际问题时程序员应该知道当调用延续时想传入的类型与结果的类型。这样可
+确定A与B的类型。再适当组织代码让C与B相等。这样无论reset是如何退出的都会产出B类型
+。
+
+
+== CPS注解 ==
+
+某些虚拟机中，延续实现方式是抓取运行时栈的快照，在调用延续时恢复。
+
+JVM不允许这样的操作，所以Scala编译器对reset块中的代码进行了“延续传递风格”（CPS）
+的变换。
+
+经过CPS变换的方法与常规的Scala方法不一样，不能混用。所以如果一个普通的方法包含
+了shift，就要加上注释。
+
+更明确地说，reset和shift之间不能隔着方法，不然这个方法就要加上注释。如：
+reset块里有一个或多个方法，方法里用shift块，那中间的方法就都要加上注释。
+
+这样看起来很麻烦，但这些注解本来不是给开发应用的程序员用的，而是给设计类库的开发
+人员设计特殊控制流程结构的。不应该让外部的人看到。
+
+至于注解如何使用，联系之前说过shift方法的类型为`shift[A, B, C]`，则：
+
+* 使用注解时，要声明`@cpsParam(B, C)`。
+* 如果`B`与`C`类型相同时可以用`@cps[B]`。
+* `@cps[Unit]`可以写为`@suspendable`。但还不如`@cps[Unit]`简洁明了，所以很少用。
+
+例，在一个循环读文件的方法中使用shift块必须要加CPS注解声明：
 
 {{{class="brush: scala"
+def tryRead(): Unit @cps[Unit] = {
+  while (contents == "") {
+    try {
+      contents = scala.io.Source.fromFile(filename, "UTF-8").mkString
+    } catch { case _ => }
+    shift { k : (Unit => Unit) => 
+      cont = k 
+    }
+  }
+}
 }}}
 
+注意：给方法添加注解时，必须指定返回类型，并且必须要加上`=`（哪怕是返回Unit），
+这是注解语法的限制，与延续无关。
+
+
+== 把递归访问转为迭代 ==
+
+例，递归遍历树形结构，如目录下所有文件：
 
 {{{class="brush: scala"
+def processDirectory(dir: File) {
+	val files = dir.listFiles
+	for (f <- files) {
+		if (f.isDirectory)
+			processDirectory(f)
+		else
+			println(f)
+	}
+}
 }}}
 
+递归时不能控制在读到100个文件时跳出。但用延续就简单了：每读到一个文件就跳出递归
+如果不满100个就再跳回去。实现方案是在需要中断的点放一个shift：
 
 {{{class="brush: scala"
+if (f.isDirectory)
+	processDirectory(f)
+else {
+	shift {
+		k: (Unit => Unit) => { cont = k }
+	}
+	println(f)
+}
 }}}
 
+这里的shit有两个作用：
+
+# 每当执行时跳到reset的末尾，还要捕获延续，这样以后才能跳回来。
+# 把整个过程的启动点用reset包起来，然后就可以用需要的调用的次数来调用捕获到的
+  延续了
 
 {{{class="brush: scala"
+reset {
+	processDirectory(new File(rootDirName))
+}
+for (i <- 1 to 100) cont()
 }}}
 
+还要加上CPS注解：
 
 {{{class="brush: scala"
+def processDirectory(dir : File) : Unit @cps[Unit]
 }}}
 
+还有一个问题：for循环会被翻译成一个`foreach()`方法调用，这是一个没有被注解为
+CPS变换的方法。只能用while循环来代替`foreach()`方法调：
 
 {{{class="brush: scala"
+var i = 0
+while (i < files.length) {
+	val f = file(i)
+	i += 1
+	...
+}
 }}}
 
+完整的程序：
 
 {{{class="brush: scala"
+// Compile as scalac -P:continuations:enable PrintFiles.scala
+import scala.util.continuations._
+import java.io._
+
+object PrintFiles extends App {
+
+  var cont : (Unit => Unit) = null
+
+  def processDirectory(dir : File) : Unit @cps[Unit] = {
+    val files = dir.listFiles
+    var i = 0
+    while (i < files.length) {
+      val f = files(i)
+      i += 1
+      if (f.isDirectory)
+        processDirectory(f)
+      else {
+        shift {
+          k: (Unit => Unit) => {
+            cont = k // ➋
+          }
+        } // ➎
+        println(f)
+      }
+    }
+  }
+
+  reset {
+    processDirectory(new File("/")) // ➊
+  } // ➌
+
+  for (i <- 1 to 100) cont() // ➍
+}
 }}}
 
+# 进入reset块时，`processDirectory()`被调用➊。
+# 一旦该方法找到第一个不是目录的文件，就进入shift块➋。
+# 延续函数被保存到`cont`，程序跳到reset块的末尾➌。
+# `cont()`被调用➍。程序重新跳加递归➎。
+# 递归继续，赶到下一个文件被找到，再次进入shift。
 
-{{{class="brush: scala"
-}}}
 
+== 控制反转 ==
 
 {{{class="brush: scala"
 }}}

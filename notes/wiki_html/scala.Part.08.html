@@ -119,7 +119,12 @@
 <li><a href="#toc_3.1">捕获并执行延续</a>
 <li><a href="#toc_3.2">定界</a>
 <li><a href="#toc_3.3">延续捕获的原理</a>
-<li><a href="#toc_3.4">reset和shift的控制流转</a>
+<li><a href="#toc_3.4">reset和shift的控制流程</a>
+<li><a href="#toc_3.5">reset表达式的值</a>
+<li><a href="#toc_3.6">reset和shift表达式的类型</a>
+<li><a href="#toc_3.7">CPS注解</a>
+<li><a href="#toc_3.8">把递归访问转为迭代</a>
+<li><a href="#toc_3.9">控制反转</a>
 </ul>
 </ul>
 </div>
@@ -2841,8 +2846,8 @@ scalac -P:continuations:enable Continuations.scala
 <h2 id="toc_3.3">延续捕获的原理</h2>
 
 <p>
-可以把<code>shift</code>块想象成一个位于<code>reset</code>块中的洞。当执行延续时可以把一个值传到这个
-洞里，运算继续，就好像<code>shift</code>本身就是哪个值一样。
+可以把<code>shift</code>块想象成一个位于<code>reset</code>块中的空位。当执行延续时可以把一个值传到这个
+空位里，运算继续，就好像<code>shift</code>本身就是哪个值一样。
 </p>
 
 <p>
@@ -2857,7 +2862,7 @@ scalac -P:continuations:enable Continuations.scala
 </pre>
 
 <p>
-把整个<code>shift</code>替换成一个洞：
+把整个<code>shift</code>替换成一个空位：
 </p>
 
 <pre class="brush: scala">
@@ -2880,68 +2885,366 @@ x: Int =&gt; 0.5 * x + 1
 延续的类型为<code>Int =&gt; Double</code>，因为填入的类型为<code>Int</code>并计算出<code>Double</code>。
 </p>
 
-<h2 id="toc_3.4">reset和shift的控制流转</h2>
+<h2 id="toc_3.4">reset和shift的控制流程</h2>
 
 <pre class="brush: scala">
+import scala.util.continuations._
+
+object Main extends App {
+  var cont : (Unit =&gt; Unit) = null  
+  reset { 
+    println("Before shift")
+    shift { 
+        k : (Unit =&gt; Unit) =&gt; { 
+          cont = k 
+          println("Inside shift")
+        } 
+    }
+    println("After shift")
+  }
+  println("After reset")
+  cont()
+}
 </pre>
 
+<p>
+执行的顺序：
+</p>
 
 <pre class="brush: scala">
+Before shift  // reset执行时
+Inside shift
+After reset   // 退出reset块
+After shift   // 调用cont时，执行跳回reset
 </pre>
 
+<p>
+shift之前的代码不是延续的一部分。延续将从包含shift的表达式（该表达式会变成那个
+空位）开始，一直延展到reset的末尾。以来例来说就是：
+</p>
 
 <pre class="brush: scala">
+/* hole */ : Unit =&gt; /* hole */ ;
+print("After shift")
 </pre>
 
+<p>
+<code>cont()</code>方法参数为<code>Unit</code>，这里的空位只是简单地被替换成了<code>()</code>。
+</p>
+
+<p>
+从这里可以看出，reset中的shift会立即跳出reset。当执行一个跳入reset的延续时，如果
+再次遇到shift（在循环中的话会遇到同一个shift），它同样会立即跳出reset。函数调用
+也会立即退出，返回shift的值。
+</p>
+
+<h2 id="toc_3.5">reset表达式的值</h2>
+
+<p>
+如果是因为执行了shift而退出了reset，那么得到的值就是shift的值：
+</p>
 
 <pre class="brush: scala">
+val result1 = reset { shift { k: (String =&gt; String) =&gt; "Exit" }; "End" }
+println(result1) // result is "Exit" 
 </pre>
 
+<p>
+如果没有执行到shift而是reset执行到结尾，值就是reset块的值（即块中的最后一个
+表达式）：
+</p>
 
 <pre class="brush: scala">
+val result2 = reset { 
+	if (false)
+		shift { k: (String =&gt; String) =&gt; "Exit" };
+	else
+		"End" 
+}
+println(result2) // result is "End"
 </pre>
 
+<h2 id="toc_3.6">reset和shift表达式的类型</h2>
 
+<p>
+类型分别是<code>reset[B, C]</code>和<code>shift[A, B, C]</code>。可以这样看：
+</p>
 
 <pre class="brush: scala">
+reset {
+
+	// shift之前
+	
+	shift { k: (A =&gt; B) =&gt; // 由这里推断A与B
+
+		// shift中 类型C
+
+	} // shift代表的空位，类型为A
+
+	// shift之后的部分，必须产出类型B的值
+
+}
 </pre>
 
+<p>
+如果reset块可能返回一个类型为B或C的值（由于分支或循环的原因），那么B必须是C的
+子类型。
+</p>
+
+<p>
+这里如果编译器无法正确判断类型，会引发错误。
+</p>
+
+<p>
+正确的代码：
+</p>
 
 <pre class="brush: scala">
+val result = reset { 
+  if (scala.util.Random.nextBoolean()) {
+    shift { 
+      k: (String =&gt; String) =&gt; { // A与B都是String
+        "Exit"                   // C是String
+      }
+    }                            // 空位的类型同是String
+  } 
+  else "End"                     // 和B一样是String
+}
 </pre>
 
+<p>
+错误的代码：
+</p>
+
+<pre class="brush: scala; highlight:[4]">
+val result = reset { 
+  if (scala.util.Random.nextBoolean()) {
+    shift { 
+      k: (Unit =&gt; Unit) =&gt; {     // A与B都是Unit
+        "Exit"                   // C是String
+      }
+    }                            // 空位的类型同A一样是Unit
+  } 
+  else "End"                     // 错：应该和B一样是Unit，但这里是String
+}
+</pre>
+
+<p>
+提示：如果推断出的类型不符合期望，可以给reset与shift添加类型参数。如把延续类型
+改为<code>Unit =&gt; Any</code>，并用<code>reset[Any, Any]</code>来让上面的代码通过编译。
+</p>
+
+<p>
+当类型推断错误时报错信息可能会非常难以理解，很容易进入瞎改类型赶到能正确编译的
+状态中。尽量不要这样做，仔细考虑延续发生时，希望的行为是什么。虽然说起来很抽象，
+但是在解决实际问题时程序员应该知道当调用延续时想传入的类型与结果的类型。这样可
+确定A与B的类型。再适当组织代码让C与B相等。这样无论reset是如何退出的都会产出B类型
+。
+</p>
+
+
+<h2 id="toc_3.7">CPS注解</h2>
+
+<p>
+某些虚拟机中，延续实现方式是抓取运行时栈的快照，在调用延续时恢复。
+</p>
+
+<p>
+JVM不允许这样的操作，所以Scala编译器对reset块中的代码进行了“延续传递风格”（CPS）
+的变换。
+</p>
+
+<p>
+经过CPS变换的方法与常规的Scala方法不一样，不能混用。所以如果一个普通的方法包含
+了shift，就要加上注释。
+</p>
+
+<p>
+更明确地说，reset和shift之间不能隔着方法，不然这个方法就要加上注释。如：
+reset块里有一个或多个方法，方法里用shift块，那中间的方法就都要加上注释。
+</p>
+
+<p>
+这样看起来很麻烦，但这些注解本来不是给开发应用的程序员用的，而是给设计类库的开发
+人员设计特殊控制流程结构的。不应该让外部的人看到。
+</p>
+
+<p>
+至于注解如何使用，联系之前说过shift方法的类型为<code>shift[A, B, C]</code>，则：
+</p>
+
+<ul>
+<li>
+使用注解时，要声明<code>@cpsParam(B, C)</code>。
+
+<li>
+如果<code>B</code>与<code>C</code>类型相同时可以用<code>@cps[B]</code>。
+
+<li>
+<code>@cps[Unit]</code>可以写为<code>@suspendable</code>。但还不如<code>@cps[Unit]</code>简洁明了，所以很少用。
+
+</ul>
+
+<p>
+例，在一个循环读文件的方法中使用shift块必须要加CPS注解声明：
+</p>
 
 <pre class="brush: scala">
+def tryRead(): Unit @cps[Unit] = {
+  while (contents == "") {
+    try {
+      contents = scala.io.Source.fromFile(filename, "UTF-8").mkString
+    } catch { case _ =&gt; }
+    shift { k : (Unit =&gt; Unit) =&gt; 
+      cont = k 
+    }
+  }
+}
 </pre>
 
+<p>
+注意：给方法添加注解时，必须指定返回类型，并且必须要加上<code>=</code>（哪怕是返回Unit），
+这是注解语法的限制，与延续无关。
+</p>
+
+
+<h2 id="toc_3.8">把递归访问转为迭代</h2>
+
+<p>
+例，递归遍历树形结构，如目录下所有文件：
+</p>
 
 <pre class="brush: scala">
+def processDirectory(dir: File) {
+	val files = dir.listFiles
+	for (f &lt;- files) {
+		if (f.isDirectory)
+			processDirectory(f)
+		else
+			println(f)
+	}
+}
 </pre>
 
+<p>
+递归时不能控制在读到100个文件时跳出。但用延续就简单了：每读到一个文件就跳出递归
+如果不满100个就再跳回去。实现方案是在需要中断的点放一个shift：
+</p>
 
 <pre class="brush: scala">
+if (f.isDirectory)
+	processDirectory(f)
+else {
+	shift {
+		k: (Unit =&gt; Unit) =&gt; { cont = k }
+	}
+	println(f)
+}
 </pre>
 
+<p>
+这里的shit有两个作用：
+</p>
+
+<ol>
+<li>
+每当执行时跳到reset的末尾，还要捕获延续，这样以后才能跳回来。
+
+<li>
+把整个过程的启动点用reset包起来，然后就可以用需要的调用的次数来调用捕获到的
+  延续了
+
+</ol>
 
 <pre class="brush: scala">
+reset {
+	processDirectory(new File(rootDirName))
+}
+for (i &lt;- 1 to 100) cont()
 </pre>
 
+<p>
+还要加上CPS注解：
+</p>
 
 <pre class="brush: scala">
+def processDirectory(dir : File) : Unit @cps[Unit]
 </pre>
 
+<p>
+还有一个问题：for循环会被翻译成一个<code>foreach()</code>方法调用，这是一个没有被注解为
+CPS变换的方法。只能用while循环来代替<code>foreach()</code>方法调：
+</p>
 
 <pre class="brush: scala">
+var i = 0
+while (i &lt; files.length) {
+	val f = file(i)
+	i += 1
+	...
+}
 </pre>
 
+<p>
+完整的程序：
+</p>
 
 <pre class="brush: scala">
+// Compile as scalac -P:continuations:enable PrintFiles.scala
+import scala.util.continuations._
+import java.io._
+
+object PrintFiles extends App {
+
+  var cont : (Unit =&gt; Unit) = null
+
+  def processDirectory(dir : File) : Unit @cps[Unit] = {
+    val files = dir.listFiles
+    var i = 0
+    while (i &lt; files.length) {
+      val f = files(i)
+      i += 1
+      if (f.isDirectory)
+        processDirectory(f)
+      else {
+        shift {
+          k: (Unit =&gt; Unit) =&gt; {
+            cont = k // ➋
+          }
+        } // ➎
+        println(f)
+      }
+    }
+  }
+
+  reset {
+    processDirectory(new File("/")) // ➊
+  } // ➌
+
+  for (i &lt;- 1 to 100) cont() // ➍
+}
 </pre>
 
+<ol>
+<li>
+进入reset块时，<code>processDirectory()</code>被调用➊。
 
-<pre class="brush: scala">
-</pre>
+<li>
+一旦该方法找到第一个不是目录的文件，就进入shift块➋。
 
+<li>
+延续函数被保存到<code>cont</code>，程序跳到reset块的末尾➌。
+
+<li>
+<code>cont()</code>被调用➍。程序重新跳加递归➎。
+
+<li>
+递归继续，赶到下一个文件被找到，再次进入shift。
+
+</ol>
+
+
+<h2 id="toc_3.9">控制反转</h2>
 
 <pre class="brush: scala">
 </pre>
