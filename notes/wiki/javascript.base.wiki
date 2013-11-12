@@ -8,6 +8,7 @@
 
 [[javascript.base.type]]
 
+[[javascript.base.prototype]]
 
 
 = 对象 =

@@ -1,0 +1,1193 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>Prototype</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>Prototype</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">对象基础</a>
+<ul>
+<li><a href="#toc_1.1">属性配置– Object.defineProperty</a>
+<li><a href="#toc_1.2">Get/Set 选择器</a>
+<li><a href="#toc_1.3">查看对象属性配置</a>
+<li><a href="#toc_1.4">call()，apply()，bind()和this</a>
+<li><a href="#toc_1.5">继承和重载</a>
+<li><a href="#toc_1.6">组合</a>
+<li><a href="#toc_1.7">Prototype 和 继承</a>
+<li><a href="#toc_1.8">兼容性</a>
+<ul>
+<li><a href="#toc_1.8.1">Object.create()函数</a>
+<li><a href="#toc_1.8.2">defineProperty()函数</a>
+<li><a href="#toc_1.8.3">keys()函数</a>
+<li><a href="#toc_1.8.4">Object.getPrototypeOf() 函数</a>
+<li><a href="#toc_1.8.5">bind 函数</a>
+</ul>
+</ul>
+<li><a href="#toc_2">原型</a>
+<ul>
+<li><a href="#toc_2.1">函数创建过程</a>
+<li><a href="#toc_2.2">构造函数</a>
+<li><a href="#toc_2.3">原型</a>
+<li><a href="#toc_2.4">原型链</a>
+<li><a href="#toc_2.5">继承</a>
+</ul>
+</ul>
+</div>
+
+
+<h1 id="toc_1">对象基础</h1>
+
+<p>
+我们知道Javascript中的变量定义基本如下：
+</p>
+
+<pre class="brush: javascript">
+var name = 'Chen Hao';
+var email = 'haoel(@)hotmail.com';
+var website = 'http://coolshell.cn';
+</pre>
+
+<p>
+如果要用对象来写的话，就是下面这个样子：
+</p>
+
+<pre class="brush: javascript">
+var chenhao = {
+    name :'Chen Hao',
+    email : 'haoel(@)hotmail.com',
+    website : 'http://coolshell.cn'
+};
+</pre>
+
+<p>
+于是，我就可以这样访问：
+</p>
+
+<pre class="brush: javascript">
+//以成员的方式
+chenhao.name;
+chenhao.email;
+chenhao.website;
+ 
+//以hash map的方式
+chenhao["name"];
+chenhao["email"];
+chenhao["website"];
+</pre>
+
+<p>
+关于函数，我们知道Javascript的函数是这样的：
+</p>
+
+<pre class="brush: javascript">
+var doSomething = function(){
+   alert('Hello World.');
+};
+</pre>
+
+<p>
+于是，我们可以这么干：
+</p>
+
+<pre class="brush: javascript">
+var sayHello = function(){
+   var hello = "Hello, I'm "+ this.name
+                + ", my email is: " + this.email
+                + ", my website is: " + this.website;
+   alert(hello);
+};
+
+chenhao.Hello = sayHello; //直接赋值，这里很像C/C++的函数指针
+
+chenhao.Hello();
+};
+
+相信这些东西都比较简单，大家都明白了。 可以看到javascript对象函数是直接声明，
+直接赋值，直接就用了。runtime的动态语言。
+
+还有一种比如规范的写法是：
+
+{{{class="brush: javascript"
+//我们可以看到， 其用function来做class。
+var Person = function(name, email, website){
+    this.name = name;
+    this.email = email;
+    this.website = website;
+ 
+    this.sayHello = function(){
+        var hello = "Hello, I'm "+ this.name  + ", n" +
+                    "my email is: " + this.email + ", n" +
+                    "my website is: " + this.website;
+        alert(hello);
+    };
+};
+ 
+var chenhao = new Person("Chen Hao", "haoel@hotmail.com",
+                                     "http://coolshell.cn");
+chenhao.sayHello();
+</pre>
+
+<p>
+顺便说一下，要删除对象的属性，很简单：
+</p>
+
+<pre class="brush: javascript">
+delete chenhao['email']
+</pre>
+
+<p>
+上面的这些例子，我们可以看到这样几点：
+</p>
+
+<ul>
+<li>
+Javascript的数据和成员封装很简单。
+
+<li>
+Javascript的function中的<code>this</code>指针很关键，如果没有的话，那就是局部变量或局部
+  函数。
+
+<li>
+Javascript对象成员函数可以在使用时临时声明，并把一个全局函数直接赋过去就好了。
+
+<li>
+Javascript的成员函数可以在实例上进行修改，也就是说不同的实例的同一个函数名的
+  行为和实现不一样。
+
+</ul>
+
+<h2 id="toc_1.1">属性配置– Object.defineProperty</h2>
+
+<p>
+先看下面的代码：
+</p>
+
+<pre class="brush: javascript">
+//创建对象
+var chenhao = Object.create(null);
+ 
+//设置一个属性
+Object.defineProperty( chenhao, 'name', { 
+	value: 'Chen Hao',
+	writable: true,
+	configurable: true,
+	enumerable: true 
+});
+ 
+//设置多个属性
+Object.defineProperties( chenhao, {
+	'email': {
+		value:  'haoel@hotmail.com',
+		writable:     true,
+		configurable: true,
+		enumerable:   true 
+	},
+	'website': { value: 'http://coolshell.cn',
+		writable:     true,
+		configurable: true,
+		enumerable:   true 
+	}
+});
+</pre>
+
+<p>
+下面就说说这些属性配置是什么意思：
+</p>
+
+<ul>
+<li>
+writable：这个属性的值是否可以改。
+
+<li>
+configurable：这个属性的配置是否可以改。
+
+<li>
+enumerable：这个属性是否能在for…in循环中遍历出来或在<code>Object.keys</code>中列举出来。
+
+<li>
+value：属性值。
+
+<li>
+<code>get()/set(_value)</code>：get和set访问器。
+
+</ul>
+
+<h2 id="toc_1.2">Get/Set 选择器</h2>
+
+<p>
+关于get/set访问器，它的意思就是用get/set来取代value（其不能和value一起使用），
+示例如下：
+</p>
+
+<pre class="brush: javascript">
+var  age = 0;
+Object.defineProperty( chenhao, 'age', {
+    get: function() {return age+1;},
+    set: function(value) {age = value;}
+    enumerable : true,
+    configurable : true
+  }
+);
+chenhao.age = 100; //调用set
+alert(chenhao.age); //调用get 输出101;
+</pre>
+
+<p>
+我们再看一个更为实用的例子——利用已有的属性<code>age</code>通过get和set构造新的属性
+<code>birth_year</code>：
+</p>
+
+<pre class="brush: javascript">
+Object.defineProperty( chenhao, 'birth_year', {
+    get: function() {
+        var d = new Date();
+        var y = d.getFullYear();
+        return ( y - this.age );
+    },
+    set: function(year) {
+        var d = new Date();
+        var y = d.getFullYear();
+        this.age = y - year;
+    }
+});
+ 
+alert(chenhao.birth_year);
+chenhao.birth_year = 2000;
+alert(chenhao.age);
+</pre>
+
+<p>
+这样做好像有点麻烦，你说，我为什么不写成下面这个样子：
+</p>
+
+<pre class="brush: javascript">
+var chenhao = {
+    name: "Chen Hao",
+    email: "haoel@hotmail.com",
+    website: "http://coolshell.cn",
+    age: 100,
+    get birth_year() {
+        var d = new Date();
+        var y = d.getFullYear();
+        return ( y - this.age );
+    },
+    set birth_year(year) {
+        var d = new Date();
+        var y = d.getFullYear();
+        this.age = y - year;
+    }
+ 
+};
+alert(chenhao.birth_year);
+chenhao.birth_year = 2000;
+alert(chenhao.age);
+</pre>
+
+<p>
+是的，你的确可以这样的，不过通过<code>defineProperty()</code>你可以干这些事：
+</p>
+
+<ul>
+<li>
+设置如 writable，configurable，enumerable 等这类的属性配置。
+
+<li>
+动态地为一个对象加属性。比如：一些HTML的DOM对像。
+
+</ul>
+
+<h2 id="toc_1.3">查看对象属性配置</h2>
+
+<p>
+如果查看并管理对象的这些配置，下面有个程序可以输入这些东西：
+</p>
+
+<pre class="brush: javascript">
+//列出对象的属性.
+function listProperties(obj)
+{
+    var newLine = "";
+    var names = Object.getOwnPropertyNames(obj);
+    for (var i = 0; i &lt; names.length; i++) {
+        var prop = names[i];
+        document.write(prop + newLine);
+ 
+        // 列出对象的属性配置（descriptor）动用getOwnPropertyDescriptor函数。
+        var descriptor = Object.getOwnPropertyDescriptor(obj, prop);
+        for (var attr in descriptor) {
+            document.write("..." + attr + ': ' + descriptor[attr]);
+            document.write(newLine);
+        }
+        document.write(newLine);
+    }
+}
+listProperties(chenhao);
+</pre>
+ 
+<h2 id="toc_1.4">call()，apply()，bind()和this</h2>
+
+<p>
+关于Javascript的this指针，和C++/Java很类似。 我们来看个示例：（这个示例很简单了
+，我就不多说了）
+</p>
+
+<pre class="brush: javascript">
+function print(text){
+    document.write(this.value + ' - ' + text+ '');
+}
+ 
+var a = {value: 10, print : print};
+var b = {value: 20, print : print};
+ 
+print('hello');// this =&gt; global, output "undefined - hello"
+ 
+a.print('a');// this =&gt; a, output "10 - a"
+b.print('b'); // this =&gt; b, output "20 - b"
+ 
+a['print']('a'); // this =&gt; a, output "10 - a"
+</pre>
+
+<p>
+我们再来看看call和apply，这两个函数的差别就是参数的样子不一样，另一个就是性能
+不一样，apply的性能要差很多。（关于性能，可到JSPerf上去跑跑看看）
+</p>
+
+<pre class="brush: javascript">
+print.call(a, 'a'); // this =&gt; a, output "10 - a"
+print.call(b, 'b'); // this =&gt; b, output "20 - b"
+ 
+print.apply(a, ['a']); // this =&gt; a, output "10 - a"
+print.apply(b, ['b']); // this =&gt; b, output "20 - b"
+</pre>
+
+<p>
+但是在bind后，this指针，可能会有不一样，但是因为Javascript是动态的。如下面的示例
+</p>
+
+<pre class="brush: javascript">
+var p = print.bind(a);
+p('a');             // this =&gt; a, output "10 - a"
+p.call(b, 'b');     // this =&gt; a, output "10 - b"
+p.apply(b, ['b']);  // this =&gt; a, output "10 - b"
+</pre>
+
+<h2 id="toc_1.5">继承和重载</h2>
+
+<p>
+通过上面的那些示例，我们可以通过<code>Object.create()</code>来实际继承，请看下面的代码，
+<code>Student</code>继承于<code>Object</code>：
+</p>
+
+<pre class="brush: javascript">
+var Person = Object.create(null);
+ 
+Object.defineProperties
+(
+    Person,
+    {
+        'name'  : {  value: 'Chen Hao'},
+        'email'  : { value : 'haoel@hotmail.com'},
+        'website': { value: 'http://coolshell.cn'}
+    }
+);
+ 
+Person.sayHello = function (person) {
+    var hello = "&lt;p&gt;Hello, I am "+ this.name  + ", " +
+                "my email is: " + this.email + ", " +
+                "my website is: " + this.website;
+    document.write(hello + "");
+}
+ 
+var Student = Object.create(Person);
+Student.no = "1234567"; //学号
+Student.dept = "Computer Science"; //系
+ 
+//检查Person的属性
+document.write(Student.name + ' ' + Student.email + ' ' + Student.website +'');
+ 
+//检查Person的方法
+Student.sayHello();
+ 
+//重载SayHello方法
+Student.sayHello = function (person) {
+    var hello = "&lt;p&gt;Hello, I am "+ this.name  + ", " +
+                "my email is: " + this.email + ", " +
+                "my website is: " + this.website + ", " +
+                "my student no is: " + this. no + ", " +
+                "my departent is: " + this. dept;
+    document.write(hello + '');
+}
+//再次调用
+Student.sayHello();
+ 
+//查看Student的属性（只有 no 、 dept 和 重载了的sayHello）
+document.write('&lt;p&gt;' + Object.keys(Student) + '');
+</pre>
+
+<p>
+通用上面这个示例，我们可以看到，Person里的属性并没有被真正复制到了Student中来，
+但是我们可以去存取。这是因为Javascript用委托实现了这一机制。其实，这就是
+Prototype，Person是Student的Prototype。
+</p>
+
+<p>
+当我们的代码需要一个属性的时候，Javascript的引擎会先看当前的这个对象中是否有这个
+属性，如果没有的话，就会查找他的Prototype对象是否有这个属性，一直继续下去，直到
+找到或是直到没有Prototype对象。
+</p>
+
+<p>
+为了证明这个事，我们可以使用<code>Object.getPrototypeOf()</code>来检验一下：
+</p>
+
+<pre class="brush: javascript">
+Student.name = 'aaa';
+ 
+document.write('&lt;p&gt;' + Student.name + '&lt;/p&gt;'); //输出 aaa
+ 
+document.write('&lt;p&gt;' +Object.getPrototypeOf(Student).name + '&lt;/p&gt;');
+//输出 Chen Hao
+</pre>
+
+<p>
+于是，你还可以在子对象的函数里调用父对象的函数，就好像C++里的<code>Base::func()</code>一样
+。于是，我们重载<code>hello()</code>的方法就可以使用父类的代码了：
+</p>
+
+<pre class="brush: javascript">
+//新版的重载SayHello方法
+Student.sayHello = function (person) {
+    Object.getPrototypeOf(this).sayHello.call(this);
+    var hello = "my student no is: " + this. no + ", " +
+                "my departent is: " + this. dept;
+    document.write(hello + '');
+}
+</pre>
+
+<p>
+这个很强大吧。
+</p>
+
+
+<h2 id="toc_1.6">组合</h2>
+
+<p>
+上面的那个东西还不能满足我们的要求，我们可能希望这些对象能真正的组合起来。为什么
+要组合？因为我们都知道是这是OO设计的最重要的东西。不过，这对于Javascript来并没有
+支持得特别好，不好我们依然可以搞定个事。
+</p>
+
+<p>
+首先，我们需要定义一个Composition的函数：（target是作用于是对象，source是源对象
+），下面这个代码还是很简单的，就是把source里的属性一个一个拿出来然后定义到target
+中。
+</p>
+
+<pre class="brush: javascript">
+function Composition(target, source)
+{
+    var desc  = Object.getOwnPropertyDescriptor;
+    var prop  = Object.getOwnPropertyNames;
+    var def_prop = Object.defineProperty;
+ 
+    prop(source).forEach(
+        function(key) {
+            def_prop(target, key, desc(source, key))
+        }
+    )
+    return target;
+}
+</pre>
+
+<p>
+有了这个函数以后，我们就可以这来玩了：
+</p>
+
+<pre class="brush: javascript">
+//艺术家
+var Artist = Object.create(null);
+Artist.sing = function() {
+    return this.name + ' starts singing...';
+}
+Artist.paint = function() {
+    return this.name + ' starts painting...';
+}
+ 
+//运动员
+var Sporter = Object.create(null);
+Sporter.run = function() {
+    return this.name + ' starts running...';
+}
+Sporter.swim = function() {
+    return this.name + ' starts swimming...';
+}
+ 
+Composition(Person, Artist);
+document.write(Person.sing() + '');
+document.write(Person.paint() + '');
+ 
+Composition(Person, Sporter);
+document.write(Person.run() + '');
+document.write(Person.swim() + '');
+</pre>
+ 
+<p>
+看看 Person中有什么？
+</p>
+
+<pre class="brush: javascript">
+document.write('&lt;p&gt;' + Object.keys(Person) + '');
+// 输出：sayHello,sing,paint,swim,run
+</pre>
+
+
+<h2 id="toc_1.7">Prototype 和 继承</h2>
+
+<p>
+我们先来说说Prototype。我们先看下面的例程，这个例程不需要解释吧，很像C语言里的
+函数指针，在C语言里这样的东西见得多了。
+</p>
+
+<pre class="brush: javascript">
+var plus = function(x,y){
+    document.write( x + ' + ' + y + ' = ' + (x+y) + '');
+    return x + y;
+};
+ 
+var minus = function(x,y){
+    document.write(x + ' - ' + y + ' = ' + (x-y) + '');
+    return x - y;
+};
+ 
+var operations = {
+    '+': plus,
+    '-': minus
+};
+ 
+var calculate = function(x, y, operation){
+    return operations[operation](x, y);
+};
+ 
+calculate(12, 4, '+');
+calculate(24, 3, '-');
+</pre>
+
+<p>
+那么，我们能不能把这些东西封装起来呢，我们需要使用prototype。看下面的示例：
+</p>
+
+<pre class="brush: javascript">
+var Cal = function(x, y){
+    this.x = x;
+    this.y = y;
+}
+ 
+Cal.prototype.operations = {
+    '+': function(x, y) { return x+y;},
+    '-': function(x, y) { return x-y;}
+};
+ 
+Cal.prototype.calculate = function(operation){
+    return this.operations[operation](this.x, this.y);
+};
+ 
+var c = new Cal(4, 5);
+ 
+Cal.calculate('+');
+Cal.calculate('-');
+</pre>
+
+<p>
+这就是prototype的用法，prototype 是javascript这个语言中最重要的内容。网上有太多
+的文章介始这个东西了。说白了，prototype就是对一对象进行扩展，其特点在于通过
+“复制”一个已经存在的实例来返回新的实例，而不是新建实例。
+</p>
+
+<p>
+被复制的实例就是我们所称的“原型”，这个原型是可定制的（当然，这里没有真正的复制，
+实际只是委托）。上面的这个例子中，我们扩展了实例Cal，让其有了一个operations的
+属性和一个calculate的方法。
+</p>
+
+<p>
+这样，我们可以通过这一特性来实现继承。还记得我们最最前面的那个Person吧，下面的
+示例是创建一个Student来继承Person。
+</p>
+
+<pre class="brush: javascript">
+function Person(name, email, website){
+    this.name = name;
+    this.email = email;
+    this.website = website;
+};
+ 
+Person.prototype.sayHello = function(){
+    var hello = "Hello, I am "+ this.name  + ", " +
+                "my email is: " + this.email + ", " +
+                "my website is: " + this.website;
+    return hello;
+};
+ 
+function Student(name, email, website, no, dept){
+    var proto = Object.getPrototypeOf;
+    proto(Student.prototype).constructor.call(this, name, email, website);
+    this.no = no;
+    this.dept = dept;
+}
+ 
+// 继承prototype
+Student.prototype = Object.create(Person.prototype);
+ 
+//重置构造函数
+Student.prototype.constructor = Student;
+ 
+//重载sayHello()
+Student.prototype.sayHello = function(){
+    var proto = Object.getPrototypeOf;
+    var hello = proto(Student.prototype).sayHello.call(this) + '';
+    hello += "my student no is: " + this. no + ", " +
+             "my departent is: " + this. dept;
+    return hello;
+};
+ 
+var me = new Student(
+    "Chen Hao",
+    "haoel@hotmail.com",
+    "http://coolshell.cn",
+    "12345678",
+    "Computer Science"
+);
+document.write(me.sayHello());
+</pre>
+
+<h2 id="toc_1.8">兼容性</h2>
+
+<p>
+上面的这些代码并不一定能在所有的浏览器下都能运行，因为上面这些代码遵循
+ECMAScript 5的规范，关于ECMAScript 5 的浏览器兼容列表，你可以看这里：
+<a href="http://kangax.github.io/es5-compat-table/\#">ES5浏览器兼容表</a>
+</p>
+
+<p>
+本文中的所有代码都在Chrome最新版中测试过了。
+</p>
+
+<p>
+下面是一些函数，可以用在不兼容ES5的浏览器中：
+</p>
+
+<h3 id="toc_1.8.1">Object.create()函数</h3>
+
+<pre class="brush: javascript">
+function clone(proto) {
+    function Dummy() { }
+ 
+    Dummy.prototype             = proto;
+    Dummy.prototype.constructor = Dummy;
+ 
+    return new Dummy(); //等价于Object.create(Person);
+}
+ 
+var me = clone(Person);
+</pre>
+
+<h3 id="toc_1.8.2">defineProperty()函数</h3>
+
+<pre class="brush: javascript">
+function defineProperty(target, key, descriptor) {
+    if (descriptor.value){
+        target[key] = descriptor.value;
+    }else {
+        descriptor.get &amp;&amp; target.__defineGetter__(key, descriptor.get);
+        descriptor.set &amp;&amp; target.__defineSetter__(key, descriptor.set);
+    }
+ 
+    return target
+}
+</pre>
+
+<h3 id="toc_1.8.3">keys()函数</h3>
+
+<pre class="brush: javascript">
+function keys(object) { var result, key
+    result = [];
+    for (key in object){
+        if (object.hasOwnProperty(key))  result.push(key)
+    }
+ 
+    return result;
+}
+</pre>
+
+<h3 id="toc_1.8.4">Object.getPrototypeOf() 函数</h3>
+
+<pre class="brush: javascript">
+function proto(object) {
+    return !object?                null
+         : '__proto__' in object?  object.__proto__
+         : /* not exposed? */      object.constructor.prototype
+}
+</pre>
+
+<h3 id="toc_1.8.5">bind 函数</h3>
+
+<pre class="brush: javascript">
+var slice = [].slice
+ 
+function bind(fn, bound_this) { var bound_args
+    bound_args = slice.call(arguments, 2)
+    return function() { var args
+        args = bound_args.concat(slice.call(arguments))
+        return fn.apply(bound_this, args) }
+}
+</pre>
+
+
+
+
+
+
+
+<h1 id="toc_2">原型</h1>
+
+
+
+<h2 id="toc_2.1">函数创建过程</h2>
+
+<p>
+在了解原型链之前我们先来看看一个函数在创建过程中做了哪些事情，举一个空函数的例子
+：
+</p>
+
+<pre class="brush: javascript">
+function A() {};
+</pre>
+
+<p>
+当我们在代码里面声明这么一个空函数，js解析的本质是（肤浅理解有待深入）：
+</p>
+
+<ol>
+<li>
+创建一个对象（有constructor属性及<code>[[Prototype]]</code>属性），根据ECMA，其中
+  <code>[[Prototype]]</code>属性不可见、不可枚举
+
+<li>
+创建一个函数（有<code>name</code>、<code>prototype</code>属性），再通过<code>prototype</code>属性引用刚才创建的
+  对象
+
+<li>
+创建变量<code>A</code>，同时把函数的引用赋值给变量<code>A</code>。
+
+</ol>
+
+<p>
+如下图所示：
+</p>
+
+<p>
+<img src="images/javascript/pt.01.jpg" />
+</p>
+
+<p>
+JavaScript原型和继承（注意图中都是“ 引用 ”类型）
+</p>
+
+<p>
+每个函数的创建都经历上述过程。
+</p>
+
+<h2 id="toc_2.2">构造函数</h2>
+
+<p>
+那么什么是构造函数呢？
+</p>
+
+<p>
+按照ECMA的定义：Constructor is a function that creates and initializes the newly
+created object.
+</p>
+
+<p>
+构造函数是用来新建同时初始化一个新对象的函数。
+</p>
+
+<p>
+什么样的函数可以用来创建同时初始化新对象呢？答案是：任何一个函数，包括空函数。
+</p>
+
+<p>
+所以，结论是：任何一个函数都可以是构造函数。
+</p>
+
+<h2 id="toc_2.3">原型</h2>
+
+<p>
+根据前面空函数的创建图示，我们知道每个函数在创建的时候都自动添加了<code>prototype</code>
+属性，这就是函数的原型，从图中可知其实质就是对一个对象的引用（这个对象暂且取名
+原型对象）。
+</p>
+
+<p>
+我们可以对函数的原型对象进行操作，和普通的对象无异！一起来证实一下。
+</p>
+
+<p>
+围绕刚才创建的空函数，这次给空函数增加一些代码：
+</p>
+
+<pre class="brush: javascript; highlight:[9,10,11]">
+function A() {
+	this.width = 10;
+	this.data = [1,2,3];
+	this.key = "this is A";
+}
+
+A._objectNum = 0;//定义A的属性
+
+A.prototype.say = function() { //给A的原型对象添加属性
+	alert("hello world")
+}
+</pre>
+
+<p>
+其中给函数的原型对象增加一个<code>say</code>属性并引用一个匿名函数，根据“函数创建
+”过程，图解如下：
+</p>
+
+<p>
+<img src="images/javascript/pt.02.jpg" />
+</p>
+
+<p>
+（灰色背景就是在空函数基础上增加的属性）
+</p>
+
+<p>
+简单说原型就是函数的一个属性，在函数的创建过程中由js编译器自动添加。
+</p>
+
+<p>
+那么原型有什么用呢？
+</p>
+
+<p>
+先了解下new运算符，如下：
+</p>
+
+<pre class="brush: javascript">
+var a1 = new A;
+var a2 = new A;
+</pre>
+
+<p>
+这是通过构造函数来创建对象的方式，那么创建对象为什么要这样创建而不是直接
+用<code>var a1 = {};</code>呢？这就涉及new的具体步骤了，这里的new操作可以分成三步(以<code>a1</code>的
+创建为例)：
+</p>
+
+<ol>
+<li>
+新建一个对象并赋值给变量<code>a1</code>：<code>var a1 = {};</code>
+
+<li>
+把这个对象的<code>[[Prototype]]</code>属性指向函数<code>A</code>的原型对象：
+  <code>a1.[[Prototype]] = A.prototype</code>
+
+<li>
+调用函数<code>A</code>，同时把<code>this</code>指向第一步中创建的对象<code>a1</code>，对对象进行初始化：
+  <code>A.apply(a1,arguments)</code>
+
+</ol>
+
+<p>
+其结构图示如下：
+</p>
+
+<p>
+<img src="images/javascript/pt.03.jpg" />
+</p>
+
+<p>
+从图中看到，无论是对象<code>a1</code>还是<code>a2</code>，都有一个属性保存了对函数<code>A</code>的原型对象的引用
+，对于这些对象来说，一些公用的方法可以在函数的原型中找到，节省了内存空间。
+</p>
+
+ 
+<h2 id="toc_2.4">原型链</h2>
+
+<p>
+了解了new运算符以及原型的作用之后，一起来看看什么是<code>[[Prototype]]</code>？以及对象如何
+沿着这个引用来进行属性的查找？
+</p>
+
+<p>
+在js的世界里，每个对象默认都有一个<code>[[Prototype]]</code>属性，其保存着的地址就构成了
+对象的原型链，它是由js编译器在对象 被创建 的时候自动添加的，其取值由new运算符的
+右侧参数决定：
+</p>
+
+<p>
+当我们<code>var object1 = {};</code>的时候，<code>object1</code>的<code>[[Prototype]]</code>就指向<code>Object</code>构造
+函数的原型对象，因为<code>var object1 = {};</code>实质上等于<code>var object = new Object();</code>
+（原因可参照上述对<code>new A</code>的分析过程）。
+</p>
+
+<p>
+对象在查找某个属性的时候，会首先遍历自身的属性，如果没有则会继续查找
+<code>[[Prototype]]</code>引用的对象，如果再没有则继续查找<code>[[Prototype]].[[Prototype]]</code>引用
+的对象，依次类推，直到<code>[[Prototype]].….[[Prototype]]</code>为<code>undefined</code>（Object的
+<code>[[Prototype]]</code>就是<code>undefined</code>）
+</p>
+
+<pre class="brush: javascript">
+//我们想要获取a1.fGetName
+alert(a1.fGetName);//输出undefined
+//1、遍历a1对象本身
+//结果a1对象本身没有fGetName属性
+//2、找到a1的[[Prototype]]，也就是其对应的对象A.prototype，同时进行遍历
+//结果A.prototype也没有这个属性
+//3、找到A.prototype对象的[[Prototype]]，指向其对应的对象Object.prototype
+//结果Object.prototype也没有fGetName
+//4、试图寻找Object.prototype的[[Prototype]]属性，结果返回undefined，这就是a1.fGetName的值
+</pre>
+
+<p>
+简单说就是通过对象的<code>[[Prototype]]</code>保存对另一个对象的引用，通过这个引用往上进行
+属性的查找，这就是原型链。
+</p>
+ 
+
+<h2 id="toc_2.5">继承</h2>
+
+<p>
+有了原型链的概念，就可以进行继承。
+</p>
+
+<pre class="brush: javascript">
+function B() {};
+</pre>
+
+<p>
+这个时候产生了<code>B</code>的原型<code>B.prototype</code>
+</p>
+
+<p>
+原型本身就是一个<code>Object</code>对象，我们可以看看里面放着哪些数据
+</p>
+
+<p>
+<code>B.prototype</code>实际上就是：
+</p>
+
+<pre class="brush: javascript">
+{
+	constructor : B,
+	[[Prototype]] : Object.prototype
+}
+</pre>
+
+<p>
+因为<code>prototype</code>本身是一个<code>Object</code>对象的实例，所以其原型链指向的是<code>Object</code>的原型
+</p>
+
+<pre class="brush: javascript">
+B.prototype = A.prototype;
+</pre>
+
+<p>
+上面相当于把B的prototype指向了A的prototype；这样只是继承了A的prototype方法，A中
+的自定义方法则不继承
+</p>
+
+<pre class="brush: javascript">
+B.prototype.thisisb = "this is constructor B";
+</pre>
+
+<p>
+上面的代码也会改变a的prototype
+</p>
+
+<p>
+但是我们只想把B的原型链指向A，如何实现？
+</p>
+
+<p>
+第一种是通过改变原型链引用地址
+</p>
+	
+<pre class="brush: javascript">
+B.prototype.__proto__ = A.prototype;
+</pre>
+
+<p>
+ECMA中并没有<code>__proto__</code>这个方法，这个是ff、chrome等js解释器添加的，等同于EMCA的
+<code>[[Prototype]]</code>，这不是标准方法，那么如何运用标准方法呢？
+</p>
+
+<p>
+我们知道new操作的时候，实际上只是把实例对象的原型链指向了构造函数的<code>prototype</code>
+地址块，那么我们可以这样操作
+</p>
+
+<pre class="brush: javascript">
+B.prototype = new A();
+</pre>
+
+<p>
+这样产生的结果是：
+</p>
+
+<p>
+产生一个A的实例，同时赋值给B的原型，也即<code>B.prototype</code>相当于对象：
+</p>
+
+<pre class="brush: javascript">
+{
+	width :10,
+	data : [1,2,3],
+	key : "this is A",
+	[[Prototype]] : A.prototype
+}
+</pre>
+
+<p>
+这样就把A的原型通过<code>B.prototype.[[Prototype]]</code>这个对象属性保存起来，构成了原型的
+链接
+</p>
+
+<p>
+但是注意，这样B产生的对象的构造函数发生了改变，因为在B中没有<code>constructor</code>属性，
+只能从原型链找到<code>A.prototype</code>，读出<code>constructor:A</code>：
+</p>
+
+<pre class="brush: javascript">
+var b = new B;
+console.log(b.constructor);   //output A
+</pre>
+
+<p>
+所以我们还要人为设回B本身：
+</p>
+
+<pre class="brush: javascript">
+B.prototype.constructor = B;
+</pre>
+
+<p>
+现在B的原型就变成了：
+</p>
+
+<pre class="brush: javascript">
+{
+	width :10,
+	data : [1,2,3],
+	key : "this is A",
+	[[Prototype]] : A.prototype,
+	constructor : B
+}
+</pre>
+
+<pre class="brush: javascript">
+console.log(b.constructor);	//output B
+</pre>
+
+<p>
+同时B直接通过原型继承了A的自定义属性<code>width</code>和<code>name</code>：
+</p>
+
+<pre class="brush: javascript">
+console.log(b.data);//output [1,2,3]
+</pre>
+
+<p>
+这样的坏处就是，直接改变了<code>prototype</code>的<code>data</code>数组（引用）：
+</p>
+
+<pre class="brush: javascript">
+b.data.push(4);
+var c = new B;
+alert(c.data);   //output [1,2,3,4]
+</pre>
+
+<p>
+其实我们想要的只是原型链，A的自定义属性我们想在B中进行定义（而不是在prototype）
+。
+</p>
+
+<p>
+该如何进行继承？既然我们不想要A中自定义的属性，那么可以想办法把其过滤。可以新建
+一个空函数，把这个空函数的原型指向构造函数A的原型：
+</p>
+
+<pre class="brush: javascript">
+function F(){}
+F.prototype = A.prototype;
+</pre>
+
+<p>
+这个时候再通过new操作把<code>B.prototype</code>的原型链指向F的原型：
+</p>
+
+<pre class="brush: javascript">
+B.prototype = new F;
+</pre>
+
+<p>
+这个时候B的原型变成了：
+</p>
+
+<pre class="brush: javascript">
+{ [[Prototype]] : F.prototype }
+</pre>
+
+<p>
+这里<code>F.prototype</code>其实只是一个地址的引用。但是由B创建的实例其<code>constructor</code>指向了
+A，所以这里要显示设置一下<code>B.prototype</code>的<code>constructor</code>属性：
+</p>
+
+<pre class="brush: javascript">
+B.prototype.constructor = B;
+</pre>
+
+<p>
+这个时候B的原型变成了：
+</p>
+
+<pre class="brush: javascript">
+{
+	constructor : B ,
+	[[Prototype]] : F.prototype
+}
+</pre>
+
+<p>
+这样就实现了B对A的原型继承。图示如下，其中红色部分代表原型链：
+</p>
+
+<p>
+<img src="images/javascript/pt.04.jpg" />
+</p>
+ </div>
+</body>
+</html>

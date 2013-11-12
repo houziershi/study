@@ -3,7 +3,82 @@
 
 %toc 文本文件
 
-= paste =
+= 文本文件 =
+
+== cat ==
+
+添加行号：
+
+{{{class="brush: bash"
+$ cat -n grocery.list
+ 1 apples
+ 2 bananas
+ 3 plums
+ 4 carrots
+}}}
+
+== nl ==
+
+nl 过滤器会从 stdin 或指定文件读取行。输出则会写入 stdout 并重定向到文件，或传到
+另一个进程中。nl 的行为是由不同命令行选项控制的。
+
+在默认情况下，nl 会计算行数，与`cat -n`的功能类似。
+
+{{{class="brush: bash"
+$nl grocery.list
+ 1 apples
+ 2 bananas
+ 3 plums
+ 4 carrots
+}}}
+
+使用`-b`标志指定要进行编号的行。此标志将参数作为“类型”。该类型告诉 nl 需要给哪些
+行编号：
+
+* 使用`a`给所有行编号
+* `t`告诉 nl 不对空行和只有空格的行进行编号
+* `n`指定不编号行。
+* `p`给正则表达式模式指定的行编号
+
+例，符合正则以字母`a`或`b`开始的行：
+
+{{{class="brush: bash"
+$ nl -b p^[ba]grocery.list
+ 1 apples
+ 2 bananas
+ plums
+ carrots
+}}}
+
+在默认情况下，nl 行号和文本之间使用制表符进行分隔。使用`-s`指定其他分隔符，
+例如`=`号：
+
+{{{class="brush: bash"
+$nl -s= grocery.list
+ 1=apples
+ 2=bananas
+ 3=plums
+ 4=carrots
+}}}
+
+=== wc ===
+
+wc (wordcount) 命令计算指定文件或来自 stdin 的行数、单词数（由空格分隔）和
+字符数。
+
+{{{class="brush: bash"
+$wc grocery.list
+ 4 4 29 grocery.list
+ $wc -l grocery.list
+ 4 grocery.list
+ $wc -w grocery.list
+ 4 grocery.list
+ $wc -c grocery.list
+ 29 grocery.list
+}}}
+
+
+=== paste ===
 
 合并两个或多个文本文件，按行来进行合并。示例。如果`file1`的内容是：
 
@@ -35,7 +110,9 @@ d
      d
 }}}
 
-= 比较 =
+
+
+== 比较 ==
 
 `cmp`比较两个任意类型的文件并将结果输出至标准输出。如果两个文件相同， `cmp`默认
 返回`0`；如果不同，将显示不同的字节数和第一处不同的位置。

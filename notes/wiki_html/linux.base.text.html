@@ -25,12 +25,119 @@
 <h1>文本文件</h1>
 <div class="toc">
 <ul>
-<li><a href="#toc_1">paste</a>
-<li><a href="#toc_2">比较</a>
+<li><a href="#toc_1">文本文件</a>
+<ul>
+<li><a href="#toc_1.1">cat</a>
+<li><a href="#toc_1.2">nl</a>
+<ul>
+<li><a href="#toc_1.2.1">wc</a>
+<li><a href="#toc_1.2.2">paste</a>
+</ul>
+<li><a href="#toc_1.3">比较</a>
+</ul>
 </ul>
 </div>
 
-<h1 id="toc_1">paste</h1>
+<h1 id="toc_1">文本文件</h1>
+
+<h2 id="toc_1.1">cat</h2>
+
+<p>
+添加行号：
+</p>
+
+<pre class="brush: bash">
+$ cat -n grocery.list
+ 1 apples
+ 2 bananas
+ 3 plums
+ 4 carrots
+</pre>
+
+<h2 id="toc_1.2">nl</h2>
+
+<p>
+nl 过滤器会从 stdin 或指定文件读取行。输出则会写入 stdout 并重定向到文件，或传到
+另一个进程中。nl 的行为是由不同命令行选项控制的。
+</p>
+
+<p>
+在默认情况下，nl 会计算行数，与<code>cat -n</code>的功能类似。
+</p>
+
+<pre class="brush: bash">
+$nl grocery.list
+ 1 apples
+ 2 bananas
+ 3 plums
+ 4 carrots
+</pre>
+
+<p>
+使用<code>-b</code>标志指定要进行编号的行。此标志将参数作为“类型”。该类型告诉 nl 需要给哪些
+行编号：
+</p>
+
+<ul>
+<li>
+使用<code>a</code>给所有行编号
+
+<li>
+<code>t</code>告诉 nl 不对空行和只有空格的行进行编号
+
+<li>
+<code>n</code>指定不编号行。
+
+<li>
+<code>p</code>给正则表达式模式指定的行编号
+
+</ul>
+
+<p>
+例，符合正则以字母<code>a</code>或<code>b</code>开始的行：
+</p>
+
+<pre class="brush: bash">
+$ nl -b p^[ba]grocery.list
+ 1 apples
+ 2 bananas
+ plums
+ carrots
+</pre>
+
+<p>
+在默认情况下，nl 行号和文本之间使用制表符进行分隔。使用<code>-s</code>指定其他分隔符，
+例如<code>=</code>号：
+</p>
+
+<pre class="brush: bash">
+$nl -s= grocery.list
+ 1=apples
+ 2=bananas
+ 3=plums
+ 4=carrots
+</pre>
+
+<h3 id="toc_1.2.1">wc</h3>
+
+<p>
+wc (wordcount) 命令计算指定文件或来自 stdin 的行数、单词数（由空格分隔）和
+字符数。
+</p>
+
+<pre class="brush: bash">
+$wc grocery.list
+ 4 4 29 grocery.list
+ $wc -l grocery.list
+ 4 grocery.list
+ $wc -w grocery.list
+ 4 grocery.list
+ $wc -c grocery.list
+ 29 grocery.list
+</pre>
+
+
+<h3 id="toc_1.2.2">paste</h3>
 
 <p>
 合并两个或多个文本文件，按行来进行合并。示例。如果<code>file1</code>的内容是：
@@ -68,7 +175,9 @@ d
      d
 </pre>
 
-<h1 id="toc_2">比较</h1>
+
+
+<h2 id="toc_1.3">比较</h2>
 
 <p>
 <code>cmp</code>比较两个任意类型的文件并将结果输出至标准输出。如果两个文件相同， <code>cmp</code>默认

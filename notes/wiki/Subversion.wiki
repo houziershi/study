@@ -5,7 +5,7 @@
 第一次签出代码：
 
 {{{class="brush: bash"
-$ svn checkout http://svn.collab.net/repos/svn/trunk subv 
+$ svn checkout --username=<username> <url> <localpath> 
 }}}
 
 = 忽略文件与目录 =
@@ -106,8 +106,9 @@ M                   44     20               harry     bar.c
 检查文件修改的内容：
 
 {{{class="brush: bash"
-svn diff             # 显示所有被修改的详细信息
-svn diff > patchfile # 生成补丁 
+svn diff                    # 显示所有被修改的详细信息
+svn diff -r m:n             # 对比两个指定的版本
+svn diff > patchfile        # 生成补丁 
 }}}
 
 = 取消修改 =
@@ -144,6 +145,8 @@ theirs-full # 放弃本地，只有服务器
 launch      # 启动一个外部程序来解决冲突，这需要一点预先准备
 help        # 显示帮助 
 }}}
+
+
 
 = 提交修改 =
 

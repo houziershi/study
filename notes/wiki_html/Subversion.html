@@ -29,7 +29,7 @@
 </p>
 
 <pre class="brush: bash">
-$ svn checkout http://svn.collab.net/repos/svn/trunk subv 
+$ svn checkout --username=&lt;username&gt; &lt;url&gt; &lt;localpath&gt; 
 </pre>
 
 <h1 id="toc_3">忽略文件与目录</h1>
@@ -150,8 +150,9 @@ M                   44     20               harry     bar.c
 </p>
 
 <pre class="brush: bash">
-svn diff             # 显示所有被修改的详细信息
-svn diff &gt; patchfile # 生成补丁 
+svn diff                    # 显示所有被修改的详细信息
+svn diff -r m:n             # 对比两个指定的版本
+svn diff &gt; patchfile        # 生成补丁 
 </pre>
 
 <h1 id="toc_7">取消修改</h1>
@@ -194,6 +195,8 @@ theirs-full # 放弃本地，只有服务器
 launch      # 启动一个外部程序来解决冲突，这需要一点预先准备
 help        # 显示帮助 
 </pre>
+
+
 
 <h1 id="toc_9">提交修改</h1>
 
