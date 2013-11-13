@@ -55,16 +55,15 @@ function changeTocSize() {
  * 打开、收起所有目录
  */
 function openAll() {
-	$('div.toc>ul li').removeClass('li-index-close');
-	$('div.toc>ul li').addClass('li-index-open');
+	$('div.toc    ul').removeClass('ul-index-close');
+	$('div.toc    ul').addClass('ul-index-open');
 	$('div.toc>ul ul').show(300);
 };
 function closeAll() {
-	$('div.toc>ul li').removeClass('li-index-open');
-	$('div.toc>ul li').addClass('li-index-close');
+	$('div.toc    ul').removeClass('ul-index-open');
+	$('div.toc    ul').addClass('ul-index-close');
 	$('div.toc>ul ul').hide(300);
 };
-
 $(document).ready(function() {
 	if (window.innerWidth >= 480) {
 		// 目录标题
@@ -98,9 +97,10 @@ $(document).ready(function() {
 		});
 
 
-		$('div.toc>ul li').removeClass('li-index-close');
-		$('div.toc>ul li').addClass('li-index-open');
-		$('div.toc>ul ul').show();
+		// $('div.toc>ul li').removeClass('li-index-close');
+		// $('div.toc>ul li').addClass('li-index-open');
+		// $('div.toc>ul ul').show();
+		openAll();
 	};
 
 	//SyntaxHighlighter.autoloader(
