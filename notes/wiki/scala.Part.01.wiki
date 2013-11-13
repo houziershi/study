@@ -22,8 +22,9 @@ val msg: String = "Hello"
 val msg = "Hello"
 }}}
 
+== 赋值没有返回值 ==
 
-注意：Scala与Java不同，赋值操作是没有返回值的，所以下面的语句是错误的：
+Scala与Java不同，赋值操作是没有返回值的，所以下面的语句是错误的：
 
 {{{class="brush: scala"
 var a,b,c = 1
@@ -89,13 +90,16 @@ println( list1.getClass() )
 println(list2.getClass())
 }}}
 
-以上代码用脚本执行，可以看到第一个没有分号的语句类型不是`ArrayList`：
+不要在repl中执行，以脚本执行上代码或用`:paste`贴入代码，可以看到第一个没有分号的
+语句类型不是`ArrayList`：
 
 {{{class="brush: bash"
 Created list1
 created list2
 class java.util.ArrayList
 class Main$$anon$2$$anon$1
+list1: java.util.ArrayList[Int] = []
+list2: java.util.ArrayList[Int] = []
 }}}
 
 原因是第二个没有分号，Scala解释器以为是要创建一个继承自`ArrayList`的匿名内部类。
@@ -111,8 +115,10 @@ def max(x: Int, y: Int): Int = {
 }
 }}}
 
-函数类型也能自动推导出来，可以省略。在递归函数的情况下，
-一定要明确地说明返回类型。如果函数体只有一行，那花括号也可以省略：
+函数类型也能自动推导出来，可以省略。但在递归函数的情况下，一定要明确地说明返回
+类型。
+
+如果函数体只有一行，那花括号也可以省略：
 
 {{{class="brush: scala"
 scala> def max(x: Int, y: Int) =  if (x > y) x else y
@@ -127,7 +133,6 @@ scala> def greet() = println("Hello")
 greet: ()Unit
 }}}
 
-
 Scala可以把任何类型转为`Unit`，以下方法最后的`String`类结果会转为`Unit`并丢弃：
 
 {{{class="brush: scala"
@@ -135,7 +140,8 @@ scala> def f(): Unit = "This String is lost!"
 f: ()Unit
 }}}
 
-对于没有等号的方法来说返回类型一定是`Unit`。有了等号但没有类型会由编译器自动推导：
+对于没有等号的方法来说返回类型一定是`Unit`。有了等号但没有类型会由编译器自动推导
+：
 
 {{{class="brush: scala"
 scala> def f() {"This String is lost!"}
@@ -202,7 +208,7 @@ scala> for (i <- 0 to 10) print(i)
 
 == 方法与操作符 ==
 
-下面的语句产一个从0到5的集合：
+下面的语句产生一个从0到5的集合：
 
 {{{class="brush: scala"
 scala> 0 to 5
@@ -235,27 +241,36 @@ Scala在构成标识符方面有四种非常灵活的规则：
 == 字母数字标识符（alphanumeric identifier） ==
 
 字母数字标识符起始于一个字母或下划线，之后可以跟字母，数字，或下划线。
-`$`也被当作是字母，但是被保留作为Scala编译器产生的标识符之用。
-用户程序里的标识符不应该包含美元字符，尽管能够编译通过；
-但是这样做有可能导致与Scala编译器产生的标识符发生名称冲撞。
 
-Scala遵循Java的驼峰式标识符习俗。尽管下划线在标识符内是合法的，
-但在Scala程序里并不常用，部分原因是为了保持与Java一致，
-同样也由于下划线在Scala代码里有许多其它非标识符用法。
-因此，最好避免使用像`to_string`，`__init__`，或`name`这样的标识符。
+`$`也被当作是字母，但是被保留作为Scala编译器产生的标识符之用。尽管能够编译通过，
+但用户程序里的标识符不应该包含美元字符。这样有可能导致与Scala编译器产生的标识符
+发生名称冲撞。
+
+Scala遵循Java的驼峰式标识符习俗。尽管下划线在标识符内是合法的，但在Scala程序里
+并不常用，部分原因是为了保持与Java一致，同样也由于下划线在Scala代码里有许多其它
+非标识符用法。因此，最好避免使用像`to_string`，`__init__`，或`name`这样的标识符
+。
  
 用下划线当标识符会引起的一个麻烦就是：如果你尝试写一个这样的定义：
-`val name_: Int = `，你会收到一个编译器错误。编译器会认为你正常是定义一个叫做
-`name_:`的变量。
+
+{{{class="brush: scala"
+val name_: Int = 1
+}}}
+
+会收到一个编译器错误。编译器会认为你正常是定义一个叫做`name_:`的变量。
 
 要让它编译通过，你将需要在冒号之前插入一个额外的空格，
-如：`val name_ : Int = 1`。
+如：
+
+{{{class="brush: scala"
+val name_ : Int = 1
+}}}
 
 字段，方法参数，本地变量，还有函数的驼峰式名称，应该以小写字母开始，如：
 `length`，`flatMap`，还有`s`。
 
-类和特质的驼峰式名称应该以大写字母开始，如：`BigInt`，`List`，
-还有`UnbalancedTreeMap`。
+类和特质的驼峰式名称应该以大写字母开始，如：`BigInt`，`List`，还有
+`UnbalancedTreeMap`。
 
 Scala与Java的习惯不一致的地方在于常量名。
 
@@ -263,8 +278,8 @@ Scala里，constant这个词并不等同于val。尽管val在被初始化之后�
 但它还是个变量。比方说，方法参数是val，但是每次方法被调用的时候这些val都可以
 代表不同的值。而常量更持久。比如`scala.Math.Pi`显然是个常量。
 
-Java里，习惯上常量名全都是大写的，用下划线分隔单词，如`MAX_VALUE`或`PI`。
-Scala里习惯用驼峰式风格，如`XOffset`。
+Java里习惯常量名全大写下划线分隔单词，如`MAX_VALUE`或`PI`。Scala里习惯用驼峰式
+风格，如`XOffset`。
 
 
 == 操作符标识符（operator identifier） ==
@@ -286,10 +301,10 @@ $colon$minus$greater
  
 Scala里的操作符标识符可以有多个字符，因此在Java和Scala间有一些小差别。
 
-Java里，输入`x<-y`将会被拆分成四个词汇符号，所以写成`x < - y`也没什么不同。
-Scala里，`<-`将被作为一个标识符拆分，而得到`x <- y`。如果你想要得到Java里
-那样的解释，你要在`<`和`-`字符间加一个空格。这大概不会是实际应用中的问题，
-因为没什么人会在Java里写`x<-y`的时候不注意加空格或括号的。
+Java里，输入`x<-y`将会被拆分成四个词汇符号，所以写成`x < - y`也没什么不同。Scala
+里，`<-`将被作为一个标识符拆分，而得到`x <- y`。如果你想要得到Java里那样的解释，
+你要在`<`和`-`字符间加一个空格。这大概不会是实际应用中的问题，因为没什么人会在
+Java里写`x<-y`的时候不注意加空格或括号的。
 
 
 == 混合标识符（mixed identifier） ==
@@ -309,15 +324,15 @@ Scala里，`<-`将被作为一个标识符拆分，而得到`x <- y`。如果你
 `x` `<clinit>` `yield` 
 }}}
 
-它的思路是你可以把任何运行时认可的字串放在反引号之间当作标识符。结果总是Scala
-标识符。即使包含在反引号间的名称是Scala保留字，这个规则也是有效的。
-
 在Java的`Thread`类中访问静态的`yield`方法是其典型的用例。因为`yield`是Scala
 的保留字所以`Thread.yield()`是不合法的，因此在调用java的`yield`方法时要这样写：
 
 {{{class="brush: scala" 
 Thread.`yield`()
 }}}
+
+它的思路是你可以把任何运行时认可的字串放在反引号之间当作标识符。结果总是Scala
+标识符。即使包含在反引号间的名称是Scala保留字，这个规则也是有效的。
 
 
 = 常用工具 =
@@ -329,10 +344,9 @@ Thread.`yield`()
 长度为3的数组，存放的元素类型为`String`：
 
 {{{class="brush: scala"
-val gs: Array[String] = new Array[String](3)
-}}}
+scala> val gs: Array[String] = new Array[String](3)
+gs: Array[String] = Array(null, null, null)
 
-{{{class="brush: scala"
 scala> val gs = new Array[String](3)
 gs: Array[String] = Array(null, null, null)
 
@@ -353,17 +367,28 @@ scala> ns.foreach(print)
 === 数组的常用方法 ===
 
 {{{class="brush: scala"
-Array(1,2,3).sum
-ArrayBuffer("Mary","had","a","little","lamb").max
+scala> import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.ArrayBuffer
 
-val l = ArrayBuffer(1,7,2,9)
-val sl = b.sorted(_<_) // 注意是返回新的数组
+scala> Array(1,2,3).sum
+res0: Int = 6
+
+scala> ArrayBuffer("Mary","had","a","little","lamb").max
+res1: String = little
+
+scala> val l = ArrayBuffer(1,7,2,9)
+l: scala.collection.mutable.ArrayBuffer[Int] = ArrayBuffer(1, 7, 2, 9)
+
+scala> val sl = l.sorted(_<_) // 注意是返回新的数组
 }}}
 
 ScalaDoc中的格式初学者可能难以理解，下面给出一些方法的导读：
 
-`def copyToArray[B >: A](xs: Array[B]): Unit`：不同类型的数组复制，`B`类型必须是
-`A`的超类。
+{{{class="brush: scala"
+def copyToArray[B >: A](xs: Array[B]): Unit
+}}}
+																				
+不同类型的数组复制，`B`类型必须是`A`的超类。
 
 === 多维数组 ===
 
