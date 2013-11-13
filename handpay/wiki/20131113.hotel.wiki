@@ -1,0 +1,11 @@
+
+%title 协程酒店
+
+%toc 协程酒店
+
+= 文档位置 =
+
+[[https://hpfs01.handpay.com.cn:8443/svn/HandpayDocument/Product Doc/01. 99无限/|UI]]
+
+[[https://hpfs01.handpay.com.cn:8443/svn/HandpayDocument/Handpay Project/酒店预订-携程|设计文档]]
+

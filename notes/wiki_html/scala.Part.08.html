@@ -125,6 +125,8 @@
 <li><a href="#toc_3.7">CPS注解</a>
 <li><a href="#toc_3.8">把递归访问转为迭代</a>
 <li><a href="#toc_3.9">控制反转</a>
+<li><a href="#toc_3.10">CPS变换</a>
+<li><a href="#toc_3.11">转换嵌套的控制上下文</a>
 </ul>
 </ul>
 </div>
@@ -3189,7 +3191,7 @@ while (i &lt; files.length) {
 完整的程序：
 </p>
 
-<pre class="brush: scala">
+<pre class="brush: scala; highlight: [20, 22, 29, 30, 32]">
 // Compile as scalac -P:continuations:enable PrintFiles.scala
 import scala.util.continuations._
 import java.io._
@@ -3209,9 +3211,9 @@ object PrintFiles extends App {
       else {
         shift {
           k: (Unit =&gt; Unit) =&gt; {
-            cont = k // ➋
+            cont = k                // ➋
           }
-        } // ➎
+        }                           // ➎
         println(f)
       }
     }
@@ -3219,9 +3221,9 @@ object PrintFiles extends App {
 
   reset {
     processDirectory(new File("/")) // ➊
-  } // ➌
+  }                                 // ➌
 
-  for (i &lt;- 1 to 100) cont() // ➍
+  for (i &lt;- 1 to 100) cont()        // ➍
 }
 </pre>
 
@@ -3246,109 +3248,551 @@ object PrintFiles extends App {
 
 <h2 id="toc_3.9">控制反转</h2>
 
+<p>
+场景：两个页面上有两个表单，分别让用户填姓和名，这种情况下如果可以直接这样写会
+很方便：
+</p>
+
 <pre class="brush: scala">
+val firstname = getResponse(page1)
+val lastname = getResponse(page2)
+</pre>
+
+<p>
+但http Web应用下的请求响应是无状态的，而且流程是不受控制的。但基于延续的Web框架
+可以解决这样的问题：
+</p>
+
+<p>
+在第一个页面等待用户响应时保留下延续，等响应到来以后再调用延续。而这一切对于程序
+开发人员是透明的。
+</p>
+
+<p>
+为简单起见先用一个GUI程序来说明，在第一个界面让用户输入first name，然后用户点
+下一步按钮，调用到<code>getResponse()</code>方法。
+</p>
+
+<pre class="brush: scala; highlight: [3, 5, 7]">
+def run() {
+  reset {
+    val response1 = getResponse("What is your first name?") // ➊
+    val response2 = getResponse("What is your last name?")
+    process(response1, response2)                           // ➎
+  }
+}                                                           // ➌
+
+def process(s1: String, s2: String) {
+  label.setText("Hello, " + s1 + " " + s2)
+}
+</pre>
+
+<p>
+注意<code>process()</code>方法并没有包含shift，所以不用加上CPS注解。CPS注解要加在捕获延续的
+<code>getResponse()</code>方法上：
+</p>
+
+<pre class="brush: scala; highlight: [6, 7]">
+def getResponse(prompt: String): String @cps[Unit] = {
+  label.setText(prompt)
+  setListener(button) { cont() }
+  shift {
+    k: (Unit =&gt; Unit) =&gt; {
+      cont = k                     // ➋
+    }                              // ➍
+  }
+  setListener(button) { }
+  textField.getText
+}
+</pre>
+
+<ul>
+<li>
+<code>run()</code>方法中的业务逻辑被包在了一个reset块中：当第一次调用<code>getResponse()</code>时➊
+  ，它将进入<code>shift</code>块➋，捕获到延续，然后返回到reset块的末尾➌，退出<code>run()</code>方法。
+
+<li>
+当用户输入first name并点下一步时，按钮的事件处理器会执行延续，程序从➍开始
+  继续，用户输入被返回给<code>run()</code>方法。<code>run()</code>方法第二次调用<code>getResponse()</code>，
+	又会在延续被捕获时退出。
+
+<li>
+用户输入last name并点一下步，结果被送到<code>run()</code>方法并传递给<code>process()</code>➎
+
+</ul>
+
+<p>
+有趣的是整个活动都在事件分发线程中完成，而且没有阻塞。为了展示这个效果，可以直接
+在按钮监听器中启动<code>run()</code>方法。 
+</p>
+
+<p>
+完整的代码：
+</p>
+
+<pre class="brush: scala; highlight: [12, 29, 31, 33, 46, 47]">
+// Compile as scalac -P:continuations:enable InvControl.scala
+
+import java.awt._
+import java.awt.event._
+import javax.swing._
+import scala.util.continuations._
+
+object Main extends App {
+  val frame = new JFrame
+  val button = new JButton("Next")
+  
+  setListener(button) { run() }
+
+  val textField = new JTextArea(10, 40)
+  textField.setEnabled(false)
+  val label = new JLabel("Welcome to the demo app")
+  frame.add(label, BorderLayout.NORTH)
+  frame.add(textField)
+  
+  val panel = new JPanel
+  panel.add(button)
+  frame.add(panel, BorderLayout.SOUTH)
+  frame.pack()
+  frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
+  frame.setVisible(true)
+
+  def run() {
+    reset {
+      val response1 = getResponse("What is your first name?") // ➊
+      val response2 = getResponse("What is your last name?")
+      process(response1, response2)                           // ➎
+    }
+  }                                                           // ➌
+
+  def process(s1: String, s2: String) {
+    label.setText("Hello, " + s1 + " " + s2)
+  }
+
+  var cont: Unit =&gt; Unit = null
+
+  def getResponse(prompt: String): String @cps[Unit] = {
+    label.setText(prompt)
+    setListener(button) { cont() }
+    shift {
+      k: (Unit =&gt; Unit) =&gt; {
+        cont = k                                               // ➋
+      }                                                        // ➍
+    }
+    setListener(button) { }
+    textField.getText
+  }
+
+  def setListener(button: JButton)(action: =&gt; Unit) {
+    for (l &lt;- button.getActionListeners) button.removeActionListener(l)
+    button.addActionListener(new ActionListener {
+      override def actionPerformed(event: ActionEvent) { action }
+    })
+  }
+}
 </pre>
 
 
+<h2 id="toc_3.10">CPS变换</h2>
+
+<p>
+前面说过JVM不支持延续，所以Scala通过CPS来实现延续。CPS变换会产出一些对象，这些
+对象会指定如何处理“剩下的运算”的函数。如下面的shift方法：
+</p>
+
 <pre class="brush: scala">
+shift { 函数 }
 </pre>
 
-
+<p>
+shift的代码体是一个<code>(A =&gt; B) =&gt; C</code>的函数，它的参数类型是<code>A =&gt; B</code>的延续作为函数，
+返回值为<code>C</code>，这个值被传递到包含延续的reset块之外。所以shift会返回一个对象：
+</p>
 
 <pre class="brush: scala">
+ControlContext[A, B, C](函数)
 </pre>
 
+<p>
+这里的控制上下文（ControlContext）已经简化处理过了，真实的版本还包含了异常处理与
+常量优化等内容。
+</p>
+
+<p>
+这个上下文描述了如何处理延续函数。它可能会把函数推到一边；也有可能会计算出结果。
+上下文并不知道如何处理延续函数，它只是预期接收延续，计算要依赖其他人。 
+</p>
+
+<p>
+延续是必须被计算，要计算的内容可以分为我们知道的内容（用<code>f</code>表示）和不知道的内容
+（用<code>k1</code>表示）。为了简化问题，直接用上<code>f</code>，这样只需要假定其他人会算完<code>k1</code>再给
+我们。这样就可以先应用<code>f</code>再应用<code>k1</code>来完成整个运算。
+</p>
+
+<p>
+把上面的想法对应到上下文中：shift被翻译成一个知道如何处理shift之后所有事情的
+上下文。现在<code>f</code>到了shift以后。可以再做出一个新的控制上下文来处理<code>f</code>之后余下的
+运算。像是这样：
+</p>
 
 <pre class="brush: scala">
+new ControlContext(k1 =&gt; fun(a =&gt; k1(f(a))))
 </pre>
 
+<p>
+<code>a =&gt; k1(f(a))</code>先运行<code>f()</code>然后再完成<code>k1</code>指定的运算。而<code>fun</code>则按通常的方法处理
+去处的结果。
+</p>
+
+<p>
+以上是控制上下文的基本操作，被称为map。以下是<code>map()</code>方法的定义：
+</p>
 
 <pre class="brush: scala">
+class ControlContext[+A, -B, +C] (val fun: (A =&gt; B) =&gt; C) {
+
+	def map[A1] (f: A =&gt; A1) = new ControlContext[A1, B, C] (
+			(k1: (A1 =&gt; B)) =&gt; fun(x: A =&gt; k1(f(x)))
+		)
+
+}
 </pre>
 
+<p>
+这里的<code>map()</code>方法和后面会涉及的<code>flatMap()</code>方法与映射并没有关系。叫<code>map</code>这个名字
+是因为与映射方法一样遵从单子法则（monad laws）。这个法则就不解释了，扯远了。
+</p>
+
+<p>
+<code>map</code>方法看起来很复杂，但用起来很直观：<code>cc.map(f)</code>接收一个上下文，产生一个处理
+过<code>f</code>之后的新的上下文。这样一级一级传下去，直到所有的<code>f</code>都被处理过了，没有什么
+要处理的了就是最终状态。这就是抵达reset边界的时候，只要把一个什么都不做的方法
+传给<code>fun()</code>。就得到最终的shift结果。
+</p>
+
+<p>
+reset正是这样定义的：
+</p>
 
 <pre class="brush: scala">
+def reset[B, C] (cc: ControlContext[B, B, C]) = cc.fun(x =&gt; x)
 </pre>
 
+<p>
+看一个简单的例子：
+</p>
 
 <pre class="brush: scala">
+ var cont : (Int =&gt; Double) = null  
+ 
+ reset {
+   0.5 * shift { 
+       k: (Int =&gt; Double) =&gt; { 
+         cont = k 
+       } 
+   } + 1
+ }
 </pre>
 
+<p>
+这时只要一步就可以计算出整个延续：
+</p>
 
 <pre class="brush: scala">
+ =&gt; 0.5 * /* hole */ + 1
 </pre>
 
+<p>
+所以，我们得到了：
+</p>
 
 <pre class="brush: scala">
+reset {
+	new ControlContext[Int, Double, Unit] (k =&gt; cont = k).map(
+			/* hole */ =&gt; 0.5 * /* hole */ + 1
+	)
+}
 </pre>
 
+<p>
+即：
+</p>
 
 <pre class="brush: scala">
+reset {
+	new ControlContext[Double, Double, Unit] (
+			k1 =&gt; cont = k1(x: Int =&gt; 0.5 * x + 1)
+	)
+}
 </pre>
 
+<p>
+这样reset就可以求值了，k1是一个恒等函数，结果为：
+</p>
 
 <pre class="brush: scala">
+cont = x: Int =&gt; 0.5 * x + 1
 </pre>
 
+<p>
+可以通过<code>-Xprint:selectivecps</code>编译参数看到CPS变换生成的代码： 
+</p>
 
 <pre class="brush: scala">
+// Compile as scalac -P:continuations:enable -Xprint:selectivecps Continuations.scala
+
+import scala.util.continuations._
+
+object Main extends App {
+  
+  var cont : (Int =&gt; Double) = null  
+  reset {
+    0.5 * shift { 
+        k: (Int =&gt; Double) =&gt; { 
+          cont = k 
+        } 
+    } + 1
+  }
+  println(cont(10))
+  println(cont(20))
+}
+
+
+/*
+[[syntax trees at end of selectivecps]]// Scala source: cont3.scala
+package &lt;empty&gt; {
+  final object Main extends java.lang.Object with App with ScalaObject {
+    def this(): object Main = {
+      Main.super.this();
+      ()
+    };
+    private[this] var cont: Int =&gt; Double = null;
+    &lt;accessor&gt; def cont: Int =&gt; Double = Main.this.cont;
+    &lt;accessor&gt; def cont_=(x$1: Int =&gt; Double): Unit = Main.this.cont = x$1;
+    scala.util.continuations.`package`.reset[Double, Unit]({
+      package.this.shiftR[Int, Double, Unit](((k: Int =&gt; Double) =&gt; Main.this.cont_=(k))).map[Double](((tmp1: Int) =&gt; 0.5.*(tmp1).+(1)))
+    });
+    scala.this.Predef.println(Main.this.cont.apply(10));
+    scala.this.Predef.println(Main.this.cont.apply(20))
+  }
+}
+*/
 </pre>
 
+<h2 id="toc_3.11">转换嵌套的控制上下文</h2>
+
+<p>
+如果有多层CPS嵌套的话就复杂了，比如把递归转为迭代的场景。
+</p>
+
+<p>
+递归访问树太复杂了，这里以访问一个链表为例：
+</p>
 
 <pre class="brush: scala">
+var cont: Unit =&gt; String = null
+
+def visit(a: List[String]): String @cps[String] = {
+  if (a.isEmpty) "" else {
+    shift {
+      k: (Unit =&gt; String) =&gt; { 
+        cont = k
+        a.head
+      }
+    }
+    visit(a.tail)
+  }
+}
 </pre>
 
+<p>
+shift生成的上下文和前一个为：
+</p>
 
 <pre class="brush: scala">
+new ControlContext[Unit, String, String] (k =&gt; { cont = k; a.head }
 </pre>
 
+<p>
+但除了shift以外，还有一个<code>visit()</code>调用，它也要生成一个上下文。虽然<code>visit()</code>方法
+的返回类型是<code>String</code>，但<code>@cps</code>注解让编译器经过CPS变换以后实际返回的类型成了
+<code>ControlContext</code>。
+</p>
 
+<p>
+更加确切地说，shift被替换成了<code>()</code>，因为延续函数的参数类型为<code>Unit</code>。这样一下，
+剩下的运算就是：
+</p>
 
 <pre class="brush: scala">
+() =&gt; visit(a.tail)
 </pre>
 
+<p>
+前一节中我们会把这个函数作为参数调用<code>map()</code>方法，但由于它的返回类型是一个控制
+上下文，所以我们要调用<code>flatMap()</code>：
+</p>
 
 <pre class="brush: scala">
+if 
+	(a.isEmpty) new ControlContext(k =&gt; k(""))
+else 
+	new Controlcontext(k =&gt; { cont = k; a.head }).flatMap(() =&gt; visit(a.tail))
 </pre>
 
+<p>
+<code>flatMap()</code>的定义为：
+</p>
 
 <pre class="brush: scala">
+class ControlContext[+A, -B, +C] (val fun: (A =&gt; B) =&gt; C) {
+
+	def flatMap[A1, B1, C1 &lt;: B] (f: A =&gt; Shift[A1, B1, C1]) = 
+		new ControlContext[A1, B1, C] (
+			(k1: (A1 =&gt; B1)) =&gt; fun(x: A =&gt; f(x).fun(k1))
+		)
+}
 </pre>
 
+<p>
+以上代码的大概意思是：如果剩下的运算是由另一个想要处理剩下运算的上下文开始的话，
+就让它开始做。这将定义出一个延续，由我们来处理。
+</p>
+
+<p>
+注意类型界定<code>C1 &lt;: B</code>。这是因为<code>f(x).fun(k1)</code>的类型为<code>C1</code>，但是<code>fun()</code>的参数类型
+是<code>A =&gt; B</code>的函数。
+</p>
+
+<p>
+现在来模拟一次调用：
+</p>
 
 <pre class="brush: scala">
+val lst = List("Fred")
+reset { viset(lst) }
 </pre>
 
+<p>
+由于<code>lst</code>不为空，所以得到： 
+</p>
 
 <pre class="brush: scala">
+reset {
+	new Controlcontext(k =&gt; { cont = k; a.head }).flatMap(() =&gt; visit(a.tail))
+}
 </pre>
 
+<p>
+根据<code>flatMap()</code>的定义，可以得到：
+</p>
 
 <pre class="brush: scala">
+reset {
+	new Controlcontext(
+		k =&gt; {
+			cont = () =&gt; visit(a.tail).fun(k1);
+			lst.head 
+		}
+	)
+}
 </pre>
 
+<p>
+然后reset把<code>k1</code>设为恒等函数，我们得到：
+</p>
 
 <pre class="brush: scala">
+cont = () =&gt; visit(lst.tail).fun(x =&gt; x)
+lst.head
 </pre>
 
+<p>
+如果是更长的列表的话会得到同样的结果，不同的是<code>visit(lst.tail.tail)</code>。本例的列表
+因为只有一个元素已经调用完了，<code>visit(lst.tail)</code>将返回：
+</p>
 
 <pre class="brush: scala">
+new ControlContext(k =&gt; k(""))
 </pre>
 
+<p>
+应用恒等函数，得到结果<code>""</code>。这里用空字符串作为返回结果显得比较造作，但是因为
+<code>cont</code>预期返回一个类型为<code>String</code>的值，所以不能用<code>Unit</code>。
+</p>
+
+<p>
+全部代码如下：
+</p>
 
 <pre class="brush: scala">
-</pre>
+// Compile as scalac -P:continuations:enable -Xprint:selectivecps Visig.scala
 
+import scala util.continuations._
 
-<pre class="brush: scala">
-</pre>
+object Main extends App {
+  var cont: Unit =&gt; String = null
 
+  def visit(a: List[String]): String @cps[String] = {
+    if (a.isEmpty) "" else {
+      shift {
+        k: (Unit =&gt; String) =&gt; { 
+          cont = k
+          a.head
+        }
+      }
+      visit(a.tail)
+      println("After visit")
+      ""
+    }
+  }
 
-<pre class="brush: scala">
-</pre>
+  reset {
+    visit(List("Mary", "had", "a", "little", "lamb"))
+  }
+  println(cont())
+  println(cont())
+}
 
+/*
 
-<pre class="brush: scala">
+[[syntax trees at end of selectivecps]]// Scala source: cont11.scala
+package &lt;empty&gt; {
+  final object Main extends java.lang.Object with App with ScalaObject {
+    def this(): object Main = {
+      Main.super.this();
+      ()
+    };
+    private[this] var cont: Unit =&gt; String = null;
+    &lt;accessor&gt; def cont: Unit =&gt; String = Main.this.cont;
+    &lt;accessor&gt; def cont_=(x$1: Unit =&gt; String): Unit = Main.this.cont = x$1;
+    def visit(a: List[String]): scala.util.continuations.ControlContext[String,String,String] = if (a.isEmpty)
+      package.this.shiftUnitR[java.lang.String(""), String]("")
+    else
+      {
+        val tmp1$shift: scala.util.continuations.ControlContext[Unit,String,String] = package.this.shiftR[Unit, String, String](((k: Unit =&gt; String) =&gt; {
+          Main.this.cont_=(k);
+          a.head
+        }));
+        if (tmp1$shift.isTrivial)
+          {
+            val tmp1: Unit = tmp1$shift.getTrivialValue;
+            tmp1;
+            Main.this.visit(a.tail)
+          }
+        else
+          tmp1$shift.flatMap[String, String, String](((tmp1: Unit) =&gt; {
+            tmp1;
+            Main.this.visit(a.tail)
+          }))
+      };
+    scala.util.continuations.`package`.reset[String, String](Main.this.visit(immutable.this.List.apply[java.lang.String]("Mary", "had", "a", "little", "lamb")));
+    scala.this.Predef.println(Main.this.cont.apply(()));
+    scala.this.Predef.println(Main.this.cont.apply(()))
+  }
+}
+
+*/
 </pre>
  </div>
 </body>
