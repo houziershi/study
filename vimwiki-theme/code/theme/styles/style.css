@@ -234,13 +234,15 @@ div.toc { height:450px; }
 .tocWrap .toggler { text-align: center; font-size: 12px; background: #666699; 
 	border-radius: 2px 2px 0 0; -moz-border-radius: 2px 2px 0 0; 
 	color: #FFFFFF; position: relative; z-index: 101; cursor: pointer; }
-.toc ul { margin: 0; }
+.toc ul { margin: 0; margin-left:-30px}
 /*
  */
 .toc li { color: #000EFF; }
 .toc a { color: #000000; }
 
 div.toc ul{ list-style:none; }
+/*
+ */
 .li-index-open  { padding-left:18px; background:url('../images/close.gif') no-repeat; }
 .li-index-close { padding-left:18px; background:url('../images/open.gif') no-repeat; }
 

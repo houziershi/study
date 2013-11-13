@@ -55,13 +55,13 @@ function changeTocSize() {
  * 打开、收起所有目录
  */
 function openAll() {
-	$('div.toc    li').removeClass('li-index-close');
-	$('div.toc    li').addClass('li-index-open');
+	$('div.toc>ul li').removeClass('li-index-close');
+	$('div.toc>ul li').addClass('li-index-open');
 	$('div.toc>ul ul').show(300);
 };
 function closeAll() {
-	$('div.toc    li').removeClass('li-index-open');
-	$('div.toc    li').addClass('li-index-close');
+	$('div.toc>ul li').removeClass('li-index-open');
+	$('div.toc>ul li').addClass('li-index-close');
 	$('div.toc>ul ul').hide(300);
 };
 
