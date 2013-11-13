@@ -49,6 +49,7 @@ reveal.js： [[reveal.js]]
 
 数据结构与算法：[[Data.Structures.and.Algorithm]]
 
+[[math]]
 
 = 架构 =
 
