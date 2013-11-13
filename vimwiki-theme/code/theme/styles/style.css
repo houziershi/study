@@ -240,6 +240,10 @@ div.toc { height:450px; }
 .toc li { color: #000EFF; }
 .toc a { color: #000000; }
 
+div.toc ul{ list-style:none; }
+.li-index-open  { padding-left:18px; background:url('../images/close.gif') no-repeat; }
+.li-index-close { padding-left:18px; background:url('../images/open.gif') no-repeat; }
+
 /* 表格 */
 {
 	font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
