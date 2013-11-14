@@ -153,6 +153,7 @@ String × Int × Int
 
 == 类型变化 ==
 
+
 === 协变 ===
 
 Scala的泛型在默认情况下是非协变的（nonvariant），即：对于泛型`Queue[T]`来说，
@@ -165,7 +166,29 @@ Scala的泛型在默认情况下是非协变的（nonvariant），即：对于�
   trait Queue[+T] { ... }
 }}}
 
-==== 协变的问题 ====
+==== 不可变类型可以安全协变 ====
+
+比如Scala默认的不可变List，是可以协变的类型：
+
+{{{class="brush: scala"
+val s:AnyRef = "abc"
+var objects:List[AnyRef] = List[String]("abc","123")
+}}}
+
+相对的，如果用的是可变的List，就是不可协变：
+
+{{{class="brush: scala"
+scala> var l: java.util.List[Object] = new java.util.ArrayList[java.lang.String]()
+<console>:7: error: type mismatch;
+ found   : java.util.ArrayList[String]
+ required: java.util.List[Object]
+Note: String <: Object, but Java-defined trait List is invariant in type E.
+You may wish to investigate a wildcard type such as `_ <: Object`. (SLS 3.2.10)
+       var l: java.util.List[Object] = new java.util.ArrayList[java.lang.String]()
+                                       ^
+}}}
+
+==== 可变类型的协变会有问题 ====
 
 Scala默认禁止协变是因为协变会产生问题：
 
@@ -498,10 +521,162 @@ foldLeft[B](z: B)(op: (B, A) => B): B
 
 == 泛型变量的界定 ==
 
+=== 下界 ===
+
+因为可变类型的协变是不安全的，所以要配合声明下界来实现可变类型的协变。
+
+当前类型`T`对于它的指定超类`U`来说，自己位于下界，格式：`U >: T`。
+
+作用是为了在参数位置实现协变。例如：
+
+`Pair`类型是一个对偶，因为两个成员是不可变的，所以可以协变:
+
+{{{class="brush: scala"
+class Pair[+T](val first: T, val second: T)
+}}}
+
+添加一个替换第一个元素的方法：
+
+{{{class="brush: scala"
+class Pair[+T](val first: T, val second: T) {
+	def replaceFirst(newFirst: T) = new Pair[T](newFirst, second) // error
+}
+}}}
+
+报错是因为协变类型`T`出现在了逆变点上。但实际上这个方法不会修改原来的对偶，因为
+它返回的是一个新的实例。解决方案是给方法加上一个新的类型参数：
+
+{{{class="brush: scala"
+	def replaceFirst[R >: T](newFirst: R) = new Pair[R](newFirst, second) // error
+}}}
+
+这样就把该方法的类型参数变成了另一个类型`R`的泛型。因为`R`没有类型变化，所以可以
+放置在逆变点。
+
+结论：
+
+因为在成员方法的参数是不能协变的（逆变点），所以不能用`T+`类型的参数，只能用超类
+`U`。方法的返回类型也成了`U`。形式为：
+
+{{{class="brush: scala"
+  class MyClass[+T] {
+
+    def func01[U >: T](x: U): U = { ... }
+
+  }
+}}}
+
+要注意对于同一个类来说，即是超类也是子类。所以`T`是`U`下界，用`T`传入也是可以的。
+
+例：
+
+要实现一个队列类型`Queue[T]`，添加队列成员`append(T)`方法的参数是不能协变的，
+所以为了实现协变的`Queue[+T]`要在`appen`方法中使用下界：
+
+{{{class="brush: scala"
+  class Queue[+T] (
+			private val leading: List[T], 
+			private val trailing: List[T] 
+	) {
+    def append[U >: T](x: U) = new Queue[U](leading, x :: trailing) // ...
+  }
+}}}
+
+`append`方法指定的类型参数`U`，并通过语法`U >: T`定义了`T`为`U`的下界，即：`U`
+必须是`T`的超类。这里可以把T的任意超类`U`的对象添加进来，返回类型也成了
+`Queue[U]`。
+
+对于`append`方法来说，它不知道自己处理的是某一个子类。只知道处理的是超类`U`。
+所以不会有类型错误。
+
+其实上面的方法体中：
+
+{{{class="brush: scala"
+def append[U >: T](x: U) = new Queue[U](leading, x :: trailing)
+}}}
+
+可以简写为：
+
+{{{class="brush: scala"
+def append[U >: T](x: U) = new Queue(leading, x :: trailing)
+}}}
+
+编译器会自动推断方法的返回类型`Queue`为`Queue[U]`。
+
+
+又一个例子：
+
+对于`Fruit`和两个子类`Orange`和`Apple`，可以把`Orange`对象传入
+`Queue[Apple]`而返回`Queue[Fruit]`。
+
+从技术角度来看，这里的情况发生了下界的翻转：类型参数`U`处于逆变点位置（1次翻转）
+，而下界`U >: T`处于协变点的位置（两次翻转）。
+
+结合逆变增加类库检查的例子：
+
+协变相反，就是只能接受Fruit及其超类而不是子类。逆变在集合上没有什么实际价值，
+乍听上去也很难理解，但是在设计库的时候逆变也是一个重要的工具。
+
+仍然基于水果的背景，我们考虑如下场景：
+
+如果有`RedApple extends Apple extends Fruit`。
+
+有一把切水果刀，就好象料理机那样，装上水果刀头就能切所有的水果，但是比较粗糙，
+装上苹果刀就能切苹果，装好红苹果刀就能把红苹果切成艺术品。一个厨师右手拿水果，
+左手去拿刀，如果手里拿的是苹果，显然切苹果的刀和切水果的刀都可以用，而切子类
+红苹果的刀反而不能用了，对吗？
+ 
+{{{class="brush: scala"
+class Fruit {
+  def selfIntro() = "Fruit"
+}
+ 
+class Apple extends Fruit{
+  override def selfIntro() = "Apple"
+}
+ 
+class RedApple extends Apple{
+  override def selfIntro() = "RedApple"
+}
+ 
+class Cutter[-T] {
+  def cut[U <: T](x:U) = x match {
+    case (f:Fruit) => Console.println("cut a " ++ f.selfIntro)
+    case _ => Console.println("don't know what to do")
+  }
+}
+ 
+class Chef[T] {
+  def cutIt(c:Cutter[T], p:T) = c.cut(p)
+}
+}}}
+
+测试结果，切红苹果的刀是不能切苹果的，而且水果的刀是可以的，这正是我们需要的
+
+{{{class="brush: scala"
+scala> new Chef[Apple].cutIt(new Cutter[RedApple], new Apple)
+<console>:16: error: type mismatch;
+ found : Cutter[RedApple]
+ required: Cutter[Apple]
+              new Chef[Apple].cutIt(new Cutter[RedApple], new Apple)
+                                    ^
+ 
+scala> new Chef[Apple].cutIt(new Cutter[Apple], new Apple)
+cut a Apple
+ 
+scala> new Chef[Apple].cutIt(new Cutter[Fruit], new Apple)
+cut a Apple
+}}}
+
+可见这正是我们需要的结果，通过精确的类型定义，我们使得编译器能够检查出用户对库的
+不正确使用，提高了库的强壮性。
+
+
 === 上界 ===
 
-上界把类型变化的范围限制为某一个类的子类，这样保证具体绑定的类有基本的功能。格式
-为：`T <: U`
+当前类型`T`对它的指定子类`U`来说，自己位于是上界，格式为：`T <: U`
+
+上界把类型变化的范围限制为某一个类的子类，这样保证具体绑定的类有基本的功能。
 
 比如，`Ordered`特质实现排序的功能，那么以`Ordered`特质为上界保证得到的类是可以
 排序的。通过把`Ordered`特质混入到类中并实现抽象比较方法`Compare`就可以对实例进行
@@ -592,94 +767,6 @@ foldLeft[B](z: B)(op: (B, A) => B): B
 
 在以后的“隐式类型转换和参数”的“视图界定”一节中介绍通过采用隐式参数与检查约束来
 实现更加通用的方案。
-
-=== 下界 ===
-
-下界限制协变的类型必须为指定类型的超类，格式：`U >: T`。作为是为了在参数位置实现
-协变。例如：
-
-`Pair`类型是一个对偶，因为两个成员是不可变的，所以可以协变:
-
-{{{class="brush: scala"
-class Pair[+T](val first: T, val second: T)
-}}}
-
-添加一个替换第一个元素的方法：
-
-{{{class="brush: scala"
-class Pair[+T](val first: T, val second: T) {
-	def replaceFirst(newFirst: T) = new Pair[T](newFirst, second) // error
-}
-}}}
-
-报错是因为协变类型`T`出现在了逆变点上。但实际上这个方法不会修改原来的对偶，因为
-它返回的是一个新的实例。解决方案是给方法加上一个新的类型参数：
-
-{{{class="brush: scala"
-	def replaceFirst[R >: T](newFirst: R) = new Pair[R](newFirst, second) // error
-}}}
-
-这样就把该方法的类型参数变成了另一个类型`R`的泛型。因为`R`没有类型变化，所以可以
-放置在逆变点。
-
-结论：
-
-因为在成员方法的参数是不能协变的（逆变点），所以不能用`T+`类型的参数，只能用超类
-`U`。方法的返回类型也成了`U`。形式为：
-
-{{{class="brush: scala"
-  class MyClass[+T] {
-
-    def func01[U >: T](x: U): U = { ... }
-
-  }
-}}}
-
-要注意对于同一个类来说，即是超类也是子类。所以`T`是`U`下界，用`T`传入也是可以的。
-
-例：
-
-要实现一个队列类型`Queue[T]`，添加队列成员`append(T)`方法的参数是不能协变的，
-所以为了实现协变的`Queue[+T]`要在`appen`方法中使用下界：
-
-{{{class="brush: scala"
-  class Queue[+T] (
-			private val leading: List[T], 
-			private val trailing: List[T] 
-	) {
-    def append[U >: T](x: U) = new Queue[U](leading, x :: trailing) // ...
-  }
-}}}
-
-`append`方法指定的类型参数`U`，并通过语法`U >: T`定义了`T`为`U`的下界，即：`U`
-必须是`T`的超类。这里可以把T的任意超类`U`的对象添加进来，返回类型也成了
-`Queue[U]`。
-
-对于`append`方法来说，它不知道自己处理的是某一个子类。只知道处理的是超类`U`。
-所以不会有类型错误。
-
-其实上面的方法体中：
-
-{{{class="brush: scala"
-def append[U >: T](x: U) = new Queue[U](leading, x :: trailing)
-}}}
-
-可以简写为：
-
-{{{class="brush: scala"
-def append[U >: T](x: U) = new Queue(leading, x :: trailing)
-}}}
-
-编译器会自动推断方法的返回类型`Queue`为`Queue[U]`。
-
-
-又一个例子：
-
-对于`Fruit`和两个子类`Orange`和`Apple`，可以把`Orange`对象传入
-`Queue[Apple]`而返回`Queue[Fruit]`。
-
-从技术角度来看，这里的情况发生了下界的翻转：类型参数`U`处于逆变点位置（1次翻转）
-，而下界`U >: T`处于协变点的位置（两次翻转）。
 
 
 == 单例对象不能泛型 ==

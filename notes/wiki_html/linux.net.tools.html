@@ -35,6 +35,7 @@
 <li><a href="#toc_1.7">配置Netcat客户端不会因为EOF而退出</a>
 <li><a href="#toc_1.8">使用 Netcat 来处理 UDP 协议</a>
 </ul>
+<li><a href="#toc_2">wget</a>
 </ul>
 </div>
 
@@ -364,6 +365,60 @@ $ nc -4 -u localhost 2389
 $ netstat | grep 2389
 udp        0      0 localhost:42634         localhost:2389          ESTABLISHED
 </pre>
+
+
+
+
+
+<h1 id="toc_2">wget</h1>
+
+<p>
+下载某个目录以及目录下所有文件：
+</p>
+
+<pre class="brush: bash">
+wget -c -r -np -k -L -p http://www.xxx.com/path/
+</pre>
+
+<p>
+以下是一些常用参数：
+</p>
+
+<ul>
+<li>
+<code>-c</code> 断点续传
+
+<li>
+<code>-r</code> 递归下载，下载指定网页某一目录下（包括子目录）的所有文件
+
+<li>
+<code>-nH</code> 下载时，同时下载跨域的图片或连接
+
+<li>
+<code>-nd</code> 递归下载时不创建一层一层的目录，把所有的文件下载到当前目录
+
+<li>
+<code>-np</code> 递归下载时不搜索上层目录，如<code>wget -c -r www.xxx.org/pub/path/</code>没有加参数
+  <code>-np</code>，就会同时下载path的上一级目录pub下的其它文件
+
+<li>
+<code>-k</code> 将绝对链接转为相对链接，下载整个站点后脱机浏览网页，最好加上这个参数
+
+<li>
+<code>-L</code> 递归时不进入其它主机，如<code>wget -c -r www.xxx.org/</code>如果网站内有一个这样的
+  链接<code>* www.yyy.org</code>，不加参数<code>-L</code>，就会像大火烧山一样，会递归下载www.yyy.org
+	网站
+
+<li>
+<code>-p</code> 下载网页所需的所有文件，如图片等
+
+<li>
+<code>-A</code> 指定要下载的文件样式列表，多个样式用逗号分隔
+
+<li>
+<code>-i</code> 后面跟一个文件，文件内指明要下载的URL
+
+</ul>
  </div>
 </body>
 </html>

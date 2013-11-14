@@ -38,9 +38,10 @@
 <ul>
 <li><a href="#toc_1.3.1">协变</a>
 <ul>
-<li><a href="#toc_1.3.1.1">协变的问题</a>
-<li><a href="#toc_1.3.1.2">Java数组是协变的</a>
-<li><a href="#toc_1.3.1.3">Scala数组是非协变的</a>
+<li><a href="#toc_1.3.1.1">不可变类型可以安全协变</a>
+<li><a href="#toc_1.3.1.2">可变类型的协变会有问题</a>
+<li><a href="#toc_1.3.1.3">Java数组是协变的</a>
+<li><a href="#toc_1.3.1.4">Scala数组是非协变的</a>
 </ul>
 <li><a href="#toc_1.3.2">逆变</a>
 </ul>
@@ -53,8 +54,8 @@
 </ul>
 <li><a href="#toc_1.5">泛型变量的界定</a>
 <ul>
-<li><a href="#toc_1.5.1">上界</a>
-<li><a href="#toc_1.5.2">下界</a>
+<li><a href="#toc_1.5.1">下界</a>
+<li><a href="#toc_1.5.2">上界</a>
 </ul>
 <li><a href="#toc_1.6">单例对象不能泛型</a>
 <li><a href="#toc_1.7">类型通配符</a>
@@ -338,6 +339,7 @@ String × Int × Int
 
 <h2 id="toc_1.3">类型变化</h2>
 
+
 <h3 id="toc_1.3.1">协变</h3>
 
 <p>
@@ -354,7 +356,33 @@ Scala的泛型在默认情况下是非协变的（nonvariant），即：对于�
   trait Queue[+T] { ... }
 </pre>
 
-<h4 id="toc_1.3.1.1">协变的问题</h4>
+<h4 id="toc_1.3.1.1">不可变类型可以安全协变</h4>
+
+<p>
+比如Scala默认的不可变List，是可以协变的类型：
+</p>
+
+<pre class="brush: scala">
+val s:AnyRef = "abc"
+var objects:List[AnyRef] = List[String]("abc","123")
+</pre>
+
+<p>
+相对的，如果用的是可变的List，就是不可协变：
+</p>
+
+<pre class="brush: scala">
+scala&gt; var l: java.util.List[Object] = new java.util.ArrayList[java.lang.String]()
+&lt;console&gt;:7: error: type mismatch;
+ found   : java.util.ArrayList[String]
+ required: java.util.List[Object]
+Note: String &lt;: Object, but Java-defined trait List is invariant in type E.
+You may wish to investigate a wildcard type such as `_ &lt;: Object`. (SLS 3.2.10)
+       var l: java.util.List[Object] = new java.util.ArrayList[java.lang.String]()
+                                       ^
+</pre>
+
+<h4 id="toc_1.3.1.2">可变类型的协变会有问题</h4>
 
 <p>
 Scala默认禁止协变是因为协变会产生问题：
@@ -431,7 +459,7 @@ Scala默认禁止协变是因为协变会产生问题：
 <code>Cell[Any]</code>和<code>Cell[String]</code>的类型的协变引起了错误。
 </p>
 
-<h4 id="toc_1.3.1.2">Java数组是协变的</h4>
+<h4 id="toc_1.3.1.3">Java数组是协变的</h4>
 
 <p>
 以前面的<code>Cell</code>类为例与Java中的数组比较，Java中的数组是协变的：
@@ -470,7 +498,7 @@ Scala默认禁止协变是因为协变会产生问题：
 不再有用了，为了向以前老版本兼容才留着。
 </p>
 
-<h4 id="toc_1.3.1.3">Scala数组是非协变的</h4>
+<h4 id="toc_1.3.1.4">Scala数组是非协变的</h4>
 
 <p>
 Scala中数组是不可协变的：
@@ -860,120 +888,18 @@ foldLeft[B](z: B)(op: (B, A) =&gt; B): B
 
 <h2 id="toc_1.5">泛型变量的界定</h2>
 
-<h3 id="toc_1.5.1">上界</h3>
+<h3 id="toc_1.5.1">下界</h3>
 
 <p>
-上界把类型变化的范围限制为某一个类的子类，这样保证具体绑定的类有基本的功能。格式
-为：<code>T &lt;: U</code>
+因为可变类型的协变是不安全的，所以要配合声明下界来实现可变类型的协变。
 </p>
 
 <p>
-比如，<code>Ordered</code>特质实现排序的功能，那么以<code>Ordered</code>特质为上界保证得到的类是可以
-排序的。通过把<code>Ordered</code>特质混入到类中并实现抽象比较方法<code>Compare</code>就可以对实例进行
-比较：
+当前类型<code>T</code>对于它的指定超类<code>U</code>来说，自己位于下界，格式：<code>U &gt;: T</code>。
 </p>
 
-<pre class="brush: scala">
-  class Person(val firstName: String, val lastName: String)
-      extends Ordered[Person] {
-
-    def compare(that: Person) = {
-      val lastNameComparison =
-        lastName.compareToIgnoreCase(that.lastName)
-      if (lastNameComparison != 0)
-        lastNameComparison
-      else
-        firstName.compareToIgnoreCase(that.firstName)
-    }
-
-    override def toString = firstName +" "+ lastName
-  }
-</pre>
-
 <p>
-这样<code>Person</code>就具有了比较的功能：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val robert = new Person("Robert", "Jones")
-  robert: Person = Robert Jones
-
-  scala&gt; val sally = new Person("Sally", "Smith")
-  sally: Person = Sally Smith
-
-  scala&gt; robert &lt; sally
-  res0: Boolean = true
-</pre>
-
-<p>
-为了让列表类型混入到<code>Ordered</code>中，需要使用上界<code>T &lt;:  Ordered[T]</code>。表明类型必须是
-<code>Ordered</code>的子类型。比如<code>Person</code>，因为<code>Person</code>混入了<code>Ordered</code>特质：
-</p>
-
-<pre class="brush: scala">
-  def orderedMergeSort[T &lt;: Ordered[T]](xs: List[T]): List[T] = {
-    def merge(xs: List[T], ys: List[T]): List[T] =
-      (xs, ys) match {
-        case (Nil, _) =&gt; ys
-        case (_, Nil) =&gt; xs
-        case (x :: xs1, y :: ys1) =&gt;
-          if (x &lt; y) x :: merge(xs1, ys)
-          else y :: merge(xs, ys1)
-      }
-    val n = xs.length / 2
-    if (n == 0) xs
-    else {
-      val (ys, zs) = xs splitAt n
-      merge(orderedMergeSort(ys), orderedMergeSort(zs))
-    }
-  }
-</pre>
-
-<p>
-使用：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val people = List(
-       |   new Person("Larry", "Wall"),
-       |   new Person("Anders", "Hejlsberg"),
-       |   new Person("Guido", "van Rossum"),
-       |   new Person("Alan", "Kay"),
-       |   new Person("Yukihiro", "Matsumoto")
-       | )
-  people: List[Person] = List(Larry Wall, Anders Hejlsberg,
-    Guido van Rossum, Alan Kay, Yukihiro Matsumoto)
-
-
-  scala&gt; val sortedPeople = orderedMergeSort(people)
-  sortedPeople: List[Person] = List(Anders Hejlsberg, Alan Kay,
-    Yukihiro Matsumoto, Guido van Rossum, Larry Wall)
-</pre>
-
-<p>
-以上的解决方案还是有限制，比如不能适应整数列表。因为<code>Int</code>不是<code>Ordered[Int]</code>的
-子类：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val wontCompile = orderedMergeSort(List(3, 2, 1))
-  &lt;console&gt;:5: error: inferred type arguments [Int] do
-     not conform to method orderedMergeSort's type
-       parameter bounds [T &lt;: Ordered[T]]
-         val wontCompile = orderedMergeSort(List(3, 2, 1))
-                           ^
-</pre>
-
-<p>
-在以后的“隐式类型转换和参数”的“视图界定”一节中介绍通过采用隐式参数与检查约束来
-实现更加通用的方案。
-</p>
-
-<h3 id="toc_1.5.2">下界</h3>
-
-<p>
-下界限制协变的类型必须为指定类型的超类，格式：<code>U &gt;: T</code>。作为是为了在参数位置实现
-协变。例如：
+作用是为了在参数位置实现协变。例如：
 </p>
 
 <p>
@@ -1091,6 +1017,192 @@ def append[U &gt;: T](x: U) = new Queue(leading, x :: trailing)
 <p>
 从技术角度来看，这里的情况发生了下界的翻转：类型参数<code>U</code>处于逆变点位置（1次翻转）
 ，而下界<code>U &gt;: T</code>处于协变点的位置（两次翻转）。
+</p>
+
+<p>
+结合逆变增加类库检查的例子：
+</p>
+
+<p>
+协变相反，就是只能接受Fruit及其超类而不是子类。逆变在集合上没有什么实际价值，
+乍听上去也很难理解，但是在设计库的时候逆变也是一个重要的工具。
+</p>
+
+<p>
+仍然基于水果的背景，我们考虑如下场景：
+</p>
+
+<p>
+如果有<code>RedApple extends Apple extends Fruit</code>。
+</p>
+
+<p>
+有一把切水果刀，就好象料理机那样，装上水果刀头就能切所有的水果，但是比较粗糙，
+装上苹果刀就能切苹果，装好红苹果刀就能把红苹果切成艺术品。一个厨师右手拿水果，
+左手去拿刀，如果手里拿的是苹果，显然切苹果的刀和切水果的刀都可以用，而切子类
+红苹果的刀反而不能用了，对吗？
+</p>
+ 
+<pre class="brush: scala">
+class Fruit {
+  def selfIntro() = "Fruit"
+}
+ 
+class Apple extends Fruit{
+  override def selfIntro() = "Apple"
+}
+ 
+class RedApple extends Apple{
+  override def selfIntro() = "RedApple"
+}
+ 
+class Cutter[-T] {
+  def cut[U &lt;: T](x:U) = x match {
+    case (f:Fruit) =&gt; Console.println("cut a " ++ f.selfIntro)
+    case _ =&gt; Console.println("don't know what to do")
+  }
+}
+ 
+class Chef[T] {
+  def cutIt(c:Cutter[T], p:T) = c.cut(p)
+}
+</pre>
+
+<p>
+测试结果，切红苹果的刀是不能切苹果的，而且水果的刀是可以的，这正是我们需要的
+</p>
+
+<pre class="brush: scala">
+scala&gt; new Chef[Apple].cutIt(new Cutter[RedApple], new Apple)
+&lt;console&gt;:16: error: type mismatch;
+ found : Cutter[RedApple]
+ required: Cutter[Apple]
+              new Chef[Apple].cutIt(new Cutter[RedApple], new Apple)
+                                    ^
+ 
+scala&gt; new Chef[Apple].cutIt(new Cutter[Apple], new Apple)
+cut a Apple
+ 
+scala&gt; new Chef[Apple].cutIt(new Cutter[Fruit], new Apple)
+cut a Apple
+</pre>
+
+<p>
+可见这正是我们需要的结果，通过精确的类型定义，我们使得编译器能够检查出用户对库的
+不正确使用，提高了库的强壮性。
+</p>
+
+
+<h3 id="toc_1.5.2">上界</h3>
+
+<p>
+当前类型<code>T</code>对它的指定子类<code>U</code>来说，自己位于是上界，格式为：<code>T &lt;: U</code>
+</p>
+
+<p>
+上界把类型变化的范围限制为某一个类的子类，这样保证具体绑定的类有基本的功能。
+</p>
+
+<p>
+比如，<code>Ordered</code>特质实现排序的功能，那么以<code>Ordered</code>特质为上界保证得到的类是可以
+排序的。通过把<code>Ordered</code>特质混入到类中并实现抽象比较方法<code>Compare</code>就可以对实例进行
+比较：
+</p>
+
+<pre class="brush: scala">
+  class Person(val firstName: String, val lastName: String)
+      extends Ordered[Person] {
+
+    def compare(that: Person) = {
+      val lastNameComparison =
+        lastName.compareToIgnoreCase(that.lastName)
+      if (lastNameComparison != 0)
+        lastNameComparison
+      else
+        firstName.compareToIgnoreCase(that.firstName)
+    }
+
+    override def toString = firstName +" "+ lastName
+  }
+</pre>
+
+<p>
+这样<code>Person</code>就具有了比较的功能：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val robert = new Person("Robert", "Jones")
+  robert: Person = Robert Jones
+
+  scala&gt; val sally = new Person("Sally", "Smith")
+  sally: Person = Sally Smith
+
+  scala&gt; robert &lt; sally
+  res0: Boolean = true
+</pre>
+
+<p>
+为了让列表类型混入到<code>Ordered</code>中，需要使用上界<code>T &lt;:  Ordered[T]</code>。表明类型必须是
+<code>Ordered</code>的子类型。比如<code>Person</code>，因为<code>Person</code>混入了<code>Ordered</code>特质：
+</p>
+
+<pre class="brush: scala">
+  def orderedMergeSort[T &lt;: Ordered[T]](xs: List[T]): List[T] = {
+    def merge(xs: List[T], ys: List[T]): List[T] =
+      (xs, ys) match {
+        case (Nil, _) =&gt; ys
+        case (_, Nil) =&gt; xs
+        case (x :: xs1, y :: ys1) =&gt;
+          if (x &lt; y) x :: merge(xs1, ys)
+          else y :: merge(xs, ys1)
+      }
+    val n = xs.length / 2
+    if (n == 0) xs
+    else {
+      val (ys, zs) = xs splitAt n
+      merge(orderedMergeSort(ys), orderedMergeSort(zs))
+    }
+  }
+</pre>
+
+<p>
+使用：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val people = List(
+       |   new Person("Larry", "Wall"),
+       |   new Person("Anders", "Hejlsberg"),
+       |   new Person("Guido", "van Rossum"),
+       |   new Person("Alan", "Kay"),
+       |   new Person("Yukihiro", "Matsumoto")
+       | )
+  people: List[Person] = List(Larry Wall, Anders Hejlsberg,
+    Guido van Rossum, Alan Kay, Yukihiro Matsumoto)
+
+
+  scala&gt; val sortedPeople = orderedMergeSort(people)
+  sortedPeople: List[Person] = List(Anders Hejlsberg, Alan Kay,
+    Yukihiro Matsumoto, Guido van Rossum, Larry Wall)
+</pre>
+
+<p>
+以上的解决方案还是有限制，比如不能适应整数列表。因为<code>Int</code>不是<code>Ordered[Int]</code>的
+子类：
+</p>
+
+<pre class="brush: scala">
+  scala&gt; val wontCompile = orderedMergeSort(List(3, 2, 1))
+  &lt;console&gt;:5: error: inferred type arguments [Int] do
+     not conform to method orderedMergeSort's type
+       parameter bounds [T &lt;: Ordered[T]]
+         val wontCompile = orderedMergeSort(List(3, 2, 1))
+                           ^
+</pre>
+
+<p>
+在以后的“隐式类型转换和参数”的“视图界定”一节中介绍通过采用隐式参数与检查约束来
+实现更加通用的方案。
 </p>
 
 

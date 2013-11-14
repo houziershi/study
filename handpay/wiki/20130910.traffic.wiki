@@ -273,7 +273,10 @@ select * from merch_transaction_detail;
 
 方案  
 
-ViolationPayAction 根据BackendID判断 == tlcbwap || bojzwap 时，跳转到页面paymentnote.jsp(新增) 参考商城中的PaymentAction, iphone/payment/paymentnote.jsp 
+`ViolationPayAction`根据判断`BackendID == tlcbwap || bojzwap`时，跳转到页面
+`paymentnote.jsp`(新增) 参考商城中的
+
+`NewPaymentAction`,`PaymentAction`,`iphone/payment/paymentnote.jsp` 
 
 看一下这两个js方法 
 
