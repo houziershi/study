@@ -196,8 +196,12 @@ pidgin：[[pidgin]]
 
 [[linus.said]]
 
+[[john.carmark.said]]
+
 [[google.android]]
 
 [[amazone.revenue]]
 
 [[char.face]]
+
+[[nittyMith]]
