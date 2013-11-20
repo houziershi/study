@@ -3,21 +3,7 @@
 
 %toc 发布
 
+[[gen.rn]]
 
-生成rn文件，请先填写conf目录下的rn.properties文件<br/>
-order=1（构建顺序，必填项，如果对构建顺序没有要求，请填写1，否则，则按构建顺序填写整型数字）<br/>
-authName=（svn用户名，必填项，填写提交人的svn用户名）<br/>
-anthPwd=（svn密码，必填项，填写提交人的svn密码）<br/>
-projectName=（工程名称，必填项，填写构建的工程名称，如果是配置文件，则填写配置文件对应的工程名称）<br/>
-projectSvnPath=（工程路径，必填项，填写构建工程或者配置文件的svn路径）<br/>
-effect=（影响工程，选填项，填写受影响的工程名称，如果有多个工程，请用逗号分开）<br/>
-releaseDate=（计划上线时间，选填项，填写项目上线时间）<br/>
-endRevision=（结束svn版本号，必填项，填写需要构建的svn版本号）<br/>
-buildType=（构建类型，必填项，填写maven或者ant）<br/>
-rnType=（rn类型，必填项，工程构建填写1，配置文件生成填写2）<br/>
-<br/>
-填写完rn.properties文件后，运行bin目录下的bootstrap.bat进入生成窗口<br/>
-输入rng回车，生成1个rn文件<br/>
-如果填写了多个properties文件，输入rng --f all生成多个rn文件<br/>
-
+[[dubbo]]
 

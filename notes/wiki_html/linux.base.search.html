@@ -127,7 +127,9 @@
 <li><a href="#toc_2">文本内容查找</a>
 <ul>
 <li><a href="#toc_2.1">grep</a>
-<li><a href="#toc_2.2">例子</a>
+<li><a href="#toc_2.2">组合<code>find</code>查找</a>
+<li><a href="#toc_2.3">组合<code>find</code>与<code>perl</code>查找替换</a>
+<li><a href="#toc_2.4">例子</a>
 </ul>
 </ul>
 </div>
@@ -1681,7 +1683,28 @@ root@tecmint:~# grep -r "127.0.0.1" /etc/
 
 </ul>
 
-<h2 id="toc_2.2">例子</h2>
+<h2 id="toc_2.2">组合<code>find</code>查找</h2>
+
+<p>
+查找非备份文件中的含有"helloworld"字符串的文件
+</p>
+
+<pre class="brush: bash">
+find /PATH /( -not -name "*~" /) -exec grep -in "helloworld" {} \;
+</pre>
+
+<p>
+注：<code>/PATH</code>为查找路径，默认为当前路径。带<code>-exec</code>参数时必须以<code>\;</code>结尾，否则会提示
+find遗漏<code>-exec</code>的参数。
+</p>
+
+<h2 id="toc_2.3">组合<code>find</code>与<code>perl</code>查找替换</h2>
+
+<pre class="brush: bash">
+find ./ -type f | xargs perl -pi -e "s/abc/def/g"
+</pre>
+
+<h2 id="toc_2.4">例子</h2>
 
 <p>
 单词匹配
@@ -1694,8 +1717,6 @@ $ grep -w apples grocery.list grocery.list2
 </pre>
 
 
-<pre class="brush: bash">
-</pre>
 
 
 <pre class="brush: bash">

@@ -11,6 +11,85 @@
 
 字面量：`{item1, item2, ... }`
 
+{{{class="brush: java"
+int[] intArray;   //creating array without initializing or specifying size
+int intArray1[];  //another int[] reference variable can hold reference of an integer array
+int[] intArray2 = new int[10]; //creating array by specifying size
+int[] intArray3 = new int[]{1,2,3,4}; //creating and initializing array in same line.
+}}}
+
+Java中数组可以轻易的转换成ArrayList。ArrayList一个基于索引的集合，它是作为数组的
+备选方案。ArrayList的优点是可以改变容量大小，只需要创建个更大的数组然后拷贝内容
+到新数组，但你不能改变数组的大小。
+
+== arrayCopy ==
+
+Java API同样提供了一些便捷方法通过java.utils.Arrays类去操作数组，通过使用Arrays
+你可以排序数组，你可以做二分搜索。
+
+java.lang.System类提供了实用方法拷贝元素到另一个数组。在拷贝内容从一个数组到
+另一个数组的时候System.arrayCopy非常强大和灵活。你可以拷贝整个或子数组，
+具体看你的需求。System.arraycoy语法：
+
+{{{class="brush: java"
+public static void arraycopy(Object src, int srcPos, Object dest, 
+		int destPos, int length)
+}}}
+
+如你所见，arraycopy允许我们指定索引和长度，能很灵活给你拷贝子数组和存储到需要的
+位置或目标数组。这里是一个例子，拷贝前三个元素到目标数组：
+
+{{{class="brush: java"
+public static void main(String args[]) {
+  int[] source = new int[]{10, 20, 30, 40, 50};
+  int[] target = new int[5];
+
+  System.out.println("Before copying");
+  for(int i: target){
+      System.out.println(i);
+  }
+
+  System.arraycopy(source, 0, target, 0, 3);
+
+  System.out.println("after copying");
+  
+  for(int i: target){
+      System.out.println(i);
+  }
+}
+}}}
+
+输出：
+
+{{{class="brush: java"
+Before copying
+0
+0
+0
+0
+0
+after copying
+10
+20
+30
+0
+0
+}}}
+
+== 多维数组 ==
+
+{{{class="brush: java"
+int[][] multiArray = new int[2][3];
+}}}
+
+
+{{{class="brush: java"
+int[][] multiArray = {{1,2,3},{10,20,30}};
+System.out.println(multiArray[0].length);
+System.out.println(multiArray[1].length);
+}}}
+
+
 
 
 = 容器类初始化 =

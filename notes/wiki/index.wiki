@@ -61,6 +61,8 @@ reveal.js： [[reveal.js]]
 
 Vim：[[vim]]
 
+[[vim.nerdtree]]
+
 Vim neocomplcache：[[vim.neocomplcache]]
 
 Vim Java：[[vim.java]]
@@ -185,6 +187,8 @@ pidgin：[[pidgin]]
 = 标准 =
 
 网络标准：[[stand.net]]
+
+[[XMPP]]
 
 =  学习计划 =
 

@@ -1,0 +1,12 @@
+
+
+%title XMPP
+
+%toc XMPP
+
+= JID =
+
+格式：`local@domain/resource`
+
+
+
