@@ -1,0 +1,69 @@
+
+%title XMPP
+
+%toc XMPP
+
+
+
+
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+

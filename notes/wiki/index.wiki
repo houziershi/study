@@ -181,10 +181,11 @@ pidgin：[[pidgin]]
 [[moc]]
 
 
-
-= 标准 =
+= 协议 =
 
 网络标准：[[stand.net]]
+
+[[XMPP]]
 
 =  学习计划 =
 
