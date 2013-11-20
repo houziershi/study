@@ -1,16 +1,10 @@
-
 %title XMPP
 
 %toc XMPP
 
+= JID =
 
-
-
-
-
-{{{class="brush: xml"
-}}}
-
+格式：`local@domain/resource`
 
 {{{class="brush: xml"
 }}}
@@ -66,4 +60,10 @@
 
 {{{class="brush: xml"
 }}}
+
+
+{{{class="brush: xml"
+}}}
+
+
 

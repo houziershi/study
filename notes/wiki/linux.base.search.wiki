@@ -1196,6 +1196,23 @@ root@tecmint:~# grep -r "127.0.0.1" /etc/
 * `-c`用于统计满足要求的行 (`grep -c 'word' /path/to/file`).
 * `–color`彩色输出 (`grep –color server /etc/passwd`).
 
+== 组合`find`查找 ==
+
+查找非备份文件中的含有"helloworld"字符串的文件
+
+{{{class="brush: bash"
+find /PATH /( -not -name "*~" /) -exec grep -in "helloworld" {} \;
+}}}
+
+注：`/PATH`为查找路径，默认为当前路径。带`-exec`参数时必须以`\;`结尾，否则会提示
+find遗漏`-exec`的参数。
+
+== 组合`find`与`perl`查找替换 ==
+
+{{{class="brush: bash"
+find ./ -type f | xargs perl -pi -e "s/abc/def/g"
+}}}
+
 == 例子 ==
 
 单词匹配
@@ -1207,8 +1224,6 @@ $ grep -w apples grocery.list grocery.list2
 }}}
 
 
-{{{class="brush: bash"
-}}}
 
 
 {{{class="brush: bash"

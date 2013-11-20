@@ -61,6 +61,8 @@ reveal.js： [[reveal.js]]
 
 Vim：[[vim]]
 
+[[vim.nerdtree]]
+
 Vim neocomplcache：[[vim.neocomplcache]]
 
 Vim Java：[[vim.java]]
@@ -197,8 +199,12 @@ pidgin：[[pidgin]]
 
 [[linus.said]]
 
+[[john.carmark.said]]
+
 [[google.android]]
 
 [[amazone.revenue]]
 
 [[char.face]]
+
+[[nittyMith]]

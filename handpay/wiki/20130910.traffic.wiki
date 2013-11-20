@@ -12,6 +12,12 @@ scp -r dsdev15@dev1.hpdev.com:~/handpay/report/template/ .
 
 scp -r dsdev15@dev1.hpdev.com:~/server/default/deploy/ROOT.war/mall/hpdownload/report .
 
+
+
+
+ssh dsdev20@dev1.hpdev.com                     // dsdev20
+/opt/dsdev20/server/default/deploy/ROOT.war/lmbao/hpmerchantService
+
 ssh dsdev15@dev1.hpdev.com                     // handpay
 
 hp stop
@@ -23,14 +29,14 @@ tail -f ~/server/default/log/server.log
 
 
 1.	SQL执行
-https://10.48.196.110:8443/svn/HandpayDocument/Handpay Project/手付通3.0/开发文档/项目提交数据/交通罚款优化/sql/test/交罚业务报表支撑权限脚本.sql 
-https://10.48.196.110:8443/svn/HandpayDocument/Handpay Project/手付通3.0/开发文档/项目提交数据/交通罚款优化/sql/test/交罚业务表结构修改及基础数据.sql 
+[[https://hpfs01.handpay.com.cn:8443/svn/HandpayDocument/Handpay Project/手付通3.0/开发文档/项目提交数据/交通罚款优化/sql/test/交罚业务报表支撑权限脚本.sql|交罚业务报表支撑权限脚本.sql]] 
+[[https://hpfs01.handpay.com.cn:8443/svn/HandpayDocument/Handpay Project/手付通3.0/开发文档/项目提交数据/交通罚款优化/sql/test/交罚业务表结构修改及基础数据.sql|交罚业务表结构修改及基础数据.sql]] 
 
 2.	静态文件
-https://10.48.196.110:8443/svn/HandpayDocument/Handpay Project/手付通3.0/开发文档/项目提交数据/交通罚款优化/mnt/mfs/ static/mall/wap 
+[[https://hpfs01.handpay.com.cn:8443/svn/HandpayDocument/Handpay Project/手付通3.0/开发文档/项目提交数据/交通罚款优化/mnt/mfs/ static/mall/wap|静态文件]] 
 
 3.	报表模板
-https://10.48.196.110:8443/svn/HandpayDocument/Handpay Project/手付通3.0/开发文档/项目提交数据/交通罚款优化/mnt/mfs/handpay
+[[https://hpfs01.handpay.com.cn:8443/svn/HandpayDocument/Handpay Project/手付通3.0/开发文档/项目提交数据/交通罚款优化/mnt/mfs/handpay|模板]]
 
 == 测试数据库 ==
 
