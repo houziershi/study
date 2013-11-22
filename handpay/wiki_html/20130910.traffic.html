@@ -1286,10 +1286,31 @@ Js中去掉iPhone的特殊代码：
 	}
 </pre>
 
+<p>
+ViolationPayAction中两个写死的地方：加密和渠道：
+</p>
+
+<pre class="brush: java" title="vposViolationDetail.jsp">
+		try {
+			signData = sign.sign(content, "gbk");
+		} catch (Exception e) {
+			// TODO:测试代码，删除
+//			 signData = content;
+		}
+</pre>
+
+<pre class="brush: java" title="vposViolationDetail.jsp">
+			// TODO : 测试时写死的渠道
+//			 channel = "icmb";
+</pre>
+
 
 <p>
-入口： <a href="http://localhost:8080/hpWapService-traffic0910/trafficIndex.do?trafficIndexFlag=vpos">http://localhost:8080/hpWapService-traffic0910/trafficIndex.do?trafficIndexFlag=vpos</a>
-入口： <a href="http://localhost:8080/wap/trafficIndex.do?trafficIndexFlag=vpos">http://localhost:8080/wap/trafficIndex.do?trafficIndexFlag=vpos</a>
+vpos入口： <a href="http://localhost:8080/wap/trafficIndex.do?trafficIndexFlag=vpos">http://localhost:8080/wap/trafficIndex.do?trafficIndexFlag=vpos</a>
+</p>
+
+<p>
+普通入口： <a href="http://localhost:8080/wap/trafficIndex.do">http://localhost:8080/wap/trafficIndex.do</a>
 </p>
 
 <p>

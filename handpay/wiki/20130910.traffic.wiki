@@ -198,9 +198,26 @@ Js中去掉iPhone的特殊代码：
 	}
 }}}
 
+ViolationPayAction中两个写死的地方：加密和渠道：
 
-入口： http://localhost:8080/hpWapService-traffic0910/trafficIndex.do?trafficIndexFlag=vpos
-入口： http://localhost:8080/wap/trafficIndex.do?trafficIndexFlag=vpos
+{{{class="brush: java" title="vposViolationDetail.jsp"
+		try {
+			signData = sign.sign(content, "gbk");
+		} catch (Exception e) {
+			// TODO:测试代码，删除
+//			 signData = content;
+		}
+}}}
+
+{{{class="brush: java" title="vposViolationDetail.jsp"
+			// TODO : 测试时写死的渠道
+//			 channel = "icmb";
+}}}
+
+
+vpos入口： http://localhost:8080/wap/trafficIndex.do?trafficIndexFlag=vpos
+
+普通入口： http://localhost:8080/wap/trafficIndex.do
 
 测试入口： http://trafficklb.99wuxian.com/wap
 

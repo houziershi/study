@@ -208,3 +208,8 @@ pidgin：[[pidgin]]
 [[char.face]]
 
 [[nittyMith]]
+
+= 英语 =
+
+[[vocabulary]]
+

@@ -87,7 +87,6 @@ type如果为`error`，表示此类消息错误。不要回应`error`以避免�
 
 === Message ===
 
-
 {{{class="brush: xml"
 <message from='bingley@netherfield.lit/drawing_room'
 	to='darcy@pemberley.lit'
@@ -113,6 +112,159 @@ type如果为`error`，表示此类消息错误。不要回应`error`以避免�
 {{{class="brush: xml"
 }}}
 
+=== IQ ===
+
+向服务器请求资源，如联系人列表等。相当于HTTP中的GET，POST等动作。
+
+
+
+{{{class="brush: xml"
+<iq from='jane@longbourn.lit/garden' type='get' id='roster1'>
+	<query xmlns='jabber:iq:roster'/>
+</iq>
+
+<iq to='jane@longbourn.lit/garden' type='error' id='roster1'>
+	<query xmlns='jabber:iq:roster'/>
+	<error type='cancel'>
+		<feature-not-implemented xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/>
+	</error>
+</iq>
+}}}
+
+{{{class="brush: xml"
+
+<iq from='jane@longbourn.lit/garden' type='get' id='roster2'>
+	<query xmlns='jabber:iq:roster'/>
+</iq>
+
+<iq to='jane@longbourn.lit/garden' type='result' id='roster2'>
+	<query xmlns='jabber:iq:roster'>
+		<item jid='elizabeth@longbourn.lit' name='Elizabeth'/>
+		<item jid='bingley@netherfield.lit' name='Bingley'/>
+	</query>
+</iq>
+}}}
+
+
+{{{class="brush: xml"
+<iq from='jane@longbourn.lit/garden' type='set' id='roster3'>
+	<query xmlns='jabber:iq:roster'>
+		<item jid='darcy@pemberley.lit' name='Mr. Darcy'/>
+	</query>
+</iq>
+
+<iq to='jane@longbourn.lit/garden' type='result' id='roster3'/>
+}}}
+
+=== error ===
+
+以上三种片段都会有对应的错误，`error`有`error`元素包含生成错误的片段。
+
+要有`type`属性，值可能为：
+
+* `cancel`：不应该再试
+* `continue`：这种情况不常见
+* `modify`：要改后才能被接受
+* `auth`：需要权限
+* `wait`：服务暂时不可用
+
+{{{class="brush: xml"
+<iq from='pubsub.pemberley.lit' to='elizabeth@longbourn.lit/sitting_room'
+	type='error' id='subscribe1'>
+	<pubsub xmlns='http://jabber.org/protocol/pubsub'>
+		<subscribe node='latest_books' jid='elizabeth@longbourn.lit'/>
+	</pubsub>
+	<error type='cancel'>
+		<not-allowed xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/>
+		<closed-node xmlns='http://jabber.org/protocol/pubsub#errors'/>
+		<text xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'>
+			You must be on the whitelist to subscribe to this node.
+		</text>
+	</error>
+</iq>
+}}}
+
+
+
+
+
+= 连接生命周期 =
+
+建立连接 -> 建立流 -> 发片段 
+
+== 建立连接 ==
+
+根据域名所在的主机查找SRV（服务），连接提供服务的主机。
+
+== 建立流 ==
+
+`<stream:stream>`元素发给服务器。
+
+{{{class="brush: xml"
+<?xml version='1.0'?>
+<stream:stream xmlns='jabber:client'
+	xmlns:stream='http://etherx.jabber.org/streams'
+	version='1.0'
+	to='pemberley.lit'>
+}}}
+
+服务器响应：
+
+{{{class="brush: xml"
+<?xml version='1.0'?>
+<stream:stream xmlns='jabber:client'
+	xmlns:stream='http://etherx.jabber.org/streams' version='1.0'
+	from='pemberley.lit'
+	id='893ca401f5ff2ec29499984e9b7e8afc'
+	xml:lang='en'>
+
+<stream:features>
+	<starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'/>
+	<compression xmlns='http://jabber.org/features/compress'>
+		<method>zlib</method>
+	</compression>
+	<mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'>
+		<mechanism>DIGEST-MD5</mechanism>
+		<mechanism>PLAIN</mechanism>
+	</mechanisms>
+</stream:features>
+}}}
+
+`<stream:features>`说明服务器的我，这里说有支持TLS验证和zlib压缩
+
+== 验证 ==
+
+TLS成功加密后流建立，验证方式是SASL。成功验证后客户端要绑定一个资源到连接然后
+开启一个session。如果没有指定当前resource的名字，服务器会给出一个随机的名字。
+
+== 断开连接 ==
+
+发一个关闭`<stream:stream>`的标签：
+
+{{{class="brush: xml"
+	<presence type='unavailable'/>
+</stream:stream>
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+
+
 
 {{{class="brush: xml"
 }}}
@@ -128,6 +280,114 @@ type如果为`error`，表示此类消息错误。不要回应`error`以避免�
 
 {{{class="brush: xml"
 }}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+{{{class="brush: xml"
+}}}
+
+
+
 
 
 {{{class="brush: xml"
