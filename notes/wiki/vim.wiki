@@ -2,6 +2,10 @@
 
 %toc Vim
 
+学一下：
+
+'Valloric/YouCompleteMe' 自动完成 'scrooloose/syntastic' 语法检查 
+
 = 安装 =
 
 == 手动编译 ==

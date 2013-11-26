@@ -38,8 +38,22 @@ tail -f ~/server/default/log/server.log
 3.	报表模板
 [[https://hpfs01.handpay.com.cn:8443/svn/HandpayDocument/Handpay Project/手付通3.0/开发文档/项目提交数据/交通罚款优化/mnt/mfs/handpay|模板]]
 
+= 测试环境 =
+
+{{{class="brush: bash"
+ssh dev@10.48.170.51       // dev
+
+/opt/test22/server/default/log
+/opt/testcore22/server/default/log
+
+10.48.170.51:8280
+10.48.170.122
+}}}
+
+
 == 测试数据库 ==
 
+版本：hpay20131031
 
 {{{class="brush: bash"
 10.48.196.3:1521/hpdb05
