@@ -3,52 +3,6 @@
 
 %toc 基础
 
-= 混淆 =
+[[java.base.string]]
 
-Aliasing指不同类型的多个别名指向同一个位置。
-
-<img src='images/java.base/00.jpg' />
-
-= 栈和堆 =
-
-方法和对象在运行时内存中的位置：
-
-<img src='images/java.base/01.png' />
-
-= equals和hashCode =
-
-`hashCode()`方法用来提升性能，它与`equals()`的关系：
-
-* 如果`equal`，`hashCode`必须一致。
-* 如果`hashCode`，不一定`equal`。
-
-<img src='images/java.base/02.jpg' />
-
-= 字符串不变性 =
-
-String Immutability。对于下面的代码：
-
-{{{class="brush: java"
-String s = "abde";
-s = s.concat("ef");
-}}}
-
-<img src='images/java.base/03.jpg' />
-
-
-= 集合 =
-
-集合类型`Collection`与工具类`Collections`：
-
-<img src='images/java.base/04.jpg' />
-
-集合类型层级：
-
-<img src='images/java.base/05.jpg' />
-
-
-= 异常 =
-
-红色为`Checked Exception`，必须被捕获或在方法是声明抛出：
-
-<img src='images/java.base/06.jpg' />
+[[java.base.other]]

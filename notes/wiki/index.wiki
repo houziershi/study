@@ -51,7 +51,14 @@ reveal.js： [[reveal.js]]
 
 [[math]]
 
+
 = 架构 =
+
+== 设计模式 ==
+
+[[design.patterns.preview]]
+
+== 框架 ==
 
 [[RESTFul]]
 
