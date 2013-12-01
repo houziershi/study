@@ -444,6 +444,23 @@ try {
 }
 </pre>
 
+<p>
+Scala里对异常的捕获：
+</p>
+
+<pre class="brush: java">
+import java.io.FileReader  
+import java.io.FileNotFoundException  
+import java.io.IOException  
+try {  
+	val f = new FileReader("input.txt")  
+	// Use and close file  
+} catch {  
+	case ex: FileNotFoundException =&gt; // Handle missing file  
+	case ex: IOException =&gt; // Handle other I/O error  
+}  
+</pre>
+
 <h3 id="toc_1.2.3">Java注解</h3>
 
 <p>

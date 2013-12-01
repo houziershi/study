@@ -101,6 +101,53 @@ hg update
 :helptags $VIMFILES/doc
 }}}
 
+= 外观 =
+
+== 字体 ==
+
+在控制台下的VIM是不能够改变字体的，因为字体的改变是随着终端字体的变化而变化的，
+但是在GVIM中，你却有权力将字体改变成自己想要的样子。
+
+在Linux下设置字体的命令是：
+
+{{{class="brush: bash"
+:set guifont=Courier/ 14
+}}}
+
+而在Windows下则是：
+
+{{{class="brush: bash"
+:set guifont=Courier:14
+}}}
+
+当然，如果需要设置多个字体，则我们可以在各个字体之间添加逗号`,`来设置多个字体，
+如：
+
+{{{class="brush: bash"
+:set guifont=Courier/ New/ 12, Arial/ 10
+}}}
+
+如果字体名字中含有空格，则我们需要将其使用`/`进行转义，而在windows下则可以将空格
+转换为`:`字符。当然，这样设置之后只会对当前会话有效，而如果想每次都使用的话，则
+需要将其加入到其gvimrc设置文件中(将命令中前面的`:`去掉)。
+
+如果你不知道可用的字体名字，使用下面的命令可以得到一个字体名字的列表：
+
+{{{class="brush: bash"
+:set guifont=*
+}}}
+
+如果需要想对特定的文件类型使用特定的字体，则可以将下面的语句加入到vimrc文件中去
+：
+
+{{{class="brush: bash"
+autocmd BufEnter *.txt set guifont=Arial/ 12
+}}}
+
+这样，在下次打开`.txt`文件的时候，就会设置字体`Arial 12`字体。
+
+需要注意的是，每次改变字体大小的时候，GVim会调整自己的窗口大小来适应字体的变化。
+
 = 编码格式 =
 
 == 字符编码 ==

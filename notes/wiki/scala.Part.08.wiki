@@ -254,6 +254,21 @@ try {
 }
 }}}
 
+Scala里对异常的捕获：
+
+{{{class="brush: java"
+import java.io.FileReader  
+import java.io.FileNotFoundException  
+import java.io.IOException  
+try {  
+	val f = new FileReader("input.txt")  
+	// Use and close file  
+} catch {  
+	case ex: FileNotFoundException => // Handle missing file  
+	case ex: IOException => // Handle other I/O error  
+}  
+}}}
+
 === Java注解 ===
 
 Java注解可以直接在Scala代码中用，任何Java框架都会看到这些注解。如Junit的注解：
