@@ -461,6 +461,95 @@ try {
 }  
 </pre>
 
+<p>
+finally子句：
+</p>
+
+<pre class="brush: java">
+import java.io.FileReader  
+val file = openFile()  
+try {  
+	// 使用文件  
+} finally {  
+	file.close() // 确保关闭文件  
+}  
+</pre>
+
+<p>
+有返回值：
+</p>
+
+<p>
+和其它大多数Scala控制结构一样，try-catch-finally也产生值。
+</p>
+
+<ul>
+<li>
+如果没有异常抛出，则对应于try子句；
+
+<li>
+如果抛出异常并被捕获，则对应于相应的catch子句；
+
+<li>
+如果异常被抛出但没被捕获，表达式就没有返回值。
+
+<li>
+如果finally子句计算得到的值被抛弃。
+
+</ul>
+
+<pre class="brush: java">
+import java.net.URL  
+import java.net.MalformedURLException  
+def urlFor(path: String) =  
+try {  
+	new URL(path)  
+} catch {  
+	case e: MalformedURLException =&gt; new URL("http://www.scalalang.org")  
+}  
+</pre>
+
+<p>
+上面代码展示了如何尝试拆分URL，但如果URL格式错误就使用缺省值。
+</p>
+
+<p>
+通常finally子句做一些清理类型的工作如关闭文件；他们不应该改变在主函数体
+或try的catch子句中计算的值。
+</p>
+
+<p>
+如：
+</p>
+
+<pre class="brush: java">
+def f(): Int = try { return 1 } finally { return 2 }  
+</pre>
+
+<p>
+调用<code>f()</code>产生结果值2，因为finally虽然不返回值，但是和Java一样它的内容<code>return 2</code>
+一定会在最后被执行。
+</p>
+
+<p>
+相反：
+</p>
+
+<pre class="brush: java">
+def g(): Int = try { 1 } finally { 2 }  
+</pre>
+
+<p>
+调用<code>g()</code>产生1，这是因为finally的值是被抛弃的，所以表达式的结果是1。
+</p>
+
+<p>
+这两个例子展示了有可能另大多数程序员感到惊奇的行为，因此通常最好还是避免从
+finally子句中返回值。最好是把finally子句当作确保某些副作用，如关闭打开的文件，
+发生的途径。
+</p>
+
+
 <h3 id="toc_1.2.3">Java注解</h3>
 
 <p>
