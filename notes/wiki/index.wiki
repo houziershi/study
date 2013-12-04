@@ -116,6 +116,8 @@ DB2： [[DB2]]
 
 [[tomcat]]
 
+[[jboss6]]
+
 
 
 = Linux =

@@ -1,4 +1,22 @@
 
+
+公司的maven私服位置：
+{{{class="brush: xml"
+    <mirror>
+      <id>handpay-public</id>
+      <mirrorOf>*</mirrorOf>
+      <name>Handpay Public Repository</name>
+      <url>http://mvnrep.handpay.com.cn/nexus/content/repositories/handpay-public/</url>
+    </mirror>
+}}}
+
+查包：[[http://mvnrep.handpay.com.cn/nexus/index.html#welcome|在线包查询]]
+
+在线下载已经编译好的：[[http://mvnrep.handpay.com.cn/nexus/content/groups/handpay-public/|已经编译好的jar包]]
+
+每天更新生产环境上`default/lib`下的jar包：[[http://10.48.193.12/lib/|comm lib]]
+
+
 = 环境文件 =
 
 * 配置文件直接从工程代码中删除，包括dev版本文件。
@@ -6,6 +24,9 @@
 * 如果代码中还需要移植出去的配置文件中的部分属性，还是按照原来的文件名，只保留不和环境相关的内容。如merchant.properties ，需要保留hornetq相关的连接工厂属性。最终的处理结果为：在hpmerchantService中保留 /src/main/resources/merchant.properties, 去掉和环境相关的所有值即可。
 * 拆分后的prop文件，统一放在svn地址：https://hpfs01.handpay.com.cn:8443/svn/prop_server/newbranches
 
+线上版本的配置文件：`https://hpfs01.handpay.com.cn:8443/svn/prop_server/online/`
+
+测试机的jboss的启动参数：`~/bin/run.conf`
 {{{class="brush: bash"
 }}}
 
@@ -20,12 +41,17 @@ dsdev20@dev1.hpdev.com:~/server/default/deploy/ROOT.war/lmbao/config/hpTrafficWa
 }}}
 
 
+= JBOSS配置 =
 
-
+JBOSS 参数：
 {{{class="brush: bash"
+-c default
 }}}
 
+JBOSS的JVM参数：
+
 {{{class="brush: bash"
+-Dprogram.name=run.bat -Xms128m -Xmx512m  -XX:MaxPermSize=256m  -Denv_path=lmbao -Denv.num=05
 }}}
 
 

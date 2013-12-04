@@ -21,6 +21,32 @@
 <body  onresize='changeTocSize()'>
 	<div class="note-main"> 
 
+
+<p>
+公司的maven私服位置：
+</p>
+<pre class="brush: xml">
+    &lt;mirror&gt;
+      &lt;id&gt;handpay-public&lt;/id&gt;
+      &lt;mirrorOf&gt;*&lt;/mirrorOf&gt;
+      &lt;name&gt;Handpay Public Repository&lt;/name&gt;
+      &lt;url&gt;http://mvnrep.handpay.com.cn/nexus/content/repositories/handpay-public/&lt;/url&gt;
+    &lt;/mirror&gt;
+</pre>
+
+<p>
+查包：<a href="http://mvnrep.handpay.com.cn/nexus/index.html\#welcome">在线包查询</a>
+</p>
+
+<p>
+在线下载已经编译好的：<a href="http://mvnrep.handpay.com.cn/nexus/content/groups/handpay-public/">已经编译好的jar包</a>
+</p>
+
+<p>
+每天更新生产环境上<code>default/lib</code>下的jar包：<a href="http://10.48.193.12/lib/">comm lib</a>
+</p>
+
+
 <h1 id="toc_1">环境文件</h1>
 
 <ul>
@@ -38,6 +64,13 @@
 
 </ul>
 
+<p>
+线上版本的配置文件：<code>https://hpfs01.handpay.com.cn:8443/svn/prop_server/online/</code>
+</p>
+
+<p>
+测试机的jboss的启动参数：<code>~/bin/run.conf</code>
+</p>
 <pre class="brush: bash">
 </pre>
 
@@ -52,12 +85,21 @@ dsdev20@dev1.hpdev.com:~/server/default/deploy/ROOT.war/lmbao/config/hpTrafficWa
 </pre>
 
 
+<h1 id="toc_3">JBOSS配置</h1>
 
-
+<p>
+JBOSS 参数：
+</p>
 <pre class="brush: bash">
+-c default
 </pre>
 
+<p>
+JBOSS的JVM参数：
+</p>
+
 <pre class="brush: bash">
+-Dprogram.name=run.bat -Xms128m -Xmx512m  -XX:MaxPermSize=256m  -Denv_path=lmbao -Denv.num=05
 </pre>
 
 

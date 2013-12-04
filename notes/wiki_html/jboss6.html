@@ -1,0 +1,251 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>JBOSS 6</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>JBOSS 7</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">目录结构</a>
+<li><a href="#toc_2">启动与停止</a>
+<li><a href="#toc_3">多个配置</a>
+<li><a href="#toc_4">用户配置</a>
+<ul>
+<li><a href="#toc_4.1">jmx-console</a>
+<li><a href="#toc_4.2">web-console</a>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">目录结构</h1>
+
+<ul>
+<li>
+<code>bin</code>:  启动和关闭 JBoss 的脚本。
+
+<li>
+<code>client</code>: 客户端与 JBoss 通信所需的 Java 库（ JARs ）。
+
+<li>
+<code>docs:</code> 配置的样本文件（数据库配置等）。
+
+<li>
+<code>docs/dtd</code>: 在 JBoss 中使用的各种 XML 文件的 DTD 。
+
+<li>
+<code>lib</code>: 一些 JAR ， JBoss 启动时加载，且被所有 JBoss 配置共享。（不要把你的库
+	放在这里）
+
+<li>
+<code>server</code>: 各种 JBoss 配置。每个配置必须放在不同的子目录。子目录的名字表示配置
+	的名字。 JBoss 包含 3 个默认的配置： minimial ， default 和 all 。
+
+<li>
+<code>server/all</code>: JBoss 的完全配置，启动所有服务，包括集群和 IIOP 。
+
+<li>
+<code>server/default</code>: JBoss 的默认配置。默认配置名称时使用。
+
+<li>
+<code>server/default/conf</code>: JBoss 的配置文件。
+
+<li>
+<code>server/default/data:</code> JBoss 的数据库文件。比如，嵌入的数据库，或者 JBossMQ
+
+<li>
+<code>server/default/deploy</code>: JBoss 的热部署目录。放到这里的任何文件或目录会被 
+	JBoss 自动部署。 EJB 、 WAR 、 EAR ，甚至服务。
+
+<li>
+<code>server/default/lib</code>: 一些 JAR ， JBoss 在启动特定配置时加载他们。 (default 
+	和 minimial 配置也包含这个和下面两个目录。 )
+
+<li>
+<code>server/default/log</code>: JBoss 的日志文件。
+
+<li>
+<code>server/default/tmp</code>: JBoss 的临时文件。
+
+</ul>
+
+<h1 id="toc_2">启动与停止</h1>
+
+<p>
+启动：
+</p>
+
+<pre class="brush: bash">
+$JBOSS_HOME/bin/run.sh
+</pre>
+
+
+
+<p>
+允许其他主机访问：
+</p>
+
+<p>
+方法一：通过<code>-b</code>参数加上允许访问的IP，<code>0.0.0.0</code>表示所有IP
+</p>
+
+<pre class="brush: bash">
+$JBOSS_HOME/bin/run.sh -b 0.0.0.0
+</pre>
+
+<p>
+也可以加到配置文件<code>server.xml</code>中一共有两处：
+</p>
+
+<pre class="brush: bash">
+address=0.0.0.0
+</pre>
+
+<p>
+停止：
+</p>
+
+<pre class="brush: bash">
+$JBOSS_HOME/bin/shutdown.sh -S
+</pre>
+
+
+<h1 id="toc_3">多个配置</h1>
+
+<p>
+<code>$JBOSS_HOME/server</code>下的每一个目录就是一个实例，新建一个实例可以以<code>default</code>为
+样本复制一个：
+</p>
+
+<pre class="brush: bash">
+cp $JBOSS_HOME/server/default $JBOSS_HOME/server/yourconf
+</pre>
+
+<p>
+比较重要的端口有两个：
+</p>
+
+<ul>
+<li>
+HTTP服务的端口
+
+<li>
+JMX控制的端口，比如关闭服务器指令要通过这个端口
+
+</ul>
+
+<p>
+<code>$JBOSS_HOME/server/yourconf/conf/bindingservice.beans/META-INF/bindings-jboss-beans.xml</code>
+</p>
+
+<pre class="brush: bash">
+&lt;bean class="org.jboss.services.binding.ServiceBindingMetadata"&gt;
+	&lt;property name="serviceName"&gt;jboss.web:service=WebServer&lt;/property&gt;
+	&lt;property name="bindingName"&gt;HttpConnector&lt;/property&gt;
+	&lt;property name="port"&gt;8080&lt;/property&gt;
+	&lt;property name="description"&gt;JBoss Web HTTP connector socket; also drives the values for the HTTPS and AJP sockets&lt;/property&gt;
+&lt;/bean&gt;
+
+&lt;bean class="org.jboss.services.binding.ServiceBindingMetadata"&gt;
+	&lt;property name="serviceName"&gt;jboss.remoting:service=JMXConnectorServer,protocol=rmi&lt;/property&gt;
+	&lt;property name="port"&gt;1090&lt;/property&gt;
+	&lt;property name="description"&gt;RMI/JRMP socket for connecting to the JMX MBeanServer&lt;/property&gt;
+&lt;/bean&gt;
+</pre>
+
+<p>
+启动：
+</p>
+
+<pre class="brush: bash">
+$JBOSS_HOME/bin/run.sh -c yourconf
+</pre>
+
+<p>
+停止：
+</p>
+
+<pre class="brush: bash">
+$JBOSS_HOME/bin/shutdown.sh -S -r 1090
+</pre>
+
+<h1 id="toc_4">用户配置</h1>
+
+<h2 id="toc_4.1">jmx-console</h2>
+
+<p>
+默认访问 <code>http://localhost:8080/jmx-console</code>不需要输入用户名和密码。
+</p>
+
+<p>
+<code>/server/default/deploy/jmx-console.war/WEB-INF/jboss-web.xml</code>加上
+去掉<code>&lt;security-domain&gt;java:/jaas/jmx-console&lt;/security-domain&gt;</code>的注释。
+</p>
+
+<p>
+<code>/server/default/deploy/jmx-console.war/WEB-INF/web.xml</code>加上
+去掉<code>&lt;security-constraint/&gt;</code>的注释。
+</p>
+
+<p>
+<code>/server/default/config/login-config.xml</code>查找名字为<code>jmx-console</code>的<code>application-policy</code>
+</p>
+
+<p>
+<code>jmx-console-users.properties</code>的内容如：用户名=密码
+<code>jmx-console-roles.properties</code>的内容如：用户名=角色。多个角色以<code>,</code>隔开。
+该文件默认为admin用户定义了JBossAdmin和HttpInvoker这两个角色。
+</p>
+
+<h2 id="toc_4.2">web-console</h2>
+
+<p>
+默认访问JBoss的web-console不需要输入用户名和密码。
+</p>
+
+<p>
+<code>server\deploy\default\management\console-mgr.sar\web-console.war\WEB-INF\jboss-web.xml</code>
+去掉<code>&lt;security-domain&gt;java:/jaas/web-console&lt;/security-domain&gt;</code>的注释。
+</p>
+
+<p>
+<code>server\deploy\default\management\console-mgr.sar\web-console.war\WEB-INF\web.xml</code>
+去掉&lt;security-constraint&gt;部分的注释.
+</p>
+
+<p>
+<code>server/default/conf/login-config.xml</code>文件中设置登录web-console的用户名和角色等
+信息同目录的<code>web-console-users.properties</code>和<code>web-console-roles.properties</code>文件
+</p>
+
+<p>
+把<code>server/default/conf/props</code>的<code>jmx-console-users.properties</code>和
+<code>jmx-console-roles.properties</code>拷贝到<code>server/default/conf/</code>下并更名为
+<code>web-console-users.properties</code>和<code>web-console-roles.properties</code>
+</p>
+
+<p>
+<code>web-console-users.properties</code>文件的内容：<code>admin=admin</code>
+<code>web-console-roles.properties</code>文件的内容：<code>admin=JBossAdmin,HttpInvoker</code>
+</p>
+ </div>
+</body>
+</html>

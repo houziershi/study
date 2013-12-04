@@ -1,0 +1,139 @@
+
+%title JBOSS 6
+
+%toc JBOSS 7
+
+= 目录结构 =
+
+* `bin`:  启动和关闭 JBoss 的脚本。
+* `client`: 客户端与 JBoss 通信所需的 Java 库（ JARs ）。
+* `docs:` 配置的样本文件（数据库配置等）。
+* `docs/dtd`: 在 JBoss 中使用的各种 XML 文件的 DTD 。
+* `lib`: 一些 JAR ， JBoss 启动时加载，且被所有 JBoss 配置共享。（不要把你的库
+	放在这里）
+* `server`: 各种 JBoss 配置。每个配置必须放在不同的子目录。子目录的名字表示配置
+	的名字。 JBoss 包含 3 个默认的配置： minimial ， default 和 all 。
+* `server/all`: JBoss 的完全配置，启动所有服务，包括集群和 IIOP 。
+* `server/default`: JBoss 的默认配置。默认配置名称时使用。
+* `server/default/conf`: JBoss 的配置文件。
+* `server/default/data:` JBoss 的数据库文件。比如，嵌入的数据库，或者 JBossMQ
+* `server/default/deploy`: JBoss 的热部署目录。放到这里的任何文件或目录会被 
+	JBoss 自动部署。 EJB 、 WAR 、 EAR ，甚至服务。
+* `server/default/lib`: 一些 JAR ， JBoss 在启动特定配置时加载他们。 (default 
+	和 minimial 配置也包含这个和下面两个目录。 )
+* `server/default/log`: JBoss 的日志文件。
+* `server/default/tmp`: JBoss 的临时文件。
+
+= 启动与停止 =
+
+启动：
+
+{{{class="brush: bash"
+$JBOSS_HOME/bin/run.sh
+}}}
+
+
+
+允许其他主机访问：
+
+方法一：通过`-b`参数加上允许访问的IP，`0.0.0.0`表示所有IP
+
+{{{class="brush: bash"
+$JBOSS_HOME/bin/run.sh -b 0.0.0.0
+}}}
+
+也可以加到配置文件`server.xml`中一共有两处：
+
+{{{class="brush: bash"
+address=0.0.0.0
+}}}
+
+停止：
+
+{{{class="brush: bash"
+$JBOSS_HOME/bin/shutdown.sh -S
+}}}
+
+
+= 多个配置 =
+
+`$JBOSS_HOME/server`下的每一个目录就是一个实例，新建一个实例可以以`default`为
+样本复制一个：
+
+{{{class="brush: bash"
+cp $JBOSS_HOME/server/default $JBOSS_HOME/server/yourconf
+}}}
+
+比较重要的端口有两个：
+
+* HTTP服务的端口
+* JMX控制的端口，比如关闭服务器指令要通过这个端口
+
+`$JBOSS_HOME/server/yourconf/conf/bindingservice.beans/META-INF/bindings-jboss-beans.xml`
+
+{{{class="brush: bash"
+<bean class="org.jboss.services.binding.ServiceBindingMetadata">
+	<property name="serviceName">jboss.web:service=WebServer</property>
+	<property name="bindingName">HttpConnector</property>
+	<property name="port">8080</property>
+	<property name="description">JBoss Web HTTP connector socket; also drives the values for the HTTPS and AJP sockets</property>
+</bean>
+
+<bean class="org.jboss.services.binding.ServiceBindingMetadata">
+	<property name="serviceName">jboss.remoting:service=JMXConnectorServer,protocol=rmi</property>
+	<property name="port">1090</property>
+	<property name="description">RMI/JRMP socket for connecting to the JMX MBeanServer</property>
+</bean>
+}}}
+
+启动：
+
+{{{class="brush: bash"
+$JBOSS_HOME/bin/run.sh -c yourconf
+}}}
+
+停止：
+
+{{{class="brush: bash"
+$JBOSS_HOME/bin/shutdown.sh -S -r 1090
+}}}
+
+= 用户配置 =
+
+== jmx-console ==
+
+默认访问 `http://localhost:8080/jmx-console`不需要输入用户名和密码。
+
+`/server/default/deploy/jmx-console.war/WEB-INF/jboss-web.xml`加上
+去掉`<security-domain>java:/jaas/jmx-console</security-domain>`的注释。
+
+`/server/default/deploy/jmx-console.war/WEB-INF/web.xml`加上
+去掉`<security-constraint/>`的注释。
+
+`/server/default/config/login-config.xml`查找名字为`jmx-console`的`application-policy`
+
+`jmx-console-users.properties`的内容如：用户名=密码
+`jmx-console-roles.properties`的内容如：用户名=角色。多个角色以`,`隔开。
+该文件默认为admin用户定义了JBossAdmin和HttpInvoker这两个角色。
+
+== web-console ==
+
+默认访问JBoss的web-console不需要输入用户名和密码。
+
+`server\deploy\default\management\console-mgr.sar\web-console.war\WEB-INF\jboss-web.xml`
+去掉`<security-domain>java:/jaas/web-console</security-domain>`的注释。
+
+`server\deploy\default\management\console-mgr.sar\web-console.war\WEB-INF\web.xml`
+去掉<security-constraint>部分的注释.
+
+`server/default/conf/login-config.xml`文件中设置登录web-console的用户名和角色等
+信息同目录的`web-console-users.properties`和`web-console-roles.properties`文件
+
+把`server/default/conf/props`的`jmx-console-users.properties`和
+`jmx-console-roles.properties`拷贝到`server/default/conf/`下并更名为
+`web-console-users.properties`和`web-console-roles.properties`
+
+`web-console-users.properties`文件的内容：`admin=admin`
+`web-console-roles.properties`文件的内容：`admin=JBossAdmin,HttpInvoker`
+
+

@@ -98,6 +98,12 @@ mvn archetype:create -DarchetypeGroupId=org.apache.maven.archetypes \
 mvn dependency:copy-dependencies -DoutputDirectory=lib
 }}}
 
+还可以指定依赖的状态：
+	
+{{{class="brush: bash"
+mvn dependency:copy-dependencies -DoutputDirectory=lib   -DincludeScope=compile
+}}}
+
 === 把源代码打成jar包 ===
 
 {{{class="brush: bash"
