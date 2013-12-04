@@ -94,8 +94,9 @@
 <ul>
 <li><a href="#toc_2.8.1">保存</a>
 <li><a href="#toc_2.8.2">加载</a>
+<li><a href="#toc_2.8.3">例子：读取保存多条记录</a>
 <ul>
-<li><a href="#toc_2.8.2.1">解析器</a>
+<li><a href="#toc_2.8.3.1">解析器</a>
 </ul>
 </ul>
 <li><a href="#toc_2.9">命名空间</a>
@@ -1539,7 +1540,92 @@ val root3 = XML.load(new InputStreamReader(
 val root4 = XML.load(new URL("http;//horstmann.com/index.html"))
 </pre>
 
-<h4 id="toc_2.8.2.1">解析器</h4>
+<h3 id="toc_2.8.3">例子：读取保存多条记录</h3>
+
+<p>
+数据文件：
+</p>
+
+<pre class="brush: xml">
+&lt;symbols&gt; 
+  &lt;symbol ticker="AAPL"&gt;&lt;units&gt;200&lt;/units&gt;&lt;/symbol&gt;
+  &lt;symbol ticker="ADBE"&gt;&lt;units&gt;125&lt;/units&gt;&lt;/symbol&gt;
+  &lt;symbol ticker="ALU"&gt;&lt;units&gt;150&lt;/units&gt;&lt;/symbol&gt;
+  &lt;symbol ticker="AMD"&gt;&lt;units&gt;150&lt;/units&gt;&lt;/symbol&gt;
+  &lt;symbol ticker="CSCO"&gt;&lt;units&gt;250&lt;/units&gt;&lt;/symbol&gt;
+  &lt;symbol ticker="HPQ"&gt;&lt;units&gt;225&lt;/units&gt;&lt;/symbol&gt;
+  &lt;symbol ticker="IBM"&gt;&lt;units&gt;215&lt;/units&gt;&lt;/symbol&gt;
+  &lt;symbol ticker="INTC"&gt;&lt;units&gt;160&lt;/units&gt;&lt;/symbol&gt;
+  &lt;symbol ticker="MSFT"&gt;&lt;units&gt;190&lt;/units&gt;&lt;/symbol&gt;
+  &lt;symbol ticker="NSM"&gt;&lt;units&gt;200&lt;/units&gt;&lt;/symbol&gt;
+  &lt;symbol ticker="ORCL"&gt;&lt;units&gt;200&lt;/units&gt;&lt;/symbol&gt;
+  &lt;symbol ticker="SYMC"&gt;&lt;units&gt;230&lt;/units&gt;&lt;/symbol&gt;
+  &lt;symbol ticker="TXN"&gt;&lt;units&gt;190&lt;/units&gt;&lt;/symbol&gt;
+  &lt;symbol ticker="VRSN"&gt;&lt;units&gt;200&lt;/units&gt;&lt;/symbol&gt;
+  &lt;symbol ticker="XRX"&gt;&lt;units&gt;240&lt;/units&gt;&lt;/symbol&gt;
+&lt;/symbols&gt; 
+</pre>
+
+<p>
+加载：
+</p>
+
+<pre class="brush: scala">
+import scala.xml._
+
+val stocksAndUnits = XML.load("stocks.xml")
+
+println(stocksAndUnits.getClass())
+println("Loaded file has " + (stocksAndUnits \\ "symbol").size +
+   " symbol elements")
+</pre>
+
+<p>
+解析数据到一个Map里：
+</p>
+
+<pre class="brush: scala">
+import scala.collection.mutable.Map
+
+val stocksAndUnitsMap =
+(Map[String, Int]() /: (stocksAndUnits \ "symbol")) { (map , symbolNode) =&gt;
+  val ticker = (symbolNode \ "@ticker").toString
+  val units = (symbolNode \ "units").text.toInt
+  map(ticker) = units //Creates and returns a new Map
+	map
+}
+
+println("Number of symbol elements found is " + stocksAndUnitsMap.size)
+</pre>
+
+<p>
+生成新的xml，每条记录的值加1：
+</p>
+
+<pre class="brush: scala">
+def updateUnitsAndCreateXML(element : (String, Int)) = {
+  val (ticker, units) = element
+  &lt;symbol ticker={ticker}&gt;
+    &lt;units&gt;{units + 1}&lt;/units&gt;
+  &lt;/symbol&gt;
+}
+
+val updatedStocksAndUnitsXML = 
+	&lt;symbols&gt;{ stocksAndUnitsMap.map { updateUnitsAndCreateXML } }&lt;/symbols&gt;
+</pre>
+
+<p>
+保存到文件：
+</p>
+
+<pre class="brush: scala">
+XML save ("stocks2.xml", updatedStocksAndUnitsXML)
+println("The saved file contains " + (XML.load("stocks2.xml") \\ "symbol").size 
+		+ " symbol elements")
+</pre>
+
+
+<h4 id="toc_2.8.3.1">解析器</h4>
 
 <p>
 默认的加载工具是Java的SAX解析器，它不会从本地编目而是从w3c.org读取DTD。尤其是
