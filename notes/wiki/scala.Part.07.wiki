@@ -1039,6 +1039,81 @@ val root3 = XML.load(new InputStreamReader(
 val root4 = XML.load(new URL("http;//horstmann.com/index.html"))
 }}}
 
+=== 例子：读取保存多条记录 ===
+
+数据文件：
+
+{{{class="brush: xml"
+<symbols> 
+  <symbol ticker="AAPL"><units>200</units></symbol>
+  <symbol ticker="ADBE"><units>125</units></symbol>
+  <symbol ticker="ALU"><units>150</units></symbol>
+  <symbol ticker="AMD"><units>150</units></symbol>
+  <symbol ticker="CSCO"><units>250</units></symbol>
+  <symbol ticker="HPQ"><units>225</units></symbol>
+  <symbol ticker="IBM"><units>215</units></symbol>
+  <symbol ticker="INTC"><units>160</units></symbol>
+  <symbol ticker="MSFT"><units>190</units></symbol>
+  <symbol ticker="NSM"><units>200</units></symbol>
+  <symbol ticker="ORCL"><units>200</units></symbol>
+  <symbol ticker="SYMC"><units>230</units></symbol>
+  <symbol ticker="TXN"><units>190</units></symbol>
+  <symbol ticker="VRSN"><units>200</units></symbol>
+  <symbol ticker="XRX"><units>240</units></symbol>
+</symbols> 
+}}}
+
+加载：
+
+{{{class="brush: scala"
+import scala.xml._
+
+val stocksAndUnits = XML.load("stocks.xml")
+
+println(stocksAndUnits.getClass())
+println("Loaded file has " + (stocksAndUnits \\ "symbol").size +
+   " symbol elements")
+}}}
+
+解析数据到一个Map里：
+
+{{{class="brush: scala"
+import scala.collection.mutable.Map
+
+val stocksAndUnitsMap =
+(Map[String, Int]() /: (stocksAndUnits \ "symbol")) { (map , symbolNode) =>
+  val ticker = (symbolNode \ "@ticker").toString
+  val units = (symbolNode \ "units").text.toInt
+  map(ticker) = units //Creates and returns a new Map
+	map
+}
+
+println("Number of symbol elements found is " + stocksAndUnitsMap.size)
+}}}
+
+生成新的xml，每条记录的值加1：
+
+{{{class="brush: scala"
+def updateUnitsAndCreateXML(element : (String, Int)) = {
+  val (ticker, units) = element
+  <symbol ticker={ticker}>
+    <units>{units + 1}</units>
+  </symbol>
+}
+
+val updatedStocksAndUnitsXML = 
+	<symbols>{ stocksAndUnitsMap.map { updateUnitsAndCreateXML } }</symbols>
+}}}
+
+保存到文件：
+
+{{{class="brush: scala"
+XML save ("stocks2.xml", updatedStocksAndUnitsXML)
+println("The saved file contains " + (XML.load("stocks2.xml") \\ "symbol").size 
+		+ " symbol elements")
+}}}
+
+
 ==== 解析器 ====
 
 默认的加载工具是Java的SAX解析器，它不会从本地编目而是从w3c.org读取DTD。尤其是
