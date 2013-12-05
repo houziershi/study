@@ -7,3 +7,29 @@
 
 [[dubbo]]
 
+
+
+= 项目提交目录 =
+
+== 静态文件 ==
+
+[[https://hpfs01.handpay.com.cn:8443/svn/HandpayDocument/Handpay Project/手付通3.0/开发文档/项目提交数据/]]加上`分支名`：
+
+下面放目录：
+
+* `lib`：更改的第三方Jar包
+* `mnt`：html, css等文件
+* `sql\test`：测试用的sql
+* `sql\online`：上线用的sql
+
+== 配置文件 ==
+
+[[https://hpfs01.handpay.com.cn:8443/svn/prop_server/newbranches/]]加上`分支名`
+
+== RN文件 ==
+
+rn的properties配置文件统一放到：
+
+[[https://hpfs01.handpay.com.cn:8443/svn/mallModule_mvn/hpBuild4.0/branches/]]
+加上`hpBuild4.0-分支名/rn`
+
