@@ -1,0 +1,45 @@
+
+%title 演示
+
+%toc 演示
+
+= 源代码 =
+
+显示源代码效果：
+
+{{{class="brush: javascript"
+if(document.getElementById('div')) {   
+    // 找到到对应元素
+} else {   
+    // 没有找到找到到对应元素
+}
+}}}
+
+
+= 公式 =
+
+== 行内公式 ==
+
+在行内显示公式用美元符号包起公式：
+
+{{{class="brush: javascript"
+教学中一般用$x$和$y$来表示变量
+}}}
+
+显示效果：
+
+教学中一般用$x$和$y$来表示变量
+
+=== 独立的公式 ===
+
+{{{class="brush: javascript"
+{{$
+\sum_{i=1}^N a_i^2 = \infty
+}}$
+}}}
+
+显示效果：
+
+{{$
+\sum_{i=1}^N a_i^2 = \infty
+}}$

@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>演示</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>演示</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">源代码</a>
+<li><a href="#toc_2">公式</a>
+<ul>
+<li><a href="#toc_2.1">行内公式</a>
+<ul>
+<li><a href="#toc_2.1.1">独立的公式</a>
+</ul>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">源代码</h1>
+
+<p>
+显示源代码效果：
+</p>
+
+<pre class="brush: javascript">
+if(document.getElementById('div')) {   
+    // 找到到对应元素
+} else {   
+    // 没有找到找到到对应元素
+}
+</pre>
+
+
+<h1 id="toc_2">公式</h1>
+
+<h2 id="toc_2.1">行内公式</h2>
+
+<p>
+在行内显示公式用美元符号包起公式：
+</p>
+
+<pre class="brush: javascript">
+教学中一般用$x$和$y$来表示变量
+</pre>
+
+<p>
+显示效果：
+</p>
+
+<p>
+教学中一般用\(x\)和\(y\)来表示变量
+</p>
+
+<h3 id="toc_2.1.1">独立的公式</h3>
+
+<pre class="brush: javascript">
+{{$
+\sum_{i=1}^N a_i^2 = \infty
+}}$
+</pre>
+
+<p>
+显示效果：
+</p>
+
+\[
+\sum_{i=1}^N a_i^2 = \infty
+\]
+ </div>
+</body>
+</html>
