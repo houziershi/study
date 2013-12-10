@@ -5,6 +5,8 @@
 
 [[maven.config]]
 
+[[maven.build.resources]]
+
 [[maven.build.app]]
 
 [[maven.build.webapp]]
