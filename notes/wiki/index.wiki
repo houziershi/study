@@ -198,6 +198,12 @@ pidgin：[[pidgin]]
 
 [[XMPP]]
 
+= 方案 =
+
+== 存储 ==
+
+[[resov.storage]]
+
 =  学习计划 =
 
 [[study.plan]]
