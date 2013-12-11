@@ -1,0 +1,187 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>Maven资源文件</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>Maven资源文件</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">分开环境差异</a>
+<li><a href="#toc_2">POM文件中指定不同环境中的配置</a>
+<li><a href="#toc_3">调用开关</a>
+</ul>
+</div>
+
+<h1 id="toc_1">分开环境差异</h1>
+
+<p>
+<code>settings.properties</code>是配置文件，我们把其中与环境相关的内容抽出来：
+</p>
+
+<pre class="brush: bash">
+CMSDB_ENDPOINT=${CMSDB_ENDPOINT}
+</pre>
+
+<p>
+<code>qa.properties</code>是测试环境：
+</p>
+
+<pre class="brush: bash">
+CMSDB_ENDPOINT=http://phx5qa01c-5fca.stratus.phx.qa.xx.com:8080/cms
+</pre>
+
+<p>
+<code>dev.properties</code>是开发环境：
+</p>
+
+<pre class="brush: bash">
+CMSDB_ENDPOINT=http://localhost:8080/cms
+</pre>
+
+<p>
+<code>prod.properties</code>是生产环境：
+</p>
+
+<pre class="brush: bash">
+CMSDB_ENDPOINT=http://cms.vip.stratus.xx.com/cms
+</pre>
+
+<p>
+目录上看起来是这样：
+</p>
+
+<p>
+<img src="images/maven/maven.res.01.png" />
+</p>
+
+<h1 id="toc_2">POM文件中指定不同环境中的配置</h1>
+
+<ul>
+<li>
+<code>resources</code>指定要替换的文件
+
+<li>
+<code>activation</code>指定替换的命令，如下例子中的配置<code>mvn install -Denv=qa</code>时采用
+	<code>qa.properties</code>中的值。
+
+<li>
+<code>activeByDefault</code>表示是否作为默认配置。如下面两个是等价的：
+
+<ul>
+<li>
+<code>mvn install</code>
+
+<li>
+<code>mvn install -Denv=dev</code>
+
+</ul>
+</ul>
+
+<pre class="brush: xml">
+&lt;profiles&gt;
+
+	&lt;profile&gt;
+		&lt;id&gt;dev&lt;/id&gt;
+		&lt;build&gt;
+			&lt;filters&gt;
+				&lt;filter&gt;src/main/resources/filters/dev.properties&lt;/filter&gt;
+			&lt;/filters&gt;
+			&lt;resources&gt;
+				&lt;resource&gt;&lt;!-- 对指定目录下的内容进行占位符替换 --&gt;
+					&lt;directory&gt;src/main/resources&lt;/directory&gt;&lt;!-- 指定目录 --&gt;
+					&lt;filtering&gt;true&lt;/filtering&gt;              &lt;!-- 过滤 --&gt;
+					&lt;includes&gt;
+						&lt;include&gt;*.*&lt;/include&gt;                 &lt;!-- 匹配文件 --&gt;
+					&lt;/includes&gt;
+				&lt;/resource&gt;
+			&lt;/resources&gt;
+		&lt;/build&gt;
+		&lt;activation&gt;                                  
+			&lt;activeByDefault&gt;true&lt;/activeByDefault&gt;     &lt;!-- 默认 --&gt;
+			&lt;property&gt;
+				&lt;name&gt;env&lt;/name&gt;                          &lt;!-- 触发的开关名 --&gt;
+				&lt;value&gt;dev&lt;/value&gt;                        &lt;!-- 触发的开关值 --&gt;
+			&lt;/property&gt;
+		&lt;/activation&gt;
+	&lt;/profile&gt;
+
+	&lt;profile&gt;
+		&lt;id&gt;qa&lt;/id&gt;
+		&lt;build&gt;
+			&lt;filters&gt;
+				&lt;filter&gt;src/main/resources/filters/qa.properties&lt;/filter&gt;
+			&lt;/filters&gt;
+			&lt;resources&gt;
+				&lt;resource&gt;
+					&lt;directory&gt;src/main/resources&lt;/directory&gt;
+					&lt;filtering&gt;true&lt;/filtering&gt;
+					&lt;includes&gt; &lt;!-- optional --&gt;
+						&lt;include&gt;*.*&lt;/include&gt;
+					&lt;/includes&gt;
+				&lt;/resource&gt;
+			&lt;/resources&gt;
+		&lt;/build&gt;
+		&lt;activation&gt;
+			&lt;property&gt;
+				&lt;name&gt;env&lt;/name&gt;
+				&lt;value&gt;qa&lt;/value&gt;
+			&lt;/property&gt;
+		&lt;/activation&gt;
+	&lt;/profile&gt;
+
+	&lt;profile&gt;
+		&lt;id&gt;prod&lt;/id&gt;
+		&lt;build&gt;
+			&lt;filters&gt;
+				&lt;filter&gt;src/main/resources/filters/prod.properties&lt;/filter&gt;
+			&lt;/filters&gt;
+			&lt;resources&gt;
+				&lt;resource&gt;
+					&lt;directory&gt;src/main/resources&lt;/directory&gt;
+					&lt;filtering&gt;true&lt;/filtering&gt;
+					&lt;includes&gt; &lt;!-- optional --&gt;
+						&lt;include&gt;*.*&lt;/include&gt;
+					&lt;/includes&gt;
+				&lt;/resource&gt;
+			&lt;/resources&gt;
+		&lt;/build&gt;
+		&lt;activation&gt;
+			&lt;property&gt;
+				&lt;name&gt;env&lt;/name&gt;
+				&lt;value&gt;prod&lt;/value&gt;
+			&lt;/property&gt;
+		&lt;/activation&gt;
+	&lt;/profile&gt;
+
+&lt;/profiles&gt;
+</pre>
+
+<h1 id="toc_3">调用开关</h1>
+
+<pre class="brush: bash">
+mvn install
+mvn install -Denv=qa
+mvn install -Denv=prod
+</pre>
+ </div>
+</body>
+</html>
