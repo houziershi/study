@@ -1,0 +1,645 @@
+%title Velocity
+
+%toc Velocity
+
+= 注释 =
+
+{{{class="brush: javascript"
+
+## This is a single line comment.
+
+This is text that is outside the multi-line comment.
+Online visitors can see it.
+
+#*
+ Thus begins a multi-line comment. Online visitors won't
+ see this text because the Velocity Templating Engine will
+ ignore it.
+*#
+
+Here is text outside the multi-line comment; it is visible.
+
+This text is visible. ## This text is not.
+This text is visible.
+This text is visible. #* This text, as part of a multi-line
+comment, is not visible. This text is not visible; it is also
+part of the multi-line comment. This text still not
+visible. *# This text is outside the comment, so it is visible.
+## This text is not visible.
+}}}
+
+说明：
+
+{{{class="brush: javascript"
+#**
+This is a VTL comment block and
+may be used to store such information
+as the document author and versioning
+information:
+@author
+@version 5
+*#
+}}}
+
+
+
+= 变量 =
+
+== 变量声明 ==
+
+{{{class="brush: javascript"
+#set( $a = "Velocity" )
+}}}
+
+== 变量使用 ==
+
+{{{class="brush: javascript"
+<html>
+<body>
+	#set( $foo = "Velocity" )
+	Hello $foo World!
+</body>
+<html>
+}}}
+
+=== 变量的缩写 ===
+
+`$foo`其实是`${foo}`的缩写，但有时会缩写有二义性：
+
+{{{class="brush: javascript"
+${foo}aaaaaaa
+$fooaaaaaaa
+}}}
+
+=== 未定义变量 ===
+
+如果用到了末定义变量，我们希望用空字符显示：
+
+{{{class="brush: javascript"
+<input type="text" name="email" value="$!{email}"/>
+<input type="text" name="email" value="$!email"/>
+}}}
+
+=== 转义 ===
+
+在变量被定义时用转义反斜线：
+
+{{{class="brush: javascript"
+#set( $email = "foo" )
+$email                    ## foo
+\$email                   ## $email
+\\$email                  ## \foo
+\\\$email                 ## \$email
+}}}
+
+没有定义变量不转义：
+
+{{{class="brush: javascript"
+$email                   ## $email
+\$email                  ## \$email
+\\$email                 ## \\$email
+\\\$email                ## \\\$email
+}}}
+
+=== 变量赋值 ===
+
+已经定义的变量传值：
+
+{{{class="brush: javascript"
+#set( $foo = "gibbous" )
+$moon = $foo              ## $moon is 'gibbous'
+}}}
+
+没有定义的变量传变量名：
+
+{{{class="brush: javascript"
+$moon = $foo              ## $moon is '$foo'
+}}}
+
+
+
+
+= 类型对象 =
+
+== 访问属性 ==
+
+{{{class="brush: javascript"
+$customer.Address
+$purchase.Total
+}}}
+
+会自动尝试用POJO方法取得属性。
+
+如对于`$customer.address`，会尝试以下方式：
+
+* getaddress()
+* getAddress()
+* get("address")
+* isAddress()
+
+注意大小写会有影响，如`$customer.Address`，会尝试以下方式：
+
+* getAddress()
+* getaddress()
+* get("Address")
+* isAddress()
+
+== 访问方法 ==
+
+{{{class="brush: javascript"
+$customer.getAddress()
+$purchase.getTotal()
+$page.setTitle( "My Home Page" )
+$person.setAttributes( ["Strange", "Weird", "Excited"] )
+}}}
+
+== 方法与属性混用 ==
+
+{{{class="brush: javascript"
+$foo
+
+$foo.getBar()
+## is the same as
+$foo.Bar
+
+$data.setUser("jon")
+## is the same as
+#set( $data.User = "jon" )
+
+$data.getRequest().getServerName()
+## is the same as
+$data.Request.ServerName
+## is the same as
+${data.Request.ServerName}
+}}}
+
+
+
+= 指令格式 =
+
+指令格式为:`#{指令}`；可简写为：`#指令`。当然有时简写会引起错误：
+
+{{{class="brush: javascript"
+## 错误
+#if($a==1)true enough#elseno way!#end
+
+## 正确
+#if($a==1)true enough#{else}no way!#end
+}}}
+
+= 赋值指令#set =
+
+== 左边的 ==
+
+LHS（Left Hand Side）：
+
+{{{class="brush: javascript"
+#set( $monkey = $bill ) ## variable reference
+#set( $monkey.Friend = "monica" ) ## string literal
+#set( $monkey.Blame = $whitehouse.Leak ) ## property reference
+#set( $monkey.Plan = $spindoctor.weave($web) ) ## method reference
+#set( $monkey.Number = 123 ) ##number literal
+#set( $monkey.Say = ["Not", $my, "fault"] ) ## ArrayList
+#set( $monkey.Map = {"banana" : "good", "roast beef" : "bad"}) ## Map
+}}}
+
+对于`ArrayList`可用`$monkey.Say.get(0)`取得元素。
+
+== 右边的 ==
+
+RHS（Right Hand Side）：
+
+{{{class="brush: javascript"
+#set( $value = $foo + 1 )
+#set( $value = $bar - 1 )
+#set( $value = $foo * $bar )
+#set( $value = $foo / $bar )
+}}}
+
+== 赋空值 ==
+
+如果RHS结果为`null`，就不会进行赋值操作。
+
+如`$query.criteria("name")`值为`"bill"`；
+而`$query.criteria("address")`值为`null`：
+
+{{{class="brush: javascript"
+#set( $result = $query.criteria("name") )     ## The result is bill
+#set( $result = $query.criteria("address") )  ## The result is bill
+}}}
+
+这会在循环中引起问题，下面的循环中不能再给`result`设为`null`，即从集合中移除对象
+：
+
+{{{class="brush: javascript"
+#set( $criteria = ["name", "address"] )
+
+#foreach( $criterion in $criteria )
+    #set( $result = $query.criteria($criterion) )
+    #if( $result )
+        Query was successful
+    #end
+#end
+}}}
+
+一个方案是把`$result`设为`false`：
+
+{{{class="brush: javascript"
+#set( $criteria = ["name", "address"] )
+
+#foreach( $criterion in $criteria )
+    #set( $result = false )
+    #set( $result = $query.criteria($criterion) )
+    #if( $result )
+        Query was successful
+    #end
+#end
+}}}
+
+= 字面量 =
+
+== 字符串字面量 ==
+
+双引号字符串字面量中也可以引用变量：
+
+{{{class="brush: javascript"
+#set( $directoryRoot = "www" )
+#set( $templateName = "index.vm" )
+#set( $template = "$directoryRoot/$templateName" )
+
+$template             ## www/index.vm
+}}}
+
+单引号里的不会：
+
+{{{class="brush: javascript"
+#set( $foo = "bar" )
+$foo                       ##  bar
+#set( $blargh = '$foo' )
+$blargh                    ##  $foo
+}}}
+
+单引号不引用变量值的特性可修改配置文件`velocity.properties`：
+
+{{{class="brush: javascript"
+stringliterals.interpolate=false 
+}}}
+
+== 指定使用字面量#literal ==
+
+指定整段文本为字面量：
+
+{{{class="brush: javascript"
+#literal()
+#foreach ($woogie in $boogie)
+  nothing will happen to $woogie
+#end
+#end
+}}}
+
+显示为：
+
+{{{class="brush: javascript"
+#foreach ($woogie in $boogie)
+  nothing will happen to $woogie
+#end
+}}}
+
+= 流程控制 =
+
+== 条件判断if-else ==
+
+条件在为`true`或对象不为空时都成立：
+
+{{{class="brush: javascript"
+#if( $foo )
+   <strong>Velocity!</strong>
+#end
+}}}
+
+`==`同时比较引用与值。组合条件：
+
+{{{class="brush: javascript"
+#if( $foo < 10 )
+    <strong>Go North</strong>
+#elseif( $foo == 10 )
+    <strong>Go East</strong>
+#elseif( $bar == 6 )
+    <strong>Go South</strong>
+#else
+    <strong>Go West</strong>
+#end
+}}}
+
+逻辑操作：
+
+{{{class="brush: javascript"
+## logical AND
+#if( $foo && $bar )
+   <strong> This AND that</strong>
+#end
+
+## logical OR
+#if( $foo || $bar )
+    <strong>This OR That</strong>
+#end
+
+##logical NOT
+#if( !$foo )
+  <strong>NOT that</strong>
+#end
+}}}
+
+如果希望输出结果不包括逻辑判断中的空白字符：
+
+{{{class="brush: javascript"
+#if( $foo == $bar)it's true!#{else}it's not!#end</li>
+}}}
+
+== 循环 ==
+
+{{{class="brush: javascript"
+<ul>
+#foreach( $key in $allProducts.keySet() )
+    <li>Key: $key -> Value: $allProducts.get($key)</li>
+#end
+</ul>
+}}}
+
+可以通过`$velocityCount`得到当前循环次数：
+
+{{{class="brush: javascript"
+<table>
+#foreach( $customer in $customerList )
+    <tr><td>$velocityCount</td><td>$customer.Name</td></tr>
+#end
+</table>
+}}}
+
+次数的名字和开始值可以在文件`velocity.properties`中改：
+
+{{{class="brush: javascript"
+# Default name of the loop counter
+# variable reference.
+directive.foreach.counter.name = velocityCount
+
+# Default starting value of the loop
+# counter variable reference.
+directive.foreach.counter.initial.value = 1
+}}}
+
+还可以限制最大的循环次数，小于1表示不限制：
+
+{{{class="brush: javascript"
+# The maximum allowed number of loops.
+directive.foreach.maxloops = -1
+}}}
+
+= 导入文件 =
+
+== 导入文件#include ==
+
+`#include`导入一个文件（不经过处理），为了安全考虑限制只能导入`TEMPLATE_ROOT`
+目录下的文件。
+
+{{{class="brush: javascript"
+#include( "one.txt" )
+
+#include( "one.gif","two.txt","three.htm" )
+}}}
+
+可以加个名字方便以后引用：
+
+{{{class="brush: javascript"
+#include( "greetings.txt", $seasonalstock )
+}}}
+
+== 导入并渲染文件#parse ==
+
+只能导入`TEMPLATE_ROOT`目录下的文件。
+
+{{{class="brush: javascript"
+#parse( "me.vm" )
+}}}
+
+可以给指定变量，例：
+
+`parsefoo.vm`：
+
+{{{class="brush: javascript"
+$count
+#set( $count = $count - 1 )
+#if( $count > 0 )
+    #parse( "parsefoo.vm" )
+#else
+    All done with parsefoo.vm!
+#end
+}}}
+
+`dofoo.vm`引入时：
+
+{{{class="brush: javascript"
+Count down.
+#set( $count = 8 )
+#parse( "parsefoo.vm" )
+All done with dofoo.vm!
+}}}
+
+`velocity.properties`中的`directive.parse.max.depth`限制`#parse`的使用数量，默认
+为10。
+
+= 停止模板引擎#stop =
+
+调试时可能会有用：
+
+{{{class="brush: javascript"
+#stop
+}}}
+
+
+= 宏#macro =
+
+`#macro`定义可重用的片段：
+
+{{{class="brush: javascript"
+#macro( d )
+<tr><td></td></tr>
+#end
+
+#d()
+}}}
+
+宏的参数。如下面的`tablerows`宏有`$color`和`somelist`两个参数：
+
+{{{class="brush: javascript"
+#macro( tablerows $color $somelist )
+#foreach( $something in $somelist )
+    <tr><td bgcolor=$color>$something</td></tr>
+#end
+#end
+}}}
+
+调用：
+
+{{{class="brush: javascript"
+#set( $greatlakes = ["Superior","Michigan","Huron","Erie","Ontario"] )
+#set( $color = "blue" )
+<table>
+    #tablerows( $color $greatlakes )
+</table>
+}}}
+
+输出：
+
+{{{class="brush: html"
+<table>
+    <tr><td bgcolor="blue">Superior</td></tr>
+    <tr><td bgcolor="blue">Michigan</td></tr>
+    <tr><td bgcolor="blue">Huron</td></tr>
+    <tr><td bgcolor="blue">Erie</td></tr>
+    <tr><td bgcolor="blue">Ontario</td></tr>
+</table>
+}}}
+
+在`velocity.properties`中把它定义成库可以在更多地方重用。
+
+== 宏参数 ==
+
+可用的参数：
+
+* 引用 : anything that starts with `$`
+* 字符串字面量 : something like `$foo` or `hello`
+* 数字字面量 : 1, 2 etc
+* 整数范围 : `[1..2]` or `[$foo .. $bar]`
+* ObjectArray : `[ "a", "b", "c"]`
+* boolean value `true`
+* boolean value `false`
+
+参数按名称传递：
+
+{{{class="brush: javascript"
+#macro( callme $a )
+    $a $a $a
+#end
+
+#callme( $foo.bar() )
+}}}
+
+按引用传递：
+
+{{{class="brush: javascript"
+#set( $myval = $foo.bar() )
+#callme( $myval )
+}}}
+
+= 转义 =
+
+{{{class="brush: javascript"
+\#if( $jazz )
+    Vyacheslav Ganelin
+\#end
+}}}
+
+被转义了，输出：
+
+{{{class="brush: javascript"
+#if($ jazz )
+    Vyacheslav Ganelin
+#end
+}}}
+
+再一个例子：
+
+{{{class="brush: javascript"
+\\#if( $jazz )
+   Vyacheslav Ganelin
+\\#end
+}}}
+
+为真时：
+
+{{{class="brush: javascript"
+\ Vyacheslav Ganelin
+\
+}}}
+
+为假时：
+
+{{{class="brush: javascript"
+\
+}}}
+
+
+
+= 其他 =
+
+== 数学运算 ==
+
+{{{class="brush: javascript"
+#set( $foo = $bar + 3 )
+#set( $foo = $bar - 4 )
+#set( $foo = $bar * 6 )
+#set( $foo = $bar / 2 )
+
+#set( $foo = $bar % 5 )
+}}}
+
+== 范围 ==
+
+格式：
+
+{{{class="brush: javascript"
+[n..m]
+}}}
+
+例：
+
+{{{class="brush: javascript"
+First example:
+#foreach( $foo in [1..5] )
+$foo
+#end
+             ## 1 2 3 4 5
+
+Second example:
+#foreach( $bar in [2..-2] )
+$bar
+#end
+             ## 2 1 0 -1 -2
+
+Third example:
+#set( $arr = [0..1] )
+#foreach( $i in $arr )
+$i
+#end
+             ## 0 1
+
+Fourth example:
+[1..3]
+             ## [1..3]
+}}}
+
+== 转义与取非 ==
+
+转义`!`：
+
+{{{class="brush: javascript"
+#set( $foo = "bar" )
+$\!foo               ## $!foo
+$\!{foo}             ## $!{foo}
+$\\!foo              ## $\!foo
+$\\\!foo             ## $\\!foo
+}}}
+
+转义`$`：
+
+{{{class="brush: javascript"
+\$foo                ## $foo
+\$!foo               ## $!foo
+\$!{foo}             ## $!{foo}
+\\$!{foo}            ## \bar
+}}}
+
+
+{{{class="brush: javascript"
+}}}

@@ -1,0 +1,869 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>Velocity</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+<h1>Velocity</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">注释</a>
+<li><a href="#toc_2">变量</a>
+<ul>
+<li><a href="#toc_2.1">变量声明</a>
+<li><a href="#toc_2.2">变量使用</a>
+<ul>
+<li><a href="#toc_2.2.1">变量的缩写</a>
+<li><a href="#toc_2.2.2">未定义变量</a>
+<li><a href="#toc_2.2.3">转义</a>
+<li><a href="#toc_2.2.4">变量赋值</a>
+</ul>
+</ul>
+<li><a href="#toc_3">类型对象</a>
+<ul>
+<li><a href="#toc_3.1">访问属性</a>
+<li><a href="#toc_3.2">访问方法</a>
+<li><a href="#toc_3.3">方法与属性混用</a>
+</ul>
+<li><a href="#toc_4">指令格式</a>
+<li><a href="#toc_5">赋值指令#set</a>
+<ul>
+<li><a href="#toc_5.1">左边的</a>
+<li><a href="#toc_5.2">右边的</a>
+<li><a href="#toc_5.3">赋空值</a>
+</ul>
+<li><a href="#toc_6">字面量</a>
+<ul>
+<li><a href="#toc_6.1">字符串字面量</a>
+<li><a href="#toc_6.2">指定使用字面量#literal</a>
+</ul>
+<li><a href="#toc_7">流程控制</a>
+<ul>
+<li><a href="#toc_7.1">条件判断if-else</a>
+<li><a href="#toc_7.2">循环</a>
+</ul>
+<li><a href="#toc_8">导入文件</a>
+<ul>
+<li><a href="#toc_8.1">导入文件#include</a>
+<li><a href="#toc_8.2">导入并渲染文件#parse</a>
+</ul>
+<li><a href="#toc_9">停止模板引擎#stop</a>
+<li><a href="#toc_10">宏#macro</a>
+<ul>
+<li><a href="#toc_10.1">宏参数</a>
+</ul>
+<li><a href="#toc_11">转义</a>
+<li><a href="#toc_12">其他</a>
+<ul>
+<li><a href="#toc_12.1">数学运算</a>
+<li><a href="#toc_12.2">范围</a>
+<li><a href="#toc_12.3">转义与取非</a>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">注释</h1>
+
+<pre class="brush: javascript">
+
+## This is a single line comment.
+
+This is text that is outside the multi-line comment.
+Online visitors can see it.
+
+#*
+ Thus begins a multi-line comment. Online visitors won't
+ see this text because the Velocity Templating Engine will
+ ignore it.
+*#
+
+Here is text outside the multi-line comment; it is visible.
+
+This text is visible. ## This text is not.
+This text is visible.
+This text is visible. #* This text, as part of a multi-line
+comment, is not visible. This text is not visible; it is also
+part of the multi-line comment. This text still not
+visible. *# This text is outside the comment, so it is visible.
+## This text is not visible.
+</pre>
+
+<p>
+说明：
+</p>
+
+<pre class="brush: javascript">
+#**
+This is a VTL comment block and
+may be used to store such information
+as the document author and versioning
+information:
+@author
+@version 5
+*#
+</pre>
+
+
+
+<h1 id="toc_2">变量</h1>
+
+<h2 id="toc_2.1">变量声明</h2>
+
+<pre class="brush: javascript">
+#set( $a = "Velocity" )
+</pre>
+
+<h2 id="toc_2.2">变量使用</h2>
+
+<pre class="brush: javascript">
+&lt;html&gt;
+&lt;body&gt;
+	#set( $foo = "Velocity" )
+	Hello $foo World!
+&lt;/body&gt;
+&lt;html&gt;
+</pre>
+
+<h3 id="toc_2.2.1">变量的缩写</h3>
+
+<p>
+<code>\(foo</code>其实是<code>\){foo}</code>的缩写，但有时会缩写有二义性：
+</p>
+
+<pre class="brush: javascript">
+${foo}aaaaaaa
+$fooaaaaaaa
+</pre>
+
+<h3 id="toc_2.2.2">未定义变量</h3>
+
+<p>
+如果用到了末定义变量，我们希望用空字符显示：
+</p>
+
+<pre class="brush: javascript">
+&lt;input type="text" name="email" value="$!{email}"/&gt;
+&lt;input type="text" name="email" value="$!email"/&gt;
+</pre>
+
+<h3 id="toc_2.2.3">转义</h3>
+
+<p>
+在变量被定义时用转义反斜线：
+</p>
+
+<pre class="brush: javascript">
+#set( $email = "foo" )
+$email                    ## foo
+\$email                   ## $email
+\\$email                  ## \foo
+\\\$email                 ## \$email
+</pre>
+
+<p>
+没有定义变量不转义：
+</p>
+
+<pre class="brush: javascript">
+$email                   ## $email
+\$email                  ## \$email
+\\$email                 ## \\$email
+\\\$email                ## \\\$email
+</pre>
+
+<h3 id="toc_2.2.4">变量赋值</h3>
+
+<p>
+已经定义的变量传值：
+</p>
+
+<pre class="brush: javascript">
+#set( $foo = "gibbous" )
+$moon = $foo              ## $moon is 'gibbous'
+</pre>
+
+<p>
+没有定义的变量传变量名：
+</p>
+
+<pre class="brush: javascript">
+$moon = $foo              ## $moon is '$foo'
+</pre>
+
+
+
+
+<h1 id="toc_3">类型对象</h1>
+
+<h2 id="toc_3.1">访问属性</h2>
+
+<pre class="brush: javascript">
+$customer.Address
+$purchase.Total
+</pre>
+
+<p>
+会自动尝试用POJO方法取得属性。
+</p>
+
+<p>
+如对于<code>$customer.address</code>，会尝试以下方式：
+</p>
+
+<ul>
+<li>
+getaddress()
+
+<li>
+getAddress()
+
+<li>
+get("address")
+
+<li>
+isAddress()
+
+</ul>
+
+<p>
+注意大小写会有影响，如<code>$customer.Address</code>，会尝试以下方式：
+</p>
+
+<ul>
+<li>
+getAddress()
+
+<li>
+getaddress()
+
+<li>
+get("Address")
+
+<li>
+isAddress()
+
+</ul>
+
+<h2 id="toc_3.2">访问方法</h2>
+
+<pre class="brush: javascript">
+$customer.getAddress()
+$purchase.getTotal()
+$page.setTitle( "My Home Page" )
+$person.setAttributes( ["Strange", "Weird", "Excited"] )
+</pre>
+
+<h2 id="toc_3.3">方法与属性混用</h2>
+
+<pre class="brush: javascript">
+$foo
+
+$foo.getBar()
+## is the same as
+$foo.Bar
+
+$data.setUser("jon")
+## is the same as
+#set( $data.User = "jon" )
+
+$data.getRequest().getServerName()
+## is the same as
+$data.Request.ServerName
+## is the same as
+${data.Request.ServerName}
+</pre>
+
+
+
+<h1 id="toc_4">指令格式</h1>
+
+<p>
+指令格式为:<code>#{指令}</code>；可简写为：<code>#指令</code>。当然有时简写会引起错误：
+</p>
+
+<pre class="brush: javascript">
+## 错误
+#if($a==1)true enough#elseno way!#end
+
+## 正确
+#if($a==1)true enough#{else}no way!#end
+</pre>
+
+<h1 id="toc_5">赋值指令#set</h1>
+
+<h2 id="toc_5.1">左边的</h2>
+
+<p>
+LHS（Left Hand Side）：
+</p>
+
+<pre class="brush: javascript">
+#set( $monkey = $bill ) ## variable reference
+#set( $monkey.Friend = "monica" ) ## string literal
+#set( $monkey.Blame = $whitehouse.Leak ) ## property reference
+#set( $monkey.Plan = $spindoctor.weave($web) ) ## method reference
+#set( $monkey.Number = 123 ) ##number literal
+#set( $monkey.Say = ["Not", $my, "fault"] ) ## ArrayList
+#set( $monkey.Map = {"banana" : "good", "roast beef" : "bad"}) ## Map
+</pre>
+
+<p>
+对于<code>ArrayList</code>可用<code>$monkey.Say.get(0)</code>取得元素。
+</p>
+
+<h2 id="toc_5.2">右边的</h2>
+
+<p>
+RHS（Right Hand Side）：
+</p>
+
+<pre class="brush: javascript">
+#set( $value = $foo + 1 )
+#set( $value = $bar - 1 )
+#set( $value = $foo * $bar )
+#set( $value = $foo / $bar )
+</pre>
+
+<h2 id="toc_5.3">赋空值</h2>
+
+<p>
+如果RHS结果为<code>null</code>，就不会进行赋值操作。
+</p>
+
+<p>
+如<code>$query.criteria("name")</code>值为<code>"bill"</code>；
+而<code>$query.criteria("address")</code>值为<code>null</code>：
+</p>
+
+<pre class="brush: javascript">
+#set( $result = $query.criteria("name") )     ## The result is bill
+#set( $result = $query.criteria("address") )  ## The result is bill
+</pre>
+
+<p>
+这会在循环中引起问题，下面的循环中不能再给<code>result</code>设为<code>null</code>，即从集合中移除对象
+：
+</p>
+
+<pre class="brush: javascript">
+#set( $criteria = ["name", "address"] )
+
+#foreach( $criterion in $criteria )
+    #set( $result = $query.criteria($criterion) )
+    #if( $result )
+        Query was successful
+    #end
+#end
+</pre>
+
+<p>
+一个方案是把<code>$result</code>设为<code>false</code>：
+</p>
+
+<pre class="brush: javascript">
+#set( $criteria = ["name", "address"] )
+
+#foreach( $criterion in $criteria )
+    #set( $result = false )
+    #set( $result = $query.criteria($criterion) )
+    #if( $result )
+        Query was successful
+    #end
+#end
+</pre>
+
+<h1 id="toc_6">字面量</h1>
+
+<h2 id="toc_6.1">字符串字面量</h2>
+
+<p>
+双引号字符串字面量中也可以引用变量：
+</p>
+
+<pre class="brush: javascript">
+#set( $directoryRoot = "www" )
+#set( $templateName = "index.vm" )
+#set( $template = "$directoryRoot/$templateName" )
+
+$template             ## www/index.vm
+</pre>
+
+<p>
+单引号里的不会：
+</p>
+
+<pre class="brush: javascript">
+#set( $foo = "bar" )
+$foo                       ##  bar
+#set( $blargh = '$foo' )
+$blargh                    ##  $foo
+</pre>
+
+<p>
+单引号不引用变量值的特性可修改配置文件<code>velocity.properties</code>：
+</p>
+
+<pre class="brush: javascript">
+stringliterals.interpolate=false 
+</pre>
+
+<h2 id="toc_6.2">指定使用字面量#literal</h2>
+
+<p>
+指定整段文本为字面量：
+</p>
+
+<pre class="brush: javascript">
+#literal()
+#foreach ($woogie in $boogie)
+  nothing will happen to $woogie
+#end
+#end
+</pre>
+
+<p>
+显示为：
+</p>
+
+<pre class="brush: javascript">
+#foreach ($woogie in $boogie)
+  nothing will happen to $woogie
+#end
+</pre>
+
+<h1 id="toc_7">流程控制</h1>
+
+<h2 id="toc_7.1">条件判断if-else</h2>
+
+<p>
+条件在为<code>true</code>或对象不为空时都成立：
+</p>
+
+<pre class="brush: javascript">
+#if( $foo )
+   &lt;strong&gt;Velocity!&lt;/strong&gt;
+#end
+</pre>
+
+<p>
+<code>==</code>同时比较引用与值。组合条件：
+</p>
+
+<pre class="brush: javascript">
+#if( $foo &lt; 10 )
+    &lt;strong&gt;Go North&lt;/strong&gt;
+#elseif( $foo == 10 )
+    &lt;strong&gt;Go East&lt;/strong&gt;
+#elseif( $bar == 6 )
+    &lt;strong&gt;Go South&lt;/strong&gt;
+#else
+    &lt;strong&gt;Go West&lt;/strong&gt;
+#end
+</pre>
+
+<p>
+逻辑操作：
+</p>
+
+<pre class="brush: javascript">
+## logical AND
+#if( $foo &amp;&amp; $bar )
+   &lt;strong&gt; This AND that&lt;/strong&gt;
+#end
+
+## logical OR
+#if( $foo || $bar )
+    &lt;strong&gt;This OR That&lt;/strong&gt;
+#end
+
+##logical NOT
+#if( !$foo )
+  &lt;strong&gt;NOT that&lt;/strong&gt;
+#end
+</pre>
+
+<p>
+如果希望输出结果不包括逻辑判断中的空白字符：
+</p>
+
+<pre class="brush: javascript">
+#if( $foo == $bar)it's true!#{else}it's not!#end&lt;/li&gt;
+</pre>
+
+<h2 id="toc_7.2">循环</h2>
+
+<pre class="brush: javascript">
+&lt;ul&gt;
+#foreach( $key in $allProducts.keySet() )
+    &lt;li&gt;Key: $key -&gt; Value: $allProducts.get($key)&lt;/li&gt;
+#end
+&lt;/ul&gt;
+</pre>
+
+<p>
+可以通过<code>$velocityCount</code>得到当前循环次数：
+</p>
+
+<pre class="brush: javascript">
+&lt;table&gt;
+#foreach( $customer in $customerList )
+    &lt;tr&gt;&lt;td&gt;$velocityCount&lt;/td&gt;&lt;td&gt;$customer.Name&lt;/td&gt;&lt;/tr&gt;
+#end
+&lt;/table&gt;
+</pre>
+
+<p>
+次数的名字和开始值可以在文件<code>velocity.properties</code>中改：
+</p>
+
+<pre class="brush: javascript">
+# Default name of the loop counter
+# variable reference.
+directive.foreach.counter.name = velocityCount
+
+# Default starting value of the loop
+# counter variable reference.
+directive.foreach.counter.initial.value = 1
+</pre>
+
+<p>
+还可以限制最大的循环次数，小于1表示不限制：
+</p>
+
+<pre class="brush: javascript">
+# The maximum allowed number of loops.
+directive.foreach.maxloops = -1
+</pre>
+
+<h1 id="toc_8">导入文件</h1>
+
+<h2 id="toc_8.1">导入文件#include</h2>
+
+<p>
+<code>#include</code>导入一个文件（不经过处理），为了安全考虑限制只能导入<code>TEMPLATE_ROOT</code>
+目录下的文件。
+</p>
+
+<pre class="brush: javascript">
+#include( "one.txt" )
+
+#include( "one.gif","two.txt","three.htm" )
+</pre>
+
+<p>
+可以加个名字方便以后引用：
+</p>
+
+<pre class="brush: javascript">
+#include( "greetings.txt", $seasonalstock )
+</pre>
+
+<h2 id="toc_8.2">导入并渲染文件#parse</h2>
+
+<p>
+只能导入<code>TEMPLATE_ROOT</code>目录下的文件。
+</p>
+
+<pre class="brush: javascript">
+#parse( "me.vm" )
+</pre>
+
+<p>
+可以给指定变量，例：
+</p>
+
+<p>
+<code>parsefoo.vm</code>：
+</p>
+
+<pre class="brush: javascript">
+$count
+#set( $count = $count - 1 )
+#if( $count &gt; 0 )
+    #parse( "parsefoo.vm" )
+#else
+    All done with parsefoo.vm!
+#end
+</pre>
+
+<p>
+<code>dofoo.vm</code>引入时：
+</p>
+
+<pre class="brush: javascript">
+Count down.
+#set( $count = 8 )
+#parse( "parsefoo.vm" )
+All done with dofoo.vm!
+</pre>
+
+<p>
+<code>velocity.properties</code>中的<code>directive.parse.max.depth</code>限制<code>#parse</code>的使用数量，默认
+为10。
+</p>
+
+<h1 id="toc_9">停止模板引擎#stop</h1>
+
+<p>
+调试时可能会有用：
+</p>
+
+<pre class="brush: javascript">
+#stop
+</pre>
+
+
+<h1 id="toc_10">宏#macro</h1>
+
+<p>
+<code>#macro</code>定义可重用的片段：
+</p>
+
+<pre class="brush: javascript">
+#macro( d )
+&lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;/tr&gt;
+#end
+
+#d()
+</pre>
+
+<p>
+宏的参数。如下面的<code>tablerows</code>宏有<code>$color</code>和<code>somelist</code>两个参数：
+</p>
+
+<pre class="brush: javascript">
+#macro( tablerows $color $somelist )
+#foreach( $something in $somelist )
+    &lt;tr&gt;&lt;td bgcolor=$color&gt;$something&lt;/td&gt;&lt;/tr&gt;
+#end
+#end
+</pre>
+
+<p>
+调用：
+</p>
+
+<pre class="brush: javascript">
+#set( $greatlakes = ["Superior","Michigan","Huron","Erie","Ontario"] )
+#set( $color = "blue" )
+&lt;table&gt;
+    #tablerows( $color $greatlakes )
+&lt;/table&gt;
+</pre>
+
+<p>
+输出：
+</p>
+
+<pre class="brush: html">
+&lt;table&gt;
+    &lt;tr&gt;&lt;td bgcolor="blue"&gt;Superior&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td bgcolor="blue"&gt;Michigan&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td bgcolor="blue"&gt;Huron&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td bgcolor="blue"&gt;Erie&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td bgcolor="blue"&gt;Ontario&lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;
+</pre>
+
+<p>
+在<code>velocity.properties</code>中把它定义成库可以在更多地方重用。
+</p>
+
+<h2 id="toc_10.1">宏参数</h2>
+
+<p>
+可用的参数：
+</p>
+
+<ul>
+<li>
+引用 : anything that starts with <code>$</code>
+
+<li>
+字符串字面量 : something like <code>$foo</code> or <code>hello</code>
+
+<li>
+数字字面量 : 1, 2 etc
+
+<li>
+整数范围 : <code>[1..2]</code> or <code>[\(foo .. \)bar]</code>
+
+<li>
+ObjectArray : <code>[ "a", "b", "c"]</code>
+
+<li>
+boolean value <code>true</code>
+
+<li>
+boolean value <code>false</code>
+
+</ul>
+
+<p>
+参数按名称传递：
+</p>
+
+<pre class="brush: javascript">
+#macro( callme $a )
+    $a $a $a
+#end
+
+#callme( $foo.bar() )
+</pre>
+
+<p>
+按引用传递：
+</p>
+
+<pre class="brush: javascript">
+#set( $myval = $foo.bar() )
+#callme( $myval )
+</pre>
+
+<h1 id="toc_11">转义</h1>
+
+<pre class="brush: javascript">
+\#if( $jazz )
+    Vyacheslav Ganelin
+\#end
+</pre>
+
+<p>
+被转义了，输出：
+</p>
+
+<pre class="brush: javascript">
+#if($ jazz )
+    Vyacheslav Ganelin
+#end
+</pre>
+
+<p>
+再一个例子：
+</p>
+
+<pre class="brush: javascript">
+\\#if( $jazz )
+   Vyacheslav Ganelin
+\\#end
+</pre>
+
+<p>
+为真时：
+</p>
+
+<pre class="brush: javascript">
+\ Vyacheslav Ganelin
+\
+</pre>
+
+<p>
+为假时：
+</p>
+
+<pre class="brush: javascript">
+\
+</pre>
+
+
+
+<h1 id="toc_12">其他</h1>
+
+<h2 id="toc_12.1">数学运算</h2>
+
+<pre class="brush: javascript">
+#set( $foo = $bar + 3 )
+#set( $foo = $bar - 4 )
+#set( $foo = $bar * 6 )
+#set( $foo = $bar / 2 )
+
+#set( $foo = $bar % 5 )
+</pre>
+
+<h2 id="toc_12.2">范围</h2>
+
+<p>
+格式：
+</p>
+
+<pre class="brush: javascript">
+[n..m]
+</pre>
+
+<p>
+例：
+</p>
+
+<pre class="brush: javascript">
+First example:
+#foreach( $foo in [1..5] )
+$foo
+#end
+             ## 1 2 3 4 5
+
+Second example:
+#foreach( $bar in [2..-2] )
+$bar
+#end
+             ## 2 1 0 -1 -2
+
+Third example:
+#set( $arr = [0..1] )
+#foreach( $i in $arr )
+$i
+#end
+             ## 0 1
+
+Fourth example:
+[1..3]
+             ## [1..3]
+</pre>
+
+<h2 id="toc_12.3">转义与取非</h2>
+
+<p>
+转义<code>!</code>：
+</p>
+
+<pre class="brush: javascript">
+#set( $foo = "bar" )
+$\!foo               ## $!foo
+$\!{foo}             ## $!{foo}
+$\\!foo              ## $\!foo
+$\\\!foo             ## $\\!foo
+</pre>
+
+<p>
+转义<code>$</code>：
+</p>
+
+<pre class="brush: javascript">
+\$foo                ## $foo
+\$!foo               ## $!foo
+\$!{foo}             ## $!{foo}
+\\$!{foo}            ## \bar
+</pre>
+
+
+<pre class="brush: javascript">
+</pre>
+ </div>
+</body>
+</html>
