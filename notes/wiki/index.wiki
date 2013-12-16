@@ -232,3 +232,6 @@ pidgin：[[pidgin]]
 
 [[vocabulary]]
 
+= 物理 =
+
+[[physics]]
