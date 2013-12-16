@@ -64,7 +64,8 @@ information:
 
 === 变量的缩写 ===
 
-`$foo`其实是`${foo}`的缩写，但有时会缩写有二义性：
+`$foo`其实是
+`${foo}`的缩写，但有时会缩写有二义性：
 
 {{{class="brush: javascript"
 ${foo}aaaaaaa
