@@ -1465,6 +1465,103 @@ Clazz.class
 </tr>
 </table>
 
+
+<pre class="brush: scala">
+val c = new C
+val clazz = c.getClass              // method from java.lang.Object
+val clazz2 = classOf[C]             // Scala method: classOf[C] ~ C.class
+val methods = clazz.getMethods      // method from java.lang.Class&lt;T&gt;
+</pre>
+
+<p>
+The <code>classOf[T]</code> method returns the runtime representation for a Scala type. It 
+is analogous to the Java expression T.class.
+</p>
+
+<p>
+Using <code>classOf[T]</code> is convenient when you have a type that you want information 
+about, while <code>getClass</code> is convenient for retrieving the same information from 
+an instance of the type.
+</p>
+
+<p>
+However, <code>classOf[T]</code> and <code>getClass</code> return slightly different values, 
+reflecting the effect of type erasure on the JVM, in the case of getClass.
+</p>
+
+<pre class="brush: scala">
+scala&gt; classOf[C]
+res0: java.lang.Class[C] = class C
+
+scala&gt; c.getClass
+res1: java.lang.Class[_] = class C
+</pre>
+
+<p>
+That is why the following will not work:
+</p>
+
+<pre class="brush: scala">
+val xClass: Class[X] = new X().getClass //it returns Class[_], nor Class[X]
+
+val integerClass: Class[Integer] = new Integer(5).getClass //similar error
+</pre>
+
+<p>
+There is a ticket regarding the return type of getClass.
+</p>
+
+<p>
+James Moore reports that the ticket is "now", ie Nov. 2011, two years later, 
+ fixed.
+</p>
+ 
+<p>
+In 2.9.1, getClass now does:
+</p>
+
+<pre class="brush: scala">
+scala&gt; "foo".getClass 
+       res0: java.lang.Class[_ &lt;: java.lang.String] = class java.lang.String
+</pre>
+
+
+<p>
+Back in 2009:
+</p>
+
+<p>
+It would be useful if Scala were to treat the return from <code>getClass()</code> as a 
+<code>java.lang.Class[T]</code> forSome <code>{ val T : C }</code> where <code>C</code> is something like the 
+erasure of the static type of the expression on which getClass is called
+</p>
+
+<p>
+It would let me do something like the following where I want to introspect on 
+a class but shouldn't need a class instance.
+</p>
+
+<p>
+I also want to limit the types of classes I want to introspect on, so I use 
+<code>Class[_ &lt;: Foo]</code>. But this prevents me from passing in a Foo class by using 
+<code>Foo.getClass()</code> without a cast.
+</p>
+
+<p>
+Note: regarding getClass, a possible workaround would be:
+</p>
+
+<pre class="brush: scala">
+class NiceObject[T &lt;: AnyRef](x : T) {
+  def niceClass : Class[_ &lt;: T] = x.getClass.asInstanceOf[Class[T]]
+}
+
+implicit def toNiceObject[T &lt;: AnyRef](x : T) = new NiceObject(x)
+
+scala&gt; "Hello world".niceClass                                       
+res11: java.lang.Class[_ &lt;: java.lang.String] = class java.lang.String
+</pre>
+
 <p>
 相比类型检查与转换，Scala更加推荐模式匹配的方式。
 </p>

@@ -934,6 +934,79 @@ Scala中字段与方法都可以用`final`修饰为不可重写（因为Scala的
 | obj.asInstanceOf[Clazz] | (Clazz) obj          |
 | classOf[Clazz]          | Clazz.class          |
 
+
+{{{class="brush: scala" 
+val c = new C
+val clazz = c.getClass              // method from java.lang.Object
+val clazz2 = classOf[C]             // Scala method: classOf[C] ~ C.class
+val methods = clazz.getMethods      // method from java.lang.Class<T>
+}}}
+
+The `classOf[T]` method returns the runtime representation for a Scala type. It 
+is analogous to the Java expression T.class.
+
+Using `classOf[T]` is convenient when you have a type that you want information 
+about, while `getClass` is convenient for retrieving the same information from 
+an instance of the type.
+
+However, `classOf[T]` and `getClass` return slightly different values, 
+reflecting the effect of type erasure on the JVM, in the case of getClass.
+
+{{{class="brush: scala" 
+scala> classOf[C]
+res0: java.lang.Class[C] = class C
+
+scala> c.getClass
+res1: java.lang.Class[_] = class C
+}}}
+
+That is why the following will not work:
+
+{{{class="brush: scala" 
+val xClass: Class[X] = new X().getClass //it returns Class[_], nor Class[X]
+
+val integerClass: Class[Integer] = new Integer(5).getClass //similar error
+}}}
+
+There is a ticket regarding the return type of getClass.
+
+James Moore reports that the ticket is "now", ie Nov. 2011, two years later, 
+ fixed.
+ 
+In 2.9.1, getClass now does:
+
+{{{class="brush: scala" 
+scala> "foo".getClass 
+       res0: java.lang.Class[_ <: java.lang.String] = class java.lang.String
+}}}
+
+
+Back in 2009:
+
+It would be useful if Scala were to treat the return from `getClass()` as a 
+`java.lang.Class[T]` forSome `{ val T : C }` where `C` is something like the 
+erasure of the static type of the expression on which getClass is called
+
+It would let me do something like the following where I want to introspect on 
+a class but shouldn't need a class instance.
+
+I also want to limit the types of classes I want to introspect on, so I use 
+`Class[_ <: Foo]`. But this prevents me from passing in a Foo class by using 
+`Foo.getClass()` without a cast.
+
+Note: regarding getClass, a possible workaround would be:
+
+{{{class="brush: scala" 
+class NiceObject[T <: AnyRef](x : T) {
+  def niceClass : Class[_ <: T] = x.getClass.asInstanceOf[Class[T]]
+}
+
+implicit def toNiceObject[T <: AnyRef](x : T) = new NiceObject(x)
+
+scala> "Hello world".niceClass                                       
+res11: java.lang.Class[_ <: java.lang.String] = class java.lang.String
+}}}
+
 相比类型检查与转换，Scala更加推荐模式匹配的方式。
 
 == 定义参数化字段 ==
