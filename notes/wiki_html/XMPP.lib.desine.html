@@ -38,7 +38,7 @@ PacketWriter.openStream();
 
 <ul>
 <li>
-写出：&lt;stream:stream to="jabber.org" xmlns="jabber:client" xmlns:stream="<a href="http://etherx.jabber.org/streams"">http://etherx.jabber.org/streams"</a> version="1.0"&gt;
+写出：<code>&lt;stream:stream to="jabber.org" xmlns="jabber:client" xmlns:stream="http://etherx.jabber.org/streams" version="1.0"&gt;</code>
 
 </ul>
 </ul>
@@ -87,21 +87,54 @@ PackerWriter与PacketReader线程启动
 
 <ul>
 <li>
-PackWriter线程启动时会发一个头，写出： &lt;stream:stream to="jabber.org" xmlns="jabber:client" xmlns:stream="<a href="http://etherx.jabber.org/streams"">http://etherx.jabber.org/streams"</a> version="1.0"&gt;
+PackWriter线程启动时会发一个头：<code>&lt;stream:stream to="jabber.org" xmlns="jabber:client" xmlns:stream="http://etherx.jabber.org/streams" version="1.0"&gt;</code>
 
 <li>
-服务器响应（注意最后指明TLS）： &lt;?xml version='1.0'?&gt;&lt;stream:stream xmlns='jabber:client' xmlns:stream='<a href="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</a> from='jabber.org' id='71e0852c8b095b2a' version='1.0'&gt;&lt;stream:features&gt;&lt;starttls xmlns='<a href="urn:ietf:params:xml:ns:xmpp-tls'/&gt;&lt;mechanisms">urn:ietf:params:xml:ns:xmpp-tls'/&gt;&lt;mechanisms</a> xmlns='<a href="urn:ietf:params:xml:ns:xmpp-sasl'&gt;&lt;mechanism&gt;SCRAM-SHA-1&lt;/mechanism&gt;&lt;mechanism&gt;DIGEST-MD5&lt;/mechanism&gt;&lt;mechanism&gt;CRAM-MD5&lt;/mechanism&gt;&lt;mechanism&gt;PLAIN&lt;/mechanism&gt;&lt;mechanism&gt;LOGIN&lt;/mechanism&gt;&lt;/mechanisms&gt;&lt;/stream:features&gt;&lt;proceed">urn:ietf:params:xml:ns:xmpp-sasl'&gt;&lt;mechanism&gt;SCRAM-SHA-1&lt;/mechanism&gt;&lt;mechanism&gt;DIGEST-MD5&lt;/mechanism&gt;&lt;mechanism&gt;CRAM-MD5&lt;/mechanism&gt;&lt;mechanism&gt;PLAIN&lt;/mechanism&gt;&lt;mechanism&gt;LOGIN&lt;/mechanism&gt;&lt;/mechanisms&gt;&lt;/stream:features&gt;&lt;proceed</a> xmlns='<a href="urn:ietf:params:xml:ns:xmpp-tls'/&gt;">urn:ietf:params:xml:ns:xmpp-tls'/&gt;</a>
+服务器回应：<code>&lt;?xml version='1.0'?&gt;&lt;stream:stream xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' from='jabber.org' id='8907b5a1b4259b3c' version='1.0'&gt;&lt;stream:features&gt;&lt;starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'/&gt;&lt;mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'&gt;&lt;mechanism&gt;SCRAM-SHA-1&lt;/mechanism&gt;&lt;mechanism&gt;DIGEST-MD5&lt;/mechanism&gt;&lt;mechanism&gt;CRAM-MD5&lt;/mechanism&gt;&lt;mechanism&gt;PLAIN&lt;/mechanism&gt;&lt;mechanism&gt;LOGIN&lt;/mechanism&gt;&lt;/mechanisms&gt;&lt;/stream:features&gt;</code>
 
 <ul>
 <li>
-PacketReader读到<code>&lt;proceed xmlns='urn:ietf:params:xml:ns:xmpp-tls'/&gt;</code>就调用XMPPConnection.proceedTLSReceived()
+处理<code>stream</code>，namespace为<code>jabber:client</code>把<code>from</code>的属性作为
+				connectionConfig的serviceName。
+
+<li>
+处理<code>features</code>，
 
 <ul>
 <li>
-调用PacketWriter.openStream()准备发登录信息。
+有<code>starttls</code>表示服务器要用TLS，
+
+<li>
+<code>mechanism</code>列表中的可用加密方式设置<code>SASLAuthentication.serverMechanisms</code>列表中。
+
+<li>
+<code>connection.startTLSReceived(startTLSRequired)</code>发出响应：<code>&lt;starttls xmlns="urn:ietf:params:xml:ns:xmpp-tls"/&gt;</code>
 
 </ul>
 </ul>
+<li>
+服务器响应（注意最后指明TLS）： <code>&lt;?xml version='1.0'?&gt;&lt;stream:stream xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' from='jabber.org' id='71e0852c8b095b2a' version='1.0'&gt;&lt;stream:features&gt;&lt;starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'/&gt;&lt;mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'&gt;&lt;mechanism&gt;SCRAM-SHA-1&lt;/mechanism&gt;&lt;mechanism&gt;DIGEST-MD5&lt;/mechanism&gt;&lt;mechanism&gt;CRAM-MD5&lt;/mechanism&gt;&lt;mechanism&gt;PLAIN&lt;/mechanism&gt;&lt;mechanism&gt;LOGIN&lt;/mechanism&gt;&lt;/mechanisms&gt;&lt;/stream:features&gt;&lt;proceed xmlns='urn:ietf:params:xml:ns:xmpp-tls'/&gt;</code>
+
+<ul>
+<li>
+PacketReader读到<code>proceed</code>就调用<code>XMPPConnection.proceedTLSReceived()</code>。
+				应该只有最后一个节点是新收到的，前面的可以就是在缓存里一直被打印出来的。
+
+<ul>
+<li>
+许多工作……配置auth key之类的。
+
+<li>
+调用PacketWriter.openStream()。再打开一个流
+
+</ul>
+</ul>
+<li>
+服务器响应(再次提供方式，这次没有<code>startttls</code>)：<code>&lt;?xml version='1.0'?&gt;&lt;stream:stream xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' from='jabber.org' id='e360aebfb6102779' version='1.0'&gt;&lt;stream:features&gt;&lt;mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'&gt;&lt;mechanism&gt;SCRAM-SHA-1-PLUS&lt;/mechanism&gt;&lt;mechanism&gt;SCRAM-SHA-1&lt;/mechanism&gt;&lt;mechanism&gt;DIGEST-MD5&lt;/mechanism&gt;&lt;mechanism&gt;CRAM-MD5&lt;/mechanism&gt;&lt;mechanism&gt;PLAIN&lt;/mechanism&gt;&lt;mechanism&gt;LOGIN&lt;/mechanism&gt;&lt;/mechanisms&gt;&lt;/stream:features&gt;</code>
+
+<li>
+<code>mechanism</code>列表中的可用加密方式设置<code>SASLAuthentication.serverMechanisms</code>列表中。
+
 </ul>
 </ul>
 </ul>

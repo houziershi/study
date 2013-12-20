@@ -5,7 +5,7 @@
 = 打开与服务器的一次会话 =
 
 * PacketWriter.openStream();
-	- 写出：<stream:stream to="jabber.org" xmlns="jabber:client" xmlns:stream="http://etherx.jabber.org/streams" version="1.0">
+	- 写出：`<stream:stream to="jabber.org" xmlns="jabber:client" xmlns:stream="http://etherx.jabber.org/streams" version="1.0">`
 
 
 = 创建连接对象 =
@@ -21,10 +21,21 @@
 	- config.setDebuggerEnabled(DEBUG_ENABLED);
 	- Sasl验证：saslAuthentication = new SASLAuthentication(this)
 	- PackerWriter与PacketReader线程启动
-		* PackWriter线程启动时会发一个头，写出： <stream:stream to="jabber.org" xmlns="jabber:client" xmlns:stream="http://etherx.jabber.org/streams" version="1.0">
-		* 服务器响应（注意最后指明TLS）： <?xml version='1.0'?><stream:stream xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' from='jabber.org' id='71e0852c8b095b2a' version='1.0'><stream:features><starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'/><mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'><mechanism>SCRAM-SHA-1</mechanism><mechanism>DIGEST-MD5</mechanism><mechanism>CRAM-MD5</mechanism><mechanism>PLAIN</mechanism><mechanism>LOGIN</mechanism></mechanisms></stream:features><proceed xmlns='urn:ietf:params:xml:ns:xmpp-tls'/>
-			- PacketReader读到`<proceed xmlns='urn:ietf:params:xml:ns:xmpp-tls'/>`就调用XMPPConnection.proceedTLSReceived()
-				* 调用PacketWriter.openStream()准备发登录信息。
+		* PackWriter线程启动时会发一个头：`<stream:stream to="jabber.org" xmlns="jabber:client" xmlns:stream="http://etherx.jabber.org/streams" version="1.0">`
+		* 服务器回应：`<?xml version='1.0'?><stream:stream xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' from='jabber.org' id='8907b5a1b4259b3c' version='1.0'><stream:features><starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'/><mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'><mechanism>SCRAM-SHA-1</mechanism><mechanism>DIGEST-MD5</mechanism><mechanism>CRAM-MD5</mechanism><mechanism>PLAIN</mechanism><mechanism>LOGIN</mechanism></mechanisms></stream:features>`
+			- 处理`stream`，namespace为`jabber:client`把`from`的属性作为
+				connectionConfig的serviceName。
+			- 处理`features`，
+				* 有`starttls`表示服务器要用TLS，
+				* `mechanism`列表中的可用加密方式设置`SASLAuthentication.serverMechanisms`列表中。
+				* `connection.startTLSReceived(startTLSRequired)`发出响应：`<starttls xmlns="urn:ietf:params:xml:ns:xmpp-tls"/>`
+		* 服务器响应（注意最后指明TLS）： `<?xml version='1.0'?><stream:stream xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' from='jabber.org' id='71e0852c8b095b2a' version='1.0'><stream:features><starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'/><mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'><mechanism>SCRAM-SHA-1</mechanism><mechanism>DIGEST-MD5</mechanism><mechanism>CRAM-MD5</mechanism><mechanism>PLAIN</mechanism><mechanism>LOGIN</mechanism></mechanisms></stream:features><proceed xmlns='urn:ietf:params:xml:ns:xmpp-tls'/>`
+			- PacketReader读到`proceed`就调用`XMPPConnection.proceedTLSReceived()`。
+				应该只有最后一个节点是新收到的，前面的可以就是在缓存里一直被打印出来的。
+				* 许多工作……配置auth key之类的。
+				* 调用PacketWriter.openStream()。再打开一个流
+		* 服务器响应(再次提供方式，这次没有`startttls`)：`<?xml version='1.0'?><stream:stream xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' from='jabber.org' id='e360aebfb6102779' version='1.0'><stream:features><mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'><mechanism>SCRAM-SHA-1-PLUS</mechanism><mechanism>SCRAM-SHA-1</mechanism><mechanism>DIGEST-MD5</mechanism><mechanism>CRAM-MD5</mechanism><mechanism>PLAIN</mechanism><mechanism>LOGIN</mechanism></mechanisms></stream:features>`
+		* `mechanism`列表中的可用加密方式设置`SASLAuthentication.serverMechanisms`列表中。
 
 = SASL验证登录 =
 
