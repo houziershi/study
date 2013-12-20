@@ -149,19 +149,53 @@ Connection.login
 <li>
 response = saslAuthentication.authenticate()
 
+<ul>
 <li>
-currentMechanism是根据mechanismsPerferences的内容选一个在
-		implementedMechainsms有的类newInstance()一个出来。(之前服务器会给出响应，说明支持的类型)
+从自己支持的加密方式（mechanismsPerferences）与服务器支持的加密方式
+			（serverMechanisms）中先一个共同的作为当前加密方式（currentMechanism）。
+			根据这个验证实现类，反射new一个实例出来。
+
+<li>
+<code>serviceName= connection.getServiceName();</code>
 
 <li>
 currentMechanism.authenticate(username, connection.getHost(), serviceName, password)
 
+<ul>
 <li>
-等待30秒，然后看验证是否已经成功 saslFailed
+<code>saslAuthentication().send(new AuthMechanism(getName(), authenticationText))</code>
+				发出xml：<code>&lt;auth mechanism="DIGEST-MD5" xmlns="urn:ietf:params:xml:ns:xmpp-sasl"&gt;&lt;/auth&gt;</code>
+
+</ul>
+<li>
+等待服务器响应（默认时间30秒），然后看验证是否已经成功 saslFailed
 
 <li>
-如果saslNegotiated,  return bindResourceAndEstablishSession(resource);
+如果<code>saslNegotiated</code>,  <code>return bindResourceAndEstablishSession(resource);</code>
 
+<ul>
+<li>
+<code>bindResource = new Bind()</code>(<code>IQ</code>的子类)加配置工作
+
+<li>
+<code>connection.sendPacket(bindResource)</code>：<code>&lt;iq id="s64xY-0" type="set"&gt;&lt;bind xmlns="urn:ietf:params:xml:ns:xmpp-bind"&gt;&lt;resource&gt;Smack&lt;/resource&gt;&lt;/bind&gt;&lt;/iq&gt;</code>
+
+</ul>
+<li>
+服务器响应：<code>&lt;?xml version='1.0'?&gt;&lt;stream:stream xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' from='jabber.org' id='726b252254aa5080' version='1.0'&gt;&lt;stream:features&gt;&lt;bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'&gt;&lt;required/&gt;&lt;/bind&gt;&lt;session xmlns='urn:ietf:params:xml:ns:xmpp-session'&gt;&lt;optional/&gt;&lt;/session&gt;&lt;sm xmlns='urn:xmpp:sm:2'&gt;&lt;optional/&gt;&lt;/sm&gt;&lt;/stream:features&gt;&lt;iq to='jade-shan@jabber.org/Smack' type='result' id='s64xY-0'&gt;&lt;bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'&gt;&lt;jid&gt;jade-shan@jabber.org/Smack&lt;/jid&gt;&lt;/bind&gt;&lt;/iq&gt;</code>
+
+<li>
+<code>PacketReader.java</code> 中处理 iq
+
+<ul>
+<li>
+iq = PacketParserUtils.parseIQ(parser, connection)
+
+<li>
+processPacket(iq);
+
+</ul>
+</ul>
 </ul>
 </ul>
  </div>

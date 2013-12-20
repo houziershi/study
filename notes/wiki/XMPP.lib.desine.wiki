@@ -41,11 +41,22 @@
 
 * Connection.login
 	- response = saslAuthentication.authenticate()
-	- currentMechanism是根据mechanismsPerferences的内容选一个在
-		implementedMechainsms有的类newInstance()一个出来。(之前服务器会给出响应，说明支持的类型)
-	- currentMechanism.authenticate(username, connection.getHost(), serviceName, password)
-	- 等待30秒，然后看验证是否已经成功 saslFailed
-	- 如果saslNegotiated,  return bindResourceAndEstablishSession(resource);
+		* 从自己支持的加密方式（mechanismsPerferences）与服务器支持的加密方式
+			（serverMechanisms）中先一个共同的作为当前加密方式（currentMechanism）。
+			根据这个验证实现类，反射new一个实例出来。
+		* `serviceName= connection.getServiceName();`
+		* currentMechanism.authenticate(username, connection.getHost(), serviceName, password)
+			- `saslAuthentication().send(new AuthMechanism(getName(), authenticationText))`
+				发出xml：`<auth mechanism="DIGEST-MD5" xmlns="urn:ietf:params:xml:ns:xmpp-sasl"></auth>`
+		* 等待服务器响应（默认时间30秒），然后看验证是否已经成功 saslFailed
+		* 如果`saslNegotiated`,  `return bindResourceAndEstablishSession(resource);`
+			- `bindResource = new Bind()`(`IQ`的子类)加配置工作
+			- `connection.sendPacket(bindResource)`：`<iq id="s64xY-0" type="set"><bind xmlns="urn:ietf:params:xml:ns:xmpp-bind"><resource>Smack</resource></bind></iq>`
+		* 服务器响应：`<?xml version='1.0'?><stream:stream xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' from='jabber.org' id='726b252254aa5080' version='1.0'><stream:features><bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'><required/></bind><session xmlns='urn:ietf:params:xml:ns:xmpp-session'><optional/></session><sm xmlns='urn:xmpp:sm:2'><optional/></sm></stream:features><iq to='jade-shan@jabber.org/Smack' type='result' id='s64xY-0'><bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'><jid>jade-shan@jabber.org/Smack</jid></bind></iq>`
+		* `PacketReader.java` 中处理 iq
+			- iq = PacketParserUtils.parseIQ(parser, connection)
+			- processPacket(iq);
 		
+
 		
 
