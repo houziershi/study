@@ -202,6 +202,8 @@ pidgin：[[pidgin]]
 
 [[XMPP]]
 
+xmpp.lib：[[XMPP.lib.desine]]
+
 = 方案 =
 
 == 存储 ==

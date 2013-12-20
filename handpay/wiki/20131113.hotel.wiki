@@ -9,3 +9,23 @@
 
 [[https://hpfs01.handpay.com.cn:8443/svn/HandpayDocument/Handpay Project/酒店预订-携程|设计文档]]
 
+= 启动参数 =
+
+JBoss参数：
+
+{{{class="brush: bash"
+-c handpay-ctrip  # 实例名
+}}}
+
+jvm参数：
+
+{{{class="brush: bash"
+-Denv_path=ctrip-qiwei  # 配置名包含dubbo组名（不要重名）
+-Denv.num=15            # dubbo 名
+}}}
+
+静态文件位置：
+
+{{{class="brush: bash"
+cd /cygdrive/d/server/jboss-5.1.0.GA-hotel/server/handpay-ctrip/deploy/ROOT.war/hotel-ctrip/mall/wap/js/min/iphone/hotel
+}}}

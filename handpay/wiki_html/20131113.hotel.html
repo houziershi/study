@@ -26,6 +26,7 @@
 <div class="toc">
 <ul>
 <li><a href="#toc_1">文档位置</a>
+<li><a href="#toc_2">启动参数</a>
 </ul>
 </div>
 
@@ -38,6 +39,33 @@
 <p>
 <a href="https://hpfs01.handpay.com.cn:8443/svn/HandpayDocument/Handpay Project/酒店预订-携程">设计文档</a>
 </p>
+
+<h1 id="toc_2">启动参数</h1>
+
+<p>
+JBoss参数：
+</p>
+
+<pre class="brush: bash">
+-c handpay-ctrip  # 实例名
+</pre>
+
+<p>
+jvm参数：
+</p>
+
+<pre class="brush: bash">
+-Denv_path=ctrip-qiwei  # 配置名包含dubbo组名（不要重名）
+-Denv.num=15            # dubbo 名
+</pre>
+
+<p>
+静态文件位置：
+</p>
+
+<pre class="brush: bash">
+cd /cygdrive/d/server/jboss-5.1.0.GA-hotel/server/handpay-ctrip/deploy/ROOT.war/hotel-ctrip/mall/wap/js/min/iphone/hotel
+</pre>
  </div>
 </body>
 </html>

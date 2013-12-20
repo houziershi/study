@@ -1,0 +1,136 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>XMPP库设计</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+<h1>XMPP库设计</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">打开与服务器的一次会话</a>
+<li><a href="#toc_2">创建连接对象</a>
+<li><a href="#toc_3">SASL验证登录</a>
+</ul>
+</div>
+
+<h1 id="toc_1">打开与服务器的一次会话</h1>
+
+<ul>
+<li>
+PacketWriter.openStream();
+
+<ul>
+<li>
+写出：&lt;stream:stream to="jabber.org" xmlns="jabber:client" xmlns:stream="<a href="http://etherx.jabber.org/streams"">http://etherx.jabber.org/streams"</a> version="1.0"&gt;
+
+</ul>
+</ul>
+
+
+<h1 id="toc_2">创建连接对象</h1>
+
+<ul>
+<li>
+new XMPPConnection
+
+<ul>
+<li>
+connCfg = (new ConnectionConfiguration(serviceName));
+
+<ul>
+<li>
+hostAddresses = DNSUtil.resolveXMPPDomain(serviceName);
+
+<li>
+init(serviceName, ProxyInfo.forDefaultProxy());
+
+<ul>
+<li>
+load cacerts from java.home
+
+<li>
+socketFactory from proxy.getSocketFactory
+
+</ul>
+</ul>
+<li>
+config.setCompressionEnabled(false);
+
+<li>
+config.setSASLAuthenticationEnabled(true);
+
+<li>
+config.setDebuggerEnabled(DEBUG_ENABLED);
+
+<li>
+Sasl验证：saslAuthentication = new SASLAuthentication(this)
+
+<li>
+PackerWriter与PacketReader线程启动
+
+<ul>
+<li>
+PackWriter线程启动时会发一个头，写出： &lt;stream:stream to="jabber.org" xmlns="jabber:client" xmlns:stream="<a href="http://etherx.jabber.org/streams"">http://etherx.jabber.org/streams"</a> version="1.0"&gt;
+
+<li>
+服务器响应（注意最后指明TLS）： &lt;?xml version='1.0'?&gt;&lt;stream:stream xmlns='jabber:client' xmlns:stream='<a href="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</a> from='jabber.org' id='71e0852c8b095b2a' version='1.0'&gt;&lt;stream:features&gt;&lt;starttls xmlns='<a href="urn:ietf:params:xml:ns:xmpp-tls'/&gt;&lt;mechanisms">urn:ietf:params:xml:ns:xmpp-tls'/&gt;&lt;mechanisms</a> xmlns='<a href="urn:ietf:params:xml:ns:xmpp-sasl'&gt;&lt;mechanism&gt;SCRAM-SHA-1&lt;/mechanism&gt;&lt;mechanism&gt;DIGEST-MD5&lt;/mechanism&gt;&lt;mechanism&gt;CRAM-MD5&lt;/mechanism&gt;&lt;mechanism&gt;PLAIN&lt;/mechanism&gt;&lt;mechanism&gt;LOGIN&lt;/mechanism&gt;&lt;/mechanisms&gt;&lt;/stream:features&gt;&lt;proceed">urn:ietf:params:xml:ns:xmpp-sasl'&gt;&lt;mechanism&gt;SCRAM-SHA-1&lt;/mechanism&gt;&lt;mechanism&gt;DIGEST-MD5&lt;/mechanism&gt;&lt;mechanism&gt;CRAM-MD5&lt;/mechanism&gt;&lt;mechanism&gt;PLAIN&lt;/mechanism&gt;&lt;mechanism&gt;LOGIN&lt;/mechanism&gt;&lt;/mechanisms&gt;&lt;/stream:features&gt;&lt;proceed</a> xmlns='<a href="urn:ietf:params:xml:ns:xmpp-tls'/&gt;">urn:ietf:params:xml:ns:xmpp-tls'/&gt;</a>
+
+<ul>
+<li>
+PacketReader读到<code>&lt;proceed xmlns='urn:ietf:params:xml:ns:xmpp-tls'/&gt;</code>就调用XMPPConnection.proceedTLSReceived()
+
+<ul>
+<li>
+调用PacketWriter.openStream()准备发登录信息。
+
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+
+<h1 id="toc_3">SASL验证登录</h1>
+
+<ul>
+<li>
+Connection.login
+
+<ul>
+<li>
+response = saslAuthentication.authenticate()
+
+<li>
+currentMechanism是根据mechanismsPerferences的内容选一个在
+		implementedMechainsms有的类newInstance()一个出来。(之前服务器会给出响应，说明支持的类型)
+
+<li>
+currentMechanism.authenticate(username, connection.getHost(), serviceName, password)
+
+<li>
+等待30秒，然后看验证是否已经成功 saslFailed
+
+<li>
+如果saslNegotiated,  return bindResourceAndEstablishSession(resource);
+
+</ul>
+</ul>
+ </div>
+</body>
+</html>

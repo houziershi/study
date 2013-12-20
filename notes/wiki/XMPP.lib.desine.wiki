@@ -1,0 +1,40 @@
+%title XMPP库设计
+
+%toc XMPP库设计
+
+= 打开与服务器的一次会话 =
+
+* PacketWriter.openStream();
+	- 写出：<stream:stream to="jabber.org" xmlns="jabber:client" xmlns:stream="http://etherx.jabber.org/streams" version="1.0">
+
+
+= 创建连接对象 =
+
+* new XMPPConnection
+	- connCfg = (new ConnectionConfiguration(serviceName));
+		* hostAddresses = DNSUtil.resolveXMPPDomain(serviceName);
+		* init(serviceName, ProxyInfo.forDefaultProxy());
+			- load cacerts from java.home
+			- socketFactory from proxy.getSocketFactory
+	- config.setCompressionEnabled(false);
+	- config.setSASLAuthenticationEnabled(true);
+	- config.setDebuggerEnabled(DEBUG_ENABLED);
+	- Sasl验证：saslAuthentication = new SASLAuthentication(this)
+	- PackerWriter与PacketReader线程启动
+		* PackWriter线程启动时会发一个头，写出： <stream:stream to="jabber.org" xmlns="jabber:client" xmlns:stream="http://etherx.jabber.org/streams" version="1.0">
+		* 服务器响应（注意最后指明TLS）： <?xml version='1.0'?><stream:stream xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' from='jabber.org' id='71e0852c8b095b2a' version='1.0'><stream:features><starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'/><mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'><mechanism>SCRAM-SHA-1</mechanism><mechanism>DIGEST-MD5</mechanism><mechanism>CRAM-MD5</mechanism><mechanism>PLAIN</mechanism><mechanism>LOGIN</mechanism></mechanisms></stream:features><proceed xmlns='urn:ietf:params:xml:ns:xmpp-tls'/>
+			- PacketReader读到`<proceed xmlns='urn:ietf:params:xml:ns:xmpp-tls'/>`就调用XMPPConnection.proceedTLSReceived()
+				* 调用PacketWriter.openStream()准备发登录信息。
+
+= SASL验证登录 =
+
+* Connection.login
+	- response = saslAuthentication.authenticate()
+	- currentMechanism是根据mechanismsPerferences的内容选一个在
+		implementedMechainsms有的类newInstance()一个出来。(之前服务器会给出响应，说明支持的类型)
+	- currentMechanism.authenticate(username, connection.getHost(), serviceName, password)
+	- 等待30秒，然后看验证是否已经成功 saslFailed
+	- 如果saslNegotiated,  return bindResourceAndEstablishSession(resource);
+		
+		
+
