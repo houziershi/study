@@ -59,9 +59,13 @@
 <li><a href="#toc_3.2.4">运行</a>
 <ul>
 <li><a href="#toc_3.2.4.1">运行Scala程序</a>
-<li><a href="#toc_3.2.4.2">运行单元测试</a>
 </ul>
-<li><a href="#toc_3.2.5">构建混合Java与Scala</a>
+<li><a href="#toc_3.2.5">scala console</a>
+<ul>
+<li><a href="#toc_3.2.5.1">运行单元测试</a>
+</ul>
+<li><a href="#toc_3.2.6">构建混合Java与Scala</a>
+<li><a href="#toc_3.2.7">sufire结合ScalaTest测试</a>
 </ul>
 </ul>
 </ul>
@@ -805,6 +809,18 @@ mvn compile -Dscala.home=&lt;path/of/scalaHome&gt;
 <h4 id="toc_3.2.4.1">运行Scala程序</h4>
 
 <p>
+直接指定类启动，不需要在pom文件中定义启动器：
+</p>
+
+<pre class="brush: bash" title="pom.xml">
+mvn scala:run -DmainClass=Example
+</pre>
+
+<p>
+还可以指定一个启动器加上更多的参数信息：
+</p>
+
+<p>
 定义Scala语言依赖；定义启动器指定运行类与id、参数，启动器可以有多个
 </p>
 
@@ -862,22 +878,20 @@ mvn compile -Dscala.home=&lt;path/of/scalaHome&gt;
 </pre>
 
 <p>
-指定类启动：
-</p>
-
-<pre class="brush: bash" title="pom.xml">
-mvn scala:run -DmainClass=Example
-</pre>
-
-<p>
-也可以指定启动器id启动：
+指定启动器id启动：
 </p>
 
 <pre class="brush: bash" title="pom.xml">
 mvn scala:run -Dlauncher=foo
 </pre>
 
-<h4 id="toc_3.2.4.2">运行单元测试</h4>
+<h3 id="toc_3.2.5">scala console</h3>
+
+<p>
+<a href="http://scala-tools.org/mvnsites/maven-scala-plugin/usage_console.html">http://scala-tools.org/mvnsites/maven-scala-plugin/usage_console.html</a>
+</p>
+
+<h4 id="toc_3.2.5.1">运行单元测试</h4>
 
 <p>
 导入ScalaTest与Junit包；定义编译测试任务；
@@ -1029,7 +1043,7 @@ class TestUnitTest extends FunSuite {
 
 </ul>
 
-<h3 id="toc_3.2.5">构建混合Java与Scala</h3>
+<h3 id="toc_3.2.6">构建混合Java与Scala</h3>
 
 <pre class="brush: xml; highlight: [17,18]" title="pom.xml">
 &lt;build&gt;
@@ -1085,8 +1099,69 @@ class TestUnitTest extends FunSuite {
 &lt;/build&gt;
 </pre>
 
-<pre class="brush: xml; highlight: [17,18]" title="pom.xml">
+
+<h3 id="toc_3.2.7">sufire结合ScalaTest测试</h3>
+
+<pre class="brush: xml" title="pom.xml">
+&lt;build&gt;
+   &lt;plugins&gt;
+     &lt;plugin&gt;
+       &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+       &lt;artifactId&gt;maven-surefire-plugin&lt;/artifactId&gt;
+       &lt;configuration&gt;
+         &lt;includes&gt;
+           &lt;include&gt;**/*Tests.java&lt;/include&gt;
+         &lt;/includes&gt;
+         &lt;excludes&gt;
+           &lt;exclude&gt;**/Abstract*.java&lt;/exclude&gt;
+         &lt;/excludes&gt;
+       &lt;/configuration&gt;
+     &lt;/plugin&gt;
+   &lt;/plugins&gt;
+ &lt;/build&gt;
 </pre>
+
+
+<p>
+运行指定的测试类：
+</p>
+
+<pre class="brush: bash">
+mvn test -Dtest=[ClassName]
+</pre>
+
+<p>
+<code>[ClassName]</code>为要运行的测试类的类名(不要带扩展名)，多个测试类间用逗号连接即可，
+类名支持<code>*</code>通配符，范例：
+</p>
+
+<p>
+<code>mvn test -Dtest=MyClassTest</code>
+<code>mvn test -Dtest=MyClass1Test,MyClass2Test</code>
+<code>mvn test -Dtest=MyClass*Test,YourClassTest</code>
+<code>mvn test -Dtest=MyClassTest</code>
+</p>
+
+<p>
+运行测试类中指定的方法：(这个需要maven-surefire-plugin:2.7.3以上版本才能支持)
+</p>
+
+<pre class="brush: bash">
+mvn test -Dtest=[ClassName]#[MethodName]
+</pre>
+
+<p>
+<code>[MethodName]</code>为要运行的方法名，支持<code>*</code>通配符，范例：
+</p>
+
+<ul>
+<li>
+<code>mvn test -Dtest=MyClassTest#test1</code>
+
+<li>
+<code>mvn test -Dtest=MyClassTest#*test*</code>
+
+</ul>
 
 
 <pre class="brush: bash">
