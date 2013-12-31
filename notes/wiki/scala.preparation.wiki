@@ -602,6 +602,14 @@ mvn compile -Dscala.home=<path/of/scalaHome>
 
 ==== 运行Scala程序 ====
 
+直接指定类启动，不需要在pom文件中定义启动器：
+
+{{{class="brush: bash" title="pom.xml"
+mvn scala:run -DmainClass=Example
+}}}
+
+还可以指定一个启动器加上更多的参数信息：
+
 定义Scala语言依赖；定义启动器指定运行类与id、参数，启动器可以有多个
 
 {{{class="brush: xml; highlight: [20,21,38,39,41,42]" title="pom.xml"
@@ -657,17 +665,15 @@ mvn compile -Dscala.home=<path/of/scalaHome>
 </project>
 }}}
 
-指定类启动：
-
-{{{class="brush: bash" title="pom.xml"
-mvn scala:run -DmainClass=Example
-}}}
-
-也可以指定启动器id启动：
+指定启动器id启动：
 
 {{{class="brush: bash" title="pom.xml"
 mvn scala:run -Dlauncher=foo
 }}}
+
+=== scala console ===
+
+http://scala-tools.org/mvnsites/maven-scala-plugin/usage_console.html
 
 ==== 运行单元测试 ====
 
@@ -847,8 +853,53 @@ class TestUnitTest extends FunSuite {
 </build>
 }}}
 
-{{{class="brush: xml; highlight: [17,18]" title="pom.xml"
+
+=== sufire结合ScalaTest测试 ===
+
+{{{class="brush: xml" title="pom.xml"
+<build>
+   <plugins>
+     <plugin>
+       <groupId>org.apache.maven.plugins</groupId>
+       <artifactId>maven-surefire-plugin</artifactId>
+       <configuration>
+         <includes>
+           <include>**/*Tests.java</include>
+         </includes>
+         <excludes>
+           <exclude>**/Abstract*.java</exclude>
+         </excludes>
+       </configuration>
+     </plugin>
+   </plugins>
+ </build>
 }}}
+
+
+运行指定的测试类：
+
+{{{class="brush: bash"
+mvn test -Dtest=[ClassName]
+}}}
+
+`[ClassName]`为要运行的测试类的类名(不要带扩展名)，多个测试类间用逗号连接即可，
+类名支持`*`通配符，范例：
+
+`mvn test -Dtest=MyClassTest`
+`mvn test -Dtest=MyClass1Test,MyClass2Test`
+`mvn test -Dtest=MyClass*Test,YourClassTest`
+`mvn test -Dtest=MyClassTest`
+
+运行测试类中指定的方法：(这个需要maven-surefire-plugin:2.7.3以上版本才能支持)
+
+{{{class="brush: bash"
+mvn test -Dtest=[ClassName]#[MethodName]
+}}}
+
+`[MethodName]`为要运行的方法名，支持`*`通配符，范例：
+
+* `mvn test -Dtest=MyClassTest#test1`
+* `mvn test -Dtest=MyClassTest#*test*`
 
 
 {{{class="brush: bash"
