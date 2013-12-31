@@ -1,0 +1,196 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>UML</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+
+<h1>UML</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">类图</a>
+<ul>
+<li><a href="#toc_1.1">基本元素</a>
+<li><a href="#toc_1.2">相互关系</a>
+<ul>
+<li><a href="#toc_1.2.1">泛化（generalization）</a>
+<li><a href="#toc_1.2.2">实现（realization）</a>
+<li><a href="#toc_1.2.3">组合（composition）</a>
+<li><a href="#toc_1.2.4">聚合（aggregation）</a>
+<li><a href="#toc_1.2.5">关联（association）</a>
+<li><a href="#toc_1.2.6">依赖（dependency）</a>
+</ul>
+<li><a href="#toc_1.3">数量描述</a>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">类图</h1>
+
+<h2 id="toc_1.1">基本元素</h2>
+
+<ul>
+<li>
+访问控制
+
+<ul>
+<li>
+public属性为<code>+</code>；
+
+<li>
+private属性为<code>-</code>；
+
+<li>
+protected属性为<code>#</code>
+
+</ul>
+</ul>
+
+<p>
+<img src='images/uml/class.prop.jpg' />
+</p>
+
+<h2 id="toc_1.2">相互关系</h2>
+
+<h3 id="toc_1.2.1">泛化（generalization）</h3>
+
+<p>
+<img src='images/uml/class.generalization.jpg' />
+</p>
+
+<h3 id="toc_1.2.2">实现（realization）</h3>
+
+<p>
+<img src='images/uml/class.realization.jpg' />
+</p>
+
+<h3 id="toc_1.2.3">组合（composition）</h3>
+
+<p>
+类型是B就是为了作为类型A的成员而存在的，不能单独存在。A的实例不存在时，B的实例
+也要销毁。
+</p>
+
+<p>
+鼻子上的孔叫鼻孔，没有鼻子光有一个孔不叫鼻孔。
+</p>
+
+<p>
+<img src='images/uml/class.composition.jpg' />
+</p>
+
+<h3 id="toc_1.2.4">聚合（aggregation）</h3>
+
+<p>
+类型是B就是为了作为类型A的成员而存在的，但B可以在没有A实例的时候单独存在。
+</p>
+
+<p>
+轮胎就是为作为车的一部分而存在的，但没有车时，轮胎还是轮胎。
+</p>
+
+<p>
+<img src='images/uml/class.aggregation.jpg' />
+</p>
+
+<h3 id="toc_1.2.5">关联（association）</h3>
+
+<p>
+类型A中的成员类型是B。但是B不是为了作为A的成员而存在的。
+</p>
+
+<p>
+汽车需要人来驾驶，但人不是为了汽车而存在的。如果没有汽车，人还是可以作为一个
+独立的类。 
+</p>
+
+<p>
+<img src='images/uml/class.association.jpg' />
+</p>
+
+<h3 id="toc_1.2.6">依赖（dependency）</h3>
+
+<p>
+类型A不把B作为成员属性，而是函数的参数或是局部变量。临时用用一下。
+</p>
+
+<p>
+有一个洗车的方法，该方法需要传入一个洗车设备，这个洗车设备并不是车的一部分，
+只有洗车的时候才会临时用到该设备。
+</p>
+
+<p>
+<img src='images/uml/class.dependency.jpg' />
+</p>
+
+
+
+
+
+
+
+
+
+<h2 id="toc_1.3">数量描述</h2>
+
+<ul>
+<li>
+<code>1</code>：一个
+
+<li>
+<code>*</code>：零个或多个
+
+<li>
+<code>1..*</code>：一个或多个
+
+<li>
+<code>0..1</code>：零个或一个
+
+</ul>
+
+<p>
+<img src='images/uml/class.rel.bmp' />
+</p>
+
+<ul>
+<li>
+一个Car有一个Person（司机，这里person指司机），因此在Person端有个符号1；
+
+<li>
+一个Person（司机）开一辆车Car，因此在Car端有个符号1；
+
+<li>
+一个Car有四个Tire（轮胎），因此在Tire端有个符号4；
+
+<li>
+一个Tire仅能在一个Car上，因此在在Car端有个符号1。需要注意的是，如果认为
+	“一个Tire可能在一个Car上，也可能不在Car上”那么Car端的符号为0..1；
+
+<li>
+一个Car只有一个Brand（标志），所以在Brand端符号为1；
+
+<li>
+一个标志会在0量或多辆车上，所以Car端符号为*。
+
+</ul>
+ </div>
+</body>
+</html>
