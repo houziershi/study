@@ -41,6 +41,10 @@ MathJax：[[MathJax]]
 
 reveal.js： [[reveal.js]]
 
+=== CSS ===
+
+[[css.tips]]
+
 === Python ===
 
 [[python.example]]
