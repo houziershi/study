@@ -1,4 +1,5 @@
 
+= 主机信息 =
 
 显示主机IP：
 
@@ -55,13 +56,32 @@ alias raspi-update="/usr/bin/apt-get update -y;/usr/bin/apt-get upgrade -y"
 alias raspi-version="/bin/cat /proc/version"
 }}}
 
+= 查看linux page cache里的内容 =
 
 {{{class="brush: bash"
+# free -mt
+             total       used       free     shared    buffers     cached
+Mem:          7168       7055        112          0        265       5772
+-/+ buffers/cache:       1017       6150
+Swap:            0          0          0
+Total:        7168       7055        112
 }}}
 
+可以看到cache了5G多，那么cache里都装了哪些内容呢？
+
+https://code.google.com/p/linux-ftools/
 
 {{{class="brush: bash"
+# ~/linux-ftools/linux-fincore --pages=false --summarize --only-cached *
+filename                  size        total_pages    min_cached page       cached_pages        cached_size        cached_perc
+--------                  ----        -----------    ---------------       ------------        -----------        -----------
+php_error.txt   10,290,322,753          2,512,286            462,368          1,337,965      5,480,304,640              53.26
 }}}
+
+可以看到，绝大部分cache里装的是`php_error.txt`内容，我们一直在
+`tail -F php_error.txt`，因此被放入了cache。
+
+
 
 
 {{{class="brush: bash"
