@@ -1196,6 +1196,15 @@ root@tecmint:~# grep -r "127.0.0.1" /etc/
 * `-c`用于统计满足要求的行 (`grep -c 'word' /path/to/file`).
 * `–color`彩色输出 (`grep –color server /etc/passwd`).
 
+== 递归查找子目录 ==
+
+在目录`src`及子目录中的`*.cpp`文件中查找`MyClass`
+
+{{{class="brush: bash"
+grep -R --include="*.cpp" "MyClass" "src"
+}}}
+
+
 == 组合`find`查找 ==
 
 查找非备份文件中的含有"helloworld"字符串的文件
