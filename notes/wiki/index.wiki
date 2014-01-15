@@ -41,6 +41,8 @@ MathJax：[[MathJax]]
 
 reveal.js： [[reveal.js]]
 
+[[ga.example]]
+
 === CSS ===
 
 [[css.tips]]
