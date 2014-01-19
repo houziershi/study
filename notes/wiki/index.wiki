@@ -110,6 +110,9 @@ SVN：[[Subversion]]
 
 Maven：[[maven]]
 
+== 压力测试 ==
+
+JMeter: [[jmeter]]
 
 
 = 数据库 =

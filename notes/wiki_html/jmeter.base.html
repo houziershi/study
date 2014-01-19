@@ -1,0 +1,615 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>基础</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>基础</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">基础</a>
+<ul>
+<li><a href="#toc_1.1">性能测试主要分类</a>
+<li><a href="#toc_1.2">性能测试主要指标</a>
+<ul>
+<li><a href="#toc_1.2.1">B-S架构普遍关注</a>
+<li><a href="#toc_1.2.2">C-S架构普遍关注</a>
+</ul>
+<li><a href="#toc_1.3">性能测试基本方案</a>
+<ul>
+<li><a href="#toc_1.3.1">响应时长</a>
+<li><a href="#toc_1.3.2">测试环境指标折算</a>
+<li><a href="#toc_1.3.3">后台监控</a>
+<li><a href="#toc_1.3.4">测试通过标准</a>
+</ul>
+<li><a href="#toc_1.4">JMeter概览</a>
+<ul>
+<li><a href="#toc_1.4.1">主要工具</a>
+<li><a href="#toc_1.4.2">主要结果字段</a>
+<li><a href="#toc_1.4.3">配置</a>
+<li><a href="#toc_1.4.4">文档</a>
+<li><a href="#toc_1.4.5">Ant支持</a>
+</ul>
+<li><a href="#toc_1.5">运行JMeter</a>
+<ul>
+<li><a href="#toc_1.5.1">classpath</a>
+</ul>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">基础</h1>
+
+<h2 id="toc_1.1">性能测试主要分类</h2>
+
+<dl>
+<dt>负载测试（Load Testing） </dt>
+<dd>确保系统在超过最大预计工作量时也能正常运行。</dd>
+<dt>压力测试（Stress Testing） </dt>
+<dd>不断施加压力，观察系统状况，赶到出现瓶颈或崩溃。</dd>
+<dt>容量测试（Volume Testing） </dt>
+<dd>确定系统可处理同时在线最大用户数。</dd>
+</dl>
+
+<h2 id="toc_1.2">性能测试主要指标</h2>
+
+<p>
+基本指标：CPU占用率、内存占用率、数据库连接池。
+</p>
+
+<h3 id="toc_1.2.1">B-S架构普遍关注</h3>
+
+<dl>
+<dt>Avg Rps </dt>
+<dd>平均每秒响应次数 =  总请求次数 / 秒数。</dd>
+<dt>Avg time to last byte per terstion（mstes） </dt>
+<dd>平均每少业务脚本迭代次数。</dd>
+<dt>Successful Rounds </dt>
+<dd>成功请求。</dd>
+<dt>Failed Rounds </dt>
+<dd>失败的请求。</dd>
+<dt>Successful Hits </dt>
+<dd>成功点击次数。</dd>
+<dt>Failed Hits </dt>
+<dd>失败的点击次数。</dd>
+<dt>Successful Hits Per Second </dt>
+<dd>每秒成功点击次数。</dd>
+<dt>Failed Hits Per Second </dt>
+<dd>每秒失败的点击次数。</dd>
+<dt>Attempted Connections </dt>
+<dd>尝试连接数。</dd>
+<dt>Throughtput </dt>
+<dd>吞吐率。</dd>
+</dl>
+
+<h3 id="toc_1.2.2">C-S架构普遍关注</h3>
+
+<dl>
+<dt>User Connections </dt>
+<dd>用户连接数。</dd>
+<dt>Number of Deadlocks </dt>
+<dd>数据库死锁。</dd>
+<dt>Butter Cache Hit </dt>
+<dd>数据库缓存命中情况。</dd>
+</dl>
+
+<h2 id="toc_1.3">性能测试基本方案</h2>
+
+<h3 id="toc_1.3.1">响应时长</h3>
+
+<table>
+<tr>
+<th>
+关键功能
+</th>
+<th>
+平均使用次数
+</th>
+<th>
+平均用户数
+</th>
+<th>
+高峰时段用户数
+</th>
+<th>
+平均响应时长
+</th>
+<th>
+要接受最长响应时长
+</th>
+<th>
+使用时间段
+</th>
+</tr>
+<tr>
+<td>
+XXX 功能
+</td>
+<td>
+&nbsp;
+</td>
+<td>
+20,000
+</td>
+<td>
+23,000
+</td>
+<td>
+&lt; 4s
+</td>
+<td>
+&lt;= 7s
+</td>
+<td>
+8:00 ~ 21:00
+</td>
+</tr>
+<tr>
+<td>
+XXX 功能
+</td>
+<td>
+&nbsp;
+</td>
+<td>
+20,000
+</td>
+<td>
+23,000
+</td>
+<td>
+&lt; 4s
+</td>
+<td>
+&lt;= 7s
+</td>
+<td>
+8:00 ~ 21:00
+</td>
+</tr>
+<tr>
+<td>
+XXX 功能
+</td>
+<td>
+&nbsp;
+</td>
+<td>
+20,000
+</td>
+<td>
+23,000
+</td>
+<td>
+&lt; 4s
+</td>
+<td>
+&lt;= 7s
+</td>
+<td>
+8:00 ~ 21:00
+</td>
+</tr>
+<tr>
+<td>
+XXX 功能
+</td>
+<td>
+&nbsp;
+</td>
+<td>
+20,000
+</td>
+<td>
+23,000
+</td>
+<td>
+&lt; 4s
+</td>
+<td>
+&lt;= 7s
+</td>
+<td>
+8:00 ~ 21:00
+</td>
+</tr>
+<tr>
+<td>
+XXX 功能
+</td>
+<td>
+&nbsp;
+</td>
+<td>
+20,000
+</td>
+<td>
+23,000
+</td>
+<td>
+&lt; 4s
+</td>
+<td>
+&lt;= 7s
+</td>
+<td>
+8:00 ~ 21:00
+</td>
+</tr>
+</table>
+
+<h3 id="toc_1.3.2">测试环境指标折算</h3>
+
+\[
+测试环境平均并发数 = 
+\frac{
+	最大在线人数 \times 1.1 
+}{
+	\frac{生产环境机器数}{测试环境机器数} \times 
+	\frac{生产环境内存}{测试环境内存} 
+}
+\]
+
+<p>
+每秒增加5个用户，直到达到平均并发数量。然后再持续运行几个小时。
+</p>
+
+<h3 id="toc_1.3.3">后台监控</h3>
+
+<table>
+<tr>
+<th>
+监控对象
+</th>
+<th>
+指标
+</th>
+<th>
+工具
+</th>
+</tr>
+<tr>
+<td>
+应用服务器
+</td>
+<td>
+CPU、MEM、IO
+</td>
+<td>
+openview
+</td>
+</tr>
+<tr>
+<td>
+数据库服务器
+</td>
+<td>
+CPU、MEM、IO
+</td>
+<td>
+openview
+</td>
+</tr>
+<tr>
+<td>
+数据库
+</td>
+<td>
+TOP、SQL等
+</td>
+<td>
+APM
+</td>
+</tr>
+<tr>
+<td>
+中间件
+</td>
+<td>
+队列
+</td>
+<td>
+Console
+</td>
+</tr>
+</table>
+
+<h3 id="toc_1.3.4">测试通过标准</h3>
+
+<ol>
+<li>
+平均响应时长满足测试指标要求。
+
+<li>
+90%响应时长满足测试指标要求。
+
+<li>
+2小时压力测试中脚本没有出错。
+
+</ol>
+
+<h2 id="toc_1.4">JMeter概览</h2>
+
+<h3 id="toc_1.4.1">主要工具</h3>
+
+<ul>
+<li>
+Test Plan（测试计划）：整个的测试脚本。
+
+<li>
+Thread Group（线程组）：模拟一组用户，大家都用同样的测试脚本。
+
+<li>
+WorkBench（工作台）：暂时不用的测试元素，不会在保存测试计划时一起被保存。
+
+<li>
+Configuration Elements（配置元素）：存放测试脚本的共享信息。
+
+<li>
+Samplers（采样器）：发请求到服务器。
+
+<li>
+Pre-Processors（前置定时器）：采样器执行前。
+
+<li>
+Post-Processors（后置定时器）：采样器执行后。
+
+<li>
+Logic Controllers（逻辑控制器）：控制执行顺序。
+
+<li>
+Listener（监听器）：收集测试结果。
+
+<li>
+Assertions（断言）：判断返回结果是否符合预期。
+
+<li>
+Timers（定时器）。
+
+</ul>
+
+<h3 id="toc_1.4.2">主要结果字段</h3>
+
+<ul>
+<li>
+Label：HTTP请求的名称。
+
+<li>
+Samples：本次测试中一共发了多少请求。
+
+<li>
+Average：请求或事务的平均时长。
+
+<li>
+Median：中位数（50%用户）的响应时长。
+
+<li>
+90% Line：90%用户的响应时长。
+
+<li>
+Min：最小时长。
+
+<li>
+Max：最大时长。
+
+<li>
+Error %：错误率。
+
+<li>
+Throughput：每秒完成的请求或事务数量。
+
+<li>
+KB/Sec：每秒收到的数据量。
+
+</ul>
+
+<h3 id="toc_1.4.3">配置</h3>
+
+<p>
+JVM参数在<code>bin/jmeter.bat</code>或<code>bin/jmeter.sh</code>中配置。<code>HEAP</code>大小默认<code>512m</code>，根据经验
+最大不要超过物理内存的一半。不然运行速度会变慢甚至内存溢出。
+</p>
+
+<p>
+日志级别调整在<code>jmeter.properties</code>中的<code>log_level.jmeter=INFO</code>。
+</p>
+
+<p>
+以上属性也可以在GUI中设置：
+</p>
+
+<p>
+<img src='images/jmeter/0204.png' />
+</p>
+
+<h3 id="toc_1.4.4">文档</h3>
+
+<ul>
+<li>
+<code>docs</code>目录下是Java Docs。
+
+<li>
+<code>printable_docs/usermanual</code>用户手册。
+
+<ul>
+<li>
+<code>component_reference.html</code>是最常用的核心组件。
+
+</ul>
+</ul>
+
+<h3 id="toc_1.4.5">Ant支持</h3>
+
+<p>
+<code>extras</code>目录下提供了Ant构造支持。JMeter把测试数据生成的<code>.jtl</code>文件放到<code>extras</code>
+目录下，运行：
+</p>
+
+<pre class="brush: bash">
+ant -Dtest=data.jtl report
+</pre>
+
+<p>
+生成测试统计报表。
+</p>
+
+<p>
+如果用户有自己扩展包，直接放<code>lib</code>下。
+</p>
+
+<h2 id="toc_1.5">运行JMeter</h2>
+
+<p>
+Windows下：
+</p>
+
+<ul>
+<li>
+<code>jmeter.bat</code>：GUI启动
+
+<li>
+<code>jmeter-t.cmd</code>：加载JMX文件，GUI
+
+<li>
+<code>jmeter-n.cmd</code>：加载JMX文件，非GUI
+
+<li>
+<code>jmeter-n-r.cmd</code>：加载JMX文件，非GUI，远程
+
+<li>
+<code>jmeter-server.bat</code>：服务器模式
+
+<li>
+<code>mirror-server.cmd</code>：镜像服务器，非GUI
+
+<li>
+<code>shutdown.cmd</code>：关闭非GUI实例（优雅地）
+
+<li>
+<code>stoptest.cmd</code>：关闭非GUI实例（中断式）
+
+</ul>
+
+<p>
+添加启动参数：
+</p>
+
+<pre class="brush: bash">
+set JVM_ARGS="-Xms1024m -Xmx1024m =Dpropname=propvalue"
+jmeter -t test.jmx ...
+</pre>
+
+<p>
+Unix下：
+</p>
+
+<ul>
+<li>
+<code>jmeter</code>：GUI启动
+
+<li>
+<code>jmeter.sh</code>：GUI启动，不带JVM参数
+
+<li>
+<code>jmeter-server</code>：服务器模式
+
+<li>
+<code>mirror-server.sh</code>：镜像服务器，非GUI
+
+<li>
+<code>shutdown.sh</code>：关闭非GUI实例（优雅地）
+
+<li>
+<code>stoptest.sh</code>：关闭非GUI实例（中断式）
+
+</ul>
+
+<p>
+添加启动参数：
+</p>
+
+<pre class="brush: bash">
+JVM_ARGS="-Xms1024m -Xmx1024m =Dpropname=propvalue"
+jmeter -t test.jmx ...
+</pre>
+
+<h3 id="toc_1.5.1">classpath</h3>
+
+<ul>
+<li>
+<code>lib</code>：公用包，如测试数据库的JDBC驱动，测试JMS的类。
+
+<li>
+<code>lib\ext</code>：JMeter核心类库、组件与补丁都放在下。如果自己写的扩展组件也放这里。
+	如果不想把扩展包放在这里，就要在<code>jmeter.properties</code>文件中定义<code>search_paths</code>。
+	这里只放JMeter用的组件，不要放公用包。
+
+<li>
+<code>lib\junit</code>：Junit脚本。
+
+<li>
+<code>$JAVA_HOME/jre/lib/ext</code>下的公用包。
+
+<li>
+<code>jmeter.properties</code>中定义<code>user.classpath</code>属性。
+
+</ul>
+
+<p>
+注意：
+</p>
+
+<ul>
+<li>
+其他以“java-jar”方式启动的方式一样，JMeter会忽视<code>CLASSPATH</code>变量。要在另外
+	在<code>-jar</code>的<code>-classpath</code>或<code>-cp</code>中指定。
+
+<li>
+JMeter只查找jar，忽略zip。
+
+</ul>
+
+
+
+
+<pre class="brush: bash">
+</pre>
+
+<pre class="brush: bash">
+</pre>
+
+<pre class="brush: bash">
+</pre>
+
+<pre class="brush: bash">
+</pre>
+
+<pre class="brush: bash">
+</pre>
+
+<pre class="brush: bash">
+</pre>
+
+<pre class="brush: bash">
+</pre>
+ </div>
+</body>
+</html>
