@@ -1,0 +1,50 @@
+
+
+%title Javascript时间与定时器
+
+%toc Javascript时间与定时器
+
+
+= 定时器 =
+
+定时执行任务：
+
+{{{class="brush: javascript"
+var timmer = setTimeout(ScriptString, timeout);
+}}}
+
+取消定时器：
+
+{{{class="brush: javascript"
+clearTimeout(timmer);
+}}}
+	
+=== 例子：点击开始与结束控制倒计时 ===
+
+页面：
+
+{{{class="brush: html"
+<input type="text" id="txt">
+
+<input type="button" value="开始计时！" onClick="timedCount()">
+<input type="button" value="停止计时！" onClick="stopCount()">
+}}}
+
+脚本：
+
+{{{class="brush: javascript"
+var c = 0;
+var t;
+function timedCount() {
+	document.getElementById('txt').value = c;
+	c = c + 1;
+	t = setTimeout("timedCount()", 1000);
+}
+
+function stopCount() {
+	c = 0;
+	setTimeout("document.getElementById('txt').value=0", 0);
+	clearTimeout(t);
+}
+}}}
+

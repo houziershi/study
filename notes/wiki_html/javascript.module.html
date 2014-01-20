@@ -1,0 +1,201 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>Javascript</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+<h1>Javascript</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">Javascirpt模块化</a>
+<ul>
+<li><a href="#toc_1.1">通过闭包建立模块</a>
+<li><a href="#toc_1.2">模块之间的依赖与自动加载</a>
+<li><a href="#toc_1.3">脚本加载</a>
+</ul>
+<li><a href="#toc_2">线上错误报告</a>
+</ul>
+</div>
+
+<h1 id="toc_1">Javascirpt模块化</h1>
+
+<h2 id="toc_1.1">通过闭包建立模块</h2>
+
+<p>
+Douglas Crockford在：《Javascript: The Good Parts》一书中提出的
+“Module Pattern”利用Javascript的闭包技术来模拟模块的概念，防止名字冲突和
+全局变量的使用：
+</p>
+
+<pre class="brush: javascript">
+var moduleName = function () {
+
+    // Define private variables and functions
+    var private = ...
+ 
+    // Return public interface.
+    return {
+        foo: ...
+    };
+}();
+</pre>
+
+<h2 id="toc_1.2">模块之间的依赖与自动加载</h2>
+
+<p>
+<a href="http://www.commonjs.org/">CommonJS</a>组织
+定义了<a href="http://wiki.commonjs.org/wiki/Modules/AsynchronousDefinition">AMD规范</a>
+方便开发者显示指定模块之间的依赖关系，并在需要时加载依赖的模块。
+<a href="http://requirejs.org/">RequireJS</a>是AMD规范的一个比较流行的实现。
+</p>
+
+<p>
+首先我们在<code>a.js</code>中定义<code>模块A</code>.
+</p>
+
+<pre class="brush: javascript">
+define(function () {
+    return {
+        color: "black",
+        size: 10
+    };
+});
+</pre>
+
+<p>
+然后定义<code>模块B</code>依赖<code>模块A</code>.
+</p>
+
+<pre class="brush: javascript">
+define(["a"], function (A) {
+    // ...
+});
+</pre>
+
+<p>
+当模块B执行时RequireJS保证<code>模块A</code>已被加载。具体细节可参考RequireJS官方文档。
+</p>
+
+<h2 id="toc_1.3">脚本加载</h2>
+
+<p>
+最简单的脚本加载方式是放在<code>&lt;head&gt;</code>加载。
+</p>
+<pre class="brush: html">
+&lt;head&gt;
+  &lt;script src="base.js" type="text/javascript"&gt;&lt;/script&gt;
+  &lt;script src="app.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;/head&gt;
+</pre>
+
+<p>
+其缺点是：
+</p>
+
+<ol>
+<li>
+加载和解析是顺序是同步执行的，先下载<code>base.js</code>然后解析和执行，
+	然后再下载<code>app.js</code>；
+
+<li>
+加载脚本时还会阻塞对<code>&lt;script&gt;</code>之后的DOM元素的渲染。
+
+</ol>
+
+<p>
+为了缓解这些问题，现在的普遍做法是将<code>&lt;script&gt;</code>放在<code>&lt;body&gt;</code>的底部。
+</p>
+<pre class="brush: html">
+  &lt;script src="base.js" type="text/javascript"&gt;&lt;/script&gt;
+  &lt;script src="app.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;/body&gt;
+</pre>
+
+<p>
+但并不是所有的脚本都可以放在<code>&lt;body&gt;</code>的底部，比如有些逻辑要在页面渲染时执行， 
+不过大多数脚本没有这样的要求。
+</p>
+
+<p>
+将脚本放在<code>&lt;body&gt;</code>底部仍然没有解决顺序下载的问题，一些浏览器厂商也意识到了
+这个问题并开始支持异步下载。HTML5也提供了标准的解决方案：
+</p>
+
+<pre class="brush: html">
+&lt;script src="base.js" type="text/javascript" async&gt;&lt;/script&gt;
+&lt;script src="app.js" type="text/javascript" async&gt;&lt;/script&gt;
+</pre>
+
+<p>
+标上<code>async</code>属性的脚本表明你没有在里面使用<code>document.write</code>之类的代码。浏览器
+将异步下载和执行这些脚本，并且不会组织DOM树的渲染。但是这会导致另一个问题：
+由于是异步执行，<code>app.js</code>可能在<code>base.js</code>之前执行，如果它们之间有依赖关系这将
+导致错误。
+</p>
+
+<p>
+讲到这里从开发者角度来看我们其实需要的是这些特性：
+</p>
+
+<ol>
+<li>
+异步下载，不要阻塞DOM的渲染；
+
+<li>
+按照模块的依赖关系解析和执行脚本。
+
+</ol>
+
+<p>
+所以脚本的加载其实需要与模块化编程问题结合起来解决。<code>RequireJS</code>不仅记录了模块
+之间的依赖关系，并且提供了根据依赖关系的按需加载和执行（详情请参考 RequireJS
+官方文档）。
+</p>
+
+<p>
+关于脚本加载的更多方案请看<a href="http://www.html5rocks.com/en/tutorials/speed/script-loading/?redirect_from_locale=zh">这里</a>
+</p>
+
+<h1 id="toc_2">线上错误报告</h1>
+
+<p>
+Javascript是一个动态语言，许多检查都是在运行时执行的，所以大多数错误只有执行到
+的时候才能检查到，只能在发布前通过大量测试来发现。即使这样仍可能有少数没有
+执行到的路径有错误，这只能通过线上错误报告来发现了。
+</p>
+	
+<pre class="brush: javascript">
+window.onerror = function (errorMsg, fileLoc, linenumber) {
+    var s = 'url: ' + document.URL + '\nfile:  ' + fileLoc
+        + '\nline number: ' + linenumber
+        + '\nmessage: ' + errorMsg;
+    Log.error(s);       // 发给服务器统计监控
+    console.log(s);
+};
+</pre>
+
+<p>
+通常线上的Javascript都是经过了合并和压缩的，上报的文件名和行号基本上没法对应到
+源代码，对查错帮助不是很大。不过最新版的Chrome支持在onerror的回调函数中获取
+出错时的栈轨迹：<code>window.event.error.stack</code>.
+</p>
+ </div>
+</body>
+</html>

@@ -1,0 +1,122 @@
+%title Javascript
+
+%toc Javascript
+
+= Javascirpt模块化 =
+
+== 通过闭包建立模块 ==
+
+Douglas Crockford在：《Javascript: The Good Parts》一书中提出的
+“Module Pattern”利用Javascript的闭包技术来模拟模块的概念，防止名字冲突和
+全局变量的使用：
+
+{{{class="brush: javascript"
+var moduleName = function () {
+
+    // Define private variables and functions
+    var private = ...
+ 
+    // Return public interface.
+    return {
+        foo: ...
+    };
+}();
+}}}
+
+== 模块之间的依赖与自动加载 ==
+
+[[http://www.commonjs.org/|CommonJS]]组织
+定义了[[http://wiki.commonjs.org/wiki/Modules/AsynchronousDefinition|AMD规范]]
+方便开发者显示指定模块之间的依赖关系，并在需要时加载依赖的模块。
+[[http://requirejs.org/|RequireJS]]是AMD规范的一个比较流行的实现。
+
+首先我们在`a.js`中定义`模块A`.
+
+{{{class="brush: javascript"
+define(function () {
+    return {
+        color: "black",
+        size: 10
+    };
+});
+}}}
+
+然后定义`模块B`依赖`模块A`.
+
+{{{class="brush: javascript"
+define(["a"], function (A) {
+    // ...
+});
+}}}
+
+当模块B执行时RequireJS保证`模块A`已被加载。具体细节可参考RequireJS官方文档。
+
+== 脚本加载 ==
+
+最简单的脚本加载方式是放在`<head>`加载。
+{{{class="brush: html"
+<head>
+  <script src="base.js" type="text/javascript"></script>
+  <script src="app.js" type="text/javascript"></script>
+</head>
+}}}
+
+其缺点是：
+
+# 加载和解析是顺序是同步执行的，先下载`base.js`然后解析和执行，
+	然后再下载`app.js`；
+# 加载脚本时还会阻塞对`<script>`之后的DOM元素的渲染。
+
+为了缓解这些问题，现在的普遍做法是将`<script>`放在`<body>`的底部。
+{{{class="brush: html"
+  <script src="base.js" type="text/javascript"></script>
+  <script src="app.js" type="text/javascript"></script>
+</body>
+}}}
+
+但并不是所有的脚本都可以放在`<body>`的底部，比如有些逻辑要在页面渲染时执行， 
+不过大多数脚本没有这样的要求。
+
+将脚本放在`<body>`底部仍然没有解决顺序下载的问题，一些浏览器厂商也意识到了
+这个问题并开始支持异步下载。HTML5也提供了标准的解决方案：
+
+{{{class="brush: html"
+<script src="base.js" type="text/javascript" async></script>
+<script src="app.js" type="text/javascript" async></script>
+}}}
+
+标上`async`属性的脚本表明你没有在里面使用`document.write`之类的代码。浏览器
+将异步下载和执行这些脚本，并且不会组织DOM树的渲染。但是这会导致另一个问题：
+由于是异步执行，`app.js`可能在`base.js`之前执行，如果它们之间有依赖关系这将
+导致错误。
+
+讲到这里从开发者角度来看我们其实需要的是这些特性：
+
+# 异步下载，不要阻塞DOM的渲染；
+# 按照模块的依赖关系解析和执行脚本。
+
+所以脚本的加载其实需要与模块化编程问题结合起来解决。`RequireJS`不仅记录了模块
+之间的依赖关系，并且提供了根据依赖关系的按需加载和执行（详情请参考 RequireJS
+官方文档）。
+
+关于脚本加载的更多方案请看[[http://www.html5rocks.com/en/tutorials/speed/script-loading/?redirect_from_locale=zh|这里]]
+
+= 线上错误报告 =
+
+Javascript是一个动态语言，许多检查都是在运行时执行的，所以大多数错误只有执行到
+的时候才能检查到，只能在发布前通过大量测试来发现。即使这样仍可能有少数没有
+执行到的路径有错误，这只能通过线上错误报告来发现了。
+	
+{{{class="brush: javascript"
+window.onerror = function (errorMsg, fileLoc, linenumber) {
+    var s = 'url: ' + document.URL + '\nfile:  ' + fileLoc
+        + '\nline number: ' + linenumber
+        + '\nmessage: ' + errorMsg;
+    Log.error(s);       // 发给服务器统计监控
+    console.log(s);
+};
+}}}
+
+通常线上的Javascript都是经过了合并和压缩的，上报的文件名和行号基本上没法对应到
+源代码，对查错帮助不是很大。不过最新版的Chrome支持在onerror的回调函数中获取
+出错时的栈轨迹：`window.event.error.stack`.

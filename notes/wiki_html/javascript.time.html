@@ -16,37 +16,75 @@
 <link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
 
 
-<title>Javascript</title>
+<title>Javascript时间与定时器</title>
 </head>
 <body  onresize='changeTocSize()'>
 	<div class="note-main"> 
 
 
-<h1>Javascript</h1>
+
+<h1>Javascript时间与定时器</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">定时器</a>
+<ul>
+<li><a href="#toc_1.0.1">例子：点击开始与结束控制倒计时</a>
+</ul>
+</ul>
+</ul>
+</div>
+
+
+<h1 id="toc_1">定时器</h1>
 
 <p>
-基础：<a href="javascript.base.html">javascript.base</a>
+定时执行任务：
 </p>
 
-<p>
-正则：<a href="javascript.time.html">javascript.time</a>
-</p>
+<pre class="brush: javascript">
+var timmer = setTimeout(ScriptString, timeout);
+</pre>
 
 <p>
-正则：<a href="javascript.regex.html">javascript.regex</a>
+取消定时器：
 </p>
 
-<p>
-性能：<a href="javascript.perform.html">javascript.perform</a>
-</p>
+<pre class="brush: javascript">
+clearTimeout(timmer);
+</pre>
+	
+<h3 id="toc_1.0.1">例子：点击开始与结束控制倒计时</h3>
 
 <p>
-例子：<a href="javascirpt.example.html">javascirpt.example</a>
+页面：
 </p>
 
+<pre class="brush: html">
+&lt;input type="text" id="txt"&gt;
+
+&lt;input type="button" value="开始计时！" onClick="timedCount()"&gt;
+&lt;input type="button" value="停止计时！" onClick="stopCount()"&gt;
+</pre>
+
 <p>
-模块化： <a href="javascript.module.html">javascript.module</a>
+脚本：
 </p>
+
+<pre class="brush: javascript">
+var c = 0;
+var t;
+function timedCount() {
+	document.getElementById('txt').value = c;
+	c = c + 1;
+	t = setTimeout("timedCount()", 1000);
+}
+
+function stopCount() {
+	c = 0;
+	setTimeout("document.getElementById('txt').value=0", 0);
+	clearTimeout(t);
+}
+</pre>
  </div>
 </body>
 </html>
