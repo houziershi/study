@@ -1,0 +1,302 @@
+%title 日期类型
+
+%toc 日期类型
+
+= 日期类型 =
+
+== 旧日期工具 ==
+
+最开始的时候，Date既要承载日期信息，又要做日期之间的转换，还要做不同日期格式的显示，职责较繁杂（不懂单一职责，你妈妈知道吗？纯属恶搞~哈哈）
+
+后来从JDK 1.1 开始，这三项职责分开了：
+
+* 使用Calendar类实现日期和时间字段之间转换；
+* 使用DateFormat类来格式化和分析日期字符串；
+* 而Date只用来承载日期和时间信息。
+
+原有Date中的相应方法已废弃。不过，无论是Date，还是Calendar，都用着太不方便了，这是API没有设计好的地方。
+
+=== 年月表示不直观 ===
+
+坑爹的year和month
+
+{{{class="brush: java"
+Date date = new Date(2012,1,1);
+System.out.println(date);
+输出Thu Feb 01 00:00:00 CST 3912
+}}}
+
+观察输出结果，year是2012+1900，而month，月份参数我不是给了1吗？怎么输出二月（Feb）了？
+
+应该曾有人告诉你，如果你要设置日期，应该使用 java.util.Calendar，像这样...
+
+{{{class="brush: java"
+Calendar calendar = Calendar.getInstance();
+calendar.set(2013, 8, 2);
+}}}
+
+这样写又不对了，calendar的month也是从0开始的，表达8月份应该用7这个数字，要么就干脆用枚举
+
+{{{class="brush: java"
+calendar.set(2013, Calendar.AUGUST, 2);
+}}}
+
+注意上面的代码，Calendar年份的传值不需要减去1900（当然月份的定义和Date还是一样），这种不一致真是让人抓狂！
+
+有些人可能知道，Calendar相关的API是IBM捐出去的，所以才导致不一致。
+
+=== java.util.Date与java.util.Calendar中的所有属性都是可变的 ===
+
+下面的代码，计算两个日期之间的天数....
+
+{{{class="brush: java"
+public static void main(String[] args) {
+    Calendar birth = Calendar.getInstance();
+    birth.set(1975, Calendar.MAY, 26);
+    Calendar now = Calendar.getInstance();
+    System.out.println(daysBetween(birth, now));
+    System.out.println(daysBetween(birth, now)); // 显示 0？
+ }  
+  
+public static long daysBetween(Calendar begin, Calendar end) {
+    long daysBetween = 0;
+    while(begin.before(end)) {
+        begin.add(Calendar.DAY_OF_MONTH, 1);
+        daysBetween++;
+    }
+    return daysBetween;
+}
+}}}
+
+daysBetween有点问题，如果连续计算两个Date实例的话，第二次会取得0，因为Calendar状态是可变的，考虑到重复计算的场合，最好复制一个新的Calendar
+
+{{{class="brush: java"
+public static long daysBetween(Calendar begin, Calendar end) {
+    Calendar calendar = (Calendar) begin.clone(); // 复制
+    long daysBetween = 0;
+    while(calendar.before(end)) {
+        calendar.add(Calendar.DAY_OF_MONTH, 1);
+        daysBetween++;
+    }
+    return daysBetween;
+}
+}}}
+
+== 新标准 JSR310 ==
+
+以上种种，导致目前有些第三方的java日期库诞生，比如广泛使用的JODA-TIME，还有Date4j等，虽然第三方库已经足够强大，好用，但还是有兼容问题的，比如标准的JSF日期转换器与joda-time API就不兼容，你需要编写自己的转换器，所以标准的API还是必须的，于是就有了JSR310。
+
+JSR 310实际上有两个日期概念。第一个是Instant，它大致对应于java.util.Date类，因为它代表了一个确定的时间点，即相对于标准Java纪元（1970年1月1日）的偏移量；但与java.util.Date类不同的是其精确到了纳秒级别。
+
+第二个对应于人类自身的观念，比如LocalDate和LocalTime。他们代表了一般的时区概念，要么是日期（不包含时间），要么是时间（不包含日期），类似于java.sql的表示方式。此外，还有一个MonthDay，它可以存储某人的生日（不包含年份）。每个类都在内部存储正确的数据而不是像java.util.Date那样利用午夜12点来区分日期，利用1970-01-01来表示时间。
+
+目前Java8已经实现了JSR310的全部内容。新增了java.time包定义的类表示了日期-时间概念的规则，包括instants, durations, dates, times, time-zones and periods。这些都是基于ISO日历系统，它又是遵循 Gregorian规则的。最重要的一点是值不可变，且线程安全，通过下面一张图，我们快速看下java.time包下的一些主要的类的值的格式，方便理解。
+
+{{{class="brush: java"
+LocalDate      2010-12-03
+LocalTime                 11:05:30
+LocalDateTime  2010-12-03T11:05:30
+OffsetTime                11:05:30+01:00
+OffsetDateTime 2010-12-03T11:05:30+01:00
+ZonedDateTime  2010-12-03T11:05:30+01:00 Europe/Paris
+
+Year           2010      
+YearMonth      2010-12
+MonthDay           -12-03
+
+Instant        2576458258.266 sends after 1970-01-01
+}}}
+
+=== 方法概览 ===
+
+该包的API提供了大量相关的方法，这些方法一般有一致的方法前缀：
+
+* `of`：静态工厂方法。
+* `parse`：静态工厂方法，关注于解析。
+* `get`：获取某些东西的值。
+* `is`：检查某些东西的是否是true。
+* `with`：不可变的setter等价物。
+* `plus`：加一些量到某个对象。
+* `minus`：从某个对象减去一些量。
+* `to`：转换到另一个类型。
+* `at`：把这个对象与另一个对象组合起来，例如： date.atTime(time)。
+
+=== 与旧API的对应关系 ===
+
+| Java.time ISO Calendar               | Java.util Calendar                         |
+|--------------------------------------|--------------------------------------------|
+| Instant                              | Date                                       |
+| LocalDate                            | Calendar                                   |
+| LocalTime                            | \/                                         |
+| LocalDateTime                        | \/                                         |
+| ZonedDateTime                        | \/                                         |
+| OffsetDateTime, OffsetTime           | Calendar                                   |
+| Zoneld, ZoneOffset, ZooneRules       | TimeZone                                   |
+| Week Starts on Monday(1 ... 7)       | Week Starts on Monday(1 ... 7)             |
+| enum MONDAY, TUESDAY, ... SUNDAY     | int values MONDAY, TUESDAY, ... SUNDAY     |
+| 12 Month (1 ... 12)                  | 12 Month (1 ... 12)                        |
+| enum JANUARY, FEBRUARY, ... DECEMBER | int values JANUARY, FEBRUARY, ... DECEMBER |
+
+=== 例子 ===
+
+{{{class="brush: java"
+public class TimeIntroduction {
+
+	public static void testClock() throws InterruptedException {
+		//时钟提供给我们用于访问某个特定 时区的 瞬时时间、日期 和 时间的。  
+		Clock c1 = Clock.systemUTC(); //系统默认UTC时钟（当前瞬时时间 System.currentTimeMillis()）  
+		System.out.println(c1.millis()); //每次调用将返回当前瞬时时间（UTC）  
+		Clock c2 = Clock.systemDefaultZone(); //系统默认时区时钟（当前瞬时时间）  
+		Clock c31 = Clock.system(ZoneId.of("Europe/Paris")); //巴黎时区  
+		System.out.println(c31.millis()); //每次调用将返回当前瞬时时间（UTC）  
+		Clock c32 = Clock.system(ZoneId.of("Asia/Shanghai"));//上海时区  
+		System.out.println(c32.millis());//每次调用将返回当前瞬时时间（UTC）  
+		Clock c4 = Clock.fixed(Instant.now(), ZoneId.of("Asia/Shanghai"));//固定上海时区时钟  
+		System.out.println(c4.millis());
+		Thread.sleep(1000);
+		System.out.println(c4.millis()); //不变 即时钟时钟在那一个点不动  
+		Clock c5 = Clock.offset(c1, Duration.ofSeconds(2)); //相对于系统默认时钟两秒的时钟  
+		System.out.println(c1.millis());
+		System.out.println(c5.millis());
+	}
+
+	public static void testInstant() {
+		//瞬时时间 相当于以前的System.currentTimeMillis()  
+		Instant instant1 = Instant.now();
+		System.out.println(instant1.getEpochSecond());//精确到秒 得到相对于1970-01-01 00:00:00 UTC的一个时间  
+		System.out.println(instant1.toEpochMilli()); //精确到毫秒  
+		Clock clock1 = Clock.systemUTC(); //获取系统UTC默认时钟  
+		Instant instant2 = Instant.now(clock1);//得到时钟的瞬时时间  
+		System.out.println(instant2.toEpochMilli());
+		Clock clock2 = Clock.fixed(instant1, ZoneId.systemDefault()); //固定瞬时时间时钟  
+		Instant instant3 = Instant.now(clock2);//得到时钟的瞬时时间  
+		System.out.println(instant3.toEpochMilli());//equals instant1  
+	}
+
+	public static void testLocalDateTime() {
+		//使用默认时区时钟瞬时时间创建 Clock.systemDefaultZone() -->即相对于 ZoneId.systemDefault()默认时区  
+		LocalDateTime now = LocalDateTime.now();
+		System.out.println(now);
+		//自定义时区  
+		LocalDateTime now2 = LocalDateTime.now(ZoneId.of("Europe/Paris"));
+		System.out.println(now2);//会以相应的时区显示日期  
+		//自定义时钟  
+		Clock clock = Clock.system(ZoneId.of("Asia/Dhaka"));
+		LocalDateTime now3 = LocalDateTime.now(clock);
+		System.out.println(now3);//会以相应的时区显示日期  
+		//不需要写什么相对时间 如java.util.Date 年是相对于1900 月是从0开始  
+		//2013-12-31 23:59  
+		LocalDateTime d1 = LocalDateTime.of(2013, 12, 31, 23, 59);
+		//年月日 时分秒 纳秒  
+		LocalDateTime d2 = LocalDateTime.of(2013, 12, 31, 23, 59, 59, 11);
+		//使用瞬时时间 + 时区  
+		Instant instant = Instant.now();
+		LocalDateTime d3 = LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault());
+		System.out.println(d3);
+		//解析String--->LocalDateTime  
+		LocalDateTime d4 = LocalDateTime.parse("2013-12-31T23:59");
+		System.out.println(d4);
+		LocalDateTime d5 = LocalDateTime.parse("2013-12-31T23:59:59.999");//999毫秒 等价于999000000纳秒  
+		System.out.println(d5);
+		//使用DateTimeFormatter API 解析 和 格式化  
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+		LocalDateTime d6 = LocalDateTime.parse("2013/12/31 23:59:59", formatter);
+		System.out.println(formatter.format(d6));
+		//时间获取  
+		System.out.println(d6.getYear());
+		System.out.println(d6.getMonth());
+		System.out.println(d6.getDayOfYear());
+		System.out.println(d6.getDayOfMonth());
+		System.out.println(d6.getDayOfWeek());
+		System.out.println(d6.getHour());
+		System.out.println(d6.getMinute());
+		System.out.println(d6.getSecond());
+		System.out.println(d6.getNano());
+		//时间增减  
+		LocalDateTime d7 = d6.minusDays(1);
+		LocalDateTime d8 = d7.plus(1, IsoFields.QUARTER_YEARS);
+		//LocalDate 即年月日 无时分秒  
+		//LocalTime即时分秒 无年月日  
+		//API和LocalDateTime类似就不演示了  
+	}
+
+	public static void testZonedDateTime() {
+		//即带有时区的date-time 存储纳秒、时区和时差（避免与本地date-time歧义）。  
+		//API和LocalDateTime类似，只是多了时差(如2013-12-20T10:35:50.711+08:00[Asia/Shanghai])  
+		ZonedDateTime now = ZonedDateTime.now();
+		System.out.println(now);
+		ZonedDateTime now2 = ZonedDateTime.now(ZoneId.of("Europe/Paris"));
+		System.out.println(now2);
+		//其他的用法也是类似的 就不介绍了  
+		ZonedDateTime z1 = ZonedDateTime.parse("2013-12-31T23:59:59Z[Europe/Paris]");
+		System.out.println(z1);
+	}
+
+	public static void testDuration() {
+		//表示两个瞬时时间的时间段  
+		Duration d1 = Duration.between(Instant.ofEpochMilli(System.currentTimeMillis() - 12323123), Instant.now());
+		//得到相应的时差  
+		System.out.println(d1.toDays());
+		System.out.println(d1.toHours());
+		System.out.println(d1.toMinutes());
+		System.out.println(d1.toMillis());
+		System.out.println(d1.toNanos());
+		//1天时差 类似的还有如ofHours()  
+		Duration d2 = Duration.ofDays(1);
+		System.out.println(d2.toDays());
+	}
+
+	public static void testChronology() {
+		//提供对java.util.Calendar的替换，提供对年历系统的支持  
+		Chronology c = HijrahChronology.INSTANCE;
+		ChronoLocalDateTime d = c.localDateTime(LocalDateTime.now());
+		System.out.println(d);
+	}
+
+	/**
+	 * 新旧日期转换
+	 */
+	public static void testNewOldDateConversion(){
+		Instant instant=new Date().toInstant();
+		Date date=Date.from(instant);
+		System.out.println(instant);
+		System.out.println(date);
+	}
+
+	public static void main(String[] args) throws InterruptedException {
+		testClock();
+		testInstant();
+		testLocalDateTime();
+		testZonedDateTime();
+		testDuration();
+		testChronology();
+		testNewOldDateConversion();
+	}
+}
+}}}
+
+=== 与Joda-Time的区别 ===
+
+其实JSR310的规范领导者Stephen Colebourne，同时也是Joda-Time的创建者，JSR310是在Joda-Time的基础上建立的，参考了绝大部分的API，但并不是说JSR310=JODA-Time，下面几个比较明显的区别是
+
+* 最明显的变化就是包名（从org.joda.time以及java.time）
+* JSR310不接受NULL值，Joda-Time视NULL值为0
+* JSR310的计算机相关的时间（Instant）和与人类相关的时间（DateTime）之间的差别变得更明显
+* JSR310所有抛出的异常都是DateTimeException的子类。虽然DateTimeException是一个RuntimeException
+
+=== 总结 ===
+
+对比旧的日期API
+| Java.time  | java.util.Calendar以及Date |
+|------------|----------------------------|
+| 流畅的API  | 不流畅的API                |
+| 实例不可变 | 实例可变                   |
+| 线程安全   | 非线程安全                 |
+
+日期与时间处理API，在各种语言中，可能都只是个不起眼的API，如果你没有较复杂的时间处理需求，可能只是利用日期与时间处理API取得系统时间，简单做些显示罢了，然而如果认真看待日期与时间，其复杂程度可能会远超过你的想象，天文、地理、历史、政治、文化等因素，都会影响到你对时间的处理。所以在处理时间上，最好选用JSR310（如果你用java8的话就实现310了），或者Joda-Time。
+
+不止是java面临时间处理的尴尬，其他语言同样也遇到过类似的问题，比如
+
+* Arrow：Python 中更好的日期与时间处理库
+* Moment.js：JavaScript 中的日期库
+* Noda-Time：.NET 阵营的 Joda-Time 的复制
