@@ -125,6 +125,7 @@ JMeter: [[jmeter]]
 
 DB2： [[DB2]]
 
+oracle：[[oracle.tips]]
 
 
 = 服务器 =

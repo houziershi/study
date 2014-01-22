@@ -1,0 +1,844 @@
+
+= 常用oracle贴士 =
+
+== 日期/时间 相关查询 ==
+
+=== 获取当前月份的第一天 ===
+
+运行这个命令能快速返回当前月份的第一天。你可以用任何的日期值替换`SYSDATE`来指定
+查询的日期。
+
+{{{class="brush: sql"
+SELECT TRUNC (SYSDATE, 'MONTH') "First day of current month" FROM DUAL;
+}}}
+
+=== 获取当前月份的最后一天 ===
+
+这个查询语句类似于上面那个语句，而且充分照顾到了闰年，所以当二月份有`29`号，那么
+就会返回`29/2`。你可以用任何的日期值替换`SYSDATE`来指定查询的日期。
+
+{{{class="brush: sql"
+SELECT TRUNC (LAST_DAY (SYSDATE)) "Last day of current month" FROM DUAL;
+}}}
+
+=== 获取当前年份的第一天 ===
+
+每年的第一天都是1 月1日，这个查询语句可以使用在存储过程中，需要对当前年份第一天
+做一些计算的时候。你可以用任何的日期值替换`SYSDATE`来指定查询的日期。
+
+{{{class="brush: sql"
+SELECT TRUNC (SYSDATE, 'YEAR') "Year First Day" FROM DUAL;
+}}}
+
+=== 获取当前年份的最后一天 ===
+
+类似于上面的查询语句。你可以用任何的日期值替换`SYSDATE`来指定查询的日期。
+
+{{{class="brush: sql"
+SELECT ADD_MONTHS (TRUNC (SYSDATE, 'YEAR'), 12) - 1 "Year Last Day" FROM DUAL
+}}}
+
+=== 获取当前月份的天数 ===
+
+这个语句非常有用，可以计算出当前月份的天数。你可以用任何的日期值替换`SYSDATE`来
+指定查询的日期。
+
+{{{class="brush: sql"
+SELECT CAST (TO_CHAR (LAST_DAY (SYSDATE), 'dd') AS INT) number_of_days 
+	FROM DUAL;
+}}}
+
+=== 获取当前月份剩下的天数 ===
+
+下面的语句用来计算当前月份剩下的天数。
+
+{{{class="brush: sql"
+SELECT SYSDATE,
+       LAST_DAY (SYSDATE) "Last",
+       LAST_DAY (SYSDATE) - SYSDATE "Days left"
+  FROM DUAL;
+}}}
+
+=== 获取两个日期之间的天数 ===
+
+使用这个语句来获取两个不同日期自检的天数。
+
+{{{class="brush: sql"
+SELECT ROUND ( (MONTHS_BETWEEN ('01-Feb-2014', '01-Mar-2012') * 30), 0)
+          num_of_days
+  FROM DUAL;
+}}}
+ 
+如果你需要查询一些特定日期的天数，可以使用下面的查询语句。这个例子是计算员工入职
+的天数。
+ 
+{{{class="brush: sql"
+SELECT TRUNC(sysdate) - TRUNC(e.hire_date) FROM employees;
+}}}
+
+
+=== 显示当前年份截止到上个月每个月份开始和结束的日期 ===
+
+这个是个很聪明的查询语句，用来显示当前年份每个月的开始和结束的日期，你可以使用
+这个进行一些类型的计算。你可以用任何的日期值替换`SYSDATE`来指定查询的日期。
+
+{{{class="brush: sql"
+SELECT ADD_MONTHS (TRUNC (SYSDATE, 'MONTH'), i) start_date,
+       TRUNC (LAST_DAY (ADD_MONTHS (SYSDATE, i))) end_date
+  FROM XMLTABLE (
+          'for $i in 0 to xs:int(D) return $i'
+          PASSING XMLELEMENT (
+                     d,
+                     FLOOR (
+                        MONTHS_BETWEEN (
+                           ADD_MONTHS (TRUNC (SYSDATE, 'YEAR') - 1, 12),
+                           SYSDATE)))
+          COLUMNS i INTEGER PATH '.');
+}}}
+
+获取直到目前为止今天过去的秒数（从 00：00 开始算）
+
+{{{class="brush: sql"
+SELECT (SYSDATE - TRUNC (SYSDATE)) * 24 * 60 * 60 num_of_sec_since_morning
+  FROM DUAL;
+}}}
+
+获取今天剩下的秒数（直到 23：59：59 结束）
+
+{{{class="brush: sql"
+SELECT (TRUNC (SYSDATE+1) - SYSDATE) * 24 * 60 * 60 num_of_sec_left FROM DUAL;
+}}}
+
+== 数据字典查询 ==
+
+=== 检查在当前数据库模式下是否存在指定的表 ===
+
+这是一个简单的查询语句，用来检查当前数据库是否有你想要创建的表，允许你重新运行
+创建表脚本，这个也可以检查当前用户是否已经创建了指定的表（根据这个查询语句在
+什么环境下运行来查询）。
+
+{{{class="brush: sql"
+SELECT table_name
+  FROM user_tables
+ WHERE table_name = 'TABLE_NAME';
+}}}
+
+=== 检查在当前表中是否存在指定的列 ===
+
+这是个简单的查询语句来检查表里是否有指定的列，在你尝试使用 ALTER TABLE 来添加
+新的列新到表中的时候非常有用，它会提示你是否已经存在这个列。
+
+{{{class="brush: sql"
+SELECT column_name AS FOUND
+  FROM user_tab_cols
+ WHERE table_name = 'TABLE_NAME' AND column_name = 'COLUMN_NAME';
+}}}
+
+=== 显示表结构 ===
+
+这 个查询语句会显示任何表的 DDL 状态信息。请注意我们已经将`TABLE`作为第一个信息
+提交了。这个查询语句也可以用来获取任何数据库对象的 DDL 状态信息。举例说明，
+只需要把第一个参数替换成`VIEW`，第二个修改成视图的名字，就可以查询视图的 DDL 
+信息了。
+
+{{{class="brush: sql"
+SELECT DBMS_METADATA.get_ddl ('TABLE', 'TABLE_NAME', 'USER_NAME') FROM DUAL;
+}}}
+
+=== 获取当前模式 ===
+
+这是另一个可以获得当前模式的名字的查询语句。
+
+{{{class="brush: sql"
+SELECT SYS_CONTEXT ('userenv', 'current_schema') FROM DUAL;
+}}}
+
+=== 修改当前模式 ===
+
+这是另一个可以修改当前模式的查询语句，当你希望你的脚本可以在指定的用户下运行的
+时候非常有用，而且这是非常安全的一个方式。
+
+{{{class="brush: sql"
+ALTER SESSION SET CURRENT_SCHEMA = new_schema;
+}}}
+
+== 数据库管理查询 ==
+
+=== 数据库版本信息 ===
+
+返回 Oracle 数据库版本
+
+{{{class="brush: sql"
+SELECT * FROM v$version;
+}}}
+
+=== 数据库默认信息 ===
+
+返回一些系统默认的信息
+
+{{{class="brush: sql"
+SELECT username,
+       profile,
+       default_tablespace,
+       temporary_tablespace
+  FROM dba_users;
+}}}
+
+=== 数据库字符设置信息 ===
+
+显示数据库的字符设置信息
+
+{{{class="brush: sql"
+SELECT * FROM nls_database_parameters;
+}}}
+
+=== 获取 Oracle 版本 ===
+
+{{{class="brush: sql"
+SELECT VALUE
+  FROM v$system_parameter
+ WHERE name = 'compatible';
+}}}
+
+=== 存储区分大小写的数据，但是索引不区分大小写 ===
+
+某些时候你可能想在数据库中查询一些独立的数据，可能会用`UPPER(..) = UPPER(..)`来
+进行不区分大小写的查询，所以就想让索引不区分大小写，不占用那么多的空间，这个语句
+恰好能解决你的需求 。
+
+{{{class="brush: sql"
+CREATE TABLE tab (col1 VARCHAR2 (10));
+ 
+CREATE INDEX idx1
+   ON tab (UPPER (col1));
+ 
+ANALYZE TABLE a COMPUTE STATISTICS;
+}}}
+
+=== 调整没有添加数据文件的表空间 ===
+
+另一个 DDL 查询来调整表空间大小
+
+{{{class="brush: sql"
+ALTER DATABASE DATAFILE '/work/oradata/STARTST/STAR02D.dbf' resize 2000M;
+}}}
+
+=== 检查表空间的自动扩展开关 ===
+
+在给定的表空间中查询是否打开了自动扩展开关
+
+{{{class="brush: sql"
+SELECT SUBSTR (file_name, 1, 50), AUTOEXTENSIBLE FROM dba_data_files;
+}}}
+ 
+(OR)
+ 
+{{{class="brush: sql"
+SELECT tablespace_name, AUTOEXTENSIBLE FROM dba_data_files;
+}}}
+
+=== 在表空间添加数据文件 ===
+
+在表空间中添加数据文件
+
+{{{class="brush: sql"
+ALTER TABLESPACE data01 ADD DATAFILE '/work/oradata/STARTST/data01.dbf'
+    SIZE 1000M AUTOEXTEND OFF;
+}}}
+
+=== 增加数据文件的大小 ===
+
+给指定的表空间增加大小
+
+{{{class="brush: sql"
+ALTER DATABASE DATAFILE '/u01/app/Test_data_01.dbf' RESIZE 2G;
+}}}
+
+=== 查询数据库的实际大小 ===
+
+给出以 GB 为单位的数据库的实际大小
+
+{{{class="brush: sql"
+SELECT SUM (bytes) / 1024 / 1024 / 1024 AS GB FROM dba_data_files;
+}}}
+
+=== 查询数据库中数据占用的大小或者是数据库使用细节 ===
+
+给出在数据库中数据占据的空间大小
+
+{{{class="brush: sql"
+SELECT SUM (bytes) / 1024 / 1024 / 1024 AS GB FROM dba_segments;
+}}}
+
+=== 查询模式或者用户的大小 ===
+
+以 MB 为单位给出用户的空间大小
+
+{{{class="brush: sql"
+SELECT SUM (bytes / 1024 / 1024) "size"
+  FROM dba_segments
+ WHERE owner = '&owner';
+}}}
+
+=== 查询数据库中每个用户最后使用的 SQL 查询 ===
+
+此查询语句会显示当前数据库中每个用户最后使用的 SQL 语句。
+
+{{{class="brush: sql"
+SELECT S.USERNAME || '(' || s.sid || ')-' || s.osuser UNAME,
+         s.program || '-' || s.terminal || '(' || s.machine || ')' PROG,
+         s.sid || '/' || s.serial# sid,
+         s.status "Status",
+         p.spid,
+         sql_text sqltext
+    FROM v$sqltext_with_newlines t, V$SESSION s, v$process p
+   WHERE     t.address = s.sql_address
+         AND p.addr = s.paddr(+)
+         AND t.hash_value = s.sql_hash_value
+ORDER BY s.sid, t.piece;
+}}}
+
+
+=== 性能相关查询 ===
+
+=== 查询用户 CPU 的使用率 ===
+
+这个语句是用来显示每个用户的 CPU 使用率，有助于用户理解数据库负载情况
+
+{{{class="brush: sql"
+SELECT ss.username, se.SID, VALUE / 100 cpu_usage_seconds
+    FROM v$session ss, v$sesstat se, v$statname sn
+   WHERE     se.STATISTIC# = sn.STATISTIC#
+         AND NAME LIKE '%CPU used by this session%'
+         AND se.SID = ss.SID
+         AND ss.status = 'ACTIVE'
+         AND ss.username IS NOT NULL
+ORDER BY VALUE DESC;
+}}}
+
+=== 查询数据库长查询进展情况 ===
+
+显示运行中的长查询的进展情况
+
+{{{class="brush: sql"
+SELECT a.sid,
+         a.serial#,
+         b.username,
+         opname OPERATION,
+         target OBJECT,
+         TRUNC (elapsed_seconds, 5) "ET (s)",
+         TO_CHAR (start_time, 'HH24:MI:SS') start_time,
+         ROUND ( (sofar / totalwork) * 100, 2) "COMPLETE (%)"
+    FROM v$session_longops a, v$session b
+   WHERE     a.sid = b.sid
+         AND b.username NOT IN ('SYS', 'SYSTEM')
+         AND totalwork > 0
+ORDER BY elapsed_seconds;
+}}}
+
+=== 获取当前会话 ID，进程 ID，客户端 ID 等 ===
+
+这个专门提供给想使用进程 ID 和 会话 ID 做些 voodoo magic 的用户。
+
+{{{class="brush: sql"
+SELECT b.sid,
+       b.serial#,
+       a.spid processid,
+       b.process clientpid
+  FROM v$process a, v$session b
+ WHERE a.addr = b.paddr AND b.audsid = USERENV ('sessionid');
+}}}
+
+
+* `V$SESSION.SID`
+	和`V$SESSION.SERIAL#`是数据库进程ID
+* `V$PROCESS.SPID`是数据库服务器后台进程ID
+* `V$SESSION.PROCESS`是客户端进程ID。Windows上分段的第一个`#`是客户端进程ID，第
+	二个是线程ID。
+
+
+=== 查询特定的模式或者表中执行的最后一个 SQL 语句 ===
+
+{{{class="brush: sql"
+SELECT CREATED, TIMESTAMP, last_ddl_time
+  FROM all_objects
+ WHERE     OWNER = 'MYSCHEMA'
+       AND OBJECT_TYPE = 'TABLE'
+       AND OBJECT_NAME = 'EMPLOYEE_TABLE';
+}}}
+
+=== 查询每个执行读取的前十个 SQL ===
+
+{{{class="brush: sql"
+SELECT *
+  FROM (  SELECT ROWNUM,
+                 SUBSTR (a.sql_text, 1, 200) sql_text,
+                 TRUNC (
+                    a.disk_reads / DECODE (a.executions, 0, 1, a.executions))
+                    reads_per_execution,
+                 a.buffer_gets,
+                 a.disk_reads,
+                 a.executions,
+                 a.sorts,
+                 a.address
+            FROM v$sqlarea a
+        ORDER BY 3 DESC)
+ WHERE ROWNUM < 10;
+}}}
+
+=== 在视图中查询并显示实际的 Oracle 连接 ===
+
+{{{class="brush: sql"
+SELECT osuser,
+         username,
+         machine,
+         program
+    FROM v$session
+ORDER BY osuser;
+}}}
+
+=== 查询并显示通过打开连接程序打开连接的组 ===
+
+{{{class="brush: sql"
+SELECT program application, COUNT (program) Numero_Sesiones
+    FROM v$session
+GROUP BY program
+ORDER BY Numero_Sesiones DESC;
+}}}
+
+
+=== 查询并显示连接 Oracle 的用户和用户的会话数量 ===
+
+{{{class="brush: sql"
+SELECT username Usuario_Oracle, COUNT (username) Numero_Sesiones
+    FROM v$session
+GROUP BY username
+ORDER BY Numero_Sesiones DESC;
+}}}
+
+=== 获取拥有者的对象数量 ===
+
+{{{class="brush: sql"
+SELECT owner, COUNT (owner) number_of_objects
+    FROM dba_objects
+GROUP BY owner
+ORDER BY number_of_objects DESC;
+}}}
+
+
+== 实用/数学 相关的查询 ==
+
+=== 把数值转换成文字 ===
+
+{{{class="brush: sql"
+SELECT TO_CHAR (TO_DATE (1526, 'j'), 'jsp') FROM DUAL;
+}}}
+
+输出:
+
+{{{class="brush: sql"
+one thousand five hundred twenty-six
+}}}
+
+更多信息可以查看： 
+
+=== How To Convert Number into Words using Oracle SQL Query ===
+number How can you convert a number into words using Oracle Sql Query? What I 
+mean by Number to Word is:
+
+* 12 = Twelve
+* 102 = One Hundred Two
+* 1020 = One Thousand Twenty
+
+Here’s a classy query which will convert number into words.Please see the query below:
+
+{{{class="brush: sql"
+select to_char(to_date(:number,'j'),'jsp') from dual;
+}}}
+
+If I pass 234 in number, then the output will : two hundred thirty-four
+
+{{{class="brush: sql"
+SELECT TO_CHAR (TO_DATE (234, 'j'), 'jsp') FROM DUAL;
+//Output: two hundred thirty-four
+ 
+SELECT TO_CHAR (TO_DATE (24834, 'j'), 'jsp') FROM DUAL;
+//Output: twenty-four thousand eight hundred thirty-four
+ 
+SELECT TO_CHAR (TO_DATE (2447834, 'j'), 'jsp') FROM DUAL;
+//Output: two million four hundred forty-seven thousand eight hundred thirty-four
+}}}
+
+So how the query works? Well here’s why:
+
+If you look into the inner most part of the query `to_date(:number,'j')` the 
+`‘j’` or `J` is the Julian Date (January 1, 4713 BC), basically this date is 
+been used for astronomical studies.
+
+So `to_date(:number,'j')` it take the number represented by number and pretend 
+it is a julian date, convert into a date.
+
+If you pass 3 to number, so it will convert date to 3rd Jan 4713 BC, it means 3 
+is added to the Julian date.
+
+Now `to_char(to_date(:number,'j'),'jsp')`, jsp = Now; take that 
+`date(to_date(:number,'j'))` and spell the julian number it represents
+
+Limitation & workaround
+
+There is a limitation while using Julian dates ,It ranges from 1 to 5373484. 
+That’s why if you put the values after 5373484, it will throw you an error as 
+shown below:
+
+{{{class="brush: sql"
+ORA-01854: julian date must be between 1 and 5373484
+}}}
+
+To cater the above problem ,create a function ,and with little trick with j->jsp ,you can fetch the desired result.
+
+{{{class="brush: sql"
+CREATE OR REPLACE FUNCTION spell_number (p_number IN NUMBER)
+   RETURN VARCHAR2
+AS
+   TYPE myArray IS TABLE OF VARCHAR2 (255);
+ 
+   l_str myArray
+         := myArray ('',
+                     ' thousand ',
+                     ' million ',
+                     ' billion ',
+                     ' trillion ',
+                     ' quadrillion ',
+                     ' quintillion ',
+                     ' sextillion ',
+                     ' septillion ',
+                     ' octillion ',
+                     ' nonillion ',
+                     ' decillion ',
+                     ' undecillion ',
+                     ' duodecillion ');
+ 
+   l_num      VARCHAR2 (50) DEFAULT TRUNC (p_number);
+   l_return   VARCHAR2 (4000);
+BEGIN
+   FOR i IN 1 .. l_str.COUNT
+   LOOP
+      EXIT WHEN l_num IS NULL;
+ 
+      IF (SUBSTR (l_num, LENGTH (l_num) - 2, 3) <> 0)
+      THEN
+         l_return :=
+            TO_CHAR (TO_DATE (SUBSTR (l_num, LENGTH (l_num) - 2, 3), 'J'),
+                     'Jsp')
+            || l_str (i)
+            || l_return;
+      END IF;
+ 
+      l_num := SUBSTR (l_num, 1, LENGTH (l_num) - 3);
+   END LOOP;
+ 
+   RETURN l_return;
+END;
+/
+ 
+ 
+SELECT spell_number (53734555555585) FROM DUAL;
+}}}
+
+Output:
+
+{{{class="brush: sql"
+    Fifty-Three trillion Seven Hundred Thirty-Four billion Five Hundred Fifty-Five million Five Hundred Fifty-Five thousand Five Hundred Eighty-Five
+}}}
+
+Hope this helps :)
+
+=== 在包的源代码中查询字符串 ===
+
+这个查询语句会在所有包的源代码上搜索‘FOO_SOMETHING’ ，可以帮助用户在源代码中查找特定的存储过程或者是函数调用。
+
+{{{class="brush: sql"
+--search a string foo_something in package source code
+SELECT *
+  FROM dba_source
+ WHERE UPPER (text) LIKE '%FOO_SOMETHING%' 
+AND owner = 'USER_NAME';
+}}}
+
+=== 把用逗号分隔的数据插入的表中 ===
+
+当 你想把用逗号分隔开的字符串插入表中的时候，你可以使用其他的查询语句，比如 IN 或者是 NOT IN 。这里我们把‘AA,BB,CC,DD,EE,FF’转换成包含 AA,BB，CC 等作为一行的表，这样你就很容易把这些字符串插入到其他表中，并快速的做一些相关的操作。
+
+{{{class="brush: sql"
+WITH csv
+     AS (SELECT 'AA,BB,CC,DD,EE,FF'
+                   AS csvdata
+           FROM DUAL)
+    SELECT REGEXP_SUBSTR (csv.csvdata, '[^,]+', 1, LEVEL) pivot_char
+      FROM DUAL, csv
+CONNECT BY REGEXP_SUBSTR (csv.csvdata,'[^,]+', 1, LEVEL) IS NOT NULL;
+}}}
+
+=== 查询表中的最后一个记录 ===
+
+这个查询语句很直接，表中没有主键，或者是用户不确定记录最大主键是否是最新的那个记录时，就可以使用这个语句来查询表中最后一个记录。
+
+{{{class="brush: sql"
+SELECT *
+  FROM employees
+ WHERE ROWID IN (SELECT MAX (ROWID) FROM employees);
+}}}
+
+或
+
+{{{class="brush: sql"
+SELECT * FROM employees
+MINUS
+SELECT *
+  FROM employees
+ WHERE ROWNUM < (SELECT COUNT (*) FROM employees);
+}}}
+
+=== 在 Oracle 中做行数据乘法 ===
+
+这个查询语句使用一些复杂的数学函数来做每个行的数值乘法。
+
+{{{class="brush: sql"
+WITH tbl
+     AS (SELECT -2 num FROM DUAL
+         UNION
+         SELECT -3 num FROM DUAL
+         UNION
+         SELECT -4 num FROM DUAL),
+     sign_val
+     AS (SELECT CASE MOD (COUNT (*), 2) WHEN 0 THEN 1 ELSE -1 END val
+           FROM tbl
+          WHERE num < 0)
+  SELECT EXP (SUM (LN (ABS (num)))) * val
+    FROM tbl, sign_val
+GROUP BY val;
+}}}
+
+更多内容请查阅下一段： 
+
+=== Row Data Multiplication in Oracle ===
+
+aggregate function multiplyAggregate functions return a single result row based
+on a group of rows. This differentiates them from Single-Row functions which act
+on each row. These functions are extensively used with the GROUP BY clause in 
+SQL statements. `AVG ()`, `COUNT ()`, `SUM ()` … are few aggregate functions 
+which are quite commonly used. Today, one of my colleague asked me if there is 
+some aggregation function for Multiplication. I thought about it for a while and
+found myself surprised that I have never thought about doing such a thing :)
+
+So, How do we do the multiplication then? I tried it but just couldn’t do it in 
+SQL. So, I asked this question on our internal self help channel and I got a 
+pretty impressive reply:
+
+“Using a mathematical approach…”
+
+After understanding the solution, I was surprisingly happy with the simplicity 
+of the approach and found it worth sharing. Let’s assume that we have a table 
+`tbl` with one column `num`. This table has three rows having values 2, 3 & 4 
+for column `num`.
+
+{{{class="brush: sql"
+WITH tbl AS
+     (SELECT 2 num
+        FROM DUAL
+      UNION
+      SELECT 3 num
+        FROM DUAL
+      UNION
+      SELECT 4 num
+        FROM DUAL)
+SELECT num
+  FROM tbl;
+}}}
+
+We need the multiplication of row’s data for this column. So essentially, we are
+looking for an aggregate function MUL (num).
+
+There is no such function as MUL () in Oracle (I actually tried using it). Here 
+comes the computational part of the puzzle. A multiplication operation can be 
+mathematically expressed as:
+
+{{{class="brush: sql"
+MUL (num) = EXP (SUM (LN (num)))
+}}}
+
+Not very clear at first, I agree. Lets review the maths behind it:
+
+{{{class="brush: sql"
+x = (2 * 3 * 4)
+ln(x) = ln(2 * 3 * 4)
+ln(x) = ln(2) + ln(3) + ln(4) => SUM(LN(num))
+ln(x) = .693 + 1.098 + 1.386
+ln(x) = 3.178
+x = e (3.178) => EXP(SUM(LN(num)))
+x = 24
+}}}
+
+
+And that’s it. We just created our own multiplication function and now the 
+result can be calculated as:
+
+{{{class="brush: sql"
+  WITH tbl AS
+     (SELECT 2 num
+        FROM DUAL
+      UNION
+      SELECT 3 num
+        FROM DUAL
+      UNION
+      SELECT 4 num
+        FROM DUAL)
+SELECT EXP (SUM (LN (num))) MUL
+  FROM tbl;
+}}}
+
+Result: 24
+
+Everything looks perfect. But hey, I have got negative values. The moment you 
+put a negative value in the dataset, you are bound to get the following Oracle 
+error:
+
+“ORA-01428: argument ‘x’ is out of range”
+
+This is because the range for LN () argument is > 0. But this is now easy to 
+handle, here is how:
+
+{{{class="brush: sql"
+WITH tbl AS
+     (SELECT -2 num
+        FROM DUAL
+      UNION
+      SELECT -3 num
+        FROM DUAL
+      UNION
+      SELECT -4 num
+        FROM DUAL),
+     sign_val AS
+     (SELECT CASE MOD (COUNT (*), 2)
+                WHEN 0 THEN 1
+                ELSE -1
+             END val
+        FROM tbl
+       WHERE num < 0)
+SELECT   EXP (SUM (LN (ABS (num)))) * val
+    FROM tbl, sign_val
+GROUP BY val
+}}}
+
+Result: -24
+
+So, we first counted the negative records in the table. If the count is odd, 
+the final result should be negative and vice versa. We then multiplied this 
+signed value with the multiplication of the absolute values. A subquery can 
+also be used instead of GROUP BY but that’s trivial. Now the solution is 
+complete and we are able to handle the negative values too.
+
+I was so impressed by this approach that I haven’t given a thought about any 
+other solution. But I am sure there would be. If you find a different approach,
+please share.
+
+
+=== 在 Oracle 生成随机数据 ===
+
+每个开发者都想能轻松生成一堆随机数据来测试数据库多好，下面这条查询语句就可以
+满足你，它可以在 Oracle 中生成随机的数据插入到表中。
+
+{{{class="brush: sql"
+SELECT LEVEL empl_id,
+           MOD (ROWNUM, 50000) dept_id,
+           TRUNC (DBMS_RANDOM.VALUE (1000, 500000), 2) salary,
+           DECODE (ROUND (DBMS_RANDOM.VALUE (1, 2)),  1, 'M',  2, 'F') gender,
+           TO_DATE (
+                 ROUND (DBMS_RANDOM.VALUE (1, 28))
+              || '-'
+              || ROUND (DBMS_RANDOM.VALUE (1, 12))
+              || '-'
+              || ROUND (DBMS_RANDOM.VALUE (1900, 2010)),
+              'DD-MM-YYYY')
+              dob,
+           DBMS_RANDOM.STRING ('x', DBMS_RANDOM.VALUE (20, 50)) address
+      FROM DUAL
+CONNECT BY LEVEL < 10000;
+}}}
+
+详细信息可以查看下一段：
+
+=== Generating Random Data in Oracle ===
+
+random-numbers-oracleMost of the times, production data is not available in 
+development environments. Here, I would like to share a single sql command 
+which can generate random data. But before that, let’s address another issue 
+faced by a lot of new oracle users. We need to generate a sequence of numbers 
+using a sql statement. This will generate a number sequence. Nothing fancy, 
+simplest of sql known :) Here it is:
+
+{{{class="brush: sql"
+SELECT ROWNUM
+	FROM DUAL
+	CONNECT BY LEVEL < 10000;
+}}}
+
+Now, to generate the random data, the oracle build in package “dbms_random” 
+comes handy. I am referring to the version 10GR2, there might be additional 
+features available on 11G . Other build in functions can also be used. Here is 
+a sample sql:
+
+{{{class="brush: sql"
+SELECT     LEVEL                                                       empl_id,
+           MOD (ROWNUM, 50000)                                         dept_id,
+           TRUNC (DBMS_RANDOM.VALUE (1000, 500000), 2)                 salary,
+           DECODE (ROUND (DBMS_RANDOM.VALUE (1, 2)), 1, 'M', 2, 'F')   gender,
+           TO_DATE (   ROUND (DBMS_RANDOM.VALUE (1, 28))
+                    || '-'
+                    || ROUND (DBMS_RANDOM.VALUE (1, 12))
+                    || '-'
+                    || ROUND (DBMS_RANDOM.VALUE (1900, 2010)),
+                    'DD-MM-YYYY'
+                   )                                                   dob,
+           DBMS_RANDOM.STRING ('x', DBMS_RANDOM.VALUE (20, 50))        address
+      FROM DUAL
+CONNECT BY LEVEL < 10000;
+}}}
+
+You can create a table using this sql and that will give you some random test 
+data to work on. The output looks something like:
+
+{{{class="brush: sql"
+EMPL_ID | DEPT_ID | SALARY    | GENDER | DOB       | ADDRESS
+1       | 1       | 385433.6  | M      | 2/25/1903 | VVGJOPVIHD8HZELHK1SXWQ1RTNK84NT6
+2       | 2       | 363024.64 | F      | 5/24/2010 | E4IOCU42LM7K2SS36OI0STDOO7A2UZ50L2Q5R1SME07
+3       | 3       | 320010.48 | M      | 9/26/2009 | 8XM6CG3CSR6UA26PXPUTLPLPQNSQ3OJG7P0CL4XVHBMCVT
+4       | 4       | 64230.96  | F      | 6/26/1991 | GLKYLEWG4NS0G67W64LF1G5GJPON5L8K93F
+5       | 5       | 414134.44 | M      | 10/26/1981| QWXIT92XPEYYZZ0A8MR050ER8UJ30NYUHDJAEJHF2M3
+...
+...
+}}}
+
+There are numerous functions which can be used to generate randomized data in different ways. Best is to create a wrapper package which can generate number, string, date etc based on the parameter passed and then call that package. I will share it as soon as I am done writing it.
+
+=== 在 Oracle 中生成随机数值 ===
+
+这是 Oracle 普通的旧的随机数值生成器。这个可以生成 0-100 之间的随机数值，如果你想自己设置数值范围，那么改变乘数就可以了。
+
+{{{class="brush: sql"
+--generate random number between 0 and 100
+SELECT ROUND (DBMS_RANDOM.VALUE () * 100) + 1 AS random_num FROM DUAL;
+}}}
+
+=== 检查表中是否含有任何的数据 ===
+
+这个可以有很多中写法，你可以使用`count(*)`来查看表里的行的数量，但是这个查询语句
+比较高效和快速，而且我们只是想知道表里是否有任何的数据。
+
+{{{class="brush: sql"
+SELECT 1
+  FROM TABLE_NAME
+ WHERE ROWNUM = 1;
+}}}
+
+
