@@ -3,6 +3,42 @@
 
 %toc HTML文本
 
+= HTML DOCTYPE =
+
+
+HTML 文档是根据文档类型声明进行验证的。如果希望 HTML 文件被正确地验证，就要将恰当的 DTD 添加到文件的第一行。
+
+HTML 4.01 Strict DTD 包含没有被反对使用或者不出现在框架中的元素和属性：
+
+{{{class="brush: html"
+<!DOCTYPE HTML PUBLIC
+"-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+}}}
+
+HTML 4.01 Transitional DTD 包含 strict DTD 中所有的内容，外加被反对使用的元素和属性：
+
+{{{class="brush: html"
+<!DOCTYPE HTML PUBLIC
+"-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+}}}
+
+HTML 4.01 Frameset DTD 包含 transitional DTD 中所有的内容，外加对框架的支持：
+
+{{{class="brush: html"
+<!DOCTYPE HTML PUBLIC
+"-//W3C//DTD HTML 4.01 Frameset//EN"
+"http://www.w3.org/TR/html4/frameset.dtd">
+}}}
+
+
+
+
+
+
+
+
 = HTML元素布局 =
 
 大多数 HTML 元素被定义为块级元素或内联元素。
@@ -313,4 +349,63 @@ Here is some Hebrew text
 </body>
 </html>
 }}}
+
+
+=== 字体 ===
+
+| 属性                | 例子            | 作用             |
+|---------------------|-----------------|------------------|
+| size="number"       | size="2"        | 定义字体大小。   |
+| size="+number"      | size="+1"       | 增加字体的大小。 |
+| size="-number"      | size="-1"       | 减少字体的大小。 |
+| face="face-name"    | face="Times"    | 定义字体名称。   |
+| color="color-value" | color="#eeff00" | 定义字体颜色。   |
+| color="color-name"  | color="red"     | 定义字体颜色。   |
+
+例子
+
+{{{class="brush: html"
+<p style="font-family:verdana;font-size:80%;color:green">
+This is a paragraph with some text in it. This is a paragraph with some text in
+it. This is a paragraph with some text in it. This is a paragraph with some 
+text in it.
+</p>
+}}}
+
+
+{{{class="brush: html"
+}}}
+
+
+{{{class="brush: html"
+}}}
+
+
+{{{class="brush: html"
+}}}
+
+
+{{{class="brush: html"
+}}}
+
+
+{{{class="brush: html"
+}}}
+
+
+{{{class="brush: html"
+}}}
+
+
+{{{class="brush: html"
+}}}
+
+
+{{{class="brush: html"
+}}}
+
+
+{{{class="brush: html"
+}}}
+
 
