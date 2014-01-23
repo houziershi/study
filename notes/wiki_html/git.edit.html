@@ -1,0 +1,389 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>EGit入门</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+<h1>EGit入门</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">EGit基本使用</a>
+<ul>
+<li><a href="#toc_1.1">开始egit的简单实用</a>
+<li><a href="#toc_1.2">分支（创建、推送、使用）</a>
+<li><a href="#toc_1.3">标签（创建、推送）</a>
+<li><a href="#toc_1.4">分支、标签的删除</a>
+<li><a href="#toc_1.5">使用远程已有本地还没有的分支</a>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">EGit基本使用</h1>
+
+<h2 id="toc_1.1">开始egit的简单实用</h2>
+
+<p>
+在eclipse中打开名字叫做“Git Repositories”的视图，然后复制项目的访问地址，在这个
+视图内Ctrl+V就可以进行配置了，或者以也可以找到按钮“Clone a……”，  
+</p>
+
+<p>
+<img src="images/egit/160246_Tez9_932586.jpg" />  
+</p>
+ 
+<p>
+弹出的界面如上，系统已经帮你填写了一些东西，你只需要将你的账号和密码填写好就
+可以了，接下来你需要的是点击“Next”和“Finish”然后等待（具体多久取决于网速和要
+下载的量）。克隆好后效果就是这样的：  
+</p>
+
+<p>
+<img src="images/egit/161908_SDqX_932586.jpg" />  
+</p>
+
+<p>
+我的是空的项目，如果你的是已经有代码的项目应该还要多一个文件夹，里面放着有各种
+托管文件。接下来为了演示，按照常规建一个java工程并且添加一个类，结果就像这样：  
+</p>
+
+<p>
+<img src="images/egit/160842_wYB1_932586.jpg" />  
+</p>
+
+<p>
+ 然后一步一步的将这个项目托管到git中去：在项目上右键，选择“Team-&gt;Share Project"  
+</p>
+
+<p>
+<img class="figure" src="images/egit/161627_3bDN_932586.jpg" />  
+</p>
+
+<p>
+ 然后选择git，next，然后选择刚才克隆的代码库（如果只有一个不需要选），  
+</p>
+
+<p>
+<img class="figure" src="images/egit/161613_QV4V_932586.jpg" />  
+</p>
+
+<p>
+ 最后点击”Finish“就可以了，接下来就是要将代码提交到代码库中去，在项目上右键，选择”Team--&amp;gt;Commit"  
+</p>
+
+<p>
+<img class="figure" src="images/egit/162129_1Jqt_932586.jpg" />  
+ 然后填写好注释勾选所有的文件，点击提交并推送就行了  
+</p>
+
+<p>
+<img class="figure" src="images/egit/162223_D38p_932586.jpg"  width="552" height="505">  
+</p>
+ 
+<p>
+基本的使用就是这些，不断地写代码、提交代码、推送代码，当然这是一个人开发，用git
+只是记录一下代码，以后万一需要可以找回，也就是我以前的用法（现在也没好到哪里去
+），但是有一点大材小用了吧，接下来说一些“高级”的。  
+</p>
+
+<h2 id="toc_1.2">分支（创建、推送、使用）</h2>
+ 
+<p>
+回到代码库的视图，在关于代码库的那一行上面右击，“Switch to--》new”（如果以后有了分支直接选就是了）：  
+</p>
+
+<p>
+<img class="figure" src="images/egit/163032_70K3_932586.jpg" />  
+</p>
+
+<p>
+然后填写分支的名称，从哪里来，用什么方式来等，然后点击“finish”就可以了：  
+</p>
+
+<p>
+<img class="figure" src="images/egit/163141_mr7t_932586.jpg" />  
+</p>
+
+<p>
+由于勾选了“checkout……”所以分支建好之后我们已经在使用新的分支了，  
+</p>
+
+<p>
+<img class="figure" src="images/egit/163255_eyVy_932586.jpg" />  
+</p>
+
+<p>
+接下来改动代码，添加一行打印，  
+</p>
+
+<p>
+<img class="figure" src="images/egit/163332_TpfI_932586.jpg" />  
+</p>
+
+<p>
+提交改变，填写说明：  
+</p>
+
+<p>
+<img class="figure" src="images/egit/163428_GwEB_932586.jpg" />  
+</p>
+ 
+<p>
+这里我直接提交并推送，但是后来才想起还没有说怎么直接推送新分支呢（我刚才的操作
+已经推送了新分支），下面来补充说一下怎么推送先新建的分支，在代码库的视图上右键
+“remote--》push”然后next，出现下图的界面  
+</p>
+
+<p>
+<img class="figure" src="images/egit/163730_bC1U_932586.jpg" />  
+</p>
+
+<p>
+单击“add all branches……”就会出现中间的那个“update……”了，然后finish就会把所有的
+分支都更新（新分支会推送出去），当然这里偷懒了。  
+</p>
+
+<p>
+我们在develop分支上更改了代码，在master分支上是没有变化的，切换过去看一下：  
+</p>
+
+<p>
+<img class="figure" src="images/egit/164117_G7Z5_932586.jpg" />  
+</p>
+
+<p>
+服务器呢，分支develop变化了，master也是没有变化的：  
+</p>
+
+<p>
+<img class="figure" src="images/egit/164202_iwo8_932586.jpg" />  
+</p>
+
+<p>
+<img class="figure" src="images/egit/164214_Ijdk_932586.jpg" />  
+</p>
+ 
+<p>
+这样两个分支的代码就不一样了，接下来我们要将分支develop的代码整合到master分支
+中去，这也是正常的开发中要做的，在一个分支中开发（大项目甚至更多），开发好后
+或者主干上有重大变动时，进行代码合并。  
+</p>
+
+<p>
+要将develop的代码合并进master，需要首先切换分支到master，然后再代码库视图上在
+本地的master上右键“merge”  
+</p>
+
+<p>
+<img class="figure" src="images/egit/164641_HGU8_932586.jpg" />  
+</p>
+
+<p>
+然后在弹出的界面中选择要合并进master的分支：develop：  
+</p>
+
+<p>
+<img class="figure" src="images/egit/164743_no3Z_932586.jpg" />  
+</p>
+
+<p>
+点击“merge”，如果有冲突的话会在代码上有标记，到时候需要解决之后再继续，合并之后
+的效果：  
+</p>
+
+<p>
+<img class="figure" src="images/egit/164914_1bor_932586.jpg" />  
+</p>
+ 
+<p>
+可以看到我添加的那一条打印语句已经合并进来了，由于还没有推送，所以在项目上有一个
+“↑1”，那么接下来我就推送到服务器上去。在代码库的视图上右键，“remote--》push”，
+然后选择“add all branches……”，点击finish  
+</p>
+
+<p>
+<img class="figure" src="images/egit/165254_WCe8_932586.jpg"  width="457" height="510">  
+</p>
+
+<p>
+<img class="figure" src="images/egit/165317_Ayw2_932586.jpg"  width="598" height="263">  
+</p>
+
+<p>
+然后在服务器上就可以看到master分支的代码已经更新了：  
+</p>
+
+<p>
+<img class="figure" src="images/egit/165359_7jbV_932586.jpg" />  
+</p>
+ 
+<p>
+分支的使用就是这些了，是不是很简单、很快捷？我们在开发中对于合并分支、提交关键
+代码更改这样的大事是不是需要记录一下，虽然可以看历史记录，但是还有一个更方便的
+东西----标签，下面就介绍如何使用标签。  
+</p>
+
+<h2 id="toc_1.3">标签（创建、推送）</h2>
+
+<p>
+如前面所说，标签就是用来记录大事件的，便于以后查看，标签不止一种，但是我不介绍
+（网上有的是，而且我也说不明白），需要的可以自行上网搜索。  
+</p>
+
+<p>
+创建标签很简单，只需在代码库的视图的“Tags”上右键，“Create tag”，  
+</p>
+
+<p>
+<img class="figure" src="images/egit/170023_VkUt_932586.jpg" />  
+</p>
+
+<p>
+弹出的窗口中，填写标签的名称、说明、基于哪一版代码，然后finnish：  
+</p>
+
+<p>
+<img class="figure" src="images/egit/170107_Obsj_932586.jpg" />  
+</p>
+
+<p>
+接下来要做的是将标签推送到服务器，方法也是在代码库的视图上右键“remote--》push”  
+</p>
+
+<p>
+<img class="figure" src="images/egit/170413_XUE6_932586.jpg" />  
+</p>
+
+<p>
+借来点击一次next，然后点击“add all tag……”推送所有标签更改，当然和分支一样，
+新标签也会推送出去  
+</p>
+
+<p>
+<img class="figure" src="images/egit/170612_Mrqs_932586.jpg" />  
+</p>
+
+<p>
+标签使用就介绍到这里了。  
+</p>
+
+<h2 id="toc_1.4">分支、标签的删除</h2>
+ 
+<p>
+分支在完成该分支的开发后可能要删除（不知道最佳做法是删除还是不删除），把标签有
+时候需要删除（标签原则上不删除）。反正就是有时候要删除，下面介绍一下删除的做法。  
+</p>
+
+<p>
+为了演示删除标签，特意新建一个标签，在服务器上查看的情况是这样的：  
+</p>
+
+<p>
+<img class="figure" src="images/egit/171507_PXXf_932586.jpg" />  
+</p>
+ 
+<p>
+删除标签，需要在代码库的视图上右键“remote--》push”，然后“add all tag……”
+添加一栏，可以看出来标签在远程的记录是“refs/tags/*”我们将前面的“update”
+单击一下变成“delete”，悲剧出现了：
+</p>
+
+<p>
+后面的列都不见了，没办法手动填写吧（分支还好可以辅助生成，这个只能手动，可能是
+标签真的不应该删除吧），先前我们知道标签在远程的记录是“refs/tags/*”，我们
+旧照样子写，然后八角具体的标签名写上，就成了这个样子：  
+</p>
+
+<p>
+<img class="figure" src="images/egit/171416_FK4y_932586.jpg" />  
+</p>
+
+<p>
+然后点击finish远程的标签就删除了，当然为了防止下一次将这个标签推送出去，我们
+需要在本地也删除这个标签，在标签上右键“delete”：  
+</p>
+
+<p>
+<img class="figure" src="images/egit/171759_HCSh_932586.jpg" />  
+</p>
+
+<p>
+这样服务器上的标签就没有了：  
+</p>
+
+<p>
+<img class="figure" src="images/egit/171835_AntG_932586.jpg" />  
+</p>
+
+<p>
+删除分支也差不多，为了演示我也建了一个叫做delete的分支，  
+</p>
+
+<p>
+<img class="figure" src="images/egit/172148_WhpT_932586.jpg" />  
+</p>
+
+<p>
+删除步骤就是在代码库的视图上右键，“remote--》push”然后next，然后可以使用向导
+生成删除请求，不用像标签那样手动写了，  
+</p>
+
+<p>
+<img class="figure" src="images/egit/172212_CFzP_932586.jpg" />  
+</p>
+
+<p>
+方法为：上面的上面的“Source ref:”和“Destination ref”选择要删除分支，然后点击
+后面的“add spec”，这个时候下面记录的是“update”我们点击一下这个update就会变成
+“delete”了，然后点击finish远程服务器上的分支就会被删除，  
+</p>
+
+<p>
+<img class="figure" src="images/egit/172542_Pa1S_932586.jpg" />  
+</p>
+
+<p>
+可以看到，服务器上已经有了delete分支，当然本地的delete分支也最好一并删除了，
+方法和删除标签一样，就不截图了。  
+</p>
+
+<h2 id="toc_1.5">使用远程已有本地还没有的分支</h2>
+ 
+<p>
+在远程服务器上别人推送提交了一个新的分支，或者本地的代码库是刚克隆的而原来已有
+不止一个分支，那么本地是不会有除master（默认分支）以外的分支的（remote下面有）
+，那么如何得到呢？  
+</p>
+ 
+<p>
+本人尝试过在remote下面的分支上checkout，但是代码出来了，更改推送不出去。那么在
+代码库的视图上“fetch from……”呢，这样根本就没有提示有版本变化！  
+</p>
+
+<p>
+经过不断尝试、探索，关键在于在local下面没有分支的记录，最后终于找到，在新建分支
+的窗口上，选择来源就用remote的那个分支就行，截图就像下面：  
+</p>
+
+<p>
+<img class="figure" src="images/egit/174551_iU4P_932586.jpg" />
+</p>
+ </div>
+</body>
+</html>

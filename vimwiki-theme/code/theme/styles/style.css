@@ -86,7 +86,8 @@ blockquote > :first-child { margin-top: 0; }
 blockquote > :last-child { margin-bottom: 0; }
 
 
-img { max-width: 100%; }
+/*img.figure { max-width:100%; height:auto; } */
+p>img { max-width:60%; height:auto; border: 5px white solid;}
 
 span.frame { display: block; overflow: hidden; }
 span.frame > span {

@@ -104,6 +104,8 @@ vim csv：[[vim.csv]]
 
 Git：[[git]]
 
+egit： [[git.edit]]
+
 SVN：[[Subversion]]
 
 == 构建工具 ==
@@ -257,3 +259,7 @@ xmpp.lib：[[XMPP.lib.desine]]
 = 音乐 =
 
 [[music]]
+
+== 其他 ==
+
+[[wine.base]]
