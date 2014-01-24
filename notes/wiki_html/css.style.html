@@ -1,0 +1,687 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>CSS</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+<h1>CSS</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">引入</a>
+<ul>
+<li><a href="#toc_1.1">引入外部css</a>
+<li><a href="#toc_1.2">内部样式</a>
+<li><a href="#toc_1.3">行内样式</a>
+</ul>
+<li><a href="#toc_2">选择器</a>
+<ul>
+<li><a href="#toc_2.1">多重选择器</a>
+<li><a href="#toc_2.2">结点属性选择器</a>
+<li><a href="#toc_2.3">CSS 伪类 (Pseudo-classes)</a>
+</ul>
+<li><a href="#toc_3">背景</a>
+<li><a href="#toc_4">设置表单组件的样式</a>
+<li><a href="#toc_5">超链接</a>
+<ul>
+<li><a href="#toc_5.1">:focus伪类(取得焦点)</a>
+<li><a href="#toc_5.2">:first-child(第一个子元素)</a>
+<li><a href="#toc_5.3">:first-child(第一个子元素)</a>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">引入</h1>
+
+<h2 id="toc_1.1">引入外部css</h2>
+
+<pre class="brush: html">
+&lt;head&gt;
+	&lt;link rel="stylesheet" type="text/css" href="mystyle.css" /&gt;
+&lt;/head&gt;
+</pre>
+
+<h2 id="toc_1.2">内部样式</h2>
+
+<pre class="brush: html">
+&lt;head&gt;
+&lt;head&gt;
+&lt;style type="text/css"&gt;
+  hr {color: sienna;}
+  p {margin-left: 20px;}
+  body {background-image: url("images/back40.gif");}
+&lt;/style&gt;
+&lt;/head&gt;
+</pre>
+
+<h2 id="toc_1.3">行内样式</h2>
+
+<pre class="brush: html">
+&lt;head&gt;
+&lt;p style="color: sienna; margin-left: 20px"&gt;
+	This is a paragraph
+&lt;/p&gt;
+</pre>
+
+<h1 id="toc_2">选择器</h1>
+
+<p>
+css选择器用来选择指定的dom结点，语法：
+</p>
+
+<pre class="brush: css">
+ node-type  { ... }   // 标签
+.node-class { ... }   // 样式
+#node-id    { ... }   // id
+</pre>
+
+<h2 id="toc_2.1">多重选择器</h2>
+
+<p>
+同时应用到多个不同的选择器：
+</p>
+
+<pre class="brush: css">
+selector, selector, selector { ... }
+</pre>
+
+<p>
+选择元素内的存在的元素（中间可以隔了其他元素），语法：
+</p>
+
+<pre class="brush: css">
+selector selector selector { ... }
+</pre>
+
+<p>
+选择元素内的的第一层元素，语法：
+</p>
+
+<pre class="brush: css">
+selector &gt; selector &gt; selector { ... }
+</pre>
+
+<p>
+选择元素同一级的下一个元素，语法：
+</p>
+
+<pre class="brush: css">
+selector + selector + selector { ... }
+</pre>
+
+<h2 id="toc_2.2">结点属性选择器</h2>
+
+<pre class="brush: css">
+[attr-name] { ... }
+[attr-name=attr-value] { ... }
+</pre>
+
+<p>
+从有空格的值中匹配：
+</p>
+
+<pre class="brush: html">
+&lt;style type="text/css"&gt;
+	[title~=hello] { color:red; } 
+&lt;/style&gt;
+
+&lt;h1&gt;可以应用样式：&lt;/h1&gt;
+
+&lt;h2 title="hello world"&gt;Hello world&lt;/h2&gt;
+&lt;p title="student hello"&gt;Hello W3School students!&lt;/h1&gt;
+
+&lt;h1&gt;无法应用样式：&lt;/h1&gt;
+
+&lt;h2 title="world"&gt;Hello world&lt;/h2&gt;
+&lt;p title="student"&gt;Hello W3School students!&lt;/p&gt;
+</pre>
+
+<p>
+从有连字符的值中匹配 例子：
+</p>
+
+<pre class="brush: css">
+&lt;style type="text/css"&gt;
+	[lang|=en] { color:red; }
+&lt;/style&gt;
+
+&lt;h1&gt;可以应用样式：&lt;/h1&gt;
+
+&lt;p lang="en"&gt;Hello!&lt;/p&gt;
+&lt;p lang="en-us"&gt;Hi!&lt;/p&gt;
+
+&lt;h1&gt;无法应用样式：&lt;/h1&gt;
+
+&lt;p lang="us"&gt;Hi!&lt;/p&gt;
+&lt;p lang="zh"&gt;Hao!&lt;/p&gt;
+</pre>
+
+
+<h2 id="toc_2.3">CSS 伪类 (Pseudo-classes)</h2>
+
+<p>
+伪类的语法：
+</p>
+
+<pre class="brush: css">
+selector : pseudo-class {property: value}
+</pre>
+
+<p>
+CSS 类也可与伪类搭配使用：
+</p>
+
+<pre class="brush: css">
+selector.class : pseudo-class {property: value}
+</pre>
+
+<p>
+常用的伪类：
+</p>
+
+<table>
+<tr>
+<th>
+属性
+</th>
+<th>
+描述
+</th>
+<th>
+CSS
+</th>
+</tr>
+<tr>
+<td>
+:active
+</td>
+<td>
+向被激活的元素添加样式。
+</td>
+<td>
+1
+</td>
+</tr>
+<tr>
+<td>
+:focus
+</td>
+<td>
+向拥有键盘输入焦点的元素添加样式。
+</td>
+<td>
+2
+</td>
+</tr>
+<tr>
+<td>
+:hover
+</td>
+<td>
+当鼠标悬浮在元素上方时，向元素添加样式。
+</td>
+<td>
+1
+</td>
+</tr>
+<tr>
+<td>
+:link
+</td>
+<td>
+向未被访问的链接添加样式。
+</td>
+<td>
+1
+</td>
+</tr>
+<tr>
+<td>
+:visited
+</td>
+<td>
+向已被访问的链接添加样式。
+</td>
+<td>
+1
+</td>
+</tr>
+<tr>
+<td>
+:first-child
+</td>
+<td>
+向元素的第一个子元素添加样式。
+</td>
+<td>
+2
+</td>
+</tr>
+<tr>
+<td>
+:lang
+</td>
+<td>
+向带有指定 lang 属性的元素添加样式。
+</td>
+<td>
+2
+</td>
+</tr>
+</table>
+
+<h1 id="toc_3">背景</h1>
+
+<p>
+所有背景属性都不能继承
+</p>
+
+<p>
+可以为所有元素设置背景色，这包括<code>body</code>一直到<code>em</code>和<code>a</code>等行内元素。
+<code>background-color</code>不能继承，其默认值是<code>transparent</code>“透明”。
+如果一个元素没有指定背景色，那么背景就是透明的，这样其祖先元素的背景才能可见。
+这条规则把元素的背景设置为灰色：
+</p>
+
+<pre class="brush: css">
+p {background-color: gray;}
+</pre>
+
+<p>
+增加内边距：
+</p>
+
+<pre class="brush: css">
+p {background-color: gray; padding: 20px;}
+</pre>
+
+<p>
+图像放入背景<code>background-image</code>默认值是<code>none</code>。大多数背景都应用到<code>body</code>元素，不过
+并不仅限于此。<code>background-image</code>也不能继承。如果需要设置一个背景图像，必须为这个
+属性设置一个 URL 值：
+</p>
+
+<pre class="brush: css">
+body {background-image: url(/i/eg_bg_04.gif);}
+</pre>
+
+<p>
+可以为行内元素设置背景图像：
+</p>
+
+<pre class="brush: css">
+a.radio {background-image: url(/i/eg_bg_07.gif);}
+</pre>
+
+<p>
+属性值<code>repeat</code>导致图像在水平垂直方向上都平铺，就像以往背景图像的通常做法一样。
+<code>repeat-x</code>和<code>repeat-y</code>分别导致图像只在水平或垂直方向上重复，<code>no-repeat</code>则不允许
+图像在任何方向上平铺。默认地，背景图像将从一个元素的左上角开始。请看下面的例子：
+</p>
+
+<pre class="brush: css">
+body { 
+  background-image: url(/i/eg_bg_03.gif);
+  background-repeat: repeat-y;
+}
+</pre>
+
+<p>
+可以利用<code>background-position</code>属性改变图像在背景中的位置。下面的例子在<code>body</code>元素
+中将一个背景图像居中放置：
+</p>
+
+<pre class="brush: css">
+body { 
+    background-image:url('/i/eg_bg_03.gif');
+    background-repeat:no-repeat;
+    background-position:center;
+}
+</pre>
+
+<p>
+为<code>background-position</code>属性提供值有很多方法。
+</p>
+
+<p>
+首先，可以使用一些关键字：<code>top</code>、<code>bottom</code>、<code>left</code>、<code>right</code>和<code>center</code>。<code>100px</code>或
+<code>5cm</code>，最后也可以使用百分数值。
+</p>
+
+<p>
+图像放置关键字最容易理解，其作用如其名称所表明的。<code>top right</code>使图像放置在元素
+内边距区的右上角。如果只出现一个关键字，则认为另一个关键字是<code>center</code>。
+</p>
+
+<p>
+所以，如果希望每个段落的中部上方出现一个图像，只需声明如下：
+</p>
+
+<pre class="brush: css">
+p { 
+    background-image:url('bgimg.gif');
+    background-repeat:no-repeat;
+    background-position:top;
+}
+</pre>
+
+<p>
+下面是等价的位置关键字：
+</p>
+
+<table>
+<tr>
+<th>
+单一关键字
+</th>
+<th>
+等价的关键字
+</th>
+</tr>
+<tr>
+<td>
+center
+</td>
+<td>
+center center
+</td>
+</tr>
+<tr>
+<td>
+top
+</td>
+<td>
+top center 或 center top
+</td>
+</tr>
+<tr>
+<td>
+bottom
+</td>
+<td>
+bottom center 或 center bottom
+</td>
+</tr>
+<tr>
+<td>
+right
+</td>
+<td>
+right center 或 center right
+</td>
+</tr>
+<tr>
+<td>
+left
+</td>
+<td>
+left center 或 center left
+</td>
+</tr>
+</table>
+
+<p>
+百分数值的表现方式：
+</p>
+
+<pre class="brush: css">
+body { 
+    background-image:url('/i/eg_bg_03.gif');
+    background-repeat:no-repeat;
+    background-position:50% 50%;
+}
+</pre>
+
+<p>
+如把一个图像放在水平方向 2/3、垂直方向 1/3 处，可以这样声明：
+</p>
+
+<pre class="brush: css">
+body { 
+    background-image:url('/i/eg_bg_03.gif');
+    background-repeat:no-repeat;
+    background-position:66% 33%;
+}
+</pre>
+
+<p>
+如果只提供一个百分数值，所提供的这个值将用作水平值，垂直值将假设为 50%。这一点
+与关键字类似。
+</p>
+
+<p>
+长度值解释的是元素内边距区左上角的偏移。偏移点是图像的左上角。
+</p>
+
+<p>
+如果设置值为 50px 100px，图像的左上角将在元素内边距区左上角向右 50 像素、向下 
+100 像素的位置上：
+</p>
+
+<pre class="brush: css">
+body { 
+    background-image:url('/i/eg_bg_03.gif');
+    background-repeat:no-repeat;
+    background-position:50px 100px;
+}
+</pre>
+
+<p>
+注意，这一点与百分数值不同，因为偏移只是从一个左上角到另一个左上角。也就是说，
+图像的左上角与<code>background-position</code>声明中的指定的点对齐。
+</p>
+
+<p>
+<code>background-attachment</code>属性防止背景图像随内容滚动：
+</p>
+
+<pre class="brush: css">
+body {
+  background-image:url(/i/eg_bg_02.gif);
+  background-repeat:no-repeat;
+  background-attachment:fixed
+}
+</pre>
+
+<p>
+ CSS 背景属性                                                         
+</p>
+ 
+<table>
+<tr>
+<th>
+属性背景属性
+</th>
+<th>
+描述
+</th>
+</tr>
+<tr>
+<td>
+background
+</td>
+<td>
+简写属性，作用是将背景属性设置在一个声明中。
+</td>
+</tr>
+<tr>
+<td>
+background-attachment
+</td>
+<td>
+背景图像是否固定或者随着页面的其余部分滚动。
+</td>
+</tr>
+<tr>
+<td>
+background-color
+</td>
+<td>
+设置元素的背景颜色。
+</td>
+</tr>
+<tr>
+<td>
+background-image
+</td>
+<td>
+把图像设置为背景。
+</td>
+</tr>
+<tr>
+<td>
+background-position
+</td>
+<td>
+设置背景图像的起始位置。
+</td>
+</tr>
+<tr>
+<td>
+background-repeat
+</td>
+<td>
+设置背景图像是否及如何重复。
+</td>
+</tr>
+</table>
+
+
+<h1 id="toc_4">设置表单组件的样式</h1>
+
+<pre class="brush: css">
+input[type="text"] {
+  width:150px;
+  display:block;
+  margin-bottom:10px;
+  background-color:yellow;
+  font-family: Verdana, Arial;
+}
+
+input[type="button"] {
+  width:120px;
+  margin-left:35px;
+  display:block;
+  font-family: Verdana, Arial;
+}
+</pre>
+
+<h1 id="toc_5">超链接</h1>
+
+<ul>
+<li>
+注意：在 CSS 定义中，a:hover 必须位于 a:link 和 a:visited 之后，这样才能生效！
+
+<li>
+注意：在 CSS 定义中，a:active 必须位于 a:hover 之后，这样才能生效！
+
+</ul>
+
+<pre class="brush: html">
+&lt;style type="text/css"&gt;
+	a:link		{color: #FF0000}
+	a:visited	{color: #00FF00}
+	a:hover		{color: #FF00FF}
+	a:active	{color: #0000FF}
+&lt;/style&gt;
+</pre>
+
+<pre class="brush: html">
+&lt;style type="text/css"&gt;
+	a.two:link {color: #ff0000}
+	a.two:visited {color: #0000ff}
+	a.two:hover {font-size: 150%}
+&lt;/style&gt;
+&lt;a class="two" href="/index.html" target="_blank"&gt;这个链接改变字体大小&lt;/a&gt;
+</pre>
+
+<pre class="brush: html">
+&lt;style type="text/css"&gt;
+	a.three:link {color: #ff0000}
+	a.three:visited {color: #0000ff}
+	a.three:hover {background: #66ff66}
+&lt;/style&gt;
+&lt;a class="three" href="/index.html" target="_blank"&gt;这个链接改变背景颜色&lt;/a&gt;
+</pre>
+
+<pre class="brush: html">
+&lt;style type="text/css"&gt;
+	a.four:link {color: #ff0000}
+	a.four:visited {color: #0000ff}
+	a.four:hover {font-family: monospace}
+&lt;/style&gt;
+&lt;a class="four" href="/index.html" target="_blank"&gt;这个链接改变字体系列&lt;/a&gt;
+</pre>
+
+<pre class="brush: html">
+&lt;style type="text/css"&gt;
+	a.five:link {color: #ff0000; text-decoration: none}
+	a.five:visited {color: #0000ff; text-decoration: none}
+	a.five:hover {text-decoration: underline}
+&lt;/style&gt;
+&lt;a class="five" href="/index.html" target="_blank"&gt;这个链接改变文本装饰&lt;/a&gt;
+</pre>
+
+
+
+<h2 id="toc_5.1">:focus伪类(取得焦点)</h2>
+
+<pre class="brush: html">
+&lt;style type="text/css"&gt;
+	input:focus { background-color:yellow; }
+&lt;/style&gt;
+&lt;input type="text" name="fname" /&gt;
+</pre>
+
+
+
+<h2 id="toc_5.2">:first-child(第一个子元素)</h2>
+
+<pre class="brush: html">
+&lt;style type="text/css"&gt;
+	p:first-child {font-weight: bold;}
+	li:first-child {text-transform:uppercase;}
+&lt;/style&gt;
+&lt;ul&gt;
+	&lt;li&gt;Intert Key&lt;/li&gt;
+	&lt;li&gt;Turn key &lt;strong&gt;clockwise&lt;/strong&gt;&lt;/li&gt;
+	&lt;li&gt;Push accelerator&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Do &lt;em&gt;not&lt;/em&gt; push the brake at the same time as the accelerator.&lt;/p&gt;
+</pre>
+
+
+
+<h2 id="toc_5.3">:first-child(第一个子元素)</h2>
+
+<p>
+lang 伪类允许您为不同的语言定义特殊的规则。在下面的例子中，在下面的例子中，
+<code>:lang</code>类为带有值为 "no" 的<code>lang</code>属性的<code>q</code>元素定义引号的类型：<code>&lt;/p&gt;</code>
+</p>
+
+<pre class="brush: html">
+&lt;style type="text/css"&gt;
+	q:lang(no) { quotes: "~" "~" }
+&lt;/style&gt;
+
+&lt;p&gt;一些文本 &lt;q lang="no"&gt;段落中的引用&lt;/q&gt; 一些文本。&lt;/p&gt;
+</pre>
+ </div>
+</body>
+</html>

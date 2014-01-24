@@ -2,4 +2,7 @@
 
 省略长文字
 
+
+{{{class="brush: css"
 .com-more{text-overflow:ellipsis; overflow:hidden;white-space:nowrap}
+}}}

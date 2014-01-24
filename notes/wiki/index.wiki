@@ -7,56 +7,19 @@
 
 == 语言 ==
 
-=== Scala ===
+Scala：[[scala]]
 
-Scala基础：[[scala]]
-
-Scala样例：[[scala.example]]
-
-=== Java ===
-
-语言：[[java]]
-
-常用库：[[java.libs]]
-
-虚拟机：[[java.jvm]]
-
-代码示例：[[java.example]]
-
-=== Jsp ===
+java：[[java]]
 
 Velocity：[[velocity]]
 
-=== JavaScript ===
-
-JavaScript基础：[[Javascript]]
-
-JQuery：[[JQuery]]
-
-AngularJs：[[AngularJs]]
-
-ExtJs：[[ExtJS]]
-
-MathJax：[[MathJax]]
-
-reveal.js： [[reveal.js]]
-
-[[ga.example]]
-
-=== HTML CSS ===
+JavaScript：[[Javascript]]
 
 html：[[html]]
 
-html5： [[html5]]
-
-[[css]]
-
-
-=== Python ===
+xml：[[xml]]
 
 [[python.example]]
-
-=== Perl ===
 
 [[Perl.quickview]]
 

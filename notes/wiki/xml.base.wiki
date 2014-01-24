@@ -1,0 +1,242 @@
+%title XML
+
+%toc XML
+
+= 基础 =
+
+== 声明 ==
+
+{{{class="brush: xml"
+<?xml version="1.0" encoding="ISO-8859-1"?>
+}}}
+
+== 转义 ==
+
+| &lt;   | < | 小于   |
+| &gt;   | > | 大于   |
+| &amp;  | & | 和号   |
+| &apos; | ' | 单引号 |
+| &quot; | " | 引号   |
+
+== 验证 ==
+
+分别可以用老版本的DTD或是新版本的XML Schema来定义。
+
+= CSS 格式化 XML =
+
+{{{class="brush: xml"
+CATALOG { background-color: #ffffff; width: 100%; }
+CD { display: block; margin-bottom: 30pt; margin-left: 0; }
+TITLE { color: #FF0000; font-size: 20pt; }
+ARTIST { color: #0000FF; font-size: 20pt; }
+COUNTRY,PRICE,YEAR,COMPANY { display: block; color: #000000; margin-left: 20pt; }
+}}}
+
+XML中引用CSS：
+
+{{{class="brush: xml; highlight: [2]"
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml-stylesheet type="text/css" href="cd_catalog.css"?>
+
+<CATALOG>
+	<CD>
+		<TITLE>Empire Burlesque</TITLE>
+		<ARTIST>Bob Dylan</ARTIST>
+		<COUNTRY>USA</COUNTRY>
+		<COMPANY>Columbia</COMPANY>
+		<PRICE>10.90</PRICE>
+		<YEAR>1985</YEAR>
+	</CD>
+	<CD>
+		<TITLE>Hide your heart</TITLE>
+		<ARTIST>Bonnie Tyler</ARTIST>
+		<COUNTRY>UK</COUNTRY>
+		<COMPANY>CBS Records</COMPANY>
+		<PRICE>9.90</PRICE>
+		<YEAR>1988</YEAR>
+	</CD>
+	<CD>
+		<TITLE>Greatest Hits</TITLE>
+		<ARTIST>Dolly Parton</ARTIST>
+		<COUNTRY>USA</COUNTRY>
+		<COMPANY>RCA</COMPANY>
+		<PRICE>9.90</PRICE>
+		<YEAR>1982</YEAR>
+	</CD>
+	<CD>
+		<TITLE>Still got the blues</TITLE>
+		<ARTIST>Gary Moore</ARTIST>
+		<COUNTRY>UK</COUNTRY>
+		<COMPANY>Virgin records</COMPANY>
+		<PRICE>10.20</PRICE>
+		<YEAR>1990</YEAR>
+	</CD>
+</CATALOG>
+}}}
+
+
+= 命名空间 =
+
+== 命名冲突 ==
+
+因为XML的标签都是用户自己定义的，所以两个人开发的两个XML都有`table`标签就
+搞不清楚了，所以要特别说明这两个`table`不是同一个东西。方法有：
+
+# 前缀
+# 命名空间
+
+== 使用前缀来避免命名冲突 ==
+
+此文档带有某个表格中的信息：
+
+{{{class="brush: xml"
+<h:table>
+   <h:tr>
+   <h:td>Apples</h:td>
+   <h:td>Bananas</h:td>
+   </h:tr>
+</h:table>
+}}}
+
+此 XML 文档携带着有关一件家具的信息：
+
+{{{class="brush: xml"
+<f:table>
+   <f:name>African Coffee Table</f:name>
+   <f:width>80</f:width>
+   <f:length>120</f:length>
+</f:table>
+}}}
+
+通过使用前缀，我们创建了两种不同类型的`<table>`元素：`<h:table>`和`<f:table>`。
+
+== 使用命名空间（Namespaces） ==
+
+与仅仅使用前缀不同，我们为`<table>`标签添加了一个`xmlns`属性，这样就为前缀赋予
+了一个与某个命名空间相关联的限定名称。
+
+这个 XML 文档携带着某个表格中的信息：
+
+{{{class="brush: xml"
+<h:table xmlns:h="http://www.w3.org/TR/html4/">
+   <h:tr>
+   <h:td>Apples</h:td>
+   <h:td>Bananas</h:td>
+   </h:tr>
+</h:table>
+}}}
+
+此 XML 文档携带着有关一件家具的信息：
+
+{{{class="brush: xml"
+<f:table xmlns:f="http://www.w3school.com.cn/furniture">
+   <f:name>African Coffee Table</f:name>
+   <f:width>80</f:width>
+   <f:length>120</f:length>
+</f:table>
+}}}
+
+== 命名空间（xmlns）属性格式 ==
+
+格式：
+
+{{{class="brush: xml"
+xmlns:namespace-prefix="namespaceURI"
+}}}
+
+当命名空间被定义在元素的开始标签中时，所有带有相同前缀的子元素都会与同一个命名
+空间相关联。
+
+注释：用于标示命名空间的地址不会被解析器用于查找信息。其惟一的作用是赋予命名空间
+一个惟一的名称。不过，很多公司常常会作为指针来使用命名空间指向实际存在的网页，
+这个网页包含关于命名空间的信息。
+
+== 默认的命名空间（Default Namespaces） ==
+
+为元素定义默认的命名空间可以让我们省去在所有的子元素中使用前缀的工作。
+
+请使用下面的语法：
+
+{{{class="brush: xml"
+xmlns="namespaceURI"
+}}}
+
+这个 XML 文档携带着某个表格中的信息：
+
+{{{class="brush: xml"
+<table xmlns="http://www.w3.org/TR/html4/">
+   <tr>
+   <td>Apples</td>
+   <td>Bananas</td>
+   </tr>
+</table>
+}}}
+
+此 XML 文档携带着有关一件家具的信息：
+
+{{{class="brush: xml"
+<table xmlns="http://www.w3school.com.cn/furniture">
+   <name>African Coffee Table</name>
+   <width>80</width>
+   <length>120</length>
+</table>
+}}}
+
+== 命名空间的实际应用 ==
+
+当开始使用 XSL 时，您不久就会看到实际使用中的命名空间。XSL 样式表用于将 XML 
+文档转换为其他格式，比如 HTML。
+
+如果您仔细观察下面的这个 XSL 文档，就会看到大多数的标签是HTML标签。非 HTML 的
+标签都有前缀 xsl，并由此命名空间标示：`http://www.w3.org/1999/XSL/Transform`：
+
+{{{class="brush: xml; highlight: [2]"
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+<xsl:template match="/">
+<html>
+<body>
+  <h2>My CD Collection</h2>
+  <table border="1">
+    <tr>
+      <th align="left">Title</th>
+      <th align="left">Artist</th>
+    </tr>
+    <xsl:for-each select="catalog/cd">
+    <tr>
+      <td><xsl:value-of select="title"/></td>
+      <td><xsl:value-of select="artist"/></td>
+    </tr>
+    </xsl:for-each>
+  </table>
+</body>
+</html>
+</xsl:template>
+
+</xsl:stylesheet>
+}}}
+
+= CDATA =
+
+* PCDATA 指的是被解析的字符数据（Parsed Character Data）。基本上大多数内容属于
+	此范围。
+
+* 术语 CDATA 指的是不应由 XML 解析器进行解析的文本数据（Unparsed Character Data）
+	。
+
+CDATA格式由：`<![CDATA[` 开始，由 `]]>`
+
+{{{class="brush: xml"
+<script>
+<![CDATA[
+function matchwo(a,b) {
+	if (a < b && a < 0) then {
+		return 1;
+	} else {
+		return 0;
+	}
+}
+]]>
+</script>
+}}}

@@ -1,0 +1,388 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>XML</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+<h1>XML</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">基础</a>
+<ul>
+<li><a href="#toc_1.1">声明</a>
+<li><a href="#toc_1.2">转义</a>
+<li><a href="#toc_1.3">验证</a>
+</ul>
+<li><a href="#toc_2">CSS 格式化 XML</a>
+<li><a href="#toc_3">命名空间</a>
+<ul>
+<li><a href="#toc_3.1">命名冲突</a>
+<li><a href="#toc_3.2">使用前缀来避免命名冲突</a>
+<li><a href="#toc_3.3">使用命名空间（Namespaces）</a>
+<li><a href="#toc_3.4">命名空间（xmlns）属性格式</a>
+<li><a href="#toc_3.5">默认的命名空间（Default Namespaces）</a>
+<li><a href="#toc_3.6">命名空间的实际应用</a>
+</ul>
+<li><a href="#toc_4">CDATA</a>
+</ul>
+</div>
+
+<h1 id="toc_1">基础</h1>
+
+<h2 id="toc_1.1">声明</h2>
+
+<pre class="brush: xml">
+&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+</pre>
+
+<h2 id="toc_1.2">转义</h2>
+
+<table>
+<tr>
+<td>
+&amp;lt;
+</td>
+<td>
+&lt;
+</td>
+<td>
+小于
+</td>
+</tr>
+<tr>
+<td colspan="2">
+&amp;gt;
+</td>
+<td>
+大于
+</td>
+</tr>
+<tr>
+<td>
+&amp;amp;
+</td>
+<td>
+&amp;
+</td>
+<td>
+和号
+</td>
+</tr>
+<tr>
+<td>
+&amp;apos;
+</td>
+<td>
+'
+</td>
+<td>
+单引号
+</td>
+</tr>
+<tr>
+<td>
+&amp;quot;
+</td>
+<td>
+"
+</td>
+<td>
+引号
+</td>
+</tr>
+</table>
+
+<h2 id="toc_1.3">验证</h2>
+
+<p>
+分别可以用老版本的DTD或是新版本的XML Schema来定义。
+</p>
+
+<h1 id="toc_2">CSS 格式化 XML</h1>
+
+<pre class="brush: xml">
+CATALOG { background-color: #ffffff; width: 100%; }
+CD { display: block; margin-bottom: 30pt; margin-left: 0; }
+TITLE { color: #FF0000; font-size: 20pt; }
+ARTIST { color: #0000FF; font-size: 20pt; }
+COUNTRY,PRICE,YEAR,COMPANY { display: block; color: #000000; margin-left: 20pt; }
+</pre>
+
+<p>
+XML中引用CSS：
+</p>
+
+<pre class="brush: xml; highlight: [2]">
+&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+&lt;?xml-stylesheet type="text/css" href="cd_catalog.css"?&gt;
+
+&lt;CATALOG&gt;
+	&lt;CD&gt;
+		&lt;TITLE&gt;Empire Burlesque&lt;/TITLE&gt;
+		&lt;ARTIST&gt;Bob Dylan&lt;/ARTIST&gt;
+		&lt;COUNTRY&gt;USA&lt;/COUNTRY&gt;
+		&lt;COMPANY&gt;Columbia&lt;/COMPANY&gt;
+		&lt;PRICE&gt;10.90&lt;/PRICE&gt;
+		&lt;YEAR&gt;1985&lt;/YEAR&gt;
+	&lt;/CD&gt;
+	&lt;CD&gt;
+		&lt;TITLE&gt;Hide your heart&lt;/TITLE&gt;
+		&lt;ARTIST&gt;Bonnie Tyler&lt;/ARTIST&gt;
+		&lt;COUNTRY&gt;UK&lt;/COUNTRY&gt;
+		&lt;COMPANY&gt;CBS Records&lt;/COMPANY&gt;
+		&lt;PRICE&gt;9.90&lt;/PRICE&gt;
+		&lt;YEAR&gt;1988&lt;/YEAR&gt;
+	&lt;/CD&gt;
+	&lt;CD&gt;
+		&lt;TITLE&gt;Greatest Hits&lt;/TITLE&gt;
+		&lt;ARTIST&gt;Dolly Parton&lt;/ARTIST&gt;
+		&lt;COUNTRY&gt;USA&lt;/COUNTRY&gt;
+		&lt;COMPANY&gt;RCA&lt;/COMPANY&gt;
+		&lt;PRICE&gt;9.90&lt;/PRICE&gt;
+		&lt;YEAR&gt;1982&lt;/YEAR&gt;
+	&lt;/CD&gt;
+	&lt;CD&gt;
+		&lt;TITLE&gt;Still got the blues&lt;/TITLE&gt;
+		&lt;ARTIST&gt;Gary Moore&lt;/ARTIST&gt;
+		&lt;COUNTRY&gt;UK&lt;/COUNTRY&gt;
+		&lt;COMPANY&gt;Virgin records&lt;/COMPANY&gt;
+		&lt;PRICE&gt;10.20&lt;/PRICE&gt;
+		&lt;YEAR&gt;1990&lt;/YEAR&gt;
+	&lt;/CD&gt;
+&lt;/CATALOG&gt;
+</pre>
+
+
+<h1 id="toc_3">命名空间</h1>
+
+<h2 id="toc_3.1">命名冲突</h2>
+
+<p>
+因为XML的标签都是用户自己定义的，所以两个人开发的两个XML都有<code>table</code>标签就
+搞不清楚了，所以要特别说明这两个<code>table</code>不是同一个东西。方法有：
+</p>
+
+<ol>
+<li>
+前缀
+
+<li>
+命名空间
+
+</ol>
+
+<h2 id="toc_3.2">使用前缀来避免命名冲突</h2>
+
+<p>
+此文档带有某个表格中的信息：
+</p>
+
+<pre class="brush: xml">
+&lt;h:table&gt;
+   &lt;h:tr&gt;
+   &lt;h:td&gt;Apples&lt;/h:td&gt;
+   &lt;h:td&gt;Bananas&lt;/h:td&gt;
+   &lt;/h:tr&gt;
+&lt;/h:table&gt;
+</pre>
+
+<p>
+此 XML 文档携带着有关一件家具的信息：
+</p>
+
+<pre class="brush: xml">
+&lt;f:table&gt;
+   &lt;f:name&gt;African Coffee Table&lt;/f:name&gt;
+   &lt;f:width&gt;80&lt;/f:width&gt;
+   &lt;f:length&gt;120&lt;/f:length&gt;
+&lt;/f:table&gt;
+</pre>
+
+<p>
+通过使用前缀，我们创建了两种不同类型的<code>&lt;table&gt;</code>元素：<code>&lt;h:table&gt;</code>和<code>&lt;f:table&gt;</code>。
+</p>
+
+<h2 id="toc_3.3">使用命名空间（Namespaces）</h2>
+
+<p>
+与仅仅使用前缀不同，我们为<code>&lt;table&gt;</code>标签添加了一个<code>xmlns</code>属性，这样就为前缀赋予
+了一个与某个命名空间相关联的限定名称。
+</p>
+
+<p>
+这个 XML 文档携带着某个表格中的信息：
+</p>
+
+<pre class="brush: xml">
+&lt;h:table xmlns:h="http://www.w3.org/TR/html4/"&gt;
+   &lt;h:tr&gt;
+   &lt;h:td&gt;Apples&lt;/h:td&gt;
+   &lt;h:td&gt;Bananas&lt;/h:td&gt;
+   &lt;/h:tr&gt;
+&lt;/h:table&gt;
+</pre>
+
+<p>
+此 XML 文档携带着有关一件家具的信息：
+</p>
+
+<pre class="brush: xml">
+&lt;f:table xmlns:f="http://www.w3school.com.cn/furniture"&gt;
+   &lt;f:name&gt;African Coffee Table&lt;/f:name&gt;
+   &lt;f:width&gt;80&lt;/f:width&gt;
+   &lt;f:length&gt;120&lt;/f:length&gt;
+&lt;/f:table&gt;
+</pre>
+
+<h2 id="toc_3.4">命名空间（xmlns）属性格式</h2>
+
+<p>
+格式：
+</p>
+
+<pre class="brush: xml">
+xmlns:namespace-prefix="namespaceURI"
+</pre>
+
+<p>
+当命名空间被定义在元素的开始标签中时，所有带有相同前缀的子元素都会与同一个命名
+空间相关联。
+</p>
+
+<p>
+注释：用于标示命名空间的地址不会被解析器用于查找信息。其惟一的作用是赋予命名空间
+一个惟一的名称。不过，很多公司常常会作为指针来使用命名空间指向实际存在的网页，
+这个网页包含关于命名空间的信息。
+</p>
+
+<h2 id="toc_3.5">默认的命名空间（Default Namespaces）</h2>
+
+<p>
+为元素定义默认的命名空间可以让我们省去在所有的子元素中使用前缀的工作。
+</p>
+
+<p>
+请使用下面的语法：
+</p>
+
+<pre class="brush: xml">
+xmlns="namespaceURI"
+</pre>
+
+<p>
+这个 XML 文档携带着某个表格中的信息：
+</p>
+
+<pre class="brush: xml">
+&lt;table xmlns="http://www.w3.org/TR/html4/"&gt;
+   &lt;tr&gt;
+   &lt;td&gt;Apples&lt;/td&gt;
+   &lt;td&gt;Bananas&lt;/td&gt;
+   &lt;/tr&gt;
+&lt;/table&gt;
+</pre>
+
+<p>
+此 XML 文档携带着有关一件家具的信息：
+</p>
+
+<pre class="brush: xml">
+&lt;table xmlns="http://www.w3school.com.cn/furniture"&gt;
+   &lt;name&gt;African Coffee Table&lt;/name&gt;
+   &lt;width&gt;80&lt;/width&gt;
+   &lt;length&gt;120&lt;/length&gt;
+&lt;/table&gt;
+</pre>
+
+<h2 id="toc_3.6">命名空间的实际应用</h2>
+
+<p>
+当开始使用 XSL 时，您不久就会看到实际使用中的命名空间。XSL 样式表用于将 XML 
+文档转换为其他格式，比如 HTML。
+</p>
+
+<p>
+如果您仔细观察下面的这个 XSL 文档，就会看到大多数的标签是HTML标签。非 HTML 的
+标签都有前缀 xsl，并由此命名空间标示：<code>http://www.w3.org/1999/XSL/Transform</code>：
+</p>
+
+<pre class="brush: xml; highlight: [2]">
+&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+&lt;xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"&gt;
+
+&lt;xsl:template match="/"&gt;
+&lt;html&gt;
+&lt;body&gt;
+  &lt;h2&gt;My CD Collection&lt;/h2&gt;
+  &lt;table border="1"&gt;
+    &lt;tr&gt;
+      &lt;th align="left"&gt;Title&lt;/th&gt;
+      &lt;th align="left"&gt;Artist&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;xsl:for-each select="catalog/cd"&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;xsl:value-of select="title"/&gt;&lt;/td&gt;
+      &lt;td&gt;&lt;xsl:value-of select="artist"/&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;/xsl:for-each&gt;
+  &lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+&lt;/xsl:template&gt;
+
+&lt;/xsl:stylesheet&gt;
+</pre>
+
+<h1 id="toc_4">CDATA</h1>
+
+<ul>
+<li>
+PCDATA 指的是被解析的字符数据（Parsed Character Data）。基本上大多数内容属于
+	此范围。
+
+</ul>
+
+<ul>
+<li>
+术语 CDATA 指的是不应由 XML 解析器进行解析的文本数据（Unparsed Character Data）
+	。
+
+</ul>
+
+<p>
+CDATA格式由：<code>&lt;![CDATA[</code> 开始，由 <code>]]&gt;</code>
+</p>
+
+<pre class="brush: xml">
+&lt;script&gt;
+&lt;![CDATA[
+function matchwo(a,b) {
+	if (a &lt; b &amp;&amp; a &lt; 0) then {
+		return 1;
+	} else {
+		return 0;
+	}
+}
+]]&gt;
+&lt;/script&gt;
+</pre>
+ </div>
+</body>
+</html>

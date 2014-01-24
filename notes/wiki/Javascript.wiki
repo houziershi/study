@@ -14,3 +14,16 @@
 例子：[[javascirpt.example]]
 
 模块化： [[javascript.module]]
+
+JQuery：[[JQuery]]
+
+AngularJs：[[AngularJs]]
+
+ExtJs：[[ExtJS]]
+
+MathJax：[[MathJax]]
+
+reveal.js： [[reveal.js]]
+
+Google Agent统计：[[ga.example]]
+

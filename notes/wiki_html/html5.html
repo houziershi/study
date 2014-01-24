@@ -1,0 +1,358 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>HTML5</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+<h1>HTML5</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">html5 视频</a>
+</ul>
+</div>
+
+<h1 id="toc_1">html5 视频</h1>
+
+<table>
+<tr>
+<th>
+属性
+</th>
+<th>
+值
+</th>
+<th>
+描述
+</th>
+</tr>
+<tr>
+<td>
+autoplay
+</td>
+<td>
+autoplay
+</td>
+<td>
+如果出现该属性，则视频在就绪后马上播放。
+</td>
+</tr>
+<tr>
+<td>
+controls
+</td>
+<td>
+controls
+</td>
+<td>
+如果出现该属性，则向用户显示控件，比如播放按钮。
+</td>
+</tr>
+<tr>
+<td>
+height
+</td>
+<td>
+pixels
+</td>
+<td>
+设置视频播放器的高度。
+</td>
+</tr>
+<tr>
+<td>
+loop
+</td>
+<td>
+loop
+</td>
+<td>
+如果出现该属性，则当媒介文件完成播放后再次开始播放。
+</td>
+</tr>
+<tr>
+<td>
+preload
+</td>
+<td>
+preload
+</td>
+<td>
+如果出现该属性，则视频在页面加载时进行加载，并预备播放。 <br/>如果使用 "autoplay"，则忽略该属性。
+</td>
+</tr>
+<tr>
+<td>
+src
+</td>
+<td>
+url
+</td>
+<td>
+要播放的视频的 URL。
+</td>
+</tr>
+<tr>
+<td>
+width
+</td>
+<td>
+pixels
+</td>
+<td>
+设置视频播放器的宽度。
+</td>
+</tr>
+</table>
+
+<p>
+方法、属性以及事件
+</p>
+
+<p>
+下面列出了大多数浏览器支持的视频方法、属性和事件：
+</p>
+
+<table>
+<tr>
+<th>
+方法
+</th>
+<th>
+属性
+</th>
+<th>
+事件
+</th>
+</tr>
+<tr>
+<td>
+play()
+</td>
+<td>
+currentSrc
+</td>
+<td>
+play
+</td>
+</tr>
+<tr>
+<td>
+pause()
+</td>
+<td>
+currentTime
+</td>
+<td>
+pause
+</td>
+</tr>
+<tr>
+<td>
+load()
+</td>
+<td>
+videoWidth
+</td>
+<td>
+progress
+</td>
+</tr>
+<tr>
+<td>
+canPlayType
+</td>
+<td>
+videoHeight 	error
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+duration
+</td>
+<td>
+timeupdate
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+ended
+</td>
+<td>
+ended
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+error
+</td>
+<td>
+abort
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+paused
+</td>
+<td>
+empty
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+muted
+</td>
+<td>
+emptied
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+seeking
+</td>
+<td>
+waiting
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+volume
+</td>
+<td>
+loadedmetadata
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+height
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+</td>
+<td>
+width
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+</table>
+
+<p>
+例子：
+</p>
+
+<ul>
+<li>
+<a href="../code/html5/01.video/01.simple.move.html">播放视频</a>
+
+<li>
+<a href="../code/html5/01.video/02.video.contrl.html">控制视频</a>
+
+</ul>
+
+<pre class="brush: html">
+</pre>
+
+
+<pre class="brush: html">
+</pre>
+
+
+<pre class="brush: html">
+</pre>
+
+
+<pre class="brush: html">
+</pre>
+
+
+<pre class="brush: html">
+</pre>
+
+
+<pre class="brush: html">
+</pre>
+
+
+<pre class="brush: html">
+</pre>
+
+
+<pre class="brush: html">
+</pre>
+
+
+<pre class="brush: html">
+</pre>
+
+
+<pre class="brush: html">
+</pre>
+
+
+<pre class="brush: html">
+</pre>
+
+
+<pre class="brush: html">
+</pre>
+
+
+<pre class="brush: html">
+</pre>
+
+
+<pre class="brush: html">
+</pre>
+ </div>
+</body>
+</html>
