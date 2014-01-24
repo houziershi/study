@@ -4,6 +4,7 @@
 
 [[xml.schema]]
 
-[[xml.xpath]]
-
-[[xml.xslt]]
+XSL指扩展样式表语言（EXtensible Stylesheet Language）由三部分组成：
+* [[xml.xpath]]
+* [[xml.xslt]]
+* [[xml.xsl-fo]]
