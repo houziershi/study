@@ -1,7 +1,5 @@
 [[xml.base]]
 
-[[xml.dtd]]
-
 [[xml.schema]]
 
 [[xml.xslt]]
