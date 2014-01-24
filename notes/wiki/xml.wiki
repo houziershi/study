@@ -4,4 +4,6 @@
 
 [[xml.schema]]
 
+[[xml.xpath]]
+
 [[xml.xslt]]

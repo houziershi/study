@@ -1,0 +1,2933 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>XPath</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+<h1>XPath</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">选择节点</a>
+<ul>
+<li><a href="#toc_1.1">选择节点</a>
+<li><a href="#toc_1.2">谓语（Predicates）</a>
+<li><a href="#toc_1.3">选取未知节点</a>
+<li><a href="#toc_1.4">选取若干路径</a>
+</ul>
+<li><a href="#toc_2">Axes（轴）</a>
+<ul>
+<li><a href="#toc_2.1">定义相对节点</a>
+<li><a href="#toc_2.2">位置路径表达式</a>
+<ul>
+<li><a href="#toc_2.2.1">绝对位置路径：</a>
+<li><a href="#toc_2.2.2">相对位置路径：</a>
+<li><a href="#toc_2.2.3">步（step）</a>
+</ul>
+</ul>
+<li><a href="#toc_3">XPath运算符</a>
+<li><a href="#toc_4">操作例子</a>
+<ul>
+<li><a href="#toc_4.1">选取所有 title</a>
+<li><a href="#toc_4.2">选取第一个 book 的 title</a>
+<li><a href="#toc_4.3">选取所有价格</a>
+<li><a href="#toc_4.4">选取价格高于 35 的 price 节点</a>
+<li><a href="#toc_4.5">选取价格高于 35 的 title 节点</a>
+</ul>
+<li><a href="#toc_5">函数速查</a>
+<ul>
+<li><a href="#toc_5.1">存取函数</a>
+<li><a href="#toc_5.2">错误和跟踪函数</a>
+<li><a href="#toc_5.3">有关数值的函数</a>
+<li><a href="#toc_5.4">有关字符串的函数</a>
+<li><a href="#toc_5.5">针对 anyURI 的函数</a>
+<li><a href="#toc_5.6">关于布尔值的函数</a>
+<li><a href="#toc_5.7">日期、时间、持续时间的组件提取函数</a>
+<li><a href="#toc_5.8">与 QNames 相关的函数</a>
+<li><a href="#toc_5.9">关于节点的函数</a>
+<li><a href="#toc_5.10">有关序列的函数</a>
+<li><a href="#toc_5.11">测试序列容量的函数</a>
+<li><a href="#toc_5.12">Equals, Union, Intersection and Except</a>
+<li><a href="#toc_5.13">合计函数</a>
+<li><a href="#toc_5.14">生成序列的函数</a>
+<li><a href="#toc_5.15">上下文函数</a>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">选择节点</h1>
+
+
+<p>
+XML 实例文档
+</p>
+
+<p>
+我们将在下面的例子中使用这个 XML 文档。
+</p>
+
+<pre class="brush: xml">
+&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+&lt;bookstore&gt;
+	&lt;book&gt;
+		&lt;title lang="eng"&gt;Harry Potter&lt;/title&gt;
+		&lt;price&gt;29.99&lt;/price&gt;
+	&lt;/book&gt;
+	&lt;book&gt;
+		&lt;title lang="eng"&gt;Learning XML&lt;/title&gt;
+		&lt;price&gt;39.95&lt;/price&gt;
+	&lt;/book&gt;
+&lt;/bookstore&gt;
+</pre>
+
+
+<p>
+XPath 使用路径表达式在 XML 文档中选取节点。节点是通过沿着路径或者 step 来选取的。
+下面列出了最有用的路径表达式：
+</p>
+
+<h2 id="toc_1.1">选择节点</h2>
+
+<table>
+<tr>
+<th>
+表达式
+</th>
+<th>
+描述
+</th>
+</tr>
+<tr>
+<td>
+<code>nodename</code>
+</td>
+<td>
+选取此节点的所有子节点。
+</td>
+</tr>
+<tr>
+<td>
+<code>/</code>
+</td>
+<td>
+从根节点选取。
+</td>
+</tr>
+<tr>
+<td>
+<code>//</code>
+</td>
+<td>
+从匹配选择的当前节点选择文档中的节点，而不考虑它们的位置。
+</td>
+</tr>
+<tr>
+<td>
+<code>.</code>
+</td>
+<td>
+选取当前节点。
+</td>
+</tr>
+<tr>
+<td>
+<code>..</code>
+</td>
+<td>
+选取当前节点的父节点。
+</td>
+</tr>
+<tr>
+<td>
+<code>@</code>
+</td>
+<td>
+选取属性。
+</td>
+</tr>
+</table>
+
+<p>
+实例
+</p>
+
+<p>
+在下面的表格中，我们已列出了一些路径表达式以及表达式的结果：
+</p>
+
+<table>
+<tr>
+<th>
+路径表达式
+</th>
+<th>
+结果
+</th>
+</tr>
+<tr>
+<td>
+<code>bookstore</code>
+</td>
+<td>
+选取 bookstore 元素的所有子节点。
+</td>
+</tr>
+<tr>
+<td>
+<code>/bookstore</code>
+</td>
+<td>
+选取根元素 bookstore。 注释：假如路径起始于正斜杠( / )，<br/>则此路径始终代表到某元素的绝对路径！
+</td>
+</tr>
+<tr>
+<td>
+<code>bookstore/book</code>
+</td>
+<td>
+选取属于 bookstore 的子元素的所有 book 元素。
+</td>
+</tr>
+<tr>
+<td>
+<code>//book</code>
+</td>
+<td>
+选取所有 book 子元素，而不管它们在文档中的位置。
+</td>
+</tr>
+<tr>
+<td>
+<code>bookstore//book</code>
+</td>
+<td>
+选择属于 bookstore 元素的后代的所有 book 元素，<br/>而不管它们位于 bookstore 之下的什么位置。
+</td>
+</tr>
+<tr>
+<td>
+<code>//@lang</code>
+</td>
+<td>
+选取名为 lang 的所有属性。
+</td>
+</tr>
+</table>
+
+<h2 id="toc_1.2">谓语（Predicates）</h2>
+
+<p>
+谓语用来查找某个特定的节点或者包含某个指定的值的节点。谓语被嵌在方括号中。
+</p>
+
+<p>
+实例
+</p>
+
+<p>
+在下面的表格中，我们列出了带有谓语的一些路径表达式，以及表达式的结果：
+</p>
+
+<table>
+<tr>
+<th>
+路径表达式
+</th>
+<th>
+结果
+</th>
+</tr>
+<tr>
+<td>
+<code>/bookstore/book[1]</code>
+</td>
+<td>
+选取属于 bookstore 子元素的第一个 book 元素。
+</td>
+</tr>
+<tr>
+<td>
+<code>/bookstore/book[last()]</code>
+</td>
+<td>
+选取属于 bookstore 子元素的最后一个 book 元素。
+</td>
+</tr>
+<tr>
+<td>
+<code>/bookstore/book[last()-1]</code>
+</td>
+<td>
+选取属于 bookstore 子元素的倒数第二个 book 元素。
+</td>
+</tr>
+<tr>
+<td>
+<code>/bookstore/book[position()&lt;3]</code>
+</td>
+<td>
+选取最前面的两个属于 bookstore 元素的子元素的 book 元素。
+</td>
+</tr>
+<tr>
+<td>
+<code>//title[@lang]</code>
+</td>
+<td>
+选取所有拥有名为 lang 的属性的 title 元素。
+</td>
+</tr>
+<tr>
+<td>
+<code>//title[@lang='eng']</code>
+</td>
+<td>
+选取所有 title 元素，且这些元素拥有值为 eng 的 lang 属性。
+</td>
+</tr>
+<tr>
+<td>
+<code>/bookstore/book[price&gt;35.00]</code>
+</td>
+<td>
+选取 bookstore 元素的所有 book 元素，且其中的 price 元素的值须大于 35.00。
+</td>
+</tr>
+<tr>
+<td>
+<code>/bookstore/book[price&gt;35.00]/title</code>
+</td>
+<td>
+选取 bookstore 元素中的 book 元素的所有 title 元素，且其中的 price 元素的值须大于 35.00。
+</td>
+</tr>
+</table>
+
+<h2 id="toc_1.3">选取未知节点</h2>
+
+<p>
+XPath 通配符可用来选取未知的 XML 元素。
+</p>
+
+<table>
+<tr>
+<th>
+通配符
+</th>
+<th>
+描述
+</th>
+</tr>
+<tr>
+<td>
+<code>*</code>
+</td>
+<td>
+匹配任何元素节点。
+</td>
+</tr>
+<tr>
+<td>
+<code>@*</code>
+</td>
+<td>
+匹配任何属性节点。
+</td>
+</tr>
+<tr>
+<td>
+<code>node()</code>
+</td>
+<td>
+匹配任何类型的节点。
+</td>
+</tr>
+</table>
+
+<p>
+实例
+</p>
+
+<p>
+在下面的表格中，我们列出了一些路径表达式，以及这些表达式的结果：
+</p>
+
+<table>
+<tr>
+<th>
+路径表达式
+</th>
+<th>
+结果
+</th>
+</tr>
+<tr>
+<td>
+<code>/bookstore/*</code>
+</td>
+<td>
+选取 bookstore 元素的所有子元素。
+</td>
+</tr>
+<tr>
+<td>
+<code>//*</code>
+</td>
+<td>
+选取文档中的所有元素。
+</td>
+</tr>
+<tr>
+<td>
+<code>//title[@*]</code>
+</td>
+<td>
+选取所有带有属性的 title 元素。
+</td>
+</tr>
+</table>
+
+<h2 id="toc_1.4">选取若干路径</h2>
+
+
+<p>
+通过在路径表达式中使用“|”运算符，您可以选取若干个路径。
+</p>
+
+<p>
+实例
+</p>
+
+<p>
+在下面的表格中，我们列出了一些路径表达式，以及这些表达式的结果：
+</p>
+
+<p>
+路径表达式 	结果
+</p>
+<pre class="brush: bash">
+//book/title | //book/price        // 选取 book 元素的所有 title 和 price 元素。
+
+//title | //price                  // 选取文档中的所有 title 和 price 元素。
+
+/bookstore/book/title | //price    // 选取属于 bookstore 元素的 book 元素
+                                   // 的所有 title 元素，以及文档中所有的 price 元素。
+</pre>
+
+<h1 id="toc_2">Axes（轴）</h1>
+
+<p>
+我们将在下面的例子中使用此 XML 文档：
+</p>
+
+<pre class="brush: xml">
+&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+&lt;bookstore&gt;
+	&lt;book&gt;
+		&lt;title lang="eng"&gt;Harry Potter&lt;/title&gt;
+		&lt;price&gt;29.99&lt;/price&gt;
+	&lt;/book&gt;
+	&lt;book&gt;
+		&lt;title lang="eng"&gt;Learning XML&lt;/title&gt;
+		&lt;price&gt;39.95&lt;/price&gt;
+	&lt;/book&gt;
+&lt;/bookstore&gt;
+</pre>
+
+<h2 id="toc_2.1">定义相对节点</h2>
+
+<p>
+轴可定义相对于当前节点的节点集。
+</p>
+
+<table>
+<tr>
+<th>
+轴名称
+</th>
+<th>
+结果
+</th>
+</tr>
+<tr>
+<td>
+ancestor
+</td>
+<td>
+选取当前节点的所有先辈（父、祖父等）。
+</td>
+</tr>
+<tr>
+<td>
+ancestor-or-self
+</td>
+<td>
+选取当前节点的所有先辈（父、祖父等）以及当前节点本身。
+</td>
+</tr>
+<tr>
+<td>
+attribute
+</td>
+<td>
+选取当前节点的所有属性。
+</td>
+</tr>
+<tr>
+<td>
+child
+</td>
+<td>
+选取当前节点的所有子元素。
+</td>
+</tr>
+<tr>
+<td>
+descendant
+</td>
+<td>
+选取当前节点的所有后代元素（子、孙等）。
+</td>
+</tr>
+<tr>
+<td>
+descendant-or-self
+</td>
+<td>
+选取当前节点的所有后代元素（子、孙等）以及当前节点本身。
+</td>
+</tr>
+<tr>
+<td>
+following
+</td>
+<td>
+选取文档中当前节点的结束标签之后的所有节点。
+</td>
+</tr>
+<tr>
+<td>
+namespace
+</td>
+<td>
+选取当前节点的所有命名空间节点。
+</td>
+</tr>
+<tr>
+<td>
+parent
+</td>
+<td>
+选取当前节点的父节点。
+</td>
+</tr>
+<tr>
+<td>
+preceding
+</td>
+<td>
+选取文档中当前节点的开始标签之前的所有节点。
+</td>
+</tr>
+<tr>
+<td>
+preceding-sibling
+</td>
+<td>
+选取当前节点之前的所有同级节点。
+</td>
+</tr>
+<tr>
+<td>
+self
+</td>
+<td>
+选取当前节点。
+</td>
+</tr>
+</table>
+
+<h2 id="toc_2.2">位置路径表达式</h2>
+
+<p>
+位置路径可以是绝对的，也可以是相对的。
+</p>
+
+<p>
+绝对路径起始于正斜杠( <code>/</code> )，而相对路径不会这样。在两种情况中，位置路径均包括
+一个或多个步，每个步均被斜杠分割：
+</p>
+
+<h3 id="toc_2.2.1">绝对位置路径：</h3>
+
+<pre class="brush: xml">
+/step/step/...
+</pre>
+
+<h3 id="toc_2.2.2">相对位置路径：</h3>
+
+<pre class="brush: xml">
+step/step/...
+</pre>
+
+<p>
+每个步均根据当前节点集之中的节点来进行计算。
+</p>
+
+<h3 id="toc_2.2.3">步（step）</h3>
+
+<p>
+步（step）包括：
+</p>
+
+<dl>
+<dt>轴（axis） </dt>
+<dd>定义所选节点与当前节点之间的树关系</dd>
+<dt>节点测试（node-test） </dt>
+<dd>识别某个轴内部的节点</dd>
+<dt>零个或者更多谓语（predicate） </dt>
+<dd>更深入地提炼所选的节点集</dd>
+</dl>
+
+<p>
+步的语法：
+</p>
+
+<pre class="brush: bash">
+轴名称::节点测试[谓语]
+</pre>
+
+<p>
+实例
+</p>
+
+<table>
+<tr>
+<th>
+例子
+</th>
+<th>
+结果
+</th>
+</tr>
+<tr>
+<td>
+<code>child::book</code>
+</td>
+<td>
+选取所有属于当前节点的子元素的 book 节点。
+</td>
+</tr>
+<tr>
+<td>
+<code>attribute::lang</code>
+</td>
+<td>
+选取当前节点的 lang 属性。
+</td>
+</tr>
+<tr>
+<td>
+<code>child::*</code>
+</td>
+<td>
+选取当前节点的所有子元素。
+</td>
+</tr>
+<tr>
+<td>
+<code>attribute::*</code>
+</td>
+<td>
+选取当前节点的所有属性。
+</td>
+</tr>
+<tr>
+<td>
+<code>child::text()</code>
+</td>
+<td>
+选取当前节点的所有文本子节点。
+</td>
+</tr>
+<tr>
+<td>
+<code>child::node()</code>
+</td>
+<td>
+选取当前节点的所有子节点。
+</td>
+</tr>
+<tr>
+<td>
+<code>descendant::book</code>
+</td>
+<td>
+选取当前节点的所有 book 后代。
+</td>
+</tr>
+<tr>
+<td>
+<code>ancestor::book</code>
+</td>
+<td>
+选择当前节点的所有 book 先辈。
+</td>
+</tr>
+<tr>
+<td>
+<code>ancestor-or-self::book</code>
+</td>
+<td>
+选取当前节点的所有 book 先辈以及当前节点（如果此节点是 book 节点）
+</td>
+</tr>
+<tr>
+<td>
+<code>child::*/child::price</code>
+</td>
+<td>
+选取当前节点的所有 price 孙节点。
+</td>
+</tr>
+</table>
+
+
+<h1 id="toc_3">XPath运算符</h1>
+
+<p>
+运算符<code>|</code>计算两个节点集：
+</p>
+
+<pre class="brush: xml">
+//book | //cd 	//返回所有拥有 book 和 cd 元素的节点集
+</pre>
+
+<table>
+<tr>
+<th>
+运算符
+</th>
+<th>
+描述
+</th>
+<th>
+实例
+</th>
+<th>
+返回值
+</th>
+</tr>
+<tr>
+<td>
++
+</td>
+<td>
+加法
+</td>
+<td>
+6 + 4
+</td>
+<td>
+10
+</td>
+</tr>
+<tr>
+<td>
+-
+</td>
+<td>
+减法
+</td>
+<td>
+6 - 4
+</td>
+<td>
+2
+</td>
+</tr>
+<tr>
+<td>
+*
+</td>
+<td>
+乘法
+</td>
+<td>
+6 * 4
+</td>
+<td>
+24
+</td>
+</tr>
+<tr>
+<td>
+div
+</td>
+<td>
+除法
+</td>
+<td>
+8 div 4
+</td>
+<td>
+2
+</td>
+</tr>
+<tr>
+<td rowspan="2">
+=
+</td>
+<td rowspan="2">
+等于
+</td>
+<td rowspan="2">
+price=9.80
+</td>
+<td>
+如果 price 是 9.80，则返回 true。
+</td>
+</tr>
+<tr>
+<td>
+如果 price 是 9.90，则返回 false。
+</td>
+</tr>
+<tr>
+<td rowspan="2">
+!=
+</td>
+<td rowspan="2">
+不等于
+</td>
+<td rowspan="2">
+price!=9.80
+</td>
+<td>
+如果 price 是 9.90，则返回 true。
+</td>
+</tr>
+<tr>
+<td>
+如果 price 是 9.80，则返回 false。
+</td>
+</tr>
+<tr>
+<td rowspan="2">
+&lt;
+</td>
+<td rowspan="2">
+小于
+</td>
+<td rowspan="2">
+price&lt;9.80
+</td>
+<td>
+如果 price 是 9.00，则返回 true。
+</td>
+</tr>
+<tr>
+<td>
+如果 price 是 9.90，则返回 false。
+</td>
+</tr>
+<tr>
+<td rowspan="2">
+&lt;=
+</td>
+<td rowspan="2">
+小于或等于
+</td>
+<td rowspan="2">
+price&lt;=9.80
+</td>
+<td>
+如果 price 是 9.00，则返回 true。
+</td>
+</tr>
+<tr>
+<td>
+如果 price 是 9.90，则返回 false。
+</td>
+</tr>
+<tr>
+<td rowspan="2">
+大于
+</td>
+<td rowspan="2">
+price&gt;9.80
+</td>
+<td>
+如果 price 是 9.90，则返回 true。
+</td>
+</tr>
+<tr>
+<td>
+如果 price 是 9.80，则返回 false。
+</td>
+</tr>
+<tr>
+<td rowspan="2">
+&gt;=
+</td>
+<td rowspan="2">
+大于或等于
+</td>
+<td rowspan="2">
+price&gt;=9.80
+</td>
+<td>
+如果 price 是 9.90，则返回 true。
+</td>
+</tr>
+<tr>
+<td>
+如果 price 是 9.70，则返回 false。
+</td>
+</tr>
+<tr>
+<td rowspan="2">
+or
+</td>
+<td rowspan="2">
+或
+</td>
+<td rowspan="2">
+price=9.80 or price=9.70
+</td>
+<td>
+如果 price 是 9.80，则返回 true。
+</td>
+</tr>
+<tr>
+<td>
+如果 price 是 9.50，则返回 false。
+</td>
+</tr>
+<tr>
+<td rowspan="2">
+and
+</td>
+<td rowspan="2">
+与
+</td>
+<td rowspan="2">
+price&gt;9.00 and price&lt;9.90
+</td>
+<td>
+如果 price 是 9.80，则返回 true。
+</td>
+</tr>
+<tr>
+<td>
+如果 price 是 8.50，则返回 false。
+</td>
+</tr>
+<tr>
+<td>
+mod
+</td>
+<td>
+计算除法的余数
+</td>
+<td>
+5 mod 2
+</td>
+<td>
+1
+</td>
+</tr>
+</table>
+
+<h1 id="toc_4">操作例子</h1>
+
+<h2 id="toc_4.1">选取所有 title</h2>
+
+<p>
+下面的例子选取所有 title 节点：
+</p>
+
+<pre class="brush: bash">
+/bookstore/book/title
+</pre>
+
+<h2 id="toc_4.2">选取第一个 book 的 title</h2>
+
+<p>
+下面的例子选取 bookstore 元素下面的第一个 book 节点的 title：
+</p>
+
+<pre class="brush: bash">
+/bookstore/book[1]/title
+</pre>
+
+<h2 id="toc_4.3">选取所有价格</h2>
+
+<p>
+下面的例子选取 price 节点中的所有文本：
+</p>
+
+<pre class="brush: bash">
+/bookstore/book/price/text()
+</pre>
+
+<h2 id="toc_4.4">选取价格高于 35 的 price 节点</h2>
+
+<p>
+下面的例子选取价格高于 35 的所有 price 节点：
+</p>
+
+<pre class="brush: bash">
+/bookstore/book[price&gt;35]/price
+</pre>
+
+<h2 id="toc_4.5">选取价格高于 35 的 title 节点</h2>
+
+<p>
+下面的例子选取价格高于 35 的所有 title 节点：
+</p>
+
+<pre class="brush: bash">
+/bookstore/book[price&gt;35]/title
+</pre>
+
+<h1 id="toc_5">函数速查</h1>
+
+<h2 id="toc_5.1">存取函数</h2>
+
+<table>
+<tr>
+<td>
+名称
+</td>
+<td>
+说明
+</td>
+</tr>
+<tr>
+<td>
+fn:node-name(node)
+</td>
+<td>
+返回参数节点的节点名称。
+</td>
+</tr>
+<tr>
+<td>
+fn:nilled(node)
+</td>
+<td>
+返回是否拒绝参数节点的布尔值。
+</td>
+</tr>
+<tr>
+<td>
+fn:data(item.item,...)
+</td>
+<td>
+接受项目序列，并返回原子值序列。
+</td>
+</tr>
+<tr>
+<td>
+fn:base-uri()
+</td>
+<td>
+返回当前节点或指定节点的 base-uri 属性的值。
+</td>
+</tr>
+<tr>
+<td>
+fn:base-uri(node)
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+fn:document-uri(node)
+</td>
+<td>
+返回指定节点的 document-uri 属性的值。
+</td>
+</tr>
+</table>
+
+<h2 id="toc_5.2">错误和跟踪函数</h2>
+
+<table>
+<tr>
+<td>
+名称
+</td>
+<td>
+说明
+</td>
+</tr>
+<tr>
+<td>
+fn:error()
+</td>
+<td>
+例子：
+</td>
+</tr>
+<tr>
+<td>
+fn:error(error)
+</td>
+<td>
+error(fn:QName('<a href="http://example.com/test',">http://example.com/test',</a> 'err:toohigh'), 'Error: Price is too high')
+</td>
+</tr>
+<tr>
+<td>
+fn:error(error,description)
+</td>
+<td>
+结果：
+</td>
+</tr>
+<tr>
+<td rowspan="2">
+fn:error(error,description,error-object)
+</td>
+<td>
+向外部处理环境返回 <code>http://example.com/test#toohigh</code>
+</td>
+</tr>
+<tr>
+<td>
+以及字符串 "Error: Price is too high"。
+</td>
+</tr>
+<tr>
+<td>
+fn:trace(value,label)
+</td>
+<td>
+用于对查询进行 debug。
+</td>
+</tr>
+</table>
+
+<h2 id="toc_5.3">有关数值的函数</h2>
+
+<table>
+<tr>
+<td>
+名称
+</td>
+<td>
+说明
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:number(arg)
+</td>
+<td>
+返回参数的数值。参数可以是布尔值、字符串或节点集。
+</td>
+</tr>
+<tr>
+<td>
+例子：number('100')
+</td>
+</tr>
+<tr>
+<td>
+结果：100
+</td>
+</tr>
+<tr>
+<td rowspan="5">
+fn:abs(num)
+</td>
+<td>
+返回参数的绝对值。
+</td>
+</tr>
+<tr>
+<td>
+例子：abs(3.14)
+</td>
+</tr>
+<tr>
+<td>
+结果：3.14
+</td>
+</tr>
+<tr>
+<td>
+例子：abs(-3.14)
+</td>
+</tr>
+<tr>
+<td>
+结果：3.14
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:ceiling(num)
+</td>
+<td>
+返回大于 num 参数的最小整数。
+</td>
+</tr>
+<tr>
+<td>
+例子：ceiling(3.14)
+</td>
+</tr>
+<tr>
+<td>
+结果：4
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:floor(num)
+</td>
+<td>
+返回不大于 num 参数的最大整数。
+</td>
+</tr>
+<tr>
+<td>
+例子：floor(3.14)
+</td>
+</tr>
+<tr>
+<td>
+结果：3
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:round(num)
+</td>
+<td>
+把 num 参数舍入为最接近的整数。
+</td>
+</tr>
+<tr>
+<td>
+例子：round(3.14)
+</td>
+</tr>
+<tr>
+<td>
+结果：3
+</td>
+</tr>
+<tr>
+<td rowspan="6">
+fn:round-half-to-even()
+</td>
+<td>
+例子：round-half-to-even(0.5)
+</td>
+</tr>
+<tr>
+<td>
+结果：0
+</td>
+</tr>
+<tr>
+<td>
+例子：round-half-to-even(1.5)
+</td>
+</tr>
+<tr>
+<td>
+结果：2
+</td>
+</tr>
+<tr>
+<td>
+例子：round-half-to-even(2.5)
+</td>
+</tr>
+<tr>
+<td>
+结果：2
+</td>
+</tr>
+</table>
+
+<h2 id="toc_5.4">有关字符串的函数</h2>
+
+<table>
+<tr>
+<td>
+名称
+</td>
+<td>
+说明
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:string(arg)
+</td>
+<td>
+返回参数的字符串值。参数可以是数字、逻辑值或节点集。
+</td>
+</tr>
+<tr>
+<td>
+例子：string(314)
+</td>
+</tr>
+<tr>
+<td>
+结果："314"
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:codepoints-to-string(int,int,...)
+</td>
+<td>
+根据代码点序列返回字符串。
+</td>
+</tr>
+<tr>
+<td>
+例子：codepoints-to-string(84, 104, 233, 114, 232, 115, 101)
+</td>
+</tr>
+<tr>
+<td>
+结果：'Thérèse'
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:string-to-codepoints(string)
+</td>
+<td>
+根据字符串返回代码点序列。
+</td>
+</tr>
+<tr>
+<td>
+例子：string-to-codepoints("Thérèse")
+</td>
+</tr>
+<tr>
+<td>
+结果：84, 104, 233, 114, 232, 115, 101
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:codepoint-equal(comp1,comp2)
+</td>
+<td>
+根据 Unicode 代码点对照，如果 comp1 的值等于 comp2 的值，则返回 true。
+</td>
+</tr>
+<tr>
+<td>
+(<a href="http://www.w3.org/2005/02/xpath-functions/collation/codepoint)">http://www.w3.org/2005/02/xpath-functions/collation/codepoint)</a>
+</td>
+</tr>
+<tr>
+<td>
+否则返回 false。
+</td>
+</tr>
+<tr>
+<td>
+fn:compare(comp1,comp2)
+</td>
+<td>
+如果 comp1 小于 comp2，则返回 -1。如果 comp1 等于 comp2，则返回 0。
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:compare(comp1,comp2,collation)
+</td>
+<td>
+如果 comp1 大于 comp2，则返回 1。（根据所用的对照规则）。
+</td>
+</tr>
+<tr>
+<td>
+例子：compare('ghi', 'ghi')
+</td>
+</tr>
+<tr>
+<td>
+结果：0
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:concat(string,string,...)
+</td>
+<td>
+返回字符串的拼接。
+</td>
+</tr>
+<tr>
+<td>
+例子：concat('XPath ','is ','FUN!')
+</td>
+</tr>
+<tr>
+<td>
+结果：'XPath is FUN!'
+</td>
+</tr>
+<tr>
+<td rowspan="7">
+fn:string-join((string,string,...),sep)
+</td>
+<td>
+使用 sep 参数作为分隔符，来返回 string 参数拼接后的字符串。
+</td>
+</tr>
+<tr>
+<td>
+例子：string-join(('We', 'are', 'having', 'fun!'), ' ')
+</td>
+</tr>
+<tr>
+<td>
+结果：' We are having fun! '
+</td>
+</tr>
+<tr>
+<td>
+例子：string-join(('We', 'are', 'having', 'fun!'))
+</td>
+</tr>
+<tr>
+<td>
+结果：'Wearehavingfun!'
+</td>
+</tr>
+<tr>
+<td>
+例子：string-join((), 'sep')
+</td>
+</tr>
+<tr>
+<td>
+结果：''
+</td>
+</tr>
+<tr>
+<td>
+fn:substring(string,start,len)
+</td>
+<td>
+返回从 start 位置开始的指定长度的子字符串。第一个字符的下标是 1。
+</td>
+</tr>
+<tr>
+<td rowspan="5">
+fn:substring(string,start)
+</td>
+<td>
+如果省略 len 参数，则返回从位置 start 到字符串末尾的子字符串。
+</td>
+</tr>
+<tr>
+<td>
+例子：substring('Beatles',1,4)
+</td>
+</tr>
+<tr>
+<td>
+结果：'Beat'
+</td>
+</tr>
+<tr>
+<td>
+例子：substring('Beatles',2)
+</td>
+</tr>
+<tr>
+<td>
+结果：'eatles'
+</td>
+</tr>
+<tr>
+<td>
+fn:string-length(string)
+</td>
+<td rowspan="2">
+返回指定字符串的长度。如果没有 string 参数，则返回当前节点的字符串值的长度。
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:string-length()
+</td>
+</tr>
+<tr>
+<td>
+例子：string-length('Beatles')
+</td>
+</tr>
+<tr>
+<td>
+结果：7
+</td>
+</tr>
+<tr>
+<td>
+fn:normalize-space(string)
+</td>
+<td>
+删除指定字符串的开头和结尾的空白，并把内部的所有空白序列替换为一个，
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:normalize-space()
+</td>
+<td>
+然后返回结果。如果没有 string 参数，则处理当前节点。
+</td>
+</tr>
+<tr>
+<td>
+例子：normalize-space(' The   XML ')
+</td>
+</tr>
+<tr>
+<td>
+结果：'The XML'
+</td>
+</tr>
+<tr>
+<td>
+fn:normalize-unicode()
+</td>
+<td>
+执行 Unicode 规格化。
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:upper-case(string)
+</td>
+<td>
+把 string 参数转换为大写。
+</td>
+</tr>
+<tr>
+<td>
+例子：upper-case('The XML')
+</td>
+</tr>
+<tr>
+<td>
+结果：'THE XML'
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:lower-case(string)
+</td>
+<td>
+把 string 参数转换为小写。
+</td>
+</tr>
+<tr>
+<td>
+例子：lower-case('The XML')
+</td>
+</tr>
+<tr>
+<td>
+结果：'the xml'
+</td>
+</tr>
+<tr>
+<td rowspan="7">
+fn:translate(string1,string2,string3)
+</td>
+<td>
+把 string1 中的 string2 替换为 string3。
+</td>
+</tr>
+<tr>
+<td>
+例子：translate('12:30','30','45')
+</td>
+</tr>
+<tr>
+<td>
+结果：'12:45'
+</td>
+</tr>
+<tr>
+<td>
+例子：translate('12:30','03','54')
+</td>
+</tr>
+<tr>
+<td>
+结果：'12:45'
+</td>
+</tr>
+<tr>
+<td>
+例子：translate('12:30','0123','abcd')
+</td>
+</tr>
+<tr>
+<td>
+结果：'bc:da'
+</td>
+</tr>
+<tr>
+<td rowspan="6">
+fn:escape-uri(stringURI,esc-res)
+</td>
+<td>
+例子：escape-uri("<a href="http://example.com/test#car",">http://example.com/test#car",</a> true())
+</td>
+</tr>
+<tr>
+<td>
+结果："http%3A%2F%2Fexample.com%2Ftest#car"
+</td>
+</tr>
+<tr>
+<td>
+例子：escape-uri("<a href="http://example.com/test#car",">http://example.com/test#car",</a> false())
+</td>
+</tr>
+<tr>
+<td>
+结果："<a href="http://example.com/test#car"">http://example.com/test#car"</a>
+</td>
+</tr>
+<tr>
+<td>
+例子：escape-uri ("<a href="http://example.com/~bébé",">http://example.com/~bébé",</a> false())
+</td>
+</tr>
+<tr>
+<td>
+结果："<a href="http://example.com/~b%C3%A9b%C3%A9"">http://example.com/~b%C3%A9b%C3%A9"</a>
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:contains(string1,string2)
+</td>
+<td>
+如果 string1 包含 string2，则返回 true，否则返回 false。
+</td>
+</tr>
+<tr>
+<td>
+例子：contains('XML','XM')
+</td>
+</tr>
+<tr>
+<td>
+结果：true
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:starts-with(string1,string2)
+</td>
+<td>
+如果 string1 以 string2 开始，则返回 true，否则返回 false。
+</td>
+</tr>
+<tr>
+<td>
+例子：starts-with('XML','X')
+</td>
+</tr>
+<tr>
+<td>
+结果：true
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:ends-with(string1,string2)
+</td>
+<td>
+如果 string1 以 string2 结尾，则返回 true，否则返回 false。
+</td>
+</tr>
+<tr>
+<td>
+例子：ends-with('XML','X')
+</td>
+</tr>
+<tr>
+<td>
+结果：false
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:substring-before(string1,string2)
+</td>
+<td>
+返回 string2 在 string1 中出现之前的子字符串。
+</td>
+</tr>
+<tr>
+<td>
+例子：substring-before('12/10','/')
+</td>
+</tr>
+<tr>
+<td>
+结果：'12'
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:substring-after(string1,string2)
+</td>
+<td>
+返回 string2 在 string1 中出现之后的子字符串。
+</td>
+</tr>
+<tr>
+<td>
+例子：substring-after('12/10','/')
+</td>
+</tr>
+<tr>
+<td>
+结果：'10'
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:matches(string,pattern)
+</td>
+<td>
+如果 string 参数匹配指定的模式，则返回 true，否则返回 false。
+</td>
+</tr>
+<tr>
+<td>
+例子：matches("Merano", "ran")
+</td>
+</tr>
+<tr>
+<td>
+结果：true
+</td>
+</tr>
+<tr>
+<td rowspan="5">
+fn:replace(string,pattern,replace)
+</td>
+<td>
+把指定的模式替换为 replace 参数，并返回结果。
+</td>
+</tr>
+<tr>
+<td>
+例子：replace("Bella Italia", "l", "*")
+</td>
+</tr>
+<tr>
+<td>
+结果：'Be**a Ita*ia'
+</td>
+</tr>
+<tr>
+<td>
+例子：replace("Bella Italia", "l", "")
+</td>
+</tr>
+<tr>
+<td>
+结果：'Bea Itaia'
+</td>
+</tr>
+<tr>
+<td rowspan="2">
+fn:tokenize(string,pattern)
+</td>
+<td>
+例子：tokenize("XPath is fun", "\s+")
+</td>
+</tr>
+<tr>
+<td>
+结果：("XPath", "is", "fun")
+</td>
+</tr>
+</table>
+
+
+<h2 id="toc_5.5">针对 anyURI 的函数</h2>
+
+<table>
+<tr>
+<td>
+名称
+</td>
+<td>
+说明
+</td>
+</tr>
+<tr>
+<td>
+fn:resolve-uri(relative,base)
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+</table>
+
+<h2 id="toc_5.6">关于布尔值的函数</h2>
+
+<table>
+<tr>
+<td>
+名称
+</td>
+<td>
+说明
+</td>
+</tr>
+<tr>
+<td>
+fn:boolean(arg)
+</td>
+<td>
+返回数字、字符串或节点集的布尔值。
+</td>
+</tr>
+<tr>
+<td rowspan="4">
+fn:not(arg)
+</td>
+<td>
+首先通过 boolean() 函数把参数还原为一个布尔值。
+</td>
+</tr>
+<tr>
+<td>
+如果该布尔值为 false，则返回 true，否则返回 true。
+</td>
+</tr>
+<tr>
+<td>
+例子：not(true())
+</td>
+</tr>
+<tr>
+<td>
+结果：false
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:true()
+</td>
+<td>
+返回布尔值 true。
+</td>
+</tr>
+<tr>
+<td>
+例子：true()
+</td>
+</tr>
+<tr>
+<td>
+结果：true
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:false()
+</td>
+<td>
+返回布尔值 false。
+</td>
+</tr>
+<tr>
+<td>
+例子：false()
+</td>
+</tr>
+<tr>
+<td>
+结果：false
+</td>
+</tr>
+</table>
+
+<h2 id="toc_5.7">日期、时间、持续时间的组件提取函数</h2>
+
+<table>
+<tr>
+<td>
+名称
+</td>
+<td>
+说明
+</td>
+</tr>
+<tr>
+<td>
+fn:dateTime(date,time)
+</td>
+<td>
+把参数转换为日期和时间。
+</td>
+</tr>
+<tr>
+<td>
+fn:years-from-duration(datetimedur)
+</td>
+<td>
+返回参数值的年份部分的整数，以标准词汇表示法来表示。
+</td>
+</tr>
+<tr>
+<td>
+fn:months-from-duration(datetimedur)
+</td>
+<td>
+返回参数值的月份部分的整数，以标准词汇表示法来表示。
+</td>
+</tr>
+<tr>
+<td>
+fn:days-from-duration(datetimedur)
+</td>
+<td>
+返回参数值的天部分的整数，以标准词汇表示法来表示。
+</td>
+</tr>
+<tr>
+<td>
+fn:hours-from-duration(datetimedur)
+</td>
+<td>
+返回参数值的小时部分的整数，以标准词汇表示法来表示。
+</td>
+</tr>
+<tr>
+<td>
+fn:minutes-from-duration(datetimedur)
+</td>
+<td>
+返回参数值的分钟部分的整数，以标准词汇表示法来表示。
+</td>
+</tr>
+<tr>
+<td>
+fn:seconds-from-duration(datetimedur)
+</td>
+<td>
+返回参数值的分钟部分的十进制数，以标准词汇表示法来表示。
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:year-from-dateTime(datetime)
+</td>
+<td>
+返回参数本地值的年部分的整数。
+</td>
+</tr>
+<tr>
+<td>
+例子：year-from-dateTime(xs:dateTime("2005-01-10T12:30-04:10"))
+</td>
+</tr>
+<tr>
+<td>
+结果：2005
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:month-from-dateTime(datetime)
+</td>
+<td>
+返回参数本地值的月部分的整数。
+</td>
+</tr>
+<tr>
+<td>
+例子：month-from-dateTime(xs:dateTime("2005-01-10T12:30-04:10"))
+</td>
+</tr>
+<tr>
+<td>
+结果：01
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:day-from-dateTime(datetime)
+</td>
+<td>
+返回参数本地值的天部分的整数。
+</td>
+</tr>
+<tr>
+<td>
+例子：day-from-dateTime(xs:dateTime("2005-01-10T12:30-04:10"))
+</td>
+</tr>
+<tr>
+<td>
+结果：10
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:hours-from-dateTime(datetime)
+</td>
+<td>
+返回参数本地值的小时部分的整数。
+</td>
+</tr>
+<tr>
+<td>
+例子：hours-from-dateTime(xs:dateTime("2005-01-10T12:30-04:10"))
+</td>
+</tr>
+<tr>
+<td>
+结果：12
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:minutes-from-dateTime(datetime)
+</td>
+<td>
+返回参数本地值的分钟部分的整数。
+</td>
+</tr>
+<tr>
+<td>
+例子：minutes-from-dateTime(xs:dateTime("2005-01-10T12:30-04:10"))
+</td>
+</tr>
+<tr>
+<td>
+结果：30
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:seconds-from-dateTime(datetime)
+</td>
+<td>
+返回参数本地值的秒部分的十进制数。
+</td>
+</tr>
+<tr>
+<td>
+例子：seconds-from-dateTime(xs:dateTime("2005-01-10T12:30:00-04:10"))
+</td>
+</tr>
+<tr>
+<td>
+结果：0
+</td>
+</tr>
+<tr>
+<td>
+fn:timezone-from-dateTime(datetime)
+</td>
+<td>
+返回参数的时区部分，如果存在。
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:year-from-date(date)
+</td>
+<td>
+返回参数本地值中表示年的整数。
+</td>
+</tr>
+<tr>
+<td>
+例子：year-from-date(xs:date("2005-04-23"))
+</td>
+</tr>
+<tr>
+<td>
+结果：2005
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:month-from-date(date)
+</td>
+<td>
+返回参数本地值中表示月的整数。
+</td>
+</tr>
+<tr>
+<td>
+例子：month-from-date(xs:date("2005-04-23"))
+</td>
+</tr>
+<tr>
+<td>
+结果：4
+</td>
+</tr>
+<tr>
+<td rowspan="2">
+fn:day-from-date(date)
+</td>
+<td>
+返回参数本地值中表示天的整数。
+</td>
+</tr>
+<tr>
+<td>
+例子：day-from-date(xs:date("2005-04-23"))
+</td>
+</tr>
+<tr>
+<td>
+fn:timezone-from-date(date)
+</td>
+<td>
+返回参数的时区部分，如果存在。
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:hours-from-time(time)
+</td>
+<td>
+返回参数本地值中表示小时部分的整数。
+</td>
+</tr>
+<tr>
+<td>
+例子：hours-from-time(xs:time("10:22:00"))
+</td>
+</tr>
+<tr>
+<td>
+结果：10
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:minutes-from-time(time)
+</td>
+<td>
+返回参数本地值中表示分钟部分的整数。
+</td>
+</tr>
+<tr>
+<td>
+例子：minutes-from-time(xs:time("10:22:00"))
+</td>
+</tr>
+<tr>
+<td>
+结果：22
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:seconds-from-time(time)
+</td>
+<td>
+返回参数本地值中表示秒部分的整数。
+</td>
+</tr>
+<tr>
+<td>
+例子：seconds-from-time(xs:time("10:22:00"))
+</td>
+</tr>
+<tr>
+<td>
+结果：0
+</td>
+</tr>
+<tr>
+<td>
+fn:timezone-from-time(time)
+</td>
+<td>
+返回参数的时区部分，如果存在。
+</td>
+</tr>
+<tr>
+<td>
+fn:adjust-dateTime-to-timezone(datetime,timezone)
+</td>
+<td>
+如果 timezone 参数为空，则返回没有时区的 dateTime。否则返回带有时区的 dateTime。
+</td>
+</tr>
+<tr>
+<td>
+fn:adjust-date-to-timezone(date,timezone)
+</td>
+<td>
+如果 timezone 参数为空，则返回没有时区的 date。否则返回带有时区的 date。
+</td>
+</tr>
+<tr>
+<td>
+fn:adjust-time-to-timezone(time,timezone)
+</td>
+<td>
+如果 timezone 参数为空，则返回没有时区的 time。否则返回带有时区的 time。
+</td>
+</tr>
+</table>
+
+<h2 id="toc_5.8">与 QNames 相关的函数</h2>
+
+<table>
+<tr>
+<td>
+名称
+</td>
+<td>
+说明
+</td>
+</tr>
+<tr>
+<td>
+fn:QName()
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+fn:local-name-from-QName()
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+fn:namespace-uri-from-QName()
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+fn:namespace-uri-for-prefix()
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+fn:in-scope-prefixes()
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+fn:resolve-QName()
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+</table>
+
+<h2 id="toc_5.9">关于节点的函数</h2>
+
+<table>
+<tr>
+<td>
+名称
+</td>
+<td>
+说明
+</td>
+</tr>
+<tr>
+<td>
+fn:name()
+</td>
+<td rowspan="2">
+返回当前节点的名称或指定节点集中的第一个节点。
+</td>
+</tr>
+<tr>
+<td>
+fn:name(nodeset)
+</td>
+</tr>
+<tr>
+<td>
+fn:local-name()
+</td>
+<td rowspan="2">
+返回当前节点的名称或指定节点集中的第一个节点 - 不带有命名空间前缀。
+</td>
+</tr>
+<tr>
+<td>
+fn:local-name(nodeset)
+</td>
+</tr>
+<tr>
+<td>
+fn:namespace-uri()
+</td>
+<td rowspan="2">
+返回当前节点或指定节点集中第一个节点的命名空间 URI。
+</td>
+</tr>
+<tr>
+<td>
+fn:namespace-uri(nodeset)
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:lang(lang)
+</td>
+<td>
+如果当前节点的语言匹配指定的语言，则返回 true。
+</td>
+</tr>
+<tr>
+<td>
+例子：Lang("en") is true for &lt;p xml:lang="en"&gt;...&lt;/p&gt;
+</td>
+</tr>
+<tr>
+<td>
+例子：Lang("de") is false for &lt;p xml:lang="en"&gt;...&lt;/p&gt;
+</td>
+</tr>
+<tr>
+<td>
+fn:root()
+</td>
+<td rowspan="2">
+返回当前节点或指定的节点所属的节点树的根节点。通常是文档节点。
+</td>
+</tr>
+<tr>
+<td>
+fn:root(node)
+</td>
+</tr>
+</table>
+
+<h2 id="toc_5.10">有关序列的函数</h2>
+
+<table>
+<tr>
+<td>
+名称
+</td>
+<td>
+说明
+</td>
+</tr>
+<tr>
+<td rowspan="7">
+fn:index-of((item,item,...),searchitem)
+</td>
+<td>
+返回在项目序列中等于 searchitem 参数的位置。
+</td>
+</tr>
+<tr>
+<td>
+例子：index-of ((15, 40, 25, 40, 10), 40)
+</td>
+</tr>
+<tr>
+<td>
+结果：(2, 4)
+</td>
+</tr>
+<tr>
+<td>
+例子：index-of (("a", "dog", "and", "a", "duck"), "a")
+</td>
+</tr>
+<tr>
+<td>
+Result (1, 4)
+</td>
+</tr>
+<tr>
+<td>
+例子：index-of ((15, 40, 25, 40, 10), 18)
+</td>
+</tr>
+<tr>
+<td>
+结果：()
+</td>
+</tr>
+<tr>
+<td rowspan="7">
+fn:remove((item,item,...),position)
+</td>
+<td>
+返回由 item 参数构造的新序列 - 同时删除 position 参数指定的项目。
+</td>
+</tr>
+<tr>
+<td>
+例子：remove(("ab", "cd", "ef"), 0)
+</td>
+</tr>
+<tr>
+<td>
+结果：("ab", "cd", "ef")
+</td>
+</tr>
+<tr>
+<td>
+例子：remove(("ab", "cd", "ef"), 1)
+</td>
+</tr>
+<tr>
+<td>
+结果：("cd", "ef")
+</td>
+</tr>
+<tr>
+<td>
+例子：remove(("ab", "cd", "ef"), 4)
+</td>
+</tr>
+<tr>
+<td>
+结果：("ab", "cd", "ef")
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:empty(item,item,...)
+</td>
+<td>
+如果参数值是空序列，则返回 true，否则返回 false。
+</td>
+</tr>
+<tr>
+<td>
+例子：empty(remove(("ab", "cd"), 1))
+</td>
+</tr>
+<tr>
+<td>
+结果：false
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:exists(item,item,...)
+</td>
+<td>
+如果参数值不是空序列，则返回 true，否则返回 false。
+</td>
+</tr>
+<tr>
+<td>
+例子：exists(remove(("ab"), 1))
+</td>
+</tr>
+<tr>
+<td>
+结果：false
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:distinct-values((item,item,...),collation)
+</td>
+<td>
+返回唯一不同的值。
+</td>
+</tr>
+<tr>
+<td>
+例子：distinct-values((1, 2, 3, 1, 2))
+</td>
+</tr>
+<tr>
+<td>
+结果：(1, 2, 3)
+</td>
+</tr>
+<tr>
+<td rowspan="9">
+fn:insert-before((item,item,...),pos,inserts)
+</td>
+<td>
+返回由 item 参数构造的新序列 - 同时在 pos 参数指定位置插入 inserts 参数的值。
+</td>
+</tr>
+<tr>
+<td>
+例子：insert-before(("ab", "cd"), 0, "gh")
+</td>
+</tr>
+<tr>
+<td>
+结果：("gh", "ab", "cd")
+</td>
+</tr>
+<tr>
+<td>
+例子：insert-before(("ab", "cd"), 1, "gh")
+</td>
+</tr>
+<tr>
+<td>
+结果：("gh", "ab", "cd")
+</td>
+</tr>
+<tr>
+<td>
+例子：insert-before(("ab", "cd"), 2, "gh")
+</td>
+</tr>
+<tr>
+<td>
+结果：("ab", "gh", "cd")
+</td>
+</tr>
+<tr>
+<td>
+例子：insert-before(("ab", "cd"), 5, "gh")
+</td>
+</tr>
+<tr>
+<td>
+结果：("ab", "cd", "gh")
+</td>
+</tr>
+<tr>
+<td rowspan="5">
+fn:reverse((item,item,...))
+</td>
+<td>
+返回指定的项目的颠倒顺序。
+</td>
+</tr>
+<tr>
+<td>
+例子：reverse(("ab", "cd", "ef"))
+</td>
+</tr>
+<tr>
+<td>
+结果：("ef", "cd", "ab")
+</td>
+</tr>
+<tr>
+<td>
+例子：reverse(("ab"))
+</td>
+</tr>
+<tr>
+<td>
+结果：("ab")
+</td>
+</tr>
+<tr>
+<td rowspan="5">
+fn:subsequence((item,item,...),start,len)
+</td>
+<td>
+返回 start 参数指定的位置返回项目序列，序列的长度由 len 参数指定。第一个项目的位置是 1。
+</td>
+</tr>
+<tr>
+<td>
+例子：subsequence((item1, item2, item3,...), 3)
+</td>
+</tr>
+<tr>
+<td>
+结果：(item3, ...)
+</td>
+</tr>
+<tr>
+<td>
+例子：subsequence((item1, item2, item3, ...), 2, 2)
+</td>
+</tr>
+<tr>
+<td>
+结果：(item2, item3)
+</td>
+</tr>
+<tr>
+<td>
+fn:unordered((item,item,...))
+</td>
+<td>
+依据实现决定的顺序来返回项目。
+</td>
+</tr>
+</table>
+
+<h2 id="toc_5.11">测试序列容量的函数</h2>
+
+<table>
+<tr>
+<td>
+名称
+</td>
+<td>
+说明
+</td>
+</tr>
+<tr>
+<td>
+fn:zero-or-one(item,item,...)
+</td>
+<td>
+如果参数包含零个或一个项目，则返回参数，否则生成错误。
+</td>
+</tr>
+<tr>
+<td>
+fn:one-or-more(item,item,...)
+</td>
+<td>
+如果参数包含一个或多个项目，则返回参数，否则生成错误。
+</td>
+</tr>
+<tr>
+<td>
+fn:exactly-one(item,item,...)
+</td>
+<td>
+如果参数包含一个项目，则返回参数，否则生成错误。
+</td>
+</tr>
+</table>
+
+<h2 id="toc_5.12">Equals, Union, Intersection and Except</h2>
+
+<table>
+<tr>
+<td>
+名称
+</td>
+<td>
+说明
+</td>
+</tr>
+<tr>
+<td>
+fn:deep-equal(param1,param2,collation)
+</td>
+<td>
+如果 param1 和 param2 与彼此相等（deep-equal），则返回 true，否则返回 false。
+</td>
+</tr>
+</table>
+
+<h2 id="toc_5.13">合计函数</h2>
+
+<table>
+<tr>
+<td>
+名称
+</td>
+<td>
+说明
+</td>
+</tr>
+<tr>
+<td>
+fn:count((item,item,...))
+</td>
+<td>
+返回节点的数量。
+</td>
+</tr>
+<tr>
+<td>
+fn:avg((arg,arg,...))
+</td>
+<td>
+返回参数值的平均数。 例子：avg((1,2,3)) 结果：2
+</td>
+</tr>
+<tr>
+<td>
+fn:max((arg,arg,...))
+</td>
+<td>
+返回大于其它参数的参数。 例子：max((1,2,3)) 结果：3 例子：max(('a', 'k')) 结果：'k'
+</td>
+</tr>
+<tr>
+<td>
+fn:min((arg,arg,...))
+</td>
+<td>
+返回小于其它参数的参数。 例子：min((1,2,3)) 结果：1 例子：min(('a', 'k')) 结果：'a'
+</td>
+</tr>
+<tr>
+<td>
+fn:sum(arg,arg,...)
+</td>
+<td>
+返回指定节点集中每个节点的数值的总和。
+</td>
+</tr>
+</table>
+
+<h2 id="toc_5.14">生成序列的函数</h2>
+
+<table>
+<tr>
+<td>
+名称
+</td>
+<td>
+说明
+</td>
+</tr>
+<tr>
+<td>
+fn:id((string,string,...),node)
+</td>
+<td>
+Returns a sequence of element nodes that have an ID value equal to the value of one or more of the values specified in the string argument
+</td>
+</tr>
+<tr>
+<td>
+fn:idref((string,string,...),node)
+</td>
+<td>
+Returns a sequence of element or attribute nodes that have an IDREF value equal to the value of one or more of the values specified in the string argument
+</td>
+</tr>
+<tr>
+<td>
+fn:doc(URI)
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+fn:doc-available(URI)
+</td>
+<td>
+如果 doc() 函数返回文档节点，则返回 true，否则返回 false。
+</td>
+</tr>
+<tr>
+<td>
+fn:collection()
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td>
+fn:collection(string)
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+</table>
+
+<h2 id="toc_5.15">上下文函数</h2>
+
+<table>
+<tr>
+<td>
+名称
+</td>
+<td>
+说明
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:position()
+</td>
+<td>
+返回当前正在被处理的节点的 index 位置。
+</td>
+</tr>
+<tr>
+<td>
+例子：//book[position()&lt;=3]
+</td>
+</tr>
+<tr>
+<td>
+结果：选择前三个 book 元素
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+fn:last()
+</td>
+<td>
+返回在被处理的节点列表中的项目数目。
+</td>
+</tr>
+<tr>
+<td>
+例子：//book[last()]
+</td>
+</tr>
+<tr>
+<td>
+结果：选择最后一个 book 元素
+</td>
+</tr>
+<tr>
+<td>
+fn:current-dateTime()
+</td>
+<td>
+返回当前的 dateTime（带有时区）。
+</td>
+</tr>
+<tr>
+<td>
+fn:current-date()
+</td>
+<td>
+返回当前的日期（带有时区）。
+</td>
+</tr>
+<tr>
+<td>
+fn:current-time()
+</td>
+<td>
+返回当前的时间（带有时区）。
+</td>
+</tr>
+<tr>
+<td>
+fn:implicit-timezone()
+</td>
+<td>
+返回隐式时区的值。
+</td>
+</tr>
+<tr>
+<td>
+fn:default-collation()
+</td>
+<td>
+返回默认对照的值。
+</td>
+</tr>
+<tr>
+<td>
+fn:static-base-uri()
+</td>
+<td>
+返回 base-uri 的值。
+</td>
+</tr>
+</table>
+
+
+
+<pre class="brush: xml">
+</pre>
+
+
+<pre class="brush: xml">
+</pre>
+
+
+<pre class="brush: xml">
+</pre>
+
+
+<pre class="brush: xml">
+</pre>
+
+
+<pre class="brush: xml">
+</pre>
+
+
+<pre class="brush: xml">
+</pre>
+
+
+<pre class="brush: xml">
+</pre>
+
+
+<pre class="brush: xml">
+</pre>
+
+
+<pre class="brush: xml">
+</pre>
+
+
+<pre class="brush: xml">
+</pre>
+ </div>
+</body>
+</html>
