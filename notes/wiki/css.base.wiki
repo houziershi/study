@@ -1,0 +1,142 @@
+%title CSS
+
+%toc CSS
+
+= 引入 =
+
+== 引入外部css ==
+
+{{{class="brush: html"
+<head>
+	<link rel="stylesheet" type="text/css" href="mystyle.css" />
+</head>
+}}}
+
+== 内部样式 ==
+
+{{{class="brush: html"
+<head>
+<head>
+<style type="text/css">
+  hr {color: sienna;}
+  p {margin-left: 20px;}
+  body {background-image: url("images/back40.gif");}
+</style>
+</head>
+}}}
+
+== 行内样式 ==
+
+{{{class="brush: html"
+<head>
+<p style="color: sienna; margin-left: 20px">
+	This is a paragraph
+</p>
+}}}
+
+= 选择器 =
+
+css选择器用来选择指定的dom结点，语法：
+
+{{{class="brush: css"
+ node-type  { ... }   // 标签
+.node-class { ... }   // 样式
+#node-id    { ... }   // id
+}}}
+
+== 多重选择器 ==
+
+同时应用到多个不同的选择器：
+
+{{{class="brush: css"
+selector, selector, selector { ... }
+}}}
+
+选择元素内的存在的元素（中间可以隔了其他元素），语法：
+
+{{{class="brush: css"
+selector selector selector { ... }
+}}}
+
+选择元素内的的第一层元素，语法：
+
+{{{class="brush: css"
+selector > selector > selector { ... }
+}}}
+
+选择元素同一级的下一个元素，语法：
+
+{{{class="brush: css"
+selector + selector + selector { ... }
+}}}
+
+== 结点属性选择器 ==
+
+{{{class="brush: css"
+[attr-name] { ... }
+[attr-name=attr-value] { ... }
+}}}
+
+从有空格的值中匹配：
+
+{{{class="brush: html"
+<style type="text/css">
+	[title~=hello] { color:red; } 
+</style>
+
+<h1>可以应用样式：</h1>
+
+<h2 title="hello world">Hello world</h2>
+<p title="student hello">Hello W3School students!</h1>
+
+<h1>无法应用样式：</h1>
+
+<h2 title="world">Hello world</h2>
+<p title="student">Hello W3School students!</p>
+}}}
+
+从有连字符的值中匹配 例子：
+
+{{{class="brush: css"
+<style type="text/css">
+	[lang|=en] { color:red; }
+</style>
+
+<h1>可以应用样式：</h1>
+
+<p lang="en">Hello!</p>
+<p lang="en-us">Hi!</p>
+
+<h1>无法应用样式：</h1>
+
+<p lang="us">Hi!</p>
+<p lang="zh">Hao!</p>
+}}}
+
+
+== CSS 伪类 (Pseudo-classes) ==
+
+伪类的语法：
+
+{{{class="brush: css"
+selector : pseudo-class {property: value}
+}}}
+
+CSS 类也可与伪类搭配使用：
+
+{{{class="brush: css"
+selector.class : pseudo-class {property: value}
+}}}
+
+常用的伪类：
+
+| 属性         | 描述                                     | CSS |
+|--------------|------------------------------------------|-----|
+| :active      | 向被激活的元素添加样式。                 | 1   |
+| :focus       | 向拥有键盘输入焦点的元素添加样式。       | 2   |
+| :hover       | 当鼠标悬浮在元素上方时，向元素添加样式。 | 1   |
+| :link        | 向未被访问的链接添加样式。               | 1   |
+| :visited     | 向已被访问的链接添加样式。               | 1   |
+| :first-child | 向元素的第一个子元素添加样式。           | 2   |
+| :lang        | 向带有指定 lang 属性的元素添加样式。     | 2   |
+

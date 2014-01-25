@@ -1,0 +1,282 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>CSS</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+<h1>CSS</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">引入</a>
+<ul>
+<li><a href="#toc_1.1">引入外部css</a>
+<li><a href="#toc_1.2">内部样式</a>
+<li><a href="#toc_1.3">行内样式</a>
+</ul>
+<li><a href="#toc_2">选择器</a>
+<ul>
+<li><a href="#toc_2.1">多重选择器</a>
+<li><a href="#toc_2.2">结点属性选择器</a>
+<li><a href="#toc_2.3">CSS 伪类 (Pseudo-classes)</a>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">引入</h1>
+
+<h2 id="toc_1.1">引入外部css</h2>
+
+<pre class="brush: html">
+&lt;head&gt;
+	&lt;link rel="stylesheet" type="text/css" href="mystyle.css" /&gt;
+&lt;/head&gt;
+</pre>
+
+<h2 id="toc_1.2">内部样式</h2>
+
+<pre class="brush: html">
+&lt;head&gt;
+&lt;head&gt;
+&lt;style type="text/css"&gt;
+  hr {color: sienna;}
+  p {margin-left: 20px;}
+  body {background-image: url("images/back40.gif");}
+&lt;/style&gt;
+&lt;/head&gt;
+</pre>
+
+<h2 id="toc_1.3">行内样式</h2>
+
+<pre class="brush: html">
+&lt;head&gt;
+&lt;p style="color: sienna; margin-left: 20px"&gt;
+	This is a paragraph
+&lt;/p&gt;
+</pre>
+
+<h1 id="toc_2">选择器</h1>
+
+<p>
+css选择器用来选择指定的dom结点，语法：
+</p>
+
+<pre class="brush: css">
+ node-type  { ... }   // 标签
+.node-class { ... }   // 样式
+#node-id    { ... }   // id
+</pre>
+
+<h2 id="toc_2.1">多重选择器</h2>
+
+<p>
+同时应用到多个不同的选择器：
+</p>
+
+<pre class="brush: css">
+selector, selector, selector { ... }
+</pre>
+
+<p>
+选择元素内的存在的元素（中间可以隔了其他元素），语法：
+</p>
+
+<pre class="brush: css">
+selector selector selector { ... }
+</pre>
+
+<p>
+选择元素内的的第一层元素，语法：
+</p>
+
+<pre class="brush: css">
+selector &gt; selector &gt; selector { ... }
+</pre>
+
+<p>
+选择元素同一级的下一个元素，语法：
+</p>
+
+<pre class="brush: css">
+selector + selector + selector { ... }
+</pre>
+
+<h2 id="toc_2.2">结点属性选择器</h2>
+
+<pre class="brush: css">
+[attr-name] { ... }
+[attr-name=attr-value] { ... }
+</pre>
+
+<p>
+从有空格的值中匹配：
+</p>
+
+<pre class="brush: html">
+&lt;style type="text/css"&gt;
+	[title~=hello] { color:red; } 
+&lt;/style&gt;
+
+&lt;h1&gt;可以应用样式：&lt;/h1&gt;
+
+&lt;h2 title="hello world"&gt;Hello world&lt;/h2&gt;
+&lt;p title="student hello"&gt;Hello W3School students!&lt;/h1&gt;
+
+&lt;h1&gt;无法应用样式：&lt;/h1&gt;
+
+&lt;h2 title="world"&gt;Hello world&lt;/h2&gt;
+&lt;p title="student"&gt;Hello W3School students!&lt;/p&gt;
+</pre>
+
+<p>
+从有连字符的值中匹配 例子：
+</p>
+
+<pre class="brush: css">
+&lt;style type="text/css"&gt;
+	[lang|=en] { color:red; }
+&lt;/style&gt;
+
+&lt;h1&gt;可以应用样式：&lt;/h1&gt;
+
+&lt;p lang="en"&gt;Hello!&lt;/p&gt;
+&lt;p lang="en-us"&gt;Hi!&lt;/p&gt;
+
+&lt;h1&gt;无法应用样式：&lt;/h1&gt;
+
+&lt;p lang="us"&gt;Hi!&lt;/p&gt;
+&lt;p lang="zh"&gt;Hao!&lt;/p&gt;
+</pre>
+
+
+<h2 id="toc_2.3">CSS 伪类 (Pseudo-classes)</h2>
+
+<p>
+伪类的语法：
+</p>
+
+<pre class="brush: css">
+selector : pseudo-class {property: value}
+</pre>
+
+<p>
+CSS 类也可与伪类搭配使用：
+</p>
+
+<pre class="brush: css">
+selector.class : pseudo-class {property: value}
+</pre>
+
+<p>
+常用的伪类：
+</p>
+
+<table>
+<tr>
+<th>
+属性
+</th>
+<th>
+描述
+</th>
+<th>
+CSS
+</th>
+</tr>
+<tr>
+<td>
+:active
+</td>
+<td>
+向被激活的元素添加样式。
+</td>
+<td>
+1
+</td>
+</tr>
+<tr>
+<td>
+:focus
+</td>
+<td>
+向拥有键盘输入焦点的元素添加样式。
+</td>
+<td>
+2
+</td>
+</tr>
+<tr>
+<td>
+:hover
+</td>
+<td>
+当鼠标悬浮在元素上方时，向元素添加样式。
+</td>
+<td>
+1
+</td>
+</tr>
+<tr>
+<td>
+:link
+</td>
+<td>
+向未被访问的链接添加样式。
+</td>
+<td>
+1
+</td>
+</tr>
+<tr>
+<td>
+:visited
+</td>
+<td>
+向已被访问的链接添加样式。
+</td>
+<td>
+1
+</td>
+</tr>
+<tr>
+<td>
+:first-child
+</td>
+<td>
+向元素的第一个子元素添加样式。
+</td>
+<td>
+2
+</td>
+</tr>
+<tr>
+<td>
+:lang
+</td>
+<td>
+向带有指定 lang 属性的元素添加样式。
+</td>
+<td>
+2
+</td>
+</tr>
+</table>
+ </div>
+</body>
+</html>
