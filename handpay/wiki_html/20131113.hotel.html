@@ -27,6 +27,10 @@
 <ul>
 <li><a href="#toc_1">文档位置</a>
 <li><a href="#toc_2">启动参数</a>
+<li><a href="#toc_3">本地测试屏蔽的内容</a>
+<ul>
+<li><a href="#toc_3.1">连接数据服务器</a>
+</ul>
 </ul>
 </div>
 
@@ -65,6 +69,23 @@ jvm参数：
 
 <pre class="brush: bash">
 cd /cygdrive/d/server/jboss-5.1.0.GA-hotel/server/handpay-ctrip/deploy/ROOT.war/hotel-ctrip/mall/wap/js/min/iphone/hotel
+</pre>
+
+<h1 id="toc_3">本地测试屏蔽的内容</h1>
+
+<h2 id="toc_3.1">连接数据服务器</h2>
+
+<p>
+<code>HotelOrderServiceImpl</code>
+</p>
+
+<pre class="brush: bash">
+	public void afterPropertiesSet() throws Exception {
+		// 别提交！！！
+//		DataListener listener = new DataListener();
+//		listener.setServer(dataServer);
+//		listener.listener(HotelUtils.getAppCode(), DC_AREA_ORDER_SYNC,new OrderStatusCallBack());
+	}
 </pre>
  </div>
 </body>

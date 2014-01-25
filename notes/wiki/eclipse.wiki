@@ -110,3 +110,34 @@ file ".project", delete :
  
 <nature>org.eclipse.wst.jsdt.core.jsNature</nature> 
 }}}
+
+
+= 构建变量 =
+
+调用外部工具的变量列表：[[http://help.eclipse.org/indigo/index.jsp?topic=/org.eclipse.platform.doc.user/concepts/concepts-exttools.htm|链接]]
+
+== 编译系统变量 ==
+
+=== 查看 ===
+
+C/C++ Build > Build Variables 选项卡 > Show system variables　选框
+
+=== 添加变量到当前项目 ===
+
+Add 按钮
+
+=== 添加变量到整个工作空间 ===
+
+Window > Preferences
+
+=== 操作系统级环境变量 ===
+
+许多对话框有Variables…按钮，在那里可以使用自定义变量，包括定义在系统级别的变量。
+
+
+
+
+
+
+
+

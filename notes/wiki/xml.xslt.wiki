@@ -2,11 +2,405 @@
 
 %toc XSLT
 
+= 声明样式 =
+
+== 文档声明 ==
+
+根据 W3C 的 XSLT 标准，声明 XSL 样式表的正确方法是：
+
+{{{class="brush: xml"
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+}}}
+
+或者：
+
+{{{class="brush: xml"
+<xsl:transform version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+}}}
+
+一定要声明XSL样式，上面两套方法是等价的。
+
+如需访问 XSLT 的元素、属性以及特性，我们必须在文档顶端声明 XSLT 命名空间。
+
+`xmlns:xsl="http://www.w3.org/1999/XSL/Transform"`指向了官方的 W3C XSLT 命名空间
+。如果您使用此命名空间，就必须包含属性`version="1.0"`。
+
+
+== XML转HTML ==
+
+定义XML到HTML的转换规则：
+
+* `xsl:template`定义一个模板。
+* `xsl:for-each`迭代。
+* `xsl:value-of`取值。
+
+{{{class="brush: xml; highlight: [6, 15, 17, 18]"
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+	<xsl:output method='html' version='1.0' encoding='UTF-8' indent='yes'/>
+
+	<xsl:template match="/"> <!-- XPath匹配整个文档 -->
+		<html>
+			<body>
+				<h2>My CD Collection</h2>
+				<table border="1">
+					<tr bgcolor="#9acd32">
+						<th align="left">Title</th>
+						<th align="left">Artist</th>
+					</tr>
+					<xsl:for-each select="catalog/cd"> <!-- 迭代 catalog/cd -->
+						<tr>
+							<td><xsl:value-of select="title"/></td>  <!-- 选定节点 -->
+							<td><xsl:value-of select="artist"/></td>
+						</tr>
+					</xsl:for-each>
+				</table>
+			</body>
+		</html>
+	</xsl:template>
+
+</xsl:stylesheet>
+}}}
+
+数据XML中引入XLS：
+
+{{{class="brush: xml; highlight: [2]"
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml-stylesheet type="text/xsl" href="cdcatalog.xsl"?>
+<catalog>
+	<cd>
+		<title>Empire Burlesque</title>
+		<artist>Bob Dylan</artist>
+		<country>USA</country>
+		<company>Columbia</company>
+		<price>10.90</price>
+		<year>1985</year>
+	</cd>
+	<cd>
+		<title>Hide your heart</title>
+		<artist>Bonnie Tyler</artist>
+		<country>UK</country>
+		<company>CBS Records</company>
+		<price>9.90</price>
+		<year>1988</year>
+	</cd>
+</catalog>
+}}}
+
+查看效果：`../code/xslt/01/cdcatalog.xml`
+
+= 元素介绍 =
+
+== xsl:for-each迭代： ==
+
+可以过滤结果：
+
+通过在`<xsl:for-each>`元素中添加一个选择属性的判别式，我们也可以过滤从 XML 文件
+输出的结果。
+
+{{{class="brush: xml"
+<xsl:for-each select="catalog/cd[artist='Bob Dylan']">
+}}}
+
+合法的过滤运算符:
+
+* `= `：等于
+* `!=`：不等于
+* `&lt;`：小于
+* `&gt;`：大于
+
+{{{class="brush: xml; highlight: [13, 18]"
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+	<xsl:template match="/">
+		<html>
+			<body>
+				<h2>My CD Collection</h2>
+				<table border="1">
+					<tr bgcolor="#9acd32">
+						<th>Title</th>
+						<th>Artist</th>
+					</tr>
+					<xsl:for-each select="catalog/cd[artist='Bob Dylan']">
+						<tr>
+							<td><xsl:value-of select="title"/></td>
+							<td><xsl:value-of select="artist"/></td>
+						</tr>
+					</xsl:for-each>
+				</table>
+			</body>
+		</html>
+	</xsl:template>
+
+</xsl:stylesheet>
+}}}
+
+== xsl:sort 排序 ==
+
+{{{class="brush: xml; highlight: [14]"
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+	<xsl:template match="/">
+		<html>
+			<body>
+				<h2>My CD Collection</h2>
+				<table border="1">
+					<tr bgcolor="#9acd32">
+						<th>Title</th>
+						<th>Artist</th>
+					</tr>
+					<xsl:for-each select="catalog/cd">
+						<xsl:sort select="artist"/>
+						<tr>
+							<td><xsl:value-of select="title"/></td>
+							<td><xsl:value-of select="artist"/></td>
+						</tr>
+					</xsl:for-each>
+				</table>
+			</body>
+		</html>
+	</xsl:template>
+
+</xsl:stylesheet>
+}}}
+
+== xsl:if 判断 ==
+
+{{{class="brush: xml; highlight: [13]"
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+	<xsl:template match="/">
+		<html>
+			<body>
+				<h2>My CD Collection</h2>
+				<table border="1">
+					<tr bgcolor="#9acd32">
+						<th>Title</th>
+						<th>Artist</th>
+					</tr>
+					<xsl:for-each select="catalog/cd">
+						<xsl:if test="price &gt; 10">
+							<tr>
+								<td><xsl:value-of select="title"/></td>
+								<td><xsl:value-of select="artist"/></td>
+							</tr>
+						</xsl:if>
+					</xsl:for-each>
+				</table>
+			</body>
+		</html>
+	</xsl:template>
+</xsl:stylesheet>
+}}}
+
+== xsl:choose 选择 ==
+
+{{{class="brush: xml; highlight: [15, 16, 20, 21, 23, 24]"
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+	<xsl:template match="/">
+		<html>
+			<body>
+				<h2>My CD Collection</h2>
+				<table border="1">
+					<tr bgcolor="#9acd32">
+						<th>Title</th>
+						<th>Artist</th>
+					</tr>
+					<xsl:for-each select="catalog/cd">
+						<tr>
+							<td><xsl:value-of select="title"/></td>
+							<xsl:choose>
+								<xsl:when test="price &gt; 10">
+									<td bgcolor="#ff00ff">
+										<xsl:value-of select="artist"/>
+									</td>
+								</xsl:when>
+								<xsl:otherwise>
+									<td><xsl:value-of select="artist"/></td>
+								</xsl:otherwise>
+							</xsl:choose>
+						</tr>
+					</xsl:for-each>
+				</table>
+			</body>
+		</html>
+	</xsl:template>
+</xsl:stylesheet>
+}}}
+
+== xsl:apply-templates 使用当前元素 ==
+
+`<xsl:apply-templates>`元素可把一个模板应用于当前的元素或者当前元素的子节点。
+
+假如我们向`<xsl:apply-templates>`元素添加一个`select`属性，此元素就会仅仅处理与
+属性值匹配的子元素。我们可以使用`select`属性来规定子节点被处理的顺序。
+
+{{{class="brush: xml; highlight: [15, 16]"
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+	<xsl:template match="/">
+		<html>
+			<body>
+				<h2>My CD Collection</h2> 
+				<xsl:apply-templates/> 
+			</body>
+		</html>
+	</xsl:template>
+
+	<xsl:template match="cd">
+		<p>
+			<xsl:apply-templates select="title"/> 
+			<xsl:apply-templates select="artist"/>
+		</p>
+	</xsl:template>
+
+	<xsl:template match="title">
+		Title: 
+		<span style="color:#ff0000"><xsl:value-of select="."/></span>
+		<br />
+	</xsl:template>
+
+	<xsl:template match="artist">
+		Artist: 
+		<span style="color:#00ff00"><xsl:value-of select="."/></span>
+		<br />
+	</xsl:template>
+
+</xsl:stylesheet>
+}}}
+
+== 使用JavaScritp ==
+
+和html一样，在模板里指定JS就可以了：
+
+{{{class="brush: javascript"
+function showMassage(msg) { alert(msg); };
+showMassage("hello");
+}}}
+
+{{{class="brush: xml; highlight: [7]"
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+	<xsl:template match="/">
+		<html>
+			<head>
+				<script type="text/javascript" src="cdcatalog.js"></script>
+			</head>
+			<body>
+				<h2>My CD Collection</h2> 
+				<xsl:apply-templates/> 
+			</body>
+		</html>
+	</xsl:template>
+
+	<xsl:template match="cd">
+		<p>
+			<xsl:apply-templates select="title"/> 
+			<xsl:apply-templates select="artist"/>
+		</p>
+	</xsl:template>
+
+	<xsl:template match="title">
+		Title: <span style="color:#ff0000">
+			<xsl:value-of select="."/></span>
+		<br />
+	</xsl:template>
+
+	<xsl:template match="artist">
+		Artist: <span style="color:#00ff00">
+			<xsl:value-of select="."/></span>
+		<br />
+	</xsl:template>
+
+</xsl:stylesheet>
+}}}
+
+= 参考手册 =
+
+== XSL常用元素 ==
+
+| 元素                   | 描述                                                   |
+|------------------------|--------------------------------------------------------|
+| apply-imports          | 应用来自导入样式表中的模版规则。                       |
+| apply-templates        | 向当前元素或当前元素的子元素应用模板。                 |
+| attribute              | 向元素添加属性。                                       |
+| attribute-set          | 创建命名的属性集。                                     |
+| call-template          | 调用一个指定的模板。                                   |
+| choose                 | 与<when>以及<otherwise>协同使用，来表达多重条件测试。  |
+| comment                | 在结果树中创建注释节点。                               |
+| copy                   | 创建当前节点的一个备份（无子节点及属性）。             |
+| copy-of                | 创建当前节点的一个备份（带有子节点及属性）。           |
+| decimal-format         | 定义当通过 format-number() 函数把数字转换为字符串时，  |
+| \/                     | 所要使用的字符和符号。                                 |
+| element                | 在输出文档中创建一个元素节点。                         |
+| fallback               | 假如处理器不支持某个XSLT元素，规定一段备用代码来运行。 |
+| for-each               | 遍历指定的节点集中的每个节点。                         |
+| if                     | 包含一个模板，仅当某个指定的条件成立时应用此模板。     |
+| import                 | 用于把一个样式表中的内容倒入另一个样式表中。           |
+| include                | 把一个样式表中的内容包含到另一个样式表中。             |
+| key                    | 声明一个命名的键。                                     |
+| message                | 向输出写一条消息（用于错误报告）。                     |
+| namespace-alias        | 把样式表中的命名空间替换为输出中不同的命名空间。       |
+| number                 | 测定当前节点的整数位置，并对数字进行格式化。           |
+| otherwise              | 规定 <choose> 元素的默认动作。                         |
+| output                 | 定义输出文档的格式。                                   |
+| param                  | 声明一个局部或全局参数。                               |
+| preserve-space         | 用于定义保留空白的元素。                               |
+| processing-instruction | 生成处理指令节点。                                     |
+| sort                   | 对结果进行排序。                                       |
+| strip-space            | 定义应当删除空白字符的元素。                           |
+| stylesheet             | 定义样式表的根元素。                                   |
+| template               | 当指定的节点被匹配时所应用的规则。                     |
+| text                   | 通过样式表生成文本节点。                               |
+| transform              | 定义样式表的根元素。                                   |
+| value-of               | 提取选定节点的值。                                     |
+| variable               | 声明局部或者全局的变量。                               |
+| when                   | 规定 <choose> 元素的动作。                             |
+| with-param             | 规定需被传入某个模板的参数的值。                       |
+
+详细：http://www.w3school.com.cn/xsl/xsl_w3celementref.asp
+
+== XSLT常用函数 ==
+
+XSLT 含有超过 100 个内建的函数。这些函数用于字符串值、数值、日期和时间比较、
+节点和 QName 操作、序列操作、逻辑值，等等等等。
+
+XSLT 函数的命名空间的 URI 是：`http://www.w3.org/2005/02/xpath-functions`
+
+函数命名空间的默认前缀是`fn`。
+
+提示：函数在被调用时常带有`fn:`前缀，比如`fn:string()`。不过，既然`fn:`是
+命名空间的默认前缀，那么在被调用时，函数的名称不必使用前缀。
+
+您可以在我们的 XPath 教程中访问所有内建的 XSLT 2.0 函数参考。
+
+此外，在此列出了内建的 XSLT 函数：
+
+| 名称                  | 描述                                                             |
+|-----------------------|------------------------------------------------------------------|
+| current()             | 返回当前节点作为唯一成员的节点集。                               |
+| document()            | 用于访问外部 XML 文档中的节点。                                  |
+| element-available()   | 检测 XSLT 处理器是否支持指定的元素。                             |
+| format-number()       | 把数字转换为字符串。                                             |
+| function-available()  | 检测 XSLT 处理器是否支持指定的函数。                             |
+| generate-id()         | 返回唯一标识指定节点的字符串值。                                 |
+| key()                 | 检索以前使用 <xsl:key> 语句标记的元素。                          |
+| node-set              | 将树转换为节点集。产生的节点集总是包含单个节点并且是树的根节点。 |
+| system-property()     | 返回系统属性的值。                                               |
+| unparsed-entity-uri() | 返回未解析实体的 URI。                                           |
+
+详细： http://www.w3school.com.cn/xsl/xsl_functions.asp
+
+
 {{{class="brush: xml"
 }}}
 
-{{{class="brush: xml"
-}}}
 
 {{{class="brush: xml"
 }}}
@@ -15,39 +409,6 @@
 {{{class="brush: xml"
 }}}
 
-
-{{{class="brush: xml"
-}}}
-
-
-{{{class="brush: xml"
-}}}
-
-
-{{{class="brush: xml"
-}}}
-
-{{{class="brush: xml"
-}}}
-
-{{{class="brush: xml"
-}}}
-
-
-{{{class="brush: xml"
-}}}
-
-
-{{{class="brush: xml"
-}}}
-
-
-{{{class="brush: xml"
-}}}
-
-
-{{{class="brush: xml"
-}}}
 
 {{{class="brush: xml"
 }}}

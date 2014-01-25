@@ -22,12 +22,826 @@
 	<div class="note-main"> 
 
 <h1>XSLT</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">声明样式</a>
+<ul>
+<li><a href="#toc_1.1">文档声明</a>
+<li><a href="#toc_1.2">XML转HTML</a>
+</ul>
+<li><a href="#toc_2">元素介绍</a>
+<ul>
+<li><a href="#toc_2.1">xsl:for-each迭代：</a>
+<li><a href="#toc_2.2">xsl:sort 排序</a>
+<li><a href="#toc_2.3">xsl:if 判断</a>
+<li><a href="#toc_2.4">xsl:choose 选择</a>
+<li><a href="#toc_2.5">xsl:apply-templates 使用当前元素</a>
+<li><a href="#toc_2.6">使用JavaScritp</a>
+</ul>
+<li><a href="#toc_3">参考手册</a>
+<ul>
+<li><a href="#toc_3.1">XSL常用元素</a>
+<li><a href="#toc_3.2">XSLT常用函数</a>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">声明样式</h1>
+
+<h2 id="toc_1.1">文档声明</h2>
+
+<p>
+根据 W3C 的 XSLT 标准，声明 XSL 样式表的正确方法是：
+</p>
+
+<pre class="brush: xml">
+&lt;xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"&gt;
+</pre>
+
+<p>
+或者：
+</p>
+
+<pre class="brush: xml">
+&lt;xsl:transform version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"&gt;
+</pre>
+
+<p>
+一定要声明XSL样式，上面两套方法是等价的。
+</p>
+
+<p>
+如需访问 XSLT 的元素、属性以及特性，我们必须在文档顶端声明 XSLT 命名空间。
+</p>
+
+<p>
+<code>xmlns:xsl="http://www.w3.org/1999/XSL/Transform"</code>指向了官方的 W3C XSLT 命名空间
+。如果您使用此命名空间，就必须包含属性<code>version="1.0"</code>。
+</p>
+
+
+<h2 id="toc_1.2">XML转HTML</h2>
+
+<p>
+定义XML到HTML的转换规则：
+</p>
+
+<ul>
+<li>
+<code>xsl:template</code>定义一个模板。
+
+<li>
+<code>xsl:for-each</code>迭代。
+
+<li>
+<code>xsl:value-of</code>取值。
+
+</ul>
+
+<pre class="brush: xml; highlight: [6, 15, 17, 18]">
+&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+&lt;xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"&gt;
+
+	&lt;xsl:output method='html' version='1.0' encoding='UTF-8' indent='yes'/&gt;
+
+	&lt;xsl:template match="/"&gt; &lt;!-- XPath匹配整个文档 --&gt;
+		&lt;html&gt;
+			&lt;body&gt;
+				&lt;h2&gt;My CD Collection&lt;/h2&gt;
+				&lt;table border="1"&gt;
+					&lt;tr bgcolor="#9acd32"&gt;
+						&lt;th align="left"&gt;Title&lt;/th&gt;
+						&lt;th align="left"&gt;Artist&lt;/th&gt;
+					&lt;/tr&gt;
+					&lt;xsl:for-each select="catalog/cd"&gt; &lt;!-- 迭代 catalog/cd --&gt;
+						&lt;tr&gt;
+							&lt;td&gt;&lt;xsl:value-of select="title"/&gt;&lt;/td&gt;  &lt;!-- 选定节点 --&gt;
+							&lt;td&gt;&lt;xsl:value-of select="artist"/&gt;&lt;/td&gt;
+						&lt;/tr&gt;
+					&lt;/xsl:for-each&gt;
+				&lt;/table&gt;
+			&lt;/body&gt;
+		&lt;/html&gt;
+	&lt;/xsl:template&gt;
+
+&lt;/xsl:stylesheet&gt;
+</pre>
+
+<p>
+数据XML中引入XLS：
+</p>
+
+<pre class="brush: xml; highlight: [2]">
+&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+&lt;?xml-stylesheet type="text/xsl" href="cdcatalog.xsl"?&gt;
+&lt;catalog&gt;
+	&lt;cd&gt;
+		&lt;title&gt;Empire Burlesque&lt;/title&gt;
+		&lt;artist&gt;Bob Dylan&lt;/artist&gt;
+		&lt;country&gt;USA&lt;/country&gt;
+		&lt;company&gt;Columbia&lt;/company&gt;
+		&lt;price&gt;10.90&lt;/price&gt;
+		&lt;year&gt;1985&lt;/year&gt;
+	&lt;/cd&gt;
+	&lt;cd&gt;
+		&lt;title&gt;Hide your heart&lt;/title&gt;
+		&lt;artist&gt;Bonnie Tyler&lt;/artist&gt;
+		&lt;country&gt;UK&lt;/country&gt;
+		&lt;company&gt;CBS Records&lt;/company&gt;
+		&lt;price&gt;9.90&lt;/price&gt;
+		&lt;year&gt;1988&lt;/year&gt;
+	&lt;/cd&gt;
+&lt;/catalog&gt;
+</pre>
+
+<p>
+查看效果：<code>../code/xslt/01/cdcatalog.xml</code>
+</p>
+
+<h1 id="toc_2">元素介绍</h1>
+
+<h2 id="toc_2.1">xsl:for-each迭代：</h2>
+
+<p>
+可以过滤结果：
+</p>
+
+<p>
+通过在<code>&lt;xsl:for-each&gt;</code>元素中添加一个选择属性的判别式，我们也可以过滤从 XML 文件
+输出的结果。
+</p>
+
+<pre class="brush: xml">
+&lt;xsl:for-each select="catalog/cd[artist='Bob Dylan']"&gt;
+</pre>
+
+<p>
+合法的过滤运算符:
+</p>
+
+<ul>
+<li>
+<code>= </code>：等于
+
+<li>
+<code>!=</code>：不等于
+
+<li>
+<code>&amp;lt;</code>：小于
+
+<li>
+<code>&amp;gt;</code>：大于
+
+</ul>
+
+<pre class="brush: xml; highlight: [13, 18]">
+&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+&lt;xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"&gt;
+
+	&lt;xsl:template match="/"&gt;
+		&lt;html&gt;
+			&lt;body&gt;
+				&lt;h2&gt;My CD Collection&lt;/h2&gt;
+				&lt;table border="1"&gt;
+					&lt;tr bgcolor="#9acd32"&gt;
+						&lt;th&gt;Title&lt;/th&gt;
+						&lt;th&gt;Artist&lt;/th&gt;
+					&lt;/tr&gt;
+					&lt;xsl:for-each select="catalog/cd[artist='Bob Dylan']"&gt;
+						&lt;tr&gt;
+							&lt;td&gt;&lt;xsl:value-of select="title"/&gt;&lt;/td&gt;
+							&lt;td&gt;&lt;xsl:value-of select="artist"/&gt;&lt;/td&gt;
+						&lt;/tr&gt;
+					&lt;/xsl:for-each&gt;
+				&lt;/table&gt;
+			&lt;/body&gt;
+		&lt;/html&gt;
+	&lt;/xsl:template&gt;
+
+&lt;/xsl:stylesheet&gt;
+</pre>
+
+<h2 id="toc_2.2">xsl:sort 排序</h2>
+
+<pre class="brush: xml; highlight: [14]">
+&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+&lt;xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"&gt;
+
+	&lt;xsl:template match="/"&gt;
+		&lt;html&gt;
+			&lt;body&gt;
+				&lt;h2&gt;My CD Collection&lt;/h2&gt;
+				&lt;table border="1"&gt;
+					&lt;tr bgcolor="#9acd32"&gt;
+						&lt;th&gt;Title&lt;/th&gt;
+						&lt;th&gt;Artist&lt;/th&gt;
+					&lt;/tr&gt;
+					&lt;xsl:for-each select="catalog/cd"&gt;
+						&lt;xsl:sort select="artist"/&gt;
+						&lt;tr&gt;
+							&lt;td&gt;&lt;xsl:value-of select="title"/&gt;&lt;/td&gt;
+							&lt;td&gt;&lt;xsl:value-of select="artist"/&gt;&lt;/td&gt;
+						&lt;/tr&gt;
+					&lt;/xsl:for-each&gt;
+				&lt;/table&gt;
+			&lt;/body&gt;
+		&lt;/html&gt;
+	&lt;/xsl:template&gt;
+
+&lt;/xsl:stylesheet&gt;
+</pre>
+
+<h2 id="toc_2.3">xsl:if 判断</h2>
+
+<pre class="brush: xml; highlight: [13]">
+&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+&lt;xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"&gt;
+	&lt;xsl:template match="/"&gt;
+		&lt;html&gt;
+			&lt;body&gt;
+				&lt;h2&gt;My CD Collection&lt;/h2&gt;
+				&lt;table border="1"&gt;
+					&lt;tr bgcolor="#9acd32"&gt;
+						&lt;th&gt;Title&lt;/th&gt;
+						&lt;th&gt;Artist&lt;/th&gt;
+					&lt;/tr&gt;
+					&lt;xsl:for-each select="catalog/cd"&gt;
+						&lt;xsl:if test="price &amp;gt; 10"&gt;
+							&lt;tr&gt;
+								&lt;td&gt;&lt;xsl:value-of select="title"/&gt;&lt;/td&gt;
+								&lt;td&gt;&lt;xsl:value-of select="artist"/&gt;&lt;/td&gt;
+							&lt;/tr&gt;
+						&lt;/xsl:if&gt;
+					&lt;/xsl:for-each&gt;
+				&lt;/table&gt;
+			&lt;/body&gt;
+		&lt;/html&gt;
+	&lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;
+</pre>
+
+<h2 id="toc_2.4">xsl:choose 选择</h2>
+
+<pre class="brush: xml; highlight: [15, 16, 20, 21, 23, 24]">
+&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+&lt;xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"&gt;
+	&lt;xsl:template match="/"&gt;
+		&lt;html&gt;
+			&lt;body&gt;
+				&lt;h2&gt;My CD Collection&lt;/h2&gt;
+				&lt;table border="1"&gt;
+					&lt;tr bgcolor="#9acd32"&gt;
+						&lt;th&gt;Title&lt;/th&gt;
+						&lt;th&gt;Artist&lt;/th&gt;
+					&lt;/tr&gt;
+					&lt;xsl:for-each select="catalog/cd"&gt;
+						&lt;tr&gt;
+							&lt;td&gt;&lt;xsl:value-of select="title"/&gt;&lt;/td&gt;
+							&lt;xsl:choose&gt;
+								&lt;xsl:when test="price &amp;gt; 10"&gt;
+									&lt;td bgcolor="#ff00ff"&gt;
+										&lt;xsl:value-of select="artist"/&gt;
+									&lt;/td&gt;
+								&lt;/xsl:when&gt;
+								&lt;xsl:otherwise&gt;
+									&lt;td&gt;&lt;xsl:value-of select="artist"/&gt;&lt;/td&gt;
+								&lt;/xsl:otherwise&gt;
+							&lt;/xsl:choose&gt;
+						&lt;/tr&gt;
+					&lt;/xsl:for-each&gt;
+				&lt;/table&gt;
+			&lt;/body&gt;
+		&lt;/html&gt;
+	&lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;
+</pre>
+
+<h2 id="toc_2.5">xsl:apply-templates 使用当前元素</h2>
+
+<p>
+<code>&lt;xsl:apply-templates&gt;</code>元素可把一个模板应用于当前的元素或者当前元素的子节点。
+</p>
+
+<p>
+假如我们向<code>&lt;xsl:apply-templates&gt;</code>元素添加一个<code>select</code>属性，此元素就会仅仅处理与
+属性值匹配的子元素。我们可以使用<code>select</code>属性来规定子节点被处理的顺序。
+</p>
+
+<pre class="brush: xml; highlight: [15, 16]">
+&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+&lt;xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"&gt;
+
+	&lt;xsl:template match="/"&gt;
+		&lt;html&gt;
+			&lt;body&gt;
+				&lt;h2&gt;My CD Collection&lt;/h2&gt; 
+				&lt;xsl:apply-templates/&gt; 
+			&lt;/body&gt;
+		&lt;/html&gt;
+	&lt;/xsl:template&gt;
+
+	&lt;xsl:template match="cd"&gt;
+		&lt;p&gt;
+			&lt;xsl:apply-templates select="title"/&gt; 
+			&lt;xsl:apply-templates select="artist"/&gt;
+		&lt;/p&gt;
+	&lt;/xsl:template&gt;
+
+	&lt;xsl:template match="title"&gt;
+		Title: 
+		&lt;span style="color:#ff0000"&gt;&lt;xsl:value-of select="."/&gt;&lt;/span&gt;
+		&lt;br /&gt;
+	&lt;/xsl:template&gt;
+
+	&lt;xsl:template match="artist"&gt;
+		Artist: 
+		&lt;span style="color:#00ff00"&gt;&lt;xsl:value-of select="."/&gt;&lt;/span&gt;
+		&lt;br /&gt;
+	&lt;/xsl:template&gt;
+
+&lt;/xsl:stylesheet&gt;
+</pre>
+
+<h2 id="toc_2.6">使用JavaScritp</h2>
+
+<p>
+和html一样，在模板里指定JS就可以了：
+</p>
+
+<pre class="brush: javascript">
+function showMassage(msg) { alert(msg); };
+showMassage("hello");
+</pre>
+
+<pre class="brush: xml; highlight: [7]">
+&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+&lt;xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"&gt;
+
+	&lt;xsl:template match="/"&gt;
+		&lt;html&gt;
+			&lt;head&gt;
+				&lt;script type="text/javascript" src="cdcatalog.js"&gt;&lt;/script&gt;
+			&lt;/head&gt;
+			&lt;body&gt;
+				&lt;h2&gt;My CD Collection&lt;/h2&gt; 
+				&lt;xsl:apply-templates/&gt; 
+			&lt;/body&gt;
+		&lt;/html&gt;
+	&lt;/xsl:template&gt;
+
+	&lt;xsl:template match="cd"&gt;
+		&lt;p&gt;
+			&lt;xsl:apply-templates select="title"/&gt; 
+			&lt;xsl:apply-templates select="artist"/&gt;
+		&lt;/p&gt;
+	&lt;/xsl:template&gt;
+
+	&lt;xsl:template match="title"&gt;
+		Title: &lt;span style="color:#ff0000"&gt;
+			&lt;xsl:value-of select="."/&gt;&lt;/span&gt;
+		&lt;br /&gt;
+	&lt;/xsl:template&gt;
+
+	&lt;xsl:template match="artist"&gt;
+		Artist: &lt;span style="color:#00ff00"&gt;
+			&lt;xsl:value-of select="."/&gt;&lt;/span&gt;
+		&lt;br /&gt;
+	&lt;/xsl:template&gt;
+
+&lt;/xsl:stylesheet&gt;
+</pre>
+
+<h1 id="toc_3">参考手册</h1>
+
+<h2 id="toc_3.1">XSL常用元素</h2>
+
+<table>
+<tr>
+<th>
+元素
+</th>
+<th>
+描述
+</th>
+</tr>
+<tr>
+<td>
+apply-imports
+</td>
+<td>
+应用来自导入样式表中的模版规则。
+</td>
+</tr>
+<tr>
+<td>
+apply-templates
+</td>
+<td>
+向当前元素或当前元素的子元素应用模板。
+</td>
+</tr>
+<tr>
+<td>
+attribute
+</td>
+<td>
+向元素添加属性。
+</td>
+</tr>
+<tr>
+<td>
+attribute-set
+</td>
+<td>
+创建命名的属性集。
+</td>
+</tr>
+<tr>
+<td>
+call-template
+</td>
+<td>
+调用一个指定的模板。
+</td>
+</tr>
+<tr>
+<td>
+choose
+</td>
+<td>
+与&lt;when&gt;以及&lt;otherwise&gt;协同使用，来表达多重条件测试。
+</td>
+</tr>
+<tr>
+<td>
+comment
+</td>
+<td>
+在结果树中创建注释节点。
+</td>
+</tr>
+<tr>
+<td>
+copy
+</td>
+<td>
+创建当前节点的一个备份（无子节点及属性）。
+</td>
+</tr>
+<tr>
+<td>
+copy-of
+</td>
+<td>
+创建当前节点的一个备份（带有子节点及属性）。
+</td>
+</tr>
+<tr>
+<td rowspan="2">
+decimal-format
+</td>
+<td>
+定义当通过 format-number() 函数把数字转换为字符串时，
+</td>
+</tr>
+<tr>
+<td>
+所要使用的字符和符号。
+</td>
+</tr>
+<tr>
+<td>
+element
+</td>
+<td>
+在输出文档中创建一个元素节点。
+</td>
+</tr>
+<tr>
+<td>
+fallback
+</td>
+<td>
+假如处理器不支持某个XSLT元素，规定一段备用代码来运行。
+</td>
+</tr>
+<tr>
+<td>
+for-each
+</td>
+<td>
+遍历指定的节点集中的每个节点。
+</td>
+</tr>
+<tr>
+<td>
+if
+</td>
+<td>
+包含一个模板，仅当某个指定的条件成立时应用此模板。
+</td>
+</tr>
+<tr>
+<td>
+import
+</td>
+<td>
+用于把一个样式表中的内容倒入另一个样式表中。
+</td>
+</tr>
+<tr>
+<td>
+include
+</td>
+<td>
+把一个样式表中的内容包含到另一个样式表中。
+</td>
+</tr>
+<tr>
+<td>
+key
+</td>
+<td>
+声明一个命名的键。
+</td>
+</tr>
+<tr>
+<td>
+message
+</td>
+<td>
+向输出写一条消息（用于错误报告）。
+</td>
+</tr>
+<tr>
+<td>
+namespace-alias
+</td>
+<td>
+把样式表中的命名空间替换为输出中不同的命名空间。
+</td>
+</tr>
+<tr>
+<td>
+number
+</td>
+<td>
+测定当前节点的整数位置，并对数字进行格式化。
+</td>
+</tr>
+<tr>
+<td>
+otherwise
+</td>
+<td>
+规定 &lt;choose&gt; 元素的默认动作。
+</td>
+</tr>
+<tr>
+<td>
+output
+</td>
+<td>
+定义输出文档的格式。
+</td>
+</tr>
+<tr>
+<td>
+param
+</td>
+<td>
+声明一个局部或全局参数。
+</td>
+</tr>
+<tr>
+<td>
+preserve-space
+</td>
+<td>
+用于定义保留空白的元素。
+</td>
+</tr>
+<tr>
+<td>
+processing-instruction
+</td>
+<td>
+生成处理指令节点。
+</td>
+</tr>
+<tr>
+<td>
+sort
+</td>
+<td>
+对结果进行排序。
+</td>
+</tr>
+<tr>
+<td>
+strip-space
+</td>
+<td>
+定义应当删除空白字符的元素。
+</td>
+</tr>
+<tr>
+<td>
+stylesheet
+</td>
+<td>
+定义样式表的根元素。
+</td>
+</tr>
+<tr>
+<td>
+template
+</td>
+<td>
+当指定的节点被匹配时所应用的规则。
+</td>
+</tr>
+<tr>
+<td>
+text
+</td>
+<td>
+通过样式表生成文本节点。
+</td>
+</tr>
+<tr>
+<td>
+transform
+</td>
+<td>
+定义样式表的根元素。
+</td>
+</tr>
+<tr>
+<td>
+value-of
+</td>
+<td>
+提取选定节点的值。
+</td>
+</tr>
+<tr>
+<td>
+variable
+</td>
+<td>
+声明局部或者全局的变量。
+</td>
+</tr>
+<tr>
+<td>
+when
+</td>
+<td>
+规定 &lt;choose&gt; 元素的动作。
+</td>
+</tr>
+<tr>
+<td>
+with-param
+</td>
+<td>
+规定需被传入某个模板的参数的值。
+</td>
+</tr>
+</table>
+
+<p>
+详细：<a href="http://www.w3school.com.cn/xsl/xsl_w3celementref.asp">http://www.w3school.com.cn/xsl/xsl_w3celementref.asp</a>
+</p>
+
+<h2 id="toc_3.2">XSLT常用函数</h2>
+
+<p>
+XSLT 含有超过 100 个内建的函数。这些函数用于字符串值、数值、日期和时间比较、
+节点和 QName 操作、序列操作、逻辑值，等等等等。
+</p>
+
+<p>
+XSLT 函数的命名空间的 URI 是：<code>http://www.w3.org/2005/02/xpath-functions</code>
+</p>
+
+<p>
+函数命名空间的默认前缀是<code>fn</code>。
+</p>
+
+<p>
+提示：函数在被调用时常带有<code>fn:</code>前缀，比如<code>fn:string()</code>。不过，既然<code>fn:</code>是
+命名空间的默认前缀，那么在被调用时，函数的名称不必使用前缀。
+</p>
+
+<p>
+您可以在我们的 XPath 教程中访问所有内建的 XSLT 2.0 函数参考。
+</p>
+
+<p>
+此外，在此列出了内建的 XSLT 函数：
+</p>
+
+<table>
+<tr>
+<th>
+名称
+</th>
+<th>
+描述
+</th>
+</tr>
+<tr>
+<td>
+current()
+</td>
+<td>
+返回当前节点作为唯一成员的节点集。
+</td>
+</tr>
+<tr>
+<td>
+document()
+</td>
+<td>
+用于访问外部 XML 文档中的节点。
+</td>
+</tr>
+<tr>
+<td>
+element-available()
+</td>
+<td>
+检测 XSLT 处理器是否支持指定的元素。
+</td>
+</tr>
+<tr>
+<td>
+format-number()
+</td>
+<td>
+把数字转换为字符串。
+</td>
+</tr>
+<tr>
+<td>
+function-available()
+</td>
+<td>
+检测 XSLT 处理器是否支持指定的函数。
+</td>
+</tr>
+<tr>
+<td>
+generate-id()
+</td>
+<td>
+返回唯一标识指定节点的字符串值。
+</td>
+</tr>
+<tr>
+<td>
+key()
+</td>
+<td>
+检索以前使用 &lt;xsl:key&gt; 语句标记的元素。
+</td>
+</tr>
+<tr>
+<td>
+node-set
+</td>
+<td>
+将树转换为节点集。产生的节点集总是包含单个节点并且是树的根节点。
+</td>
+</tr>
+<tr>
+<td>
+system-property()
+</td>
+<td>
+返回系统属性的值。
+</td>
+</tr>
+<tr>
+<td>
+unparsed-entity-uri()
+</td>
+<td>
+返回未解析实体的 URI。
+</td>
+</tr>
+</table>
+
+<p>
+详细： <a href="http://www.w3school.com.cn/xsl/xsl_functions.asp">http://www.w3school.com.cn/xsl/xsl_functions.asp</a>
+</p>
+
 
 <pre class="brush: xml">
 </pre>
 
-<pre class="brush: xml">
-</pre>
 
 <pre class="brush: xml">
 </pre>
@@ -36,39 +850,6 @@
 <pre class="brush: xml">
 </pre>
 
-
-<pre class="brush: xml">
-</pre>
-
-
-<pre class="brush: xml">
-</pre>
-
-
-<pre class="brush: xml">
-</pre>
-
-<pre class="brush: xml">
-</pre>
-
-<pre class="brush: xml">
-</pre>
-
-
-<pre class="brush: xml">
-</pre>
-
-
-<pre class="brush: xml">
-</pre>
-
-
-<pre class="brush: xml">
-</pre>
-
-
-<pre class="brush: xml">
-</pre>
 
 <pre class="brush: xml">
 </pre>

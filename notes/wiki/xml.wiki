@@ -4,7 +4,22 @@
 
 [[xml.schema]]
 
+
+= XSL =
+
 XSL指扩展样式表语言（EXtensible Stylesheet Language）由三部分组成：
-* [[xml.xpath]]
-* [[xml.xslt]]
-* [[xml.xsl-fo]]
+
+XSL-FO 目前通常被称为 XSL
+
+为什么会存在这样的混淆呢？XSL-FO 和 XSL 是一回事吗？
+
+可以这么说，不过我们需要向您作一个解释：
+
+样式化（Styling）是关于转换信息和格式化信息两方面的信息。在万维网联盟编写他们的
+首个 XSL 工作草案的时候，这个草案包括了有关转换和格式化 XML 文档的语言语法。
+
+后来，XSL 工作组把这个原始的草案分为独立的标准：
+
+* [[xml.xpath]]：是通过元素和属性在 XML 文档中进行导航的语言
+* [[xml.xslt]]：用于转换 XML 文档为其他格式的语言
+* [[xml.xsl-fo]]：（也被称为XSL）用于格式化 XML 文档的语言

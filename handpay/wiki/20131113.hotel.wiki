@@ -29,3 +29,18 @@ jvm参数：
 {{{class="brush: bash"
 cd /cygdrive/d/server/jboss-5.1.0.GA-hotel/server/handpay-ctrip/deploy/ROOT.war/hotel-ctrip/mall/wap/js/min/iphone/hotel
 }}}
+
+= 本地测试屏蔽的内容 =
+
+== 连接数据服务器 ==
+
+`HotelOrderServiceImpl`
+
+{{{class="brush: bash"
+	public void afterPropertiesSet() throws Exception {
+		// 别提交！！！
+//		DataListener listener = new DataListener();
+//		listener.setServer(dataServer);
+//		listener.listener(HotelUtils.getAppCode(), DC_AREA_ORDER_SYNC,new OrderStatusCallBack());
+	}
+}}}

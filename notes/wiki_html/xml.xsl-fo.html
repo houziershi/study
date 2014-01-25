@@ -1,0 +1,1597 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>XSL-FO</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+<h1>XSL-FO</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">XSL-FO 文档的结构</a>
+<ul>
+<li><a href="#toc_1.1">结构解释</a>
+<ul>
+<li><a href="#toc_1.1.1">fo:root 根</a>
+</ul>
+<li><a href="#toc_1.2">fo:layout-master-set 一组模板</a>
+<li><a href="#toc_1.3">fo:simple-page-master 一个模板</a>
+<li><a href="#toc_1.4">fo:page-sequence 页面内容</a>
+</ul>
+<li><a href="#toc_2">XSL-FO 区域</a>
+<ul>
+<li><a href="#toc_2.1">XSL-FO Pages（页面）</a>
+<li><a href="#toc_2.2">XSL-FO Regions（区）</a>
+<li><a href="#toc_2.3">XSL-FO Block Areas（块区域）</a>
+<li><a href="#toc_2.4">XSL-FO Line Areas（行区域）</a>
+<li><a href="#toc_2.5">XSL-FO Inline Areas（行内区域）</a>
+</ul>
+<li><a href="#toc_3">XSL-FO 输出</a>
+<li><a href="#toc_4">XSL-FO 流</a>
+<ul>
+<li><a href="#toc_4.1">XSL-FO 页面顺序</a>
+<li><a href="#toc_4.2">XSL-FO Flow（流）</a>
+<li><a href="#toc_4.3">流动到何处?</a>
+</ul>
+<li><a href="#toc_5">XSL-FO 页面模板</a>
+<ul>
+<li><a href="#toc_5.1">XSL-FO 页面尺寸</a>
+<li><a href="#toc_5.2">XSL-FO 页面边距</a>
+<li><a href="#toc_5.3">XSL-FO 页面区（Page Regions）</a>
+<li><a href="#toc_5.4">例子</a>
+</ul>
+<li><a href="#toc_6">XSL-FO Blocks（块）</a>
+<ul>
+<li><a href="#toc_6.1">块区域的属性</a>
+<li><a href="#toc_6.2">块边距</a>
+<li><a href="#toc_6.3">块边框</a>
+<ul>
+<li><a href="#toc_6.3.1">边框样式属性</a>
+<li><a href="#toc_6.3.2">边框颜色属性</a>
+<li><a href="#toc_6.3.3">边框宽度属性</a>
+</ul>
+<li><a href="#toc_6.4">块填充</a>
+<li><a href="#toc_6.5">块背景</a>
+<li><a href="#toc_6.6">块样式属性：</a>
+<ul>
+<li><a href="#toc_6.6.1">字体属性:</a>
+<li><a href="#toc_6.6.2">文本属性:</a>
+</ul>
+<li><a href="#toc_6.7">实例</a>
+<li><a href="#toc_6.8">结合XSLT转换</a>
+</ul>
+<li><a href="#toc_7">XSL-FO 列表</a>
+<li><a href="#toc_8">XSL-FO 表格</a>
+<li><a href="#toc_9">XSL-FO 对象表</a>
+</ul>
+</div>
+
+<h1 id="toc_1">XSL-FO 文档的结构</h1>
+
+<p>
+XSL-FO 文档存储在以<code>.fo</code>或<code>.fob</code>为后缀的文件中。以<code>.xml</code>为后缀存储的 XSL-FO 文档
+也很常见，这样做的话可以使 XSL-FO 文档更易被 XML 编辑器存取。
+</p>
+
+<p>
+XSL-FO 的文档结构类似这样：
+</p>
+
+<pre class="brush: xml">
+&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+
+	&lt;fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format"&gt;
+
+	&lt;fo:layout-master-set&gt;
+		&lt;fo:simple-page-master master-name="A4"&gt;
+			&lt;!-- Page template goes here --&gt;
+		&lt;/fo:simple-page-master&gt;
+	&lt;/fo:layout-master-set&gt;
+
+	&lt;fo:page-sequence master-reference="A4"&gt;
+		&lt;!-- Page content goes here --&gt;
+	&lt;/fo:page-sequence&gt;
+
+&lt;/fo:root&gt;
+</pre>
+
+<h2 id="toc_1.1">结构解释</h2>
+
+<p>
+XSL-FO 文档属于 XML 文档，因为也需要以 XML 声明来起始：
+</p>
+
+<pre class="brush: xml">
+&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+</pre>
+
+<h3 id="toc_1.1.1">fo:root 根</h3>
+
+<p>
+<code>&lt;fo:root&gt;</code>元素是 XSL-FO 文档的根元素。这个根元素也要声明 XSL-FO 的命名空间：
+</p>
+
+<pre class="brush: xml">
+&lt;fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format"&gt;
+  &lt;!-- 此处是 XSL-FO 文档的内容 --&gt;
+&lt;/fo:root&gt;
+</pre>
+
+<h2 id="toc_1.2">fo:layout-master-set 一组模板</h2>
+
+<p>
+<code>&lt;fo:layout-master-set&gt;</code>元素含有一个或多个页面模板：
+</p>
+
+<pre class="brush: xml">
+&lt;fo:layout-master-set&gt;
+  &lt;!-- 此处是所有的页面模板 --&gt;
+&lt;/fo:layout-master-set&gt;
+</pre>
+
+<h2 id="toc_1.3">fo:simple-page-master 一个模板</h2>
+
+<p>
+<code>&lt;fo:simple-page-master&gt;</code>元素包含一个单一的页面模板。每个模板须有一个唯一的名称
+(master-name)：
+</p>
+
+<pre class="brush: xml">
+&lt;fo:simple-page-master master-name="A4"&gt;
+  &lt;!-- 此处是某一个页面模板 --&gt;
+&lt;/fo:simple-page-master&gt;
+</pre>
+
+<h2 id="toc_1.4">fo:page-sequence 页面内容</h2>
+
+<p>
+一个或多个<code>&lt;fo:page-sequence&gt;</code>元素可描述页面的内容。<code>master-reference</code>属性使用
+相同的名称来引用<code>simple-page-master</code>模板：
+</p>
+
+<pre class="brush: xml">
+&lt;fo:page-sequence master-reference="A4"&gt;
+  &lt;!-- 此处是页面内容 --&gt;
+&lt;/fo:page-sequence&gt;
+</pre>
+
+<p>
+注释：<code>master-reference</code>的值"A4" 实际上并没有描述某个预定义的页面格式。它仅仅是
+一个名称。您可以使用任何名称，比如 "MyPage"、"MyTemplate" 等等。
+</p>
+
+
+<h1 id="toc_2">XSL-FO 区域</h1>
+
+<p>
+XSL-FO 使用矩形框（区域）来显示输出。
+</p>
+
+<p>
+XSL 格式化模型定义了一系列的矩形（区域）框来显示输出。
+</p>
+
+<p>
+所有的输出都会被格式化到这些框中，然后会被显示或打印到某个目标媒介。
+</p>
+
+<p>
+让我们研究一下下面这些区域：
+</p>
+
+<ul>
+<li>
+Pages（页面）
+
+<li>
+Regions（区）
+
+<li>
+Block areas（块区域）
+
+<li>
+Line areas（行区域）
+
+<li>
+Inline areas（行内区域）
+
+</ul>
+
+<h2 id="toc_2.1">XSL-FO Pages（页面）</h2>
+
+<p>
+XSL-FO 输出会被格式化到页面中。打印输出通常会进入分为许多分割的页面。浏览器输出
+经常会成为一个长的页面。
+</p>
+
+<p>
+XSL-FO 页面包含区域（Region）。
+</p>
+
+<h2 id="toc_2.2">XSL-FO Regions（区）</h2>
+
+<p>
+每个 XSL-FO 页面均包含一系列的 Regions（区）：
+</p>
+
+<ul>
+<li>
+region-body (页面的主体)
+
+<li>
+region-before (页面的页眉)
+
+<li>
+region-after (页面的页脚)
+
+<li>
+region-start (左侧栏)
+
+<li>
+region-end (右侧栏)
+
+</ul>
+
+<p>
+XSL-FO Regions 包含块区域（Block Area）。
+</p>
+
+<h2 id="toc_2.3">XSL-FO Block Areas（块区域）</h2>
+
+<p>
+XSL-FO 块区域可定义小的块元素（通常由一个新行开始），比如段落、表格以及列表。
+</p>
+
+<p>
+XSL-FO 块区域可包含其他的块区域，不过大多数时候它们包含的是行区域（Line Area）。
+</p>
+
+<h2 id="toc_2.4">XSL-FO Line Areas（行区域）</h2>
+
+<p>
+XSL-FO 行区域定义了块区域内部的文本行。
+</p>
+
+<p>
+XSL-FO 行区域包含行内区域（Inline Area）。
+</p>
+
+<h2 id="toc_2.5">XSL-FO Inline Areas（行内区域）</h2>
+
+<p>
+XSL-FO 行内区域定了行内部的文本（着重号、单字符以及图像等等）。
+</p>
+
+
+<h1 id="toc_3">XSL-FO 输出</h1>
+
+<p>
+XSL-FO 在<code>&lt;fo:flow&gt;</code>元素内部定义输出。
+</p>
+
+<p>
+XSL-FO 页面(Page)、流(Flow)以及块(Block)的关系：
+</p>
+
+<p>
+内容“块”会“流”入“页面”中，然后输出到媒介。
+</p>
+
+<p>
+XSL-FO 输出通常被嵌套在<code>&lt;fo:block&gt;</code>元素中，<code>&lt;fo:block&gt;</code>嵌套于<code>&lt;fo:flow&gt;</code>元素中，
+<code>&lt;fo:flow&gt;</code>嵌套于<code>&lt;fo:page-sequence&gt;</code>元素中：
+</p>
+
+<pre class="brush: xml">
+&lt;fo:page-sequence&gt;
+  &lt;fo:flow flow-name="xsl-region-body"&gt;
+    &lt;fo:block&gt;
+      &lt;!-- Output goes here --&gt;
+    &lt;/fo:block&gt;
+  &lt;/fo:flow&gt;
+&lt;/fo:page-sequence&gt;
+</pre>
+
+<p>
+例子：
+</p>
+
+<pre class="brush: xml">
+&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+
+&lt;fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format"&gt;
+
+	&lt;fo:layout-master-set&gt;
+		&lt;fo:simple-page-master master-name="A4"&gt;
+		&lt;/fo:simple-page-master&gt;
+	&lt;/fo:layout-master-set&gt;
+	
+	&lt;fo:page-sequence master-reference="A4"&gt;
+		&lt;fo:flow flow-name="xsl-region-body"&gt;
+			&lt;fo:block&gt;Hello W3School&lt;/fo:block&gt;
+		&lt;/fo:flow&gt;
+	&lt;/fo:page-sequence&gt;
+
+&lt;/fo:root&gt;
+</pre>
+
+
+<h1 id="toc_4">XSL-FO 流</h1>
+
+<p>
+XSL-FO 页面使用来自<code>&lt;fo:flow&gt;</code>元素的数据进行填充。
+</p>
+
+<h2 id="toc_4.1">XSL-FO 页面顺序</h2>
+
+<p>
+XSL-FO 使用<code>&lt;fo:page-sequence&gt;</code>元素来定义输出页面。
+</p>
+
+<ul>
+<li>
+每个输出页面都会引用一个定义布局的 page master。
+
+<li>
+每个输出页面均有一个定义输出的<code>&lt;fo:flow&gt;</code>元素。
+
+<li>
+每个输出页面均会按顺序（序列）被打印或显示。
+
+</ul>
+
+<h2 id="toc_4.2">XSL-FO Flow（流）</h2>
+
+<p>
+XSL-FO 页面使用来自<code>&lt;fo:flow&gt;</code>元素的数据进行填充。
+</p>
+
+<p>
+<code>&lt;fo:flow&gt;</code>包含所有被打印到页面的元素。
+</p>
+
+<p>
+当页面被印满以后，相同的 page master 会被一遍又一遍地被使用，直到所有页面的页面
+被打印为止。
+</p>
+
+<h2 id="toc_4.3">流动到何处?</h2>
+
+<p>
+<code>&lt;fo:flow&gt;</code>元素有一个名为"flow-name"的属性。
+</p>
+
+<p>
+flow-name 属性的值定义<code>&lt;fo:flow&gt;</code>元素的内容会去往何处。
+</p>
+
+<p>
+合法的值：
+</p>
+
+<ul>
+<li>
+xsl-region-body （进入 region-body）
+
+<li>
+xsl-region-before （进入 region-before）
+
+<li>
+xsl-region-after （进入 region-after）
+
+<li>
+xsl-region-start （进入 region-start）
+
+<li>
+xsl-region-end （进入 region-end）
+
+</ul>
+
+
+<h1 id="toc_5">XSL-FO 页面模板</h1>
+
+<p>
+XSL-FO 使用名为 "Page Masters" 的页面模板来定义页面的布局。每个模板必须拥有一个
+唯一的名称：
+</p>
+
+<pre class="brush: xml">
+&lt;fo:simple-page-master master-name="intro"&gt;
+  &lt;fo:region-body margin="5in" /&gt;
+&lt;/fo:simple-page-master&gt;
+
+&lt;fo:simple-page-master master-name="left"&gt;
+  &lt;fo:region-body margin-left="2in" margin-right="3in" /&gt;
+&lt;/fo:simple-page-master&gt;
+
+&lt;fo:simple-page-master master-name="right"&gt;
+  &lt;fo:region-body margin-left="3in" margin-right="2in" /&gt;
+&lt;/fo:simple-page-master&gt;
+</pre>
+
+<p>
+在上面的例子中，三个<code>&lt;fo:simple-page-master&gt;</code>元素，定义了三个不同的模板。每个
+模板（page-master）都有不同的名称。
+</p>
+
+<p>
+第一个模板名为 "intro"。它可作为介绍页面的模板使用。
+</p>
+
+<p>
+第二个和第三个模板名为 "left" 和 "right"。它们可被用于偶数和奇数页码的页面。
+</p>
+
+<h2 id="toc_5.1">XSL-FO 页面尺寸</h2>
+
+<p>
+XSL-FO 使用下面的属性来定义页面尺寸：
+</p>
+
+<dl>
+<dt>page-width </dt>
+<dd>定义页面的宽度</dd>
+<dt>page-height </dt>
+<dd>定义页面的高度</dd>
+</dl>
+
+<h2 id="toc_5.2">XSL-FO 页面边距</h2>
+
+<p>
+XSL-FO 使用下面的属性定义页面边距：
+</p>
+
+<dl>
+<dt>margin-top </dt>
+<dd>定义上边距</dd>
+<dt>margin-bottom </dt>
+<dd>定义下边距</dd>
+<dt>margin-left </dt>
+<dd>定义左边距</dd>
+<dt>margin-right </dt>
+<dd>定义右边距</dd>
+<dt>margin </dt>
+<dd>定义所有边的边距</dd>
+</dl>
+
+<h2 id="toc_5.3">XSL-FO 页面区（Page Regions）</h2>
+
+<p>
+XSL-FO 使用下面的元素来定义页面的区：
+</p>
+
+<dl>
+<dt>region-body </dt>
+<dd>定义主体区</dd>
+<dt>region-before </dt>
+<dd>定义顶部区 (页眉)</dd>
+<dt>region-after </dt>
+<dd>定义底部区 (页脚)</dd>
+<dt>region-start </dt>
+<dd>定义左侧区 (左侧栏)</dd>
+<dt>region-end </dt>
+<dd>定义右侧区 (右侧栏)</dd>
+</dl>
+
+<p>
+注释：region-before、region-after、region-start 以及 region-end 是主体区的一部分
+。为了避免主体区的文本覆盖到这些区域，主题区的边距至少要等于其他区的尺寸。
+</p>
+
+<p>
+图示：
+</p>
+
+<p>
+<img src="images/xsl-fo/xslfo_pages_01.gif" />
+</p>
+
+<h2 id="toc_5.4">例子</h2>
+
+<p>
+这是从某个 XSL-FO 文档中提取的一个片断：
+</p>
+
+<pre class="brush: xml">
+&lt;fo:simple-page-master master-name="A4"
+ page-width="297mm" page-height="210mm"
+ margin-top="1cm"   margin-bottom="1cm"
+ margin-left="1cm"  margin-right="1cm"&gt;
+  &lt;fo:region-body   margin="3cm"/&gt;
+  &lt;fo:region-before extent="2cm"/&gt;
+  &lt;fo:region-after  extent="2cm"/&gt;
+  &lt;fo:region-start  extent="2cm"/&gt;
+  &lt;fo:region-end    extent="2cm"/&gt;
+&lt;/fo:simple-page-master&gt;
+</pre>
+
+<ul>
+<li>
+上面的代码定义了名称为 "A4" 的 "Simple Page Master Template"。
+
+<li>
+页面的宽度是 297 毫米，高度是 210 毫米。
+
+<li>
+页面的四个边距均为 1 厘米。
+
+<li>
+主体的边距是 3 厘米（四个边都是）。
+
+<li>
+before、after、start 以及 end 区均为 2 厘米。
+
+</ul>
+
+<p>
+上面的例子中的主体的宽度可通过页面宽度减去左右边距以及<code>region-body</code>的边距来计算
+得出：
+</p>
+
+<p>
+297mm - (2 x 1cm) - (2 x 3cm) = 297mm - 20mm - 60mm = 217mm.
+</p>
+
+<p>
+注释：region （region-start 和 region-end） 没有被计算进来。正如之前讲解过的，
+这些区（region）是主体的组成部分。
+</p>
+
+
+<h1 id="toc_6">XSL-FO Blocks（块）</h1>
+
+<p>
+内容“块”会“流”入“页面”中，然后输出到媒介。
+</p>
+
+<p>
+XSL-FO 输出通常被嵌套在<code>&lt;fo:block&gt;</code>元素中，<code>&lt;fo:block&gt;</code>嵌套于<code>&lt;fo:flow&gt;</code>元素中，
+<code>&lt;fo:flow&gt;</code>嵌套于<code>&lt;fo:page-sequence&gt;</code>元素中：
+</p>
+
+<pre class="brush: xml">
+&lt;fo:page-sequence&gt;
+  &lt;fo:flow flow-name="xsl-region-body"&gt;
+    &lt;fo:block&gt;
+      &lt;!-- Output goes here --&gt;
+    &lt;/fo:block&gt;
+  &lt;/fo:flow&gt;
+&lt;/fo:page-sequence&gt;
+</pre>
+
+<h2 id="toc_6.1">块区域的属性</h2>
+
+<p>
+块是位于矩形框中的输出序列：
+</p>
+
+<pre class="brush: xml">
+&lt;fo:block border-width="1mm"&gt;
+这个输出块周围有一条一毫米的边框。
+&lt;/fo:block&gt;
+</pre>
+
+<p>
+由于块区域是矩形框，所以可共享许多公共的区域属性：
+</p>
+
+<ul>
+<li>
+space before 和 space after
+
+<li>
+margin
+
+<li>
+border
+
+<li>
+padding
+
+<li>
+space before
+
+</ul>
+
+<p>
+图示：
+</p>
+
+<p>
+<img src="images/xsl-fo/xslfo_blocks_01.gif" />
+</p>
+
+<ul>
+<li>
+space before 和 space after 是块与块之间起分割作用的空白。
+
+<li>
+margin 是块外侧的空白区域。
+
+<li>
+border 的区域外部边缘的矩形。其四个边均可有不同的宽度。它也可被填充为不同的颜色和背景图像。
+
+<li>
+padding 是位于内容区域与边框之间的区域。
+
+<li>
+内容区域可包含实际的内容，比如文本、图片、图形等等。
+
+</ul>
+
+<h2 id="toc_6.2">块边距</h2>
+
+<ul>
+<li>
+margin
+
+<li>
+margin-top
+
+<li>
+margin-bottom
+
+<li>
+margin-left
+
+<li>
+margin-right
+
+</ul>
+
+<h2 id="toc_6.3">块边框</h2>
+
+<h3 id="toc_6.3.1">边框样式属性</h3>
+
+<ul>
+<li>
+border-style
+
+<li>
+border-before-style
+
+<li>
+border-after-style
+
+<li>
+border-start-style
+
+<li>
+border-end-style
+
+<li>
+border-top-style ((等同于 border-before)
+
+<li>
+border-bottom-style (等同于 border-after)
+
+<li>
+border-left-style (等同于 border-start)
+
+<li>
+border-right-style (等同于 border-end)
+
+</ul>
+
+<h3 id="toc_6.3.2">边框颜色属性</h3>
+
+<ul>
+<li>
+border-color
+
+<li>
+border-before-color
+
+<li>
+border-after-color
+
+<li>
+border-start-color
+
+<li>
+border-end-color
+
+<li>
+border-top-color (等同于 border-before)
+
+<li>
+border-bottom-color (等同于 border-after)
+
+<li>
+border-left-color (等同于 border-start)
+
+<li>
+border-right-color (等同于 border-end)
+
+</ul>
+
+<h3 id="toc_6.3.3">边框宽度属性</h3>
+
+<ul>
+<li>
+border-width
+
+<li>
+border-before-width
+
+<li>
+border-after-width
+
+<li>
+border-start-width
+
+<li>
+border-end-width
+
+<li>
+border-top-width (等同于 border-before)
+
+<li>
+border-bottom-width (等同于 border-after)
+
+<li>
+border-left-width (等同于 border-start)
+
+<li>
+border-right-width (等同于 border-end)
+
+</ul>
+
+<h2 id="toc_6.4">块填充</h2>
+
+<ul>
+<li>
+padding
+
+<li>
+padding-before
+
+<li>
+padding-after
+
+<li>
+padding-start
+
+<li>
+padding-end
+
+<li>
+padding-top (等同于 padding-before)
+
+<li>
+padding-bottom (等同于 padding-after)
+
+<li>
+padding-left (等同于 padding-start)
+
+<li>
+padding-right (等同于 padding-end)
+
+</ul>
+
+<h2 id="toc_6.5">块背景</h2>
+
+<ul>
+<li>
+background-color
+
+<li>
+background-image
+
+<li>
+background-repeat
+
+<li>
+background-attachment (scroll 或者 fixed)
+
+</ul>
+
+<h2 id="toc_6.6">块样式属性：</h2>
+
+<p>
+块是可被单独样式化的输出序列：
+</p>
+
+<pre class="brush: xml">
+&lt;fo:block font-size="12pt" font-family="sans-serif"&gt;
+	This block of output will be written in a 12pt sans-serif font.
+&lt;/fo:block&gt;
+</pre>
+
+<h3 id="toc_6.6.1">字体属性:</h3>
+
+<ul>
+<li>
+font-family
+
+<li>
+font-weight
+
+<li>
+font-style
+
+<li>
+font-size
+
+<li>
+font-variant
+
+</ul>
+
+<h3 id="toc_6.6.2">文本属性:</h3>
+
+<ul>
+<li>
+ text-align
+
+<li>
+ text-align-last
+
+<li>
+ text-indent
+
+<li>
+ start-indent
+
+<li>
+ end-indent
+
+<li>
+ wrap-option (定义自动换行，word wrap)
+
+<li>
+ break-before (定义分页符，page breaks)
+
+<li>
+ break-after (定义分页符，page breaks)
+
+<li>
+ reference-orientation (定义 90" 内的文字旋转)
+
+</ul>
+
+<h2 id="toc_6.7">实例</h2>
+
+<pre class="brush: xml">
+&lt;fo:block font-size="14pt" font-family="verdana" color="red"
+    space-before="5mm" space-after="5mm"&gt;
+	W3School
+&lt;/fo:block&gt;
+
+&lt;fo:block text-indent="5mm" font-family="verdana" font-size="12pt"
+    space-before="5mm" space-after="5mm"&gt;
+	At W3School you will find all the Web-building tutorials you
+	need, from basic HTML and XHTML to advanced XML, XSL, Multimedia
+	and WAP.
+&lt;/fo:block&gt;
+</pre>
+
+<p>
+结果：
+</p>
+
+<p>
+<img src="images/xsl-fo/xslfo_blocks_02.gif" />
+</p>
+
+<p>
+请看上面的例子，如果要生成一个拥有许多标题和段落的文档，那么将会需要非常多的代码。
+</p>
+
+<p>
+通常，XSL-FO 文档不会像我们刚才所做的那样对格式化信息和内容进行组合。通过 XSLT 
+的些许帮助，我们就可以把格式化信息置入模板，然后编写出更纯净的内容。
+</p>
+
+<h2 id="toc_6.8">结合XSLT转换</h2>
+
+<p>
+从文档移除 XSL-FO 信息：
+</p>
+
+<pre class="brush: xml">
+&lt;header&gt; W3School &lt;/header&gt;
+
+&lt;paragraph&gt;
+	At W3School you will find all the Web-building tutorials you
+	need, from basic HTML and XHTML to advanced XML, XSL, Multimedia
+	and WAP.
+&lt;/paragraph&gt;
+</pre>
+
+<p>
+添加 XSLT 转换：
+</p>
+
+<pre class="brush: xml">
+&lt;xsl:template match="header"&gt;
+	&lt;fo:block font-size="14pt" font-family="verdana" color="red"
+			space-before="5mm" space-after="5mm"&gt;
+		&lt;xsl:apply-templates/&gt;
+	&lt;/fo:block&gt;
+&lt;/xsl:template&gt;
+
+&lt;xsl:template match="paragraph"&gt;
+	&lt;fo:block text-indent="5mm" font-family="verdana" font-size="12pt"
+			space-before="5mm" space-after="5mm"&gt;
+		&lt;xsl:apply-templates/&gt;
+	&lt;/fo:block&gt;
+&lt;/xsl:template&gt;
+</pre>
+
+<p>
+产生的结果是相同的。
+</p>
+
+
+<h1 id="toc_7">XSL-FO 列表</h1>
+
+<p>
+XSL-FO 使用列表块（List Block）来定义列表。
+</p>
+
+<p>
+有四种 XSL-FO 对象可用来创建列表：
+</p>
+
+<dl>
+<dt>fo:list-block </dt>
+<dd>包含整个列表。</dd>
+<dt>fo:list-item </dt>
+<dd>包含列表中的每个项目。</dd>
+<dt>fo:list-item-label </dt>
+<dd>包含用于 list-item 的标记 - 典型地，包含一个数字或者字符的<code>&lt;fo:block&gt;</code>。</dd>
+<dt>fo:list-item-body </dt>
+<dd>包含 list-item 的主体或内容 - 典型地，一个或多个<code>&lt;fo:block&gt;</code>对象。</dd>
+</dl>
+
+<p>
+一个 XSL-FO 列表实例:
+</p>
+
+<pre class="brush: xml">
+&lt;fo:list-block&gt;
+	&lt;fo:list-item&gt;
+	 &lt;fo:list-item-label&gt;
+		 &lt;fo:block&gt;*&lt;/fo:block&gt;
+	 &lt;/fo:list-item-label&gt;
+	 &lt;fo:list-item-body&gt;
+		 &lt;fo:block&gt;Volvo&lt;/fo:block&gt;
+	 &lt;/fo:list-item-body&gt;
+	&lt;/fo:list-item&gt;
+	&lt;fo:list-item&gt;
+	 &lt;fo:list-item-label&gt;
+		 &lt;fo:block&gt;*&lt;/fo:block&gt;
+	 &lt;/fo:list-item-label&gt;
+	 &lt;fo:list-item-body&gt;
+		 &lt;fo:block&gt;Saab&lt;/fo:block&gt;
+	 &lt;/fo:list-item-body&gt;
+	&lt;/fo:list-item&gt;
+&lt;/fo:list-block&gt;
+</pre>
+
+<p>
+效果：
+</p>
+
+<pre class="brush: xml">
+* Volvo
+* Saab 
+</pre>
+
+
+<h1 id="toc_8">XSL-FO 表格</h1>
+
+<p>
+XSL-FO 表格模型与 HTML 表格模型是非常不同的。有九种 XSL-FO 对象可用来创建表格：
+</p>
+
+<ul>
+<li>
+fo:table-and-caption
+
+<li>
+fo:table
+
+<li>
+fo:table-caption
+
+<li>
+fo:table-column
+
+<li>
+fo:table-header
+
+<li>
+fo:table-footer
+
+<li>
+fo:table-body
+
+<li>
+fo:table-row
+
+<li>
+fo:table-cell
+
+</ul>
+
+<p>
+XSL-FO 使用<code>&lt;fo:table-and-caption&gt;</code>元素来定义表格。它包含一个<code>&lt;fo:table&gt;</code>以及
+一个可选的<code>&lt;fo:caption&gt;</code>元素。
+</p>
+
+<p>
+<code>&lt;fo:table&gt;</code>元素包含：
+</p>
+
+<ul>
+<li>
+可选的<code>&lt;fo:table-column&gt;</code>元素
+
+<li>
+可选的<code>&lt;fo:table-header&gt;</code>元素
+
+<li>
+<code>&lt;fo:table-body&gt;</code>元素
+
+<li>
+可选的<code>&lt;fo:table-footer&gt;</code>元素
+
+</ul>
+
+<p>
+这些元素中的每一个都可能拥有一个或多个<code>&lt;fo:table-row&gt;</code>元素，而<code>&lt;fo:table-row&gt;</code>
+同时会带有一个或多个<code>&lt;fo:table-cell&gt;</code>元素：
+</p>
+
+<pre class="brush: xml">
+&lt;fo:table-and-caption&gt;
+&lt;fo:table&gt;
+&lt;fo:table-column column-width="25mm"/&gt;
+&lt;fo:table-column column-width="25mm"/&gt;
+
+&lt;fo:table-header&gt;
+  &lt;fo:table-row&gt;
+    &lt;fo:table-cell&gt;
+      &lt;fo:block font-weight="bold"&gt;Car&lt;/fo:block&gt;
+    &lt;/fo:table-cell&gt;
+    &lt;fo:table-cell&gt;
+      &lt;fo:block font-weight="bold"&gt;Price&lt;/fo:block&gt;
+    &lt;/fo:table-cell&gt;
+  &lt;/fo:table-row&gt;
+&lt;/fo:table-header&gt;
+
+&lt;fo:table-body&gt;
+  &lt;fo:table-row&gt;
+    &lt;fo:table-cell&gt;
+      &lt;fo:block&gt;Volvo&lt;/fo:block&gt;
+    &lt;/fo:table-cell&gt;
+    &lt;fo:table-cell&gt;
+      &lt;fo:block&gt;$50000&lt;/fo:block&gt;
+    &lt;/fo:table-cell&gt;
+  &lt;/fo:table-row&gt;
+  &lt;fo:table-row&gt;
+    &lt;fo:table-cell&gt;
+      &lt;fo:block&gt;SAAB&lt;/fo:block&gt;
+    &lt;/fo:table-cell&gt;
+    &lt;fo:table-cell&gt;
+      &lt;fo:block&gt;$48000&lt;/fo:block&gt;
+    &lt;/fo:table-cell&gt;
+  &lt;/fo:table-row&gt;
+&lt;/fo:table-body&gt;
+
+&lt;/fo:table&gt;
+&lt;/fo:table-and-caption&gt;
+</pre>
+
+<p>
+以上代码的输出：
+</p>
+
+<table>
+<tr>
+<th>
+Car
+</th>
+<th>
+Price
+</th>
+</tr>
+<tr>
+<td>
+Volvo
+</td>
+<td>
+$50000
+</td>
+</tr>
+<tr>
+<td>
+SAAB
+</td>
+<td>
+$48000
+</td>
+</tr>
+</table>
+
+<h1 id="toc_9">XSL-FO 对象表</h1>
+
+<table>
+<tr>
+<td>
+对象
+</td>
+<td>
+描述
+</td>
+</tr>
+<tr>
+<td>
+basic-link
+</td>
+<td>
+定义一个链接的起始资源
+</td>
+</tr>
+<tr>
+<td>
+bidi-override
+</td>
+<td>
+Overrides the default Unicode BIDI direction
+</td>
+</tr>
+<tr>
+<td>
+block
+</td>
+<td>
+定义一个输出块（比如段落和标题）
+</td>
+</tr>
+<tr>
+<td>
+block-container
+</td>
+<td>
+定义一个块级的引用区域（reference-area）
+</td>
+</tr>
+<tr>
+<td>
+character
+</td>
+<td>
+定义一个字符，该字符会被映射为供呈现的字形
+</td>
+</tr>
+<tr>
+<td>
+color-profile
+</td>
+<td>
+定义样式表的一个颜色配置文件
+</td>
+</tr>
+<tr>
+<td>
+conditional-page-master-reference
+</td>
+<td>
+规定一个当所定义的条件成立时使用的page-master
+</td>
+</tr>
+<tr>
+<td>
+declarations
+</td>
+<td>
+组合针对某个样式表的全局声明
+</td>
+</tr>
+<tr>
+<td>
+external-graphic
+</td>
+<td>
+用于图像数据位于XML结果树之外的某个图形
+</td>
+</tr>
+<tr>
+<td>
+float
+</td>
+<td>
+典型的用法是，在页面起始位置的某个单独的区域放置一幅图片，或者把一幅图片放置到一侧，而内容则流动至图片的旁边。
+</td>
+</tr>
+<tr>
+<td>
+flow
+</td>
+<td>
+包含所有被输出到页面的元素
+</td>
+</tr>
+<tr>
+<td>
+footnote
+</td>
+<td>
+定义在页面的region-body内部的一个脚注
+</td>
+</tr>
+<tr>
+<td>
+footnote-body
+</td>
+<td>
+定义脚注的内容
+</td>
+</tr>
+<tr>
+<td>
+initial-property-set
+</td>
+<td>
+格式化&lt;fo:block&gt;的第一行
+</td>
+</tr>
+<tr>
+<td>
+inline
+</td>
+<td>
+通过背景或者将其包围在一个边框中，来格式化文本的某个部分
+</td>
+</tr>
+<tr>
+<td>
+inline-container
+</td>
+<td>
+定义一个行内的引用区域（inline reference-area）
+</td>
+</tr>
+<tr>
+<td>
+instream-foreign-object
+</td>
+<td>
+用于行内图形（inline graphics）或用于普通对象，其中对象的数据作为&lt;fo:instream-foreign-object&gt;的后代存在。
+</td>
+</tr>
+<tr>
+<td>
+layout-master-set
+</td>
+<td>
+存有所有用在文档中的master
+</td>
+</tr>
+<tr>
+<td>
+leader
+</td>
+<td>
+用来生成"."由内容表格中的页码来分隔标题，或者创建表单中的输入域，或者创建水平线
+</td>
+</tr>
+<tr>
+<td>
+list-block
+</td>
+<td>
+定义列表
+</td>
+</tr>
+<tr>
+<td>
+list-item
+</td>
+<td>
+包含列表中的每个项目
+</td>
+</tr>
+<tr>
+<td>
+list-item-body
+</td>
+<td>
+包含列表项的内容或主体
+</td>
+</tr>
+<tr>
+<td>
+list-item-label
+</td>
+<td>
+包含列表项的标号（有代表性的是数据、字符等等）
+</td>
+</tr>
+<tr>
+<td>
+marker
+</td>
+<td>
+与fo:retrieve-marker使用来创建连续的页面或页脚
+</td>
+</tr>
+<tr>
+<td>
+multi-case
+</td>
+<td>
+包含 XSL-FO对象的每个供选择的子树（在&lt;fo:multi-switch&gt;内部）。父元素&lt;fo:multi-switch&gt;会选择显示那个选项并隐藏其余的选项。
+</td>
+</tr>
+<tr>
+<td>
+multi-properties
+</td>
+<td>
+用来在两个或更多的属性集（property-sets）间转换
+</td>
+</tr>
+<tr>
+<td>
+multi-property-set
+</td>
+<td>
+规定一个可供选择的属性集，这个属性集会被根据用户代理的状态来进行应用。
+</td>
+</tr>
+<tr>
+<td>
+multi-switch
+</td>
+<td>
+存有一个或多个&lt;fo:multi-case&gt;对象，并控制它们之间的切换（通过&lt;fo:multi-toggle&gt;激活）
+</td>
+</tr>
+<tr>
+<td>
+multi-toggle
+</td>
+<td>
+用来切换到另一个&lt;fo:multi-case&gt;
+</td>
+</tr>
+<tr>
+<td>
+page-number
+</td>
+<td>
+表示当前的页面
+</td>
+</tr>
+<tr>
+<td>
+page-number-citation
+</td>
+<td>
+为页面引用页码，此页面包含首个由被引用对象返回的标准区域。
+</td>
+</tr>
+<tr>
+<td>
+page-sequence
+</td>
+<td>
+一个针对页面输出元素的容器。在其中一个&lt;fo:page-sequence&gt;对象针对每个页面布局。
+</td>
+</tr>
+<tr>
+<td>
+page-sequence-master
+</td>
+<td>
+规定使用哪个simple-page-master，以及使用次序。
+</td>
+</tr>
+<tr>
+<td>
+region-after
+</td>
+<td>
+定义页脚
+</td>
+</tr>
+<tr>
+<td>
+region-before
+</td>
+<td>
+定义页眉
+</td>
+</tr>
+<tr>
+<td>
+region-body
+</td>
+<td>
+定义页面主体
+</td>
+</tr>
+<tr>
+<td>
+region-end
+</td>
+<td>
+定义页面的右侧栏
+</td>
+</tr>
+<tr>
+<td>
+region-start
+</td>
+<td>
+定义页面的左侧栏
+</td>
+</tr>
+<tr>
+<td>
+repeatable-page-master-alternatives
+</td>
+<td>
+定义一套simple-page-master的副本
+</td>
+</tr>
+<tr>
+<td>
+repeatable-page-master-reference
+</td>
+<td>
+规定一个简单的simple-page-master的副本
+</td>
+</tr>
+<tr>
+<td>
+retrieve-marker
+</td>
+<td>
+与&lt;fo:marker&gt;一同使用来创建连续页眉或者页脚
+</td>
+</tr>
+<tr>
+<td>
+root
+</td>
+<td>
+XSL-FO文档的根（顶）节点
+</td>
+</tr>
+<tr>
+<td>
+simple-page-master
+</td>
+<td>
+定义页面的尺寸和形状
+</td>
+</tr>
+<tr>
+<td>
+single-page-master-reference
+</td>
+<td>
+规定用在页面序列的某个给定的点的一个
+</td>
+</tr>
+<tr>
+<td>
+static-content
+</td>
+<td>
+包含在许多页面上重复的静态内容（比如页眉和页脚）
+</td>
+</tr>
+<tr>
+<td>
+table
+</td>
+<td>
+格式化一个表格的表格式的材料
+</td>
+</tr>
+<tr>
+<td>
+table-and-caption
+</td>
+<td>
+格式化一个表格及其标题
+</td>
+</tr>
+<tr>
+<td>
+table-body
+</td>
+<td>
+表格行和表格单元的容器
+</td>
+</tr>
+<tr>
+<td>
+table-caption
+</td>
+<td>
+包含一个表格的标题
+</td>
+</tr>
+<tr>
+<td>
+table-cell
+</td>
+<td>
+定义表格单元
+</td>
+</tr>
+<tr>
+<td>
+table-column
+</td>
+<td>
+格式化表格的列
+</td>
+</tr>
+<tr>
+<td>
+table-footer
+</td>
+<td>
+定义表格的页脚
+</td>
+</tr>
+<tr>
+<td>
+table-header
+</td>
+<td>
+定义表格的页眉
+</td>
+</tr>
+<tr>
+<td>
+table-row
+</td>
+<td>
+定义表格的行
+</td>
+</tr>
+<tr>
+<td>
+title
+</td>
+<td>
+为页面序列定义一个标题
+</td>
+</tr>
+<tr>
+<td>
+wrapper
+</td>
+<td>
+为一组XSL-FO对象规定继承属性
+</td>
+</tr>
+</table>
+ </div>
+</body>
+</html>
