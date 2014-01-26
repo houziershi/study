@@ -1,0 +1,436 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>Servlet 3 的异步Servlet</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+<h1>Servlet 3 的异步Servlet</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_0.1">实现异步Servlet</a>
+<ul>
+<li><a href="#toc_0.1.1">在监听中初始化线程池</a>
+<li><a href="#toc_0.1.2">工作线程实现</a>
+<li><a href="#toc_0.1.3">AsyncListener实现</a>
+<li><a href="#toc_0.1.4">Async Servlet 实现</a>
+</ul>
+<li><a href="#toc_0.2">Run Async Servlet</a>
+</ul>
+</ul>
+</div>
+
+<p>
+理解异步Servlet之前，让我们试着理解为什么需要它。假设我们有一个Servlet需要很多的
+时间来处理，类似下面的内容：
+</p>
+
+<pre class="brush: java">
+package com.journaldev.servlet;
+ 
+import java.io.IOException;
+import java.io.PrintWriter;
+ 
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+ 
+@WebServlet("/LongRunningServlet")
+public class LongRunningServlet extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+ 
+    protected void doGet(HttpServletRequest request,
+            HttpServletResponse response) throws ServletException, IOException {
+        long startTime = System.currentTimeMillis();
+        System.out.println("LongRunningServlet Start::Name="
+                + Thread.currentThread().getName() + "::ID="
+                + Thread.currentThread().getId());
+ 
+        String time = request.getParameter("time");
+        int secs = Integer.valueOf(time);
+        // max 10 seconds
+        if (secs &gt; 10000)
+            secs = 10000;
+ 
+        longProcessing(secs);
+ 
+        PrintWriter out = response.getWriter();
+        long endTime = System.currentTimeMillis();
+        out.write("Processing done for " + secs + " milliseconds!!");
+        System.out.println("LongRunningServlet Start::Name="
+                + Thread.currentThread().getName() + "::ID="
+                + Thread.currentThread().getId() + "::Time Taken="
+                + (endTime - startTime) + " ms.");
+    }
+ 
+    private void longProcessing(int secs) {
+        // wait for given time before finishing
+        try {
+            Thread.sleep(secs);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+ 
+}
+</pre>
+
+<p>
+如果我们的URL是：<code>http://localhost:8080/AsyncServletExample/LongRunningServlet?time=8000</code>
+</p>
+
+<p>
+得到响应为"Processing done for 8000 milliseconds! !"。
+</p>
+
+<p>
+现在，如果你会查看服务器日志，会得到以下记录:
+</p>
+
+<pre class="brush: java">
+LongRunningServlet Start::Name=http-bio-8080-exec-34::ID=103
+LongRunningServlet Start::Name=http-bio-8080-exec-34::ID=103::Time Taken=8002 ms.
+</pre>
+
+<p>
+所以Servlet线程实际运行超过8秒，尽管大多数时间用来处理其它Servlet请求或响应。
+</p>
+
+<p>
+这可能导致线程饥饿——因为我们的Servlet线程被阻塞，直到所有的处理完成。如果服务器
+的请求得到了很多过程，它将达到最大Servlet线程限制和进一步的请求会拒绝连接错误。
+</p>
+
+<p>
+Servlet 3.0之前，这些长期运行的线程容器特定的解决方案，我们可以产生一个单独的
+工作线程完成耗时的任务，然后返回响应客户。Servlet线程返回Servlet池后启动工作线程
+。Tomcat 的 Comet、WebLogic FutureResponseServlet 和 WebSphere Asynchronous 
+Request Dispatcher都是实现异步处理的很好示例。
+</p>
+
+<p>
+容器特定解决方案的问题在于，在不改变应用程序代码时不能移动到其他Servlet容器。
+这就是为什么在Servlet3.0提供标准的方式异步处理Servlet的同时增加异步Servlet支持。
+</p>
+
+<h2 id="toc_0.1">实现异步Servlet</h2>
+
+<p>
+让我们看看步骤来实现异步Servlet，然后我们将提供异步支持Servlet上面的例子：
+</p>
+
+<ol>
+<li>
+首先Servlet,我们提供异步支持 Annotation @WebServlet  的属性asyncSupported 
+	值为true。
+
+<li>
+由于实际实现委托给另一个线程，我们应该有一个线程池实现。我们可以一个通过
+	Executors framework 创建线程池和使用servlet context listener来初始化线程池。
+
+<li>
+通过ServletRequest.startAsync方法获取AsyncContext的实例。AsyncContext提供方法
+	让ServletRequest和ServletResponse对象引用。它还提供了使用调度方法将请求转发到
+	另一个 dispatch() 方法。
+
+<li>
+编写一个可运行的实现,我们将进行重处理，然后使用AsyncContext对象发送请求到
+	另一个资源或使用ServletResponse编写响应对象。一旦处理完成，我们通过
+	AsyncContext.complete()方法通知容器异步处理完成。
+
+<li>
+添加AsyncListener实现AsyncContext对象实现回调方法，我们可以使用它来提供错误
+	响应客户端装进箱的错误或超时，而异步线程处理。在这里我们也可以做一些清理工作。
+
+</ol>
+
+<p>
+一旦我们将完成我们的项目对于异步Servlet示例，项目结构看起来会像下面的图片：
+</p>
+
+<pre class="brush: java">
++ src
+	+ com.journaldev.servlet
+		LongRunningServlet.java
+	+ com.journaldev.servlet.async
+		AppAsyncListener.java
+		AppcontextListener.java
+		AsyncLongRunningServlet.java
+		AsyncRequestProcesser.java
+</pre>
+
+<h3 id="toc_0.1.1">在监听中初始化线程池</h3>
+
+<pre class="brush: java">
+package com.journaldev.servlet.async;
+ 
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+ 
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import javax.servlet.annotation.WebListener;
+ 
+@WebListener
+public class AppContextListener implements ServletContextListener {
+ 
+    public void contextInitialized(ServletContextEvent servletContextEvent) {
+ 
+        // create the thread pool
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(100, 200, 50000L,
+                TimeUnit.MILLISECONDS, new ArrayBlockingQueue&lt;Runnable&gt;(100));
+        servletContextEvent.getServletContext().setAttribute("executor",
+                executor);
+ 
+    }
+ 
+    public void contextDestroyed(ServletContextEvent servletContextEvent) {
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) servletContextEvent
+                .getServletContext().getAttribute("executor");
+        executor.shutdown();
+    }
+ 
+}
+</pre>
+
+<p>
+实现很直接，如果你不熟悉ThreadPoolExecutor 框架请读线程池的<a href="http://mjava.org/1417.shtml">ThreadPoolExecutor</a>。
+</p>
+
+<p>
+关于listeners 的更多细节，请阅读教程<a href="http://www.journaldev.com/1945/servlet-listener-example-servletcontextlistener-httpsessionlistener-and-servletrequestlistener">Servlet Listener</a>。
+</p>
+
+<h3 id="toc_0.1.2">工作线程实现</h3>
+
+<pre class="brush: java">
+package com.journaldev.servlet.async;
+ 
+import java.io.IOException;
+import java.io.PrintWriter;
+ 
+import javax.servlet.AsyncContext;
+ 
+public class AsyncRequestProcessor implements Runnable {
+ 
+    private AsyncContext asyncContext;
+    private int secs;
+ 
+    public AsyncRequestProcessor() {
+    }
+ 
+    public AsyncRequestProcessor(AsyncContext asyncCtx, int secs) {
+        this.asyncContext = asyncCtx;
+        this.secs = secs;
+    }
+ 
+    @Override
+    public void run() {
+        System.out.println("Async Supported? "
+                + asyncContext.getRequest().isAsyncSupported());
+        longProcessing(secs);
+        try {
+            PrintWriter out = asyncContext.getResponse().getWriter();
+            out.write("Processing done for " + secs + " milliseconds!!");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        //complete the processing
+        asyncContext.complete();
+    }
+ 
+    private void longProcessing(int secs) {
+        // wait for given time before finishing
+        try {
+            Thread.sleep(secs);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+}
+</pre>
+
+<p>
+注意：在请求和响应时使用AsyncContext对象，然后在完成时调用
+</p>
+
+<h3 id="toc_0.1.3">AsyncListener实现</h3>
+
+<p>
+<code>asyncContext.complete()</code>方法。
+</p>
+
+<pre class="brush: java">
+package com.journaldev.servlet.async;
+ 
+import java.io.IOException;
+import java.io.PrintWriter;
+ 
+import javax.servlet.AsyncEvent;
+import javax.servlet.AsyncListener;
+import javax.servlet.ServletResponse;
+import javax.servlet.annotation.WebListener;
+ 
+@WebListener
+public class AppAsyncListener implements AsyncListener {
+ 
+    @Override
+    public void onComplete(AsyncEvent asyncEvent) throws IOException {
+        System.out.println("AppAsyncListener onComplete");
+        // we can do resource cleanup activity here
+    }
+ 
+    @Override
+    public void onError(AsyncEvent asyncEvent) throws IOException {
+        System.out.println("AppAsyncListener onError");
+        //we can return error response to client
+    }
+ 
+    @Override
+    public void onStartAsync(AsyncEvent asyncEvent) throws IOException {
+        System.out.println("AppAsyncListener onStartAsync");
+        //we can log the event here
+    }
+ 
+    @Override
+    public void onTimeout(AsyncEvent asyncEvent) throws IOException {
+        System.out.println("AppAsyncListener onTimeout");
+        //we can send appropriate response to client
+        ServletResponse response = asyncEvent.getAsyncContext().getResponse();
+        PrintWriter out = response.getWriter();
+        out.write("TimeOut Error in Processing");
+    }
+ 
+}
+</pre>
+
+<p>
+通知的实现在 Timeout()方法，通过它发送超时响应给客户端。
+</p>
+
+<h3 id="toc_0.1.4">Async Servlet 实现</h3>
+
+<p>
+这是我们的异步Servlet实现，注意使用AsyncContext和ThreadPoolExecutor进行处理。
+</p>
+
+<pre class="brush: java">
+package com.journaldev.servlet.async;
+ 
+import java.io.IOException;
+import java.util.concurrent.ThreadPoolExecutor;
+ 
+import javax.servlet.AsyncContext;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+ 
+@WebServlet(urlPatterns = "/AsyncLongRunningServlet", asyncSupported = true)
+public class AsyncLongRunningServlet extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+ 
+    protected void doGet(HttpServletRequest request,
+            HttpServletResponse response) throws ServletException, IOException {
+        long startTime = System.currentTimeMillis();
+        System.out.println("AsyncLongRunningServlet Start::Name="
+                + Thread.currentThread().getName() + "::ID="
+                + Thread.currentThread().getId());
+ 
+        request.setAttribute("org.apache.catalina.ASYNC_SUPPORTED", true);
+ 
+        String time = request.getParameter("time");
+        int secs = Integer.valueOf(time);
+        // max 10 seconds
+        if (secs &gt; 10000)
+            secs = 10000;
+ 
+        AsyncContext asyncCtx = request.startAsync();
+        asyncCtx.addListener(new AppAsyncListener());
+        asyncCtx.setTimeout(9000);
+ 
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) request
+                .getServletContext().getAttribute("executor");
+ 
+        executor.execute(new AsyncRequestProcessor(asyncCtx, secs));
+        long endTime = System.currentTimeMillis();
+        System.out.println("AsyncLongRunningServlet End::Name="
+                + Thread.currentThread().getName() + "::ID="
+                + Thread.currentThread().getId() + "::Time Taken="
+                + (endTime - startTime) + " ms.");
+    }
+ 
+}
+</pre>
+
+<h2 id="toc_0.2">Run Async Servlet</h2>
+
+<p>
+现在，当我们将上面运行servlet URL：
+</p>
+
+<p>
+<code>http://localhost:8080/AsyncServletExample/AsyncLongRunningServlet?time=8000</code>
+</p>
+
+<p>
+得到响应和日志：
+</p>
+
+<pre class="brush: java">
+AsyncLongRunningServlet Start::Name=http-bio-8080-exec-50::ID=124
+AsyncLongRunningServlet End::Name=http-bio-8080-exec-50::ID=124::Time Taken=1 ms.
+Async Supported? true
+AppAsyncListener onComplete
+</pre>
+
+<p>
+如果运行时设置time=9999，在客户端超时以后会得到响应超时错误处理和日志：
+</p>
+
+<pre class="brush: java">
+AsyncLongRunningServlet Start::Name=http-bio-8080-exec-44::ID=117
+AsyncLongRunningServlet End::Name=http-bio-8080-exec-44::ID=117::Time Taken=1 ms.
+Async Supported? true
+AppAsyncListener onTimeout
+AppAsyncListener onError
+AppAsyncListener onComplete
+Exception in thread "pool-5-thread-6" java.lang.IllegalStateException: The request associated with the AsyncContext has already completed processing.
+    at org.apache.catalina.core.AsyncContextImpl.check(AsyncContextImpl.java:439)
+    at org.apache.catalina.core.AsyncContextImpl.getResponse(AsyncContextImpl.java:197)
+    at com.journaldev.servlet.async.AsyncRequestProcessor.run(AsyncRequestProcessor.java:27)
+    at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:895)
+    at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:918)
+    at java.lang.Thread.run(Thread.java:680)
+</pre>
+
+<p>
+注意：Servlet线程执行完，很快就和所有主要的处理工作是发生在其他线程。
+</p>
+
+<p>
+这是所有异步Servlet内容，希望你喜欢它。<code>code/servlet/AsyncServletExample</code>
+</p>
+ </div>
+</body>
+</html>
