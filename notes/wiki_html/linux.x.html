@@ -1,0 +1,46 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>linux.x</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+<h1 id="toc_1">startx</h1>
+
+<h2 id="toc_1.1">分享会话到多个用户</h2>
+
+<p>
+分享 X 会话。如果你需要频繁的（以不同用户身份）登入或登出桌面时，那就需要 startx
+来救场。这个命令建立了一个新的会话从而避免了在一个会话中反复的登入和登出。为了
+在X会话间进行交换，我们可以通过<code>ctrl+Alt+F7</code>和<code>ctrl+Alt+F8</code>的组合键来完成。
+</p>
+
+<pre class="brush: bash">
+startx - :1
+</pre>
+
+<p>
+注意：快捷键<code>ctrl+Alt+F1～F6</code>是为了控制台会话准备的，而<code>ctrl+Alt+F7～F12</code>则为
+X会话服务。因此我们有6个控制台会话和6个X会话，不需要频繁的登入登出。上面的顺序
+适用于大多数的发行版，然而不同发行版可能会有不同的实现。我在Debian中尝试过，
+运行的很好。
+</p>
+ </div>
+</body>
+</html>

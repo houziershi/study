@@ -26,16 +26,25 @@
 <ul>
 <li><a href="#toc_1">netcat</a>
 <ul>
-<li><a href="#toc_1.1">在服务器-客户端架构上使用Netcat</a>
-<li><a href="#toc_1.2">使用 Netcat 来传输文件</a>
-<li><a href="#toc_1.3">Netcat 支持超时控制</a>
-<li><a href="#toc_1.4">Netcat 支持 IPv6</a>
-<li><a href="#toc_1.5">在Netcat中禁止从标准输入中读取数据</a>
-<li><a href="#toc_1.6">强制 Netcat 服务器端保持启动状态</a>
-<li><a href="#toc_1.7">配置Netcat客户端不会因为EOF而退出</a>
-<li><a href="#toc_1.8">使用 Netcat 来处理 UDP 协议</a>
+<li><a href="#toc_1.1">查看端口是否被打开</a>
+<li><a href="#toc_1.2">在服务器-客户端架构上使用Netcat</a>
+<li><a href="#toc_1.3">使用 Netcat 来传输文件</a>
+<li><a href="#toc_1.4">Netcat 支持超时控制</a>
+<li><a href="#toc_1.5">Netcat 支持 IPv6</a>
+<li><a href="#toc_1.6">在Netcat中禁止从标准输入中读取数据</a>
+<li><a href="#toc_1.7">强制 Netcat 服务器端保持启动状态</a>
+<li><a href="#toc_1.8">配置Netcat客户端不会因为EOF而退出</a>
+<li><a href="#toc_1.9">使用 Netcat 来处理 UDP 协议</a>
 </ul>
 <li><a href="#toc_2">wget</a>
+<li><a href="#toc_3">curl</a>
+<ul>
+<li><a href="#toc_3.1">查看地址位置</a>
+</ul>
+<li><a href="#toc_4">lsof</a>
+<ul>
+<li><a href="#toc_4.1">查看占用指定端口的进程</a>
+</ul>
 </ul>
 </div>
 
@@ -50,7 +59,31 @@ Netcat或者叫<code>nc</code>是Linux下的一个用于调试和检查网络工
 这里我们将通过一些实例来学习 netcat 命令。
 </p>
 
-<h2 id="toc_1.1">在服务器-客户端架构上使用Netcat</h2>
+<h2 id="toc_1.1">查看端口是否被打开</h2>
+
+<pre class="brush: bash">
+$ nc -zv localhost 80
+Connection to localhost 80 port [tcp/http] succeeded!
+</pre>
+
+<p>
+（译注：出现该信息表示80端口已被打开。）
+</p>
+
+<p>
+检查 8080 端口是否启用
+</p>
+
+<pre class="brush: bash">
+$ nc -zv localhost 8080
+nc: connect to localhost port 8080 (tcp) failed: Connection refused
+</pre>
+
+<p>
+（译注：该信息显示了8080端口并未打开。）
+</p>
+
+<h2 id="toc_1.2">在服务器-客户端架构上使用Netcat</h2>
 
 <p>
 netcat 工具可运行于服务器模式，侦听指定端口：
@@ -86,7 +119,7 @@ $ nc -l 2389
 HI, oschina
 </pre>
 
-<h2 id="toc_1.2">使用 Netcat 来传输文件</h2>
+<h2 id="toc_1.3">使用 Netcat 来传输文件</h2>
 
 <p>
 netcat 工具还可用来传输文件，在客户端，假设我们有一个 testfile 文件：
@@ -127,7 +160,7 @@ $ cat test
 hello oschina
 </pre>
 
-<h2 id="toc_1.3">Netcat 支持超时控制</h2>
+<h2 id="toc_1.4">Netcat 支持超时控制</h2>
 
 <p>
 多数情况我们不希望连接一直保持，那么我们可以使用<code>-w</code>参数来指定连接的空闲超时时间
@@ -158,7 +191,7 @@ $ nc -w 10 localhost 2389
 注意: 不要在服务器端同时使用<code>-w</code>和<code>-l</code>参数，因为<code>-w</code>参数将在服务器端无效果。
 </p>
 
-<h2 id="toc_1.4">Netcat 支持 IPv6</h2>
+<h2 id="toc_1.5">Netcat 支持 IPv6</h2>
 
 <p>
 netcat 的<code>-4</code>和<code>-6</code>参数用来指定IP地址类型，分别是<code>IPv4</code>和<code>IPv6</code>：
@@ -224,7 +257,7 @@ tcp6       0      0 localhost:33234         localhost:2389          ESTABLISHED
 前缀是 tcp6 表示使用的是 IPv6 的地址。
 </p>
 
-<h2 id="toc_1.5">在Netcat中禁止从标准输入中读取数据</h2>
+<h2 id="toc_1.6">在Netcat中禁止从标准输入中读取数据</h2>
 
 <p>
 该功能使用<code>-d</code>参数，请看下面例子：
@@ -251,7 +284,7 @@ Hi
 你输入的 Hi 文本并不会送到服务器端。
 </p>
 
-<h2 id="toc_1.6">强制 Netcat 服务器端保持启动状态</h2>
+<h2 id="toc_1.7">强制 Netcat 服务器端保持启动状态</h2>
 
 <p>
 如果连接到服务器的客户端断开连接，那么服务器端也会跟着退出。
@@ -316,7 +349,7 @@ $ nc localhost 2389
 $ nc -k -l 2389
 </pre>
 
-<h2 id="toc_1.7">配置Netcat客户端不会因为EOF而退出</h2>
+<h2 id="toc_1.8">配置Netcat客户端不会因为EOF而退出</h2>
 
 <p>
 Netcat客户端可以通过<code>-q</code>参数来控制接收到<code>EOF</code>后隔多长时间才退出，该参数的单位是
@@ -335,7 +368,7 @@ nc  -q 5  localhost 2389
 现在如果客户端接收到<code>EOF</code>，它将等待5秒后退出。
 </p>
 
-<h2 id="toc_1.8">使用 Netcat 来处理 UDP 协议</h2>
+<h2 id="toc_1.9">使用 Netcat 来处理 UDP 协议</h2>
 
 <p>
 netcat默认是使用TCP协议，但也支持UDP，可使用<code>-u</code>参数来启用UDP协议通讯。
@@ -419,6 +452,84 @@ wget -c -r -np -k -L -p http://www.xxx.com/path/
 <code>-i</code> 后面跟一个文件，文件内指明要下载的URL
 
 </ul>
+
+<h1 id="toc_3">curl</h1>
+
+<h2 id="toc_3.1">查看地址位置</h2>
+
+<p>
+该命令会输出并提供 IP 地址 的 ‘地理位置’ 。
+</p>
+
+<pre class="brush: bash">
+$ curl ipinfo.io 
+
+"ip": "xx.xx.xx.xx", "hostname": "triband-del-aa.bbb.cc.ddd.bol.net.in", "city": "null", "region": "null", "country": "IN", "loc": "20,77", "org": "AS17813 Mahanagar Telephone Nigam Ltd".
+</pre>
+
+
+<h1 id="toc_4">lsof</h1>
+
+<h2 id="toc_4.1">查看占用指定端口的进程</h2>
+
+<p>
+会输出所用正在使用 80 端口的 进程/服务 的名称。在 80 端口运行下列命令会更好理解
+这个命令，它会列出所用运行在该端口的 进程/服务 。
+</p>
+
+<pre class="brush: bash">
+root@localhost:/home/avi# lsof -iTCP:80 -sTCP:LISTEN
+COMMAND PID USER FD TYPE DEVICE SIZE/OFF NODE NAME
+apache2 1566 root 5u IPv6 5805 0t0 TCP *:www (LISTEN)
+apache2 1664 www-data 5u IPv6 5805 0t0 TCP *:www (LISTEN)
+apache2 1665 www-data 5u IPv6 5805 0t0 TCP *:www (LISTEN)
+apache2 1666 www-data 5u IPv6 5805 0t0 TCP *:www (LISTEN)
+apache2 1667 www-data 5u IPv6 5805 0t0 TCP *:www (LISTEN)
+apache2 1668 www-data 5u IPv6 5805 0t0 TCP *:www (LISTEN)
+</pre>
+
+<p>
+同样，你可以检查运行在端口 22 的进程/服务。
+</p>
+
+<pre class="brush: bash">
+root@localhost:/home/avi# lsof -iTCP:22 -sTCP:LISTEN
+COMMAND PID USER FD TYPE DEVICE SIZE/OFF NODE NAME
+sshd 2261 root 3u IPv4 8366 0t0 TCP *:ssh (LISTEN)
+sshd 2261 root 4u IPv6 8369 0t0 TCP *:ssh (LISTEN)
+</pre>
+
+
+
+
+
+<pre class="brush: bash">
+</pre>
+
+
+
+<pre class="brush: bash">
+</pre>
+
+
+
+<pre class="brush: bash">
+</pre>
+
+
+
+<pre class="brush: bash">
+</pre>
+
+
+
+<pre class="brush: bash">
+</pre>
+
+
+
+<pre class="brush: bash">
+</pre>
  </div>
 </body>
 </html>

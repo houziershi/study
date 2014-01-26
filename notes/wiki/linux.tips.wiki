@@ -1,4 +1,16 @@
 
+
+
+= 合并pdf文件 =
+
+pdftk命令用来合并几个pdf文件。你必须安装有 pdftk 程序。如果还没有，请用apt或
+yum来获取相应的包。
+
+{{{class="brush: bash"
+$ pdftk 1.pdf 2.pdf 3.pdf …. 10.pdf cat output merged.pdf
+}}}
+
+
 = 主机信息 =
 
 显示主机IP：

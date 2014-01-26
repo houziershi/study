@@ -69,6 +69,26 @@ dpkg -l | grep ^rc|awk '{print $2}' | #xargs dpkg -P
 * `auto-apt run ./configure` 编译时缺少h文件的自动处理。
 * `apt-get -f install` 解决依赖性这个问题。
 
+=== 安装时自动构那家依赖 ===
+
+`sudo apt-get build-dep ffmpeg`该命令会在相应的包安装时自动构建依赖关系。因此
+包安装的过程将非常流畅，也是非常容易的。
+
+{{{class="brush: bash"
+# apt-get build-dep ffmpeg
+libxinerama-dev libxml-namespacesupport-perl libxml-sax-expat-perl
+libxml-sax-perl libxml-simple-perl libxrandr-dev libxrender-dev
+x11proto-render-dev x11proto-xinerama-dev xulrunner-dev
+The following packages will be upgraded:
+libpixman-1-0
+
+1 upgraded, 143 newly installed, 0 to remove and 6 not upgraded.
+Need to get 205 MB of archives.
+After this operation, 448 MB of additional disk space will be used.
+Do you want to continue [Y/n]?
+}}}
+
+
 === 删除软件 ===
 
 在用命令`apt-get install`之前，是先将软件包下载到`/var/cache/apt/archives`中，

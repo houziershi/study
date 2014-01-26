@@ -21,7 +21,21 @@
 <body  onresize='changeTocSize()'>
 	<div class="note-main"> 
 
-<h1 id="toc_1">主机信息</h1>
+
+
+<h1 id="toc_1">合并pdf文件</h1>
+
+<p>
+pdftk命令用来合并几个pdf文件。你必须安装有 pdftk 程序。如果还没有，请用apt或
+yum来获取相应的包。
+</p>
+
+<pre class="brush: bash">
+$ pdftk 1.pdf 2.pdf 3.pdf …. 10.pdf cat output merged.pdf
+</pre>
+
+
+<h1 id="toc_2">主机信息</h1>
 
 <p>
 显示主机IP：
@@ -82,7 +96,7 @@ alias raspi-update="/usr/bin/apt-get update -y;/usr/bin/apt-get upgrade -y"
 alias raspi-version="/bin/cat /proc/version"
 </pre>
 
-<h1 id="toc_2">查看linux page cache里的内容</h1>
+<h1 id="toc_3">查看linux page cache里的内容</h1>
 
 <pre class="brush: bash">
 # free -mt

@@ -2,7 +2,9 @@
 
 %toc 系统信息
 
-= uptime =
+= 系统相关信息 =
+
+== uptime ==
 
 你连接到你的Linux服务器时发现一些不寻常或恶意的东西，你会做什么？猜测……不，绝不
 ！你可以运行`uptime`来验证当服务器无人值守式到底发生了什么事情。
@@ -14,7 +16,7 @@
 }}}
 
 
-= uname =
+== uname ==
 
 `uname`命令就是Unix Name的简写。显示机器名，操作系统和内核的详细信息。
 
@@ -33,11 +35,11 @@ Linux tecmint 3.8.0-19-generic #30-Ubuntu SMP Wed May 1 16:36:13 UTC 2013 i686 i
 # `i686`: 处理器架构
 # `GNU/Linux`: 操作系统名
 
-= issue =
+== issue ==
 
 `cat /etc/issue`
 
-= w =
+== w ==
 
 是否觉得命令`w`很滑稽？但是事实上不是的。它是一个命令，尽管只有一个字符长，命令
 `w`是`uptime`和`who`命令，以前后的顺序组合在一起。
@@ -51,3 +53,20 @@ server   tty7     :0               14:06    4:43m  1:42   0.08s pam: gdm-passwo
 server   pts/0    :0.0             14:18    0.00s  0.23s  1.65s gnome-terminal
 server   pts/1    :0.0             14:47    4:43   0.01s  0.01s bash
 }}}
+
+== lsb_release ==
+
+`lsb_release`命令会打印特殊发行版的信息。如果 lsb_release 还没安装，你可以在基于
+Debain 的发行版中用命令 apt 安装，在基于 Red Hat 系统下用 yum 来安装包。
+
+{{{class="brush: bash"
+# lsb_release -a
+LSB Version:    :base-4.0-ia32:base-4.0-noarch:core-4.0-ia32:core-4.0-noarch:graphics-4.0-ia32:
+Distributor ID: CentOS
+Description:    CentOS release 6.3 (Final)
+Release:        6.3
+Codename:       Final
+}}}
+
+注意：选项‘-a’，会显示有关版本、ID、详情、发行号和研发代号的全部可用信息。
+

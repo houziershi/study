@@ -9,6 +9,24 @@ Netcat或者叫`nc`是Linux下的一个用于调试和检查网络工具包。�
 
 这里我们将通过一些实例来学习 netcat 命令。
 
+== 查看端口是否被打开 ==
+
+{{{class="brush: bash"
+$ nc -zv localhost 80
+Connection to localhost 80 port [tcp/http] succeeded!
+}}}
+
+（译注：出现该信息表示80端口已被打开。）
+
+检查 8080 端口是否启用
+
+{{{class="brush: bash"
+$ nc -zv localhost 8080
+nc: connect to localhost port 8080 (tcp) failed: Connection refused
+}}}
+
+（译注：该信息显示了8080端口并未打开。）
+
 == 在服务器-客户端架构上使用Netcat ==
 
 netcat 工具可运行于服务器模式，侦听指定端口：
@@ -266,3 +284,78 @@ wget -c -r -np -k -L -p http://www.xxx.com/path/
 * `-p` 下载网页所需的所有文件，如图片等
 * `-A` 指定要下载的文件样式列表，多个样式用逗号分隔
 * `-i` 后面跟一个文件，文件内指明要下载的URL
+
+= curl =
+
+== 查看地址位置 ==
+
+该命令会输出并提供 IP 地址 的 ‘地理位置’ 。
+
+{{{class="brush: bash"
+$ curl ipinfo.io 
+
+"ip": "xx.xx.xx.xx", "hostname": "triband-del-aa.bbb.cc.ddd.bol.net.in", "city": "null", "region": "null", "country": "IN", "loc": "20,77", "org": "AS17813 Mahanagar Telephone Nigam Ltd".
+}}}
+
+
+= lsof =
+
+== 查看占用指定端口的进程 ==
+
+会输出所用正在使用 80 端口的 进程/服务 的名称。在 80 端口运行下列命令会更好理解
+这个命令，它会列出所用运行在该端口的 进程/服务 。
+
+{{{class="brush: bash"
+root@localhost:/home/avi# lsof -iTCP:80 -sTCP:LISTEN
+COMMAND PID USER FD TYPE DEVICE SIZE/OFF NODE NAME
+apache2 1566 root 5u IPv6 5805 0t0 TCP *:www (LISTEN)
+apache2 1664 www-data 5u IPv6 5805 0t0 TCP *:www (LISTEN)
+apache2 1665 www-data 5u IPv6 5805 0t0 TCP *:www (LISTEN)
+apache2 1666 www-data 5u IPv6 5805 0t0 TCP *:www (LISTEN)
+apache2 1667 www-data 5u IPv6 5805 0t0 TCP *:www (LISTEN)
+apache2 1668 www-data 5u IPv6 5805 0t0 TCP *:www (LISTEN)
+}}}
+
+同样，你可以检查运行在端口 22 的进程/服务。
+
+{{{class="brush: bash"
+root@localhost:/home/avi# lsof -iTCP:22 -sTCP:LISTEN
+COMMAND PID USER FD TYPE DEVICE SIZE/OFF NODE NAME
+sshd 2261 root 3u IPv4 8366 0t0 TCP *:ssh (LISTEN)
+sshd 2261 root 4u IPv6 8369 0t0 TCP *:ssh (LISTEN)
+}}}
+
+
+
+
+
+{{{class="brush: bash"
+}}}
+
+
+
+{{{class="brush: bash"
+}}}
+
+
+
+{{{class="brush: bash"
+}}}
+
+
+
+{{{class="brush: bash"
+}}}
+
+
+
+{{{class="brush: bash"
+}}}
+
+
+
+{{{class="brush: bash"
+}}}
+
+
+

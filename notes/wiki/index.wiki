@@ -124,6 +124,8 @@ oracle：[[oracle.tips]]
 
 == 桌面环境 ==
 
+[[linux.x]]
+
 [[Desktop.Entry]]
 
 [[fonts]]

@@ -37,9 +37,10 @@
 <li><a href="#toc_1.2.1">设置软件源</a>
 <li><a href="#toc_1.2.2">查看包信息</a>
 <li><a href="#toc_1.2.3">安装软件</a>
-<li><a href="#toc_1.2.4">删除软件</a>
-<li><a href="#toc_1.2.5">升级包</a>
-<li><a href="#toc_1.2.6">准备信赖包</a>
+<li><a href="#toc_1.2.4">安装时自动构那家依赖</a>
+<li><a href="#toc_1.2.5">删除软件</a>
+<li><a href="#toc_1.2.6">升级包</a>
+<li><a href="#toc_1.2.7">准备信赖包</a>
 </ul>
 <li><a href="#toc_1.3">aptitude命令行模式</a>
 <li><a href="#toc_1.4">aptitude界面模式</a>
@@ -207,7 +208,29 @@ dpkg -l | grep ^rc|awk '{print $2}' | #xargs dpkg -P
 
 </ul>
 
-<h3 id="toc_1.2.4">删除软件</h3>
+<h3 id="toc_1.2.4">安装时自动构那家依赖</h3>
+
+<p>
+<code>sudo apt-get build-dep ffmpeg</code>该命令会在相应的包安装时自动构建依赖关系。因此
+包安装的过程将非常流畅，也是非常容易的。
+</p>
+
+<pre class="brush: bash">
+# apt-get build-dep ffmpeg
+libxinerama-dev libxml-namespacesupport-perl libxml-sax-expat-perl
+libxml-sax-perl libxml-simple-perl libxrandr-dev libxrender-dev
+x11proto-render-dev x11proto-xinerama-dev xulrunner-dev
+The following packages will be upgraded:
+libpixman-1-0
+
+1 upgraded, 143 newly installed, 0 to remove and 6 not upgraded.
+Need to get 205 MB of archives.
+After this operation, 448 MB of additional disk space will be used.
+Do you want to continue [Y/n]?
+</pre>
+
+
+<h3 id="toc_1.2.5">删除软件</h3>
 
 <p>
 在用命令<code>apt-get install</code>之前，是先将软件包下载到<code>/var/cache/apt/archives</code>中，
@@ -233,7 +256,7 @@ dpkg -l | grep ^rc|awk '{print $2}' | #xargs dpkg -P
 
 </ul>
 
-<h3 id="toc_1.2.5">升级包</h3>
+<h3 id="toc_1.2.6">升级包</h3>
 
 <ul>
 <li>
@@ -244,7 +267,7 @@ dpkg -l | grep ^rc|awk '{print $2}' | #xargs dpkg -P
 
 </ul>
 
-<h3 id="toc_1.2.6">准备信赖包</h3>
+<h3 id="toc_1.2.7">准备信赖包</h3>
 
 <p>
 <code>apt-get build-dep 软件名</code>把指定软件需要的包都装上，这样就可以在包齐的情况下自己
