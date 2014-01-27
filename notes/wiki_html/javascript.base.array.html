@@ -22,7 +22,32 @@
 	<div class="note-main"> 
 
 <h1>数组</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">JS数组</a>
+<ul>
+<li><a href="#toc_1.1">定义</a>
+<li><a href="#toc_1.2">循环 forEach</a>
+<li><a href="#toc_1.3">断言 some 和 every</a>
+<li><a href="#toc_1.4">join与concat的区别</a>
+<li><a href="#toc_1.5">栈</a>
+<li><a href="#toc_1.6">队列</a>
+<li><a href="#toc_1.7">映射 map</a>
+<li><a href="#toc_1.8">过滤 filter</a>
+<li><a href="#toc_1.9">sort</a>
+<li><a href="#toc_1.10">reduce和reduceRight</a>
+<li><a href="#toc_1.11">复制 slice</a>
+<li><a href="#toc_1.12">万能的 splice</a>
+<li><a href="#toc_1.13">查找indexOf</a>
+<li><a href="#toc_1.14">in操作符</a>
+<li><a href="#toc_1.15">reverse</a>
+</ul>
+</ul>
+</div>
 
+<h1 id="toc_1">JS数组</h1>
+
+<h2 id="toc_1.1">定义</h2>
 
 <p>
 传统的定义数组的方法是这样：
@@ -60,6 +85,502 @@ car['age'] = 4;
 <p>
 数组不是万能的；这样写不对，会让人困惑。图组实际上是对象的功能，人们混淆了这两个
 概念
+</p>
+
+<h2 id="toc_1.2">循环 forEach</h2>
+
+<p>
+两个参数：
+</p>
+
+<ul>
+<li>
+回调函数。三个参数：
+
+<ul>
+<li>
+value 当前操作的数组元素
+
+<li>
+index 当前操作元素的数组索引
+
+<li>
+array 当前数组的引用
+
+</ul>
+<li>
+每个调用函数的上下文（this）
+
+</ul>
+	
+<pre class="brush: javascript">
+['_', 't', 'a', 'n', 'i', 'f', ']'].forEach(function (value, index, array) {
+		this.push(String.fromCharCode(value.charCodeAt() + index + 2))
+	}, out = []);
+
+out.join(''); // &lt;- 'awesome'
+</pre>
+
+<h2 id="toc_1.3">断言 some 和 every</h2>
+
+<p>
+参数类型和forEach类似。
+</p>
+
+<p>
+some将会给数组里的每一个元素执行一遍回调函数，直到有一个回调函数返回true为止。
+如果找到目标元素，some立即返回true，否则some返回false。回调函数只对已经指定值的
+数组索引执行；它不会对已删除的或未指定值的元素执行。
+</p>
+
+<pre class="brush: javascript">
+max = -Infinity;
+satisfied = [10, 12, 10, 8, 5, 23].some(function (value, index, array) {
+    if (value &gt; max) max = value;
+    return value &lt; 10;
+});
+
+console.log(max) // &lt;- 12
+satisfied // &lt;- true
+</pre>
+
+<p>
+注意，当回调函数的value &lt; 10 条件满足时，中断函数循环。
+</p>
+
+<p>
+every的工作行为类似，但中断的条件是回调函数返回false而不是true。
+</p>
+
+<h2 id="toc_1.4">join与concat的区别</h2>
+
+<ul>
+<li>
+join用分隔符（默认为<code>,</code>）连成字符串。
+
+<li>
+concat是浅拷贝一个新的数组。
+
+</ul>
+
+<ul>
+<li>
+concat 的标志用法：<code>array.concat(val, val2, val3, valn)</code>
+
+<li>
+concat 返回一个新数组
+
+<li>
+<code>array.concat()</code>没有参数的情况下，会返回原数组的浅拷贝
+
+</ul>
+
+<p>
+浅拷贝意味着新数组和原数组保持相同的对象引用，这通常是好事。例如：
+</p>
+
+<pre class="brush: javascript">
+var a = { foo: 'bar' }
+var b = [1, 2, 3, a]
+var c = b.concat()
+
+console.log(b === c) // &lt;- false
+b[3] === a &amp;&amp; c[3] === a // &lt;- true
+</pre>
+
+<h2 id="toc_1.5">栈</h2>
+
+<p>
+每个人都知道向数组添加元素用push。但你知道一次可以添加多个元素吗？如下：
+</p>
+
+<pre class="brush: javascript">
+[].push(‘a’, ‘b’, ‘c’, ‘d’, ‘z’)。
+</pre>
+
+<p>
+pop方法和push成对使用，它返回数组的末尾元素并将元素从数组移除。如果数组为空，
+返回<code>void 0</code>（<code>undefined</code>）。使用push和pop我们能轻易模拟出LIFO栈。
+</p>
+
+<pre class="brush: javascript">
+function Stack () { this._stack = [] };
+
+Stack.prototype.next = function () { return this._stack.pop() };
+
+Stack.prototype.add = function () {
+    return this._stack.push.apply(this._stack, arguments)
+};
+
+stack = new Stack()
+stack.add(1,2,3)
+
+stack.next() // &lt;- 3
+</pre>
+
+<h2 id="toc_1.6">队列</h2>
+
+<p>
+相反，我们可以用unshift和shift模拟FIFO（先进先出）队列。
+</p>
+
+<pre class="brush: javascript">
+function Queue () { this._queue = [] }
+
+Queue.prototype.next = function () { return this._queue.shift() }
+
+Queue.prototype.add = function () {
+    return this._queue.unshift.apply(this._queue, arguments)
+}
+
+queue = new Queue()
+queue.add(1,2,3)
+
+queue.next() // &lt;- 1
+</pre>
+
+<p>
+用.shift或.pop能很容易遍历数组元素，并在操作过程中清空数组。
+</p>
+
+<pre class="brush: javascript">
+list = [1,2,3,4,5,6,7,8,9,10]
+
+while (item = list.shift()) { console.log(item) }
+
+list // &lt;- []
+</pre>
+
+<h2 id="toc_1.7">映射 map</h2>
+
+<p>
+map 方法会按顺序给原数组中的每个元素(必须有值)都调用一次 callback 函数callback 
+每次执行后的返回值组合起来形成一个新数组. callback函数只会在有值的索引上被调用;
+那些从来没被赋过值或者使用delete删除的索引则不会被调用。——MDN
+</p>
+
+<p>
+<code>Array.prototype.map</code>方法和上面我们提到的forEach，some和every有相同的参数：
+</p>
+
+<p>
+<code>map(func(value, index, array), thisArgument)</code>
+</p>
+
+<pre class="brush: javascript">
+values = [void 0, null, false, '']
+values[7] = void 0
+result = values.map(function(value, index, array){
+    console.log(value)
+    return value
+})
+
+// &lt;- [undefined, null, false, '', undefined × 3, undefined]
+</pre>
+
+<p>
+undefined × 3 值解释map不会在没被赋过值或者使用delete删除的索引上调用，但他们
+仍然被包含在结果数组中。map在遍历或改变数组方面非常有用，如下所示：
+</p>
+
+<pre class="brush: javascript">
+// 遍历
+[1, '2', '30', '9'].map(function (value) { return parseInt(value, 10) })
+// 1, 2, 30, 9
+
+[97, 119, 101, 115, 111, 109, 101].map(String.fromCharCode).join('')
+// &lt;- 'awesome'
+
+// 一个映射新对象的通用模式
+items.map(function (item) { return {
+        id: item.id,
+        name: computeName(item)
+}});
+</pre>
+
+<h2 id="toc_1.8">过滤 filter</h2>
+
+<p>
+filter对每个数组元素执行一次回调函数，并返回一个由回调函数返回true的元素组成的
+新数组。回调函数只会对已经指定值的数组项调用。
+</p>
+
+<p>
+用法例子：
+</p>
+
+<p>
+<code>filter(func(value, index, array), thisArgument)</code>
+</p>
+
+<p>
+考虑到filter仅返回callback函数返回真值的值，下面是一些有趣的例子。没有传递给
+回调函数测试的元素被简单的跳过，不会包含进返回的新数组里。
+</p>
+
+<pre class="brush: javascript">
+[void 0, null, false, '', 1].filter(function (value) { return value })
+// &lt;- [1]
+
+[void 0, null, false, '', 1].filter(function (value) { return !value })
+// &lt;- [void 0, null, false, '']
+</pre>
+
+
+<h2 id="toc_1.9">sort</h2>
+
+
+<p>
+像大部分排序函数一样，<code>Array.prototype.sort(fn(a,b))</code>需要一个包含两个测试参数的
+回调函数，并且要产生以下三种返回值之一：
+</p>
+
+<ul>
+<li>
+如果a在b前，则返回值小于零（&lt; 0）
+
+<li>
+如果a和b是等价的，则返回值等于零（=== 0）
+
+<li>
+如果a在b后，则返回值大于零（&gt; 0）
+
+</ul>
+
+<pre class="brush: javascript">
+[9,80,3,10,5,6].sort() // &lt;- [10, 3, 5, 6, 80, 9]
+
+[9,80,3,10,5,6].sort(function (a, b) { return a - b })
+// &lt;- [3, 5, 6, 9, 10, 80]
+</pre>
+
+
+<h2 id="toc_1.10">reduce和reduceRight</h2>
+
+<p>
+首先reduce函数不是很好理解，reduce从左到右而reduceRight从右到左循环遍历数组，
+每次调用接收到目前为止的部分结果和当前遍历的值，整个操作最终返回一个合计的返回值。
+</p>
+
+<p>
+两种方法都有如下典型用法：
+</p>
+
+<p>
+<code>reduce(callback(previousValue, currentValue, index, array), initialValue)</code>
+</p>
+
+<ul>
+<li>
+previousValue是上一次被调用的回调函数的返回值
+
+<li>
+initialValue是开始时previousValue被初始化的值
+
+<li>
+currentValue 是当前被遍历的元素值
+
+<li>
+index是当前元素在数组中的索引值
+
+<li>
+array是对调用reduce数组的简单引用。
+
+</ul>
+
+<p>
+一个典型的用例，使用reduce的求和函数。
+</p>
+
+<pre class="brush: javascript">
+Array.prototype.sum = function () {
+    return this.reduce(function (partial, value) {
+        return partial + value
+    }, 0)
+};
+
+[3,4,5,6,10].sum() // &lt;- 28
+</pre>
+
+<p>
+上面提到如果想把数组连成一个字符串，可以使用join。当数组的值是对象的情况下，
+除非对象有能返回其合理值的valueof或toString方法，否则join的表现和你期望的不一样
+。然而，我们可以使用reduce作为对象的字符串生成器。
+</p>
+
+<pre class="brush: javascript">
+function concat (input) {
+    return input.reduce(function (partial, value) {
+        if (partial) {
+            partial += ', '
+        }
+        return partial + value
+    }, '')
+}
+
+concat([
+    { name: 'George' },
+    { name: 'Sam' },
+    { name: 'Pear' }
+]) // &lt;- 'George, Sam, Pear'
+</pre>
+
+
+<h2 id="toc_1.11">复制 slice</h2>
+
+<p>
+和concat类似，调用slice缺省参数时，返回原数组的浅拷贝。
+</p>
+
+<p>
+slice函数需要两个参数：一个是开始位置和一个结束位置。
+</p>
+
+<p>
+<code>Array.prototype.slice</code>能被用来将类数组对象转换为真正的数组。
+</p>
+
+<pre class="brush: javascript">
+Array.prototype.slice.call({ 0: 'a', 1: 'b', length: 2 }) // &lt;- ['a', 'b']
+</pre>
+
+<p>
+除此之外，另一个常见用途是从参数列表中移除最初的几个元素，并将类数组对象转换为
+真正的数组。
+</p>
+
+<pre class="brush: javascript">
+function format (text, bold) {
+    if (bold) { text = '&lt;b&gt;' + text + '&lt;/b&gt;' }
+    var values = Array.prototype.slice.call(arguments, 2)
+    values.forEach(function (value) { text = text.replace('%s', value) })
+    return text
+}
+
+format('some%sthing%s %s', true, 'some', 'other', 'things')
+// &lt;- &lt;b&gt;somesomethingother things&lt;/b&gt;
+</pre>
+
+<h2 id="toc_1.12">万能的 splice</h2>
+
+<p>
+splice是我最喜欢的原生数组函数之一。它允许你删除元素，插入新元素，或在同一位置
+同时进行上述操作，而只使用一个函数调用。注意和concat和slice不同的是splice函数
+修改原数组。
+</p>
+
+<pre class="brush: javascript">
+var source = [1,2,3,8,8,8,8,8,9,10,11,12,13]
+var spliced = source.splice(3, 4, 4, 5, 6, 7)
+
+console.log(source) // &lt;- [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ,13]
+
+spliced // &lt;- [8, 8, 8, 8]
+</pre>
+
+<p>
+你可能已经注意到，它也返回被删除的元素。这在你想遍历数组的某一个区段并且删除时
+派上用场。
+</p>
+
+<pre class="brush: javascript">
+var source = [1,2,3,8,8,8,8,8,9,10,11,12,13]
+var spliced = source.splice(9)
+
+spliced.forEach(function (value) {
+    console.log('removed', value)
+})
+// &lt;- removed 10
+// &lt;- removed 11
+// &lt;- removed 12
+// &lt;- removed 13
+
+console.log(source) // &lt;- [1, 2, 3, 8, 8, 8, 8, 8, 9]
+</pre>
+
+<h2 id="toc_1.13">查找indexOf</h2>
+
+<p>
+通过indexOf，我们可以查找数组元素的位置。如果没有匹配元素则返回-1。我发现我用的
+很多的一个模式是连续比较，例如：
+</p>
+
+<p>
+<code>a === 'a' || a === 'b' || a === 'c'</code>
+</p>
+
+<p>
+或者即使只有两个结果的比较。在这种情况下，你也可以使用indexOf，像这样：
+</p>
+
+<p>
+<code>['a', 'b', 'c'].indexOf(a) !== -1</code>。
+</p>
+
+<p>
+注意，对于对象来说，只有指向同一个对象的引用才能被识别出。第二个参数是开始查询的
+起始位置。
+</p>
+
+<pre class="brush: javascript">
+var a = { foo: 'bar' }
+var b = [a, 2]
+
+console.log(b.indexOf(1))              // -1
+console.log(b.indexOf({ foo: 'bar' })) // -1
+console.log(b.indexOf(a))              //  0
+console.log(b.indexOf(a, 1))           // -1
+console.log(b.indexOf(2, 1))           //  1
+</pre>
+
+<p>
+如果你想从后向前搜索，lastIndexOf能派上用场。
+</p>
+
+<h2 id="toc_1.14">in操作符</h2>
+
+<p>
+在面试中新手容易犯的错误是混淆indexOf和in操作符，如下：
+</p>
+
+<pre class="brush: javascript">
+var a = [1, 2, 5]
+
+1 in a       // &lt;- true, 但 是因为 2!
+5 in a       // &lt;- false
+</pre>
+
+<p>
+问题的关键是in操作符通过检索对象的键(key)来寻值，而不是搜索值。当然，这在性能上
+比.indexOf快得多。
+</p>
+
+<pre class="brush: javascript">
+var a = [3, 7, 6]
+
+1 in a === !!a[1]      // &lt;- true
+</pre>
+
+<p>
+in操作符类似于将键值转换为布尔值。<code>!!</code>表达式通常被开发者用来双重取非一个值（
+转化为布尔值）。实际上相当于强制转换为布尔值，迅速地将任何为真的值被转为true，
+任何为假的值被转换为false。
+</p>
+
+<h2 id="toc_1.15">reverse</h2>
+
+<p>
+这方法将数组中的元素翻转并替换原来的元素。
+</p>
+
+<pre class="brush: javascript">
+var a = [1, 1, 7, 8]
+
+a.reverse() // [8, 7, 1, 1]
+</pre>
+
+<p>
+和复制不同的是，数组本身被更改。
 </p>
  </div>
 </body>
