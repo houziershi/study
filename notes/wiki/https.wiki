@@ -1,0 +1,127 @@
+
+= HTTPS 部署简要指南 =
+
+
+许多Web开发者都知道SSL，但常见的情况是SSL没有完整地部署或者没有部署在它应该部署
+的地方。这篇关于何时及如何部署SSL的简要指南，将帮助你避免大多数常见错误。
+
+== 要点 ==
+
+* 如果你有任何机密信息，或者你要进行用户登陆，哪怕只是让管理员登陆，你就应该部署
+	HTTPS。风险并非只存在于理论上。
+* 决不要部分部署HTTPS：请将它用于所有内容，否则你将面临许多风险，比如session ID
+	被拦截，其危害不亚于密码被拦截。
+* 如果你部署了HTTPS，请将任何普通的HTTP请求都重定向至HTTPS的URL，以强制所有的
+	请求都通过HTTPS来处理。
+* 启用HTTP严格传输安全协议（HSTS）来进一步减少遭受攻击的可能。
+* 在你的cookies，比如session cookie上设置安全标记，确保它们不会经由普通的HTTP
+	请求而泄露。
+
+== 什么是HTTPS？ ==
+
+HTTPS是将HTTP置于SSL/TLS之上，其效果是加密HTTP流量(traffic)，包括请求的URL、结果
+页面、cookies、媒体资源和其他通过HTTP传输的内容。企图干扰HTTPS连接的人既无法监听
+流量，也无法更改其内容。除了加密，远程服务器的身份也要进行验证：毕竟，如果你都
+不知道另一端是谁，加密连接也就没什么用处了。这些措施将使拦截流量变得极其困难。
+虽然攻击者仍有可能知道用户正在访问哪个网站，但他所能知道的也就仅限于此了。
+
+== 何时及为什么要部署HTTPS ==
+
+只要你的网站有任何非公开信息，你就应当部署HTTPS，包括那些需要登陆的网站——毕竟，
+如果信息是公开的，根本就无需要求登陆。那些只有管理员才能登陆的网站，比如典型的
+Wordpress站点，也需要HTTPS。
+
+部署HTTPS是必须的，因为如果没有它，即使有人在被动监听，也就是监听而不操控网络
+流量，他也能顺着HTTP传输读取到密码或认证令牌等机密信息。
+
+这种攻击并非只存在于理论上。我自己（经过许可）就干过几次——在公共热点(public 
+hotspots)上这太容易做到了。公共热点通常没有使用任何WiFi加密，因此监听所有流量
+只不过是小菜一碟。这种情况在酒吧、宾馆、火车和其他公共场所非常普遍。换句话说，
+如果你的用户某些时候从公共热点访问你的网站，而你又没有使用HTTPS，那么任何在公共
+热点附近的人都可以监听用户所有的流量。这并不是监听可能发生的唯一情况，但它确实
+很容易做到。
+
+== 如果我只是在登陆页面使用HTTPS呢？ ==
+
+别这么干。只在登陆页面使用HTTPS固然可以防止用户的密码被窃取，但这只是问题的
+一部分。
+
+首先，你的网站上使用HTTPS的部分越少，进行主动拦截就越容易：你的登陆链接可能指向
+一个HTTPS URL，但如果我在用户点击之前就改变了链接，HTTPS就没法帮到你了。部分使用
+HTTPS也将面临被动拦截的风险。
+
+验证用户名和密码只是web上用户身份验证的一部分：我们还需要记住某个特定用户已经过
+验证和用于验证的账户。最常见的办法是使用session cookies，这通常意味着浏览器会将
+一个长的随机字符串，也就是session ID，存储在一个cookie中，例如在PHP中可以使用
+PHPSESSID来实现。服务器端的数据库知道那个随机字符串对应某个特定的session，而那个
+session又对应着某个特定的已验证用户。如果我用某种方式得到了你的session ID，那么
+当你登陆之后，我就获得了你所有的权限，这和我知道你的密码没什么两样。
+
+考虑到这一风险，session ID都非常长且随机，并且它的生命期是有限的，这就意味着我
+没法靠猜测来获知它，因此session ID是足够安全的。但是，由于cookie的运作方式，
+浏览器每次向网站发请求时都会包含cookie信息。所以，即使已经登陆很久了，我请求的
+每个网页，哪怕通常情况下是公开的网页，也会导致我的session cookie被浏览器发送出去
+。如果这时有人在监听，他们依然可以篡改我的账户。
+
+如果你仅仅把网站中涉及管理员的部分置于SSL的保护之下，同样的情况也可能发生：当你
+登陆并随后访问非SSL的公开内容时，浏览器也会发送session cookie。
+
+简而言之：由于允许访问用户账户的session cookie在每一次请求中都会被发送，仅仅保障
+登陆页面的安全是绝对不够的。
+
+== 我该如何正确地启用HTTPS？ ==
+
+=== 强制使用HTTPS ===
+
+一些网站购买了SSL证书并将其配置到Web服务器上，以为这就算完事儿了。但这只是表明
+你启用了HTTPS选项，而用户很可能不会注意到。为确保每个用户都从HTTPS中受益，你应该
+将所有传入的HTTP请求重定向至HTTPS。这意味着任何一个访问你的网站的用户都将自动
+切换到HTTPS，从那以后他们的信息传输就安全了。
+
+但上述做法还是留下了一个空子：当用户第一次向你的网站发送请求时，他们使用的是普通
+HTTP，而那时他们可能就已经在传输机密信息了。上述做法还留下了一个“中间人攻击”漏洞
+(man-in-the-middle hole)。
+
+=== 严格传输安全协议 ===
+
+为进一步加强控制，请启用HTTP严格传输安全协议。这是一种可由服务器发送的特殊的
+头信息(header)，它的含义是：在设定的时限内，你不能通过普通HTTP访问网站，也不能在
+证书不可靠时通过HTTPS访问网站。二级域名也可以选择包含HSTS。
+
+HSTS是一种简单的服务器头信息，且容易配置。但是要注意在时限结束之前无法撤销设定，
+因此不要把时限设置得太长。你应该同时使用HSTS和HTTPS重定向，而不是用前者取代后者
+。
+
+=== 安全的cookies ===
+
+Cookies，包括session cookie，有一个可选的安全标记。它大致的含义是：“不要用普通
+HTTP连接发送这个cookie” 启用这个安全标记，你的cookie就不会被浏览器的初始HTTP请求
+发送出去，直到连接切换为HTTPS且不再会被监听为止。
+
+== 我可以只为已验证用户部署SSL吗？ ==
+
+不可以。一旦你遵循了上述指南，当用户发起普通HTTP连接时，你没法知道他们是否经过了
+验证。关键在于：除非用户已经连上了SSL，否则他们不应该传输任何机密信息，比如
+session cookie。
+
+虽然我还能想出其他的办法来解决这些安全问题，但它们可能会在某个环节上失效。如今
+SSL的成本已相当低，采用其他方案并不划算。
+
+== 进一步阅读 ==
+
+读过这篇博客，你可能还想看看：
+
+* [[http://erik.io/blog/2013/12/15/appeal-for-security-for-the-ordinary-developer/|An appeal for security for the ordinary developer]]
+* [[http://erik.io/blog/2014/01/06/but-where-is-the-decryption-key/|But where is the decryption key?]]
+* [[http://blog.jobbole.com/57704/arbitrary%20remote%20code%20execution%20through%20pickle-backed%20cookie-based%20sessions|Proof of concept: arbitrary remote code execution through pickle-backed cookie-based sessions]]
+
+想进一步了解怎样正确设置加密和其他SSL选项，你可以看看：
+
+[[https://www.ssllabs.com/ssltest/|Qualys Labs的SSL服务器测试]]
+[[http://blog.jobbole.com/57704/best%20practices%20document|Qualys Labs的最佳实践文档]]
+[[https://github.com/blog/1734-improving-our-ssl-setup|GitHub改进其SSL配置时的考量]]
+[[https://wiki.mozilla.org/Security/Server_Side_TLS|Mozilla的TLS文档]]
+
+不过Mozilla的TLS文档可能会吓到新手。尚处于草案阶段的
+[[https://bettercrypto.org/Applied|Crypto Hardening]]
+也不错，它提供了直接可用的配置模板并详细解释了模板中所用选项的合理性。
