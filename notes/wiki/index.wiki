@@ -72,7 +72,6 @@ vim csv：[[vim.csv]]
 
 Git：[[git]]
 
-egit： [[git.edit]]
 
 SVN：[[Subversion]]
 

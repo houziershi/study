@@ -1,0 +1,62 @@
+
+
+%title Git规范
+
+%toc Git规范
+
+= Git注释规范 =
+
+基本要求
+
+第一行应该少于50个字。 随后是一个空行 第一行题目也可以写成：`Fix issue #8976`
+
+喜欢用 vim 的哥们把下面这行代码加入 .vimrc 文件中，来检查拼写和自动折行
+
+{{{class="brush: bash"
+autocmd Filetype gitcommit setlocal spell textwidth=72
+}}}
+
+例如注释有这样的（转载）
+
+一般情况下，提交 GIT 时的注释可以分成几类，可以用几个动词开始：
+
+* Added（新加入的需求）
+* Fixed（修复 bug）
+* Refacotry（重构）
+* Changed（成的任务）
+* Updated（完成的任务，或者由于第三方模块变化而做的变化）
+
+尽量将注释缩减为一句话，不要包含详细的内容。
+假如有 Issues 系统，其中可以包含 Issue 的 ID。比如：`Issue #123456`
+包含作者的信息。比如 by Bruce
+
+完整例子：
+
+{{{class="brush: bash"
+git commit -m 'Issue #[issue num] by [user]: [Short summary of the change].'
+}}}
+
+
+个人的习惯 
+
+* 修 Issue 就写：fixed #XX
+* 小改直接就用一句话说清楚。
+* 大改的，自己建一个 Issue 说清楚情况、方案、变化。。。。，然后同 1
+
+这里还有一个好处是，commit log 里面的`#XX GitHub`会显示成指向对应Issue的链接，
+对应地Issue里面也会出现这条Issue被哪个commit引用的提示。
+
+更屌炸天的是，类似`fixed #XX`这样的，GitHub 还会自动帮你把那条Issue给close掉。
+
+其实最重要一点，commit log 是给人类看的，说清楚就好，不必太过拘谨，更不能写成
+只给机器看的东西。
+
+* Rem: deprecate unused modules, 表示移除（Remove）
+* Ref: improved the implementation of module X, 表示重构（Refactory）
+
+有同学要问了：如果一个commit里的内容无法用上述任意一种语句陈述，应该怎么办？
+同学，那说明你的commit应该被拆分成多个小部分
+
+当然我最喜欢的commit message还是第一个commit，内容是`First Blood`
+
+
