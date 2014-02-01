@@ -88,10 +88,6 @@ JMeter: [[jmeter]]
 
 [[mysql]]
 
-[[mysql.moniter]]
-
-[[mysql.optimize]]
-
 DB2： [[DB2]]
 
 oracle：[[oracle.tips]]
