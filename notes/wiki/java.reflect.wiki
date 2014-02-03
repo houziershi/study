@@ -1,0 +1,211 @@
+%title 反射
+
+%toc 反射
+
+= Class类 =
+
+== 取得Class类 ==
+
+每个类都有的运用`getClass()`方法。可以在实例上调用：
+	
+{{{class="brush: java"
+String str = "abc";
+Class c1 = str.getClass();
+}}}
+
+
+取得超类`Class.getSuperclass()`：
+
+{{{class="brush: java"
+Button b = new Button();
+Class c1 = b.getClass();
+Class c2 = c1.getSuperclass();
+}}}
+
+静态方法`Class.forName()`：
+
+{{{class="brush: java"
+Class c1 = Class.forName("java.lang.String");
+Class c2 = Class.forName("java.awt.Button");
+Class c3 = Class.forName("java.util.LinkedList$Entry");
+Class c4 = Class.forName("I");
+Class c5 = Class.forName("[I");
+}}}
+
+`.class`语法：
+
+{{{class="brush: java"
+Class c1 = String.class;
+Class c2 = java.awt.Button.class;
+Class c3 = Main.InnerClass.class;
+Class c4 = int.class;
+Class c5 = int[].class;
+}}}
+
+运用`primitive wrapper classes`的`TYPE`语法：
+
+{{{class="brush: java"
+Class c1 = Boolean.TYPE;
+Class c2 = Byte.TYPE;
+Class c3 = Character.TYPE;
+Class c4 = Short.TYPE;
+Class c5 = Integer.TYPE;
+Class c6 = Long.TYPE;
+Class c7 = Float.TYPE;
+Class c8 = Double.TYPE;
+Class c9 = Void.TYPE;
+}}}
+
+== 取得类信息 ==
+
+| 类的内部模块 | 说明                     | API                            | 返回类型               |
+|--------------|--------------------------|--------------------------------|------------------------|
+| package      | 类隶属哪个包             | getPackage()                   | Package                |
+| import       | 类导入哪些类             | 无直接对应之API。 可间接获取。 | void                   |
+| modifier     | 类的方法与字段           | int getModifiers()             | int                    |
+| \/           | \/                       | Modifier.toString(int)         | String                 |
+| \/           | \/                       | Modifier.isInterface(int)      | bool                   |
+| 类名或接口名 | class/interface          | 名称getName()                  | String                 |
+| 参数类型     | 参数化类型的名称         | getTypeParameters()            | TypeVariable <Class>[] |
+| 基础粝       | base class（只可能一个） | getSuperClass()                | Class                  |
+| 已实现接口   | 实现有哪些interfaces     | getInterfaces()                | Class[]                |
+| 内部类       | 内部classes              | getDeclaredClasses()           | Class[]                |
+| 外部类       | 内部类一定会有外部类     | getDeclaringClass()            | Class                  |
+
+= 构造函数 =
+
+== 从Class类中取得构造函数 ==
+
+通过指定参数类型返回确定的构造函数：
+
+{{{class="brush: java"
+Constructor getConstructor(Class[] params) 
+
+Constructor getDeclaredConstructor(Class[] params) 
+}}}
+
+获取所有的构造函数：
+
+{{{class="brush: java"
+Constructor[] getConstructors()
+
+Constructor[] getDeclaredConstructors()
+}}}
+
+
+== 创建对象 ==
+
+=== 调用默认无参构造函数 ===
+
+{{{class="brush: java"
+Class cls = Class.forName(“className”);
+inst =  cls.newInstance();
+}}}
+
+=== 使用构造函数 ===
+
+通过前面得到构造函数类`Constructor<T>`，成员方法：
+
+{{{class="brush: java"
+T newInstance(Object... args)
+}}}
+
+其中args为对应的参数。
+
+
+
+
+
+= 成员函数 =
+
+== 从Class类中取得成员函数 ==
+
+和获取构造函数的方法类似，获取成员函数的方法有以下一些：
+
+{{{class="brush: java"
+Method getMethod(String name, Class[] params)
+
+Method[] getMethods()
+
+Method getDeclaredMethod(String name, Class[] params) 
+
+Method[] getDeclaredMethods() 
+}}}
+
+其中需要注意，`String name`参数，需要写入方法名。关于访问权限和确定性的问题，和
+构造函数基本一致。
+
+== 调用方法 ==
+
+`Method`类的成员方法：
+
+{{{class="brush: java"
+public Object invoke(Object receiver, Object... args)
+}}}
+
+第二个参数`args`明显是参数列表。
+
+第一个参数`reveiver`就是成员函数所调用的对象。如果是静态方法，可以为空。
+
+`receiver`的存在是有历史原因的：在非面向对象语言中，没有`obj.func()`的。以C语言
+实现Java来说，相当于用一个参数来表明现在调用的是哪一个对象的成员方法。
+
+所以`obj.func()`其实是有隐含参数的，那就是object对象的指针，method原型的第一个
+参数其实是this指针，于是原型为`method(void* this)`。
+
+
+
+
+
+= 成员属性 =
+
+== 通过Class取得成员属性 ==
+
+获取成员变量的方法与上面两种方法类似，具体如下：
+
+{{{class="brush: java"
+Field getField(String name)
+
+Field[] getFields()
+
+Field getDeclaredField(String name)
+
+Field[] getDeclaredFields()
+}}}
+
+其中，`String name`参数，需要写入变量名。关于访问权限和确定性的问题，与前面两例
+基本一致。
+
+== 操作成员属性 ==
+
+{{{class="brush: java"
+public Object get(Object object)
+
+public void set(Object object, Object value)
+}}}
+
+object参数需要传入的对象，原理类似于成员方法需要指明对象一样。如果是静态属性，
+同样可以为null。
+
+
+= 其他 =
+
+* Java反射中对数组做过单独的优化处理，具体可查看java.lang.reflect.Array类；
+* 还有关于泛型的支持，可查看java.lang.reflect.ParameterizedType及相关资料。
+{{{class="brush: java"
+}}}
+
+{{{class="brush: java"
+}}}
+
+{{{class="brush: java"
+}}}
+
+{{{class="brush: java"
+}}}
+
+{{{class="brush: java"
+}}}
+
+{{{class="brush: java"
+}}}
