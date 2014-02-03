@@ -18,7 +18,7 @@
 
 MyEclipse启动Tomcat可以加在Tomcat的JDK->Optional Java VM arguments里。
 
-== 虚拟机进程 ==
+== 虚拟机进程（jps） ==
 
 `jps`命令，显示虚拟机执行的主类与LVMID（本虚拟机唯一ID）。对本地单个虚拟机来说
 LVMID与OS进程号一样，多个虚拟机只能用`jps`来看LVMID。
@@ -29,48 +29,84 @@ jps [options] [host]
 
 参数：
 
-| -m | 显示传给main()的参数 |
-| -l | 主类的全名           |
-| -v | JVM参数              |
-
-== 进程状态 ==
-
-指定进程号、循环间隔与次数：
+| -m | 显示传给main方法的参数                |
+| -l | 主类的全名                            |
+| -v | 显示JVM参数                           |
+| -q | 不输出类名、Jar名和传入main方法的参数 |
 
 {{{class="brush: bash"
-jstat -gcutil 14101                                                                                               ──(Sun,Aug11)─┘
-  S0     S1     E      O      P     YGC     YGCT    FGC    FGCT     GCT   
-  0.00  99.42  10.74   1.55  40.26      1    0.012     0    0.000    0.012
+root@ubuntu:/# jps -m -l
+2458 org.artifactory.standalone.main.Main /usr/local/artifactory-2.2.5/etc/jetty.xml
+29920 com.sun.tools.hat.Main -port 9998 /tmp/dump.dat
+3149 org.apache.catalina.startup.Bootstrap start
+30972 sun.tools.jps.Jps -m -l
+8247 org.apache.catalina.startup.Bootstrap start
+25687 com.sun.tools.hat.Main -port 9999 dump.dat
+21711 mrf-center.jar
+}}}
+
+== 进程状态（jstat） ==
+
+语法格式如下：
+
+{{{class="brush: bash"
+jstat [ generalOption | outputOptions vmid [interval[s|ms] [count]] ]
+}}}
+
+* vmid是Java虚拟机ID，在Linux/Unix系统上一般就是进程ID。
+* interval是采样时间间隔。
+* count是采样数目。
+
+比如下面输出的是GC信息，采样时间间隔为250ms，采样数为4：
+
+{{{class="brush: bash"
+root@ubuntu:/# jstat -gc 21711 250 4
+ S0C    S1C    S0U    S1U      EC       EU        OC         OU       PC     PU    YGC     YGCT    FGC    FGCT     GCT   
+192.0  192.0   64.0   0.0    6144.0   1854.9   32000.0     4111.6   55296.0 25472.7    702    0.431   3      0.218    0.649
+192.0  192.0   64.0   0.0    6144.0   1972.2   32000.0     4111.6   55296.0 25472.7    702    0.431   3      0.218    0.649
+192.0  192.0   64.0   0.0    6144.0   1972.2   32000.0     4111.6   55296.0 25472.7    702    0.431   3      0.218    0.649
+192.0  192.0   64.0   0.0    6144.0   2109.7   32000.0     4111.6   55296.0 25472.7  
 }}}
 
 `S0 S1 E O P`代表两个Sivivor、Eden、老年代、永久代的使用比。
 
 `YGC YGCT FGC FGCT GCT`启动以来新生代与老生代GC次数与耗时、总GC耗时。
 
+| S0C、S1C、S0U、S1U | Survivor 0/1区容量（Capacity）和使用量（Used） |
+| EC、EU             | Eden区容量和使用量                             |
+| OC、OU             | 年老代容量和使用量                             |
+| PC、PU             | 永久代容量和使用量                             |
+| YGC、YGT           | 年轻代GC次数和GC耗时                           |
+| FGC、FGCT          | Full GC次数和Full GC耗时                       |
+| GCT                | GC总耗时                                       |
+
+结合JVM内存模型：
+
+* 堆内存 = 年轻代 + 年老代 + 永久代
+* 年轻代 = Eden区 + 两个Survivor区（From和To）
+
 
 == 配置信息 ==
 
-`jinfo`查看配置参数。`-flag 参数名`查看参数默认值，`java -XX:+PrintFlagsFinal`也可以。
+`jinfo`查看配置参数。`-flag 参数名`查看参数默认值，`java -XX:+PrintFlagsFinal`
+也可以。
 `-sysprops 属性名`显示虚拟机`System.getProperties()`。
 
-== 内存转储 ==
+== 内存转储（jmap） ==
 
-`jmap`输出内存转储文件。其他野路子的方法如：
-
-* 启动参数`-XX:+HeapDumpOnOutOfMemoryError`在内存耗尽时转储；
-* `-XX:+HeapDumpOnCtrlBreak`在按键`Control+Break`时生成；
-* linux下`kill -3`“恐吓”一下VM；
-
-`jmap`使用：
+`jmap`输出内存转储文件。基本格式：
 
 {{{class="brush: bash"
-$ jmap -dump:live,format=b,file=tmp.dmp 14101
-Dumping heap to /home/morgan/tmp/tmp.dmp ...
-File exists
+jmap [option] pid
+jmap [option] executable core
+jmap [option] [server-id@]remote-hostname-or-ip
 }}}
+
+如果运行在64位JVM上，可能需要指定`-J-d64`命令选项参数。
 
 常用参数：
 
+| -J-d64         | 在64位jvm上可能需要指定                                   |
 | -dump          | `-dump:[live,]format=b,file=文件名`，`Live`则只要存活对象 |
 | -finalizerinfo | 显示F-Queue中等待finalize方法的对象                       |
 | -heap          | 详细堆信息、回收器类型、参数配置、分代状况                |
@@ -78,8 +114,154 @@ File exists
 | -permstat      | 以ClassLoader为统计口径显示永久代内存状态                 |
 | -F             | VM线程对-dump 选项没有响应时，用来强制生成dump快照        |
 
+还有一些其他的小技巧：
 
-== 分析转储文件 ==
+* 启动参数`-XX:+HeapDumpOnOutOfMemoryError`在内存耗尽时转储；
+* `-XX:+HeapDumpOnCtrlBreak`在按键`Control+Break`时生成；
+* linux下`kill -3`“恐吓”一下VM；
+
+例，生成转储文件：
+
+{{{class="brush: bash"
+$ jmap -dump:live,format=b,file=tmp.dmp 14101
+Dumping heap to /home/morgan/tmp/tmp.dmp ...
+File exists
+}}}
+
+例，打印进程的类加载器和类加载器加载的持久代对象信息。输出类加载器名称、对象
+是否存活（不可靠）、对象地址、父类加载器、已加载的类大小等信息：
+
+{{{class="brush: bash"
+jmap -permstat 21711
+}}}
+
+例，使用`jmap -heap pid`查看进程堆内存使用情况，包括使用的GC算法、堆配置参数和
+各代中堆内存使用情况。比如下面的例子：
+
+{{{class="brush: bash"
+root@ubuntu:/# jmap -heap 21711
+Attaching to process ID 21711, please wait...
+Debugger attached successfully.
+Server compiler detected.
+JVM version is 20.10-b01
+ 
+using thread-local object allocation.
+Parallel GC with 4 thread(s)
+ 
+Heap Configuration:
+   MinHeapFreeRatio = 40
+   MaxHeapFreeRatio = 70
+   MaxHeapSize      = 2067791872 (1972.0MB)
+   NewSize          = 1310720 (1.25MB)
+   MaxNewSize       = 17592186044415 MB
+   OldSize          = 5439488 (5.1875MB)
+   NewRatio         = 2
+   SurvivorRatio    = 8
+   PermSize         = 21757952 (20.75MB)
+   MaxPermSize      = 85983232 (82.0MB)
+ 
+Heap Usage:
+PS Young Generation
+Eden Space:
+   capacity = 6422528 (6.125MB)
+   used     = 5445552 (5.1932830810546875MB)
+   free     = 976976 (0.9317169189453125MB)
+   84.78829520089286% used
+From Space:
+   capacity = 131072 (0.125MB)
+   used     = 98304 (0.09375MB)
+   free     = 32768 (0.03125MB)
+   75.0% used
+To Space:
+   capacity = 131072 (0.125MB)
+   used     = 0 (0.0MB)
+   free     = 131072 (0.125MB)
+   0.0% used
+PS Old Generation
+   capacity = 35258368 (33.625MB)
+   used     = 4119544 (3.9287033081054688MB)
+   free     = 31138824 (29.69629669189453MB)
+   11.683876009235595% used
+PS Perm Generation
+   capacity = 52428800 (50.0MB)
+   used     = 26075168 (24.867218017578125MB)
+   free     = 26353632 (25.132781982421875MB)
+   49.73443603515625% used
+   ....
+}}}
+
+使用`jmap -histo[:live] pid`查看堆内存中的对象数目、大小统计直方图，如果带上
+`live`则只统计活对象，如下：
+
+{{{class="brush: bash"
+root@ubuntu:/# jmap -histo:live 21711 | more
+ 
+ num     #instances         #bytes  class name
+----------------------------------------------
+   1:         38445        5597736  <constMethodKlass>
+   2:         38445        5237288  <methodKlass>
+   3:          3500        3749504  <constantPoolKlass>
+   4:         60858        3242600  <symbolKlass>
+   5:          3500        2715264  <instanceKlassKlass>
+   6:          2796        2131424  <constantPoolCacheKlass>
+   7:          5543        1317400  [I
+   8:         13714        1010768  [C
+   9:          4752        1003344  [B
+  10:          1225         639656  <methodDataKlass>
+  11:         14194         454208  java.lang.String
+  12:          3809         396136  java.lang.Class
+  13:          4979         311952  [S
+  14:          5598         287064  [[I
+  15:          3028         266464  java.lang.reflect.Method
+  16:           280         163520  <objArrayKlassKlass>
+  17:          4355         139360  java.util.HashMap$Entry
+  18:          1869         138568  [Ljava.util.HashMap$Entry;
+  19:          2443          97720  java.util.LinkedHashMap$Entry
+  20:          2072          82880  java.lang.ref.SoftReference
+  21:          1807          71528  [Ljava.lang.Object;
+  22:          2206          70592  java.lang.ref.WeakReference
+  23:           934          52304  java.util.LinkedHashMap
+  24:           871          48776  java.beans.MethodDescriptor
+  25:          1442          46144  java.util.concurrent.ConcurrentHashMap$HashEntry
+  26:           804          38592  java.util.HashMap
+  27:           948          37920  java.util.concurrent.ConcurrentHashMap$Segment
+  28:          1621          35696  [Ljava.lang.Class;
+  29:          1313          34880  [Ljava.lang.String;
+  30:          1396          33504  java.util.LinkedList$Entry
+  31:           462          33264  java.lang.reflect.Field
+  32:          1024          32768  java.util.Hashtable$Entry
+  33:           948          31440  [Ljava.util.concurrent.ConcurrentHashMap$HashEntr
+}}}
+
+class name是对象类型，形式为`[L+类名`或其他对象：
+
+| B | byte                |
+| C | char                |
+| D | double              |
+| F | float               |
+| I | int                 |
+| J | long                |
+| Z | boolean             |
+| [ | 数组，如[I表示int[] |
+
+== 分析转储文件（jhat） ==
+
+有一个很常用的情况是用jmap把进程内存使用情况dump到文件中，再用jhat分析查看。
+jmap进行dump命令格式如下：
+
+{{{class="brush: bash"
+jmap -dump:format=b,file=dumpFileName
+}}}
+
+例，对上面进程ID为21711进行Dump：
+
+{{{class="brush: bash"
+root@ubuntu:/# jmap -dump:format=b,file=/tmp/dump.dat 21711     
+Dumping heap to /tmp/dump.dat ...
+Heap dump file created
+}}}
+
+dump出来的文件可以用MAT、VisualVM等工具查看，这里用jhat查看。
 
 `jhat`分析dump文件，分析完后会启动一个小Http服务器：
 
@@ -98,14 +280,26 @@ Server is ready.
 
 可以用浏览器查看`http://localhost:7000/`，还可以用对象查询语言（OQL）查询。
 
+注意如果Dump文件太大，可能需要加上`-J-Xmx512m`参数指定最大堆内存。
 
-== 跟踪堆栈 ==
+另外还可以指定所在的端口，即：
+
+{{{class="brush: bash"
+jhat -J-Xmx512m -port 9998 /tmp/dump.dat
+}}}
+
+然后就可以在浏览器中输入`主机地址:9998`查看了：
+
+
+== 跟踪堆栈（jstat） ==
 
 `jstack`生成VM当前的线程快照（一般称为`threaddump`或`javacore`文件）,查看各线程
 的调用堆栈。
 
 {{{class="brush: bash"
 jstack [option] vmid
+jstack [option] executable core
+jstack [option] [server-id@]remote-hostname-or-ip
 }}}
 
 常用参数：
@@ -186,15 +380,173 @@ JNI global references: 1963
 </html>
 }}}
 
+另一个场景的例子：
+
+jstack可以定位到线程堆栈，根据堆栈信息我们可以定位到具体代码，所以它在JVM性能
+调优中使用得非常多。下面我们来一个实例找出某个Java进程中最耗费CPU的Java线程并
+定位堆栈信息，用到的命令有ps、top、printf、jstack、grep。
+
+第一步先找出Java进程ID，我部署在服务器上的Java应用名称为`mrf-center`，得到进程
+ID为`21711`：
+
+{{{class="brush: bash"
+root@ubuntu:/# ps -ef | grep mrf-center | grep -v grep
+root     21711     1  1 14:47 pts/3    00:02:10 java -jar mrf-center.jar
+}}}
+
+第二步找出该进程内最耗费CPU的线程，可以使用方法有三个：
+* `ps -Lfp pid`
+* `ps -mp pid -o THREAD, tid, time`
+* `top -Hp pid`
+
+我这里用第三个，可以看到占用CPU时间（TIME）最多的是PID为21742的线程：
+
+{{{class="brush: bash; highlight: [8]"
+top - 12:34:34 up  1:52,  1 user,  load average: 0.63, 1.21, 1.19
+Tasks: 154 total,   2 running, 150 sleeping,   0 stopped,   2 zombie
+Cpu(s): 27.6%us,  3.4%sy,  0.0%ni, 68.9%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
+Mem:   4013476k total,  3190956k used,   822520k free,   335480k buffers
+Swap:  1951740k total,       20k used,  1951720k free,  1497056k cached
+
+  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND                       
+21742 morgan    20   0 4185m 395m  41m R   52 10.1   1:12.24 plugin-containe               
+ 1121 root      20   0  505m 134m  14m S    8  3.4   9:09.35 Xorg                          
+ 2301 morgan     9 -11  473m 6380 3956 S    3  0.2   2:25.49 pulseaudio                    
+10691 morgan    20   0 17344 1336  960 R    1  0.0   0:00.05 top                           
+ 2203 morgan    20   0  165m  15m 6936 S    0  0.4   0:05.57 awesome                       
+    1 root      20   0 24604 2572 1340 S    0  0.1   0:00.79 init                          
+    2 root      20   0     0    0    0 S    0  0.0   0:00.00 kthreadd                      
+    3 root      20   0     0    0    0 S    0  0.0   0:00.28 ksoftirqd/0                   
+    6 root      RT   0     0    0    0 S    0  0.0   0:00.26 migration/0                   
+    7 root      RT   0     0    0    0 S    0  0.0   0:00.02 watchdog/0                    
+    8 root      RT   0     0    0    0 S    0  0.0   0:00.31 migration/1                   
+   10 root      20   0     0    0    0 S    0  0.0   0:00.27 ksoftirqd/1                   
+   12 root      RT   0     0    0    0 S    0  0.0   0:00.02 watchdog/1                    
+   13 root       0 -20     0    0    0 S    0  0.0   0:00.00 cpuset                        
+   14 root       0 -20     0    0    0 S    0  0.0   0:00.00 khelper                       
+   15 root      20   0     0    0    0 S    0  0.0   0:00.00 kdevtmpfs                     
+   16 root       0 -20     0    0    0 S    0  0.0   0:00.00 netns                         
+   18 root      20   0     0    0    0 S    0  0.0   0:00.01 sync_supers                   
+   19 root      20   0     0    0    0 S    0  0.0   0:00.00 bdi-default                   
+   20 root       0 -20     0    0    0 S    0  0.0   0:00.00 kintegrityd                   
+   21 root       0 -20     0    0    0 S    0  0.0   0:00.00 kblockd                       
+   22 root       0 -20     0    0    0 S    0  0.0   0:00.00 ata_sff                       
+   23 root      20   0     0    0    0 S    0  0.0   0:00.00 khubd                         
+   24 root       0 -20     0    0    0 S    0  0.0   0:00.00 md                            
+}}}
+
+注意进程号21742的十六进制值为54ee，下面会用到：
+
+{{{class="brush: bash"
+$ printf "%x\n" 21742
+54ee
+}}}
+
+下一步终于轮到jstack上场了，它用来输出进程21711的堆栈信息，然后根据线程号的
+十六进制值grep，如下：
+
+{{{class="brush: bash"
+root@ubuntu:/# jstack 21711 | grep 54ee
+"PollIntervalRetrySchedulerThread" prio=10 tid=0x00007f950043e000 nid=0x54ee in Object.wait() [0x00007f94c6eda000]
+}}}
+
+可以看到CPU消耗在`PollIntervalRetrySchedulerThread`这个类的`Object.wait()`。
+
+查找源代码，定位到下面的代码：
+
+{{{class="brush: java; highlight: [10]"
+// Idle wait
+getLog().info("Thread [" + getName() + "] is idle waiting...");
+schedulerThreadState = PollTaskSchedulerThreadState.IdleWaiting;
+long now = System.currentTimeMillis();
+long waitTime = now + getIdleWaitTime();
+long timeUntilContinue = waitTime - now;
+synchronized(sigLock) {
+    try {
+        if(!halted.get()) {
+            sigLock.wait(timeUntilContinue);
+        }
+    } 
+    catch (InterruptedException ignore) {
+    }
+}
+}}}
+
+它是轮询任务的空闲等待代码，上面的`sigLock.wait(timeUntilContinue)`就对应了
+前面的`Object.wait()`。
+
+== CPU占用（hprof） ==
+
+hprof表示 Heap/CPU Profiling Tool。能够展现CPU使用率，统计堆内存使用情况。
+
+语法格式如下：
+
+{{{class="brush: bash"
+java -agentlib:hprof[=options] ToBeProfiledClass
+java -Xrunprof[:options] ToBeProfiledClass
+javac -J-agentlib:hprof[=options] ToBeProfiledClass
+}}}
+
+完整的命令选项如下：
+
+| Option Name and Value | Description                    | Default          |
+| --------------------- | -----------                    | -------          |
+| heap=dump/sites/all   | heap profiling                 | all              |
+| cpu=samples/times/old | CPU usage                      | off              |
+| monitor=y/n           | monitor contention             | n                |
+| format=a/b            | text(txt) or binary output     | a                |
+| file=<file>           | write data to file             | java.hprof[.txt] |
+| net=<host>:<port>     | send data over a socket        | off              |
+| depth=<size>          | stack trace depth              | 4                |
+| interval=<ms>         | sample interval in ms          | 10               |
+| cutoff=<value>        | output cutoff point            | 0.0001           |
+| lineno=y/n            | line number in traces?         | y                |
+| thread=y/n            | thread in traces?              | n                |
+| doe=y/n               | dump on exit?                  | y                |
+| msa=y/n               | Solaris micro state accounting | n                |
+| force=y/n             | force output to <file>         | y                |
+| verbose=y/n           | print messages about dumps     | y                |
+
+来几个官方指南上的实例。
+
+CPU Usage Sampling Profiling(cpu=samples)的例子：
+
+每隔20毫秒采样CPU消耗信息，堆栈深度为3，生成的profile文件名称是java.hprof.txt，在当前目录。 
+
+{{{class="brush: bash"
+java -agentlib:hprof=cpu=samples,interval=20,depth=3 Hello
+}}}
+
+
+CPU Usage Times Profiling(cpu=times)的例子，它相对于CPU Usage Sampling Profile
+能够获得更加细粒度的CPU消耗信息，能够细到每个方法调用的开始和结束，它的实现使用
+字节码注入技术（BCI）：
+
+{{{class="brush: bash"
+javac -J-agentlib:hprof=cpu=times Hello.java
+}}}
+
+Heap Allocation Profiling(heap=sites)的例子：
+
+{{{class="brush: bash"
+javac -J-agentlib:hprof=heap=sites Hello.java
+}}}
+
+Heap Dump(heap=dump)的例子，它比上面的Heap Allocation Profiling能生成更详细的
+Heap Dump信息：
+
+{{{class="brush: bash"
+javac -J-agentlib:hprof=heap=dump Hello.java
+}}}
+
+虽然在JVM启动参数中加入`-Xrunprof:heap=sites`参数可以生成CPU/Heap Profile文件，
+但对JVM性能影响非常大，不建议在线上服务器环境使用。
 
 
 
 = JConsole =
 
 JConsole在open JDK与Oracle JDK里都有。运行后直接IP:Port监控系统占用。
-
-{{{class="brush: bash"
-}}}
 
 
 
@@ -242,50 +594,3 @@ Oracle JDK中自带；Open JDK中没有，要另外下载。
 JDK1.5以后Client模式下加入并自动启用了类共享（多JVM情况下共享`rt.jar`以节约资源
 优化性能），在这里用Profiler性能分析会引起程序崩溃。要用`-Xshare:off`关闭共享
 优化。
-
-{{{class="brush: bash"
-}}}
-
-
-
-{{{class="brush: bash"
-}}}
-
-
-
-{{{class="brush: bash"
-}}}
-
-
-
-{{{class="brush: bash"
-}}}
-
-
-
-{{{class="brush: bash"
-}}}
-
-
-
-{{{class="brush: bash"
-}}}
-
-
-
-{{{class="brush: bash"
-}}}
-
-
-
-{{{class="brush: bash"
-}}}
-
-
-
-
-{{{class="brush: bash"
-}}}
-
-
-
