@@ -22,4 +22,7 @@
                    
 [[scala.Part.08]]：结合Scala与Java、Actor和并发、定界延续
 
+汇总：[[scala.all]]
+
 Scala样例：[[scala.example]]
+

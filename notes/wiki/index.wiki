@@ -72,7 +72,6 @@ vim csv：[[vim.csv]]
 
 Git：[[git]]
 
-egit： [[git.edit]]
 
 SVN：[[Subversion]]
 
@@ -88,10 +87,6 @@ JMeter: [[jmeter]]
 = 数据库 =
 
 [[mysql]]
-
-[[mysql.moniter]]
-
-[[mysql.optimize]]
 
 DB2： [[DB2]]
 

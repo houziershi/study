@@ -1,0 +1,453 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+
+
+<title>反射</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+<h1>反射</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">Class类</a>
+<ul>
+<li><a href="#toc_1.1">取得Class类</a>
+<li><a href="#toc_1.2">取得类信息</a>
+</ul>
+<li><a href="#toc_2">构造函数</a>
+<ul>
+<li><a href="#toc_2.1">从Class类中取得构造函数</a>
+<li><a href="#toc_2.2">创建对象</a>
+<ul>
+<li><a href="#toc_2.2.1">调用默认无参构造函数</a>
+<li><a href="#toc_2.2.2">使用构造函数</a>
+</ul>
+</ul>
+<li><a href="#toc_3">成员函数</a>
+<ul>
+<li><a href="#toc_3.1">从Class类中取得成员函数</a>
+<li><a href="#toc_3.2">调用方法</a>
+</ul>
+<li><a href="#toc_4">成员属性</a>
+<ul>
+<li><a href="#toc_4.1">通过Class取得成员属性</a>
+<li><a href="#toc_4.2">操作成员属性</a>
+</ul>
+<li><a href="#toc_5">其他</a>
+</ul>
+</div>
+
+<h1 id="toc_1">Class类</h1>
+
+<h2 id="toc_1.1">取得Class类</h2>
+
+<p>
+每个类都有的运用<code>getClass()</code>方法。可以在实例上调用：
+</p>
+	
+<pre class="brush: java">
+String str = "abc";
+Class c1 = str.getClass();
+</pre>
+
+
+<p>
+取得超类<code>Class.getSuperclass()</code>：
+</p>
+
+<pre class="brush: java">
+Button b = new Button();
+Class c1 = b.getClass();
+Class c2 = c1.getSuperclass();
+</pre>
+
+<p>
+静态方法<code>Class.forName()</code>：
+</p>
+
+<pre class="brush: java">
+Class c1 = Class.forName("java.lang.String");
+Class c2 = Class.forName("java.awt.Button");
+Class c3 = Class.forName("java.util.LinkedList$Entry");
+Class c4 = Class.forName("I");
+Class c5 = Class.forName("[I");
+</pre>
+
+<p>
+<code>.class</code>语法：
+</p>
+
+<pre class="brush: java">
+Class c1 = String.class;
+Class c2 = java.awt.Button.class;
+Class c3 = Main.InnerClass.class;
+Class c4 = int.class;
+Class c5 = int[].class;
+</pre>
+
+<p>
+运用<code>primitive wrapper classes</code>的<code>TYPE</code>语法：
+</p>
+
+<pre class="brush: java">
+Class c1 = Boolean.TYPE;
+Class c2 = Byte.TYPE;
+Class c3 = Character.TYPE;
+Class c4 = Short.TYPE;
+Class c5 = Integer.TYPE;
+Class c6 = Long.TYPE;
+Class c7 = Float.TYPE;
+Class c8 = Double.TYPE;
+Class c9 = Void.TYPE;
+</pre>
+
+<h2 id="toc_1.2">取得类信息</h2>
+
+<table>
+<tr>
+<th>
+类的内部模块
+</th>
+<th>
+说明
+</th>
+<th>
+API
+</th>
+<th>
+返回类型
+</th>
+</tr>
+<tr>
+<td>
+package
+</td>
+<td>
+类隶属哪个包
+</td>
+<td>
+getPackage()
+</td>
+<td>
+Package
+</td>
+</tr>
+<tr>
+<td>
+import
+</td>
+<td>
+类导入哪些类
+</td>
+<td>
+无直接对应之API。 可间接获取。
+</td>
+<td>
+void
+</td>
+</tr>
+<tr>
+<td rowspan="3">
+modifier
+</td>
+<td rowspan="3">
+类的方法与字段
+</td>
+<td>
+int getModifiers()
+</td>
+<td>
+int
+</td>
+</tr>
+<tr>
+<td>
+Modifier.toString(int)
+</td>
+<td>
+String
+</td>
+</tr>
+<tr>
+<td>
+Modifier.isInterface(int)
+</td>
+<td>
+bool
+</td>
+</tr>
+<tr>
+<td>
+类名或接口名
+</td>
+<td>
+class/interface
+</td>
+<td>
+名称getName()
+</td>
+<td>
+String
+</td>
+</tr>
+<tr>
+<td>
+参数类型
+</td>
+<td>
+参数化类型的名称
+</td>
+<td>
+getTypeParameters()
+</td>
+<td>
+TypeVariable &lt;Class&gt;[]
+</td>
+</tr>
+<tr>
+<td>
+基础粝
+</td>
+<td>
+base class（只可能一个）
+</td>
+<td>
+getSuperClass()
+</td>
+<td>
+Class
+</td>
+</tr>
+<tr>
+<td>
+已实现接口
+</td>
+<td>
+实现有哪些interfaces
+</td>
+<td>
+getInterfaces()
+</td>
+<td>
+Class[]
+</td>
+</tr>
+<tr>
+<td>
+内部类
+</td>
+<td>
+内部classes
+</td>
+<td>
+getDeclaredClasses()
+</td>
+<td>
+Class[]
+</td>
+</tr>
+<tr>
+<td>
+外部类
+</td>
+<td>
+内部类一定会有外部类
+</td>
+<td>
+getDeclaringClass()
+</td>
+<td>
+Class
+</td>
+</tr>
+</table>
+
+<h1 id="toc_2">构造函数</h1>
+
+<h2 id="toc_2.1">从Class类中取得构造函数</h2>
+
+<p>
+通过指定参数类型返回确定的构造函数：
+</p>
+
+<pre class="brush: java">
+Constructor getConstructor(Class[] params) 
+
+Constructor getDeclaredConstructor(Class[] params) 
+</pre>
+
+<p>
+获取所有的构造函数：
+</p>
+
+<pre class="brush: java">
+Constructor[] getConstructors()
+
+Constructor[] getDeclaredConstructors()
+</pre>
+
+
+<h2 id="toc_2.2">创建对象</h2>
+
+<h3 id="toc_2.2.1">调用默认无参构造函数</h3>
+
+<pre class="brush: java">
+Class cls = Class.forName(“className”);
+inst =  cls.newInstance();
+</pre>
+
+<h3 id="toc_2.2.2">使用构造函数</h3>
+
+<p>
+通过前面得到构造函数类<code>Constructor&lt;T&gt;</code>，成员方法：
+</p>
+
+<pre class="brush: java">
+T newInstance(Object... args)
+</pre>
+
+<p>
+其中args为对应的参数。
+</p>
+
+
+
+
+
+<h1 id="toc_3">成员函数</h1>
+
+<h2 id="toc_3.1">从Class类中取得成员函数</h2>
+
+<p>
+和获取构造函数的方法类似，获取成员函数的方法有以下一些：
+</p>
+
+<pre class="brush: java">
+Method getMethod(String name, Class[] params)
+
+Method[] getMethods()
+
+Method getDeclaredMethod(String name, Class[] params) 
+
+Method[] getDeclaredMethods() 
+</pre>
+
+<p>
+其中需要注意，<code>String name</code>参数，需要写入方法名。关于访问权限和确定性的问题，和
+构造函数基本一致。
+</p>
+
+<h2 id="toc_3.2">调用方法</h2>
+
+<p>
+<code>Method</code>类的成员方法：
+</p>
+
+<pre class="brush: java">
+public Object invoke(Object receiver, Object... args)
+</pre>
+
+<p>
+第二个参数<code>args</code>明显是参数列表。
+</p>
+
+<p>
+第一个参数<code>reveiver</code>就是成员函数所调用的对象。如果是静态方法，可以为空。
+</p>
+
+<p>
+<code>receiver</code>的存在是有历史原因的：在非面向对象语言中，没有<code>obj.func()</code>的。以C语言
+实现Java来说，相当于用一个参数来表明现在调用的是哪一个对象的成员方法。
+</p>
+
+<p>
+所以<code>obj.func()</code>其实是有隐含参数的，那就是object对象的指针，method原型的第一个
+参数其实是this指针，于是原型为<code>method(void* this)</code>。
+</p>
+
+
+
+
+
+<h1 id="toc_4">成员属性</h1>
+
+<h2 id="toc_4.1">通过Class取得成员属性</h2>
+
+<p>
+获取成员变量的方法与上面两种方法类似，具体如下：
+</p>
+
+<pre class="brush: java">
+Field getField(String name)
+
+Field[] getFields()
+
+Field getDeclaredField(String name)
+
+Field[] getDeclaredFields()
+</pre>
+
+<p>
+其中，<code>String name</code>参数，需要写入变量名。关于访问权限和确定性的问题，与前面两例
+基本一致。
+</p>
+
+<h2 id="toc_4.2">操作成员属性</h2>
+
+<pre class="brush: java">
+public Object get(Object object)
+
+public void set(Object object, Object value)
+</pre>
+
+<p>
+object参数需要传入的对象，原理类似于成员方法需要指明对象一样。如果是静态属性，
+同样可以为null。
+</p>
+
+
+<h1 id="toc_5">其他</h1>
+
+<ul>
+<li>
+Java反射中对数组做过单独的优化处理，具体可查看java.lang.reflect.Array类；
+
+<li>
+还有关于泛型的支持，可查看java.lang.reflect.ParameterizedType及相关资料。
+<pre class="brush: java">
+</pre>
+
+</ul>
+
+<pre class="brush: java">
+</pre>
+
+<pre class="brush: java">
+</pre>
+
+<pre class="brush: java">
+</pre>
+
+<pre class="brush: java">
+</pre>
+
+<pre class="brush: java">
+</pre>
+ </div>
+</body>
+</html>

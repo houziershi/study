@@ -27,3 +27,27 @@ reveal.js： [[reveal.js]]
 
 Google Agent统计：[[ga.example]]
 
+= tips =
+
+
+
+
+= 线上错误报告 =
+
+Javascript是一个动态语言，许多检查都是在运行时执行的，所以大多数错误只有执行到
+的时候才能检查到，只能在发布前通过大量测试来发现。即使这样仍可能有少数没有
+执行到的路径有错误，这只能通过线上错误报告来发现了。
+	
+{{{class="brush: javascript"
+window.onerror = function (errorMsg, fileLoc, linenumber) {
+    var s = 'url: ' + document.URL + '\nfile:  ' + fileLoc
+        + '\nline number: ' + linenumber
+        + '\nmessage: ' + errorMsg;
+    Log.error(s);       // 发给服务器统计监控
+    console.log(s);
+};
+}}}
+
+通常线上的Javascript都是经过了合并和压缩的，上报的文件名和行号基本上没法对应到
+源代码，对查错帮助不是很大。不过最新版的Chrome支持在onerror的回调函数中获取
+出错时的栈轨迹：`window.event.error.stack`.

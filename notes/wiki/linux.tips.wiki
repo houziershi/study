@@ -94,7 +94,44 @@ php_error.txt   10,290,322,753          2,512,286            462,368          1,
 `tail -F php_error.txt`，因此被放入了cache。
 
 
+= 常用监控工具 =
 
+== htop – 交互式进程查看器 ==
+
+htop是top的扩展版本，有更丰富的概貌（例如全命令、可视化、图形用户界面gui和用户
+界面ui），有鼠标点击交互（译者注：看下面的截图，指的是最上面的列标题如CPU%、
+MEM%等可以通过鼠标点击切换以显示不同的功能），也有许多的指导教你如何做进程管理。
+
+== iotop – 简单的类似top的I/O监控器 ==
+
+iotop是IO实时监控器。使用它们附属的详细输入输出（IO）使用方法可以展示出你系统中
+每个进程线程的信息。
+
+该命令可以与tcpdump（响应网络流量的命令）一起使用。如果你发现你的web服务器上有
+程序在运行，你可以，比如运行tcpdump port 80检查端口80（标准的http端口）的网络
+流量来观察细节。
+
+最有用的信息可能是DISK WRITE这一列，从该列你可以准确的看到每个IO使用了多少个进程
+，单位为K/s。
+
+== apachetop – 展示web服务器实时统计数据 ==
+
+Apachetop展示Apache web服务器上关于http请求的实时表。
+
+它显示统计（stats）, 点击（hits）, 请求（requests）, 请求细节（request details）
+，且能够获得当前你的web服务器正在运行程序的概貌，这一点很赞。
+
+如果你使用的是Nginx，也有一些相似的工具，但似乎没有apachetop那么详细。
+
+
+== Glances – 基于CLI curses库的监控工具 ==
+
+Glances用各个分离的表列展示了你机器当前正运行的各种有用的实时数据。Glances旨在
+用最小的空间显示尽可能多的信息，我认为它的目标完全达到了。
+
+Glances用有限的交互可能性和更深层的信息监控PerCPU, Load, Memory, Swap, Network, 
+	Disk i/O, Mount data 和processes，但对于获得一个整体概貌绝对是完美的。
+	
 
 {{{class="brush: bash"
 }}}
