@@ -246,7 +246,7 @@ p.showInfo(screenName="Unmi", email="fantasia@sina.com")
     filesMatching(query, _.matches(_)) 
 }}}
 
-上面的代码可能太乘法了，加上参数表和参数类型可以更加好理解一些：
+上面的代码可能太抽象了，加上参数表和参数类型可以更加好理解一些：
 
 {{{class="brush: scala"
   // _.endsWith(_)
@@ -906,22 +906,12 @@ Scala中字段与方法都可以用`final`修饰为不可重写（因为Scala的
 
 详述：
 
-* 用val
-	- 重写val：
-		* 超类同名的私有字段
-		* 重写超类的getter方法
-	- 重写def：
-		* 子类有一个私有字段
-		* 重写超类的getter方法
-	- 重写var：错误
-* 用def
-	- 重写val：错误
-	- 重写def：同Java
-	- 重写var：错误
-* 用var
-	- 重写val：错误
-	- 重写def：同时重写getter/setter。只重写getter会报错
-	- 重写var：重写超类的抽象var
+
+|           | def                                            | val                                           | var               |
+|-----------|------------------------------------------------|-----------------------------------------------|-------------------|
+| 用val重写 | 子类有一个私有字段。<br/>重写超类的getter方法  | 超类同名的私有字段。<br/>重写超类的getter方法 | 错误              |
+| 用def重写 | 同Java                                         | 错误                                          | 错误              |
+| 用var重写 | 同时重写getter/setter。<br/>只重写getter会报错 | 错误                                          | 重写超类的抽象var |
 
 在当前类中，随时可以对`getter`与`setter`重新实现`var`，但在子类中不能通过
 `getter`与`setter`重新实现`var`，只能接受现有的实现。
@@ -933,6 +923,7 @@ Scala中字段与方法都可以用`final`修饰为不可重写（因为Scala的
 | obj.isInstanceOf[Clazz] | obj instanceof Clazz |
 | obj.asInstanceOf[Clazz] | (Clazz) obj          |
 | classOf[Clazz]          | Clazz.class          |
+| obj.getClass            | obj.getClass         |
 
 
 {{{class="brush: scala" 
@@ -942,15 +933,12 @@ val clazz2 = classOf[C]             // Scala method: classOf[C] ~ C.class
 val methods = clazz.getMethods      // method from java.lang.Class<T>
 }}}
 
-The `classOf[T]` method returns the runtime representation for a Scala type. It 
-is analogous to the Java expression T.class.
+类似于Java的`T.class`表达式，Scala的`classOf[T]`方法返回运行时表示的类。
 
-Using `classOf[T]` is convenient when you have a type that you want information 
-about, while `getClass` is convenient for retrieving the same information from 
-an instance of the type.
+* `classOf[T]`方法可以方便地取得类的相关信息。
+* `obj.getClass`成员方法可以取得当前实例的类信息。
 
-However, `classOf[T]` and `getClass` return slightly different values, 
-reflecting the effect of type erasure on the JVM, in the case of getClass.
+然而`classOf[T]`和`getClass`的返回结果会因为JVM的类型擦除机制而略有不同。
 
 {{{class="brush: scala" 
 scala> classOf[C]
@@ -960,7 +948,7 @@ scala> c.getClass
 res1: java.lang.Class[_] = class C
 }}}
 
-That is why the following will not work:
+这就是下面代码的结果与预期不同:
 
 {{{class="brush: scala" 
 val xClass: Class[X] = new X().getClass //it returns Class[_], nor Class[X]
@@ -968,12 +956,10 @@ val xClass: Class[X] = new X().getClass //it returns Class[_], nor Class[X]
 val integerClass: Class[Integer] = new Integer(5).getClass //similar error
 }}}
 
-There is a ticket regarding the return type of getClass.
+有一些与`getClass`方法相关的待修复错误，James Moore报告的错误在2001年标记为修复
+：
 
-James Moore reports that the ticket is "now", ie Nov. 2011, two years later, 
- fixed.
- 
-In 2.9.1, getClass now does:
+Scala 2.9.1版时`getClass`方法的效果：
 
 {{{class="brush: scala" 
 scala> "foo".getClass 
@@ -1870,7 +1856,7 @@ class ConsoleLogger extends Logger {
 
 ==== 需要重新编译 ====
 
-如果特质带有具体实现，那么这个物质一旦改变，所有已经混入该特质的类必须重新编译。
+如果特质带有具体实现，那么这个特质一旦改变，所有已经混入该特质的类必须重新编译。
 
 == 单例对象也可以扩展特质 ==
 
@@ -2610,7 +2596,7 @@ public class ShortLogger$class {
 被混入的类会有带`getter`和`setter`的`maxLength`字段，上面的构造器会被调用以初始
 化字段。
 
-如果物质扩展自某个超类，则伴生类并不继承这个超类。该超类会被任何实现该特质的类
+如果特质扩展自某个超类，则伴生类并不继承这个超类。该超类会被任何实现该特质的类
 继承。
 
 == 特质与类的差异 ==

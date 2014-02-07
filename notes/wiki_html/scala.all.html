@@ -16,12 +16,12 @@
 <link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
 
 
-<title>汇总</title>
+<title>Part I</title>
 </head>
 <body  onresize='changeTocSize()'>
 	<div class="note-main"> 
 
-<h1>汇总</h1>
+<h1>Part I</h1>
 <div class="toc">
 <ul>
 <li><a href="#toc_1">入门</a>
@@ -110,6 +110,10 @@
 <ul>
 <li><a href="#toc_6.1">单例对象</a>
 <li><a href="#toc_6.2">伴生对象</a>
+<ul>
+<li><a href="#toc_6.2.1">私有构造函数</a>
+<li><a href="#toc_6.2.2">伴生对象代替构造函数</a>
+</ul>
 <li><a href="#toc_6.3">与Java的区别</a>
 </ul>
 <li><a href="#toc_7">类与对象高级应用</a>
@@ -184,14 +188,13 @@
 <li><a href="#toc_9.7">占位符语法（Placeholder syntax）</a>
 <li><a href="#toc_9.8">部分应用函数（partially applied function）</a>
 <li><a href="#toc_9.9">闭包（Closures）</a>
-<li><a href="#toc_9.10">重复参数</a>
-<li><a href="#toc_9.11">尾递归（tail recursive）</a>
+<li><a href="#toc_9.10">尾递归（tail recursive）</a>
 <ul>
-<li><a href="#toc_9.11.1">跟踪尾递归函数</a>
-<li><a href="#toc_9.11.2">尾递归的局限</a>
+<li><a href="#toc_9.10.1">跟踪尾递归函数</a>
+<li><a href="#toc_9.10.2">尾递归的局限</a>
 </ul>
-<li><a href="#toc_9.12">蹦床</a>
-<li><a href="#toc_9.13">Execute Around Method 模式</a>
+<li><a href="#toc_9.11">蹦床</a>
+<li><a href="#toc_9.12">Execute Around Method 模式</a>
 </ul>
 <li><a href="#toc_10">动态成员</a>
 <ul>
@@ -3009,6 +3012,8 @@ println(res2)
 </pre>
 
 
+<h3 id="toc_6.2.1">私有构造函数</h3>
+
 <p>
 一个典型的应用场景是，把类的主构造器做成私有的，通过伴生对象来访问工厂方法：
 </p>
@@ -3036,6 +3041,8 @@ println(Marker getMarker "blue")
 println(Marker getMarker "red" )
 println(Marker getMarker "red" )
 </pre>
+
+<h3 id="toc_6.2.2">伴生对象代替构造函数</h3>
 
 <p>
 伴生对象把<code>对象名(参数表)</code>的形式转为<code>对象名.apply(参数表)</code>的调用，看起来像是一个
@@ -4700,6 +4707,11 @@ res2: String = [hello&gt;
 
 <h2 id="toc_9.2">变长参数</h2>
 
+<p>
+Scala允许你指明函数的最后一个参数可以是重复的。这可以允许客户向函数传入可变长度
+参数列表。想要标注一个重复参数，在参数的类型之后放一个星号。例如：
+</p>
+
 <pre class="brush: scala">
 def sum(args: Int*) = {
   var res = 0
@@ -4718,7 +4730,12 @@ s: Int = 55
 </pre>
 
 <p>
-但是不能把序列传入：
+函数内部，重复参数的类型是声明参数类型的数组。因此，echo函数里被声明为类型
+<code>String*</code>的args的类型实际上是<code>Array[String]</code>。
+</p>
+
+<p>
+但是不能把序列（列表或数组）传入：
 </p>
 
 <pre class="brush: scala">
@@ -4731,7 +4748,8 @@ scala&gt; val s = sum (1 to 5)
 </pre>
 
 <p>
-可能通过<code>: _*</code>声明类型不是序列而是多个参数：
+把序列转为多个参数的方法是序列实参后添加<code>:_*</code>符号（这三个之间还可以有空格），
+像这样：
 </p>
 
 <pre class="brush: scala">
@@ -4761,13 +4779,6 @@ val str = MessageFormat.format("The answer to {0} is {1}", "everything",
 		42.asInstanceOf[AnyRef])
 
 str: String = The answer to everything is 42
-</pre>
-
-
-
-
-
-<pre class="brush: scala">
 </pre>
 
 
@@ -5404,75 +5415,7 @@ Scala与指令式语言如Java关系近得多，在这些语言中没有应用�
 </p>
 
 
-<h2 id="toc_9.10">重复参数</h2>
-
-<p>
-Scala允许你指明函数的最后一个参数可以是重复的。这可以允许客户向函数传入可变长度
-参数列表。想要标注一个重复参数，在参数的类型之后放一个星号。例如：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; def echo(args: String*) = 
-       |   for (arg &lt;- args) println(arg)
-  echo: (String*)Unit 
-</pre>
-
-<p>
-这样定义，echo可以被零个至多个String参数调用：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; echo()
-
-  scala&gt; echo("one")
-  one
-
-  scala&gt; echo("hello", "world!")
-  hello
-  world! 
-</pre>
-
-<p>
-函数内部，重复参数的类型是声明参数类型的数组。因此，echo函数里被声明为类型
-<code>String*</code>的args的类型实际上是<code>Array[String]</code>。然而，如果你有一个合适类型的数组，
-并尝试把它当作重复参数传入，你会得到一个编译器错误：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val arr = Array("What's", "up", "doc?")
-  arr: Array[java.lang.String] = Array(What's, up, doc?)
-
-  scala&gt; echo(arr)
-  &lt;console&gt;:7: error: type mismatch;
-   found   : Array[java.lang.String]
-   required: String
-         echo(arr)
-              ^ 
-</pre>
-
-<p>
-要实现这个做法，你需要在数组参数后添加<code>:_*</code>符号（这三个之间还可以有空格），
-像这样：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; echo(arr:_*)
-  What's
-  up
-  doc? 
-  
-  scala&gt; echo(arr : _ *)
-  What's
-  up
-  doc? 
-</pre>
-
-<p>
-这个标注告诉编译器把<code>arr</code>的每个元素当作参数，而不是当作单一的参数传给<code>echo</code>。
-</p>
-
-
-<h2 id="toc_9.11">尾递归（tail recursive）</h2>
+<h2 id="toc_9.10">尾递归（tail recursive）</h2>
 
 <p>
 当函数递归时调用自己这个动作正好是整个函数的最后一个动作时，Scala编译器可以对其
@@ -5490,7 +5433,7 @@ Scala编译器检测到尾递归就用新值更新函数参数，然后把它替
 开销。
 </p>
 
-<h3 id="toc_9.11.1">跟踪尾递归函数</h3>
+<h3 id="toc_9.10.1">跟踪尾递归函数</h3>
 
 <p>
 尾递归函数将不会为每个调用制造新的堆栈框架；所有的调用将在一个框架内执行。所以在
@@ -5567,7 +5510,7 @@ Scala编译器检测到尾递归就用新值更新函数参数，然后把它替
   ... 
 </pre>
 
-<h3 id="toc_9.11.2">尾递归的局限</h3>
+<h3 id="toc_9.10.2">尾递归的局限</h3>
 
 <p>
 Scala里尾递归的使用局限很大，因为JVM指令集使实现更加先进的尾递归形式变得很困难。
@@ -5604,7 +5547,7 @@ Scala仅优化了直接递归调用使其返回同一个函数。如果递归是
 中间函数的情况。
 </p>
 
-<h2 id="toc_9.12">蹦床</h2>
+<h2 id="toc_9.11">蹦床</h2>
 
 <p>
 对于消除递归，有一个比尾递归更加通用的机制叫作“蹦床”。它通过一个循环不断地调用
@@ -5640,7 +5583,7 @@ object TailCallDemo extends App {
 调用时，用<code>result</code>方法取得结果：
 </p>
 
-<h2 id="toc_9.13">Execute Around Method 模式</h2>
+<h2 id="toc_9.12">Execute Around Method 模式</h2>
 
 <p>
 举个例子，对于资源<code>Resource</code>一定要执行善后工作<code>cleanUp</code>。这里把构造函数做成私有
@@ -6045,7 +5988,7 @@ p.showInfo(screenName="Unmi", email="fantasia@sina.com")
 </pre>
 
 <p>
-上面的代码可能太乘法了，加上参数表和参数类型可以更加好理解一些：
+上面的代码可能太抽象了，加上参数表和参数类型可以更加好理解一些：
 </p>
 
 <pre class="brush: scala">
@@ -6898,66 +6841,65 @@ Scala中字段与方法都可以用<code>final</code>修饰为不可重写（因
 详述：
 </p>
 
-<ul>
-<li>
-用val
 
-<ul>
-<li>
-重写val：
-
-<ul>
-<li>
-超类同名的私有字段
-
-<li>
-重写超类的getter方法
-
-</ul>
-<li>
-重写def：
-
-<ul>
-<li>
-子类有一个私有字段
-
-<li>
-重写超类的getter方法
-
-</ul>
-<li>
-重写var：错误
-
-</ul>
-<li>
-用def
-
-<ul>
-<li>
-重写val：错误
-
-<li>
-重写def：同Java
-
-<li>
-重写var：错误
-
-</ul>
-<li>
-用var
-
-<ul>
-<li>
-重写val：错误
-
-<li>
-重写def：同时重写getter/setter。只重写getter会报错
-
-<li>
-重写var：重写超类的抽象var
-
-</ul>
-</ul>
+<table>
+<tr>
+<th>
+&nbsp;
+</th>
+<th>
+def
+</th>
+<th>
+val
+</th>
+<th>
+var
+</th>
+</tr>
+<tr>
+<td>
+用val重写
+</td>
+<td>
+子类有一个私有字段。<br/>重写超类的getter方法
+</td>
+<td>
+超类同名的私有字段。<br/>重写超类的getter方法
+</td>
+<td>
+错误
+</td>
+</tr>
+<tr>
+<td>
+用def重写
+</td>
+<td>
+同Java
+</td>
+<td>
+错误
+</td>
+<td>
+错误
+</td>
+</tr>
+<tr>
+<td>
+用var重写
+</td>
+<td>
+同时重写getter/setter。<br/>只重写getter会报错
+</td>
+<td>
+错误
+</td>
+<td>
+重写超类的抽象var
+</td>
+</tr>
+</table>
 
 <p>
 在当前类中，随时可以对<code>getter</code>与<code>setter</code>重新实现<code>var</code>，但在子类中不能通过
@@ -6999,6 +6941,14 @@ classOf[Clazz]
 Clazz.class
 </td>
 </tr>
+<tr>
+<td>
+obj.getClass
+</td>
+<td>
+obj.getClass
+</td>
+</tr>
 </table>
 
 
@@ -7010,19 +6960,20 @@ val methods = clazz.getMethods      // method from java.lang.Class&lt;T&gt;
 </pre>
 
 <p>
-The <code>classOf[T]</code> method returns the runtime representation for a Scala type. It 
-is analogous to the Java expression T.class.
+类似于Java的<code>T.class</code>表达式，Scala的<code>classOf[T]</code>方法返回运行时表示的类。
 </p>
 
-<p>
-Using <code>classOf[T]</code> is convenient when you have a type that you want information 
-about, while <code>getClass</code> is convenient for retrieving the same information from 
-an instance of the type.
-</p>
+<ul>
+<li>
+<code>classOf[T]</code>方法可以方便地取得类的相关信息。
+
+<li>
+<code>obj.getClass</code>成员方法可以取得当前实例的类信息。
+
+</ul>
 
 <p>
-However, <code>classOf[T]</code> and <code>getClass</code> return slightly different values, 
-reflecting the effect of type erasure on the JVM, in the case of getClass.
+然而<code>classOf[T]</code>和<code>getClass</code>的返回结果会因为JVM的类型擦除机制而略有不同。
 </p>
 
 <pre class="brush: scala">
@@ -7034,7 +6985,7 @@ res1: java.lang.Class[_] = class C
 </pre>
 
 <p>
-That is why the following will not work:
+这就是下面代码的结果与预期不同:
 </p>
 
 <pre class="brush: scala">
@@ -7044,16 +6995,12 @@ val integerClass: Class[Integer] = new Integer(5).getClass //similar error
 </pre>
 
 <p>
-There is a ticket regarding the return type of getClass.
+有一些与<code>getClass</code>方法相关的待修复错误，James Moore报告的错误在2001年标记为修复
+：
 </p>
 
 <p>
-James Moore reports that the ticket is "now", ie Nov. 2011, two years later, 
- fixed.
-</p>
- 
-<p>
-In 2.9.1, getClass now does:
+Scala 2.9.1版时<code>getClass</code>方法的效果：
 </p>
 
 <pre class="brush: scala">
@@ -8166,7 +8113,7 @@ class ConsoleLogger extends Logger {
 <h4 id="toc_14.1.4.1">需要重新编译</h4>
 
 <p>
-如果特质带有具体实现，那么这个物质一旦改变，所有已经混入该特质的类必须重新编译。
+如果特质带有具体实现，那么这个特质一旦改变，所有已经混入该特质的类必须重新编译。
 </p>
 
 <h2 id="toc_14.2">单例对象也可以扩展特质</h2>
@@ -9120,7 +9067,7 @@ public class ShortLogger$class {
 </p>
 
 <p>
-如果物质扩展自某个超类，则伴生类并不继承这个超类。该超类会被任何实现该特质的类
+如果特质扩展自某个超类，则伴生类并不继承这个超类。该超类会被任何实现该特质的类
 继承。
 </p>
 
@@ -13145,10 +13092,6 @@ Scala所有的正则表达式都定义了抽取器，可以用来鉴别匹配于
 
 
 
-
-
-
-
 <h1 id="toc_21">使用列表</h1>
 
 <h2 id="toc_21.1">列表字面量</h2>
@@ -16330,11 +16273,6 @@ str.foldLeft(Set[Char]())(_ + _)
 <p>
 产出的结果是一个<code>str</code>里所有不同的字符集。
 </p>
-
-
-
-
-
 
 
 
@@ -20234,7 +20172,6 @@ scala&gt; val chars: List[Char] = "xyz"
 
 
 
-
 <h1 id="toc_26">泛型与类型转换高级应用</h1>
 
 <h2 id="toc_26.1">多重界定</h2>
@@ -23793,7 +23730,7 @@ Scala没有序列化框架，但准备了三个注解：
 
 <ul>
 <li>
-<code>@serializable</code>表示可序列化（已经过时，应扩展<code>scala.Serializable物质</code>）。
+<code>@serializable</code>表示可序列化（已经过时，应扩展<code>scala.Serializable</code>特质）。
 
 <li>
 <code>@SerialVersionUID(version)</code>标明序列化的版本号。<code>version</code>是数字版本号。
@@ -25789,7 +25726,7 @@ new RuleTransformer(rule1, rule2, rule3)
 </pre>
 
 <p>
-但食谱物质遇到了问题：
+但食谱特质遇到了问题：
 </p>
 
 <pre class="brush: scala">
@@ -26940,13 +26877,6 @@ asdfa
       41 + numer
     ) + denom
 </pre>
-
-
-
-
-
-
-
 
 
 

@@ -111,6 +111,10 @@
 <ul>
 <li><a href="#toc_6.1">单例对象</a>
 <li><a href="#toc_6.2">伴生对象</a>
+<ul>
+<li><a href="#toc_6.2.1">私有构造函数</a>
+<li><a href="#toc_6.2.2">伴生对象代替构造函数</a>
+</ul>
 <li><a href="#toc_6.3">与Java的区别</a>
 </ul>
 <li><a href="#toc_7">类与对象高级应用</a>
@@ -185,14 +189,13 @@
 <li><a href="#toc_9.7">占位符语法（Placeholder syntax）</a>
 <li><a href="#toc_9.8">部分应用函数（partially applied function）</a>
 <li><a href="#toc_9.9">闭包（Closures）</a>
-<li><a href="#toc_9.10">重复参数</a>
-<li><a href="#toc_9.11">尾递归（tail recursive）</a>
+<li><a href="#toc_9.10">尾递归（tail recursive）</a>
 <ul>
-<li><a href="#toc_9.11.1">跟踪尾递归函数</a>
-<li><a href="#toc_9.11.2">尾递归的局限</a>
+<li><a href="#toc_9.10.1">跟踪尾递归函数</a>
+<li><a href="#toc_9.10.2">尾递归的局限</a>
 </ul>
-<li><a href="#toc_9.12">蹦床</a>
-<li><a href="#toc_9.13">Execute Around Method 模式</a>
+<li><a href="#toc_9.11">蹦床</a>
+<li><a href="#toc_9.12">Execute Around Method 模式</a>
 </ul>
 </ul>
 </div>
@@ -940,7 +943,7 @@ Luft
 </p>
 
 <p>
-虽然都提供了<code>+=()</code>方法添加元素，但只可变实现都是返回一个新的对象。
+虽然都提供了<code>+=()</code>方法添加元素，但不可变实现都是返回一个新的对象。
 </p>
 
 <h3 id="toc_3.6.1">Set</h3>
@@ -2204,6 +2207,8 @@ println(res2)
 </pre>
 
 
+<h3 id="toc_6.2.1">私有构造函数</h3>
+
 <p>
 一个典型的应用场景是，把类的主构造器做成私有的，通过伴生对象来访问工厂方法：
 </p>
@@ -2231,6 +2236,8 @@ println(Marker getMarker "blue")
 println(Marker getMarker "red" )
 println(Marker getMarker "red" )
 </pre>
+
+<h3 id="toc_6.2.2">伴生对象代替构造函数</h3>
 
 <p>
 伴生对象把<code>对象名(参数表)</code>的形式转为<code>对象名.apply(参数表)</code>的调用，看起来像是一个
@@ -3895,6 +3902,11 @@ res2: String = [hello&gt;
 
 <h2 id="toc_9.2">变长参数</h2>
 
+<p>
+Scala允许你指明函数的最后一个参数可以是重复的。这可以允许客户向函数传入可变长度
+参数列表。想要标注一个重复参数，在参数的类型之后放一个星号。例如：
+</p>
+
 <pre class="brush: scala">
 def sum(args: Int*) = {
   var res = 0
@@ -3913,7 +3925,12 @@ s: Int = 55
 </pre>
 
 <p>
-但是不能把序列传入：
+函数内部，重复参数的类型是声明参数类型的数组。因此，echo函数里被声明为类型
+<code>String*</code>的args的类型实际上是<code>Array[String]</code>。
+</p>
+
+<p>
+但是不能把序列（列表或数组）传入：
 </p>
 
 <pre class="brush: scala">
@@ -3926,7 +3943,8 @@ scala&gt; val s = sum (1 to 5)
 </pre>
 
 <p>
-可能通过<code>: _*</code>声明类型不是序列而是多个参数：
+把序列转为多个参数的方法是序列实参后添加<code>:_*</code>符号（这三个之间还可以有空格），
+像这样：
 </p>
 
 <pre class="brush: scala">
@@ -3956,13 +3974,6 @@ val str = MessageFormat.format("The answer to {0} is {1}", "everything",
 		42.asInstanceOf[AnyRef])
 
 str: String = The answer to everything is 42
-</pre>
-
-
-
-
-
-<pre class="brush: scala">
 </pre>
 
 
@@ -4599,75 +4610,7 @@ Scala与指令式语言如Java关系近得多，在这些语言中没有应用�
 </p>
 
 
-<h2 id="toc_9.10">重复参数</h2>
-
-<p>
-Scala允许你指明函数的最后一个参数可以是重复的。这可以允许客户向函数传入可变长度
-参数列表。想要标注一个重复参数，在参数的类型之后放一个星号。例如：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; def echo(args: String*) = 
-       |   for (arg &lt;- args) println(arg)
-  echo: (String*)Unit 
-</pre>
-
-<p>
-这样定义，echo可以被零个至多个String参数调用：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; echo()
-
-  scala&gt; echo("one")
-  one
-
-  scala&gt; echo("hello", "world!")
-  hello
-  world! 
-</pre>
-
-<p>
-函数内部，重复参数的类型是声明参数类型的数组。因此，echo函数里被声明为类型
-<code>String*</code>的args的类型实际上是<code>Array[String]</code>。然而，如果你有一个合适类型的数组，
-并尝试把它当作重复参数传入，你会得到一个编译器错误：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; val arr = Array("What's", "up", "doc?")
-  arr: Array[java.lang.String] = Array(What's, up, doc?)
-
-  scala&gt; echo(arr)
-  &lt;console&gt;:7: error: type mismatch;
-   found   : Array[java.lang.String]
-   required: String
-         echo(arr)
-              ^ 
-</pre>
-
-<p>
-要实现这个做法，你需要在数组参数后添加<code>:_*</code>符号（这三个之间还可以有空格），
-像这样：
-</p>
-
-<pre class="brush: scala">
-  scala&gt; echo(arr:_*)
-  What's
-  up
-  doc? 
-  
-  scala&gt; echo(arr : _ *)
-  What's
-  up
-  doc? 
-</pre>
-
-<p>
-这个标注告诉编译器把<code>arr</code>的每个元素当作参数，而不是当作单一的参数传给<code>echo</code>。
-</p>
-
-
-<h2 id="toc_9.11">尾递归（tail recursive）</h2>
+<h2 id="toc_9.10">尾递归（tail recursive）</h2>
 
 <p>
 当函数递归时调用自己这个动作正好是整个函数的最后一个动作时，Scala编译器可以对其
@@ -4685,7 +4628,7 @@ Scala编译器检测到尾递归就用新值更新函数参数，然后把它替
 开销。
 </p>
 
-<h3 id="toc_9.11.1">跟踪尾递归函数</h3>
+<h3 id="toc_9.10.1">跟踪尾递归函数</h3>
 
 <p>
 尾递归函数将不会为每个调用制造新的堆栈框架；所有的调用将在一个框架内执行。所以在
@@ -4762,7 +4705,7 @@ Scala编译器检测到尾递归就用新值更新函数参数，然后把它替
   ... 
 </pre>
 
-<h3 id="toc_9.11.2">尾递归的局限</h3>
+<h3 id="toc_9.10.2">尾递归的局限</h3>
 
 <p>
 Scala里尾递归的使用局限很大，因为JVM指令集使实现更加先进的尾递归形式变得很困难。
@@ -4799,7 +4742,7 @@ Scala仅优化了直接递归调用使其返回同一个函数。如果递归是
 中间函数的情况。
 </p>
 
-<h2 id="toc_9.12">蹦床</h2>
+<h2 id="toc_9.11">蹦床</h2>
 
 <p>
 对于消除递归，有一个比尾递归更加通用的机制叫作“蹦床”。它通过一个循环不断地调用
@@ -4835,7 +4778,7 @@ object TailCallDemo extends App {
 调用时，用<code>result</code>方法取得结果：
 </p>
 
-<h2 id="toc_9.13">Execute Around Method 模式</h2>
+<h2 id="toc_9.12">Execute Around Method 模式</h2>
 
 <p>
 举个例子，对于资源<code>Resource</code>一定要执行善后工作<code>cleanUp</code>。这里把构造函数做成私有

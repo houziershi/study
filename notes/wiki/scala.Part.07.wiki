@@ -188,7 +188,7 @@ Scala里用不着这些getter和setter方法，是为了某些框架而需要的
 
 Scala没有序列化框架，但准备了三个注解：
 
-* `@serializable`表示可序列化（已经过时，应扩展`scala.Serializable物质`）。
+* `@serializable`表示可序列化（已经过时，应扩展`scala.Serializable`特质）。
 * `@SerialVersionUID(version)`标明序列化的版本号。`version`是数字版本号。
 * `@transient`标明类里的某个字段不应该被序列化。
 
@@ -1767,7 +1767,7 @@ new RuleTransformer(rule1, rule2, rule3)
   }
 }}}
 
-但食谱物质遇到了问题：
+但食谱特质遇到了问题：
 
 {{{class="brush: scala"
   trait SimpleRecipes { // Does not compile

@@ -509,7 +509,7 @@ p.showInfo(screenName="Unmi", email="fantasia@sina.com")
 </pre>
 
 <p>
-上面的代码可能太乘法了，加上参数表和参数类型可以更加好理解一些：
+上面的代码可能太抽象了，加上参数表和参数类型可以更加好理解一些：
 </p>
 
 <pre class="brush: scala">
@@ -1362,66 +1362,65 @@ Scala中字段与方法都可以用<code>final</code>修饰为不可重写（因
 详述：
 </p>
 
-<ul>
-<li>
-用val
 
-<ul>
-<li>
-重写val：
-
-<ul>
-<li>
-超类同名的私有字段
-
-<li>
-重写超类的getter方法
-
-</ul>
-<li>
-重写def：
-
-<ul>
-<li>
-子类有一个私有字段
-
-<li>
-重写超类的getter方法
-
-</ul>
-<li>
-重写var：错误
-
-</ul>
-<li>
-用def
-
-<ul>
-<li>
-重写val：错误
-
-<li>
-重写def：同Java
-
-<li>
-重写var：错误
-
-</ul>
-<li>
-用var
-
-<ul>
-<li>
-重写val：错误
-
-<li>
-重写def：同时重写getter/setter。只重写getter会报错
-
-<li>
-重写var：重写超类的抽象var
-
-</ul>
-</ul>
+<table>
+<tr>
+<th>
+&nbsp;
+</th>
+<th>
+def
+</th>
+<th>
+val
+</th>
+<th>
+var
+</th>
+</tr>
+<tr>
+<td>
+用val重写
+</td>
+<td>
+子类有一个私有字段。<br/>重写超类的getter方法
+</td>
+<td>
+超类同名的私有字段。<br/>重写超类的getter方法
+</td>
+<td>
+错误
+</td>
+</tr>
+<tr>
+<td>
+用def重写
+</td>
+<td>
+同Java
+</td>
+<td>
+错误
+</td>
+<td>
+错误
+</td>
+</tr>
+<tr>
+<td>
+用var重写
+</td>
+<td>
+同时重写getter/setter。<br/>只重写getter会报错
+</td>
+<td>
+错误
+</td>
+<td>
+重写超类的抽象var
+</td>
+</tr>
+</table>
 
 <p>
 在当前类中，随时可以对<code>getter</code>与<code>setter</code>重新实现<code>var</code>，但在子类中不能通过
@@ -1463,6 +1462,14 @@ classOf[Clazz]
 Clazz.class
 </td>
 </tr>
+<tr>
+<td>
+obj.getClass
+</td>
+<td>
+obj.getClass
+</td>
+</tr>
 </table>
 
 
@@ -1474,19 +1481,20 @@ val methods = clazz.getMethods      // method from java.lang.Class&lt;T&gt;
 </pre>
 
 <p>
-The <code>classOf[T]</code> method returns the runtime representation for a Scala type. It 
-is analogous to the Java expression T.class.
+类似于Java的<code>T.class</code>表达式，Scala的<code>classOf[T]</code>方法返回运行时表示的类。
 </p>
 
-<p>
-Using <code>classOf[T]</code> is convenient when you have a type that you want information 
-about, while <code>getClass</code> is convenient for retrieving the same information from 
-an instance of the type.
-</p>
+<ul>
+<li>
+<code>classOf[T]</code>方法可以方便地取得类的相关信息。
+
+<li>
+<code>obj.getClass</code>成员方法可以取得当前实例的类信息。
+
+</ul>
 
 <p>
-However, <code>classOf[T]</code> and <code>getClass</code> return slightly different values, 
-reflecting the effect of type erasure on the JVM, in the case of getClass.
+然而<code>classOf[T]</code>和<code>getClass</code>的返回结果会因为JVM的类型擦除机制而略有不同。
 </p>
 
 <pre class="brush: scala">
@@ -1498,7 +1506,7 @@ res1: java.lang.Class[_] = class C
 </pre>
 
 <p>
-That is why the following will not work:
+这就是下面代码的结果与预期不同:
 </p>
 
 <pre class="brush: scala">
@@ -1508,16 +1516,12 @@ val integerClass: Class[Integer] = new Integer(5).getClass //similar error
 </pre>
 
 <p>
-There is a ticket regarding the return type of getClass.
+有一些与<code>getClass</code>方法相关的待修复错误，James Moore报告的错误在2001年标记为修复
+：
 </p>
 
 <p>
-James Moore reports that the ticket is "now", ie Nov. 2011, two years later, 
- fixed.
-</p>
- 
-<p>
-In 2.9.1, getClass now does:
+Scala 2.9.1版时<code>getClass</code>方法的效果：
 </p>
 
 <pre class="brush: scala">
@@ -2630,7 +2634,7 @@ class ConsoleLogger extends Logger {
 <h4 id="toc_5.1.4.1">需要重新编译</h4>
 
 <p>
-如果特质带有具体实现，那么这个物质一旦改变，所有已经混入该特质的类必须重新编译。
+如果特质带有具体实现，那么这个特质一旦改变，所有已经混入该特质的类必须重新编译。
 </p>
 
 <h2 id="toc_5.2">单例对象也可以扩展特质</h2>
@@ -3584,7 +3588,7 @@ public class ShortLogger$class {
 </p>
 
 <p>
-如果物质扩展自某个超类，则伴生类并不继承这个超类。该超类会被任何实现该特质的类
+如果特质扩展自某个超类，则伴生类并不继承这个超类。该超类会被任何实现该特质的类
 继承。
 </p>
 

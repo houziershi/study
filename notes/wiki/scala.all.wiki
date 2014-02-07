@@ -1,6 +1,6 @@
-%title 汇总
+%title Part I
 
-%toc 汇总
+%toc Part I
 
 
 = 入门 =
@@ -1635,6 +1635,8 @@ println(res2)
 }}}
 
 
+=== 私有构造函数 ===
+
 一个典型的应用场景是，把类的主构造器做成私有的，通过伴生对象来访问工厂方法：
 
 {{{class="brush: scala"
@@ -1660,6 +1662,8 @@ println(Marker getMarker "blue")
 println(Marker getMarker "red" )
 println(Marker getMarker "red" )
 }}}
+
+=== 伴生对象代替构造函数 ===
 
 伴生对象把`对象名(参数表)`的形式转为`对象名.apply(参数表)`的调用，看起来像是一个
 不用`new`的构造函数：
@@ -2979,6 +2983,9 @@ res2: String = [hello>
 
 == 变长参数 ==
 
+Scala允许你指明函数的最后一个参数可以是重复的。这可以允许客户向函数传入可变长度
+参数列表。想要标注一个重复参数，在参数的类型之后放一个星号。例如：
+
 {{{class="brush: scala"
 def sum(args: Int*) = {
   var res = 0
@@ -2994,7 +3001,10 @@ scala> val s = sum (1,4,9,16,25)
 s: Int = 55
 }}}
 
-但是不能把序列传入：
+函数内部，重复参数的类型是声明参数类型的数组。因此，echo函数里被声明为类型
+`String*`的args的类型实际上是`Array[String]`。
+
+但是不能把序列（列表或数组）传入：
 
 {{{class="brush: scala"
 scala> val s = sum (1 to 5)
@@ -3005,7 +3015,8 @@ scala> val s = sum (1 to 5)
                       ^
 }}}
 
-可能通过`: _*`声明类型不是序列而是多个参数：
+把序列转为多个参数的方法是序列实参后添加`:_*`符号（这三个之间还可以有空格），
+像这样：
 
 {{{class="brush: scala"
 scala> val s = sum(1 to 5: _*)
@@ -3030,13 +3041,6 @@ val str = MessageFormat.format("The answer to {0} is {1}", "everything",
 		42.asInstanceOf[AnyRef])
 
 str: String = The answer to everything is 42
-}}}
-
-
-
-
-
-{{{class="brush: scala"
 }}}
 
 
@@ -3547,64 +3551,6 @@ Scala与指令式语言如Java关系近得多，在这些语言中没有应用�
 变量：val，var，或参数。
 
 
-== 重复参数 ==
-
-Scala允许你指明函数的最后一个参数可以是重复的。这可以允许客户向函数传入可变长度
-参数列表。想要标注一个重复参数，在参数的类型之后放一个星号。例如：
-
-{{{class="brush: scala"
-  scala> def echo(args: String*) = 
-       |   for (arg <- args) println(arg)
-  echo: (String*)Unit 
-}}}
-
-这样定义，echo可以被零个至多个String参数调用：
-
-{{{class="brush: scala"
-  scala> echo()
-
-  scala> echo("one")
-  one
-
-  scala> echo("hello", "world!")
-  hello
-  world! 
-}}}
-
-函数内部，重复参数的类型是声明参数类型的数组。因此，echo函数里被声明为类型
-`String*`的args的类型实际上是`Array[String]`。然而，如果你有一个合适类型的数组，
-并尝试把它当作重复参数传入，你会得到一个编译器错误：
-
-{{{class="brush: scala"
-  scala> val arr = Array("What's", "up", "doc?")
-  arr: Array[java.lang.String] = Array(What's, up, doc?)
-
-  scala> echo(arr)
-  <console>:7: error: type mismatch;
-   found   : Array[java.lang.String]
-   required: String
-         echo(arr)
-              ^ 
-}}}
-
-要实现这个做法，你需要在数组参数后添加`:_*`符号（这三个之间还可以有空格），
-像这样：
-
-{{{class="brush: scala"
-  scala> echo(arr:_*)
-  What's
-  up
-  doc? 
-  
-  scala> echo(arr : _ *)
-  What's
-  up
-  doc? 
-}}}
-
-这个标注告诉编译器把`arr`的每个元素当作参数，而不是当作单一的参数传给`echo`。
-
-
 == 尾递归（tail recursive） ==
 
 当函数递归时调用自己这个动作正好是整个函数的最后一个动作时，Scala编译器可以对其
@@ -4037,7 +3983,7 @@ p.showInfo(screenName="Unmi", email="fantasia@sina.com")
     filesMatching(query, _.matches(_)) 
 }}}
 
-上面的代码可能太乘法了，加上参数表和参数类型可以更加好理解一些：
+上面的代码可能太抽象了，加上参数表和参数类型可以更加好理解一些：
 
 {{{class="brush: scala"
   // _.endsWith(_)
@@ -4697,22 +4643,12 @@ Scala中字段与方法都可以用`final`修饰为不可重写（因为Scala的
 
 详述：
 
-* 用val
-	- 重写val：
-		* 超类同名的私有字段
-		* 重写超类的getter方法
-	- 重写def：
-		* 子类有一个私有字段
-		* 重写超类的getter方法
-	- 重写var：错误
-* 用def
-	- 重写val：错误
-	- 重写def：同Java
-	- 重写var：错误
-* 用var
-	- 重写val：错误
-	- 重写def：同时重写getter/setter。只重写getter会报错
-	- 重写var：重写超类的抽象var
+
+|           | def                                            | val                                           | var               |
+|-----------|------------------------------------------------|-----------------------------------------------|-------------------|
+| 用val重写 | 子类有一个私有字段。<br/>重写超类的getter方法  | 超类同名的私有字段。<br/>重写超类的getter方法 | 错误              |
+| 用def重写 | 同Java                                         | 错误                                          | 错误              |
+| 用var重写 | 同时重写getter/setter。<br/>只重写getter会报错 | 错误                                          | 重写超类的抽象var |
 
 在当前类中，随时可以对`getter`与`setter`重新实现`var`，但在子类中不能通过
 `getter`与`setter`重新实现`var`，只能接受现有的实现。
@@ -4724,6 +4660,7 @@ Scala中字段与方法都可以用`final`修饰为不可重写（因为Scala的
 | obj.isInstanceOf[Clazz] | obj instanceof Clazz |
 | obj.asInstanceOf[Clazz] | (Clazz) obj          |
 | classOf[Clazz]          | Clazz.class          |
+| obj.getClass            | obj.getClass         |
 
 
 {{{class="brush: scala" 
@@ -4733,15 +4670,12 @@ val clazz2 = classOf[C]             // Scala method: classOf[C] ~ C.class
 val methods = clazz.getMethods      // method from java.lang.Class<T>
 }}}
 
-The `classOf[T]` method returns the runtime representation for a Scala type. It 
-is analogous to the Java expression T.class.
+类似于Java的`T.class`表达式，Scala的`classOf[T]`方法返回运行时表示的类。
 
-Using `classOf[T]` is convenient when you have a type that you want information 
-about, while `getClass` is convenient for retrieving the same information from 
-an instance of the type.
+* `classOf[T]`方法可以方便地取得类的相关信息。
+* `obj.getClass`成员方法可以取得当前实例的类信息。
 
-However, `classOf[T]` and `getClass` return slightly different values, 
-reflecting the effect of type erasure on the JVM, in the case of getClass.
+然而`classOf[T]`和`getClass`的返回结果会因为JVM的类型擦除机制而略有不同。
 
 {{{class="brush: scala" 
 scala> classOf[C]
@@ -4751,7 +4685,7 @@ scala> c.getClass
 res1: java.lang.Class[_] = class C
 }}}
 
-That is why the following will not work:
+这就是下面代码的结果与预期不同:
 
 {{{class="brush: scala" 
 val xClass: Class[X] = new X().getClass //it returns Class[_], nor Class[X]
@@ -4759,12 +4693,10 @@ val xClass: Class[X] = new X().getClass //it returns Class[_], nor Class[X]
 val integerClass: Class[Integer] = new Integer(5).getClass //similar error
 }}}
 
-There is a ticket regarding the return type of getClass.
+有一些与`getClass`方法相关的待修复错误，James Moore报告的错误在2001年标记为修复
+：
 
-James Moore reports that the ticket is "now", ie Nov. 2011, two years later, 
- fixed.
- 
-In 2.9.1, getClass now does:
+Scala 2.9.1版时`getClass`方法的效果：
 
 {{{class="brush: scala" 
 scala> "foo".getClass 
@@ -5661,7 +5593,7 @@ class ConsoleLogger extends Logger {
 
 ==== 需要重新编译 ====
 
-如果特质带有具体实现，那么这个物质一旦改变，所有已经混入该特质的类必须重新编译。
+如果特质带有具体实现，那么这个特质一旦改变，所有已经混入该特质的类必须重新编译。
 
 == 单例对象也可以扩展特质 ==
 
@@ -6401,7 +6333,7 @@ public class ShortLogger$class {
 被混入的类会有带`getter`和`setter`的`maxLength`字段，上面的构造器会被调用以初始
 化字段。
 
-如果物质扩展自某个超类，则伴生类并不继承这个超类。该超类会被任何实现该特质的类
+如果特质扩展自某个超类，则伴生类并不继承这个超类。该超类会被任何实现该特质的类
 继承。
 
 == 特质与类的差异 ==
@@ -9654,10 +9586,6 @@ Scala所有的正则表达式都定义了抽取器，可以用来鉴别匹配于
 
 
 
-
-
-
-
 = 使用列表 =
 
 == 列表字面量 ==
@@ -11782,11 +11710,6 @@ str.foldLeft(Set[Char]())(_ + _)
 }}}
 
 产出的结果是一个`str`里所有不同的字符集。
-
-
-
-
-
 
 
 
@@ -14867,7 +14790,6 @@ scala> val chars: List[Char] = "xyz"
 
 
 
-
 = 泛型与类型转换高级应用 =
 
 == 多重界定 ==
@@ -17613,7 +17535,7 @@ Scala里用不着这些getter和setter方法，是为了某些框架而需要的
 
 Scala没有序列化框架，但准备了三个注解：
 
-* `@serializable`表示可序列化（已经过时，应扩展`scala.Serializable物质`）。
+* `@serializable`表示可序列化（已经过时，应扩展`scala.Serializable`特质）。
 * `@SerialVersionUID(version)`标明序列化的版本号。`version`是数字版本号。
 * `@transient`标明类里的某个字段不应该被序列化。
 
@@ -19192,7 +19114,7 @@ new RuleTransformer(rule1, rule2, rule3)
   }
 }}}
 
-但食谱物质遇到了问题：
+但食谱特质遇到了问题：
 
 {{{class="brush: scala"
   trait SimpleRecipes { // Does not compile
@@ -20130,13 +20052,6 @@ asdfa
       41 + numer
     ) + denom
 }}}
-
-
-
-
-
-
-
 
 
 
