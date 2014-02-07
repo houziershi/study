@@ -34,8 +34,10 @@ h1, h2, h3, h4, h5, h6 {
    cursor: text;
    position: relative; }
 
-h1:hover a.anchor, h2:hover a.anchor, h3:hover a.anchor, h4:hover a.anchor, h5:hover a.anchor, h6:hover a.anchor {
-   text-decoration: none; }
+h1:hover a.anchor, h2:hover a.anchor, h3:hover a.anchor, 
+h4:hover a.anchor, h5:hover a.anchor, h6:hover a.anchor {
+   text-decoration: none;
+ }
 
 h1 tt, h1 code { font-size: inherit; }
 h2 tt, h2 code { font-size: inherit; }
@@ -44,12 +46,39 @@ h4 tt, h4 code { font-size: inherit; }
 h5 tt, h5 code { font-size: inherit; }
 h6 tt, h6 code { font-size: inherit; }
 
-h1 { font-size: 28px; text-align: center; margin: 50px 0 10px; }
-h2 { font-size: 24px; border-bottom: 1px solid #cccccc;}
-h3 { font-size: 18px; }
+h1 {
+	background-color: rgba(176, 188, 254, 0.35);
+	border-radius: 5px;
+	box-shadow: 3px 3px 5px #333333;
+	clear: both;
+	color: #0000FE;
+
+	display: inline-block;
+
+	font-size: 40pt;
+	font-weight: normal;
+	line-height: 60px;
+	margin-bottom: 21px;
+	padding: 8px 7px;
+	text-align: center;
+	text-shadow: 2px 2px 2px #000000;
+}
+h2 { font-size: 24px; 
+	background-color: rgba(176, 188, 254, 0.85);
+	border-radius: 5px;
+	box-shadow: 3px 3px 5px #333333;
+	clear: both;
+	color: #FFFFFE;
+	font-size: medium;
+	line-height: 1.3em;
+	text-align: center;
+	padding: 4px;
+	text-shadow: 2px 2px 2px #000000;
+}
+h3 { font-size: 18px; border-bottom: 1px solid #cccccc;}
 h4 { font-size: 16px; }
 h5 { font-size: 14px; }
-h6 { color: #777777; font-size: 14px; }
+h6 { font-size: 14px; color: #777777; }
 
 p, blockquote, ul, ol, dl, li, table, pre { margin: 15px 0; }
 

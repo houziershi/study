@@ -1,0 +1,323 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/jquery-1.4.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/3rd-libs/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/3rd-libs/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/templates/code-default/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/templates/code-default/styles/style.css" />
+
+
+<title>CSS代码风格</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+<h1>CSS代码风格</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">规则性能</a>
+<li><a href="#toc_2">避免过度约束</a>
+<li><a href="#toc_3">后代选择符最烂</a>
+<li><a href="#toc_4">避免链式（交集）选择符</a>
+<li><a href="#toc_5">坚持KISS原则</a>
+<li><a href="#toc_6">使用复合（紧凑）语法</a>
+<li><a href="#toc_7">避免不必要的命名空间</a>
+<li><a href="#toc_8">避免不必要的重复</a>
+<li><a href="#toc_9">尽可能精简规则</a>
+<li><a href="#toc_10">避免不明确的命名约定</a>
+<li><a href="#toc_11">避免 !importants</a>
+<li><a href="#toc_12">遵循一个标准的声明顺序</a>
+<li><a href="#toc_13">组织好的代码格式</a>
+</ul>
+</div>
+
+<h1 id="toc_1">规则性能</h1>
+
+<p>
+编写好的CSS代码，有助提升页面的渲染速度。本质上，引擎需要解析的CSS规则越少，
+性能越好。MDN上将CSS选择符归类成四个主要类别，如下所示，性能依次降低。
+</p>
+
+<ul>
+<li>
+ID 规则
+
+<li>
+Class 规则
+
+<li>
+标签规则
+
+<li>
+通用规则
+
+</ul>
+
+<p>
+对效率的普遍认识是从Steve Souders在2009年出版的
+<a href="http://click.union.360buy.com/JdClick/?unionId=16231&amp;to=http://book.360buy.com/10067740.html">《高性能网站建设进阶指南》</a>
+开始，虽然该书中罗列的更加详细，但你也可以在
+<a href="http://csswizardry.com/2011/09/writing-efficient-css-selectors/">这里</a>
+查看完整的引用列表，
+也可以在谷歌的
+<a href="https://developers.google.com/speed/docs/best-practices/rendering\#UseEfficientCSSSelectors">《高效CSS选择器的最佳实践》</a>
+中查看更多的细节。
+</p>
+
+<p>
+本文我想分享一些我在编写高性能CSS中用到的简单例子和指南。这些都是受到MDN 编写的
+高效CSS指南的启发，并遵循类似的格式。
+</p>
+
+<h1 id="toc_2">避免过度约束</h1>
+
+<p>
+一条普遍规则，不要添加不必要的约束。
+</p>
+
+<pre class="brush: css">
+// 糟糕
+ul#someid {..}
+.menu#otherid{..}
+ 
+// 好的
+#someid {..}
+#otherid {..}
+</pre>
+ 
+<h1 id="toc_3">后代选择符最烂</h1>
+
+<p>
+不仅性能低下而且代码很脆弱，html代码和css代码严重耦合，html代码结构发生变化时，
+CSS也得修改，这是多么糟糕，特别是在大公司里，写html和css的往往不是同一个人。
+</p>
+
+<pre class="brush: css">
+// 烂透了
+html div tr td {..}
+</pre>
+ 
+<h1 id="toc_4">避免链式（交集）选择符</h1>
+
+<p>
+这和过度约束的情况类似，更明智的做法是简单的创建一个新的CSS类选择符。
+</p>
+
+<pre class="brush: css">
+// 糟糕
+.menu.left.icon {..}
+ 
+// 好的
+.menu-left-icon {..}
+</pre>
+
+<h1 id="toc_5">坚持KISS原则</h1>
+
+<p>
+想象我们有如下的DOM：
+</p>
+
+<pre class="brush: html">
+&lt;ul id="navigator"&gt;
+    &lt;li&gt;&lt;a href="#" class="twitter"&gt;Twitter&lt;/a&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;a href="#" class="facebook"&gt;Facebook&lt;/a&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;a href="#" class="dribble"&gt;Dribbble&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</pre>
+
+<p>
+下面是对应的规则……
+</p>
+
+<pre class="brush: css">
+// 糟糕
+#navigator li a {..}
+ 
+// 好的
+#navigator {..}
+</pre>
+
+<h1 id="toc_6">使用复合（紧凑）语法</h1>
+
+<p>
+尽可能使用复合语法。
+</p>
+
+<pre class="brush: css">
+// 糟糕
+.someclass {
+ padding-top: 20px;
+ padding-bottom: 20px;
+ padding-left: 10px;
+ padding-right: 10px;
+ background: #000;
+ background-image: url(../imgs/carrot.png);
+ background-position: bottom;
+ background-repeat: repeat-x;
+}
+ 
+// 好的
+.someclass {
+ padding: 20px 10px 20px 10px;
+ background: #000 url(../imgs/carrot.png) repeat-x bottom;
+}
+</pre>
+
+ 
+<h1 id="toc_7">避免不必要的命名空间</h1>
+
+<pre class="brush: css">
+// 糟糕
+.someclass table tr.otherclass td.somerule {..}
+ 
+//好的
+.someclass .otherclass td.somerule {..}
+</pre>
+ 
+<h1 id="toc_8">避免不必要的重复</h1>
+
+<pre class="brush: css">
+尽可能组合重复的规则。
+
+// 糟糕
+.someclass {
+ color: red;
+ background: blue;
+ font-size: 15px;
+}
+ 
+.otherclass {
+ color: red;
+ background: blue;
+ font-size: 15px;
+}
+ 
+// 好的
+.someclass, .otherclass {
+ color: red;
+ background: blue;
+ font-size: 15px;
+}
+</pre>
+
+<h1 id="toc_9">尽可能精简规则</h1>
+
+<p>
+在上面规则的基础上，你可以进一步合并不同类里的重复的规则。
+</p>
+
+<pre class="brush: css">
+// 糟糕
+.someclass {
+ color: red;
+ background: blue;
+ height: 150px;
+ width: 150px;
+ font-size: 16px;
+}
+ 
+.otherclass {
+ color: red;
+ background: blue;
+ height: 150px;
+ width: 150px;
+ font-size: 8px;
+}
+ 
+// 好的
+.someclass, .otherclass {
+ color: red;
+ background: blue;
+ height: 150px;
+ width: 150px;
+}
+ 
+.someclass {
+ font-size: 16px;
+}
+ 
+.otherclass {
+ font-size: 8px;
+}
+</pre>
+
+<h1 id="toc_10">避免不明确的命名约定</h1>
+
+<p>
+最好使用表示语义的名字。一个好的CSS类名应描述它是什么而不是它像什么。
+</p>
+
+<h1 id="toc_11">避免 !importants</h1>
+
+<p>
+其实你应该也可以使用其他优质的选择器。
+</p>
+
+<h1 id="toc_12">遵循一个标准的声明顺序</h1>
+
+<p>
+虽然有一些排列CSS属性顺序常见的方式，下面是我遵循的一种流行方式。
+</p>
+
+<pre class="brush: css">
+.someclass {
+ /* Positioning */
+ /* Display &amp; Box Model */
+ /* Background and typography styles */
+ /* Transitions */
+ /* Other */
+}
+</pre>
+
+
+<h1 id="toc_13">组织好的代码格式</h1>
+
+<p>
+代码的易读性和易维护性成正比。下面是我遵循的格式化方法。
+</p>
+
+<pre class="brush: css">
+// 糟糕
+.someclass-a, .someclass-b, .someclass-c, .someclass-d {
+ ...
+}
+ 
+// 好的
+.someclass-a,
+.someclass-b,
+.someclass-c,
+.someclass-d {
+ ...
+}
+ 
+// 好的做法
+.someclass {
+    background-image:
+        linear-gradient(#000, #ccc),
+        linear-gradient(#ccc, #ddd);
+    box-shadow:
+        2px 2px 2px #000,
+        1px 4px 1px 1px #ddd inset;
+}
+</pre>
+
+<p>
+显然，这里只讲述了少数的规则，是我在我自己的CSS中，本着更高效和更易维护性而尝试
+遵循的规则。如果你想阅读更多的知识，我建议阅读MDN上的
+<a href="https://developer.mozilla.org/en-US/docs/Web/Guide/CSS/Writing_efficient_CSS">编写高效的CSS</a>
+和谷歌的
+<a href="https://developers.google.com/speed/docs/best-practices/rendering\#UseEfficientCSSSelectors">优化浏览器渲染指南</a>
+。
+</p>
+ </div>
+</body>
+</html>
