@@ -1989,10 +1989,9 @@ trait TimestampLogger extends Logger {
 }
 }}}
 
-再来看一个例子
+再来看一个例子：
 
 在基类方法为抽象时情况比较复杂。比如下面这个抽象`Writer`类的抽象方法
-
 `writeMessage()`：
 
 {{{class="brush: scala"
