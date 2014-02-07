@@ -49,13 +49,12 @@ h5 tt, h5 code { font-size: inherit; }
 h6 tt, h6 code { font-size: inherit; }
 
 h1 {
-	font-size: 40px; 
+	font-size: 28px; 
 	background-color: #0067BA;
 	border-radius: 5px;
 	box-shadow: 3px 3px 5px #333333;
 	clear: both;
 	color: #FFFFFF;
-	font-size: medium;
 	line-height: 1.3em;
 	margin: 20px auto;
 	padding: 4px;
