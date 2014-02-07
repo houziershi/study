@@ -5,7 +5,7 @@
 
 基础：[[javascript.base]]
 
-正则：[[javascript.time]]
+风格：[[javascript.style]]
 
 正则：[[javascript.regex]]
 
