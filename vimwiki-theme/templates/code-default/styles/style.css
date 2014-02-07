@@ -47,23 +47,21 @@ h5 tt, h5 code { font-size: inherit; }
 h6 tt, h6 code { font-size: inherit; }
 
 h1 {
-	background-color: rgba(176, 188, 254, 0.35);
+	font-size: 40px; 
+	background-color: #69AB01;
 	border-radius: 5px;
 	box-shadow: 3px 3px 5px #333333;
 	clear: both;
-	color: #0000FE;
-
-	display: inline-block;
-
-	font-size: 40pt;
-	font-weight: normal;
-	line-height: 60px;
-	margin-bottom: 21px;
-	padding: 8px 7px;
+	color: #FFFFFF;
+	font-size: medium;
+	line-height: 1.3em;
+	margin: 20px auto;
+	padding: 4px;
 	text-align: center;
 	text-shadow: 2px 2px 2px #000000;
 }
-h2 { font-size: 24px; 
+h2 {
+	font-size: 24px; 
 	background-color: rgba(176, 188, 254, 0.85);
 	border-radius: 5px;
 	box-shadow: 3px 3px 5px #333333;
