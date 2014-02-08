@@ -21,7 +21,6 @@
 <body  onresize='changeTocSize()'>
 	<div class="note-main"> 
 
-
 <h1>Part III</h1>
 <div class="toc">
 <ul>
@@ -52,6 +51,12 @@
 <li><a href="#toc_2.2">private</a>
 <li><a href="#toc_2.3">protected</a>
 <li><a href="#toc_2.4">保护的范围</a>
+<ul>
+<li><a href="#toc_2.4.1">扩大范围到包：<code>private[包名]</code></a>
+<li><a href="#toc_2.4.2">指向外围类、对象：<code>private[类或对象]</code></a>
+<li><a href="#toc_2.4.3">添加指定包、类、对象：<code>protected[包或类或对象]</code></a>
+<li><a href="#toc_2.4.4">只能当前实例访问：<code>private[this]</code></a>
+</ul>
 <li><a href="#toc_2.5">伴生对象的可见度性</a>
 </ul>
 <li><a href="#toc_3">断言</a>
@@ -158,9 +163,6 @@
 </ul>
 </ul>
 </div>
-
-
-
 
 <h1 id="toc_1">包和引用</h1>
 
@@ -572,63 +574,66 @@ Scala与Java对访问修饰符的对待方式有一些重要的差异。
 <h2 id="toc_2.1">public</h2>
 
 <p>
-没有任何标记就是公开的，可以在任何地方被访问。与Java中默认是<code>protected</code>不同，
-Scala中默认是<code>public</code>的。
+Scala中没有任何标记默认是<code>public</code>的就是公开的。与Java中默认是<code>protected</code>不同，
 </p>
 
 
 <h2 id="toc_2.2">private</h2>
 
-<p>
-标记为<code>private</code>的成员仅在包含了成员定义的类或对象内部可见。不仅如此，Scala中还
-可以进一步限制只在当前的实例中可见。
-</p>
+<ul>
+<li>
+Scala的<code>private</code>只在当前的实例中可见。与Java的同一类可见不同。
 
-<p>
-不同于Java，Scala里这个规则同样应用到了内部类上。这种方式更一致。
-</p>
+<li>
+Scala里这个规则同样应用到了内部类上。这种方式更一致。这点与Java不同，
+	Java会允许这两种访问因为它允许外部类访问其内部类的私有成员。
 
-<pre class="brush: scala">
-  class Outer {
-    class Inner {
-      private def f() { println("f") }
-      class InnerMost {
-        f() // OK
-      }
-    }
-    (new Inner).f() // error: f is not accessible
-  } 
+</ul>
+
+<pre class="brush: scala; highlight: [3, 5, 8]">
+class Outer {
+	class Inner {
+		private def f() { println("f") }   // Only accessable in class "Inner"
+		class InnerMost {
+			f()                              // OK: Inside Class "Inner"
+		}
+	}
+	(new Inner).f()                      // error: f is not accessible
+} 
 </pre>
 
-<p>
-Scala里，<code>(new Inner).f()</code>访问非法，因为<code>f</code>在<code>Inner</code>中被声明为<code>private</code>所以类
-<code>Inner</code>外面不能被访问。相反，类<code>InnerMost</code>里访问<code>f</code>没有问题，因为这个访问包含在
-<code>Inner</code>类之内。
-</p>
+<ul>
+<li>
+<code>(new Inner).f()</code>访问非法，因为<code>f</code>在<code>Inner</code>中被声明为<code>private</code>所以类<code>Inner</code>
+	外面不能被访问。
 
-<p>
-这点与Java不同，Java会允许这两种访问因为它允许外部类访问其内部类的私有成员。
-</p>
+<li>
+相反，类<code>InnerMost</code>里访问<code>f</code>没有问题，因为这个访问包含在<code>Inner</code>类之内。
+
+</ul>
 
 <h2 id="toc_2.3">protected</h2>
 
 <p>
-Java中<code>protected</code>可以被子类或同一个包中的类访问。Scala里，只在定义了成员的类的
-子类中可以被访问，同一包中的其他类不能访问。
+Scala里<code>protected</code>只能被子类访问，和Java不一样，Java中可以被子类或同一个包中的类
+访问。
 </p>
 
-<pre class="brush: scala">
-  package p {
-    class Super {
-      protected def f() { println("f") }
-    }
-    class Sub extends Super {
-      f()
-    }
-    class Other {
-      (new Super).f()  // error: f is not accessible
-    }
-  } 
+<pre class="brush: scala; highlight: [4, 8, 12]">
+package p {
+
+	class Super {
+		protected def f() { println("f") }  // Only accessable in sub-class
+	}
+
+	class Sub extends Super {
+		f()                                 // OK, in sub-class
+	}
+
+	class Other {
+		(new Super).f()                     // error:  not sub-class, same packet
+	}
+} 
 </pre>
 
 <h2 id="toc_2.4">保护的范围</h2>
@@ -644,31 +649,45 @@ Scala里的访问修饰符可以通过使用修饰词增加。格式为<code>pri
 同样的技巧在Java里是不可能的：
 </p>
 
-<pre class="brush: scala">
- package bobsrockets {
-   package navigation {
-     private[bobsrockets] class Navigator { 
-       protected[navigation] def useStarChart() {}
-       class LegOfJourney {
-         private[Navigator] val distance = 100
-       }
-       private[this] var speed = 200
-     }
-   }
-   package launch {
-     import navigation._
-     object Vehicle { 
-       private[launch] val guide = new Navigator
-     }
-   }
- } 
+<pre class="brush: scala; highlight: [4, 5, 7, 8, 10, 18]">
+package bobsrockets {
+	package navigation {
+	
+		private[bobsrockets] class Navigator {         // acc in bobsrockets pkg
+			protected[navigation] def useStarChart() {}  // like Java pprotected
+			class LegOfJourney {
+				private[Navigator]    val distance = 100   // like java private
+				private[LegOfJourney] val days = 100       // like scala private
+			}
+			private[this] var speed = 200                // acc same instance
+		}
+
+	}
+	package launch {
+		import navigation._
+
+		object Vehicle { 
+			private[launch] val guide = new Navigator   // accessable in launch pkg
+		}
+
+	}
+} 
 </pre>
+
+<h3 id="toc_2.4.1">扩大范围到包：<code>private[包名]</code></h3>
 
 <p>
 类<code>Navigator</code>被标记为<code>private[bobsrockets]</code>。这就是说这个类对包含在<code>bobsrockets</code>
-包的所有的类和对象可见。特别是对象<code>Vehicle</code>里对<code>Navigator</code>的访问被允许，因为
-<code>Vehicle</code>包含在包<code>launch</code>中，而<code>launch</code>包在<code>bobsrockets</code>中。另一方面，包
-<code>bobsrockets</code>包之外的所有代码都不能访问类Navigator。
+包的所有的类和对象可见。
+</p>
+
+<p>
+特别是对象<code>Vehicle</code>里对<code>Navigator</code>的访问被允许，因为<code>Vehicle</code>包含在包<code>launch</code>中
+，而<code>launch</code>包在<code>bobsrockets</code>中。
+</p>
+
+<p>
+另一方面，包<code>bobsrockets</code>包之外的所有代码都不能访问类<code>Navigator</code>。
 </p>
 
 <p>
@@ -676,77 +695,48 @@ Scala里的访问修饰符可以通过使用修饰词增加。格式为<code>pri
 这样的例子。这种访问修饰符等价于Java的包私有访问。
 </p>
 
-<table>
-<tr>
-<th>
-没有修饰符
-</th>
-<th>
-公开访问
-</th>
-</tr>
-<tr>
-<td>
-Private[bobsrockets]
-</td>
-<td>
-在外部包中访问
-</td>
-</tr>
-<tr>
-<td>
-Private[navigation]
-</td>
-<td>
-与Java的包可见度相同
-</td>
-</tr>
-<tr>
-<td>
-Private[Navigator]
-</td>
-<td>
-与Java的private相同
-</td>
-</tr>
-<tr>
-<td>
-Private[LegOfJourney]
-</td>
-<td>
-与Scala的private相同
-</td>
-</tr>
-<tr>
-<td>
-Private[this]
-</td>
-<td>
-仅在类的同一个实例中可以访问
-</td>
-</tr>
-</table>
-
+<h3 id="toc_2.4.2">指向外围类、对象：<code>private[类或对象]</code></h3>
 
 <p>
-所有的修饰词也可以用在<code>protected</code>上，与<code>private</code>意思相同。也就是说，类<code>C</code>的
-<code>protected[X]</code>修饰符允许<code>C</code>的所有子类和外围的包、类、或对象<code>X</code>访问被标记的定义。
+<code>private</code>的修饰词还能指向外围类或对象。
+</p>
+
+<p>
+例如<code>LegOfJourney</code>里的<code>distance</code>变量被标记为<code>private[Navigator]</code>，
+因此它在类<code>Navigator</code>的任何地方都可见。
+</p>
+
+<p>
+这与Java里的内部类的私有成员具有同样的访问能力。<code>private[C]</code>里的<code>C</code>如果是最外层
+的类，那么<code>private</code>的意思和Java一致。
+</p>
+
+<h3 id="toc_2.4.3">添加指定包、类、对象：<code>protected[包或类或对象]</code></h3>
+
+<p>
+所有的修饰词也可以用在<code>protected</code>上，与<code>private</code>意思相同。
+</p>
+
+<p>
+也就是说，类<code>C</code>的<code>protected[X]</code>修饰符允许<code>C</code>的所有子类和外围的包、类、或对象<code>X</code>
+访问被标记的定义。
+</p>
+
+<p>
 例如，<code>useStarChart</code>方法在<code>Navigator</code>所有子类以及包含在<code>navigation</code>包里的所有
 代码能够被访问。这与Java的protected意思完全一致。
 </p>
 
-<p>
-<code>Private</code>的修饰词还能指向外围类或对象。例如<code>LegOfJourney</code>里的<code>distance</code>变量被
-标记为<code>private[Navigator]</code>，因此它在类<code>Navigator</code>的任何地方都可见。这与Java里的
-内部类的私有成员具有同样的访问能力。<code>private[C]</code>里的<code>C</code>如果是最外层类，那么
-<code>private</code>的意思和Java一致。
-</p>
+<h3 id="toc_2.4.4">只能当前实例访问：<code>private[this]</code></h3>
 
 <p>
 Scala还具有一种比<code>private</code>更严格的访问修饰符。被<code>private[this]</code>标记的定义仅能在
-包含了定义的同一个实例中被访问。这种定义被称为对象私有（object-private）。例如，
-代码13.11中，类<code>Navigator</code>的的<code>speed</code>定义就是对象私有的。这就是说所有的访问必须
-不仅是在<code>Navigator</code>类里，而且还要是同一个<code>Navigator</code>实例发生的。
+包含了定义的同一个实例中被访问。这种定义被称为对象私有（object-private）。
+</p>
+
+<p>
+例如，代码13.11中，类<code>Navigator</code>的的<code>speed</code>定义就是对象私有的。这就是说所有的
+访问必须不仅是在<code>Navigator</code>类里，而且还要是同一个<code>Navigator</code>实例发生的。
 </p>
 
 <p>

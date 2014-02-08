@@ -1,9 +1,6 @@
-
 %title Part VI
 
 %toc Part VI
-
-
 
 = 泛型与类型转换高级应用 =
 
@@ -2559,8 +2556,6 @@ for表达式的实现是基于`map`、`flatMap`、`filter`这些高阶函数。�
 
 函数式编程里个概念叫单体（monad）有很广泛地应用，包括从集合、IO操作、状态操作、
 回溯计算及交易等。`map`、`flatMap`、`filter`这三个方法可以用来定制单体功能。
-
-
 
 
 

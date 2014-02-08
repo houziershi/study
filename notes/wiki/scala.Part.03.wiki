@@ -1,10 +1,6 @@
-
 %title Part III
 
 %toc Part III
-
-
-
 
 = 包和引用 =
 
@@ -323,52 +319,51 @@ Scala与Java对访问修饰符的对待方式有一些重要的差异。
 
 == public ==
 
-没有任何标记就是公开的，可以在任何地方被访问。与Java中默认是`protected`不同，
-Scala中默认是`public`的。
+Scala中没有任何标记默认是`public`的就是公开的。与Java中默认是`protected`不同，
 
 
 == private ==
 
-标记为`private`的成员仅在包含了成员定义的类或对象内部可见。不仅如此，Scala中还
-可以进一步限制只在当前的实例中可见。
+* Scala的`private`只在当前的实例中可见。与Java的同一类可见不同。
+* Scala里这个规则同样应用到了内部类上。这种方式更一致。这点与Java不同，
+	Java会允许这两种访问因为它允许外部类访问其内部类的私有成员。
 
-不同于Java，Scala里这个规则同样应用到了内部类上。这种方式更一致。
-
-{{{class="brush: scala"
-  class Outer {
-    class Inner {
-      private def f() { println("f") }
-      class InnerMost {
-        f() // OK
-      }
-    }
-    (new Inner).f() // error: f is not accessible
-  } 
+{{{class="brush: scala; highlight: [3, 5, 8]"
+class Outer {
+	class Inner {
+		private def f() { println("f") }   // Only accessable in class "Inner"
+		class InnerMost {
+			f()                              // OK: Inside Class "Inner"
+		}
+	}
+	(new Inner).f()                      // error: f is not accessible
+} 
 }}}
 
-Scala里，`(new Inner).f()`访问非法，因为`f`在`Inner`中被声明为`private`所以类
-`Inner`外面不能被访问。相反，类`InnerMost`里访问`f`没有问题，因为这个访问包含在
-`Inner`类之内。
-
-这点与Java不同，Java会允许这两种访问因为它允许外部类访问其内部类的私有成员。
+* `(new Inner).f()`访问非法，因为`f`在`Inner`中被声明为`private`所以类`Inner`
+	外面不能被访问。
+* 相反，类`InnerMost`里访问`f`没有问题，因为这个访问包含在`Inner`类之内。
 
 == protected ==
 
-Java中`protected`可以被子类或同一个包中的类访问。Scala里，只在定义了成员的类的
-子类中可以被访问，同一包中的其他类不能访问。
+Scala里`protected`只能被子类访问，和Java不一样，Java中可以被子类或同一个包中的类
+访问。
 
-{{{class="brush: scala"
-  package p {
-    class Super {
-      protected def f() { println("f") }
-    }
-    class Sub extends Super {
-      f()
-    }
-    class Other {
-      (new Super).f()  // error: f is not accessible
-    }
-  } 
+{{{class="brush: scala; highlight: [4, 8, 12]"
+package p {
+
+	class Super {
+		protected def f() { println("f") }  // Only accessable in sub-class
+	}
+
+	class Sub extends Super {
+		f()                                 // OK, in sub-class
+	}
+
+	class Other {
+		(new Super).f()                     // error:  not sub-class, same packet
+	}
+} 
 }}}
 
 == 保护的范围 ==
@@ -380,57 +375,71 @@ Scala里的访问修饰符可以通过使用修饰词增加。格式为`private[
 这样允许定义一些在你项目的若干子包中可见但对于项目外部的客户却始终不可见的东西。
 同样的技巧在Java里是不可能的：
 
-{{{class="brush: scala"
- package bobsrockets {
-   package navigation {
-     private[bobsrockets] class Navigator { 
-       protected[navigation] def useStarChart() {}
-       class LegOfJourney {
-         private[Navigator] val distance = 100
-       }
-       private[this] var speed = 200
-     }
-   }
-   package launch {
-     import navigation._
-     object Vehicle { 
-       private[launch] val guide = new Navigator
-     }
-   }
- } 
+{{{class="brush: scala; highlight: [4, 5, 7, 8, 10, 18]"
+package bobsrockets {
+	package navigation {
+	
+		private[bobsrockets] class Navigator {         // acc in bobsrockets pkg
+			protected[navigation] def useStarChart() {}  // like Java pprotected
+			class LegOfJourney {
+				private[Navigator]    val distance = 100   // like java private
+				private[LegOfJourney] val days = 100       // like scala private
+			}
+			private[this] var speed = 200                // acc same instance
+		}
+
+	}
+	package launch {
+		import navigation._
+
+		object Vehicle { 
+			private[launch] val guide = new Navigator   // accessable in launch pkg
+		}
+
+	}
+} 
 }}}
 
+=== 扩大范围到包：`private[包名]` ===
+
 类`Navigator`被标记为`private[bobsrockets]`。这就是说这个类对包含在`bobsrockets`
-包的所有的类和对象可见。特别是对象`Vehicle`里对`Navigator`的访问被允许，因为
-`Vehicle`包含在包`launch`中，而`launch`包在`bobsrockets`中。另一方面，包
-`bobsrockets`包之外的所有代码都不能访问类Navigator。
+包的所有的类和对象可见。
+
+特别是对象`Vehicle`里对`Navigator`的访问被允许，因为`Vehicle`包含在包`launch`中
+，而`launch`包在`bobsrockets`中。
+
+另一方面，包`bobsrockets`包之外的所有代码都不能访问类`Navigator`。
 
 `private`修饰词同样可以直接是外围包。对象`Vehicle`类的`guide`对象的访问修饰符是
 这样的例子。这种访问修饰符等价于Java的包私有访问。
 
-| 没有修饰符            | 公开访问                     |
-|-----------------------|------------------------------|
-| Private[bobsrockets]  | 在外部包中访问               |
-| Private[navigation]   | 与Java的包可见度相同         |
-| Private[Navigator]    | 与Java的private相同          |
-| Private[LegOfJourney] | 与Scala的private相同         |
-| Private[this]         | 仅在类的同一个实例中可以访问 |
+=== 指向外围类、对象：`private[类或对象]` ===
 
+`private`的修饰词还能指向外围类或对象。
 
-所有的修饰词也可以用在`protected`上，与`private`意思相同。也就是说，类`C`的
-`protected[X]`修饰符允许`C`的所有子类和外围的包、类、或对象`X`访问被标记的定义。
+例如`LegOfJourney`里的`distance`变量被标记为`private[Navigator]`，
+因此它在类`Navigator`的任何地方都可见。
+
+这与Java里的内部类的私有成员具有同样的访问能力。`private[C]`里的`C`如果是最外层
+的类，那么`private`的意思和Java一致。
+
+=== 添加指定包、类、对象：`protected[包或类或对象]` ===
+
+所有的修饰词也可以用在`protected`上，与`private`意思相同。
+
+也就是说，类`C`的`protected[X]`修饰符允许`C`的所有子类和外围的包、类、或对象`X`
+访问被标记的定义。
+
 例如，`useStarChart`方法在`Navigator`所有子类以及包含在`navigation`包里的所有
 代码能够被访问。这与Java的protected意思完全一致。
 
-`Private`的修饰词还能指向外围类或对象。例如`LegOfJourney`里的`distance`变量被
-标记为`private[Navigator]`，因此它在类`Navigator`的任何地方都可见。这与Java里的
-内部类的私有成员具有同样的访问能力。`private[C]`里的`C`如果是最外层类，那么
-`private`的意思和Java一致。
+=== 只能当前实例访问：`private[this]` ===
 
 Scala还具有一种比`private`更严格的访问修饰符。被`private[this]`标记的定义仅能在
-包含了定义的同一个实例中被访问。这种定义被称为对象私有（object-private）。例如，
-代码13.11中，类`Navigator`的的`speed`定义就是对象私有的。这就是说所有的访问必须
-不仅是在`Navigator`类里，而且还要是同一个`Navigator`实例发生的。
+包含了定义的同一个实例中被访问。这种定义被称为对象私有（object-private）。
+
+例如，代码13.11中，类`Navigator`的的`speed`定义就是对象私有的。这就是说所有的
+访问必须不仅是在`Navigator`类里，而且还要是同一个`Navigator`实例发生的。
 
 因此在`Navigator`内访问`speed`和`this.speed`是合法的。然而以下的访问，将不被允许
 ，即使它发生在`Navigator`类之中：
@@ -2925,9 +2934,6 @@ Scala所有的正则表达式都定义了抽取器，可以用来鉴别匹配于
   sign: null, integer: 99, decimal: null
   sign: null, integer: 3, decimal: null
 }}}
-
-
-
 
 
 

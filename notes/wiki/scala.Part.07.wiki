@@ -1,5 +1,3 @@
-
-
 %title Part VII
 
 %toc Part VII
@@ -2705,15 +2703,6 @@ asdfa
       41 + numer
     ) + denom
 }}}
-
-
-
-
-
-
-
-
-
 
 
 

@@ -1,4 +1,3 @@
-
 %title Scala入门
 
 %toc Scala入门

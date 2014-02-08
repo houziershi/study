@@ -2211,7 +2211,7 @@ trait LoggedException {
 Scala还可以通过自身类型（self type），限制只能被混入到指定的类中：
 
 {{{class="brush: scala"
-this: MyType =>
+this: SuperType =>
 }}}
 
 保证特质只能被混入`MyType`的子类中。
@@ -2219,7 +2219,7 @@ this: MyType =>
 例如，要根据现有的日志工具类`Logged`扩展出一个适用于异常日志的`LoggedException`
 ：
 
-{{{class="brush: scala"
+{{{class="brush: scala; highlight: [2]"
 trait LoggedException extends Logged {
 	this: Exception =>
 		def log() { log(getMessage()) }
@@ -2227,7 +2227,6 @@ trait LoggedException extends Logged {
 }}}
 
 因为限制在`Exception`的子类中，所以可以保证肯定会有`getMessage()`方法。
-
 
 通过`this: Type`来限制类型比继承超类的版本更加灵活。可以避免两个彼此需要的特质
 循环依赖。
@@ -2248,7 +2247,7 @@ trait ManagedException extends LoggedException {
 
 如果把`this`改成别的名字那么在子类中还可以使用这个别名。如：
 
-{{{class="brush: scala"
+{{{class="brush: scala; highlight: [2]"
 trait Group {
 	outer: Network =>
 		class Member { ... }
@@ -2266,7 +2265,7 @@ trait Group {
 
 自身类型也可以不给出类名，而用结构类型(structural type)来说明要有指定方法：
 
-{{{class="brush: scala"
+{{{class="brush: scala; highlight: [2]"
 trait LoggedException extends Logged {
 	this: { def getMessage(): String} =>
 		def log() { log(getMessage()) }
@@ -2275,7 +2274,7 @@ trait LoggedException extends Logged {
 
 这样就可以混入任何有`getMessage`方法的类了。
 
-{{{class="brush: scala"
+{{{class="brush: scala; highlight: [2]"
 trait LoggedException extends Logged {
 	this: { def getMessage(): String }=>
 		def log() { log(getMessage()) }
@@ -2608,7 +2607,7 @@ public class ShortLogger$class {
 * 特质不能有构造器参数。
 * 特质的`super`引用是动态的。
 
-但是下面定义特质的尝试将遭到失败：
+比如是下面定义特质有构造参数，所以不能通过编译：
 
 {{{class="brush: scala"
   trait NoPoint(x: Int, y: Int) // Does not compile

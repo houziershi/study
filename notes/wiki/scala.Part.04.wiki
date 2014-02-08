@@ -1,9 +1,6 @@
-
 %title Part IV
 
 %toc Part IV
-
-
 
 = 使用列表 =
 
@@ -2129,11 +2126,6 @@ str.foldLeft(Set[Char]())(_ + _)
 }}}
 
 产出的结果是一个`str`里所有不同的字符集。
-
-
-
-
-
 
 
 
