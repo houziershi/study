@@ -2022,6 +2022,8 @@ match { case first :: second :: rest => doSth() }
    ....
 }}}
 
+=== 偏函数定义 ===
+
 如果要检查一个偏函数是否有定义，一定要告诉编译器正在使用的函数是偏函数。类型
 `Lint[Int] => Int`包含了不管是否是偏函数的，从整数列表到整数的所有函数。仅包含
 整数列表到的偏函数的，应该写成`Partialfunction[List[Int],Int]`。
@@ -2514,6 +2516,7 @@ x   1.5
 ，是对Email类实现的抽象`apply`方法的声明。这样可以把Email传递给需要
 `Function2[String,String]`的方法。
 
+=== unapply返回类型为Option ===
 
 注意`unapply`方法返回类型是`Option`。因为输入参数可能不是正确的email格式。
 
@@ -2522,6 +2525,7 @@ x   1.5
   unapply("John Doe")  equals  None
 }}}
 
+=== unapply与模式匹配 ===
 
 现在，当模式匹配到抽取器对象指定的模式就会在选择器表达式中调用抽取器的`unapply`
 方法。如下面的代码：
@@ -2545,6 +2549,8 @@ x   1.5
   val x: Any = ...
   x match { case EMail(user, domain) => ... }
 }}}
+
+=== apply与unapply应该有对偶关系 ===
 
 一般来说如果包含了注入方法，那应该与抽取方法成对偶关系。如调用：
 

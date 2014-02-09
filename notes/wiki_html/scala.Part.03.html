@@ -138,7 +138,8 @@
 <ul>
 <li><a href="#toc_5.10.1">变量定义</a>
 <li><a href="#toc_5.10.2">偏函数的样本序列</a>
-<li><a href="#toc_5.10.3">for表达式</a>
+<li><a href="#toc_5.10.3">偏函数定义</a>
+<li><a href="#toc_5.10.4">for表达式</a>
 </ul>
 <li><a href="#toc_5.11">大型的例子</a>
 </ul>
@@ -146,6 +147,11 @@
 <ul>
 <li><a href="#toc_6.1">例子：抽取email地址</a>
 <li><a href="#toc_6.2">抽取器</a>
+<ul>
+<li><a href="#toc_6.2.1">unapply返回类型为Option</a>
+<li><a href="#toc_6.2.2">unapply与模式匹配</a>
+<li><a href="#toc_6.2.3">apply与unapply应该有对偶关系</a>
+</ul>
 <li><a href="#toc_6.3">只有1个或没有变量的模式</a>
 <li><a href="#toc_6.4">可变参数的抽取器</a>
 <li><a href="#toc_6.5">抽取器和序列模式</a>
@@ -2648,6 +2654,8 @@ match { case first :: second :: rest =&gt; doSth() }
    ....
 </pre>
 
+<h3 id="toc_5.10.3">偏函数定义</h3>
+
 <p>
 如果要检查一个偏函数是否有定义，一定要告诉编译器正在使用的函数是偏函数。类型
 <code>Lint[Int] =&gt; Int</code>包含了不管是否是偏函数的，从整数列表到整数的所有函数。仅包含
@@ -2712,7 +2720,7 @@ Scala在编译器在把这样的表达式转为偏函数时会对模式进行两
 偏函数可能会引起运行时的异常，所以在调用前用<code>isDefineAt</code>检查一下。
 </p>
 
-<h3 id="toc_5.10.3">for表达式</h3>
+<h3 id="toc_5.10.4">for表达式</h3>
 
 <p>
 来看一个典型的例子：每个元素都是<code>(country,city)</code>：
@@ -3230,6 +3238,7 @@ x   1.5
 <code>Function2[String,String]</code>的方法。
 </p>
 
+<h3 id="toc_6.2.1">unapply返回类型为Option</h3>
 
 <p>
 注意<code>unapply</code>方法返回类型是<code>Option</code>。因为输入参数可能不是正确的email格式。
@@ -3240,6 +3249,7 @@ x   1.5
   unapply("John Doe")  equals  None
 </pre>
 
+<h3 id="toc_6.2.2">unapply与模式匹配</h3>
 
 <p>
 现在，当模式匹配到抽取器对象指定的模式就会在选择器表达式中调用抽取器的<code>unapply</code>
@@ -3271,6 +3281,8 @@ x   1.5
   val x: Any = ...
   x match { case EMail(user, domain) =&gt; ... }
 </pre>
+
+<h3 id="toc_6.2.3">apply与unapply应该有对偶关系</h3>
 
 <p>
 一般来说如果包含了注入方法，那应该与抽取方法成对偶关系。如调用：
