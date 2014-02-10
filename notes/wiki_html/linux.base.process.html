@@ -46,6 +46,9 @@
 </ul>
 <li><a href="#toc_3">free</a>
 <li><a href="#toc_4">kill</a>
+<ul>
+<li><a href="#toc_4.1">不要用kill -9</a>
+</ul>
 <li><a href="#toc_5">pkill</a>
 </ul>
 </div>
@@ -265,6 +268,57 @@ root@tecmint:~# kill 1285
 <p>
 注意:每次你重新运行一个进程或者启动系统,每个进程都会生成一个新的<code>PID</code>.你可以使用
 <code>ps</code>命令获得当前运行进程的<code>PID</code>.
+</p>
+
+<h2 id="toc_4.1">不要用kill -9</h2>
+
+<p>
+Perl语言专家Randal Schwartz在一篇短文里这样写： 
+</p>
+
+<p>
+no no no.不要使用kill -9。它没有给进程留下善后的机会：
+</p>
+
+<ul>
+<li>
+关闭socket链接
+
+<li>
+清理临时文件
+
+<li>
+将自己将要被销毁的消息通知给子进程
+
+<li>
+重置自己的终止状态
+
+</ul>
+
+<p>
+等等。
+</p>
+
+<p>
+通常，应该发送15，等一两秒钟，如果没效果，发送2，如果还不行，发送1。如果还不行，
+那你应该把那个程序删掉，因为那个程序写的太烂了！
+</p>
+
+<p>
+不要使用<code>kill -9</code>。不要用收割机来修剪花盆里的花。
+</p>
+
+<p>
+总之，在使用<code>kill -9</code>前，你应该先使用<code>kill -15</code>，给目标进程一个清理善后工作的
+机会。(进程也许无法捕捉或直接忽略SIGKILL信号，但它们可以，通常也是能够捕捉
+SIGTERM信号的。)。如果你不留机会让进程完成清理工作，它们会留下一些不完整的文件或
+状态，当系统重启时，程序将无法理解这些状态。
+</p>
+
+<p>
+<code>strace</code>/<code>truss</code>，<code>ltrace</code>和<code>gdb</code>都是查看一个卡住的进程因何卡住的好工具。(
+Solaris里的<code>truss -u</code>非常好用；)Solaris里还有一些非常有用的<code>/proc</code>相关的工具，
+有一些已经被移植到了Linux上。
 </p>
 
 <h1 id="toc_5">pkill</h1>

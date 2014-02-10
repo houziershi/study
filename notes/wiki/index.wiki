@@ -9,7 +9,7 @@
 
 Scala：[[scala]]
 
-java：[[java]]
+Java：[[java]]
 
 Velocity：[[velocity]]
 
