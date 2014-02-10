@@ -3,7 +3,10 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
+<!--
 <script type="text/javascript" src="../../vimwiki-theme/3rd-libs/jquery-1.4.2.min.js"></script>
+-->
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/zepto-1.1.2.min.js"></script>
 
 <link type="text/css" rel="stylesheet" href="../../vimwiki-theme/3rd-libs/hightlight-code/styles/shCore.css"/>
 <link type="text/css" rel="stylesheet" href="../../vimwiki-theme/3rd-libs/hightlight-code/styles/shThemeDefault.css"/>
@@ -130,24 +133,28 @@
 <li><a href="#toc_15.1">条件队列的缺陷</a>
 <li><a href="#toc_15.2">使用Condition</a>
 </ul>
-<li><a href="#toc_16">Synchronizer</a>
+<li><a href="#toc_16">理解Condition</a>
 <ul>
-<li><a href="#toc_16.1">AQS</a>
-<li><a href="#toc_16.2">实现AQS</a>
-<ul>
-<li><a href="#toc_16.2.1">实现一个简单的闭锁</a>
+<li><a href="#toc_16.1">Condition实现原理</a>
 </ul>
-<li><a href="#toc_16.3">Java并发包中的AQS</a>
+<li><a href="#toc_17">Synchronizer</a>
 <ul>
-<li><a href="#toc_16.3.1">ReentrantLock</a>
-<li><a href="#toc_16.3.2">Semaphore与CountDownLatch</a>
-<li><a href="#toc_16.3.3">FutureTask</a>
-<li><a href="#toc_16.3.4">ReentrantReadWriteLock</a>
+<li><a href="#toc_17.1">AQS</a>
+<li><a href="#toc_17.2">实现AQS</a>
+<ul>
+<li><a href="#toc_17.2.1">实现一个简单的闭锁</a>
+</ul>
+<li><a href="#toc_17.3">Java并发包中的AQS</a>
+<ul>
+<li><a href="#toc_17.3.1">ReentrantLock</a>
+<li><a href="#toc_17.3.2">Semaphore与CountDownLatch</a>
+<li><a href="#toc_17.3.3">FutureTask</a>
+<li><a href="#toc_17.3.4">ReentrantReadWriteLock</a>
 </ul>
 </ul>
-<li><a href="#toc_17">Fork-Join</a>
+<li><a href="#toc_18">Fork-Join</a>
 <ul>
-<li><a href="#toc_17.1">实现方式</a>
+<li><a href="#toc_18.1">实现方式</a>
 </ul>
 </ul>
 </div>
@@ -2769,7 +2776,7 @@ try {
 如下面的在两个账户之间的转账程序，通过轮询的方式反常尝试取得锁：
 </p>
 
-<pre class="brush: java; highlight:[4,5,7,14,19]">
+<pre class="brush: java; highlight:[5,7,14,19]">
 public void transferMoney(Account fromAccount, Account toAccount, 
 		BigDecimal amt) 
 {
@@ -2994,7 +3001,7 @@ public interface Condition {
 
 <p>
 <code>Condition</code>通过外部锁<code>Lock.newCondition</code>方法创建。对于同一个<code>Lock</code>可以有多个
-<code>Condition</code>。<code>Condition</code>继承了相差<code>Lock</code>对象的公平性，对于公平的锁，线程会按FIFO
+<code>Condition</code>。<code>Condition</code>继承了相关<code>Lock</code>对象的公平性，对于公平的锁，线程会按FIFO
 顺序从<code>Condtion.await</code>中释放。
 </p>
 
@@ -3009,7 +3016,7 @@ public interface Condition {
 例子：
 </p>
 
-<pre class="brush: java; highlight: [4,6,7,9,18,21,26,28,34,37,43,46]">
+<pre class="brush: java; highlight: [4,7,9,18,21,26,28,34,37,43,46]">
 @ThreadSafe
 public class ConditionBoundedBuffer&lt;T&gt; {
 
@@ -3162,14 +3169,316 @@ public class Clock implements Runnable {
 }
 </pre>
 
+<h1 id="toc_16">理解Condition</h1>
+
+<p>
+在java.util.concurrent包中，有两个很特殊的工具类，Condition和ReentrantLock，
+使用过的人都知道，ReentrantLock（重入锁）是jdk的concurrent包提供的一种独占锁的
+实现。它继承自Dong Lea的AbstractQueuedSynchronizer（同步器），确切的说是
+ReentrantLock的一个内部类继承了AbstractQueuedSynchronizer，ReentrantLock只不过
+是代理了该类的一些方法，可能有人会问为什么要使用内部类在包装一层？ 我想是安全的
+关系，因为AbstractQueuedSynchronizer中有很多方法，还实现了共享锁，Condition等
+功能，如果直接使ReentrantLock继承它，则很容易出现AbstractQueuedSynchronizer中的
+API被无用的情况。
+</p>
+
+<p>
+ReentrantLock和Condition的使用方式通常是这样的：
+</p>
+
+<pre class="brush: java">
+public static void main(String[] args) {
+    final ReentrantLock reentrantLock = new ReentrantLock();
+    final Condition condition = reentrantLock.newCondition();
+ 
+    Thread thread = new Thread((Runnable) () -&gt; {
+            try {
+                reentrantLock.lock();
+                System.out.println("我要等一个新信号" + this);
+                condition.wait();
+            }
+            catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println("拿到一个信号！！" + this);
+            reentrantLock.unlock();
+    }, "waitThread1");
+ 
+    thread.start();
+     
+    Thread thread1 = new Thread((Runnable) () -&gt; {
+            reentrantLock.lock();
+            System.out.println("我拿到锁了");
+            try {
+                Thread.sleep(3000);
+            }
+            catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            condition.signalAll();
+            System.out.println("我发了一个信号！！");
+            reentrantLock.unlock();
+    }, "signalThread");
+     
+    thread1.start();
+}
+</pre>
+
+<p>
+运行后，结果如下：
+</p>
+
+<pre class="brush: java">
+我要等一个新信号lock.ReentrantLockTest$1@a62fc3
+我拿到锁了
+我发了一个信号！！
+拿到一个信号！！
+</pre>
+
+<p>
+可以看到：
+</p>
+
+<ul>
+<li>
+Condition的执行方式，是当在线程1中调用<code>await</code>方法后，线程1将释放锁，并且将自己沉睡
+	，等待唤醒，
+
+<li>
+线程2获取到锁后，开始做事，完毕后，调用Condition的<code>signal</code>方法，唤醒线程1，
+	线程1恢复执行。
+
+</ul>
+
+<p>
+以上说明Condition是一个多线程间协调通信的工具类，使得某个，或者某些线程一起等待
+某个条件（Condition）,只有当该条件具备( signal 或者 signalAll方法被带调用)时 ，
+这些等待线程才会被唤醒，从而重新争夺锁。
+</p>
+
+<h2 id="toc_16.1">Condition实现原理</h2>
+
+<p>
+首先还是要明白，<code>reentrantLock.newCondition()</code>返回的是Condition的一个实现，
+该类在<code>AbstractQueuedSynchronizer</code>中被实现，叫做<code>newCondition()</code>。
+</p>
+
+<pre class="brush: java">
+public Condition newCondition() { return sync.newCondition(); }
+</pre>
+
+<p>
+它可以访问AbstractQueuedSynchronizer中的方法和其余内部类（
+AbstractQueuedSynchronizer是个抽象类，至于他怎么能访问，这里有个很奇妙的点，
+后面我专门用demo说明 ）
+</p>
+
+<p>
+现在，我们一起来看下Condition类的实现，还是从上面的demo入手，为了方便书写，我将
+AbstractQueuedSynchronizer缩写为AQS。
+</p>
+
+<p>
+当await被调用时，代码如下：
+</p>
+
+<pre class="brush: java">
+public final void await() throws InterruptedException {
+	if (Thread.interrupted()) {
+		throw new InterruptedException();
+	}
+
+	/* 将当前线程包装下后， 添加到Condition自己维护的一个链表中。 */
+	Node node = addConditionWaiter(); 
+	
+	/* 释放当前线程占有的锁，从demo中看到，调用await前，当前线程是占有锁的 */
+	int savedState = fullyRelease(node);
+
+	int interruptMode = 0;
+	while (!isOnSyncQueue(node)) {
+		/* 
+		 * 释放完毕后，遍历AQS的队列，看当前节点是否在队列中，
+		 * 不在说明它还没有竞争锁的资格，所以继续将自己沉睡。
+		 * 直到它被加入到队列中，聪明的你可能猜到了，
+		 * 没有错，在singal的时候加入不就可以了？
+		 */
+		LockSupport.park(this);
+		if ((interruptMode = checkInterruptWhileWaiting(node)) != 0) {
+			break;
+		}
+	}
+	// 被唤醒后，重新开始正式竞争锁，同样，如果竞争不到还是会将自己沉睡，等待唤醒重新开始竞争。
+	if (acquireQueued(node, savedState) &amp;&amp; interruptMode != THROW_IE) {
+		interruptMode = REINTERRUPT;
+	}
+	if (node.nextWaiter != null) {
+		unlinkCancelledWaiters();
+	}
+	if (interruptMode != 0) {
+		reportInterruptAfterWait(interruptMode);
+	}
+}
+</pre>
+
+<p>
+回到上面的demo，
+</p>
+<ul>
+<li>
+锁被释放后，线程1开始沉睡
+
+<li>
+这个时候线程因为线程1沉睡时，会唤醒AQS队列中的头结点，所所以线程2会开始竞争锁
+	，并获取到
+
+<li>
+等待3秒后，线程2会调用 signal方法，“发出”signal信号
+
+</ul>
+
+<p>
+signal方法如下：
+</p>
+
+<pre class="brush: java">
+public final void signal() {
+	if (!isHeldExclusively()) {
+		throw new IllegalMonitorStateException();
+	}
+	// firstWaiter为condition自己维护的一个链表的头结点，
+	// 取出第一个节点后开始唤醒操作
+	Node first = firstWaiter; 
+	if (first != null) doSignal(first);
+}
+</pre>
+
+<p>
+说明下，其实Condition内部维护了等待队列的头结点和尾节点，该队列的作用是存放等待
+signal信号的线程，该线程被封装为Node节点后存放于此。
+</p>
+
+<pre class="brush: java">
+public class ConditionObject implements Condition, java.io.Serializable {
+	private static final long serialVersionUID = 1173984872572414699L;
+	/** First node of condition queue. */
+	private transient Node firstWaiter;
+	/** Last node of condition queue. */
+	private transient Node lastWaiter;
+
+}
+</pre>
 
 
+<p>
+而Condition自己也维护了一个队列，该队列的作用是维护一个等待signal信号的队列，
+两个队列的作用是不同，事实上，每个线程也仅仅会同时存在以上两个队列中的一个，
+流程是这样的：
+</p>
 
+<ul>
+<li>
+线程1调用<code>reentrantLock.lock</code>时，线程被加入到AQS的等待队列中。
 
+<li>
+线程1调用<code>await</code>方法被调用时，该线程从AQS中移除，对应操作是锁的释放。
 
-<h1 id="toc_16">Synchronizer</h1>
+<li>
+接着马上被加入到Condition的等待队列中，意味着该线程需要signal信号。
 
-<h2 id="toc_16.1">AQS</h2>
+<li>
+线程2，因为线程1释放锁的关系，被唤醒，并判断可以获取锁，于是线程2获取锁，
+	并被加入到AQS的等待队列中。
+
+<li>
+线程2调用<code>signal</code>方法，这个时候Condition的等待队列中只有线程1一个节点，于是
+	它被取出来，并被加入到AQS的等待队列中。 注意，这个时候，线程1 并没有被唤醒。
+
+<li>
+<code>signal</code>方法执行完毕，线程2调用<code>reentrantLock.unLock()</code>方法，释放锁。这个时候
+	因为AQS中只有线程1，于是，AQS释放锁后按从头到尾的顺序唤醒线程时，线程1被唤醒，
+	于是线程1回复执行。
+
+<li>
+直到释放所整个过程执行完毕。
+
+</ul>
+
+<p>
+可以看到，整个协作过程是靠结点在AQS的等待队列和Condition的等待队列中来回移动
+实现的，Condition作为一个条件类，很好的自己维护了一个等待信号的队列，并在适时的
+时候将结点加入到AQS的等待队列中来实现的唤醒操作。
+</p>
+
+<p>
+看到这里，signal方法的代码应该不难理解了。
+</p>
+
+<p>
+取出头结点，然后<code>doSignal</code>：
+</p>
+
+<pre class="brush: java">
+public final void signal() {
+	if (!isHeldExclusively()) {
+		throw new IllegalMonitorStateException();
+	}
+	Node first = firstWaiter;
+	if (first != null) {
+		doSignal(first);
+	}
+}
+
+private void doSignal(Node first) {
+	do {
+		// 修改头结点，完成旧头结点的移出工作
+		if ((firstWaiter = first.nextWaiter) == null)
+			lastWaiter = null;
+		first.nextWaiter = null;
+	} while (!transferForSignal(first) &amp;&amp; // 将老的头结点，加入到AQS的等待队列中
+			(first = firstWaiter) != null);
+}
+
+final boolean transferForSignal(Node node) {
+	/*
+	 * If cannot change waitStatus, the node has been cancelled.
+	 */
+	if (!compareAndSetWaitStatus(node, Node.CONDITION, 0))
+		return false;
+
+	/*
+	 * Splice onto queue and try to set waitStatus of predecessor to
+	 * indicate that thread is (probably) waiting. If cancelled or attempt
+	 * to set waitStatus fails, wake up to resync (in which case the
+	 * waitStatus can be transiently and harmlessly wrong).
+	 */
+	Node p = enq(node);
+	int ws = p.waitStatus;
+	// 如果该结点的状态为cancel 或者修改waitStatus失败，则直接唤醒。
+	if (ws &gt; 0 || !compareAndSetWaitStatus(p, ws, Node.SIGNAL))
+		LockSupport.unpark(node.thread);
+	return true;
+}
+</pre>
+
+<p>
+可以看到，正常情况<code>ws &gt; 0 || !compareAndSetWaitStatus(p, ws, Node.SIGNAL)</code>这个
+判断是不会为true的，所以，不会在这个时候唤醒该线程。
+</p>
+
+<p>
+只有到发送signal信号的线程调用<code>reentrantLock.unlock()</code>后因为它已经被加到AQS的
+等待队列中，所以才会被唤醒。
+</p>
+
+<p>
+本文从代码的角度说明了Condition的实现方式，其中，涉及到了AQS的很多操作，比如
+AQS的等待队列实现独占锁功能，不过，这不是本文讨论的重点，等有机会再将AQS的实现
+单独分享出来。
+</p>
+
+<h1 id="toc_17">Synchronizer</h1>
+
+<h2 id="toc_17.1">AQS</h2>
 
 <p>
 <code>ReentrantLock</code>与<code>Semaphore</code>这两个接口的功能很相像，甚至可以通过<code>ReentrantLock</code>
@@ -3228,7 +3537,7 @@ public class SemaphoreOnLock {
 降低了上下文开销。
 </p>
 
-<h2 id="toc_16.2">实现AQS</h2>
+<h2 id="toc_17.2">实现AQS</h2>
 
 <p>
 一般现有的工具已经够用了。但是有必要了解一下通过AQS实现同步器的原理。最基本的
@@ -3297,7 +3606,7 @@ void release() {
 </p>
 
 
-<h3 id="toc_16.2.1">实现一个简单的闭锁</h3>
+<h3 id="toc_17.2.1">实现一个简单的闭锁</h3>
 
 <p>
 一个简单的二元闭锁。两个公有方法<code>await</code>和<code>signal</code>分别对应获取和释放。我们定义
@@ -3339,13 +3648,13 @@ public class OneShotLatch {
 </p>
 
 
-<h2 id="toc_16.3">Java并发包中的AQS</h2>
+<h2 id="toc_17.3">Java并发包中的AQS</h2>
 
 <p>
 介绍一下Java提供的同步器中是如何使用AQS的。
 </p>
 
-<h3 id="toc_16.3.1">ReentrantLock</h3>
+<h3 id="toc_17.3.1">ReentrantLock</h3>
 
 <p>
 只支持独占获取操作，所以实现了<code>tryAcquire</code>、<code>tryRelease</code>、<code>isHeldExclusively</code>。
@@ -3371,7 +3680,7 @@ protected boolean tryAcquire(int ignored) {
 }
 </pre>
 
-<h3 id="toc_16.3.2">Semaphore与CountDownLatch</h3>
+<h3 id="toc_17.3.2">Semaphore与CountDownLatch</h3>
 
 <p>
 信号量的AQS状态用于保存可用的许可数量。<code>tryAcquireShared</code>方法来操作许可数量。
@@ -3404,7 +3713,7 @@ protected boolean tryReleaseShared(int releases) {
 </p>
 
 
-<h3 id="toc_16.3.3">FutureTask</h3>
+<h3 id="toc_17.3.3">FutureTask</h3>
 
 <p>
 虽然看起来不像是同步器，但<code>Future.get</code>语言非常像闭锁。这里用AQS状态来保证任务
@@ -3417,7 +3726,7 @@ protected boolean tryReleaseShared(int releases) {
 </p>
 
 
-<h3 id="toc_16.3.4">ReentrantReadWriteLock</h3>
+<h3 id="toc_17.3.4">ReentrantReadWriteLock</h3>
 
 <p>
 虽然有读和写两个锁，实现中是用单个AQS子类同时管理两个锁。状态值是32位整数。它
@@ -3433,7 +3742,7 @@ AQS在内部维护一个等待线程队列，其中记录了某个线程请求�
 
 
 
-<h1 id="toc_17">Fork-Join</h1>
+<h1 id="toc_18">Fork-Join</h1>
 
 <p>
 Java 7新提供了“Fork-Join”机制。在多个线程并行的情况下，如果有些进程处于等待
@@ -3453,7 +3762,7 @@ Java 7新提供了“Fork-Join”机制。在多个线程并行的情况下，�
 
 </ul>
 
-<h2 id="toc_17.1">实现方式</h2>
+<h2 id="toc_18.1">实现方式</h2>
 
 <p>
 实现<code>RecursiveTask</code>接口，并重写<code>compute</code>方法。里面可以执行多个<code>ForkJoinTask</code>。
