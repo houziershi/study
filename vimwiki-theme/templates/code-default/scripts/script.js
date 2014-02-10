@@ -67,6 +67,8 @@ function closeAll() {
 	$('div.toc>ul ul').hide(300);
 };
 $(document).ready(function() {
+	loadCodeHightlight();
+
 	if (window.innerWidth >= 480) {
 		// 目录标题
 		var toggler = $('<div class="toggler" title="点击展开/收起，Shift+Z 隐藏或打开">目录</div>');
@@ -93,6 +95,4 @@ $(document).ready(function() {
 
 		openAll();
 	};
-
-	loadCodeHightlight();
 });
