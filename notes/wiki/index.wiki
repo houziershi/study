@@ -94,8 +94,6 @@ GRUB：[[linux.grub]]
 
 图形界面： [[linux.gui]]
 
-常用工具：[[linux.tools]]
-
 服务：[[linux.service]]
 
 贴士：[[linux.tips]]

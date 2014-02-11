@@ -1,11 +1,22 @@
+= 系统模拟器 =
+
+Cygwin：[[Cygwin]]
+
+= 命令行 =
+
+终端复用：[[tmux]]
+
+交互脚本：[[expect]]
+
+= 文件管理 =
+
+[[Midnight.Commander]]
+
+[[Gnome.Commander]]
 
 = 办公文档 =
 
 Windows的chm工具：[[winchm]]
-
-= 系统模拟器 =
-
-Cygwin：[[Cygwin]]
 
 = 网络 =
 
