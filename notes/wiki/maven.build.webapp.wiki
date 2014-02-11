@@ -11,6 +11,17 @@ mvn archetype:generate -DgroupId=hx.frame -DartifactId=frame-web \
 			-DarchetypeArtifactId=maven-archetype-webapp
 }}}
 
+加入全部JavaEE 7依赖：
+
+{{{class="brush: xml"
+<dependency>
+	<groupId>javax</groupId>
+	<artifactId>javaee-api</artifactId>
+	<version>7.0</version>
+	<scope>compile</scope>
+</dependency>
+}}}
+
 == 压缩Js与Css ==
 
 {{{class="brush: xml"
