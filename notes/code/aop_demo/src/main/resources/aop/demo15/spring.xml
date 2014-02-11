@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/aop
+       http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <bean id="greetingImpl" class="aop.demo15.GreetingImpl"/>
+
+    <bean id="greetingAspect" class="aop.demo15.GreetingAspect"/>
+
+    <aop:config>
+        <aop:aspect ref="greetingAspect">
+            <aop:around method="around" pointcut="execution(* aop.demo15.GreetingImpl.*(..))"/>
+        </aop:aspect>
+    </aop:config>
+
+</beans>

@@ -1,0 +1,992 @@
+%title AOP
+
+%toc AOP
+
+= AOP这点事儿 =
+
+今天我要和大家分享的是AOP（Aspect-Oriented Programming）这个东西，名字与OOP仅差
+一个字母，其实它是对OOP编程方式的一种补充，并非是取而代之。翻译过来就是
+“面向方面编程”，可我更倾向于翻译为“面向切面编程”。它听起有些的神秘，为什么呢？
+当你看完这篇文章的时候，就会知道，我们做的很重要的工作就是去写这个“切面”。那么
+什么是“切面”呢？
+
+那么AOP到底是什么？如何去使用它？本文将逐步带您进入AOP的世界，让您感受到
+前所未有的畅快！
+
+源代码位置：[[../code/aop_demo/|查看源代码]]
+
+== 写死代码 ==
+
+不过在开始讲解AOP之前，我想有必要回忆一下这段代码：
+
+先来一个接口：
+
+{{{class="brush: java"
+public interface Greeting {
+	void sayHello(String name);
+}
+}}}
+
+还有一个实现类：
+
+{{{class="brush: java; highlight:[5, 7]"
+public class GreetingImpl implements Greeting {
+ 
+	@Override
+	public void sayHello(String name) {
+		before();
+		System.out.println("Hello! " + name);
+		after();
+	}
+ 
+	private void before() {
+		System.out.println("Before");
+	}
+ 
+	private void after() {
+		System.out.println("After");
+	}
+}
+}}}
+
+`before()`与`after()`方法写死在`sayHello()`方法体中了，这样的代码的味道非常不好
+。如果哪位仁兄大量写了这样的代码，肯定要被你的架构师骂个够呛。
+
+比如：我们要统计每个方法的执行时间，以对性能作出评估，那是不是要在每个方法的
+一头一尾都做点手脚呢？
+
+再比如：我们要写一个JDBC程序，那是不是也要在方法的开头去连接数据库，方法的末尾
+去关闭数据库连接呢？
+
+这样的代码只会把程序员累死，把架构师气死！
+
+一定要想办法对上面的代码进行重构，首先给出三个解决方案：
+
+== 静态代理 ==
+
+最简单的解决方案就是使用静态代理模式了，我们单独为`GreetingImpl`这个类写一个
+代理类：
+
+{{{class="brush: java; highlight: [3, 6, 12]"
+public class GreetingProxy implements Greeting {
+
+	private GreetingImpl greetingImpl;
+
+	public GreetingProxy(GreetingImpl greetingImpl) {
+		this.greetingImpl = greetingImpl;
+	}
+
+	@Override
+	public void sayHello(String name) {
+		before();
+		greetingImpl.sayHello(name);
+		after();
+	}
+
+	private void before() {
+		System.out.println("Before");
+	}
+
+	private void after() {
+		System.out.println("After");
+	}
+}
+}}}
+
+就用这个`GreetingProxy`去代理GreetingImpl，下面看看客户端如何来调用：
+
+{{{class="brush: java"
+public class Client {
+	public static void main(String[] args) {
+		Greeting greetingProxy = new GreetingProxy(new GreetingImpl());
+		greetingProxy.sayHello("Jack");
+	}
+}
+}}}
+
+这样写没错，但是有个问题，`XxxProxy`这样的类会越来越多，如何才能将这些代理类
+尽可能减少呢？最好只有一个代理类。
+
+这时我们就需要使用JDK提供的动态代理了。
+
+== JDK 动态代理 ==
+
+{{{class="brush: java; highlight: [6, 11, 23]"
+public class JDKDynamicProxy implements InvocationHandler {
+
+	private Object target;
+
+	public JDKDynamicProxy(Object target) {
+		this.target = target;
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> T getProxy() {
+		return (T) Proxy.newProxyInstance(
+			target.getClass().getClassLoader(),
+			target.getClass().getInterfaces(),
+			this
+		);
+	}
+
+	@Override
+	public Object invoke(Object proxy, Method method, Object[] args)
+		throws Throwable
+	{
+		before();
+		Object result = method.invoke(target, args);
+		after();
+		return result;
+	}
+
+	private void before() {
+		System.out.println("Before");
+	}
+
+	private void after() {
+		System.out.println("After");
+	}
+}
+}}}
+
+客户端是这样调用的：
+
+{{{class="brush: java"
+public class Client {
+ 
+	public static void main(String[] args) {
+		Greeting greeting = new JDKDynamicProxy(new GreetingImpl()).getProxy();
+		greeting.sayHello("Jack");
+	}
+}
+}}}
+
+这样所有的代理类都合并到动态代理类中了，但这样做仍然存在一个问题：JDK 给我们提供的动态代理只能代理接口，而不能代理没有接口的类。有什么方法可以解决呢？
+
+== CGLib 动态代理 ==
+
+我们使用开源的 CGLib 类库可以代理没有接口的类，这样就弥补了 JDK 的不足。CGLib 动态代理类是这样玩的：
+
+{{{class="brush: java; highlight: [3, 14, 22]"
+public class CGLibDynamicProxy implements MethodInterceptor {
+ 
+	private static CGLibDynamicProxy instance = new CGLibDynamicProxy();
+ 
+	private CGLibDynamicProxy() {
+	}
+ 
+	public static CGLibDynamicProxy getInstance() {
+		return instance;
+	}
+ 
+	@SuppressWarnings("unchecked")
+	public <T> T getProxy(Class<T> cls) {
+		return (T) Enhancer.create(cls, this);
+	}
+ 
+	@Override
+	public Object intercept(Object target, Method method, Object[] args, 
+			MethodProxy proxy) throws Throwable 
+	{
+		before();
+		Object result = proxy.invokeSuper(target, args);
+		after();
+		return result;
+	}
+ 
+	private void before() {
+		System.out.println("Before");
+	}
+ 
+	private void after() {
+		System.out.println("After");
+	}
+}
+}}}
+
+以上代码中了 Singleton 模式，那么客户端调用也更加轻松了：
+
+{{{class="brush: java"
+public class Client {
+ 
+	public static void main(String[] args) {
+		Greeting greeting = CGLibDynamicProxy.getInstance().getProxy(GreetingImpl.class);
+		greeting.sayHello("Jack");
+	}
+}
+}}}
+
+到此为止，我们能做的都做了，问题似乎全部都解决了。但事情总不会那么完美，而我们一定要追求完美！
+
+== Sprint AOP ==
+
+老罗搞出了一个 AOP 框架，能否做到完美而优雅呢？请大家继续往下看吧！
+
+=== 前置增强、后置增强、环绕增强（编程式） ===
+
+在 Spring AOP 的世界里，与 AOP 相关的术语实在太多，往往也是我们的“拦路虎”，不管是看那本书或是技术文档，在开头都要将这些术语逐个灌输给读者。我想这完全是在吓唬人了，其实没那么复杂的，大家放轻松一点。
+
+我们上面例子中提到的 before() 方法，在 Spring AOP 里就叫 Before Advice（前置增强）。有些人将 Advice 直译为“通知”，我想这是不太合适的，因为它根本就没有“通知”的含义，而是对原有代码功能的一种“增强”。再说，CGLib 中也有一个 Enhancer 类，它就是一个增强类。
+
+此外，像 after() 这样的方法就叫 After Advice（后置增强），因为它放在后面来增强代码的功能。
+
+如果能把 before() 与 after() 合并在一起，那就叫 Around Advice（环绕增强），就像汉堡一样，中间夹一根火腿。
+
+这三个概念是不是轻松地理解了呢？如果是，那就继续吧！
+
+我们下面要做的就是去实现这些所谓的“增强类”，让他们横切到代码中，而不是将这些写死在代码中。
+
+先来一个前置增强类吧：
+
+
+{{{class="brush: java"
+public class GreetingBeforeAdvice implements MethodBeforeAdvice {
+ 
+	@Override
+	public void before(Method method, Object[] args, Object target)
+		throws Throwable
+	{
+		System.out.println("Before");
+	}
+}
+}}}
+
+注意：这个类实现了`org.springframework.aop.MethodBeforeAdvice`接口，我们将需要
+增强的代码放入其中。
+
+再来一个后置增强类吧：
+
+{{{class="brush: java"
+public class GreetingAfterAdvice implements AfterReturningAdvice {
+ 
+	@Override
+	public void afterReturning(Object result, Method method, Object[] args,
+			Object target) throws Throwable
+	{
+		System.out.println("After");
+	}
+}
+}}}
+
+类似地，这个类实现了`org.springframework.aop.AfterReturningAdvice`接口。
+
+最后用一个客户端来把它们集成起来，看看如何调用吧：
+
+{{{class="brush: java"
+public class Client {
+ 
+	public static void main(String[] args) {
+		ProxyFactory proxyFactory = new ProxyFactory();     // 创建代理工厂
+		proxyFactory.setTarget(new GreetingImpl());         // 射入目标类对象
+		proxyFactory.addAdvice(new GreetingBeforeAdvice()); // 添加前置增强
+		proxyFactory.addAdvice(new GreetingAfterAdvice());  // 添加后置增强 
+		
+		// 从代理工厂中获取代理
+		Greeting greeting = (Greeting) proxyFactory.getProxy();
+		greeting.sayHello("Jack");                              // 调用代理的方法
+	}
+}
+}}}
+
+请仔细阅读以上代码及其注释，您会发现，其实 Spring AOP 还是挺简单的，对吗？
+
+当然，我们完全可以只定义一个增强类，让它同时实现`MethodBeforeAdvice`与
+`AfterReturningAdvice`这两个接口，如下：
+
+{{{class="brush: java"
+public class GreetingBeforeAndAfterAdvice
+	implements MethodBeforeAdvice, AfterReturningAdvice
+{
+
+	@Override
+	public void before(Method method, Object[] args, Object target)
+		throws Throwable
+	{
+		System.out.println("Before");
+	}
+
+	@Override
+	public void afterReturning(Object result, Method method, Object[] args,
+			Object target) throws Throwable
+	{
+		System.out.println("After");
+	}
+}
+}}}
+
+这样我们只需要使用一行代码，同时就可以添加前置与后置增强：
+
+{{{class="brush: java"
+proxyFactory.addAdvice(new GreetingBeforeAndAfterAdvice());
+}}}
+
+刚才有提到“环绕增强”，其实这个东西可以把“前置增强”与“后置增强”的功能给合并起来，无需让我们同时实现以上两个接口。
+
+{{{class="brush: java"
+public class GreetingAroundAdvice implements MethodInterceptor {
+ 
+	@Override
+	public Object invoke(MethodInvocation invocation) throws Throwable {
+		before();
+		Object result = invocation.proceed();
+		after();
+		return result;
+	}
+ 
+	private void before() {
+		System.out.println("Before");
+	}
+ 
+	private void after() {
+		System.out.println("After");
+	}
+}
+}}}
+
+环绕增强类需要实现`org.aopalliance.intercept.MethodInterceptor`接口。注意，这个
+接口不是 Spring 提供的，它是 AOP 联盟（一个很牛逼的联盟）写的，Spring 只是
+借用了它。
+
+在客户端中同样也需要将该增强类的对象添加到代理工厂中：
+
+{{{class="brush: java"
+proxyFactory.addAdvice(new GreetingAroundAdvice());
+}}}
+
+好了，这就是 Spring AOP 的基本用法，但这只是“编程式”而已。Spring AOP 如果只是这样，那就太傻逼了，它曾经也是一度宣传用 Spring 配置文件的方式来定义 Bean 对象，把代码中的 new 操作全部解脱出来。
+
+=== 前置增强、后置增强、环绕增强（声明式） ===
+
+先看 Spring 配置文件是如何写的吧：
+
+{{{class="brush: xml"
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+	   http://www.springframework.org/schema/beans/spring-beans.xsd
+	   http://www.springframework.org/schema/context
+	   http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<!-- 扫描指定包（将 @Component 注解的类自动定义为 Spring Bean） -->
+	<context:component-scan base-package="aop.demo"/>
+
+	<!-- 配置一个代理 -->
+	<bean id="greetingProxy" class="org.springframework.aop.framework.ProxyFactoryBean">
+		<property name="interfaces" value="aop.Greeting"/> <!-- 需要代理的接口 -->
+		<property name="target" ref="greetingImpl"/>       <!-- 接口实现类 -->
+		<!-- 拦截器名称（也就是增强类名称，Spring Bean 的 id） -->
+		<property name="interceptorNames">
+			<list>
+				<value>greetingAroundAdvice</value>
+			</list>
+		</property>
+	</bean>
+
+</beans>
+}}}
+
+一定要阅读以上代码的注释，其实使用`ProxyFactoryBean`就可以取代前面的
+`ProxyFactory`，其实它们俩就一回事儿。我认为`interceptorNames`应该改名为
+`adviceNames`或许会更容易让人理解，不就是往这个属性里面添加增强类吗？
+
+此外，如果只有一个增强类，可以使用以下方法来简化：
+
+{{{class="brush: xml"
+	<bean id="greetingProxy"
+		class="org.springframework.aop.framework.ProxyFactoryBean">
+		<property name="interfaces" value="aop.Greeting"/>
+		<property name="target" ref="greetingImpl"/>
+		<!-- 注意这行配置 -->
+		<property name="interceptorNames" value="greetingAroundAdvice"/>
+	</bean>
+}}}
+
+还需要注意的是，这里使用了 Spring 2.5+ 的特性“Bean 扫描”，这样我们就无需在
+Spring 配置文件里不断地定义`<bean id="xxx" class="xxx"/>`了，从而解脱了我们的
+双手。
+
+看看这是有多么的简单：
+
+{{{class="brush: java"
+@Component
+public class GreetingImpl implements Greeting {
+	...
+}
+}}}
+
+
+{{{class="brush: java"
+@Component
+public class GreetingAroundAdvice implements MethodInterceptor {
+	...
+}
+}}}
+
+最后看看客户端吧：
+
+{{{class="brush: java"
+public class Client {
+
+	public static void main(String[] args) {
+		// 获取 Spring Context
+		ApplicationContext context = new ClassPathXmlApplicationContext("aop/demo/spring.xml");
+		// 从 Context 中根据 id 获取 Bean 对象（其实就是一个代理）
+		Greeting greeting = (Greeting) context.getBean("greetingProxy");
+		// 调用代理的方法
+		greeting.sayHello("Jack");
+	}
+}
+}}}
+
+代码量确实少了，我们将配置性的代码放入配置文件，这样也有助于后期维护。更重要的是，代码只关注于业务逻辑，而将配置放入文件中。这是一条最佳实践！
+
+除了上面提到的那三类增强以外，其实还有两类增强也需要了解一下，关键的时候您要能想得到它们才行。 
+
+=== 抛出增强 ===
+
+程序报错，抛出异常了，一般的做法是打印到控制台或日志文件中，这样很多地方都得去处理，有没有一个一劳永逸的方法呢？那就是 Throws Advice（抛出增强），它确实很强，不信你就继续往下看：
+
+{{{class="brush: java"
+@Component
+public class GreetingImpl implements Greeting {
+
+	@Override
+	public void sayHello(String name) {
+		System.out.println("Hello! " + name);
+
+		// 故意抛出一个异常，看看异常信息能否被拦截到
+		throw new RuntimeException("Error");
+	}
+}
+}}}
+
+下面是抛出增强类的代码：
+
+{{{class="brush: java"
+@Component
+public class GreetingThrowAdvice implements ThrowsAdvice {
+ 
+	public void afterThrowing(Method method, Object[] args, Object target,
+			Exception e)
+	{
+		System.out.println("---------- Throw Exception ----------");
+		System.out.println("Target Class: " + target.getClass().getName());
+		System.out.println("Method Name: " + method.getName());
+		System.out.println("Exception Message: " + e.getMessage());
+		System.out.println("-------------------------------------");
+	}
+}
+}}}
+
+抛出增强类需要实现`org.springframework.aop.ThrowsAdvice`接口，在接口方法中可获取
+方法、参数、目标对象、异常对象等信息。我们可以把这些信息统一写入到日志中，当然
+也可以持久化到数据库中。
+
+这个功能确实太棒了！但还有一个更厉害的增强。如果某个类实现了 A 接口，但没有实现
+B 接口，那么该类可以调用 B 接口的方法吗？如果您没有看到下面的内容，一定不敢相信
+原来这是可行的！
+
+=== 引入增强 ===
+
+以上提到的都是对方法的增强，那能否对类进行增强呢？用 AOP 的行话来讲，对方法的增强叫做 Weaving（织入），而对类的增强叫做 Introduction（引入）。而 Introduction Advice（引入增强）就是对类的功能增强，它也是 Spring AOP 提供的最后一种增强。建议您一开始千万不要去看《Spring Reference》，否则您一定会后悔的。因为当您看了以下的代码示例后，一定会彻底明白什么才是引入增强。
+
+定义了一个新接口`Apology`（道歉）：
+
+{{{class="brush: java"
+public interface Apology {
+
+	void saySorry(String name);
+
+}
+}}}
+
+但我不想在代码中让`GreetingImpl`直接去实现这个接口，我想在程序运行的时候动态地
+实现它。因为假如我实现了这个接口，那么我就一定要改写`GreetingImpl`这个类，
+关键是我不想改它，或许在真实场景中，这个类有1万行代码，我实在是不敢动了。于是，
+我需要借助 Spring 的引入增强。这个有点意思了！
+
+{{{class="brush: java"
+@Component
+public class GreetingIntroAdvice extends DelegatingIntroductionInterceptor
+	implements Apology
+{
+
+	@Override
+	public Object invoke(MethodInvocation invocation) throws Throwable {
+		return super.invoke(invocation);
+	}
+
+	@Override
+	public void saySorry(String name) {
+		System.out.println("Sorry! " + name);
+	}
+}
+}}}
+
+以上定义了一个引入增强类，扩展了
+`org.springframework.aop.support.DelegatingIntroductionInterceptor`类，
+同时也实现了新定义的`Apology`接口。
+
+在类中首先覆盖了父类的`invoke()`方法，然后实现了`Apology`接口的方法。我就是想用
+这个增强类去丰富`GreetingImpl`类的功能，那么这个`GreetingImpl`类无需直接实现
+`Apology`接口，就可以在程序运行的时候调用`Apology`接口的方法了。这简直是太神奇了
+！
+
+看看是如何配置的吧：
+
+{{{class="brush: xml"
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+	   http://www.springframework.org/schema/beans/spring-beans.xsd
+	   http://www.springframework.org/schema/context
+	   http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<context:component-scan base-package="aop.demo"/>
+
+	<bean id="greetingProxy" 
+		class="org.springframework.aop.framework.ProxyFactoryBean">
+		<!-- 需要动态实现的接口 -->
+		<property name="interfaces" value="aop.demo.Apology"/>
+		<!-- 目标类 -->
+		<property name="target" ref="greetingImpl"/>
+		<!-- 引入增强 -->
+		<property name="interceptorNames" value="greetingIntroAdvice"/>
+		<!-- 代理目标类（默认为 false，代理接口） -->
+		<property name="proxyTargetClass" value="true"/>
+	</bean>
+
+</beans>
+}}}
+
+需要注意 proxyTargetClass 属性，它表明是否代理目标类，默认为 false，也就是代理接口了，此时 Spring 就用 JDK 动态代理。如果为 true，那么 Spring 就用 CGLib 动态代理。这简直就是太方便了！Spring 封装了这一切，让程序员不在关心那么多的细节。我们要向老罗同志致敬，您是我们心中永远的 idol！
+
+当您看完下面的客户端代码，一定会完全明白以上的这一切：
+
+{{{class="brush: java"
+public class Client {
+
+	public static void main(String[] args) {
+		ApplicationContext context = new ClassPathXmlApplicationContext(
+				"aop/demo/spring.xml");
+		// 注意：转型为目标类，而并非它的 Greeting 接口
+		GreetingImpl greetingImpl = (GreetingImpl) context.getBean("greetingProxy");
+		greetingImpl.sayHello("Jack");
+
+		// 将目标类强制向上转型为 Apology 接口
+		//（这是引入增强给我们带来的特性，也就是“接口动态实现”功能）
+		Apology apology = (Apology) greetingImpl;
+		apology.saySorry("Jack");
+	}
+}
+}}}
+
+没想到`saySorry()`方法原来是可以被`greetingImpl`对象来直接调用的，只需将其
+强制转换为该接口即可。
+
+我们再次感谢 Spring AOP，感谢老罗给我们提供了这么强大的特性！
+
+=== 切面 ===
+
+之前谈到的 AOP 框架其实可以将它理解为一个拦截器框架，但这个拦截器似乎非常武断。比如说，如果它拦截了一个类，那么它就拦截了这个类中所有的方法。类似地，当我们在使用动态代理的时候，其实也遇到了这个问题。需要在代码中对所拦截的方法名加以判断，才能过滤出我们需要拦截的方法，想想这种做法确实不太优雅。在大量的真实项目中，似乎我们只需要拦截特定的方法就行了，没必要拦截所有的方法。于是，老罗同志借助了 AOP 的一个很重要的工具，Advisor（切面），来解决这个问题。它也是 AOP 中的核心！是我们关注的重点！
+
+也就是说，我们可以通过切面，将增强类与拦截匹配条件组合在一起，然后将这个切面配置到 ProxyFactory 中，从而生成代理。
+
+这里提到这个“拦截匹配条件”在 AOP 中就叫做 Pointcut（切点），其实说白了就是一个基于表达式的拦截条件罢了。
+
+归纳一下，Advisor（切面）封装了 Advice（增强）与 Pointcut（切点 ）。当您理解了这句话后，就往下看吧。
+
+我在 GreetingImpl 类中故意增加了两个方法，都以“good”开头。下面要做的就是拦截这两个新增的方法，而对 sayHello() 方法不作拦截。
+
+{{{class="brush: java"
+@Component
+public class GreetingImpl implements Greeting {
+ 
+	@Override
+	public void sayHello(String name) {
+		System.out.println("Hello! " + name);
+	}
+ 
+	public void goodMorning(String name) {
+		System.out.println("Good Morning! " + name);
+	}
+ 
+	public void goodNight(String name) {
+		System.out.println("Good Night! " + name);
+	}
+}
+}}}
+
+在 Spring AOP 中，老罗已经给我们提供了许多切面类了，这些切面类我个人感觉最好用的就是基于正则表达式的切面类。看看您就明白了：
+
+{{{class="brush: xml"
+<?xml version="1.0" encoding="UTF-8"?>
+<beans>
+
+	<context:component-scan base-package="aop.demo"/>
+
+	<!-- 配置一个切面 -->
+	<bean id="greetingAdvisor"
+		class="org.springframework.aop.support.RegexpMethodPointcutAdvisor">
+		<!-- 增强 -->
+		<property name="advice" ref="greetingAroundAdvice"/>
+		<!-- 切点（正则表达式） -->
+		<property name="pattern" value="aop.demo.GreetingImpl.good.*"/>
+	</bean>
+
+	<!-- 配置一个代理 -->
+	<bean id="greetingProxy"
+		class="org.springframework.aop.framework.ProxyFactoryBean">
+		<property name="target" ref="greetingImpl"/>                <!-- 目标类 -->
+		<property name="interceptorNames" value="greetingAdvisor"/> <!-- 切面 -->
+		<!-- 代理目标类 -->
+		<property name="proxyTargetClass" value="true"/>
+	</bean>
+
+</beans>
+}}}
+
+注意以上代理对象的配置中的`interceptorNames`，它不再是一个增强，而是一个切面，
+因为已经将增强封装到该切面中了。此外，切面还定义了一个切点（正则表达式），
+其目的是为了只将满足切点匹配条件的方法进行拦截。
+
+需要强调的是，这里的切点表达式是基于正则表达式的。示例中的
+`aop.demo.GreetingImpl.good.*`表达式后面的`.*`表示匹配所有字符。
+
+除了`RegexpMethodPointcutAdvisor`以外，在 Spring AOP 中还提供了几个切面类，比如：
+
+* `DefaultPointcutAdvisor`：默认切面（可扩展它来自定义切面）
+* `NameMatchMethodPointcutAdvisor`：根据方法名称进行匹配的切面
+* `StaticMethodMatcherPointcutAdvisor`：用于匹配静态方法的切面
+
+总的来说，让用户去配置一个或少数几个代理，似乎还可以接受，但随着项目的扩大，代理配置就会越来越多，配置的重复劳动就多了，麻烦不说，还很容易出错。能否让 Spring 框架为我们自动生成代理呢？
+
+=== 自动代理（扫描 Bean 名称） ===
+
+Spring AOP 提供了一个可根据 Bean 名称来自动生成代理的工具，它就是
+`BeanNameAutoProxyCreator`。是这样配置的：
+
+{{{class="brush: xml"
+<?xml version="1.0" encoding="UTF-8"?>
+<beans>
+
+	...
+
+	<bean class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
+		<!-- 只为后缀是“Impl”的 Bean 生成代理 -->
+		<property name="beanNames" value="*Impl"/>
+		<!-- 增强 -->
+		<property name="interceptorNames" value="greetingAroundAdvice"/>
+		<!-- 是否对代理生成策略进行优化 -->
+		<property name="optimize" value="true"/>
+	</bean>
+
+</beans>
+}}}
+
+以上使用`BeanNameAutoProxyCreator`只为后缀为`Impl`的 Bean 生成代理。需要注意的是
+，这个地方我们不能定义代理接口，也就是`interfaces`属性，因为我们根本就不知道这些
+Bean 到底实现了多少接口。此时不能代理接口，而只能代理类。所以这里提供了一个新的
+配置项，它就是`optimize`。若为 true 时，则可对代理生成策略进行优化（默认是
+false 的）。也就是说，如果该类有接口，就代理接口（使用 JDK 动态代理）；
+如果没有接口，就代理类（使用 CGLib 动态代理）。
+而并非像之前使用的`proxyTargetClass`属性那样，强制代理类，而不考虑代理接口的方式。
+
+既然 CGLib 可以代理任何的类了，那为什么还要用 JDK 的动态代理呢？肯定您会这样问。
+
+根据多年来实际项目经验得知：CGLib 创建代理的速度比较慢，但创建代理后运行的速度却
+非常快，而 JDK 动态代理正好相反。如果在运行的时候不断地用 CGLib 去创建代理，系统
+的性能会大打折扣，所以建议一般在系统初始化的时候用 CGLib 去创建代理，并放入
+Spring 的`ApplicationContext`中以备后用。
+
+以上这个例子只能匹配目标类，而不能进一步匹配其中指定的方法，要匹配方法，就要考虑
+使用切面与切点了。Spring AOP 基于切面也提供了一个自动代理生成器：
+`DefaultAdvisorAutoProxyCreator`。
+
+=== 自动代理（扫描切面配置） ===
+
+为了匹配目标类中的指定方法，我们仍然需要在 Spring 中配置切面与切点：
+
+{{{class="brush: xml"
+<?xml version="1.0" encoding="UTF-8"?>
+<beans ...>
+
+	...
+
+	<bean id="greetingAdvisor"
+		class="org.springframework.aop.support.RegexpMethodPointcutAdvisor">
+		<property name="pattern" value="aop.demo.GreetingImpl.good.*"/>
+		<property name="advice" ref="greetingAroundAdvice"/>
+	</bean>
+
+	<bean
+		class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator">
+		<property name="optimize" value="true"/>
+	</bean>
+
+</beans>
+}}}
+
+这里无需再配置代理了，因为代理将会由`DefaultAdvisorAutoProxyCreator`自动生成。也就是说，这个类可以扫描所有的切面类，并为其自动生成代理。
+
+看来不管怎样简化，老罗始终解决不了切面的配置，这件繁重的手工劳动。在
+Spring 配置文件中，仍然会存在大量的切面配置。然而在有很多情况下 Spring AOP
+所提供的切面类真的不太够用了，比如：想拦截指定注解的方法，我们就必须扩展
+`DefaultPointcutAdvisor`类，自定义一个切面类，然后在 Spring 配置文件中进行切面配置。不做不知道，做了您就知道相当麻烦了。
+
+老罗的解决方案似乎已经掉进了切面类的深渊，这还真是所谓的“面向切面编程”了，最重要的是切面，最麻烦的也是切面。
+
+必须要把切面配置给简化掉，Spring 才能有所突破！ 
+
+神一样的老罗总算认识到了这一点，接受了网友们的建议，集成了 AspectJ，同时也保留了以上提到的切面与代理配置方式（为了兼容老的项目，更为了维护自己的面子）。将 Spring 与 AspectJ 集成与直接使用 AspectJ 是不同的，我们不需要定义 AspectJ 类（它是扩展了 Java 语法的一种新的语言，还需要特定的编译器），只需要使用 AspectJ 切点表达式即可（它是比正则表达式更加友好的表现形式）。
+
+== Spring + AspectJ ==
+
+=== 基于注解：通过 AspectJ execution 表达式拦截方法 ===
+
+下面以一个最简单的例子，实现之前提到的环绕增强。先定义一个 Aspect 切面类：
+
+{{{class="brush: java"
+@Aspect
+@Component
+public class GreetingAspect {
+
+	@Around("execution(* aop.demo.GreetingImpl.*(..))")
+	public Object around(ProceedingJoinPoint pjp) throws Throwable {
+		before();
+		Object result = pjp.proceed();
+		after();
+		return result;
+	}
+
+	private void before() {
+		System.out.println("Before");
+	}
+
+	private void after() {
+		System.out.println("After");
+	}
+}
+}}}
+
+注意：类上面标注的`@Aspect`注解，这表明该类是一个 Aspect（其实就是 Advisor）。
+该类无需实现任何的接口，只需定义一个方法（方法叫什么名字都无所谓），只需在方法上
+标注`@Around`注解，在注解中使用了 AspectJ 切点表达式。方法的参数中包括一个
+`ProceedingJoinPoint`对象，它在 AOP 中称为 Joinpoint（连接点），可以通过该对象
+获取方法的任何信息，例如：方法名、参数等。
+
+下面重点来分析一下这个切点表达式：
+
+{{{class="brush: java"
+execution(* aop.demo.GreetingImpl.*(..))
+}}}
+
+* `execution()`：表示拦截方法，括号中可定义需要匹配的规则。
+* 第一个`*`：表示方法的返回值是任意的。
+* 第二个`*`：表示匹配该类中所有的方法。
+* `(..)`：表示方法的参数是任意的。
+
+是不是比正则表达式的可读性更强呢？如果想匹配指定的方法，只需将第二个`*`改为指定
+的方法名称即可。
+
+如何配置呢？看看是有多简单吧：
+
+{{{class="brush: xml"
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:aop="http://www.springframework.org/schema/aop"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+	   http://www.springframework.org/schema/beans/spring-beans.xsd
+	   http://www.springframework.org/schema/context
+	   http://www.springframework.org/schema/context/spring-context.xsd
+	   http://www.springframework.org/schema/aop
+	   http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+	<context:component-scan base-package="aop.demo"/>
+
+	<aop:aspectj-autoproxy proxy-target-class="true"/>
+
+</beans>
+}}}
+
+两行配置就行了，不需要配置大量的代理，更不需要配置大量的切面，真是太棒了！
+需要注意的是`proxy-target-class="true"`属性，它的默认值是 false，默认只能代理
+接口（使用 JDK 动态代理），当为 true 时，才能代理目标类（使用 CGLib 动态代理）。
+
+Spring 与 AspectJ 结合的威力远远不止这些，我们来点时尚的吧，拦截指定注解的方法
+怎么样？
+
+=== 基于注解：通过 AspectJ @annotation 表达式拦截方法 === 
+
+为了拦截指定的注解的方法，我们首先需要来自定义一个注解：
+
+{{{class="brush: java"
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Tag {
+}
+}}}
+
+以上定义了一个`@Tag`注解，此注解可标注在方法上，在运行时生效。
+
+只需将前面的 Aspect 类的切点表达式稍作改动：
+
+{{{class="brush: java"
+@Aspect
+@Component
+public class GreetingAspect {
+
+	@Around("@annotation(aop.demo.Tag)")
+	public Object around(ProceedingJoinPoint pjp) throws Throwable {
+		...
+	}
+
+	...
+}
+}}}
+
+这次使用了 @annotation() 表达式，只需在括号内定义需要拦截的注解名称即可。
+
+直接将 @Tag 注解定义在您想要拦截的方法上，就这么简单：
+
+{{{class="brush: java"
+@Component
+public class GreetingImpl implements Greeting {
+
+	@Tag
+	@Override
+	public void sayHello(String name) {
+		System.out.println("Hello! " + name);
+	}
+}
+}}}
+
+以上示例中只有一个方法，如果有多个方法，我们只想拦截其中某些时，这种解决方案会更加有价值。
+
+除了`@Around`注解外，其实还有几个相关的注解，稍微归纳一下吧：
+
+* `@Before`：前置增强
+* `@After`：后置增强
+* `@Around`：环绕增强
+* `@AfterThrowing`：抛出增强
+* `@DeclareParents`：引入增强
+
+此外还有一个`@AfterReturning`（返回后增强），也可理解为 Finally 增强，相当于
+finally 语句，它是在方法结束后执行的，也就说说，它比`@After`还要晚一些。
+
+最后一个`@DeclareParents`竟然就是引入增强！为什么不叫做`@Introduction`呢？我也
+不知道为什么，但它干的活就是引入增强。
+
+=== 引入增强 ===
+
+为了实现基于 AspectJ 的引入增强，我们同样需要定义一个 Aspect 类：
+
+{{{class="brush: java"
+@Aspect
+@Component
+public class GreetingAspect {
+
+	@DeclareParents(value = "aop.demo.GreetingImpl", 
+			defaultImpl = ApologyImpl.class)
+	private Apology apology;
+}
+}}}
+
+只需要在 Aspect 类中定义一个需要引入增强的接口，它也就是运行时需要动态实现的接口
+。在这个接口上标注了`@DeclareParents`注解，该注解有两个属性：
+
+* value：目标类
+* defaultImpl：引入接口的默认实现类
+
+我们只需要对引入的接口提供一个默认实现类即可完成引入增强：
+
+{{{class="brush: java"
+public class ApologyImpl implements Apology {
+ 
+	@Override
+	public void saySorry(String name) {
+		System.out.println("Sorry! " + name);
+	}
+}
+}}}
+
+以上这个实现会在运行时自动增强到`GreetingImpl`类中，也就是说，无需修改
+`GreetingImpl`类的代码，让它去实现`Apology`接口，我们单独为该接口提供一个实现类
+（ApologyImpl），来做 GreetingImpl 想做的事情。
+
+还是用一个客户端来尝试一下吧：
+
+{{{class="brush: java"
+public class Client {
+ 
+	public static void main(String[] args) {
+		ApplicationContext context =
+			new ClassPathXmlApplicationContext("aop/demo/spring.xml");
+		Greeting greeting = (Greeting) context.getBean("greetingImpl");
+		greeting.sayHello("Jack");
+ 
+		Apology apology = (Apology) greeting; // 强制转型为 Apology 接口
+		apology.saySorry("Jack");
+	}
+}
+}}}
+
+从 Spring ApplicationContext 中获取 greetingImpl 对象（其实是个代理对象），可转型为自己静态实现的接口 Greeting，也可转型为自己动态实现的接口 Apology，切换起来非常方便。
+
+使用 AspectJ 的引入增强比原来的 Spring AOP 的引入增强更加方便了，而且还可面向接口编程（以前只能面向实现类），这也算一个非常巨大的突破。
+
+这一切真的已经非常强大也非常灵活了！但仍然还是有用户不能尝试这些特性，因为他们还在使用 JDK 1.4（根本就没有注解这个东西），怎么办呢？没想到 Spring AOP 为那些遗留系统也考虑到了。
+
+=== 基于配置 ===
+
+除了使用`@Aspect`注解来定义切面类以外，Spring AOP 也提供了基于配置的方式来定义切面类：
+
+
+{{{class="brush: xml"
+<?xml version="1.0" encoding="UTF-8"?>
+<beans ...">
+
+	<bean id="greetingImpl" class="aop.demo.GreetingImpl"/>
+
+	<bean id="greetingAspect" class="aop.demo.GreetingAspect"/>
+
+	<aop:config>
+		<aop:aspect ref="greetingAspect">
+			<aop:around method="around"
+				pointcut="execution(* aop.demo.GreetingImpl.*(..))"/>
+		</aop:aspect>
+	</aop:config>
+ 
+</beans>
+}}}
+
+使用`<aop:config>`元素来进行 AOP 配置，在其子元素中配置切面，包括增强类型、目标方法、切点等信息。
+
+无论您是不能使用注解，还是不愿意使用注解，Spring AOP 都能为您提供全方位的服务。
+
+好了，我所知道的比较实用的 AOP 技术都在这里了，当然还有一些更为高级的特性，由于个人精力有限，这里就不再深入了。
+
+还是依照惯例，给一张牛逼的高清无码思维导图，总结一下以上各个知识点：
+
+<img src="file:///D:/cygwin64/home/qwshan/workspace/study/notes/wiki_html/images/aop/aop.prv01.png" />
+
+再来一张表格，总结一下各类增强类型所对应的解决方案：
+
+| 增强类型                       | 基于 AOP 接口                     | 基于 @Aspect    | 基于 <aop:config>     |
+|--------------------------------|-----------------------------------|-----------------|-----------------------|
+| Before Advice（前置增强）      | MethodBeforeAdvice                | @Before         | <aop:before>          |
+| AfterAdvice（后置增强）        | AfterReturningAdvice              | @After          | <aop:after>           |
+| AroundAdvice（环绕增强）       | MethodInterceptor                 | @Around         | <aop:around>          |
+| ThrowsAdvice（抛出增强         | ThrowsAdvice                      | @AfterThrowing  | <aop:after-throwing>  |
+| IntroductionAdvice（引入增强） | DelegatingIntroductionInterceptor | @DeclareParents | <aop:declare-parents> |
+
+
+最后给一张 UML 类图描述一下 Spring AOP 的整体架构：
+
+<img src="file:///D:/cygwin64/home/qwshan/workspace/study/notes/wiki_html/images/aop/aop.prv02.png" />

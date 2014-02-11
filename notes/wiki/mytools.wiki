@@ -18,6 +18,8 @@ Cygwin：[[Cygwin]]
 
 Windows的chm工具：[[winchm]]
 
+大文本：[[larg.text]]
+
 = 网络 =
 
 putty： [[putty]]
