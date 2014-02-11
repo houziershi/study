@@ -1,0 +1,24 @@
+
+= 办公文档 =
+
+Windows的chm工具：[[winchm]]
+
+= 系统模拟器 =
+
+Cygwin：[[Cygwin]]
+
+= 网络 =
+
+putty： [[putty]]
+
+email：[[email]]
+
+pidgin：[[pidgin]]
+
+远程桌面：remina
+
+= 多媒体 =
+
+[[SMplayer]]
+
+[[moc]]

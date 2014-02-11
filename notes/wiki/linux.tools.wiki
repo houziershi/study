@@ -1,0 +1,12 @@
+
+= 命令行 =
+
+终端复用：[[tmux]]
+
+交互脚本：[[expect]]
+
+= 文件管理 =
+
+[[Midnight.Commander]]
+
+[[Gnome.Commander]]

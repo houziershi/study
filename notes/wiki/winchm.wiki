@@ -1,0 +1,6 @@
+
+windows解压chm文件：
+
+hh.exe -decompile 目标文件夹 chm文件
+
+hh.exe -decompile html aa.chm

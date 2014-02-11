@@ -1,0 +1,10 @@
+[[linux.x]]
+
+[[Desktop.Entry]]
+
+[[fonts]]
+
+[[scrot]]
+
+[[synergy]]
+

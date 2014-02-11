@@ -19,11 +19,35 @@
 <link type="text/css" rel="stylesheet" href="../../vimwiki-theme/templates/code-default/styles/style.css" />
 
 
-<title>linux.tips</title>
+<title>贴士</title>
 </head>
 <body  onresize='changeTocSize()'>
 	<div class="note-main"> 
 
+<h1>贴士</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">合并pdf文件</a>
+<li><a href="#toc_2">主机信息</a>
+<li><a href="#toc_3">查看linux page cache里的内容</a>
+<li><a href="#toc_4">常用监控工具</a>
+<ul>
+<li><a href="#toc_4.1">htop – 交互式进程查看器</a>
+<li><a href="#toc_4.2">iotop – 简单的类似top的I/O监控器</a>
+<li><a href="#toc_4.3">apachetop – 展示web服务器实时统计数据</a>
+<li><a href="#toc_4.4">Glances – 基于CLI curses库的监控工具</a>
+</ul>
+<li><a href="#toc_5">sl 命令</a>
+<li><a href="#toc_6">fortune  命令</a>
+<li><a href="#toc_7">cowsay 命令</a>
+<li><a href="#toc_8">cmatrix 命令</a>
+<li><a href="#toc_9">oneko 命令</a>
+<li><a href="#toc_10">xeyes 命令</a>
+<li><a href="#toc_11">cal 9 1752</a>
+<li><a href="#toc_12">shred</a>
+<li><a href="#toc_13">factor</a>
+</ul>
+</div>
 
 
 <h1 id="toc_1">合并pdf文件</h1>
@@ -186,7 +210,272 @@ Glances用各个分离的表列展示了你机器当前正运行的各种有用�
 Glances用有限的交互可能性和更深层的信息监控PerCPU, Load, Memory, Swap, Network, 
 	Disk i/O, Mount data 和processes，但对于获得一个整体概貌绝对是完美的。
 </p>
+
+
+<h1 id="toc_5">sl 命令</h1>
+
+<p>
+你会看到一辆火车从屏幕右边开往左边……
+</p>
+
+<p>
+安装
+</p>
 	
+<p>
+$ sudo apt-get install sl
+</p>
+
+<p>
+运行
+</p>
+
+<p>
+ $ sl
+</p>
+
+<p>
+命令有 -a l F e 几个选项，
+</p>
+	
+<p>
+-a An accident seems to happen. You'll feel pity for people who cry for help.
+ -l shows little one.
+ -F It flies.
+ -e Allow interrupt by Ctrl+C.
+</p>
+
+
+<p>
+可以给别人来个恶作剧，他一敲ls，不知道的肯定很有效果
+</p>
+	
+<p>
+$alias ls=sl
+</p>
+
+<h1 id="toc_6">fortune  命令</h1>
+
+<p>
+输出一句话，有笑话，名言什么的 (还有唐诗宋词sudo apt-get install fortune-zh)
+</p>
+
+<p>
+安装
+</p>
+	
+<p>
+$sudo apt-get install fortune
+</p>
+
+<p>
+运行
+</p>
+	
+<p>
+$fortune
+</p>
+
+ 
+
+<h1 id="toc_7">cowsay 命令</h1>
+
+<p>
+用ASCII字符打印牛，羊等动物，还有个cowthink，这个是奶牛想，那个是奶牛说，哈哈，
+差不多
+</p>
+
+<p>
+安装
+</p>
+	
+<p>
+$sudo apt-get install cowsay
+</p>
+
+
+<p>
+$cowsay "I am not a cow, hahaha"
+</p>
+
+<p>
+查看其它动物的名字，然后 -f 跟上动物名，
+</p>
+
+<p>
+$cowsay -l  
+</p>
+
+<p>
+如
+</p>
+	
+<p>
+$cowsay -f tux "坑爹啊"
+</p>
+
+<p>
+还可以让cowsay说出fortune的内容，就像这样：
+</p>
+
+<p>
+$fortune | cowsay
+</p>
+
+
+<h1 id="toc_8">cmatrix 命令</h1>
+
+<p>
+这个很酷！《黑客帝国》那种矩阵风格的动画效果
+</p>
+
+<p>
+安装
+ $ sudo apt-get install cmatrix
+</p>
+
+<p>
+运行
+</p>
+	
+<p>
+$cmatrix
+</p>
+
+ 
+
+<p>
+figlet 、toilet命令
+</p>
+
+<p>
+艺术字生成器，由ASCII字符组成，把文本显示成标题栏。此外还有banner这个命令
+</p>
+
+<p>
+安装
+</p>
+	
+<p>
+$sudo apt-get install figlet
+$sudo apt-get install toilet
+</p>
+
+<p>
+运行
+</p>
+
+<p>
+$figlet fuck you !
+$toilet i love you
+</p>
+
+
+<p>
+toilet 还可以添加颜色，里面的选项请自己 man 一下
+</p>
+	
+<p>
+$ toilet -f mono12 -F gay a girl
+</p>
+
+
+ 
+
+<h1 id="toc_9">oneko 命令</h1>
+
+<p>
+桌面上出现一直喵星人，跟着你的鼠标跑，你不动了它就睡觉。哈哈，这个挺不错
+</p>
+
+<p>
+安装
+</p>
+
+<p>
+$sudo apt-get install oneko
+</p>
+
+<p>
+运行
+</p>
+
+<p>
+$oneko
+</p>
+
+<p>
+要关掉这家伙，按<code>ctrl+c</code>结束
+</p>
+
+
+ 
+
+<h1 id="toc_10">xeyes 命令</h1>
+
+<p>
+在屏幕上出现一双眼睛，盯着你的鼠标指针
+</p>
+
+ 
+
+<p>
+yes 命令
+</p>
+
+<p>
+输出无穷无尽的字符，按<code>ctrl+c</code>结束，如
+</p>
+
+<p>
+$yes  我很NB
+</p>
+
+ 
+
+<h1 id="toc_11">cal 9 1752</h1>
+
+<p>
+cal是打印日历，不过这个是很奇葩的一个月，
+</p>
+
+
+<h1 id="toc_12">shred</h1>
+
+<p>
+覆盖搞乱文件，就是文档粉碎，哈哈，要把你私藏的大片种子和电影销毁，不被恢复出来，
+就靠它了
+</p>
+
+<h1 id="toc_13">factor</h1>
+
+<p>
+分解因数，这个……小学生可以用一下
+</p>
+
+<p>
+aptitude
+</p>
+
+<p>
+挨个敲下面这一堆，aptitude 没有的可以安装上
+</p>
+
+<p>
+aptitude moo
+ aptitude -v moo
+ aptitude -vv moo
+ aptitude -vvv moo
+ aptitude -vvvv moo
+ aptitude -vvvvv moo
+ aptitude -vvvvvv moo
+ aptitude -vvvvvvv moo
+</p>
+
+<p>
+这些好玩的命令可以通过查 man 手册，然后在加上自己想出来的创意，改编成更多有趣的
+东西，哈哈，给别人捣乱也是挺好玩的…
+</p>
 
 <pre class="brush: bash">
 </pre>

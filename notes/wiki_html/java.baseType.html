@@ -28,20 +28,84 @@
 <h1>基础类型</h1>
 <div class="toc">
 <ul>
-<li><a href="#toc_1">数组</a>
+<li><a href="#toc_1">Integer</a>
 <ul>
-<li><a href="#toc_1.1">arrayCopy</a>
-<li><a href="#toc_1.2">多维数组</a>
-</ul>
-<li><a href="#toc_2">容器类初始化</a>
+<li><a href="#toc_1.1">valueOf(String)的特殊行为</a>
 <ul>
-<li><a href="#toc_2.1">忘设初始容量</a>
+<li><a href="#toc_1.1.1">结果缓存</a>
+<li><a href="#toc_1.1.2">开箱转换</a>
 </ul>
-<li><a href="#toc_3">枚举（enum）</a>
+</ul>
+<li><a href="#toc_2">数组</a>
+<ul>
+<li><a href="#toc_2.1">arrayCopy</a>
+<li><a href="#toc_2.2">多维数组</a>
+</ul>
+<li><a href="#toc_3">容器类初始化</a>
+<ul>
+<li><a href="#toc_3.1">忘设初始容量</a>
+</ul>
+<li><a href="#toc_4">枚举（enum）</a>
 </ul>
 </div>
 
-<h1 id="toc_1">数组</h1>
+<h1 id="toc_1">Integer</h1>
+
+<h2 id="toc_1.1">valueOf(String)的特殊行为</h2>
+
+<h3 id="toc_1.1.1">结果缓存</h3>
+
+<pre class="brush: java; highlight: [2]">
+Integer.valueOf("127")==Integer.valueOf("127")    // true
+Integer.valueOf("128")==Integer.valueOf("128")    // false why ?!!
+</pre>
+
+<p>
+valueOf会返回一个Integer（整型）对象，当被处理的字符串在<code>-128</code>和<code>127</code>（包含边界）
+之间时，返回的对象是预先缓存的。
+</p>
+
+<p>
+这就是为什么第一行的调用会返回<code>true</code>。<code>-127</code>这个整型对象是被缓存的（所以两次
+valueOf返回的是同一个对象）。
+</p>
+
+<p>
+第二行的调用返回<code>false</code>是因为<code>128</code>没有被缓存，所以每次调用，都会生成一个新的整型
+对象，因此两个128整型对象是不同的对象。
+</p>
+
+<p>
+重要的是你要知道在上面的比较中，你实际进行比较的是integer.valueOf返回的对象引用
+，所以当你比较缓存外的整型对象时，相等的判断不会返回true，就算你传个valueOf的值
+是相等的也没用。想让这个判断返回true，你需要使用equals()方法。
+</p>
+
+<h3 id="toc_1.1.2">开箱转换</h3>
+
+<pre class="brush: java; highlight: [2]">
+Integer.parseInt("128")==Integer.valueOf("128")   // true
+</pre>
+
+<p>
+parseInt()返回的不是整型对象，而是一个int型基础元素。这就是为什么最后一个判断会
+返回true，第三行的判断中，在判断相等时，实际比较的是<code>128 == 128</code>，所以它必然是
+相等的。
+</p>
+
+<p>
+一个unboxing conversion（一种比较时的转换，把对对象的引用转换为其对应的原子类型
+）在第三行的比较中发生了。因为比较操作符使用了<code>==</code>同时等号的两边存在一个<code>int</code>型
+和一个<code>Integer</code>对象的引用。这样的话，等号右边返回的Integer对象被进一步转换成了
+int数值，才与左边进行相等判断。
+</p>
+
+<p>
+所以在转换完成后，你实际比较的是两个原子整型数值。这种转换正是你在比较两个原子
+类型时所期待看到的那样，所以你最终比较了128等于128。
+</p>
+
+<h1 id="toc_2">数组</h1>
 
 <p>
 声明时不能指定大小：<code>type [] var;</code>或<code>type var []</code>
@@ -68,7 +132,7 @@ Java中数组可以轻易的转换成ArrayList。ArrayList一个基于索引的�
 到新数组，但你不能改变数组的大小。
 </p>
 
-<h2 id="toc_1.1">arrayCopy</h2>
+<h2 id="toc_2.1">arrayCopy</h2>
 
 <p>
 Java API同样提供了一些便捷方法通过java.utils.Arrays类去操作数组，通过使用Arrays
@@ -130,7 +194,7 @@ after copying
 0
 </pre>
 
-<h2 id="toc_1.2">多维数组</h2>
+<h2 id="toc_2.2">多维数组</h2>
 
 <pre class="brush: java">
 int[][] multiArray = new int[2][3];
@@ -146,9 +210,9 @@ System.out.println(multiArray[1].length);
 
 
 
-<h1 id="toc_2">容器类初始化</h1>
+<h1 id="toc_3">容器类初始化</h1>
 
-<h2 id="toc_2.1">忘设初始容量</h2>
+<h2 id="toc_3.1">忘设初始容量</h2>
 
 <p>
 在JAVA中，我们常用<code>Collection</code>中的<code>Map</code>做Cache,但是我们经常会遗忘设置初始容量：
@@ -275,7 +339,7 @@ double
 
 
 
-<h1 id="toc_3">枚举（enum）</h1>
+<h1 id="toc_4">枚举（enum）</h1>
 
 <p>
 不能用<code>ordinal</code>自增当值时，增加一个<code>value</code>表示值：

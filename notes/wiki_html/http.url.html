@@ -1,0 +1,830 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<!--
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/jquery-1.4.2.min.js"></script>
+-->
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/zepto-1.1.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/3rd-libs/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/3rd-libs/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/templates/code-default/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/templates/code-default/styles/style.css" />
+
+
+<title>URL</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+<h1>URL</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">URL</a>
+<ul>
+<li><a href="#toc_1.1">HTTP URL语法</a>
+<li><a href="#toc_1.2">URL 语法</a>
+<li><a href="#toc_1.3">URL常见陷阱</a>
+<ul>
+<li><a href="#toc_1.3.1">每部分的保留字都是不同</a>
+<li><a href="#toc_1.3.2">不能分析解码后的URL</a>
+<li><a href="#toc_1.3.3">解码后的URL不能被再恢复</a>
+</ul>
+<li><a href="#toc_1.4">用Java正确处理URL</a>
+<ul>
+<li><a href="#toc_1.4.1">不要处理整个URL</a>
+<li><a href="#toc_1.4.2">分段编码后再拼装</a>
+<li><a href="#toc_1.4.3">URI.getPath()有问题</a>
+<li><a href="#toc_1.4.4">第三方库问题</a>
+<li><a href="#toc_1.4.5">在web应用的每一层修复URL编码问题</a>
+<li><a href="#toc_1.4.6">在创建时候就要进行URL编码</a>
+<li><a href="#toc_1.4.7">URL-rewrite过滤器问题</a>
+<li><a href="#toc_1.4.8">正确使用Apache mod-rewrite</a>
+</ul>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">URL</h1>
+
+<p>
+<code>http://www.google.com</code>这个URL中读出下列详细信息:
+</p>
+
+<table>
+<tr>
+<td>
+Part
+</td>
+<td>
+Data
+</td>
+</tr>
+<tr>
+<td>
+Scheme
+</td>
+<td>
+http
+</td>
+</tr>
+<tr>
+<td>
+Host address
+</td>
+<td>
+www.google.com
+</td>
+</tr>
+</table>
+
+<p>
+如果我们看一个更复杂的URL，比如：
+</p>
+
+<p>
+<code>https://bob:bobby@www.lunatech.com:8080/file;p=1?q=2#third</code>
+</p>
+
+<p>
+我们就能获取到下列信息:
+<table>
+<tr>
+<td>
+Part
+</td>
+<td>
+Data
+</td>
+</tr>
+<tr>
+<td>
+Scheme
+</td>
+<td>
+https
+</td>
+</tr>
+<tr>
+<td>
+User
+</td>
+<td>
+bob
+</td>
+</tr>
+<tr>
+<td>
+Password
+</td>
+<td>
+bobby
+</td>
+</tr>
+<tr>
+<td>
+Host address
+</td>
+<td>
+www.lunatech.com
+</td>
+</tr>
+<tr>
+<td>
+Port
+</td>
+<td>
+8080
+</td>
+</tr>
+<tr>
+<td>
+Path
+</td>
+<td>
+/file
+</td>
+</tr>
+<tr>
+<td>
+Path parameters
+</td>
+<td>
+p=1
+</td>
+</tr>
+<tr>
+<td>
+Query parameters
+</td>
+<td>
+q=2
+</td>
+</tr>
+<tr>
+<td>
+Fragment
+</td>
+<td>
+third
+</td>
+</tr>
+</table>
+</p>
+
+<p>
+协议 (即scheme，如上面的http和https (安全HTTP)) 定义了URL中其余部分的结构。大多数互联网URL协议 拥有通用的开头，包括用户，密码，主机名和端口，后面才是每个协议具体的部分。这个通用的部分负责处理认证，同时它也有能力知道为了请求数据应该链接到哪儿。
+</p>
+
+<h2 id="toc_1.1">HTTP URL语法</h2>
+
+<p>
+对于HTTP URL(使用http 或 https 协议)，URL的<code>scheme</code>描述部分定义了数据的路径（<code>path</code>），后面是可选的<code>query</code>和<code>fragment</code>。
+</p>
+
+<p>
+<code>path</code>部分看上去是一个分层的结构，类似于文件系统中文件夹和文件的分层结构。path由<code>/</code>字符开始，每一个文件夹由<code>/</code>分隔，最后是文件。
+</p>
+
+<p>
+每一个<code>path</code>片段 可以有可选的<code>path</code>参数 (也叫<code>matrix</code>参数)，这是在path片段的最后由<code>;</code>开始的一些字符。每个参数名和值由<code>=</code>字符分隔，像这样：<code>/file;p=1</code>，这定义了path片段<code>file</code>有一个<code>path</code>参数<code>p</code>，其值为<code>1</code>。这些参数并不常用但确实是存在，而且从Yahoo RESTful API文档我们能找到很好的理由去使用它们：
+</p>
+
+<p>
+“Matrix参数可以让程序在GET请求中可以获取部分的数据集。参考数据集的分页。因为matrix参数可以跟任何数据集的URI格式的path片段，它们可以在内部的path片段中被使用。”
+</p>
+
+<p>
+在路径(path)部分之后是查询(query)部分，它和路径之间由一个<code>?</code>隔开， 查询部分包含了一个由<code>&amp;</code>分隔开的参数列表，每一个参数由参数名称、<code>=</code>号以及参数值组成。
+</p>
+
+<p>
+一个HTTP URL的最后部分是一个段落(fragment)部分，用来指向HTML文件中具体的某个部分，而不是整个HTML页面。比如说，当你点击链接时浏览器自动滚屏到某个部分而不是从页面最顶部开始展示，就说明你点击了一个拥有段落部分的URL。
+</p>
+
+<h2 id="toc_1.2">URL 语法</h2>
+
+<p>
+http URL方案最初由RFC 1738定义（实际上，在之前的RFC 1630也有涉及），而在http URL方案被重新定义之前，整个URL语法就已经由扩展了几次以适应发展的规范进化为一套统一资源标识符（Uniform Resource Identifiers 即 URIs)。
+</p>
+
+<p>
+URL中的与保留字符冲突的字符要被转成特殊的16进制，如：<code>to_be_or_not_to_be?.jpg</code>图片的URL写成<code>http://example.com/to_be_or_not_to_be%3F.jpg</code>。
+</p>
+
+<h2 id="toc_1.3">URL常见陷阱</h2>
+
+<p>
+URL编码规范并没有定义使用何种字符编码形式去编码字节。一般的ASCII字母数字字符并不需要转义，但是ASCII之外的保留字需要。
+</p>
+
+<pre class="brush: html">
+例如法语单词“nœud”中的"œ"
+</pre>
+
+<p>
+我们必须提出疑问，应该使用哪类字符编码来编码URL字节。
+</p>
+
+<p>
+当然如果只有Unicode的话，这个世界就会清净很多。因为每个字符都包含其中，但是它只是一个集合，或者说是列表如果你愿意，它本身并不是一中编码。Unicode可以使用多种方式进行编码，譬如UTF-8或者UTF-16（也有其它格式），但是问题并没有解决：我们应该使用哪类字符来编码URL（通常也指URI）。
+</p>
+
+<p>
+标准并没有定义一个URI应该以何种方式指定其编码，所以其必须从环境信息中进行推导。对于HTTP URL，它可以是HTML页面的编码格式，或HTTP头的。这通常会让人迷惑，也是许多错误的根源。事实上，最新版的URI标准 定义了新的URI scheme将采用UTF-8，host（甚至已有的scheme）也使用UTF-8，这让我更加怀疑：难道host和path真的可以使用不同的编码方式？
+</p>
+
+
+<h3 id="toc_1.3.1">每部分的保留字都是不同</h3>
+
+<p>
+是的，每一部分的保留字都是不同。
+</p>
+
+<p>
+对于一个httpd连接，路径片段部分中的空格被编码为<code>%20</code>（不，完全没有<code>+</code>）,而<code>+</code>字符在路径片段部分可以保持不编码。
+</p>
+
+<p>
+现在，在查询部分，一个空格可能会被编码为<code>+</code>（为了向后兼容：不要试图在URI标准去搜索他）或者<code>%20</code>，当作为<code>+</code>字符（作为个统配符的结果）会被编译为<code>%2B</code>。
+</p>
+
+<p>
+这意味着<code>blue+light blue</code>字串，如果在路径部分或者查询部分，将会有不同的编码。比如得到
+</p>
+
+<pre class="brush: html">
+http://example.com/blue+light%20blue?blue%2Blight+blue
+</pre>
+
+<p>
+这样的编码形式，这样我们不需从语法上分析url结构，就可以推导这个url的整个结构是可能的。
+</p>
+
+<p>
+考虑如下组装URL的Java代码片段 
+</p>
+<pre class="brush: java">
+String str = "blue+light blue";
+String url = "http://example.com/" + str + "?" + str;
+</pre>
+
+<p>
+编码URL并不是为了转义保留字而进行的简单字符迭代，我们需要确切的知道哪个URL部份有哪些保留字，而有针对性的进行编码。
+</p>
+
+<p>
+这也意味着URL重写过滤器如果不考虑合适的编码细节而对URL直接进行分段转换通常是有问题的。对URL进行编码而不考虑具体的分段规则是不切实际的。
+</p>
+
+<p>
+保留字不是你想象的那样
+</p>
+
+<p>
+大多数人不知道<code>+</code>在路径部分是被允许的并且特指正号而不是空格。其他类似的有：
+</p>
+
+<ul>
+<li>
+<code>?</code>在查询部分允许不被转义，
+
+<li>
+<code>/</code>在查询部分允许不被转义，
+
+<li>
+<code>=</code>在作为路径参数或者查询参数值以及在路径部分允许不被转义，
+
+<li>
+<code>:@-._~!$&amp;'()*+,;=</code>等字符在路径部分允许不被转义，
+
+<li>
+<code>/?:@-._~!$&amp;'()*+,;=</code>等字符在任何段中允许不被转义。
+
+</ul>
+
+<p>
+这样下面的地址虽然看起来有点混乱:
+</p>
+<pre class="brush: html">
+http://example.com/:@-._~!$&amp;'()*+,=;:@-._~!$&amp;'()*+,=:@-._~!$&amp;'()*+,==?/?:@-._~!$'()*+,;=/?:@-._~!$'()*+,;==#/?:@-._~!$&amp;'()*+,;=
+</pre>
+
+<p>
+按照上面的规则，其实上是一个合法的地址：
+</p>
+
+<table>
+<tr>
+<td>
+部分
+</td>
+<td>
+值
+</td>
+</tr>
+<tr>
+<td>
+协议
+</td>
+<td>
+http
+</td>
+</tr>
+<tr>
+<td>
+主机
+</td>
+<td>
+example.com
+</td>
+</tr>
+<tr>
+<td>
+路径
+</td>
+<td>
+/:@-._~!$&amp;'()*+,=
+</td>
+</tr>
+<tr>
+<td>
+路径参数名
+</td>
+<td>
+:@-._~!$&amp;'()*+,
+</td>
+</tr>
+<tr>
+<td>
+路径参数值
+</td>
+<td>
+:@-._~!$&amp;'()*+,==
+</td>
+</tr>
+<tr>
+<td>
+查询参数名
+</td>
+<td>
+/?:@-._~!$'()* ,;
+</td>
+</tr>
+<tr>
+<td>
+查询参数值
+</td>
+<td>
+/?:@-._~!$'()* ,;==
+</td>
+</tr>
+<tr>
+<td>
+段
+</td>
+<td>
+/?:@-._~!$&amp;'()*+,;=
+</td>
+</tr>
+</table>
+
+
+<h3 id="toc_1.3.2">不能分析解码后的URL</h3>
+
+<p>
+URL的语法只在它被解码前是有意义的，一旦解码就可能出现保留字。
+</p>
+
+<p>
+例如
+</p>
+
+<pre class="brush: html">
+http://example.com/blue%2Fred%3Fand+green
+</pre>
+
+<p>
+在解码前由如下部分组成:
+<table>
+<tr>
+<td>
+Part
+</td>
+<td>
+Value
+</td>
+</tr>
+<tr>
+<td>
+Scheme
+</td>
+<td>
+http
+</td>
+</tr>
+<tr>
+<td>
+Host
+</td>
+<td>
+example.com
+</td>
+</tr>
+<tr>
+<td>
+Path segment
+</td>
+<td>
+blue%2Fred%3Fand+green
+</td>
+</tr>
+<tr>
+<td>
+Decoded Path segment
+</td>
+<td>
+blue/red?and+green
+</td>
+</tr>
+</table>
+</p>
+
+<p>
+这样看来, 我们是在请求一个名为<code>blue/red?and+green</code>的文件，而不是一个位于<code>blue</code>文件夹下的名为<code>red?and+green</code>的文件。
+</p>
+
+<p>
+如果我们把它解码为<code>http://example.com/blue/red?and+green</code>，我们将得到如下部分:
+<table>
+<tr>
+<td>
+Part
+</td>
+<td>
+Value
+</td>
+</tr>
+<tr>
+<td>
+Scheme
+</td>
+<td>
+http
+</td>
+</tr>
+<tr>
+<td>
+Host
+</td>
+<td>
+example.com
+</td>
+</tr>
+<tr>
+<td>
+Path segment
+</td>
+<td>
+blue
+</td>
+</tr>
+<tr>
+<td>
+Path segment
+</td>
+<td>
+red
+</td>
+</tr>
+<tr>
+<td>
+Query parameter
+</td>
+<td>
+name and green
+</td>
+</tr>
+</table>
+</p>
+
+<p>
+这明显是错误的，所以，对保留字和URL各部分的分析必须在URL解码之前完成。这意味着URL重写过滤器不应当在尝试匹配之前解码URL，当且仅当保留字允许进行URL编码时才可以(有时符合这种情形，有时不符合，这取决于你的应用)。
+</p>
+
+
+
+<h3 id="toc_1.3.3">解码后的URL不能被再恢复</h3>
+
+<p>
+解码后的URL不能被再编码为同样的形式
+</p>
+
+<p>
+如果你解码<code>http://example.com/blue%2Fred%3Fand+green</code>
+</p>
+
+<p>
+为<code>http://example.com/blue/red?and+green</code>
+</p>
+
+<p>
+然后对它进行编码(哪怕使用一个对URL每一部分都很了解的编码器)，你将会得到
+</p>
+
+<p>
+<code>http://example.com/blue/red?and+green</code>
+</p>
+
+<p>
+这是因为它已经是一个有效的URL。它跟我们解码之前的URL非常的不同。
+</p>
+
+
+<h2 id="toc_1.4">用Java正确处理URL</h2>
+
+<p>
+当你觉得自己已经拿到了URL的黑腰带(柔道中的最高级别--译者注)，你将会发现仍有一些Java里特有的、URL相关的陷阱。如果没有一个强大的心脏，你很难正确的处理URL。
+</p>
+
+<h3 id="toc_1.4.1">不要处理整个URL</h3>
+
+<p>
+不要用<code>java.net.URLEncoder</code>或者<code>java.net.URLDecoder</code>来处理整个URL
+</p>
+
+<p>
+不开玩笑。这些类不是用来编码或解码URL的，API文档中清楚的写着:
+</p>
+
+<p>
+“Utility class for HTML form encoding. This class contains static methods for converting a String to theapplication/x-www-form-urlencodedMIME format. For more information about HTML form encoding, consult the HTML specification.”
+</p>
+
+<p>
+这不是给URL用的。充其量它类似于查询部分的编码方式。使用它来编码或解码整个URL是错误的。你肯定以为标准的JDK一定会有一个标准的类来正确的处理URL编码(是这样，只不过是各部分分开处理的)，但是要么是压根没有，要么是我们还没有发现。不
+</p>
+
+<h3 id="toc_1.4.2">分段编码后再拼装</h3>
+
+<p>
+正如我们已经讲过的：完整构建后的URL不能再被编码。
+</p>
+
+<p>
+以下面的代码为例:
+</p>
+<pre class="brush: java">
+String pathSegment = "a/b?c";
+String url = "http://example.com/" + pathSegment;
+</pre>
+
+<p>
+如果<code>a/b?c</code>是一个路径片段，那么不可能把<code>http://example.com/a/b?c</code>转换回之前它的原样，因为它碰巧是一个有效的URL。之前我们已经解释过这一点。
+</p>
+
+<p>
+下面是正确的代码: 
+</p>
+<pre class="brush: java">
+String pathSegment = "a/b?c";
+String url = "http://example.com/" + URLUtils.encodePathSegment(pathSegment);  
+</pre>
+
+<p>
+这里我们使用了一个工具类<code>URLUtils</code>，它是我们自己开发的，因为网络上找不到一个详尽的足够快的工具类。上面的代码会带给你正确编码的<code>http://example.com/a%2Fb%3Fc</code>。
+</p>
+
+<p>
+注意，同样的方式也适用于查询子串: 
+</p>
+<pre class="brush: java">
+String value = "a&amp;b==c";
+String url = "http://example.com/?query=" + value;  
+</pre>
+
+<p>
+这会给你<code>http://example.com/?query=a&amp;b==c</code>，这是个有效的URL，而不是我们想得到的<code>http://example.com/?query=a%26b==c</code>。
+</p>
+
+
+<h3 id="toc_1.4.3">URI.getPath()有问题</h3>
+
+<p>
+不要期望URI.getPath()给你结构化的数据
+</p>
+
+<p>
+因为一旦一个URL被解码，句法信息就会丢失，下面这样的代码就是错误的： 
+</p>
+<pre class="brush: java">
+URI uri = new URI("http://example.com/a%2Fb%3Fc");
+for(String pathSegment : uri.getPath().split("/"))
+  System.err.println(pathSegment);  
+</pre>
+
+<p>
+它会先将路径<code>a%2Fb%3Fc</code>解码为<code>a/b?c</code>,然后在不应该分割的地方将地址分割为地址片段。
+</p>
+
+<p>
+正确的代码使用的是 未解码的路径：
+</p>
+<pre class="brush: java">
+URI uri = new URI("http://example.com/a%2Fb%3Fc");
+
+for(String pathSegment : uri.getRawPath().split("/"))
+  System.err.println(URLUtils.decodePathSegment(pathSegment));  
+</pre>
+
+<p>
+注意路径参数仍然存在：如果需要的话再处理它们。
+</p>
+
+
+<h3 id="toc_1.4.4">第三方库问题</h3>
+
+<p>
+Apache Commons HTTPClient 3的<code>URI</code>类使用了Apache Commons Codec的<code>URLCodec</code>来做 URL编码, 正如API文档提到的 它是有问题的，因为它犯了和使用<code>java.net.URLEncoder</code>同样的错误。它不但使用了错误的编码器，还错误的按照每一部分都具有同样的预定设置进行解码。
+</p>
+
+<h3 id="toc_1.4.5">在web应用的每一层修复URL编码问题</h3>
+
+<p>
+近来我们已经被动修复了许多应用中的URL编码问题。从在Java中支持它，到低层次的URL重写。这里我们会列出一些必要的修改。
+</p>
+
+
+<h3 id="toc_1.4.6">在创建时候就要进行URL编码</h3>
+
+<p>
+在我们的 HTML文件中，我们将所有出现：
+</p>
+<pre class="brush: javascript">
+var url = "#{vl:encodeURL(contextPath + '/view/' + resource.name)}";  
+</pre>
+
+<p>
+的地方替换为：
+</p>
+<pre class="brush: javascript">
+var url = "#{contextPath}/view/#{vl:encodeURLPathSegment(resource.name)}";  
+</pre>
+
+<p>
+查询参数也是类似的。
+</p>
+
+
+<h3 id="toc_1.4.7">URL-rewrite过滤器问题</h3>
+
+<p>
+Url 重写过滤器是一个重写过滤器，我们在seam中用于转化漂亮的地址去应用依赖的网址。
+</p>
+
+<p>
+例如，我们用它把
+</p>
+
+<p>
+<code>http://beta.visiblelogistics.com/view/resource/FOO/bar</code>
+</p>
+
+<p>
+转化为
+</p>
+
+<p>
+<code>http://beta.visiblelogistics.com/resources/details.seam?owner=FOO&amp;name=bar</code>。
+</p>
+
+<p>
+很明显，这个过程包含了一些字符串从一个地址到另一个地址，这意味着我们要从路径部分解码并且把它重新编码为另一个查询值部分。
+</p>
+
+<p>
+我们起初的规则，如下所示：
+</p>
+<pre class="brush: xml">
+&lt;urlrewrite decode-using="utf-8"&gt;
+ &lt;rule&gt;
+  &lt;from&gt;^/view/resource/(.*)/(.*)$&lt;/from&gt;
+  &lt;to encode="false"&gt;/resources/details.seam?owner=$1&amp;name=$2&lt;/to&gt;
+ &lt;/rule&gt;
+&lt;/urlrewrite&gt;  
+</pre>
+
+<p>
+从这我们可以看到在重写过滤器中只有两种方法处理网址重写：每一个的网址先被解码去做规则匹配（&lt;to&gt;模式），或者它不可用，所有规则去处理解码。在我们看来后者是比较好的选择，特别是当你要移动网址部分周围，或者想去包含URL解码路径分隔符的匹配路径部分时候。
+</p>
+
+<p>
+在替换模式中（&lt;to&gt;模式）你可以使用内建的函数<code>escape(String)</code>和<code>unescape(String)</code>处理网站转码和解码。
+</p>
+
+<p>
+在撰写这个文章的时候，Url Rewrite Filter Beta 3.2有一些bugs，限制住我们提高URL-correctness：
+</p>
+
+<ul>
+<li>
+网址解码使用<code>java.net.URLDecoder</code>（这是错误的
+
+<li>
+<code>escape(String)</code>和<code>unescape(String)</code>内建函数使用<code>java.net.URLDecoder</code>和<code>java.net.URLEncoder</code>（不够强大，只能用于这个查询字串，所有的<code>&amp;</code>或者<code>=</code>不被转码）。
+
+</ul>
+
+<p>
+我们因此做了一个大修正补丁，用于修正诸如网址解码问题以及增加内建函建<code>escapePathSegment(String)</code>和<code>unescapePathSegment(String)</code>。
+</p>
+
+<p>
+我们现在可以这样写，几乎不会有错误
+</p>
+<pre class="brush: xml">
+&lt;urlrewrite decode-using="null"&gt;
+ &lt;rule&gt;
+  &lt;from&gt;^/view/resource/(.*)/(.*)$&lt;/from&gt;
+  &lt;-- Line breaks inserted for readability --&gt;
+  &lt;to encode="false"&gt;/resources/details.seam
+                     ?owner=${escape:${unescapePath:$1}}
+                     &amp;name=${escape:${unescapePath:$2}}&lt;/to&gt;
+ &lt;/rule&gt;
+&lt;/urlrewrite&gt;  
+</pre>
+
+
+<p>
+唯一可能出问题的地方是由于我们的补丁还不能解决以下的问题：
+</p>
+
+<ul>
+<li>
+内建的<code>escaping/unescaping</code>函数应能只能编码，这已经做为下一个补丁（已经做完了），或者能从http请求来确定（还不支持），
+
+<li>
+<code>oldescape(String)</code>和<code>unescape(String)</code>内建函数被保留了，并且仍然调用<code>java.net.URLDecoder</code>，而这个包在由于没有解决"&amp;"和"="的问题，所以仍然有问题，
+
+<li>
+我需要增加更多的局部特定的编码和解码函数，
+
+<li>
+我们需要增加一个方法去鉴别<code>per-rule</code>解码行为，对照全局在<code>&lt;urlrewrite&gt;</code>`。
+
+</ul>
+
+<p>
+我们一有时间，我们就会发布第二个补丁。
+</p>
+
+<h3 id="toc_1.4.8">正确使用Apache mod-rewrite</h3>
+
+<p>
+Apache mod-rewrite是一个Apache Web服务器的网址重写模块。例如用它来把
+</p>
+
+<p>
+<code>http://beta.visiblelogistics.com/foo</code>
+</p>
+
+<p>
+的流量代理到<code>http://our-internal-server:8080/vl/foo</code>。
+</p>
+
+<p>
+这是最后的要修正的事情，就像是Url Rewrite Filter，他默认解码网址给我们，并且从新编码重写过得网址给我们，这其实上是错误的，因为"解码的网址不能被重新编码"。
+</p>
+
+<p>
+有一种方法可以避免这种行为，至少在我们的案例中我们没有转化一个网址部分到另一个网址，例如，我们不需要解码一个路径部分并且重新编码它到一个查询部分：没有加码也没有重编码。
+</p>
+
+<p>
+我们通过THE_REQUEST来网址匹配来完成工作。他是完全的HTTP请求（包括HTTP方法和版本）联合解码。我们只要取host后面的URL部分，改变host和预设的<code>/v/</code>前缀和<code>tada</code>
+</p>
+
+<pre class="brush: bash">
+...
+
+# This is required if we want to allow URL-encoded slashes a path segment
+AllowEncodedSlashes On
+
+# Enable mod-rewrite
+RewriteEngine on
+
+# Use THE_REQUEST to not decode the URL, since we are not moving
+# any URI part to another part so we do not need to decode/reencode
+
+RewriteCond %{THE_REQUEST} "^[a-zA-Z]+ /(.*) HTTP/\d\.\d$" RewriteRule ^(.*)$ http://our-internal-server:8080/vl/%1 [P,L,NE]
+</pre>
+ </div>
+</body>
+</html>

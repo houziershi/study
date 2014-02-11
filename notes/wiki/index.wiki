@@ -27,18 +27,13 @@ xml：[[xml]]
 
 数据结构与算法：[[Data.Structures.and.Algorithm]]
 
-[[math]]
-
+数学：[[math]]
 
 = 架构 =
 
-== UML ==
+UML：[[UML]]
 
-[[UML]]
-
-== 设计模式 ==
-
-[[design.patterns.preview]]
+设计模式概览：[[design.patterns.preview]]
 
 == 框架 ==
 
@@ -50,20 +45,6 @@ xml：[[xml]]
 
 Vim：[[vim]]
 
-[[vim.nerdtree]]
-
-Vim neocomplcache：[[vim.neocomplcache]]
-
-Vim Java：[[vim.java]]
-
-VimWiki：[[vimwiki]]
-
-vim.markdown：[[vim.markdown]]
-
-Emmet-vim：[[Emmet-vim]]
-
-vim csv：[[vim.csv]]
-
 == IDE ==
 
 [[eclipse]]
@@ -71,7 +52,6 @@ vim csv：[[vim.csv]]
 == 版本控制 ==
 
 Git：[[git]]
-
 
 SVN：[[Subversion]]
 
@@ -83,19 +63,15 @@ Maven：[[maven]]
 
 JMeter: [[jmeter]]
 
-
 = 数据库 =
 
-[[mysql]]
+MySql：[[mysql]]
 
-DB2： [[DB2]]
+DB2：[[DB2]]
 
 oracle：[[oracle.tips]]
 
-
 = 服务器 =
-
-[[https]]
 
 [[nginx]]
 
@@ -103,95 +79,40 @@ oracle：[[oracle.tips]]
 
 [[jboss6]]
 
+CAS服务器：[[cas]]
 
 
 = Linux =
 
-[[linux.base]]
+基础：[[linux.base]]
 
-[[linux.install]]
+安装：[[linux.install]]
 
-[[linux.grub]]
+GRUB：[[linux.grub]]
 
-[[linux.fun]]
+网络：[[linux.net]]
 
-[[linux.tips]]
+图形界面： [[linux.gui]]
 
-[[raspberry.pi]]
+常用工具：[[linux.tools]]
 
-== 桌面环境 ==
+服务：[[linux.service]]
 
-[[linux.x]]
+贴士：[[linux.tips]]
 
-[[Desktop.Entry]]
+RaspBerry PI：[[raspberry.pi]]
 
-[[fonts]]
+= 日常工具 =
 
-[[scrot]]
-
-[[synergy]]
-
-== 网络 ==
-
-网络配置：[[linux.net]]
-
-网络工具：[[linux.net.tools]]
-
-网络故障：[[linux.net.problem]]
-
-[[linux.samba]]
-
-
-= 常用工具 =
-
-== 命令行 ==
-
-[[tmux]]
-
-[[expect]]
-
-== 文件管理 ==
-
-[[Midnight.Commander]]
-
-[[Gnome.Commander]]
-
-[[rsync]]
-
-windows解压chm文件：
-
-hh.exe -decompile 目标文件夹 chm文件
-
-hh.exe -decompile html aa.chm
-
-== 系统模拟器 ==
-
-Cygwin：[[Cygwin]]
-
-== 网络 ==
-
-putty： [[putty]]
-
-email：[[email]]
-
-pidgin：[[pidgin]]
-
-远程桌面：remina
-
-== 多媒体 ==
-
-[[SMplayer]]
-
-[[moc]]
-
+[[mytools]]
 
 = 协议 =
 
-网络标准：[[stand.net]]
+HTTP：[[http.url]]
 
-[[XMPP]]
+HTTPS：[[https]]
 
-xmpp.lib：[[XMPP.lib.desine]]
+XMPP：[[XMPP]]
 
 = 方案 =
 
@@ -209,18 +130,6 @@ xmpp.lib：[[XMPP.lib.desine]]
 
 [[Joke]]
 
-[[linus.said]]
-
-[[john.carmark.said]]
-
-[[google.android]]
-
-[[amazone.revenue]]
-
-[[char.face]]
-
-[[nittyMith]]
-
 = 英语 =
 
 [[vocabulary]]
@@ -233,6 +142,6 @@ xmpp.lib：[[XMPP.lib.desine]]
 
 [[music]]
 
-== 其他 ==
+== 生活 ==
 
 [[wine.base]]

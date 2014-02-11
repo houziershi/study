@@ -1,0 +1,142 @@
+%title 安装配置CAS服务器
+
+%toc 安装配置CAS服务器
+
+= 下载 CAS 服务器 =
+
+下载 CAS 服务器最新版：cas-server-3.5.2-release.zip解压程序包
+
+可以从CAS官网下载，这可能需要翻墙：http://www.jasig.org/cas
+
+如果你不太愿意翻墙的话，可以访问这个地址：
+http://downloads.jasig.org/cas/，同样可以下载。
+
+复制`cas-server-3.5.2/modules/cas-server-webapp-3.5.2.war`到Tomcat的webapps
+目录下，并重命名为 ROOT.war。
+
+= 创建 CAS 密钥库 =
+
+使用JDK的`keytool`命令生成密钥库（keystore），其实就是一份keystore文件，keystore
+必须通过密码才能访问。
+
+keystore里包含了多个密钥对（keypair），每个keypair都有一个别名（alias），alias
+必须保证唯一性，而且都有一个密码，有此可知，keystore与keypair都有自己的密码。
+
+JDK也有自己的keystore，位于`%JAVA_HOME%\jre\lib\security\cacerts`，其密码就是
+`changeit`，当然也可以通过`keytool`命令来修改。
+
+我们首先生成keypair及其存放keypair的keystore，然后从keystore里导出证书，最后将
+证书导入JDK的keystore里，Tomcat在运行时就会自动读取JDK的keystore，以确保所部署的
+应用可以享受HTTPS协议（SSL通道）带来的安全性。
+
+== 生成keypair ==
+
+使用以下命令生成密钥对：
+
+{{{class="brush: bash"
+keytool -genkeypair -alias cas -keyalg RSA -storepass changeit
+}}}
+
+根据提示输入相应的个人信息即可。
+
+默认情况下，生成的keystore就是用户目录下的`.keystore`文件。对于Win8而言，默认的
+用户目录为`C:\Users\`用户名。
+
+以上命令执行完毕后，会在用户目录下生成一份`.keystore`文件（如果以前不存在该文件
+的话），其中包括一个keypair。
+
+注意：
+
+* 为了简化操作，建议keystore与keypair的密码相同，且均为`changeit`。
+* 提示“您的名字与姓氏是什么？”，这里需要输入一个域名，例如：www.xxx.com，本例中
+	输入cas需要在hosts文件中做如下映射：`127.0.0.1 cas`
+
+还有几条常用的keytool命令：
+
+查看keypair：
+
+{{{class="brush: bash"
+keytool -list -storepass changeit
+}}}
+
+删除keypair：
+
+{{{class="brush: bash"
+keytool -delete -alias <别名> -storepass changeit
+}}}
+
+== 从keystore中导出证书 ==
+
+使用以下命令导出证书：
+
+{{{class="brush: bash"
+keytool -exportcert -alias cas -file cas.crt -storepass changeit
+}}}
+
+生成的证书文件为`cas.crt`，位于运行该命令所在的当前目录下。
+
+可双击该证书文件，将该证书安装到“受信任的根证书颁发机构”中，这样在浏览器中使用
+HTTPS协议访问时才不会出现一个红色的叉叉。
+
+== 导入证书到JVM中 ==
+
+使用以下命令导入证书到JVM的keystore中：
+
+{{{class="brush: bash"
+keytool -importcert -alias cas -file cas.crt -keystore "%JAVA_HOME%\jre\lib\security\cacerts" -storepass changeit -noprompt
+}}}
+
+默认情况下，Tomcat将读取JVM中的密钥库，而不是用户目录下的`.keystore`密钥库，当然
+也可以配置Tomcat使其读取指定的密钥库（见附录）。
+
+注意：
+
+* 在执行以上命令前，必须需要保证cacerts文件对当前用户有写权限。
+* JDK的keystore的密码必须为`changeit`，这样Tomcat无需做任何配置就能访问。
+
+= 使 Tomcat 支持 HTTPS =
+
+打开Tomcat的`conf/server.xml`文件。将以下配置中的`SSLEngine`改为`off`，默认为
+`on`：
+
+{{{class="brush: xml"
+<Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="off" />
+}}}
+
+禁用HTTP的8080端口，开启HTTPS的8443端口，禁用AJP的8009端口，以确保只能通过HTTPS
+协议访问CAS服务器。
+
+{{{class="brush: xml"
+...
+<!--<Connector port="8080" protocol="HTTP/1.1"
+               connectionTimeout="20000"
+               redirectPort="18443" />-->
+...
+<Connector port="8443" protocol="HTTP/1.1" SSLEnabled="true"
+           maxThreads="150" scheme="https" secure="true"
+           clientAuth="false" sslProtocol="TLS" />
+...
+<!--<Connector port="8009" protocol="AJP/1.3" redirectPort="18443" />-->
+...
+}}}
+
+若将HTTPS端口号配置为443，则可以使用无端口方式发送HTTPS请求。
+
+= 运行CAS服务器 =
+
+启动部署了CAS服务器的Tomcat，并使用以下地址访问CAS登录页面：
+
+https://cas:8443/login
+
+一定要使用域名`cas`来访问，实际上`cas`指向了127.0.0.1（需要在本机的hosts中进行
+配置）。
+
+CAS默认采用了最简单的认证，即用户名与密码必须有，但两者必须相同，也可对CAS做
+个性化认证配置。
+
+可以使用如下URL注销CAS：
+
+https://cas:8443/logout
+
+
+如何应用 CAS 实现单点登录？如何定制 CAS 的认证方式？如何将 CAS 集成到 Smart 框架中？下回分解！
