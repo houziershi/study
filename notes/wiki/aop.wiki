@@ -978,14 +978,19 @@ public class Client {
 
 再来一张表格，总结一下各类增强类型所对应的解决方案：
 
-| 增强类型                       | 基于 AOP 接口                     | 基于 @Aspect    | 基于 <aop:config>     |
-|--------------------------------|-----------------------------------|-----------------|-----------------------|
-| Before Advice（前置增强）      | MethodBeforeAdvice                | @Before         | <aop:before>          |
-| AfterAdvice（后置增强）        | AfterReturningAdvice              | @After          | <aop:after>           |
-| AroundAdvice（环绕增强）       | MethodInterceptor                 | @Around         | <aop:around>          |
-| ThrowsAdvice（抛出增强         | ThrowsAdvice                      | @AfterThrowing  | <aop:after-throwing>  |
-| IntroductionAdvice（引入增强） | DelegatingIntroductionInterceptor | @DeclareParents | <aop:declare-parents> |
+| 增强类型            | 基于 AOP 接口                     | 基于 @Aspect    | 基于 <aop:config>     |
+|---------------------|-----------------------------------|-----------------|-----------------------|
+| Before-Advice       | MethodBeforeAdvice                | @Before         | <aop:before>          |
+| After-Advice        | AfterReturningAdvice              | @After          | <aop:after>           |
+| Around-Advice       | MethodInterceptor                 | @Around         | <aop:around>          |
+| Throws-Advice       | ThrowsAdvice                      | @AfterThrowing  | <aop:after-throwing>  |
+| Introduction-Advice | DelegatingIntroductionInterceptor | @DeclareParents | <aop:declare-parents> |
 
+* Before-Advice（前置增强）
+* After-Advice（后置增强）
+* Around-Advice（环绕增强）
+* Throws-Advice（抛出增强）
+* Introduction-Advice（引入增强）
 
 最后给一张 UML 类图描述一下 Spring AOP 的整体架构：
 
