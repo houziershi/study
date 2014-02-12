@@ -33,6 +33,26 @@
 
 并发工具类：[[java.concurrency.class]]
 
+多线程使用虚拟内存：[[java.concurrent.MuTh-VtMem]]
+
+= 虚拟机 =
+
+并不是任何VM都支持所有命令行标志，Sun/Oracle的VM除外。查明一个标志是否被支持的
+最好方法是试用它，看它是否正常工作。倘若这些标志在技术上是不支持的，那么，使用
+它们您要承担全部责任。如果这些标志中的任何一个使您的代码、您的数据、您的服务器
+或您的一切消失得无影无踪，我、Sun/Oracle和IBM都将不负责任。为以防万一，建议先在
+虚拟（非常生产）环境中实验。
+
+虚拟机内存：[[java.jvm.memory]]
+
+监控工具：[[java.jvm.monitor]]
+
+常见问题：[[java.jvm.problems]]
+
+类加载器：[[java.jvm.classloader]]
+
+其他：[[java.jvm.other]]
+
 
 = 其他 =
 

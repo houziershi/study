@@ -1,0 +1,233 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<!--
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/jquery-1.4.2.min.js"></script>
+-->
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/zepto-1.1.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/3rd-libs/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/3rd-libs/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/templates/code-default/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/templates/code-default/styles/style.css" />
+
+
+<title>虚拟内存</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+<h1>虚拟内存</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">Java高速、多线程使用虚拟内在</a>
+<ul>
+<li><a href="#toc_1.1">访问内在映射文件</a>
+<li><a href="#toc_1.2">线程</a>
+<li><a href="#toc_1.3">结果会有所不同</a>
+<li><a href="#toc_1.4">应用程序</a>
+</ul>
+</ul>
+</div>
+
+
+<h1 id="toc_1">Java高速、多线程使用虚拟内在</h1>
+
+<p>
+你想在标准硬件上运行TB级甚至PB级内存的JVM吗？你想与内存交互一样读写文件，且无需
+关心文件的打开、关闭、读、写吗？
+</p>
+
+<p>
+JVM的64位地址空间使这些成为可能。首先，不要在观念上将内存和磁盘进行区分，而是
+统一处理为内存映射文件。在32位地址空间时，内存映射文件只是为了高速访问磁盘；
+因为受限于虚拟机的有限地址空间，并不支持大规模的虚拟内存或大文件。如今JVM已经
+发展为64位，而且可以在64位操作系统上运行。在一个进程的地址空间中，内存映射文件
+大小就可以达到TB甚至PB。
+</p>
+
+<p>
+进程无需关心内存是在RAM或是磁盘上。操作系统会负责处理，而且处理得非常高效。
+</p>
+
+<h2 id="toc_1.1">访问内在映射文件</h2>
+
+<p>
+我们可以使用Java的<code>MappedByteBuffer</code>类访问内存映射文件。该类的实例对象与普通的
+<code>ByteBuffer</code>一样，但包含的内存是虚拟的——可能是在磁盘上，也可能是在RAM中。但无论
+哪种方式，都是由操作系统负责处理。
+</p>
+
+<p>
+因为的ByteBuffer的大小上限是<code>Intger.MAX_VALUE</code>，我们需要若干个ByteBuffer来映射
+大量内存。在这个示例中，我映射了40GB。
+</p>
+
+<p>
+这是因为我的Mac只有16GB内存，下面代码证明了这一点！
+</p>
+
+<pre class="brush: java">
+</pre>
+
+<p>
+上面的代码在虚拟内存创建了40GB的MappedByteBuffer对象列表。读取和写入时只需要注意
+处理两个内存模块的跨越访问。完整代码：<code>code\java.vtMemMap\MapperCore.java</code>
+</p>
+
+<h2 id="toc_1.2">线程</h2>
+
+<p>
+一个极其强大且简单易用的方法就是线程。但是普通的Java IO简直就是线程的噩梦。两个
+线程无法在不引起冲突的情况下同时访问相同的数据流或<code>RandomAccessFile</code>。虽然可以
+使用非阻塞IO，但是这样做会增加代码的复杂性并对原有的代码造成侵入。
+</p>
+
+<p>
+与其他的内存线程一样，内存映射文件也是由操作系统来处理。可以根据读写需要，在
+同一时刻尽可能多的使用线程。我的测试代码有128个线程，而且工作得很好（虽然机器
+发热比较大）。唯一重要的技巧是复用<code>MappedByteBuffer</code>对象，避免自身位置状态引发
+问题。
+</p>
+
+<p>
+现在可以执行下面的测试：
+</p>
+
+<pre class="brush: java">
+@Test
+public void readWriteCycleThreaded() throws IOException {
+	final MapperCore mapper = new MapperCore("/tmp/MemoryMap", BIG_SIZE);
+	final AtomicInteger fails = new AtomicInteger();
+	final AtomicInteger done = new AtomicInteger();
+
+	Runnable r = new Runnable() {
+		public void run() {
+			try {
+				// Set to 0 for sequential test
+				long off = (long) ((BIG_SIZE - 1024) * Math.random());
+				System.out.println("Running new thread");
+				byte[] bOut = new byte[1024];
+				double counts = 10000000;
+				for (long i = 0; i &lt; counts; ++i) {
+					ByteBuffer buf = ByteBuffer.wrap(bOut);
+					long pos = (long) (((BIG_SIZE - 1024) * (i / counts)) + off) % 
+						(BIG_SIZE - 1024);
+					// Align with 8 byte boundary
+					pos = pos / 8;
+					pos = pos * 8;
+
+					for (int j = 0; j &lt; 128; ++j) {
+						buf.putLong(pos + j * 8);
+					}
+					mapper.put(pos, bOut);
+
+					byte[] bIn = mapper.get(pos, 1024);
+					buf = ByteBuffer.wrap(bIn);
+					for (int j = 0; j &lt; 128; ++j) {
+						long val = buf.getLong();
+						if (val != pos + j * 8) {
+							throw new RuntimeException("Error at "
+									+ (pos + j * 8) + " was " + val);
+						}
+					}
+				}
+				System.out.println("Thread Complete");
+			} catch (Throwable e) {
+				e.printStackTrace();
+				fails.incrementAndGet();
+			} finally {
+				done.incrementAndGet();
+			}
+		}
+	};
+
+	int nThreads = 128;
+	for (int i = 0; i &lt; nThreads; ++i) {
+		new Thread(r).start();
+	}
+	while (done.intValue() != nThreads) {
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			// ignore
+		}
+	}
+	if (fails.intValue() != 0) {
+		throw new RuntimeException("It failed " + fails.intValue());
+	}
+}
+</pre>
+
+<p>
+我曾尝试进行其他形式的IO，但是只要像上面那样运行128个线程，性能都不如上面的方法
+。我在四核、超线程I7 Retina MacBook Pro上尝试过。代码运行时会启动128个线程，
+超出CPU的最大负载(800%)，直到操作系统检测到该进程的内存不足。在这个时候，系统
+开始对内存映射文件的读写进行分页。为实现这一目标，内核会占用一定的CPU，Java进程
+的性能会下降到650～750%。Java无需关心读取、写入、同步或类似的东西——操作系统会
+负责处理。
+</p>
+
+<h2 id="toc_1.3">结果会有所不同</h2>
+
+<p>
+如果读取和写入点不是连续而是随机的，性能下降有所区别（带有交换时会达到750%，
+否则会达到250%）。我相信这种方式可能更适合处理少量的大数据对象，而不适用于大量的
+小数据对象。对于后者，可能的处理办法是预先将大量小数据对象加载到缓存中，再将其
+映射到虚拟内存。
+</p>
+
+<h2 id="toc_1.4">应用程序</h2>
+
+<p>
+到目前为止，我使用的技术都是虚拟内存系统。在示例中，一旦与虚拟内存交互完成，就会
+删除底层文件。但是，这种方法可以很容易地进行数据持久化。
+</p>
+
+<p>
+例如，视频编辑是一个非常具有挑战性的工程问题。一般来说，有两个有效的方法：
+</p>
+
+<ul>
+<li>
+无损耗存储整个视频，并编辑存储的信息
+
+<li>
+根据需要重新生成视频。
+
+</ul>
+
+<p>
+因为RAM的制约，后一种方法越来越普遍。然而，视频是线性的——这是一种理想的数据类型
+，可用来存储非常大的映射虚拟内存。由于在视频算法上取得的进步，可以将它作为原始
+字节数组访问。操作系统会根据需要将磁盘到虚拟内存的缓冲区进行分页处理。
+</p>
+
+<p>
+另一个同样有效的应用场景是替代文档服务中过度设计的RAM缓存解决方案。想想看，我们
+有一个几TB的中等规模的文档库。它可能包含图片、短片和PDF文件。有一种常见的快速
+访问磁盘的方法，使用文件的RAM缓存弱引用或软引用。但是，这会对JVM垃圾收集器产生
+重大影响，并且增加操作难度。如果将整个文档映射到虚拟内存，可以更加简单地完成
+同样的工作。操作系统会根据需要将数据读入内存。更重要的是，操作系统将尽量保持
+RAM中最近被访问的内存页。这意味着内存映射文件就像RAM缓存一样，不会对Java或
+JVM垃圾收集器产生任何影响。
+</p>
+
+<p>
+最后，内存映射文件在科学计算和建模等应用中非常有效。在用来处理代表真实世界系统的
+计算模型时，经常需要大量的数据才能正常工作。在我的音频处理系统
+<a href="http://http://www.sonicfield.co.uk">Sonic Field</a>中，
+通过混合和处理单一声波，可以模拟真实世界中的音频效果。例如，创建原始音频副本
+是为模拟从硬表面反射的声波，并将反射回来的声波与原声波混合。这种方法需要大量的
+存储空间，这时就可以把音频信号放在虚拟内存中（也是这项工作的最初动机）。
+</p>
+ </div>
+</body>
+</html>

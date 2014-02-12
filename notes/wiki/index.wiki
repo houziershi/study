@@ -15,11 +15,13 @@ Velocity：[[velocity]]
 
 JavaScript：[[Javascript]]
 
+C：[[c]]
+
 html：[[html]]
 
 xml：[[xml]]
 
-[[python.example]]
+Python：[[python]]
 
 [[Perl.quickview]]
 

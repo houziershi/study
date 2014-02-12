@@ -1,0 +1,310 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<!--
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/jquery-1.4.2.min.js"></script>
+-->
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/zepto-1.1.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/3rd-libs/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/3rd-libs/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/templates/code-default/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/templates/code-default/styles/style.css" />
+
+
+<title>回调函数</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+
+<h1>回调函数</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">C/C++回调函数简要介绍</a>
+<ul>
+<li><a href="#toc_1.1">引子</a>
+<li><a href="#toc_1.2">概念</a>
+<li><a href="#toc_1.3">示例代码</a>
+<ul>
+<li><a href="#toc_1.3.1">通用头文件 pub.h</a>
+<li><a href="#toc_1.3.2">callback模块</a>
+<li><a href="#toc_1.3.3">main模块</a>
+</ul>
+<li><a href="#toc_1.4">Makefile</a>
+<li><a href="#toc_1.5">执行结果</a>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">C/C++回调函数简要介绍</h1>
+
+<h2 id="toc_1.1">引子</h2>
+
+<p>
+在C/C++里面有个非常给力的库函数<code>qsort</code>，相信大家都用过。他的函数原型如下：
+</p>
+
+<pre class="brush: c">
+void qsort(
+		void *base,                           // 要排序的数组
+		size_tnmemb,                          // 数组数量
+		size_tsize,                           // 每个数组的大小
+		int(*compar)(constvoid*, constvoid*)  // 回调函数
+		);
+</pre>
+
+<p>
+使用的时候需要传递需要排序的数组<code>base</code>，数组数目<code>nmeb</code>，每个数组大小<code>size</code>，
+以及我们比较自定义的回调函数：<code>compar</code>。
+</p>
+
+<h2 id="toc_1.2">概念</h2>
+
+<p>
+如compar所示，如果你把函数的指针（地址）作为参数传递给另一个函数，当这个指针
+被用来调用其所指向的函数时，我们就说这是回调函数。
+</p>
+
+<p>
+和回调函数相对，普通函数调用一般为同步调用，即A模块阻塞调用B模块函数，B模块
+执行完毕之后会讲结果返回给A模块。
+</p>
+
+<p>
+回调函数则不同。A模块定义一个回调函数C，将函数指针C传给B模块作为参数。在调用
+B模块之后，B模块会根据一定的条件触发回调C，进而重新调用模块A的函数。
+</p>
+
+<p>
+这样模块B就不用关心回调函数自己的具体实现，这样可以是系统架构更加清晰，可以
+提高系统的可扩展性。
+</p>
+
+<h2 id="toc_1.3">示例代码</h2>
+
+<p>
+现在我们有个模块叫<code>callback</code>模块。callback模块会接受主函数<code>main</code>传来的<code>a</code>与<code>b</code>
+，回调函数<code>c</code>：
+</p>
+
+<ul>
+<li>
+如果<code>a==100</code>，那么就返回<code>10000</code>
+
+<li>
+否则就使用我们的回调函数，执行<code>c(a,b)</code>并返回。
+
+</ul>
+
+<p>
+具体如下所示：
+</p>
+
+<h3 id="toc_1.3.1">通用头文件 pub.h</h3>
+
+<p>
+这里主要定义了一个函数指针。
+</p>
+
+<p>
+函数原型为：<code>int myfoo(int, int);</code>
+</p>
+
+<p>
+如果有疑问，请自行Google or Baidu。
+</p>
+
+<pre class="brush: c">
+/***************************************************************************
+ *
+ * Copyright (c) 2014 liujun&amp;&amp;baidu. inc All Rights Reserved
+ *
+ **************************************************************************/
+ 
+/*
+ * @filename:  pub.h
+ * @version:  1.0
+ * @date : 2014/01/28 14时44分05秒
+ * @author:  liujun (liujun0923@zju.edu.cn)
+ * @breif:  
+ */
+ 
+#ifndef  PUB_INC
+#define  PUB_INC
+ 
+#include&lt;stdio.h&gt;
+ 
+//定义一个回调函数，返回为int, 参数为int,int
+typedef int(*myfoo)(int, int);
+ 
+#endif   /* ----- #ifndef PUB_INC  ----- */
+</pre>
+
+<h3 id="toc_1.3.2">callback模块</h3>
+
+<p>
+头文件<code>callback.h</code>主要定义了一个结构体，包括<code>a</code>，<code>b</code>，回调函数<code>foo</code>。同时
+有一个执行函数<code>process</code>。
+</p>
+
+<pre class="brush: c">
+/***************************************************************************
+ *
+ * Copyright (c) 2014 liujun&amp;&amp;baidu. inc All Rights Reserved
+ *
+ **************************************************************************/
+ 
+/*
+ * @filename:  callback.h
+ * @version:  1.0
+ * @date : 2014/01/28 14时46分31秒
+ * @author:  liujun (liujun0923@zju.edu.cn)
+ * @breif:  
+ */
+ 
+ 
+#ifndef  CALLBACK_INC
+#define  CALLBACK_INC
+ 
+#include "pub.h"
+ 
+typedef struct _foo_struct_t{
+    int a;
+    int b;
+    myfoo foo;
+}foo_struct_t;
+ 
+int process(foo_struct_t* data);
+ 
+#endif   /* ----- #ifndef CALLBACK_INC  ----- */
+</pre>
+
+
+<p>
+执行函数<code>callback.c</code>： 如果<code>a=100</code>，那么返回<code>10000</code>，否则使用回调函数来执行：
+</p>
+
+<pre class="brush: c">
+/***************************************************************************
+ *
+ * Copyright (c) 2014 liujun&amp;&amp;baidu. inc All Rights Reserved
+ *
+ **************************************************************************/
+ 
+/*
+ * @filename:  callback.c
+ * @version:  1.0
+ * @date : 2014/01/28 14时48分26秒
+ * @author:  liujun (liujun0923@zju.edu.cn)
+ * @breif:  
+ */
+ 
+#include "callback.h"
+ 
+int process(foo_struct_t* data)
+{
+    int res;
+    //这里你可以做很多事情。
+ 
+    //这里你可以用主函数传来的函数指针来进行回调
+    if( data-&gt;a == 100)
+    {
+        res = 10000;
+    }
+    else
+    {
+        res =  data-&gt;foo(data-&gt;a, data-&gt;b);
+    }
+    //你还是可以做很多事情
+    return res;
+}
+</pre>
+
+<h3 id="toc_1.3.3">main模块</h3>
+
+<p>
+<code>main.c</code>： 从命令行接受参数<code>a</code>，<code>b</code>，然后将<code>a</code>，<code>b</code>以及<code>myfun</code>函数地址一起
+传入模块<code>callback</code>。
+</p>
+
+<pre class="brush: c">
+/***************************************************************************
+ *
+ * Copyright (c) 2014 liujun&amp;&amp;baidu. inc All Rights Reserved
+ *
+ **************************************************************************/
+ 
+/*
+ * @filename:  main.c
+ * @version:  1.0
+ * @date : 2014/01/28 14时52分48秒
+ * @author:  liujun (liujun0923@zju.edu.cn)
+ * @breif:  
+ */
+ 
+#include "pub.h"
+#include "callback.h"
+#include &lt;stdlib.h&gt;
+ 
+int myfun(int a, int b)
+{
+    return a+b;
+}
+ 
+int main(int argc, char** argv)
+{
+    foo_struct_t* data = (foo_struct_t*)malloc(sizeof(foo_struct_t));
+    data-&gt;a = atoi(argv[1]);
+    data-&gt;b = atoi(argv[2]);
+    data-&gt;foo = myfun;    
+    int res = process(data);
+    printf("after callback is %d\n", res);
+    return 0;
+}
+</pre>
+
+<h2 id="toc_1.4">Makefile</h2>
+
+<p>
+先生成<code>libcallback</code>，然后生成可执行文件。
+</p>
+
+<pre class="brush: bash">
+main: main.c libcallback
+	gcc -g main.c -I. -L. -lcallback -o main
+
+libcallback:callback.h callback.c pub.h
+	gcc -g -c callback.h callback.c pub.h
+	ar -r libcallback.a callback.o
+
+clean:
+	rm *.gch
+	rm *.o
+	rm *.a
+	rm main
+</pre>
+
+
+<h2 id="toc_1.5">执行结果</h2>
+
+<pre class="brush: bash">
+liujun@ubuntu:~/test/callback$ ./main  100 200
+after callback is 10000
+liujun@ubuntu:~/test/callback$ ./main  50 200
+after callback is 250
+</pre>
+
+<p>
+可以看到达到我们预期效果。
+</p>
+ </div>
+</body>
+</html>

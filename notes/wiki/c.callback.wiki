@@ -1,0 +1,228 @@
+
+%title 回调函数
+
+%toc 回调函数
+
+= C/C++回调函数简要介绍 =
+
+== 引子 ==
+
+在C/C++里面有个非常给力的库函数`qsort`，相信大家都用过。他的函数原型如下：
+
+{{{class="brush: c"
+void qsort(
+		void *base,                           // 要排序的数组
+		size_tnmemb,                          // 数组数量
+		size_tsize,                           // 每个数组的大小
+		int(*compar)(constvoid*, constvoid*)  // 回调函数
+		);
+}}}
+
+使用的时候需要传递需要排序的数组`base`，数组数目`nmeb`，每个数组大小`size`，
+以及我们比较自定义的回调函数：`compar`。
+
+== 概念 ==
+
+如compar所示，如果你把函数的指针（地址）作为参数传递给另一个函数，当这个指针
+被用来调用其所指向的函数时，我们就说这是回调函数。
+
+和回调函数相对，普通函数调用一般为同步调用，即A模块阻塞调用B模块函数，B模块
+执行完毕之后会讲结果返回给A模块。
+
+回调函数则不同。A模块定义一个回调函数C，将函数指针C传给B模块作为参数。在调用
+B模块之后，B模块会根据一定的条件触发回调C，进而重新调用模块A的函数。
+
+这样模块B就不用关心回调函数自己的具体实现，这样可以是系统架构更加清晰，可以
+提高系统的可扩展性。
+
+== 示例代码 ==
+
+现在我们有个模块叫`callback`模块。callback模块会接受主函数`main`传来的`a`与`b`
+，回调函数`c`：
+
+* 如果`a==100`，那么就返回`10000`
+* 否则就使用我们的回调函数，执行`c(a,b)`并返回。
+
+具体如下所示：
+
+=== 通用头文件 pub.h ===
+
+这里主要定义了一个函数指针。
+
+函数原型为：`int myfoo(int, int);`
+
+如果有疑问，请自行Google or Baidu。
+
+{{{class="brush: c"
+/***************************************************************************
+ *
+ * Copyright (c) 2014 liujun&&baidu. inc All Rights Reserved
+ *
+ **************************************************************************/
+ 
+/*
+ * @filename:  pub.h
+ * @version:  1.0
+ * @date : 2014/01/28 14时44分05秒
+ * @author:  liujun (liujun0923@zju.edu.cn)
+ * @breif:  
+ */
+ 
+#ifndef  PUB_INC
+#define  PUB_INC
+ 
+#include<stdio.h>
+ 
+//定义一个回调函数，返回为int, 参数为int,int
+typedef int(*myfoo)(int, int);
+ 
+#endif   /* ----- #ifndef PUB_INC  ----- */
+}}}
+
+=== callback模块 ===
+
+头文件`callback.h`主要定义了一个结构体，包括`a`，`b`，回调函数`foo`。同时
+有一个执行函数`process`。
+
+{{{class="brush: c"
+/***************************************************************************
+ *
+ * Copyright (c) 2014 liujun&&baidu. inc All Rights Reserved
+ *
+ **************************************************************************/
+ 
+/*
+ * @filename:  callback.h
+ * @version:  1.0
+ * @date : 2014/01/28 14时46分31秒
+ * @author:  liujun (liujun0923@zju.edu.cn)
+ * @breif:  
+ */
+ 
+ 
+#ifndef  CALLBACK_INC
+#define  CALLBACK_INC
+ 
+#include "pub.h"
+ 
+typedef struct _foo_struct_t{
+    int a;
+    int b;
+    myfoo foo;
+}foo_struct_t;
+ 
+int process(foo_struct_t* data);
+ 
+#endif   /* ----- #ifndef CALLBACK_INC  ----- */
+}}}
+
+
+执行函数`callback.c`： 如果`a=100`，那么返回`10000`，否则使用回调函数来执行：
+
+{{{class="brush: c"
+/***************************************************************************
+ *
+ * Copyright (c) 2014 liujun&&baidu. inc All Rights Reserved
+ *
+ **************************************************************************/
+ 
+/*
+ * @filename:  callback.c
+ * @version:  1.0
+ * @date : 2014/01/28 14时48分26秒
+ * @author:  liujun (liujun0923@zju.edu.cn)
+ * @breif:  
+ */
+ 
+#include "callback.h"
+ 
+int process(foo_struct_t* data)
+{
+    int res;
+    //这里你可以做很多事情。
+ 
+    //这里你可以用主函数传来的函数指针来进行回调
+    if( data->a == 100)
+    {
+        res = 10000;
+    }
+    else
+    {
+        res =  data->foo(data->a, data->b);
+    }
+    //你还是可以做很多事情
+    return res;
+}
+}}}
+
+=== main模块 ===
+
+`main.c`： 从命令行接受参数`a`，`b`，然后将`a`，`b`以及`myfun`函数地址一起
+传入模块`callback`。
+
+{{{class="brush: c"
+/***************************************************************************
+ *
+ * Copyright (c) 2014 liujun&&baidu. inc All Rights Reserved
+ *
+ **************************************************************************/
+ 
+/*
+ * @filename:  main.c
+ * @version:  1.0
+ * @date : 2014/01/28 14时52分48秒
+ * @author:  liujun (liujun0923@zju.edu.cn)
+ * @breif:  
+ */
+ 
+#include "pub.h"
+#include "callback.h"
+#include <stdlib.h>
+ 
+int myfun(int a, int b)
+{
+    return a+b;
+}
+ 
+int main(int argc, char** argv)
+{
+    foo_struct_t* data = (foo_struct_t*)malloc(sizeof(foo_struct_t));
+    data->a = atoi(argv[1]);
+    data->b = atoi(argv[2]);
+    data->foo = myfun;    
+    int res = process(data);
+    printf("after callback is %d\n", res);
+    return 0;
+}
+}}}
+
+== Makefile ==
+
+先生成`libcallback`，然后生成可执行文件。
+
+{{{class="brush: bash"
+main: main.c libcallback
+	gcc -g main.c -I. -L. -lcallback -o main
+
+libcallback:callback.h callback.c pub.h
+	gcc -g -c callback.h callback.c pub.h
+	ar -r libcallback.a callback.o
+
+clean:
+	rm *.gch
+	rm *.o
+	rm *.a
+	rm main
+}}}
+
+
+== 执行结果 ==
+
+{{{class="brush: bash"
+liujun@ubuntu:~/test/callback$ ./main  100 200
+after callback is 10000
+liujun@ubuntu:~/test/callback$ ./main  50 200
+after callback is 250
+}}}
+
+可以看到达到我们预期效果。

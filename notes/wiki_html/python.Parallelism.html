@@ -1,0 +1,513 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<!--
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/jquery-1.4.2.min.js"></script>
+-->
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/zepto-1.1.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/3rd-libs/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/3rd-libs/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/templates/code-default/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/templates/code-default/styles/style.css" />
+
+
+<title>Python并行处理</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+<h1>Python并行处理</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">一行代码完成并行任务</a>
+<ul>
+<li><a href="#toc_1.1">生产者消费者模式</a>
+<li><a href="#toc_1.2">产生者消费者模式的问题（个人观点）</a>
+<li><a href="#toc_1.3">介绍：Map</a>
+<li><a href="#toc_1.4">准备开始</a>
+<li><a href="#toc_1.5">实例2：生成成千上万的缩略图</a>
+<ul>
+<li><a href="#toc_1.5.1">基础的单线程创建</a>
+</ul>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">一行代码完成并行任务</h1>
+
+<p>
+众所周知，Python的并行处理能力很不理想。我认为如果不考虑线程和GIL的标准参数
+（它们大多是合法的），其原因不是因为技术不到位而是我们的使用方法不恰当。大多数
+关于Python线程和多进程的教材虽然都很出色，但是内容繁琐冗长。它们的确在开篇
+铺陈了许多有用的信息，但往往都不会涉及真正能提高日常工作的部分。
+</p>
+
+<h2 id="toc_1.1">生产者消费者模式</h2>
+
+<p>
+DDG上以“Python threading tutorial（Python线程教程）”为关键字的热门搜索结果表明：
+几乎每篇文章中给出的例子都是相同的类+队列。
+</p>
+
+<p>
+事实上，它们就是以下这段使用producer/Consumer来处理线程/多进程的代码示例：
+</p>
+
+<pre class="brush: python">
+#Example.py
+'''
+Standard Producer/Consumer Threading Pattern
+'''
+ 
+import time
+import threading
+import Queue
+ 
+class Consumer(threading.Thread):
+    def __init__(self, queue):
+        threading.Thread.__init__(self)
+        self._queue = queue
+ 
+    def run(self):
+        while True:
+            # queue.get() blocks the current thread until
+            # an item is retrieved.
+            msg = self._queue.get()
+            # Checks if the current message is
+            # the "Poison Pill"
+            if isinstance(msg, str) and msg == 'quit':
+                # if so, exists the loop
+                break
+            # "Processes" (or in our case, prints) the queue item  
+            print "I'm a thread, and I received %s!!" % msg
+        # Always be friendly!
+        print 'Bye byes!'
+ 
+def Producer():
+    # Queue is used to share items between
+    # the threads.
+    queue = Queue.Queue()
+ 
+    # Create an instance of the worker
+    worker = Consumer(queue)
+    # start calls the internal run() method to
+    # kick off the thread
+    worker.start()
+ 
+    # variable to keep track of when we started
+    start_time = time.time()
+    # While under 5 seconds..
+    while time.time() - start_time &lt; 5:
+        # "Produce" a piece of work and stick it in
+        # the queue for the Consumer to process
+        queue.put('something at %s' % time.time())
+        # Sleep a bit just to avoid an absurd number of messages
+        time.sleep(1)
+ 
+    # This the "poison pill" method of killing a thread.
+    queue.put('quit')
+    # wait for the thread to close down
+    worker.join()
+ 
+if __name__ == '__main__':
+    Producer()
+</pre>
+
+<p>
+唔…….感觉有点像Java。
+</p>
+
+<p>
+我现在并不想说明使用Producer / Consume来解决线程/多进程的方法是错误的——因为
+它肯定正确，而且在很多情况下它是最佳方法。但我不认为这是平时写代码的最佳选择。
+</p>
+
+<h2 id="toc_1.2">产生者消费者模式的问题（个人观点）</h2>
+
+<p>
+首先，你需要创建一个样板式的铺垫类。然后，你再创建一个队列，通过其传递对象和
+监管队列的两端来完成任务。（如果你想实现数据的交换或存储，通常还涉及另一个队列
+的参与）。
+</p>
+
+<p>
+Worker越多，问题越多。
+</p>
+
+<p>
+接下来，你应该会创建一个worker类的pool来提高Python的速度。下面是IBM tutorial
+给出的较好的方法。这也是程序员们在利用多线程检索web页面时的常用方法。
+</p>
+
+<pre class="brush: python">
+#Example2.py
+'''
+A more realistic thread pool example
+'''
+ 
+import time
+import threading
+import Queue
+import urllib2
+ 
+class Consumer(threading.Thread):
+    def __init__(self, queue):
+        threading.Thread.__init__(self)
+        self._queue = queue
+ 
+    def run(self):
+        while True:
+            content = self._queue.get()
+            if isinstance(content, str) and content == 'quit':
+                break
+            response = urllib2.urlopen(content)
+        print 'Bye byes!'
+ 
+def Producer():
+    urls = [
+        'http://www.python.org', 'http://www.yahoo.com'
+        'http://www.scala.org', 'http://www.google.com'
+        # etc..
+    ]
+    queue = Queue.Queue()
+    worker_threads = build_worker_pool(queue, 4)
+    start_time = time.time()
+ 
+    # Add the urls to process
+    for url in urls:
+        queue.put(url) 
+    # Add the poison pillv
+    for worker in worker_threads:
+        queue.put('quit')
+    for worker in worker_threads:
+        worker.join()
+ 
+    print 'Done! Time taken: {}'.format(time.time() - start_time)
+ 
+def build_worker_pool(queue, size):
+    workers = []
+    for _ in range(size):
+        worker = Consumer(queue)
+        worker.start()
+        workers.append(worker)
+    return workers
+ 
+if __name__ == '__main__':
+    Producer()
+</pre>
+
+<p>
+它的确能运行，但是这些代码多么复杂阿！它包括了初始化方法、线程跟踪列表以及
+和我一样容易在死锁问题上出错的人的噩梦——大量的<code>join</code>语句。而这些还仅仅只是
+繁琐的开始！
+</p>
+
+<p>
+我们目前为止都完成了什么？基本上什么都没有。上面的代码几乎一直都只是在进行传递。
+这是很基础的方法，很容易出错（该死，我刚才忘了在队列对象上还需要调用
+<code>task_done()</code>方法（但是我懒得修改了）），性价比很低。还好，我们还有更好的方法。
+</p>
+
+<h2 id="toc_1.3">介绍：Map</h2>
+
+<p>
+Map是一个很棒的小功能，同时它也是Python并行代码快速运行的关键。给不熟悉的人
+讲解一下吧，map是从函数语言Lisp来的。map函数能够按序映射出另一个函数。例如：
+</p>
+
+<pre class="brush: python">
+urls = ['http://www.yahoo.com', 'http://www.reddit.com']
+results = map(urllib2.urlopen, urls)
+</pre>
+
+<p>
+这里调用urlopen方法来把调用结果全部按序返回并存储到一个列表里。就像：
+</p>
+
+<pre class="brush: python">
+results = []
+for url in urls:
+    results.append(urllib2.urlopen(url))
+</pre>
+
+<p>
+Map按序处理这些迭代。调用这个函数，它就会返回给我们一个按序存储着结果的简易列表
+。
+</p>
+
+<p>
+为什么它这么厉害呢？因为只要有了合适的库，map能使并行运行得十分流畅！
+</p>
+
+<p>
+<img src='images/python.parallslism/shortcut.png' />
+</p>
+
+
+<p>
+有两个能够支持通过map函数来完成并行的库：
+</p>
+
+<ul>
+<li>
+一个是<code>multiprocessing</code>
+
+<li>
+另一个是鲜为人知但功能强大的子文件：<code>multiprocessing.dummy</code>
+
+</ul>
+
+<p>
+题外话：这个是什么？你从来没听说过dummy多进程库？我也是最近才知道的。它在多进程
+的说明文档里面仅仅只被提到了一句。而且那一句就是大概让你知道有这么个东西的存在。
+我敢说，这样几近抛售的做法造成的后果是不堪设想的！
+</p>
+
+<p>
+Dummy就是多进程模块的克隆文件。唯一不同的是，多进程模块使用的是进程，而dummy则
+使用线程（当然，它有所有Python常见的限制）。也就是说，数据由一个传递给另一个。
+这能够使得数据轻松的在这两个之间进行前进和回跃，特别是对于探索性程序来说十分有用
+，因为你不用确定框架调用到底是IO 还是CPU模式。
+</p>
+
+<h2 id="toc_1.4">准备开始</h2>
+
+<p>
+要做到通过map函数来完成并行，你应该先导入装有它们的模块：
+</p>
+
+<pre class="brush: python">
+from multiprocessing import Pool
+from multiprocessing.dummy import Pool as ThreadPool
+</pre>
+
+<p>
+再初始化:
+</p>
+
+<pre class="brush: python">
+pool = ThreadPool()
+</pre>
+
+<p>
+这简单的一句就能代替我们的<code>build_worker_pool</code>函数在<code>example2.py</code>中的所有工作。
+换句话说，它创建了许多有效的worker，启动它们来为接下来的工作做准备，以及把它们
+存储在不同的位置，方便使用。
+</p>
+
+<p>
+<code>Pool</code>对象需要一些参数，但最重要的是：进程。它决定pool中的worker数量。如果你
+不填的话，它就会默认为你电脑的内核数值。
+</p>
+
+<p>
+如果你在CPU模式下使用多进程pool，通常内核数越大速度就越快（还有很多其它因素）。
+但是，当进行线程或者处理网络绑定之类的工作时，情况会比较复杂所以应该使用pool的
+准确大小。
+</p>
+
+<pre class="brush: python">
+pool = ThreadPool(4) # Sets the pool size to 4
+</pre>
+
+<p>
+如果你运行过多线程，多线程间的切换将会浪费许多时间，所以你最好耐心调试出最适合的
+任务数。
+</p>
+
+<p>
+我们现在已经创建了pool对象，马上就能有简单的并行程序了，所以让我们重新写
+example2.py中的url opener吧！
+</p>
+
+<pre class="brush: python">
+import urllib2
+from multiprocessing.dummy import Pool as ThreadPool
+ 
+urls = [
+    'http://www.python.org',
+    'http://www.python.org/about/',
+    'http://www.onlamp.com/pub/a/python/2003/04/17/metaclasses.html',
+    'http://www.python.org/doc/',
+    'http://www.python.org/download/',
+    'http://www.python.org/getit/',
+    'http://www.python.org/community/',
+    'https://wiki.python.org/moin/',
+    'http://planet.python.org/',
+    'https://wiki.python.org/moin/LocalUserGroups',
+    'http://www.python.org/psf/',
+    'http://docs.python.org/devguide/',
+    'http://www.python.org/community/awards/'
+    # etc..
+    ]
+ 
+# Make the Pool of workers
+pool = ThreadPool(4)
+# Open the urls in their own threads
+# and return the results
+results = pool.map(urllib2.urlopen, urls)
+#close the pool and wait for the work to finish
+pool.close()
+pool.join()
+</pre>
+
+<p>
+看吧！这次的代码仅用了4行就完成了所有的工作。其中3句还是简单的固定写法。
+调用map就能完成我们前面例子中40行的内容！为了更形象地表明两种方法的差异，
+我还分别给它们运行的时间计时。
+</p>
+
+<pre class="brush: python">
+# results = []
+# for url in urls:
+#   result = urllib2.urlopen(url)
+#   results.append(result)
+ 
+# # ------- VERSUS ------- #
+ 
+# # ------- 4 Pool ------- #
+# pool = ThreadPool(4)
+# results = pool.map(urllib2.urlopen, urls)
+ 
+# # ------- 8 Pool ------- #
+ 
+# pool = ThreadPool(8)
+# results = pool.map(urllib2.urlopen, urls)
+ 
+# # ------- 13 Pool ------- #
+ 
+# pool = ThreadPool(13)
+# results = pool.map(urllib2.urlopen, urls)
+</pre>
+
+<p>
+结果：
+</p>
+
+<pre class="brush: bash">
+#                       Single thread:  14.4 Seconds
+#                              4 Pool:   3.1 Seconds
+#                              8 Pool:   1.4 Seconds
+#                             13 Pool:   1.3 Seconds
+</pre>
+
+<p>
+相当出色！并且也表明了为什么要细心调试pool的大小。在这里，只要大于9，就能使其
+运行速度加快。
+</p>
+
+<h2 id="toc_1.5">实例2：生成成千上万的缩略图</h2>
+
+<p>
+我们在CPU模式下来完成吧！我工作中就经常需要处理大量的图像文件夹。其任务之一就是
+创建缩略图。这在并行任务中已经有很成熟的方法了。
+</p>
+
+<h3 id="toc_1.5.1">基础的单线程创建</h3>
+
+<pre class="brush: python">
+import os
+import PIL
+ 
+from multiprocessing import Pool
+from PIL import Image
+ 
+SIZE = (75,75)
+SAVE_DIRECTORY = 'thumbs'
+ 
+def get_image_paths(folder):
+    return (os.path.join(folder, f)
+            for f in os.listdir(folder)
+            if 'jpeg' in f)
+ 
+def create_thumbnail(filename):
+    im = Image.open(filename)
+    im.thumbnail(SIZE, Image.ANTIALIAS)
+    base, fname = os.path.split(filename)
+    save_path = os.path.join(base, SAVE_DIRECTORY, fname)
+    im.save(save_path)
+ 
+if __name__ == '__main__':
+    folder = os.path.abspath(
+        '11_18_2013_R000_IQM_Big_Sur_Mon__e10d1958e7b766c3e840')
+    os.mkdir(os.path.join(folder, SAVE_DIRECTORY))
+ 
+    images = get_image_paths(folder)
+ 
+    for image in images:
+             create_thumbnail(Image)
+</pre>
+
+<p>
+对于一个例子来说，这是有点难，但本质上，这就是向程序传递一个文件夹，然后将其中
+所有图片抓取出来，并最终在它们各自的目录下创建和储存缩略图。
+</p>
+
+<p>
+我的电脑处理大约6000张图片用了27.9秒。
+</p>
+
+<p>
+如果我们用并行调用map来代替for循环的话：
+</p>
+
+<pre class="brush: python">
+import os
+import PIL
+ 
+from multiprocessing import Pool
+from PIL import Image
+ 
+SIZE = (75,75)
+SAVE_DIRECTORY = 'thumbs'
+ 
+def get_image_paths(folder):
+    return (os.path.join(folder, f)
+            for f in os.listdir(folder)
+            if 'jpeg' in f)
+ 
+def create_thumbnail(filename):
+    im = Image.open(filename)
+    im.thumbnail(SIZE, Image.ANTIALIAS)
+    base, fname = os.path.split(filename)
+    save_path = os.path.join(base, SAVE_DIRECTORY, fname)
+    im.save(save_path)
+ 
+if __name__ == '__main__':
+    folder = os.path.abspath(
+        '11_18_2013_R000_IQM_Big_Sur_Mon__e10d1958e7b766c3e840')
+    os.mkdir(os.path.join(folder, SAVE_DIRECTORY))
+ 
+    images = get_image_paths(folder)
+ 
+    pool = Pool()
+        pool.map(create_thumbnail,images)
+        pool.close()
+        pool.join()
+</pre>
+
+<p>
+5.6秒！
+</p>
+
+<p>
+对于只改变了几行代码而言，这是大大地提升了运行速度。这个方法还能更快，只要你将
+cpu和io的任务分别用它们的进程和线程来运行——但也常造成死锁。总之，综合考虑到map
+这个实用的功能，以及人为线程管理的缺失，我觉得这是一个美观，可靠还容易debug的
+方法。
+</p>
+
+<p>
+好了，文章结束了。一行完成并行任务。
+</p>
+ </div>
+</body>
+</html>
