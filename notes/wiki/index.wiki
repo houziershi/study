@@ -73,7 +73,7 @@ MySql：[[mysql]]
 
 DB2：[[DB2]]
 
-oracle：[[oracle.tips]]
+Oracle：[[oracle]]
 
 = 服务器 =
 
@@ -99,6 +99,8 @@ GRUB：[[linux.grub]]
 图形界面： [[linux.gui]]
 
 服务：[[linux.service]]
+
+监控：[[linux.monitor]]
 
 贴士：[[linux.tips]]
 

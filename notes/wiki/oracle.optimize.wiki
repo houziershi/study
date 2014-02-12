@@ -1,0 +1,177 @@
+%title Oracle优化
+%toc Oracle优化
+
+
+= 优化oracle性能参数之前要了解的情况 =
+
+# 物理内存有多大
+# 操作系统估计要使用多大内存
+# 数据库是使用文件系统还是裸设备
+# 有多少并发连接
+# 应用是OLTP类型还是OLAP类型
+
+= oracle数据库内存参数的优化 =
+
+== 系统内核参数 ==
+
+修改`/etc/sysctl.conf`这个文件，加入以下的语句：
+
+{{{class="brush: bash"
+kernel.shmmax = 2147483648
+kernel.shmmni = 4096
+kernel.shmall = 2097152
+kernel.sem = 250 32000 100 128
+fs.file-max = 65536
+net.ipv4.ip_local_port_range = 1024 65000
+}}}
+
+参数依次为：
+
+* `Kernel.shmmax`：共享内存段的最大尺寸（以字节为单位）。
+* `Kernel.shmmni`：系统中共享内存段的最大数量。
+* `Kernel.shmall`：共享内存总量，以页为单位。
+* `fs.file-max`：文件句柄数，表示在Linux系统中可以打开的文件数量。
+* `net.ipv4.ip_local_port_range`：应用程序可使用的IPv4端口范围。
+
+=== 需要注意的几个问题 ===
+
+==== 关于Kernel.shmmax ====
+
+Oracle SGA由共享内存组成，如果错误设置`SHMMAX`可能会限制SGA的大小，SHMMAX设置
+不足可能会导致以下问题：
+
+`ORA-27123:unable to attach to shared memory segment`，如果该参数设置小于
+Oracle SGA设置，那么SGA就会被分配多个共享内存段。这在繁忙的系统中可能成为性能
+负担，带来系统问题。
+
+Oracle建议`Kernel.shmmax`最好大于sga，以让oracle共享内存区SGA在一个共享内存段中
+，从而提高性能。
+
+==== 关于Kernel.shmall ====
+
+表示系统共享内存总大小，以页为单位。
+
+一个32位的Linux系统，8G的内存，可以设置：`kernel.shmall = 2097152`，
+即为：`2097152*4k/1024/1024 = 8G`就是说可用共享内存一共8G，这里的4K是32位
+操作系统一页的大小，即4096字节。
+
+==== 关于Kernel.shmmni ====
+
+表示系统中共享内存段的最大数量。系统默认是4096，一般无需修改，在SUN OS下还有
+`Kernel.shmmin`参数，表示共享内存段最小尺寸，勿要混肴！
+
+== SGA、PAG参数的设置 ==
+
+=== Oracle在内存管理方面的改进 ===
+
+Oracle 9i通过参数`PGA_AGGREGATE_TARGET`参数实现PGA自动管理 Oracle 10g通过参数
+`SGA_TARGET`参数实现了SGA的自动管理，
+
+Oracle 11g实现了数据库所有内存块的全自动化管理，使得动态管理SGA和PGA成为现实。
+
+自动内存管理的两个参数：
+
+* `MEMORY_TARGET`：表示整个ORACLE实例所能使用的内存大小，包括PGA和SGA的整体大小
+	，即这个参数是动态的，可以动态控制SGA和PGA的大小。
+* `MEMORY_MAX_TARGET`：这个参数定义了`MEMORY_TARGET`最大可以达到而不用重启实例的
+	值，如果没有设置MEMORY_MAX_TARGET值，默认等于MEMORY_TARGET的值。
+
+使用动态内存管理时，`SGA_TARGET`和`PGA_AGGREGATE_TARGET`代表它们各自内存区域的
+最小设置，要让Oracle完全控制内存管理，这两个参数应该设置为0。
+
+=== Oracle五种内存管理方式 ===
+
+* 自动内存管理,即AMM (Automatic Memory Management）
+* 自动共享内存管理，即ASMM（Automatic Shared Memory Management）
+* 手动共享内存管理
+* 自动PGA管理
+* 手动PGA管理
+
+==== 自动内存管理（AMM） ====
+
+默认安装oracle11g的实例就是AMM方式。通过如下查看：
+
+示例如下：
+
+{{{class="brush: sql"
+SQL> show parameters target
+NAME TYPE VALUE
+—————————————————————————————   ———————————   —————
+archive_lag_target              integer           0
+db_flashback_retention_target   integer        1860
+fast_start_io_target            integer           0
+fast_start_mttr_target          integer           0
+memory_max_target               big integer   1400M
+memory_target big               integer       1400M
+pga_aggregate_target            big integer       0
+sga_target                      big integer       0
+}}}
+
+注意：如果初始化参数`LOCK_SGA = true` ，则 AMM 是不可用的。
+
+==== 自动共享内存管理 ====
+
+自动共享内存管理是oracle10g引进的，如果要使用自动共享内存管理，只需设置
+`MEMORY_TARGET=0`，然后显式指定`SGA_TARGET`即可。
+
+示例如下：
+
+{{{class="brush: sql"
+SQL> alter system set memory_target=0 scope=both;
+System altered.
+SQL> alter system set sga_target=1024m scope=both;
+System altered.
+SQL>
+}}}
+
+==== 手工共享内存管理 ====
+
+Oracle9i以及以前版本，只能手工设置共享内存管理，如果要使用手动共享内存管理，
+首先需要设置`SGA_TARGET` 与`MEMORY_TARGET`为0。
+
+SGA包含主要参数有：
+
+* `share_pool_size`：共享池大小，建议300-500M之间。
+* `Log_buffer`：日志缓冲区大小，建议1-3M之间。
+* `Large_pool_size`：大缓冲池大小，非MTS系统，建议在20-30M之间。
+* `Java_pool_size`：java池大小，没有java应用时，建议10-20M之间。
+* `db_cache_size`：数据缓冲区大小，根据可使用内存大小，尽可能大。
+
+==== 自动PAG管理 ====
+
+Oracle9i版本引入了自动PGA管理，如果使用的是AMM管理方式，则无需担心PGA的配置，
+但是如果对对AMM管理不放心的话，可以设置自动PGA管理，
+
+设置`WORKAREA_SIZE_POLICY = AUTO`然后指定`PGA_AGGREGATE_TARGET`大小即可。
+
+==== 手工PAG管理 ====
+
+如果要做到精确的控制PGA，还可以设置手动管理PGA，
+设置`WORKAREA_SIZE_POLICY = manual` 然后分别指定PGA相关参数即可。
+
+PGA相关参数有：
+
+* `SORT_AREA_SIZE`
+* `SORT_AREA_RETAINED_SIZE`
+
+= Oracle下磁盘存储性能优化 =
+
+== 选择文件系统存取数据 ==
+
+文件系统的选择
+
+* 单一文件系统（ext2、ext3、xfs等）
+* 集群文件系统（gfs、ocfs2）
+
+文件系统存储优缺点：
+
+* 优点：管理维护方便。
+* 缺点：数据读写要经过操作系统级的缓存，效率不是很高。
+
+== ASM（Automatic Storage Management） ==
+
+ASM优点：
+
+* 数据可直接读写，无需经过操作系统存取效率很高，读写效率与直接的原始设备基本相同
+	。
+* Oracle提供了专门的管理和维护工具

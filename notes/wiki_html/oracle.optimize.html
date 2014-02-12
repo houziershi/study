@@ -1,0 +1,368 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<!--
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/jquery-1.4.2.min.js"></script>
+-->
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/zepto-1.1.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/3rd-libs/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/3rd-libs/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/templates/code-default/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/templates/code-default/styles/style.css" />
+
+
+<title>Oracle优化</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+<h1>Oracle优化</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">优化oracle性能参数之前要了解的情况</a>
+<li><a href="#toc_2">oracle数据库内存参数的优化</a>
+<ul>
+<li><a href="#toc_2.1">系统内核参数</a>
+<ul>
+<li><a href="#toc_2.1.1">需要注意的几个问题</a>
+<ul>
+<li><a href="#toc_2.1.1.1">关于Kernel.shmmax</a>
+<li><a href="#toc_2.1.1.2">关于Kernel.shmall</a>
+<li><a href="#toc_2.1.1.3">关于Kernel.shmmni</a>
+</ul>
+</ul>
+<li><a href="#toc_2.2">SGA、PAG参数的设置</a>
+<ul>
+<li><a href="#toc_2.2.1">Oracle在内存管理方面的改进</a>
+<li><a href="#toc_2.2.2">Oracle五种内存管理方式</a>
+<ul>
+<li><a href="#toc_2.2.2.1">自动内存管理（AMM）</a>
+<li><a href="#toc_2.2.2.2">自动共享内存管理</a>
+<li><a href="#toc_2.2.2.3">手工共享内存管理</a>
+<li><a href="#toc_2.2.2.4">自动PAG管理</a>
+<li><a href="#toc_2.2.2.5">手工PAG管理</a>
+</ul>
+</ul>
+</ul>
+<li><a href="#toc_3">Oracle下磁盘存储性能优化</a>
+<ul>
+<li><a href="#toc_3.1">选择文件系统存取数据</a>
+<li><a href="#toc_3.2">ASM（Automatic Storage Management）</a>
+</ul>
+</ul>
+</div>
+
+
+<h1 id="toc_1">优化oracle性能参数之前要了解的情况</h1>
+
+<ol>
+<li>
+物理内存有多大
+
+<li>
+操作系统估计要使用多大内存
+
+<li>
+数据库是使用文件系统还是裸设备
+
+<li>
+有多少并发连接
+
+<li>
+应用是OLTP类型还是OLAP类型
+
+</ol>
+
+<h1 id="toc_2">oracle数据库内存参数的优化</h1>
+
+<h2 id="toc_2.1">系统内核参数</h2>
+
+<p>
+修改<code>/etc/sysctl.conf</code>这个文件，加入以下的语句：
+</p>
+
+<pre class="brush: bash">
+kernel.shmmax = 2147483648
+kernel.shmmni = 4096
+kernel.shmall = 2097152
+kernel.sem = 250 32000 100 128
+fs.file-max = 65536
+net.ipv4.ip_local_port_range = 1024 65000
+</pre>
+
+<p>
+参数依次为：
+</p>
+
+<ul>
+<li>
+<code>Kernel.shmmax</code>：共享内存段的最大尺寸（以字节为单位）。
+
+<li>
+<code>Kernel.shmmni</code>：系统中共享内存段的最大数量。
+
+<li>
+<code>Kernel.shmall</code>：共享内存总量，以页为单位。
+
+<li>
+<code>fs.file-max</code>：文件句柄数，表示在Linux系统中可以打开的文件数量。
+
+<li>
+<code>net.ipv4.ip_local_port_range</code>：应用程序可使用的IPv4端口范围。
+
+</ul>
+
+<h3 id="toc_2.1.1">需要注意的几个问题</h3>
+
+<h4 id="toc_2.1.1.1">关于Kernel.shmmax</h4>
+
+<p>
+Oracle SGA由共享内存组成，如果错误设置<code>SHMMAX</code>可能会限制SGA的大小，SHMMAX设置
+不足可能会导致以下问题：
+</p>
+
+<p>
+<code>ORA-27123:unable to attach to shared memory segment</code>，如果该参数设置小于
+Oracle SGA设置，那么SGA就会被分配多个共享内存段。这在繁忙的系统中可能成为性能
+负担，带来系统问题。
+</p>
+
+<p>
+Oracle建议<code>Kernel.shmmax</code>最好大于sga，以让oracle共享内存区SGA在一个共享内存段中
+，从而提高性能。
+</p>
+
+<h4 id="toc_2.1.1.2">关于Kernel.shmall</h4>
+
+<p>
+表示系统共享内存总大小，以页为单位。
+</p>
+
+<p>
+一个32位的Linux系统，8G的内存，可以设置：<code>kernel.shmall = 2097152</code>，
+即为：<code>2097152*4k/1024/1024 = 8G</code>就是说可用共享内存一共8G，这里的4K是32位
+操作系统一页的大小，即4096字节。
+</p>
+
+<h4 id="toc_2.1.1.3">关于Kernel.shmmni</h4>
+
+<p>
+表示系统中共享内存段的最大数量。系统默认是4096，一般无需修改，在SUN OS下还有
+<code>Kernel.shmmin</code>参数，表示共享内存段最小尺寸，勿要混肴！
+</p>
+
+<h2 id="toc_2.2">SGA、PAG参数的设置</h2>
+
+<h3 id="toc_2.2.1">Oracle在内存管理方面的改进</h3>
+
+<p>
+Oracle 9i通过参数<code>PGA_AGGREGATE_TARGET</code>参数实现PGA自动管理 Oracle 10g通过参数
+<code>SGA_TARGET</code>参数实现了SGA的自动管理，
+</p>
+
+<p>
+Oracle 11g实现了数据库所有内存块的全自动化管理，使得动态管理SGA和PGA成为现实。
+</p>
+
+<p>
+自动内存管理的两个参数：
+</p>
+
+<ul>
+<li>
+<code>MEMORY_TARGET</code>：表示整个ORACLE实例所能使用的内存大小，包括PGA和SGA的整体大小
+	，即这个参数是动态的，可以动态控制SGA和PGA的大小。
+
+<li>
+<code>MEMORY_MAX_TARGET</code>：这个参数定义了<code>MEMORY_TARGET</code>最大可以达到而不用重启实例的
+	值，如果没有设置MEMORY_MAX_TARGET值，默认等于MEMORY_TARGET的值。
+
+</ul>
+
+<p>
+使用动态内存管理时，<code>SGA_TARGET</code>和<code>PGA_AGGREGATE_TARGET</code>代表它们各自内存区域的
+最小设置，要让Oracle完全控制内存管理，这两个参数应该设置为0。
+</p>
+
+<h3 id="toc_2.2.2">Oracle五种内存管理方式</h3>
+
+<ul>
+<li>
+自动内存管理,即AMM (Automatic Memory Management）
+
+<li>
+自动共享内存管理，即ASMM（Automatic Shared Memory Management）
+
+<li>
+手动共享内存管理
+
+<li>
+自动PGA管理
+
+<li>
+手动PGA管理
+
+</ul>
+
+<h4 id="toc_2.2.2.1">自动内存管理（AMM）</h4>
+
+<p>
+默认安装oracle11g的实例就是AMM方式。通过如下查看：
+</p>
+
+<p>
+示例如下：
+</p>
+
+<pre class="brush: sql">
+SQL&gt; show parameters target
+NAME TYPE VALUE
+—————————————————————————————   ———————————   —————
+archive_lag_target              integer           0
+db_flashback_retention_target   integer        1860
+fast_start_io_target            integer           0
+fast_start_mttr_target          integer           0
+memory_max_target               big integer   1400M
+memory_target big               integer       1400M
+pga_aggregate_target            big integer       0
+sga_target                      big integer       0
+</pre>
+
+<p>
+注意：如果初始化参数<code>LOCK_SGA = true</code> ，则 AMM 是不可用的。
+</p>
+
+<h4 id="toc_2.2.2.2">自动共享内存管理</h4>
+
+<p>
+自动共享内存管理是oracle10g引进的，如果要使用自动共享内存管理，只需设置
+<code>MEMORY_TARGET=0</code>，然后显式指定<code>SGA_TARGET</code>即可。
+</p>
+
+<p>
+示例如下：
+</p>
+
+<pre class="brush: sql">
+SQL&gt; alter system set memory_target=0 scope=both;
+System altered.
+SQL&gt; alter system set sga_target=1024m scope=both;
+System altered.
+SQL&gt;
+</pre>
+
+<h4 id="toc_2.2.2.3">手工共享内存管理</h4>
+
+<p>
+Oracle9i以及以前版本，只能手工设置共享内存管理，如果要使用手动共享内存管理，
+首先需要设置<code>SGA_TARGET</code> 与<code>MEMORY_TARGET</code>为0。
+</p>
+
+<p>
+SGA包含主要参数有：
+</p>
+
+<ul>
+<li>
+<code>share_pool_size</code>：共享池大小，建议300-500M之间。
+
+<li>
+<code>Log_buffer</code>：日志缓冲区大小，建议1-3M之间。
+
+<li>
+<code>Large_pool_size</code>：大缓冲池大小，非MTS系统，建议在20-30M之间。
+
+<li>
+<code>Java_pool_size</code>：java池大小，没有java应用时，建议10-20M之间。
+
+<li>
+<code>db_cache_size</code>：数据缓冲区大小，根据可使用内存大小，尽可能大。
+
+</ul>
+
+<h4 id="toc_2.2.2.4">自动PAG管理</h4>
+
+<p>
+Oracle9i版本引入了自动PGA管理，如果使用的是AMM管理方式，则无需担心PGA的配置，
+但是如果对对AMM管理不放心的话，可以设置自动PGA管理，
+</p>
+
+<p>
+设置<code>WORKAREA_SIZE_POLICY = AUTO</code>然后指定<code>PGA_AGGREGATE_TARGET</code>大小即可。
+</p>
+
+<h4 id="toc_2.2.2.5">手工PAG管理</h4>
+
+<p>
+如果要做到精确的控制PGA，还可以设置手动管理PGA，
+设置<code>WORKAREA_SIZE_POLICY = manual</code> 然后分别指定PGA相关参数即可。
+</p>
+
+<p>
+PGA相关参数有：
+</p>
+
+<ul>
+<li>
+<code>SORT_AREA_SIZE</code>
+
+<li>
+<code>SORT_AREA_RETAINED_SIZE</code>
+
+</ul>
+
+<h1 id="toc_3">Oracle下磁盘存储性能优化</h1>
+
+<h2 id="toc_3.1">选择文件系统存取数据</h2>
+
+<p>
+文件系统的选择
+</p>
+
+<ul>
+<li>
+单一文件系统（ext2、ext3、xfs等）
+
+<li>
+集群文件系统（gfs、ocfs2）
+
+</ul>
+
+<p>
+文件系统存储优缺点：
+</p>
+
+<ul>
+<li>
+优点：管理维护方便。
+
+<li>
+缺点：数据读写要经过操作系统级的缓存，效率不是很高。
+
+</ul>
+
+<h2 id="toc_3.2">ASM（Automatic Storage Management）</h2>
+
+<p>
+ASM优点：
+</p>
+
+<ul>
+<li>
+数据可直接读写，无需经过操作系统存取效率很高，读写效率与直接的原始设备基本相同
+	。
+
+<li>
+Oracle提供了专门的管理和维护工具
+
+</ul>
+ </div>
+</body>
+</html>
