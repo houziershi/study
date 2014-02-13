@@ -1,8 +1,4 @@
 
 日期时间：[[java.libs.time]]
 
-[[jsp]]
-
-[[struts]]
-
 [[log4j]]

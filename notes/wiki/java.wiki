@@ -13,6 +13,10 @@
 
 反射：[[java.reflect]]
 
+类加载器：[[java.classloader]]
+
+内存泄漏：[[java.mem-leak]]
+
 = 常用类型 =
 
 日期：[[java.utils.date]]
@@ -49,8 +53,6 @@
 
 常见问题：[[java.jvm.problems]]
 
-类加载器：[[java.jvm.classloader]]
-
 其他：[[java.jvm.other]]
 
 
@@ -58,9 +60,11 @@
 
 常用库：[[java.libs]]
 
-虚拟机：[[java.jvm]]
-
 [[java.servlet]]
+
+[[jsp]]
+
+[[struts]]
 
 代码示例：[[java.example]]
 

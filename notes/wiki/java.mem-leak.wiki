@@ -1,0 +1,192 @@
+%title 内存泄漏
+
+%toc 内存泄漏
+
+= 没有设空已经不用的引用 =
+
+Java平台的一个突出的特性是自动内存管理。很多人把这种特性误读为Java没有内存泄露。
+然而，在我印象中，现代Java框架以及基于Java的平台并非如此。特别是Android平台，
+能举出很多反例。为了让大家对Java平台的内存泄露有一个初步的认识，我们先来看一个
+Java实现的栈：
+
+{{{class="brush: java; highlight: [10]"
+class SimpleStack {
+ 
+    private final Object[] objectPool = new Object[10];
+    private int pointer = -1;
+ 
+    public Object pop() {
+        if(pointer < 0) {
+            throw new IllegalStateException("no elements on stack");
+        }
+        return objectPool[pointer--]; // Error: not free the reference
+    }
+ 
+    public Object peek() {
+        if(pointer < 0) {
+            throw new IllegalStateException("no elements on stack");
+        }
+        return objectPool[pointer];
+ 
+    }
+ 
+    public void push(Object object) {
+        if(pointer > 8) {
+            throw new IllegalStateException("stack overflow");
+        }
+        objectPool[++pointer] = object;
+    }
+}
+}}}
+
+这个内存泄露很容易修复：
+
+{{{class="brush: java; highlight: [8]"
+public Object pop() {
+    if (pointer < 1) {
+        throw new IllegalStateException("no elements on stack");
+    }
+    try {
+        return objectPool[pointer];
+    } finally {
+        objectPool[pointer--] = null;
+    }
+}
+}}}
+
+= 弱引用 =
+
+让我们来看一个更常见的Java内存泄漏的例子。在Java开发中经常用到的观察者模式就会
+引起内存泄露：
+
+{{{class="brush: java"
+class Observed {
+ 
+    public interface Observer {
+        void update();
+    }
+ 
+    private Collection<Observer> observers = new HashSet<Observer>();
+ 
+    void addListener(Observer observer) {
+        observers.add(observer);
+    }
+ 
+    void removeListener(Observer observer) {
+        observers.remove(observer);
+    }
+ 
+}
+}}}
+
+这次提供了一个直接删除底层对象池引用的方法。基于这种实现，任何已注册的Observer
+在使用后只要被正确注销，就不会存在内存泄漏的风险。
+
+然而，假设这样一个场景，框架的使用者在使用完Observer之后并没有及时注销。同理
+Observer将永远不会被回收，因为Observed一直保留着它的引用。
+
+更糟的是，没有Observer引用，是无法从Observed对象池外部删除Observer的，即无法
+回收未被及时注销的Observer。
+
+不过，有一种简单的方法能够修复这种潜在的内存泄露——弱引用。我个人认为这是
+Java程序员都应该知道的特性。
+
+简单地说，弱引用在功能上和普通的引用一样，但它不会妨碍垃圾回收。因此JVM执行
+垃圾回收时，如果没有发现强引用，那么你就会发现弱引用会被置为null。要使用弱引用
+，我们可以将上面的代码改为：
+
+{{{class="brush: java"
+private Collection<Observer> observers = Collections.newSetFromMap(
+        new WeakHashMap<Observer, Boolean>());
+}}}
+
+[[http://docs.oracle.com/javase/6/docs/api/java/util/WeakHashMap.html|WeakHashMap]]
+是一个现成的弱引用Map，Map的键都是弱引用对象。使用WeakHashMap后，被观察者将不会
+阻止JVM对Observer进行垃圾回收。然而，你必须在代码注释中强调这一点。因为这个特性
+可能引起一些问题，比如使用者想要注册一个常驻内存的Observer（例如日志库），但他们
+并没有打算维持一个Observer引用。
+
+例如，Android平台上的`OnSharedPreferencesChangeListener`使用了弱引用，但文档中
+并没有声明这一特性。这给开发者带来了很多麻烦。
+
+在本文的开头我提到了，现在的很多框架都需要使用者谨慎地管理内存。我想至少有
+两个例子可以印证这个观点。
+
+= 内部类持有外部类的引用 =
+
+Android应用程序的核心类采用了基于生命周期的编程模型。这意味着你不能自行创建和
+管理这些类的实例，这些实例将由Android操作系统在需要的时候替你创建（比如应用程序
+需要显示某个特定的画面）。同理，Android操作系统将会决定应用何时不再需要某个特定
+实例（比如用户关闭了应用界面），并通过调用该实例特定的生命周期方法来通知该实例
+即将被删除。但是，如果你将这个实例的引用泄露到某个全局上下文，Android JVM将不能
+对这个实例进行回收。这与Android本身的设计理念相违背。由于Android手机通常没有
+限制应用程序的内存，即使在非常简单的应用中，也会频繁创建和销毁对象，所以在清理
+引用时必须格外小心。
+
+不幸的是，应用程序核心类引用很容易被泄露到外部。你能看出下面的例子是如何泄露
+引用的吗？
+
+{{{class="brush: java; highlight: [7]"
+class ExampleActivity extends Activity {
+
+	@Override
+	public void onCreate(Bundle bundle) {
+		startService(
+				new Intent(this, ExampleService.class).putExtra("mykey",
+					new Serializable() {
+						public String getInfo() {
+							return "myinfo";
+						}
+					}
+				)
+		);
+	}
+
+}
+}}}
+
+如果你认为是传入`Intent`构造函数的`this`指针泄露了当前实例的引用，你就错了。
+这个`Intent`对象仅用于启动`ExampleService`，它会在`ExampleService`启动之后被
+销毁。然而，那个实现了`Serializable`接口的匿名内部类会持有闭包类
+`ExampleActivity`的引用。如果`ExampleService`一直维持着这个匿名类实例引用，那么
+也会持有这个`ExampleActivity`实例的引用。
+
+出于这个原因，我建议Android开发者避免使用匿名类。
+
+= Web框架（特别是Wicket）中的Session =
+
+Web应用框架通常将半永久性的用户数据存放在Session中。你在Session中写入的任何数据
+都会在内存中滞留，而且滞留的时间无法确定。如果有一定数量的访问者在你的Session中
+“乱扔垃圾”，运行Servlet容器的JVM早晚会挂掉。
+
+因此，你谨慎管理引用的另一个极端案例就是Wicket框架：
+
+Wicket框架会将用户的所有访问序列化成历史版本。这种过分简单的设计意味着，如果
+某个访问者点击十次欢迎页面，Wicket框架会在硬盘默认路径下序列化十个对象。
+Wicket页面对象持有的所有对象引用都会和页面对象一起被序列化到硬盘上，所以在管理
+引用时必须格外小心。
+
+让我们来看一个错误使用Wicket框架的示例：
+
+{{{class="brush: java"
+class ExampleWelcomePage extends WebPage {
+ 
+    private final List<People> peopleList;
+ 
+    public ExampleWelcomePage (PageParameters pageParameters) {
+        peopleList = new Service().getWorldPhonebook();
+    }
+}
+}}}
+
+用户点击十次欢迎页面，就会在服务器硬盘上存储十份`WorldPhoneBook`拷贝。因此，
+在你使用Wicket开发应用时，务必要使用`LoadableDetachableModels`管理引用。
+
+在Java程序中追踪内存泄漏是一件非常麻烦的事情，因此我想推荐一款非常好用的（但很
+可惜不是免费的）调式工具：JProfiler。它能够提供Java程序运行时的堆快照（heap 
+dumps），帮助你了解程序运行时内部的具体情况。如果你的程序存在内存泄露的问题，
+我推荐你试一试JProfiler。JProfiler提供免费试用许可证。
+
+= 类加载器引起的内存泄漏 =
+
+详见：[[java.classloader.mem-leak]]
