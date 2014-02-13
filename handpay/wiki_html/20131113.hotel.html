@@ -3,17 +3,20 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
-<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/jquery-1.4.2.min.js"></script>
+<!--
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/jquery-1.4.2.min.js"></script>
+-->
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/zepto-1.1.2.min.js"></script>
 
-<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shCore.css"/>
-<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/hightlight-code/styles/shThemeDefault.css"/>
-<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shCore.js"></script>
-<script type="text/javascript" src="../../vimwiki-theme/hightlight-code/scripts/shAutoloader.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/3rd-libs/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/3rd-libs/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/hightlight-code/scripts/shAutoloader.js"></script>
 
-<script type="text/javascript" src="../../vimwiki-theme/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
-<script type="text/javascript" src="../../vimwiki-theme/code/theme/scripts/script.js"></script>
-<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/code/theme/styles/style.css" />
+<script type="text/javascript" src="../../vimwiki-theme/templates/code-default/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/templates/code-default/styles/style.css" />
 
 
 <title>协程酒店</title>
@@ -27,9 +30,10 @@
 <ul>
 <li><a href="#toc_1">文档位置</a>
 <li><a href="#toc_2">启动参数</a>
-<li><a href="#toc_3">本地测试屏蔽的内容</a>
+<li><a href="#toc_3">同步数据</a>
+<li><a href="#toc_4">本地测试屏蔽的内容</a>
 <ul>
-<li><a href="#toc_3.1">连接数据服务器</a>
+<li><a href="#toc_4.1">连接数据服务器</a>
 </ul>
 </ul>
 </div>
@@ -71,9 +75,26 @@ jvm参数：
 cd /cygdrive/d/server/jboss-5.1.0.GA-hotel/server/handpay-ctrip/deploy/ROOT.war/hotel-ctrip/mall/wap/js/min/iphone/hotel
 </pre>
 
-<h1 id="toc_3">本地测试屏蔽的内容</h1>
+<p>
+数据库：
+</p>
 
-<h2 id="toc_3.1">连接数据服务器</h2>
+<pre class="brush: xml">
+    &lt;xa-datasource-property name="URL"&gt;jdbc:oracle:thin:@10.48.193.245:1521:hpatc&lt;/xa-datasource-property&gt;
+    &lt;xa-datasource-property name="User"&gt;appl&lt;/xa-datasource-property&gt;
+    &lt;xa-datasource-property name="Password"&gt;test&lt;/xa-datasource-property&gt;
+</pre>
+
+<h1 id="toc_3">同步数据</h1>
+
+
+<pre class="brush: bash">
+ssh dsdev14@10.48.193.221 // handpay
+</pre>
+
+<h1 id="toc_4">本地测试屏蔽的内容</h1>
+
+<h2 id="toc_4.1">连接数据服务器</h2>
 
 <p>
 <code>HotelOrderServiceImpl</code>

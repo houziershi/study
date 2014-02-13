@@ -30,6 +30,21 @@ jvm参数：
 cd /cygdrive/d/server/jboss-5.1.0.GA-hotel/server/handpay-ctrip/deploy/ROOT.war/hotel-ctrip/mall/wap/js/min/iphone/hotel
 }}}
 
+数据库：
+
+{{{class="brush: xml"
+    <xa-datasource-property name="URL">jdbc:oracle:thin:@10.48.193.245:1521:hpatc</xa-datasource-property>
+    <xa-datasource-property name="User">appl</xa-datasource-property>
+    <xa-datasource-property name="Password">test</xa-datasource-property>
+}}}
+
+= 同步数据 =
+
+
+{{{class="brush: bash"
+ssh dsdev14@10.48.193.221 // handpay
+}}}
+
 = 本地测试屏蔽的内容 =
 
 == 连接数据服务器 ==
