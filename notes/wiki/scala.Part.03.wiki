@@ -2695,8 +2695,7 @@ Array、RichString等）的共同超类。
 
 {{{class="brush: scala"
   object ExpandedEMail {
-    def unapplySeq(email: String)
-        : Option[(String, Seq[String])] = {
+    def unapplySeq(email: String) : Option[(String, Seq[String])] = {
       val parts = email split "@"
       if (parts.length == 2) 
         Some(parts(0), parts(1).split("\\.").reverse)
@@ -2756,8 +2755,8 @@ List对象包含了带可变数量参数的`apply`方法，从而允许编写如
 
 === 抽取器中置模式匹配 ===
 
-如果`unapply`方法产出的是一个对偶，就可以是模式匹配`case`语句中使用跳转表示法。
-尤其对于有两个参数的样本类。对于：
+如果`unapply`方法产出的是一个对偶，就可以在模式匹配`case`语句中使用中置表示法。
+对于有两个参数的样本类：
 
 {{{class="brush: scala"
 case class Currency(value: Double, unit: String)

@@ -146,13 +146,8 @@
 <pre class="brush: scala">
   val fruit = List("apples", "oranges", "pears")
   val nums = List(1, 2, 3, 4)
-  val diag3 =
-    List(
-      List(1, 0, 0),
-      List(0, 1, 0),
-      List(0, 0, 1)
-    )
-  val empty = List()"brush: scala"
+  val diag3 = List(List(1, 0, 0), List(0, 1, 0), List(0, 0, 1))
+  val empty = List()
 </pre>
 
 <p>
@@ -168,19 +163,14 @@
 
 <pre class="brush: scala">
 val fruit: List[String] = List("apples", "oranges", "pears")
-  val nums: List[Int] = List(1, 2, 3, 4)
-  val diag3: List[List[Int]] =
-    List(
-      List(1, 0, 0),
-      List(0, 1, 0),
-      List(0, 0, 1)
-    )
-  val empty: List[Nothing] = List()
+val nums: List[Int] = List(1, 2, 3, 4)
+val diag3: List[List[Int]] = List(List(1, 0, 0), List(0, 1, 0), List(0, 0, 1))
+val empty: List[Nothing] = List()
 </pre>
 
 <p>
-Scala里的列表类是协变的（covariant）。如果<code>S</code>是<code>T</code>的子类，那<code>List[S]</code>也是
-<code>List[T]</code>的子类。
+Scala里的 <strong>不可变</strong> 列表类是协变的（covariant）。如果<code>S</code>是<code>T</code>的子类，那<code>List[S]</code>
+也是<code>List[T]</code>的子类。
 </p>
 
 <p>
@@ -310,7 +300,15 @@ diag3.head // List(1, 0, 0)
 </p>
 
 <p>
-“cos”模式<code>x::xs</code>是中缀操作符模式的特例，一般中缀表达式<code>p op q</code>视为<code>p.op(q)</code>。
+“cos”模式：
+</p>
+
+<pre class="brush: scala">
+x :: xs
+</pre>
+
+<p>
+是中缀操作符模式的特例，一般中缀表达式<code>p op q</code>视为<code>p.op(q)</code>。
 但是如果作为模式，其实是被当作构造器模式的<code>op(p,q)</code>形式。
 </p>
 
@@ -325,14 +323,13 @@ diag3.head // List(1, 0, 0)
 
 <pre class="brush: scala">
   def isort(xs: List[Int]): List[Int] = xs match {
-    case List() =&gt; List()
+    case List() =&gt; List()                    // empty list
     case x :: xs1 =&gt; insert(x, isort(xs1))
   }
 
   def insert(x: Int, xs: List[Int]): List[Int] = xs match {
-    case List() =&gt; List(x)
-    case y :: ys =&gt; if (x &lt;= y) x :: xs
-                    else y :: insert(x, ys)
+    case List() =&gt; List(x)                   // empty list
+    case y :: ys =&gt; if (x &lt;= y) x :: xs else y :: insert(x, ys)
   }
 </pre>
 
@@ -600,7 +597,7 @@ xs mkString sep
 // equals
 xs mkString ("", sep, "")
 
-sx mkString
+xs mkString
 // equals
 xs mkString ""
 </pre>
@@ -815,17 +812,15 @@ Scala中以操作符形式出现的高阶函数更加简洁地处理Java中用�
 </p>
 
 <pre class="brush: scala">
-  scala&gt; List.range(1, 5) flatMap (
-       | i =&gt; List.range(1, i) map (j =&gt; (i, j))
-       | )
+  scala&gt; List.range(1, 5) flatMap ( i =&gt; List.range(1, i) map (j =&gt; (i, j)) )
   res34: List[(Int, Int)] = List((2,1), (3,1), (3,2), (4,1),
       (4,2), (4,3))
 </pre>
 
 <p>
-上面的代码<code>List.range(1, 5)</code>产生从1到5的整数列表。对于其中的每项<code>i</code>再产生1到<code>i</code>
-的列表。<code>map</code>产生<code>(i, j)</code>元组列表，这里的<code>j&lt;i</code>。<code>flatMpa</code>对每个1到5之间的<code>i</code>产生
-列表，并连接所有列表得到结果。
+上面的代码<code>List.range(1, 5)</code>产生从1到5的整数列表。对于其中的每项<code>i</code>再产生<code>1</code>到
+<code>i</code>的列表。<code>map</code>产生<code>(i, j)</code>元组列表，这里的<code>j&lt;i</code>。<code>flatMpa</code>对每个1到5之间的<code>i</code>
+产生列表，并连接所有列表得到结果。
 </p>
 
 <p>
@@ -833,7 +828,7 @@ Scala中以操作符形式出现的高阶函数更加简洁地处理Java中用�
 </p>
 
 <pre class="brush: scala">
-  for (i &lt;- List.range(1, 5); j &lt;- List.range(1, i)) yield (i, j)
+for (i &lt;- List.range(1, 5); j &lt;- List.range(1, i)) yield (i, j)
 </pre>
 
 <p>
@@ -1538,7 +1533,7 @@ Hindley-Mlner更加优雅。由于这些局限性在比较极端的情况下才�
 <h3 id="toc_2.2.2">列表缓存</h3>
 
 <p>
-还有一人方式是使用<code>scala.collection.mutable.ListBuffer</code>。
+还有一个方式是使用<code>scala.collection.mutable.ListBuffer</code>。
 </p>
 
 <p>

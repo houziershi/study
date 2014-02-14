@@ -11,13 +11,8 @@
 {{{class="brush: scala"
   val fruit = List("apples", "oranges", "pears")
   val nums = List(1, 2, 3, 4)
-  val diag3 =
-    List(
-      List(1, 0, 0),
-      List(0, 1, 0),
-      List(0, 0, 1)
-    )
-  val empty = List()"brush: scala"
+  val diag3 = List(List(1, 0, 0), List(0, 1, 0), List(0, 0, 1))
+  val empty = List()
 }}}
 
 注意列表是不可变的。
@@ -29,18 +24,13 @@
 
 {{{class="brush: scala"
 val fruit: List[String] = List("apples", "oranges", "pears")
-  val nums: List[Int] = List(1, 2, 3, 4)
-  val diag3: List[List[Int]] =
-    List(
-      List(1, 0, 0),
-      List(0, 1, 0),
-      List(0, 0, 1)
-    )
-  val empty: List[Nothing] = List()
+val nums: List[Int] = List(1, 2, 3, 4)
+val diag3: List[List[Int]] = List(List(1, 0, 0), List(0, 1, 0), List(0, 0, 1))
+val empty: List[Nothing] = List()
 }}}
 
-Scala里的列表类是协变的（covariant）。如果`S`是`T`的子类，那`List[S]`也是
-`List[T]`的子类。
+Scala里的 *不可变* 列表类是协变的（covariant）。如果`S`是`T`的子类，那`List[S]`
+也是`List[T]`的子类。
 
 由于`Nothing`是所有类的子类，所以`List[Nothing]`是所有`List[T]`类型的子类：
 
@@ -144,7 +134,13 @@ diag3.head // List(1, 0, 0)
 
 实际上`List(...)`是将来会在抽取器章节介绍的抽取器模式。
 
-“cos”模式`x::xs`是中缀操作符模式的特例，一般中缀表达式`p op q`视为`p.op(q)`。
+“cos”模式：
+
+{{{class="brush: scala"
+x :: xs
+}}}
+
+是中缀操作符模式的特例，一般中缀表达式`p op q`视为`p.op(q)`。
 但是如果作为模式，其实是被当作构造器模式的`op(p,q)`形式。
 
 对应这个构造器模式的类是`scala.::`，它可以创建非空列表的类。还有一个`List`类的
@@ -154,14 +150,13 @@ diag3.head // List(1, 0, 0)
 
 {{{class="brush: scala"
   def isort(xs: List[Int]): List[Int] = xs match {
-    case List() => List()
+    case List() => List()                    // empty list
     case x :: xs1 => insert(x, isort(xs1))
   }
 
   def insert(x: Int, xs: List[Int]): List[Int] = xs match {
-    case List() => List(x)
-    case y :: ys => if (x <= y) x :: xs
-                    else y :: insert(x, ys)
+    case List() => List(x)                   // empty list
+    case y :: ys => if (x <= y) x :: xs else y :: insert(x, ys)
   }
 }}}
 
@@ -379,7 +374,7 @@ xs mkString sep
 // equals
 xs mkString ("", sep, "")
 
-sx mkString
+xs mkString
 // equals
 xs mkString ""
 }}}
@@ -560,21 +555,19 @@ Scala中以操作符形式出现的高阶函数更加简洁地处理Java中用�
 `flatMap`和`map`合作建立出所有`1 <= j < i < 5`的`(i, j)`对偶：
 
 {{{class="brush: scala"
-  scala> List.range(1, 5) flatMap (
-       | i => List.range(1, i) map (j => (i, j))
-       | )
+  scala> List.range(1, 5) flatMap ( i => List.range(1, i) map (j => (i, j)) )
   res34: List[(Int, Int)] = List((2,1), (3,1), (3,2), (4,1),
       (4,2), (4,3))
 }}}
 
-上面的代码`List.range(1, 5)`产生从1到5的整数列表。对于其中的每项`i`再产生1到`i`
-的列表。`map`产生`(i, j)`元组列表，这里的`j<i`。`flatMpa`对每个1到5之间的`i`产生
-列表，并连接所有列表得到结果。
+上面的代码`List.range(1, 5)`产生从1到5的整数列表。对于其中的每项`i`再产生`1`到
+`i`的列表。`map`产生`(i, j)`元组列表，这里的`j<i`。`flatMpa`对每个1到5之间的`i`
+产生列表，并连接所有列表得到结果。
 
 等同于以下循环结构：
 
 {{{class="brush: scala"
-  for (i <- List.range(1, 5); j <- List.range(1, i)) yield (i, j)
+for (i <- List.range(1, 5); j <- List.range(1, i)) yield (i, j)
 }}}
 
 `foreach`没有返回结果（或返回`Unit`）。如下对`sum`变量累加，但是没有返回值：
@@ -1138,7 +1131,7 @@ Hindley-Mlner更加优雅。由于这些局限性在比较极端的情况下才�
 
 === 列表缓存 ===
 
-还有一人方式是使用`scala.collection.mutable.ListBuffer`。
+还有一个方式是使用`scala.collection.mutable.ListBuffer`。
 
 `+=`在尾部添加元素；`+:`加在头上；完成之后用`toList`生成`List`：
 

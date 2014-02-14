@@ -3,6 +3,8 @@
 
 推荐规范：[[git.stands]]
 
+建立服务器：[[git.server]]
+
 工具
 
 egit： [[git.edit]]

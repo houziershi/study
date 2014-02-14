@@ -1,3 +1,7 @@
+%title Raspberry Pi安装
+
+%toc Raspberry Pi安装
+
 
 = 准备启动盘 =
 
@@ -55,12 +59,12 @@ sudo raspi-config
 }}}
 
 
-expand_rootfs :: 将根分区扩展到整张SD卡
+== expand_rootfs 将根分区扩展到整张SD卡 ==
 
 因为整个Image才400多兆，但是现在的SD卡基本都是几个G的，除非SD卡有其他用途，
 一般建议选择这项，这样可以有足够多的空间来安装各种程序。
 
-overscan :: 可以扩充或者缩小屏幕的设置
+== overscan 可以扩充或者缩小屏幕的设置 ==
 
 除非一启动就发现显示的内容能刚好填满整个电视的画面。大部分情况下是不能填满
 或者超过，如果这样就要enable这个，然 后在系统启动之后，更改`/boot/config.txt`
@@ -69,7 +73,7 @@ overscan :: 可以扩充或者缩小屏幕的设置
 如果是1080p，一般设置为48。如果显示的内容不能填满屏幕，则设置这些值为负值，
 如果是1080p，一般设置为-48。具体可以更加显示的结果，以16为步长进行调整。
 
-configure_keyboard :: 键盘
+== configure_keyboard 键盘 ==
 
 这个很重要，前面的屏幕选默认值：`Generic 105-key (Intl) PC`，
 但在`Keyboard layout`时，显示出来的都是English（UK）的，要选择Other，然后
@@ -78,37 +82,37 @@ configure_keyboard :: 键盘
 到了`Use Control+Alt+Backspace to terminate the X server? `时，选择Yes，
 表示用这个可以终止X Server，当整个X-Window死掉的时候可以用。
 
-change_pass :: 密码
+== change_pass 密码 ==
 
 默认的用户名是pi，密码是raspberry，一般登录时不需要输入，但是用ssh远程连接
 时要用到这个用户名和密码，这里可以更改密码。
 
-change_locale :: 更改语言设置
+== change_locale 更改语言设置 ==
 
 在`Locales to be generated`中，选择`en_US.UTF-8`和`zh_CN.UTF-8`。在
 `Default locale for the system environment`中，选择`en_US.UTF-8`（等启动完机器，
 装完中文字体，再改回zh_CN.UTF-8，否则第一次启动会出现方块）。
 
-change_timezone :: 更改时区
+== change_timezone 更改时区 ==
 
 这个很重要，因为树莓派没有内部时钟，是通过网络获取的时间，如果设错时区，那么
 时间就不正确了，选择Asia – Shanghai，没错是Shanghai，木有Beijing，这是Unix的
 传统。缩写是CST，不知道是China Shanghai Time还是China Standard Time。
 
-memory_split :: 内存分配
+== memory_split 内存分配 ==
 
 按照网上的说法，这个功能有Bug，会导致/boot/start.elf损坏使系统无法启动，所以
 不要使用这个功能。可以通过拷贝`/boot/`下的`arm128_start.elf`、`arm192_start.elf`
 、`arm224_start.elf`覆盖`start.elf`来实现显存和内存的划分。为了能播放高清1080p
 的视频，至少要分配64M显存给GPU。所以arm224就不能播放1080p高清。
 
-ssh :: 是否激活sshd服务
+== ssh 是否激活sshd服务 ==
 
 应该选择激活，这是当界面死掉后唯一进入机器的通道（如果Kernel没死的话），
 可以找另外一部机器，用putty或者其他ssh的工具连接到这部机器上，用pi这个用户登录
 ，至少可以实现安全重启。
 
-boot_behaviour :: 设置启动时启动图形界面
+== boot_behaviour 设置启动时启动图形界面 ==
 
 正常肯定是Yes。
 
@@ -128,12 +132,6 @@ sudo apt-get install ttf-wqy-microhei
  
 sudo apt-get install ibus-table-wubi
 sudo apt-get install ibus-pinyin
-}}}
-
-JDK
-
-{{{class="brush: bash"	
-sudo apt-get install openjdk-7-jdk
 }}}
 
 = 常用软件 =
@@ -204,9 +202,30 @@ XBMC是Linux的媒体中心版，XBian就是XBMC和Raspbian结合的产物。
 
 = 超频设置 =
 
-通过更改`/boog/config.txt`中的下列参数可以实现超频：
+== 通过Raspi-config工具修改 ==
+
+{{{class="brush: bash"	
+sudo raspi-config
+}}}
+
+然后选择合适的频率。
+
+== 直接修改config.txt文件 ==
+
+通过更改`/boog/config.txt`中的下列参数可以实现超频，主要参数：
+
+{{{class="brush: bash"	
+carm_freq=800
+gpu_freq=300
+sdram_freq=450
+}}}
+上面的命令将CPU频率设到800MHZ，你所要做的只是修改carm_freq这个参数，就能实现
+超频！现在你只需要将config.txt这个文件放到SD卡的启动分区中。
+
+=== 详细参数 ===
 
 | Option               | Description                                                                                                         |
+|----------------------|---------------------------------------------------------------------------------------------------------------------|
 | arm_freq             | frequency of ARM in MHz. Default 700.                                                                               |
 | gpu_freq             | Sets core_freq, h264_freq, isp_freq, v3d_freq together.                                                             |
 | core_freq            | frequency of GPU processor core in MHz. It have an impact on ARM performance since it drives L2 cache. Default 250. |
@@ -222,12 +241,30 @@ XBMC是Linux的媒体中心版，XBian就是XBMC和Raspbian结合的产物。
 
 
 
-如何组合参照下表（注意：如果设置了over_voltage，质保就会失效）：
- | arm_freq | gpu_freq | core_freq | h264_freq | isp_freq | v3d_freq | sdram_freq | over_voltage | over_voltage_sdram |   |
- | 750      | 255      |           |           |          |          | 450        |              |                    |   |
- | 900      | 250      |           |           |          |          | 500        |              |                    |   |
- | 900      | 275      |           |           |          |          | 500        |              |                    |   |
- | 900      |          | 450       |           |          |          | 450        |              |                    |   |
- | 930      | 350      |           |           |          |          | 500        |              |                    |   |
- | 1000     |          | 500       |           |          |          | 450        | 6            |                    |   |
- | 1000     |          | 500       |           |          |          | 500        | 6            |                    |   |
+如何组合参照下表（注意：如果设置了`over_voltage`，质保就会失效）：
+
+| arm_freq | gpu_freq | core_freq | h264_freq | isp_freq | v3d_freq | sdram_freq | over_voltage | over_voltage_sdram |
+|----------|----------|-----------|-----------|----------|----------|------------|--------------|--------------------|
+| 750      | 255      |           |           |          |          | 450        |              |                    |
+| 900      | 250      |           |           |          |          | 500        |              |                    |
+| 900      | 275      |           |           |          |          | 500        |              |                    |
+| 900      |          | 450       |           |          |          | 450        |              |                    |
+| 930      | 350      |           |           |          |          | 500        |              |                    |
+| 1000     |          | 500       |           |          |          | 450        | 6            |                    |
+| 1000     |          | 500       |           |          |          | 500        | 6            |                    |
+ 
+== 超频错误无法启动 ==
+
+不幸的是，如果你设置了过高的时钟频率，树莓派可能就启动不了了。别担心，可以通过
+重设频率的方法来解决这个问题。
+
+当你启动树莓派的时候，按住`SHIFT`键，再次运行`Raspi-config`程序并设置一个低一些
+的频率。
+
+如果你使用的是配置`config.txt`的方法，修改这个文件中的参数，设置一个低一些的
+频率。
+
+树莓派的官方网站推荐用Quake 3来测试当前的频率设定是否合适。注意要是你的小Pi通风
+不是很顺畅，你可能需要调整出风口。一些在线商家已经开始出售树莓派的专用散热器，
+如果你想超频到900MHz以上，推荐你买一个。
+

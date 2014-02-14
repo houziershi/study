@@ -1,0 +1,228 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<!--
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/jquery-1.4.2.min.js"></script>
+-->
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/zepto-1.1.2.min.js"></script>
+
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/3rd-libs/hightlight-code/styles/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/3rd-libs/hightlight-code/styles/shThemeDefault.css"/>
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/hightlight-code/scripts/shCore.js"></script>
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/hightlight-code/scripts/shAutoloader.js"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/3rd-libs/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script type="text/javascript" src="../../vimwiki-theme/templates/code-default/scripts/script.js"></script>
+<link type="text/css" rel="stylesheet" href="../../vimwiki-theme/templates/code-default/styles/style.css" />
+
+
+<title>Git服务器</title>
+</head>
+<body  onresize='changeTocSize()'>
+	<div class="note-main"> 
+
+<h1>Git服务器</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">利用树莓派搭建Git私有服务器</a>
+<ul>
+<li><a href="#toc_1.1">安装Git</a>
+<li><a href="#toc_1.2">安装SSH</a>
+<li><a href="#toc_1.3">改变主机名</a>
+<li><a href="#toc_1.4">添加一个Git用户和组</a>
+<li><a href="#toc_1.5">增加一个空的Git仓库(Git Repository)</a>
+<li><a href="#toc_1.6">Push你的代码到Pi上</a>
+</ul>
+</ul>
+</div>
+
+<h1 id="toc_1">利用树莓派搭建Git私有服务器</h1>
+
+<h2 id="toc_1.1">安装Git</h2>
+
+<p>
+首先你需要在树莓派上安装Git.
+</p>
+
+<pre class="brush: bash">
+sudo apt-get install wget git-core
+</pre>
+
+<p>
+这将会安装Git服务器和必要的客户端软件。
+</p>
+
+<h2 id="toc_1.2">安装SSH</h2>
+
+<p>
+如果你还没有安装SSH，通过以下命令安装它：
+</p>
+
+<pre class="brush: bash">
+sudo apt-get install ssh
+</pre>
+
+<p>
+通过以下命令启动它：
+</p>
+
+<pre class="brush: bash">
+sudo /etc/init.d/ssh start
+</pre>
+
+<p>
+现在ssh已经运行起来了，但是一旦你重启树莓派，你还需要重新执行一遍上面命令。你
+可以通过执行一次下面的命令来解决这个问题：
+</p>
+
+<pre class="brush: bash">
+sudo update-rc.d ssh defaults
+</pre>
+
+<p>
+当你重启树莓派，SSH应该能够自动启动了。你可以看看能不能通过SSH连接到树莓派，
+在你的Windows机器上使用Putty(Mac用户需要寻找替代的SSH客户端)。
+</p>
+
+<p>
+在HostName文本框里输入树莓派的IP地址。通过以下命令找到你的树莓派IP:
+</p>
+
+<pre class="brush: bash">
+/sbin/ifconfig
+</pre>
+
+<p>
+找到<code>inet addr:</code>后面的就是IP。
+</p>
+
+<h2 id="toc_1.3">改变主机名</h2>
+
+<p>
+这步不是必须的，但是我强烈推荐如果你正在，计划使用多台树莓派设备。
+</p>
+
+<pre class="brush: bash">
+sudo leafpad /etc/hostname
+</pre>
+
+<p>
+输入你想要的主机名，然后保存文件。我的主机名是<code>gitpi</code>。
+</p>
+
+<p>
+接着，输入下面的命令：
+</p>
+
+<pre class="brush: bash">
+sudo leafpad /etc/hosts
+</pre>
+
+<p>
+替换所有<code>raspberrypi</code>为你上一步输入的新主机名。然后，重启你的树莓派。
+</p>
+
+<h2 id="toc_1.4">添加一个Git用户和组</h2>
+
+<p>
+接着我们来创建一个<code>Git</code>用户和用户组。注意<code>/home/git</code>是这个例子里我使用的文件夹。
+如果你想使用别的路径，替换下面命令里的<code>/home/git</code>。
+</p>
+
+<pre class="brush: bash">
+adduser --system --shell /bin/bash --gecos 'git version control by pi' --group --home /home/git git
+</pre>
+
+<p>
+接着是更改密码：
+</p>
+
+<pre class="brush: bash">
+passwd git
+</pre>
+
+<p>
+你的<code>git</code>用户现在有了一个新密码。现在尝试切换用户，你将会看到现在的终端提示
+用户名和主机为<code>git@gitpi</code>。你可以通过下面的命令切换用户：
+</p>
+
+<pre class="brush: bash">
+su git
+</pre>
+
+<h2 id="toc_1.5">增加一个空的Git仓库(Git Repository)</h2>
+
+<p>
+我们现在来增加一个空的Git仓库。首先更改目录到你存储git的路径下。
+</p>
+
+<pre class="brush: bash">
+cd /home/git
+</pre>
+
+<p>
+为你的仓库创建一个文件夹，并移动进去，然后初始化并清空仓库。
+</p>
+
+<p>
+注意我现在使用的是<code>git</code>用户。这个用户具有<code>/home/git</code>目录的控制权。
+</p>
+
+<pre class="brush: bash">
+mkdir test.git
+cd test.git
+git --bare init
+</pre>
+
+<h2 id="toc_1.6">Push你的代码到Pi上</h2>
+
+<p>
+最终，我们会把代码push到树莓派上。首先，更改路径到你之前初始化的git仓库(
+或初始化一个新的)。
+</p>
+
+<p>
+加入一个新的远程主机(*你的IP地址没有中括号)
+</p>
+
+<pre class="brush: bash">
+git remote add pi git@[your IP]:/home/git/test.git
+</pre>
+
+<p>
+现在你要做的就是add你的代码，commit然后push。
+</p>
+
+<pre class="brush: bash">
+git add .
+git commit -am "Initial"
+git push pi master
+</pre>
+
+<p>
+如果你得到了一个类似这样的消息<code>authenticity of host …</code>，只需要输入<code>yes</code>然后
+继续就可以了。
+</p>
+
+<p>
+理想情况下，如果一切正常，你的Git仓库已经搭建在你的树莓派上了。
+</p>
+
+<p>
+如果你想要测试一下，试着clone你的仓库到你的Windows机器上。首先更改路径到你希望
+存储clone的地方(一个空文件夹)，然后通过命令行(或git bash)，运行：
+</p>
+
+<pre class="brush: bash">
+git clone git@[your IP]:/home/git/test.git
+</pre>
+
+<p>
+如果你有任何问题，请到原博客地址留言。祝你好运！
+</p>
+ </div>
+</body>
+</html>

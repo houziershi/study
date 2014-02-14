@@ -1,0 +1,138 @@
+%title Git服务器
+
+%toc Git服务器
+
+= 利用树莓派搭建Git私有服务器 =
+
+== 安装Git ==
+
+首先你需要在树莓派上安装Git.
+
+{{{class="brush: bash"
+sudo apt-get install wget git-core
+}}}
+
+这将会安装Git服务器和必要的客户端软件。
+
+== 安装SSH ==
+
+如果你还没有安装SSH，通过以下命令安装它：
+
+{{{class="brush: bash"
+sudo apt-get install ssh
+}}}
+
+通过以下命令启动它：
+
+{{{class="brush: bash"
+sudo /etc/init.d/ssh start
+}}}
+
+现在ssh已经运行起来了，但是一旦你重启树莓派，你还需要重新执行一遍上面命令。你
+可以通过执行一次下面的命令来解决这个问题：
+
+{{{class="brush: bash"
+sudo update-rc.d ssh defaults
+}}}
+
+当你重启树莓派，SSH应该能够自动启动了。你可以看看能不能通过SSH连接到树莓派，
+在你的Windows机器上使用Putty(Mac用户需要寻找替代的SSH客户端)。
+
+在HostName文本框里输入树莓派的IP地址。通过以下命令找到你的树莓派IP:
+
+{{{class="brush: bash"
+/sbin/ifconfig
+}}}
+
+找到`inet addr:`后面的就是IP。
+
+== 改变主机名 ==
+
+这步不是必须的，但是我强烈推荐如果你正在，计划使用多台树莓派设备。
+
+{{{class="brush: bash"
+sudo leafpad /etc/hostname
+}}}
+
+输入你想要的主机名，然后保存文件。我的主机名是`gitpi`。
+
+接着，输入下面的命令：
+
+{{{class="brush: bash"
+sudo leafpad /etc/hosts
+}}}
+
+替换所有`raspberrypi`为你上一步输入的新主机名。然后，重启你的树莓派。
+
+== 添加一个Git用户和组 ==
+
+接着我们来创建一个`Git`用户和用户组。注意`/home/git`是这个例子里我使用的文件夹。
+如果你想使用别的路径，替换下面命令里的`/home/git`。
+
+{{{class="brush: bash"
+adduser --system --shell /bin/bash --gecos 'git version control by pi' --group --home /home/git git
+}}}
+
+接着是更改密码：
+
+{{{class="brush: bash"
+passwd git
+}}}
+
+你的`git`用户现在有了一个新密码。现在尝试切换用户，你将会看到现在的终端提示
+用户名和主机为`git@gitpi`。你可以通过下面的命令切换用户：
+
+{{{class="brush: bash"
+su git
+}}}
+
+== 增加一个空的Git仓库(Git Repository) ==
+
+我们现在来增加一个空的Git仓库。首先更改目录到你存储git的路径下。
+
+{{{class="brush: bash"
+cd /home/git
+}}}
+
+为你的仓库创建一个文件夹，并移动进去，然后初始化并清空仓库。
+
+注意我现在使用的是`git`用户。这个用户具有`/home/git`目录的控制权。
+
+{{{class="brush: bash"
+mkdir test.git
+cd test.git
+git --bare init
+}}}
+
+== Push你的代码到Pi上 ==
+
+最终，我们会把代码push到树莓派上。首先，更改路径到你之前初始化的git仓库(
+或初始化一个新的)。
+
+加入一个新的远程主机(*你的IP地址没有中括号)
+
+{{{class="brush: bash"
+git remote add pi git@[your IP]:/home/git/test.git
+}}}
+
+现在你要做的就是add你的代码，commit然后push。
+
+{{{class="brush: bash"
+git add .
+git commit -am "Initial"
+git push pi master
+}}}
+
+如果你得到了一个类似这样的消息`authenticity of host …`，只需要输入`yes`然后
+继续就可以了。
+
+理想情况下，如果一切正常，你的Git仓库已经搭建在你的树莓派上了。
+
+如果你想要测试一下，试着clone你的仓库到你的Windows机器上。首先更改路径到你希望
+存储clone的地方(一个空文件夹)，然后通过命令行(或git bash)，运行：
+
+{{{class="brush: bash"
+git clone git@[your IP]:/home/git/test.git
+}}}
+
+如果你有任何问题，请到原博客地址留言。祝你好运！

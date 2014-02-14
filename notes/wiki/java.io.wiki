@@ -1,0 +1,170 @@
+%title Java IO
+
+%toc Java IO
+
+= BufferedInputStream和GZIPInputStream性能调优 =
+
+== 何时不需要缓冲 ==
+
+缓冲是用来减少来自输入设备的单独读取操作数的数量，许多开发者往往忽视这一点，
+并经常将InputStream包含进BufferedInputStream中，如：
+	
+{{{class="brush: java"
+final InputStream is = new BufferedInputStream(new FileInputStream(file));
+}}}
+
+是否使用缓冲的简略规则如下：
+
+* 当你的数据块足够大的时候(100K+)，你不需要使用缓冲，你可以处理任何长度的块(
+	不需要保证在缓冲前缓冲区中至少有N bytes可用字节)。
+* 在所有的其他情况下，你都需要缓冲输入数据。
+
+最简单的不需要缓冲的例子就是手动复制文件的过程。
+
+{{{class="brush: java"
+public static void copyFile(final File from, final File to) 
+	throws IOException 
+{
+	final InputStream is = new FileInputStream(from);
+	try {
+		final OutputStream os = new FileOutputStream(to);
+		try {
+			final byte[] buf = new byte[8192];
+			int read = 0;
+			while ((read = is.read(buf)) != -1) {
+				os.write( buf, 0, read );
+			}
+		}
+		finally {
+			os.close();
+		}
+	}
+	finally {
+		is.close();
+	}
+}
+}}}
+
+注1:衡量文件复制的性能是非常困难的，因为这很大程度上收到操作系统写入缓存的影响
+。在我的机器上复制一个4.5G的文件到相同的硬盘所花费的时间在68至107s之间变化。
+
+注2:文件复制经常通过Java NIO实现，使用`FileChannel.transferTo`或者
+`transferFrom()`的方法。使用这些方法不需要再在内核和用户态之间频繁的转换(在
+用户的java程序中将读入数据转换为字节缓存，再通过内核调用将它复制回输出文件中)。
+相反它们在内核模式中传输尽可能多的数据(直达231-1字节)，尽可能做到不返回用户的
+代码中。因此，Java NIO会使用较少的CPU周期，并腾出留给其他程序。然而，只有高负荷
+的环境下才能看到这当中的差异(在我的机器中，NIO模式的CPU总占用率为4%，而旧的
+流模式CPU总占用率则为8-9%)。以下是一个可能的Java NIO实现:
+
+{{{class="brush: java"
+private static void copyFileNio( final File from, final File to ) 
+	throws IOException 
+{
+	final RandomAccessFile inFile = new RandomAccessFile( from, "r" );
+	try
+	{
+		final RandomAccessFile outFile = new RandomAccessFile( to, "rw" );
+		try
+		{
+			final FileChannel inChannel = inFile.getChannel();
+			final FileChannel outChannel = outFile.getChannel();
+			long pos = 0;
+			long toCopy = inFile.length();
+			while ( toCopy > 0 )
+			{
+				final long bytes = inChannel.transferTo( pos, toCopy, outChannel );
+				pos += bytes;
+				toCopy -= bytes;
+			}
+		}
+		finally {
+			outFile.close();
+		}
+	}
+	finally {
+		inFile.close();
+	}
+}
+}}}
+
+== 缓冲大小 ==
+
+BufferedInputStream中默认的缓冲大小是8192个字节。缓冲大小实际上是从输入设备中准备读取的块的平均大小。这就是为什么它经常值得精确地提高至64K(65536)， 万一有非常大的输入文件 — 那些在512K和2M的文件，为了更深一层地减少磁盘读入的数量。许多专家也建议将此值设置为4096的整数倍 — 一个普通磁盘扇区的大小。所以，不要将缓冲区的大小设置为，像125000这样的大小，取而代之的应该是像131072（128K）这样的大小。
+
+java.util.zip.GZIPInputStream 是一个能够很好处理gzip文件输入的输入流。它经常被用来做这样的事情：
+
+{{{class="brush: java"
+final InputStream is = new GZIPInputStream(
+	new BufferedInputStream(new FileInputStream(file)));
+}}}
+
+这样的初始化已经足够好了，不过BufferedInputStream在此处是多余的，因为GZIPInputStream已经拥有了自己的内建缓冲区，它里面有一个字节缓冲区(实际上，它是InflaterInputStream的成员)，被用做此从底层流中读取压缩的数据，并且将其传递给一个inflater。这个缓冲区默认的大小是512字节，所以它必须被设置成一个更高的数值。一个更理想地使用GZIPInputStream的方式如下:
+	
+{{{class="brush: java"
+final InputStream is = new GZIPInputStream(
+	new FileInputStream(file), 65536);
+}}}
+
+== BufferedInputStream.available ==
+
+BufferedInputStream.available 方法有一个可能的性能问题，取决于你真正想要接收到的东西。它的标准实现将返回BufferedInputStream自身的内部缓冲区可用字节数和底层输入流调用avalibale()结果的总和。所以，它将尽可能地返回一个精确的数值。但是在很多案例中，用户想知道的仅仅是缓冲区中是否还有空间可用( available() > 0). 在这种情况下，即使BufferedInputStream的缓冲区中只有一个字节余留，我们都不需要去查询底层的输入流。这显得非常重要，如果我们有一个FileInputStream包含在BufferedInputStream中–这样的优化会节省我们在FileInputStream.available()中的磁盘访问时间。
+
+幸运的是，我们可以简单地解决这样的问题。BufferedInputStream不是一个final类，所以我们可以继承并且重载available方法。我们可以看看JDK的源代码着手准备。从这里我们还可以发现Java 6中的实现有一个bug — 如果BufferedInputStream可用的字节数和底层流available()调用结果的总和大于Integer.MaxVALUE，这样就会因为溢出而返回一个负数结果，不过这在Java 7中已经得到了解决。
+
+以下是我们改进的实现，它将返回BufferedInputStream的内置缓冲区中可用的字节数，又或者是，如果它里面没有剩余的字节数，底层流中的available()方法会被调用，并且返回调用后的结果。在大多数情况下，这种实现会极少调用到底层流中的available()方法，因为当BufferedInputStream缓冲区被读取到最后，这个类会读取从底层流中读取更多的数据，所以，我们只会在输入文件的末尾中调用底层流的available()方法。
+
+{{{class="brush: java"
+public class FasterBufferedInputStream extends BufferedInputStream
+{
+	public FasterBufferedInputStream(InputStream in, int size) {
+		super(in, size);
+	}
+	//如果有东西可用，该方法将返回一个正数，否则它会返回0。
+	public int available() throws IOException {
+		if (in == null)
+			throw new IOException( "Stream closed" );
+		final int n = count - pos;
+		return n > 0 ? n : in.available();
+	}
+}
+}}}
+
+为了测试这个实现，我尝试使用标准版的和改进版的BufferedInputStream去读取4.5G的文件，它们都有64K的缓冲区大小，并且每读取512或者1024字节的时候就调用一次available()方法。干净的测试需要操作系统在每一次测试之后重启以清除磁盘缓存。于是我决定在热身阶段读取文件，当文件已经在磁盘缓存时就用两种方法测试性能。测试显示，标准类的运行时间与available()调用的数量呈线性关系。而改进的方法运行时间看起来却与调用的次数无关。
+
+这里是测试的源代码:
+
+|        | standard, once per 512 bytes | improved, once per 512 bytes | standard, once per 1024 bytes | improved, once per 1024 bytes |
+|--------|------------------------------|------------------------------|-------------------------------|-------------------------------|
+| Java6 | 17.062 sec                   | 2.11 sec                     | 9.592 sec                     | 2.047 sec                     |
+| Java7 | 17.337 sec                   | 2.125 sec                    | 9.748 sec                     | 2.044 sec                     |
+
+{{{class="brush: java"
+private static void testRead(final InputStream is) throws IOException {
+	final long start = System.currentTimeMillis();
+	final byte[] buf = new byte[512];   //or 1024 bytes
+	while (true) {
+		if (is.available() == 0) break;
+		is.read( buf );
+	}
+	final long time = System.currentTimeMillis() - start;
+	System.out.println("Impl: " + is.getClass().getCanonicalName() + 
+			" time = " + time / 1000.0 + " sec");
+}
+}}}
+
+使用以下的声明变量调用以上方法:
+
+{{{class="brush: java"
+final InputStream is1 = new BufferedInputStream(
+	new FileInputStream(file), 65536);
+
+final InputStream is2 = new FasterBufferedInputStream(
+	new FileInputStream(file), 65536);
+}}}
+
+ 
+== 总结 ==
+
+* BufferedInputStream和GZIPInputStream 都有内建的缓冲区。前者默认的缓冲大小是8192字节，后者则为512字节。一般而言，它值得增加任何它们的整数倍大小到至少65536。
+* 不要使用BufferedInputStream作为GZIPInputStream的输入，相反，显示地在构造器中设置GZIPInputStream的缓存大小。虽然，保持BufferedInputStream仍然是安全的。
+* 如果你有一个new BufferedInputStream( new FileInputStream( file ) )对象，并且需要频繁地调用它的available方法(例如，每输入一次信息都需要调用一次或者两次)，考虑重载 BufferedInputStream.available方法，它将极大地提高文件读取的速度。

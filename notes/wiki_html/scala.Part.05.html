@@ -58,6 +58,7 @@
 <ul>
 <li><a href="#toc_1.5.1">下界</a>
 <li><a href="#toc_1.5.2">上界</a>
+<li><a href="#toc_1.5.3">同时指定上界与下界</a>
 </ul>
 <li><a href="#toc_1.6">单例对象不能泛型</a>
 <li><a href="#toc_1.7">类型通配符</a>
@@ -1098,7 +1099,7 @@ cut a Apple
 <h3 id="toc_1.5.2">上界</h3>
 
 <p>
-当前类型<code>T</code>对它的指定子类<code>U</code>来说，自己位于是上界，格式为：<code>T &lt;: U</code>
+对于当前类型<code>T</code>来说，超类<code>U</code>是它的上界，格式为：<code>T &lt;: U</code>
 </p>
 
 <p>
@@ -1206,6 +1207,12 @@ cut a Apple
 在以后的“隐式类型转换和参数”的“视图界定”一节中介绍通过采用隐式参数与检查约束来
 实现更加通用的方案。
 </p>
+
+<h3 id="toc_1.5.3">同时指定上界与下界</h3>
+
+<pre class="brush: scala">
+ T &gt;: Lower &lt;: Upper
+</pre>
 
 
 <h2 id="toc_1.6">单例对象不能泛型</h2>

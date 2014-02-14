@@ -19,10 +19,47 @@
 <link type="text/css" rel="stylesheet" href="../../vimwiki-theme/templates/code-default/styles/style.css" />
 
 
-<title>raspberry.pi</title>
+<title>Raspberry Pi安装</title>
 </head>
 <body  onresize='changeTocSize()'>
 	<div class="note-main"> 
+
+<h1>Raspberry Pi安装</h1>
+<div class="toc">
+<ul>
+<li><a href="#toc_1">准备启动盘</a>
+<li><a href="#toc_2">系统配置工具</a>
+<ul>
+<li><a href="#toc_2.1">expand_rootfs 将根分区扩展到整张SD卡</a>
+<li><a href="#toc_2.2">overscan 可以扩充或者缩小屏幕的设置</a>
+<li><a href="#toc_2.3">configure_keyboard 键盘</a>
+<li><a href="#toc_2.4">change_pass 密码</a>
+<li><a href="#toc_2.5">change_locale 更改语言设置</a>
+<li><a href="#toc_2.6">change_timezone 更改时区</a>
+<li><a href="#toc_2.7">memory_split 内存分配</a>
+<li><a href="#toc_2.8">ssh 是否激活sshd服务</a>
+<li><a href="#toc_2.9">boot_behaviour 设置启动时启动图形界面</a>
+</ul>
+<li><a href="#toc_3">工具配置</a>
+<li><a href="#toc_4">常用软件</a>
+<ul>
+<li><a href="#toc_4.1">Java</a>
+<li><a href="#toc_4.2">视频播放</a>
+<li><a href="#toc_4.3">web浏览器</a>
+<li><a href="#toc_4.4">媒体中心</a>
+</ul>
+<li><a href="#toc_5">超频设置</a>
+<ul>
+<li><a href="#toc_5.1">通过Raspi-config工具修改</a>
+<li><a href="#toc_5.2">直接修改config.txt文件</a>
+<ul>
+<li><a href="#toc_5.2.1">详细参数</a>
+</ul>
+<li><a href="#toc_5.3">超频错误无法启动</a>
+</ul>
+</ul>
+</div>
+
 
 <h1 id="toc_1">准备启动盘</h1>
 
@@ -88,20 +125,14 @@ sudo raspi-config
 </pre>
 
 
-<dl>
-<dt>expand_rootfs </dt>
-<dd>将根分区扩展到整张SD卡</dd>
-</dl>
+<h2 id="toc_2.1">expand_rootfs 将根分区扩展到整张SD卡</h2>
 
 <p>
 因为整个Image才400多兆，但是现在的SD卡基本都是几个G的，除非SD卡有其他用途，
 一般建议选择这项，这样可以有足够多的空间来安装各种程序。
 </p>
 
-<dl>
-<dt>overscan </dt>
-<dd>可以扩充或者缩小屏幕的设置</dd>
-</dl>
+<h2 id="toc_2.2">overscan 可以扩充或者缩小屏幕的设置</h2>
 
 <p>
 除非一启动就发现显示的内容能刚好填满整个电视的画面。大部分情况下是不能填满
@@ -112,10 +143,7 @@ sudo raspi-config
 如果是1080p，一般设置为-48。具体可以更加显示的结果，以16为步长进行调整。
 </p>
 
-<dl>
-<dt>configure_keyboard </dt>
-<dd>键盘</dd>
-</dl>
+<h2 id="toc_2.3">configure_keyboard 键盘</h2>
 
 <p>
 这个很重要，前面的屏幕选默认值：<code>Generic 105-key (Intl) PC</code>，
@@ -126,20 +154,14 @@ sudo raspi-config
 表示用这个可以终止X Server，当整个X-Window死掉的时候可以用。
 </p>
 
-<dl>
-<dt>change_pass </dt>
-<dd>密码</dd>
-</dl>
+<h2 id="toc_2.4">change_pass 密码</h2>
 
 <p>
 默认的用户名是pi，密码是raspberry，一般登录时不需要输入，但是用ssh远程连接
 时要用到这个用户名和密码，这里可以更改密码。
 </p>
 
-<dl>
-<dt>change_locale </dt>
-<dd>更改语言设置</dd>
-</dl>
+<h2 id="toc_2.5">change_locale 更改语言设置</h2>
 
 <p>
 在<code>Locales to be generated</code>中，选择<code>en_US.UTF-8</code>和<code>zh_CN.UTF-8</code>。在
@@ -147,10 +169,7 @@ sudo raspi-config
 装完中文字体，再改回zh_CN.UTF-8，否则第一次启动会出现方块）。
 </p>
 
-<dl>
-<dt>change_timezone </dt>
-<dd>更改时区</dd>
-</dl>
+<h2 id="toc_2.6">change_timezone 更改时区</h2>
 
 <p>
 这个很重要，因为树莓派没有内部时钟，是通过网络获取的时间，如果设错时区，那么
@@ -158,10 +177,7 @@ sudo raspi-config
 传统。缩写是CST，不知道是China Shanghai Time还是China Standard Time。
 </p>
 
-<dl>
-<dt>memory_split </dt>
-<dd>内存分配</dd>
-</dl>
+<h2 id="toc_2.7">memory_split 内存分配</h2>
 
 <p>
 按照网上的说法，这个功能有Bug，会导致/boot/start.elf损坏使系统无法启动，所以
@@ -170,10 +186,7 @@ sudo raspi-config
 的视频，至少要分配64M显存给GPU。所以arm224就不能播放1080p高清。
 </p>
 
-<dl>
-<dt>ssh </dt>
-<dd>是否激活sshd服务</dd>
-</dl>
+<h2 id="toc_2.8">ssh 是否激活sshd服务</h2>
 
 <p>
 应该选择激活，这是当界面死掉后唯一进入机器的通道（如果Kernel没死的话），
@@ -181,10 +194,7 @@ sudo raspi-config
 ，至少可以实现安全重启。
 </p>
 
-<dl>
-<dt>boot_behaviour </dt>
-<dd>设置启动时启动图形界面</dd>
-</dl>
+<h2 id="toc_2.9">boot_behaviour 设置启动时启动图形界面</h2>
 
 <p>
 正常肯定是Yes。
@@ -210,14 +220,6 @@ sudo apt-get install ttf-wqy-microhei
  
 sudo apt-get install ibus-table-wubi
 sudo apt-get install ibus-pinyin
-</pre>
-
-<p>
-JDK
-</p>
-
-<pre class="brush: bash">
-sudo apt-get install openjdk-7-jdk
 </pre>
 
 <h1 id="toc_4">常用软件</h1>
@@ -300,18 +302,42 @@ XBMC是Linux的媒体中心版，XBian就是XBMC和Raspbian结合的产物。
 
 <h1 id="toc_5">超频设置</h1>
 
+<h2 id="toc_5.1">通过Raspi-config工具修改</h2>
+
+<pre class="brush: bash">
+sudo raspi-config
+</pre>
+
 <p>
-通过更改<code>/boog/config.txt</code>中的下列参数可以实现超频：
+然后选择合适的频率。
 </p>
+
+<h2 id="toc_5.2">直接修改config.txt文件</h2>
+
+<p>
+通过更改<code>/boog/config.txt</code>中的下列参数可以实现超频，主要参数：
+</p>
+
+<pre class="brush: bash">
+carm_freq=800
+gpu_freq=300
+sdram_freq=450
+</pre>
+<p>
+上面的命令将CPU频率设到800MHZ，你所要做的只是修改carm_freq这个参数，就能实现
+超频！现在你只需要将config.txt这个文件放到SD卡的启动分区中。
+</p>
+
+<h3 id="toc_5.2.1">详细参数</h3>
 
 <table>
 <tr>
-<td>
+<th>
 Option
-</td>
-<td>
+</th>
+<th>
 Description
-</td>
+</th>
 </tr>
 <tr>
 <td>
@@ -414,40 +440,38 @@ SDRAM phy voltage adjust. [-16,8] equates to [0.8V,1.4V] with 0.025V steps. Defa
 
 
 <p>
-如何组合参照下表（注意：如果设置了over_voltage，质保就会失效）：
+如何组合参照下表（注意：如果设置了<code>over_voltage</code>，质保就会失效）：
 </p>
-<table class='center'>
+
+<table>
 <tr>
-<td>
+<th>
 arm_freq
-</td>
-<td>
+</th>
+<th>
 gpu_freq
-</td>
-<td>
+</th>
+<th>
 core_freq
-</td>
-<td>
+</th>
+<th>
 h264_freq
-</td>
-<td>
+</th>
+<th>
 isp_freq
-</td>
-<td>
+</th>
+<th>
 v3d_freq
-</td>
-<td>
+</th>
+<th>
 sdram_freq
-</td>
-<td>
+</th>
+<th>
 over_voltage
-</td>
-<td>
+</th>
+<th>
 over_voltage_sdram
-</td>
-<td>
-&nbsp;
-</td>
+</th>
 </tr>
 <tr>
 <td>
@@ -470,9 +494,6 @@ over_voltage_sdram
 </td>
 <td>
 450
-</td>
-<td>
-&nbsp;
 </td>
 <td>
 &nbsp;
@@ -509,9 +530,6 @@ over_voltage_sdram
 <td>
 &nbsp;
 </td>
-<td>
-&nbsp;
-</td>
 </tr>
 <tr>
 <td>
@@ -541,9 +559,6 @@ over_voltage_sdram
 <td>
 &nbsp;
 </td>
-<td>
-&nbsp;
-</td>
 </tr>
 <tr>
 <td>
@@ -566,9 +581,6 @@ over_voltage_sdram
 </td>
 <td>
 450
-</td>
-<td>
-&nbsp;
 </td>
 <td>
 &nbsp;
@@ -605,9 +617,6 @@ over_voltage_sdram
 <td>
 &nbsp;
 </td>
-<td>
-&nbsp;
-</td>
 </tr>
 <tr>
 <td>
@@ -637,9 +646,6 @@ over_voltage_sdram
 <td>
 &nbsp;
 </td>
-<td>
-&nbsp;
-</td>
 </tr>
 <tr>
 <td>
@@ -669,11 +675,31 @@ over_voltage_sdram
 <td>
 &nbsp;
 </td>
-<td>
-&nbsp;
-</td>
 </tr>
 </table>
+ 
+<h2 id="toc_5.3">超频错误无法启动</h2>
+
+<p>
+不幸的是，如果你设置了过高的时钟频率，树莓派可能就启动不了了。别担心，可以通过
+重设频率的方法来解决这个问题。
+</p>
+
+<p>
+当你启动树莓派的时候，按住<code>SHIFT</code>键，再次运行<code>Raspi-config</code>程序并设置一个低一些
+的频率。
+</p>
+
+<p>
+如果你使用的是配置<code>config.txt</code>的方法，修改这个文件中的参数，设置一个低一些的
+频率。
+</p>
+
+<p>
+树莓派的官方网站推荐用Quake 3来测试当前的频率设定是否合适。注意要是你的小Pi通风
+不是很顺畅，你可能需要调整出风口。一些在线商家已经开始出售树莓派的专用散热器，
+如果你想超频到900MHz以上，推荐你买一个。
+</p>
  </div>
 </body>
 </html>
