@@ -1,0 +1,337 @@
+%title HTML5离线存储
+
+%toc HTML5离线存储
+
+= AppCache =
+
+如果你的Web应用中有一部分功能（或者整个应用）需要在脱离服务器的情况下使用，那么
+就可以通过AppCache来让你的用户在离线状态下也能使用。你所需要做的就是创建一个
+配置文件，在其中指定哪些资源需要被缓存，哪些不需要。此外，还能在其中指定某些
+联机资源在脱机条件下的替代资源。
+
+AppCache的配置文件通常是一个以`.appcache`结尾的文本文件（推荐写法）。文件以
+`CACHE MANIFEST`开头，包含下列三部分内容：
+
+* `CACHE` – 指定了哪些资源在用户第一次访问站点的时候需要被下载并缓存
+* `NETWORK` – 指定了哪些资源需要在联机条件下才能访问，这些资源从不被缓存
+* `FALLBACK` – 指定了上述资源在脱机条件下的替代资源
+
+== 示例 ==
+
+首先，你需要在页面上指定AppCache的配置文件：
+
+{{{class="brush: html"
+<!DOCTYPE html>
+<html manifest="manifest.appcache">
+...
+</html>
+}}}
+
+在这里千万记得在服务器端发布上述配置文件的时候，需要将MIME类型设置为
+`text/cache-manifest`，否则浏览器无法正常解析。
+
+接下来是创建之前定义好的各种资源。我们假定在这个示例中，你开发的是一个交互类
+站点，用户可以在上面联系别人并且发表评论。用户在离线的状态下依然可以访问网站的
+静态部分，而联系以及发表评论的页面则会被其它页面替代，无法访问。
+
+好的，我们这就着手定义那些静态资源：
+
+{{{class="brush: bash"
+CACHE MANIFEST
+ 
+CACHE:
+/about.html
+/portfolio.html
+/portfolio_gallery/image_1.jpg
+/portfolio_gallery/image_2.jpg
+/info.html
+/style.css
+/main.js
+/jquery.min.js
+}}}
+
+旁注：配置文件写起来有一点很不方便。举例来说，如果你想缓存整个目录，你不能直接
+在CACHE部分使用通配符（*），而是只能在NETWORK部分使用通配符把所有不应该被缓存的
+资源写出来。
+
+你不需要显式地缓存包含配置文件的页面，因为这个页面会自动被缓存。接下来我们为联系
+和评论的页面定义FALLBACK部分：
+
+{{{class="brush: bash"
+FALLBACK:
+/contact.html /offline.html
+/comments.html /offline.html
+}}}
+
+最后我们用一个通配符来阻止其余的资源被缓存：
+	
+{{{class="brush: bash"
+NETWORK:
+*
+}}}
+
+最后的结果就是下面这样：
+
+{{{class="brush: html"
+CACHE MANIFEST
+ 
+CACHE:
+/about.html
+/portfolio.html
+/portfolio_gallery/image_1.jpg
+/portfolio_gallery/image_2.jpg
+/info.html
+/style.css
+/main.js
+/jquery.min.js
+ 
+FALLBACK:
+/contact.html /offline.html
+/comments.html /offline.html
+ 
+NETWORK:
+*
+}}}
+
+== 通过版本号表示更新 ==
+
+还有一件很重要的事情要记得：你的资源只会被缓存一次！也就是说，如果资源更新了，
+它们不会自动更新，除非你修改了配置文件。所以有一个最佳实践是，在配置文件中增加
+一项版本号，每次更新资源的时候顺带更新版本号：
+
+{{{class="brush: html"
+CACHE MANIFEST
+ 
+# version 1
+ 
+CACHE:
+...
+}}}
+
+
+
+= LocalStorage和SessionStorage =
+
+如果你想在Javascript代码里面保存些数据，那么这两个东西就派上用场了。前一个可以
+保存数据，永远不会过期（expire）。只要是相同的域和端口，所有的页面中都能访问到
+通过LocalStorage保存的数据。
+
+举个简单的例子，你可以用它来保存用户设置，用户可以把他的个人喜好保存在当前使用的
+电脑上，以后打开应用的时候能够直接加载。后者也能保存数据，但是一旦关闭浏览器窗口
+（译者注：浏览器窗口，window，如果是多tab浏览器，则此处指代tab）就失效了。而且
+这些数据不能在不同的浏览器窗口之间共享，即使是在不同的窗口中访问同一个Web应用的
+其它页面。
+
+旁注：有一点需要提醒的是，LocalStorage和SessionStorage里面只能保存基本类型的数据
+，也就是字符串和数字类型。其它所有的数据可以通过各自的toString()方法转化后保存。
+如果你想保存一个对象，则需要使用`JSON.stringfy`方法。（如果这个对象是一个类，
+你可以复写它默认的`toString()`方法，这个方法会自动被调用）。
+
+== 示例 ==
+
+我们不妨来看看之前的例子。在联系人和评论的部分，我们可以随时保存用户输入的东西
+。这样一来，即使用户不小心关闭了浏览器，之前输入的东西也不会丢失。对于jQuery
+来说，这个功能是小菜一碟。（注意：表单中每个输入字段都有id，在这里我们就用id来
+指代具体的字段）
+
+{{{class="brush: javascript"
+$('#comments-input, .contact-field').on('keyup', function () {
+   // let's check if localStorage is supported
+   if (window.localStorage) {
+      localStorage.setItem($(this).attr('id'), $(this).val());
+   }
+});
+}}}
+
+每次提交联系人和评论的表单，我们需要清空缓存的值，我们可以这样处理提交
+（submit）事件：
+
+{{{class="brush: javascript"
+$('#comments-form, #contact-form').on('submit', function () {
+   // get all of the fields we saved
+   $('#comments-input, .contact-field').each(function () {
+      // get field's id and remove it from local storage
+      localStorage.removeItem($(this).attr('id'));
+   });
+});
+}}}
+
+最后，每次加载页面的时候，把缓存的值填充到表单上即可：
+
+{{{class="brush: javascript"
+// get all of the fields we saved
+$('#comments-input, .contact-field').each(function () {
+   // get field's id and get it's value from local storage
+   var val = localStorage.getItem($(this).attr('id'));
+   // if the value exists, set it
+   if (val) {
+      $(this).val(val);
+   }
+});
+}}}
+
+
+
+= IndexedDB =
+
+在我个人看来，这是最有意思的一种技术。它可以保存大量经过索引（indexed）的数据在
+浏览器端。这样一来，就能在客户端保存复杂对象，大文档等等数据。而且用户可以在
+离线情况下访问它们。这一特性几乎适用于所有类型的Web应用：如果你写的是邮件客户端
+，你可以缓存用户的邮件，以供稍后再看；如果你写的是相册类应用，你可以离线保存用户
+的照片；如果你写的是GPS导航，你可以缓存用户的路线……不胜枚举。
+
+IndexedDB是一个面向对象的数据库。这就意味着在IndexedDB中既不存在表的概念，
+也没有SQL，数据是以键值对的形式保存的。其中的键既可以是字符串和数字等基础类型，
+也可以是日期和数组等复杂类型。这个数据库本身构建于存储（store，一个store类似于
+关系型数据中表的概念）的基础上。数据库中每个值都必须要有对应的键。每个键既可以
+自动生成，也可以在插入值的时候指定，也可以取自于值中的某个字段。如果你决定使用
+值中的字段，那么只能向其中添加Javascript对象，因为基础数据类型不像Javascript对象那
+样有自定义属性。
+示例
+
+在这个例子中，我们用一个音乐专辑应用作为示范。不过我并不打算在这里从头到尾展示整
+个应用，而是把涉及IndexedDB的部分挑出来解释。如果大家对这个Web应用感兴趣的话，
+文章的后面也提供了源代码的下载。首先，让我们来打开数据库并创建store：
+
+{{{class="brush: javascript"
+// check if the indexedDB is supported
+if (!window.indexedDB) {
+	// of course replace that with some user-friendly notification
+	throw 'IndexedDB is not supported!';
+}
+
+// variable which will hold the database connection
+var db;
+
+// open the database
+// first argument is database's name, second is it's version 
+// (I will talk about versions in a while)
+var request = indexedDB.open('album', 1);
+
+request.onerror = function (e) {
+	console.log(e);
+};
+
+// this will fire when the version of the database changes
+request.onupgradeneeded = function (e) {
+	// e.target.result holds the connection to database
+	db = e.target.result;
+
+	/* create a store to hold the data
+	 * first argument is the store name, second is for options
+	 * here we specify the field that will serve as the key and also 
+	 * enable the automatic generation of keys with autoIncrement
+	 */
+	var objectStore = db.createObjectStore('cds', 
+			{ keyPath: 'id', autoIncrement: true });
+ 
+
+	/* create an index to search cds by title
+	 * first argument is the index name, second is the field in the value
+	 * in the last argument we specify other options, here we only state that 
+	 * the index is unique, because there can be only one album with 
+	 * specific title
+	 */
+	objectStore.createIndex('title', 'title', { unique: true });
+
+	/* create an index to search cds by band
+	 * this one is not unique, since one band can have several albums
+	 */
+	objectStore.createIndex('band', 'band', { unique: false });
+};
+}}}
+
+相信上面的代码还是相当通俗易懂的。估计你也注意到上述代码中打开数据库时会传入
+一个版本号，还用到了`onupgradeneeded`事件。当你以较新的版本打开数据库时就会触发
+这个事件。如果相应版本的数据库尚不存在，则会触发事件，随后我们就会创建所需的
+`store`。
+
+接下来我们还创建了两个索引，一个用于标题搜索，一个用于乐队搜索。现在让我们再来
+看看如何增加和删除专辑：
+
+{{{class="brush: javascript"
+// adding
+$('#add-album').on('click', function () {
+	// create the transaction
+	// first argument is a list of stores that will be used, 
+	// second specifies the flag since we want to add something 
+	// we need write access, so we use readwrite flag
+	var transaction = db.transaction([ 'cds' ], 'readwrite');
+	transaction.onerror = function (e) {
+		console.log(e);
+	};
+	var value = { ... }; // read from DOM
+	// add the album to the store
+	var request = transaction.objectStore('cds').add(value);
+	request.onsuccess = function (e) {
+	// add the album to the UI, e.target.result is 
+	// a key of the item that was added
+	};
+});
+
+// removing
+$('.remove-album').on('click', function () {
+	var transaction = db.transaction([ 'cds' ], 'readwrite');
+	var request = transaction.objectStore('cds').delete(
+		/* some id got from DOM, converted to integer */
+	);
+	request.onsuccess = function () {
+		// remove the album from UI
+	}
+});
+}}}
+
+是不是看起来直接明了？这里对数据库所有的操作都基于事务的，只有这样才能保证
+数据的一致性。现在最后要做的就是展示音乐专辑：
+
+{{{class="brush: javascript"
+request.onsuccess = function (e) {
+    if (!db) db = e.target.result;
+     
+		// no flag since we are only reading
+    var transaction = db.transaction([ 'cds' ]);
+    var store = transaction.objectStore('cds');
+    // open a cursor, which will get all the items from database
+    store.openCursor().onsuccess = function (e) {
+        var cursor = e.target.result;
+        if (cursor) {
+            var value = cursor.value;
+            $('#albums-list tbody').append(
+								'<tr><td>' + value.title + '</td><td>' + value.band +
+								'</td><td>' + value.genre + '</td><td>' + value.year +
+								'</td></tr>');
+ 
+            // move to the next item in the cursor
+            cursor.continue();
+        }
+    };
+}
+}}}
+
+这也不是十分复杂。可以看见，通过使用IndexedDB，可以很轻松的保存复杂对象，也可以通过索引来检索想要的内容：
+
+{{{class="brush: javascript"
+function getAlbumByBand(band) {
+    var transaction = db.transaction([ 'cds' ]);
+    var store = transaction.objectStore('cds');
+    var index = store.index('band');
+    // open a cursor to get only albums with specified band
+    // notice the argument passed to openCursor()
+    index.openCursor(IDBKeyRange.only(band)).onsuccess = function (e) {
+        var cursor = e.target.result;
+        if (cursor) {
+            // render the album
+            // move to the next item in the cursor
+            cursor.continue();
+        }
+    });
+}
+}}}
+
+使用索引的时候和使用store一样，也能通过游标（cursor）来遍历。由于同一个索引值
+名下可能有好几条数据（如果索引不是unique的话），所以这里我们需要用到
+`IDBKeyRange`。它能根据指定的函数对结果集进行过滤。这里，我们只想根据指定的乐队
+进行检索，所以我们用到了`only()`函数。也能使用其它类似于`lowerBound()`，
+`upperBound()`和`bound()`等函数，它们的功能也是不言自明的。
+
+源代码：`code/html5/sotre/rw.offline.store`
